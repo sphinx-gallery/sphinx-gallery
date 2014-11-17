@@ -12,6 +12,6 @@ setup(
     url="https://github.com/sphinx-gallery/sphinx-gallery",
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',
-    install_requires=['Sphinx'],
-    setup_requires=['nose']
+    install_requires=['Sphinx', 'matplotlib', 'pillow'],
+    setup_requires=['nose>=1.0']
 )
