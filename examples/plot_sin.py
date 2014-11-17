@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """
+===========================
+Ploting simple sin function
+===========================
+
 A simple example of the plot of a sin function
 in order to test the autonomy of the gallery
 """
