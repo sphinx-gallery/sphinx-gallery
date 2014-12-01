@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """
+=================
+need of the title
+=================
 
 A simple example of the plot of a sin function
 in order to test the autonomy of the gallery

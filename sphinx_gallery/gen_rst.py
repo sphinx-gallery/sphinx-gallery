@@ -569,12 +569,9 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
 
 .. raw:: html
 
+    <div class="thumbnailContainer" tooltip="%s">
 
-    <div class="thumbnailContainer">
-        <div class="docstringWrapper">
-
-
-""")
+""" % (snippet))
 
     out.append('.. figure:: %s\n' % thumb)
     if link_name.startswith('._'):
@@ -588,12 +585,9 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
 
 .. raw:: html
 
-
-    <p>%s
-    </p></div>
     </div>
 
-""" % (ref_name, snippet))
+""" % (ref_name))
     return ''.join(out)
 
 
