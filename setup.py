@@ -15,6 +15,7 @@ setup(
     description="Sphinx extension to automatically generate an examples gallery",
     version="0.0.1",
     packages=find_packages(),
+    package_data={'sphinxgallery': ['_static/gallery.css']},
     url="https://github.com/sphinx-gallery/sphinx-gallery",
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',
