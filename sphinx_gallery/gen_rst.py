@@ -827,7 +827,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
                                'stdout_%s.txt' % base_image_name)
     time_path = os.path.join(image_dir,
                              'time_%s.txt' % base_image_name)
-    thumb_file = os.path.join(thumb_dir, fname[:-3] + '.png')
+    thumb_file = os.path.join(thumb_dir, base_image_name + '.png')
     time_elapsed = 0
     if plot_gallery and fname.startswith('plot'):
         # generate the plot as png image if file name
