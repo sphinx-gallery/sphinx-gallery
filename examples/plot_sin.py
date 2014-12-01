@@ -19,5 +19,5 @@ y = np.sin(x)
 
 plt.plot(x,y)
 plt.xlabel('$x$')
-plt.ylabel('$sin(x)$')
+plt.ylabel('$\sin(x)$')
 plt.show()
