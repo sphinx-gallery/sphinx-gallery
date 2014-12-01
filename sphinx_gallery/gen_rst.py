@@ -453,10 +453,10 @@ def extract_docstring(filename, ignore_heading=False):
                         first_par = ((first_par[:95] + '...')
                                      if len(first_par) > 95 else first_par)
                     else:
-                        raise ValueError("Docstring not found by gallery"
+                        raise ValueError("Docstring not found by gallery.\n"
                                          "Please check the layout of your"
-                                         " example file: {} and make sure"
-                                         "it's correct".format(filename))
+                                         " example file:\n {}\n and make sure"
+                                         " it's correct".format(filename))
                 else:
                     first_par = paragraphs[0]
 
@@ -499,8 +499,7 @@ def generate_example_rst(app):
     <style type="text/css">
     div#sidebarbutton {
         /* hide the sidebar collapser, while ensuring vertical arrangement */
-        width: 0px;
-        overflow: hidden;
+        display: none;
     }
     </style>
 
@@ -970,6 +969,10 @@ def embed_code_links(app, exception):
     if exception is not None:
         return
     print('Embedding documentation hyperlinks in examples..')
+
+    if app.builder.name == 'latex':
+        # Don't embed hyperlinks when a latex builder is used.
+        return
 
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
