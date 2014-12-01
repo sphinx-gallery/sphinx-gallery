@@ -499,16 +499,15 @@ def generate_example_rst(app):
     <style type="text/css">
     div#sidebarbutton {
         /* hide the sidebar collapser, while ensuring vertical arrangement */
-        width: 0px;
-        overflow: hidden;
+        display: none;
     }
     </style>
 
+.. _examples-index:
 
 Examples
 ========
 
-.. _examples-index:
 """)
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
@@ -570,12 +569,9 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
 
 .. raw:: html
 
+    <div class="thumbnailContainer" tooltip="%s">
 
-    <div class="thumbnailContainer">
-        <div class="docstringWrapper">
-
-
-""")
+""" % (snippet))
 
     out.append('.. figure:: %s\n' % thumb)
     if link_name.startswith('._'):
@@ -589,12 +585,9 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
 
 .. raw:: html
 
-
-    <p>%s
-    </p></div>
     </div>
 
-""" % (ref_name, snippet))
+""" % (ref_name))
     return ''.join(out)
 
 
@@ -970,6 +963,10 @@ def embed_code_links(app, exception):
     if exception is not None:
         return
     print('Embedding documentation hyperlinks in examples..')
+
+    if app.builder.name == 'latex':
+        # Don't embed hyperlinks when a latex builder is used.
+        return
 
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}

@@ -1,0 +1,4 @@
+matplotlib
+pillow
+numpy
+scikit-learn
