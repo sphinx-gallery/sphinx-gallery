@@ -569,9 +569,10 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
 
 .. raw:: html
 
-    <div class="thumbnailContainer" tooltip="%s">
 
-""" % (snippet))
+    <div class="thumbnailContainer" tooltip="{}">
+
+""".format(snippet))
 
     out.append('.. figure:: %s\n' % thumb)
     if link_name.startswith('._'):
@@ -917,7 +918,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
             os.makedirs(car_thumb_path)
         if os.path.exists(first_image_file):
             # We generate extra special thumbnails for the carousel
-            carousel_tfile = os.path.join(car_thumb_path, fname[:-3] + '_carousel.png')
+            carousel_tfile = os.path.join(car_thumb_path, base_image_name + '_carousel.png')
             first_img = image_fname % 1
             if first_img in carousel_thumbs:
                 make_thumbnail((image_path % carousel_thumbs[first_img][0]),
@@ -941,7 +942,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
             image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = open(os.path.join(target_dir, fname[:-2] + 'rst'), 'w')
+    f = open(os.path.join(target_dir, base_image_name + 'rst'), 'w')
     f.write(this_template % locals())
     f.flush()
 
