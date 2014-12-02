@@ -13,7 +13,7 @@ before_install:
 
 install:
     - conda create --yes -n testenv python=$PYTHON_VERSION pip matplotlib nose
-    pillow coverage sphinx
+      pillow coverage sphinx
     - source activate testenv
     - python setup.py install
 
