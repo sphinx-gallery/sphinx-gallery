@@ -1,13 +1,17 @@
 Sphinx-Gallery
 ==============
-[![Build Status](https://travis-ci.org/sphinx-gallery/sphinx-gallery.svg?branch=master)](https://travis-ci.org/Titan-C/sphinx-gallery)
+[![Build Status](https://travis-ci.org/sphinx-gallery/sphinx-gallery.svg?branch=master)](https://travis-ci.org/sphinx-gallery/sphinx-gallery)
 
 Sphinx extension for automatic generation of an example gallery.
 
 Getting the package
 -------------------
 
-There is work in progress to put this package in PyPi. Wait for a while, please!
+You can do a direct install via pip by using
+
+```
+$ pip install sphinxgallery
+```
 
 ### Install as developer
 
