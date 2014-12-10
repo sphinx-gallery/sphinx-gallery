@@ -1,6 +1,6 @@
 Sphinx-Gallery
 ==============
-[![Build Status](https://travis-ci.org/Titan-C/sphinx-gallery.svg?branch=example_doc)](https://travis-ci.org/Titan-C/sphinx-gallery)
+[![Build Status](https://travis-ci.org/sphinx-gallery/sphinx-gallery.svg?branch=master)](https://travis-ci.org/Titan-C/sphinx-gallery)
 
 Sphinx extension for automatic generation of an example gallery.
 
