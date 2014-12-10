@@ -20,7 +20,7 @@ import gzip
 import posixpath
 import subprocess
 import warnings
-
+import sphinxgallery
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -927,7 +927,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
 
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        make_thumbnail('images/no_image.png', thumb_file, 200, 140)
+        make_thumbnail(sphinxgallery._path_static()+'/no_image.png', thumb_file, 200, 140)
 
     docstring, short_desc, end_row = extract_docstring(example_file)
 
