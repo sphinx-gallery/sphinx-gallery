@@ -1,5 +1,5 @@
 matplotlib
 pillow
-numpy
-scipy
 scikit-learn
+sphinx
+nose
