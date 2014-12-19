@@ -75,6 +75,6 @@ If these instructions are not clear enough, this package uses itself, to generat
 its own example gallery. So check the directory structure and the contents of the
 files.
 
-That is all, out module shall take care of the rest
+That is all, our module shall take care of the rest
 
 
