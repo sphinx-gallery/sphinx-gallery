@@ -47,6 +47,10 @@ extensions = [
     ...
     'sphinxgallery.gen_rst',
     ]
+
+import sphinxgallery
+html_static_path = ['_static', sphinxgallery._path_static()]
+
 ```
 you need to have a folder called `examples` in your main repository directory.
 This folder needs
@@ -60,18 +64,6 @@ This folder needs
 Your python scripts in the examples folder need to have a main comment. Written
 in rst sintax to be used in the generated file in the example gallery.
 
-To use our pretty CSS defaul templating of the gallery you need to add to your
-Sphinx template file
-
-```
-{% set css_files = css_files + ["_static/gallery.css"] %}
-```
-
-and to your Sphinx `conf.py` file
-```python
-import sphinxgallery
-html_static_path = ['_static', sphinxgallery._path_static()]
-```
 If these instructions are not clear enough, this package uses itself, to generated
 its own example gallery. So check the directory structure and the contents of the
 files.

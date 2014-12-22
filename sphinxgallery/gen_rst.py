@@ -649,7 +649,7 @@ def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, se
     fhindex.write("""
 .. raw:: html
 
-    <div class="clearer"></div>
+    <div style='clear:both'></div>
     """)  # clear at the end of the section
 
 # modules for which we embed links into example code
@@ -1069,6 +1069,7 @@ def embed_code_links(app, exception):
 def setup(app):
     app.connect('builder-inited', generate_example_rst)
     app.add_config_value('plot_gallery', True, 'html')
+    app.add_stylesheet('gallery.css')
 
     # embed links after build is finished
     app.connect('build-finished', embed_code_links)
