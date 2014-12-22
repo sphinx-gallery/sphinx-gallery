@@ -51,7 +51,7 @@ you need to have a folder called `examples` in your main repository directory.
 This folder needs
 
 * A `README.txt` file with rst syntax to present your gallery
-* `*plot*_examples.py` files. Python scripts that have to be executed
+* `plot_examples.py` files. Python scripts that have to be executed
   and output a plot that will be presented in your gallery
 * `examples.py` files. Python scripts that will not be executed but will be presented
   in the gallery

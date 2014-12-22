@@ -8,12 +8,12 @@ Installer Sphinx extension for gallery generator
 # - Sample gallery with documentation
 
 from setuptools import setup, find_packages
-
+import sphinxgallery
 
 setup(
     name="sphinxgallery",
     description="Sphinx extension to automatically generate an examples gallery",
-    version="0.0.2",
+    version=sphinxgallery.__version__,
     packages=find_packages(),
     package_data={'sphinxgallery': ['_static/gallery.css', '_static/no_image.png']},
     url="https://github.com/sphinx-gallery/sphinx-gallery",
