@@ -1,6 +1,7 @@
 Sphinx-Gallery
 ==============
 [![Build Status](https://travis-ci.org/sphinx-gallery/sphinx-gallery.svg?branch=master)](https://travis-ci.org/sphinx-gallery/sphinx-gallery)
+[![Documentation Status](https://readthedocs.org/projects/sphinx-gallery/badge/?version=latest)](https://readthedocs.org/projects/sphinx-gallery/?badge=latest)
 
 Sphinx extension for automatic generation of an example gallery.
 
