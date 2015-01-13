@@ -476,21 +476,7 @@ def generate_example_rst(app):
 
     # we create an index.rst with all examples
     fhindex = open(os.path.join(root_dir, 'index.rst'), 'w')
-    # Note: The sidebar button has been removed from the examples page for now
-    #      due to how it messes up the layout. Will be fixed at a later point
-    fhindex.write("""\
-
-
-
-.. raw:: html
-
-
-    <style type="text/css">
-    div#sidebarbutton {
-        /* hide the sidebar collapser, while ensuring vertical arrangement */
-        display: none;
-    }
-    </style>
+    fhindex.write("""
 
 .. _examples-index:
 
@@ -553,32 +539,29 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     ref_name = os.path.join(subdir, fname).replace(os.path.sep, '_')
     if ref_name.startswith('._'):
         ref_name = ref_name[2:]
-    out = []
-    out.append("""
-
-.. raw:: html
-
-
-    <div class="thumbnailContainer" tooltip="{}">
-
-""".format(snippet))
-
-    out.append('.. figure:: %s\n' % thumb)
     if link_name.startswith('._'):
         link_name = link_name[2:]
     if full_dir != '.':
-        out.append('   :target: ./%s/%s.html\n\n' % (full_dir, fname[:-3]))
+        target = './%s/%s.html' % (full_dir, fname[:-3])
     else:
-        out.append('   :target: ./%s.html\n\n' % link_name[:-3])
-    out.append("""   :ref:`example_%s`
+        target = './%s.html' % link_name[:-3]
 
+    out = """
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="{}">
+
+.. figure:: {}
+    :target: {}
+
+    :ref:`example_{}`
 
 .. raw:: html
 
     </div>
+""".format(snippet, thumb, target, ref_name)
 
-""" % (ref_name))
-    return ''.join(out)
+    return out
 
 
 def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, seen_backrefs):
