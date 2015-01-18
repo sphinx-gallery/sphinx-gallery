@@ -1,7 +1,7 @@
 """Sphinx Gallery
 """
 import os
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 def _path_static():
     """Returns path to packaged static files"""
