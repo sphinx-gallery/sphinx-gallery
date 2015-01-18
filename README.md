@@ -13,7 +13,7 @@ Getting the package
 You can do a direct install via pip by using
 
 ```
-$ pip install sphinxgallery
+$ pip install sphinx-gallery
 ```
 
 ### Install as developer
@@ -74,7 +74,7 @@ its own example gallery. So check the directory structure and the contents of th
 files.
 
 That is all, our module shall take care of the rest.
-Once you build the documentation, our extension will generate a **auto_examples**
+Once you build the documentation, our extension will generate a `auto_examples`
 directory and populate it with rst files containing the gallery and each example.
 Then Sphinx will give this files its regular processing and you can enjoy your
 generated gallery unde the same path.

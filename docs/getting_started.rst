@@ -6,7 +6,7 @@ Getting the package
 ===================
 The package can be directly obtained via pip by using::
 
-  $ pip install sphinxgallery
+  $ pip install sphinx-gallery
 
 
 Setting up your project

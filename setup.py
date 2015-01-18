@@ -2,16 +2,12 @@
 """
 Installer Sphinx extension for gallery generator
 """
-# TODO
-# - Remove setup tools and use python standard distutils
-# - Automatic online deployment CI and website
-# - Sample gallery with documentation
 
 from setuptools import setup, find_packages
 import sphinxgallery
 
 setup(
-    name="sphinxgallery",
+    name="sphinx-gallery",
     description="Sphinx extension to automatically generate an examples gallery",
     version=sphinxgallery.__version__,
     packages=find_packages(),
