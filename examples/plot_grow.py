@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-===================================
-Ploting simple exponential function
-===================================
+====================================
+Plotting simple exponential function
+====================================
 
 A simple example of the plot of a exponential function
 in order to test the autonomy of the gallery
@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 x = np.linspace(-1, 2, 100)
 y = np.exp(x)
 
-plt.plot(x,y)
+plt.plot(x, y)
 plt.xlabel('$x$')
 plt.ylabel('$exp(x)$')
 plt.show()

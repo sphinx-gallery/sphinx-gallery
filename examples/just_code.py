@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-======================
-A short python scritpt
-======================
+=====================
+A short python script
+=====================
 
 A script that is not executed when gallery is generated but nevertheless
 gets included as an example.
