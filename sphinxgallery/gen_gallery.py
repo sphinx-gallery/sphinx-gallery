@@ -46,7 +46,7 @@ Examples
     seen_backrefs = set()
     generate_dir_rst('.', fhindex, root_dir, gallery_dir, plot_gallery, seen_backrefs)
     for directory in sorted(os.listdir(root_dir)):
-        if os.path.isdir(os.path.join(gallery_dir, directory)):
+        if os.path.isdir(os.path.join(root_dir, directory)):
             generate_dir_rst(directory, fhindex, root_dir, gallery_dir, plot_gallery, seen_backrefs)
     fhindex.flush()
 

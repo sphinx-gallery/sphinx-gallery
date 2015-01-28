@@ -274,8 +274,6 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, plot_gallery, se
         os.makedirs(target_dir)
     sorted_listdir = line_count_sort(os.listdir(src_dir),
                                      src_dir)
-    if not os.path.exists(os.path.join(directory, 'images', 'thumb')):
-        os.makedirs(os.path.join(directory, 'images', 'thumb'))
     for fname in sorted_listdir:
         if fname.endswith('py'):
             backrefs = generate_file_rst(fname, target_dir, src_dir, example_dir, plot_gallery)
