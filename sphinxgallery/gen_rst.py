@@ -177,43 +177,7 @@ def extract_docstring(filename, ignore_heading=False):
     return docstring, first_par, erow + 1 + start_row
 
 
-def generate_example_rst(app):
-    """ Generate the list of examples, as well as the contents of
-        examples.
-    """
-    gallery_conf = app.config.gallery_conf
 
-    example_dir = os.path.abspath(os.path.join(app.builder.srcdir, gallery_conf['root_dir']))
-    root_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_dir'])
-    generated_dir = os.path.join(app.builder.srcdir, gallery_conf['mod_generated'])
-
-    try:
-        plot_gallery = eval(app.builder.config.plot_gallery)
-    except TypeError:
-        plot_gallery = bool(app.builder.config.plot_gallery)
-
-    for workdir in [root_dir, example_dir, generated_dir]:
-        if not os.path.exists(workdir):
-            os.makedirs(workdir)
-
-    # we create an index.rst with all examples
-    fhindex = open(os.path.join(root_dir, 'index.rst'), 'w')
-    fhindex.write("""
-
-.. _examples-index:
-
-Examples
-========
-
-""")
-    # Here we don't use an os.walk, but we recurse only twice: flat is
-    # better than nested.
-    seen_backrefs = set()
-    generate_dir_rst('.', fhindex, example_dir, root_dir, plot_gallery, seen_backrefs)
-    for directory in sorted(os.listdir(example_dir)):
-        if os.path.isdir(os.path.join(example_dir, directory)):
-            generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, seen_backrefs)
-    fhindex.flush()
 
 
 def extract_line_count(filename, target_dir):
@@ -286,15 +250,15 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     return out
 
 
-def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, seen_backrefs):
+def generate_dir_rst(directory, fhindex, root_dir, example_dir, plot_gallery, seen_backrefs):
     """ Generate the rst file for an example directory.
     """
     if not directory == '.':
-        target_dir = os.path.join(root_dir, directory)
-        src_dir = os.path.join(example_dir, directory)
+        src_dir = os.path.join(root_dir, directory)
+        target_dir = os.path.join(example_dir, directory)
     else:
-        target_dir = root_dir
-        src_dir = example_dir
+        src_dir = root_dir
+        target_dir = example_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
         raise ValueError('Example directory %s does not have a README.txt' %
                          src_dir)
@@ -314,7 +278,7 @@ def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, se
         os.makedirs(os.path.join(directory, 'images', 'thumb'))
     for fname in sorted_listdir:
         if fname.endswith('py'):
-            backrefs = generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery)
+            backrefs = generate_file_rst(fname, target_dir, src_dir, example_dir, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
             fhindex.write(_thumbnail_div(directory, directory, fname, snippet))
@@ -327,7 +291,7 @@ def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, se
 
 """ % (directory, fname[:-3]))
             for backref in backrefs:
-                include_path = os.path.join(root_dir, '../modules/generated/%s.examples' % backref)
+                include_path = os.path.join(example_dir, '../modules/generated/%s.examples' % backref)
                 seen = backref in seen_backrefs
                 with open(include_path, 'a' if seen else 'w') as ex_file:
                     if not seen:
@@ -641,40 +605,3 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
     return backrefs
 
 
-DEFAULT_CONF = {
-    'root_dir'          : '../examples',
-    'examples_dir'      : 'auto_examples',
-    'mod_generated'     : 'modules/generated',
-    'doc_module'        : ''}
-
-def setup(app):
-    app.add_config_value('plot_gallery', True, 'html')
-    app.add_config_value('gallery_conf', DEFAULT_CONF, 'html')
-    app.connect('builder-inited', generate_example_rst)
-    app.add_stylesheet('gallery.css')
-
-    # Sphinx hack: sphinx copies generated images to the build directory
-    #  each time the docs are made.  If the desired image name already
-    #  exists, it appends a digit to prevent overwrites.  The problem is,
-    #  the directory is never cleared.  This means that each time you build
-    #  the docs, the number of images in the directory grows.
-    #
-    # This question has been asked on the sphinx development list, but there
-    #  was no response: http://osdir.com/ml/sphinx-dev/2011-02/msg00123.html
-    #
-    # The following is a hack that prevents this behavior by clearing the
-    #  image build directory each time the docs are built.  If sphinx
-    #  changes their layout between versions, this will not work (though
-    #  it should probably not cause a crash).  Tested successfully
-    #  on Sphinx 1.0.7
-    build_image_dir = '_build/html/_images'
-    if os.path.exists(build_image_dir):
-        filelist = os.listdir(build_image_dir)
-        for filename in filelist:
-            if filename.endswith('png'):
-                os.remove(os.path.join(build_image_dir, filename))
-
-
-def setup_module():
-    # HACK: Stop nosetests running setup() above
-    pass

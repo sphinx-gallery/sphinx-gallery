@@ -37,7 +37,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
-    'sphinxgallery.gen_rst',
+    'sphinxgallery.gen_gallery',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
