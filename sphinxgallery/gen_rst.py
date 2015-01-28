@@ -308,9 +308,6 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, plot_gallery, se
     <div style='clear:both'></div>
     """)  # clear at the end of the section
 
-# modules for which we embed links into example code
-DOCMODULES = ['sklearn', 'matplotlib', 'numpy', 'scipy']
-
 
 def make_thumbnail(in_fname, out_fname, width, height):
     """Make a thumbnail with the same aspect ratio centered in an
