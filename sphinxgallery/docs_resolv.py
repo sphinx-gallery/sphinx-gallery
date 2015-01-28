@@ -1,6 +1,25 @@
 ###############################################################################
 # Documentation link resolver objects
 import joblib
+import gzip
+import os
+import posixpath
+import re
+
+# Try Python 2 first, otherwise load from Python 3
+try:
+    from StringIO import StringIO
+    import cPickle as pickle
+    import urllib2 as urllib
+    from urllib2 import HTTPError, URLError
+except ImportError:
+    from io import StringIO
+    import pickle
+    import urllib.request
+    import urllib.error
+    import urllib.parse
+    from urllib.error import HTTPError, URLError
+
 
 def _get_data(url):
     """Helper function to get data over http or from a local file"""
@@ -371,9 +390,3 @@ def embed_code_links(app, exception):
                             fid.write(line.encode('utf-8'))
     print('[done]')
 
-def setup(app):
-    app.add_config_value('plot_gallery', True, 'html')
-    app.add_config_value('gallery_conf', DEFAULT_CONF, 'html')
-
-    # embed links after build is finished
-    app.connect('build-finished', embed_code_links)

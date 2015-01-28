@@ -23,6 +23,11 @@ Contents:
 
     <div style='clear:both'></div>
 
+.. include:: modules/generated/numpy.exp.examples
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 Indices and tables
 ==================
 

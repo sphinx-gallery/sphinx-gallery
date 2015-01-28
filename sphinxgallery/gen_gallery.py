@@ -6,6 +6,8 @@ Created on Wed Jan 28 10:38:13 2015
 """
 import os
 from sphinxgallery.gen_rst import generate_dir_rst
+from sphinxgallery.docs_resolv import embed_code_links
+
 
 def generate_gallery_rst(app):
     """ Generate the list of examples, as well as the contents of
@@ -24,8 +26,6 @@ def generate_gallery_rst(app):
     root_dir = os.path.join(app.builder.srcdir, gallery_conf['root_dir'])
     gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_gallery'])
     generated_dir = os.path.join(app.builder.srcdir, gallery_conf['mod_generated'])
-
-
 
     for workdir in [root_dir, gallery_dir, generated_dir]:
         if not os.path.exists(workdir):
@@ -60,9 +60,11 @@ DEFAULT_CONF = {
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
     app.add_config_value('gallery_conf', DEFAULT_CONF, 'html')
-    app.connect('builder-inited', generate_gallery_rst)
     app.add_stylesheet('gallery.css')
 
+    app.connect('builder-inited', generate_gallery_rst)
+
+    app.connect('build-finished', embed_code_links)
 
     # Sphinx hack: sphinx copies generated images to the build directory
     #  each time the docs are made.  If the desired image name already
