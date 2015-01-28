@@ -55,7 +55,7 @@ DEFAULT_CONF = {
     'root_dir'          : '../examples',
     'examples_gallery'  : 'auto_examples',
     'mod_generated'     : 'modules/generated',
-    'doc_module'        : ''}
+    'doc_module'        : ('sphinxgallery', 'numpy')}
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')

@@ -276,7 +276,7 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, pl
                                      src_dir)
     for fname in sorted_listdir:
         if fname.endswith('py'):
-            backrefs = generate_file_rst(fname, target_dir, src_dir, example_dir, plot_gallery)
+            backrefs = generate_file_rst(fname, target_dir, src_dir, example_dir, gallery_conf, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
             fhindex.write(_thumbnail_div(directory, directory, fname, snippet))
@@ -441,7 +441,7 @@ def identify_names(code):
     return example_code_obj
 
 
-def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
+def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_gallery):
     """ Generate the rst file for a given example.
 
     Returns the set of sklearn functions/classes imported in the example.
@@ -597,7 +597,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
 
     backrefs = set('{module_short}.{name}'.format(**entry)
                    for entry in example_code_obj.values()
-                   if entry['module'].startswith('numpy'))
+                   if entry['module'].startswith(gallery_conf['doc_module']))
     return backrefs
 
 
