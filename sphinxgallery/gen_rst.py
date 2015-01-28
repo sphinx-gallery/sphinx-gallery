@@ -250,7 +250,7 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     return out
 
 
-def generate_dir_rst(directory, fhindex, root_dir, example_dir, plot_gallery, seen_backrefs):
+def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, plot_gallery, seen_backrefs):
     """ Generate the rst file for an example directory.
     """
     if not directory == '.':
@@ -289,7 +289,7 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, plot_gallery, se
 
 """ % (directory, fname[:-3]))
             for backref in backrefs:
-                include_path = os.path.join(example_dir, '../modules/generated/%s.examples' % backref)
+                include_path = os.path.join(gallery_conf['mod_generated'], '%s.examples' % backref)
                 seen = backref in seen_backrefs
                 with open(include_path, 'a' if seen else 'w') as ex_file:
                     if not seen:
@@ -299,9 +299,10 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, plot_gallery, se
                         print('-----------------%s--' % ('-' * len(backref)),
                               file=ex_file)
                         print(file=ex_file)
-                    rel_dir = os.path.join('../../auto_examples', directory)
+                    rel_dir = os.path.join(gallery_conf['examples_gallery'], directory)
                     ex_file.write(_thumbnail_div(directory, rel_dir, fname, snippet))
                     seen_backrefs.add(backref)
+
     fhindex.write("""
 .. raw:: html
 
@@ -596,7 +597,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
 
     backrefs = set('{module_short}.{name}'.format(**entry)
                    for entry in example_code_obj.values()
-                   if entry['module'].startswith('dmft'))
+                   if entry['module'].startswith('numpy'))
     return backrefs
 
 

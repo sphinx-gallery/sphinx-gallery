@@ -21,7 +21,7 @@ def generate_gallery_rst(app):
 
     gallery_conf = app.config.gallery_conf
 
-    root_dir = os.path.abspath(os.path.join(app.builder.srcdir, gallery_conf['root_dir']))
+    root_dir = os.path.join(app.builder.srcdir, gallery_conf['root_dir'])
     gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_gallery'])
     generated_dir = os.path.join(app.builder.srcdir, gallery_conf['mod_generated'])
 
@@ -44,10 +44,10 @@ Examples
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     seen_backrefs = set()
-    generate_dir_rst('.', fhindex, root_dir, gallery_dir, plot_gallery, seen_backrefs)
+    generate_dir_rst('.', fhindex, root_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
     for directory in sorted(os.listdir(root_dir)):
         if os.path.isdir(os.path.join(root_dir, directory)):
-            generate_dir_rst(directory, fhindex, root_dir, gallery_dir, plot_gallery, seen_backrefs)
+            generate_dir_rst(directory, fhindex, root_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
     fhindex.flush()
 
 

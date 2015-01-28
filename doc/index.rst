@@ -18,6 +18,10 @@ Contents:
    getting_started
    auto_examples/index
 
+.. include:: modules/generated/numpy.linspace.examples
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 Indices and tables
 ==================
