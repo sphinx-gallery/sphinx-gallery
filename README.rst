@@ -83,6 +83,7 @@ Building the documentation locally
 ----------------------------------
 
 In your sphinx documentation directory, usually ``doc`` execute::
+
     $ make html
 
 This will start the build of your complete documentation including the examples
@@ -90,6 +91,26 @@ gallery. Once documentation is build, our extension will have generated a ``auto
 directory and populated it with rst files containing the gallery and each example.
 Sphinx gives this files its regular processing and you can enjoy your
 generated gallery unde the same path. That means you will find the gallery in the path::
+
     _build/html/auto_examples/index.html
+
 that you can open under your favourite browser.
 
+Extending your Makefile
+-----------------------
+Once your gallery is working you might need remove completely all renerated files by
+sphinx-gallery to have a clean build, or you might want to build the gallery without
+runnig the examples files. For this you need to extend your ``Makefile`` with::
+
+    clean:
+            rm -rf $(BUILDDIR)/*
+            rm -rf auto_examples/
+            rm -rf modules/generated/*
+
+    html-noplot:
+            $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+            @echo
+            @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+Remember that for in ``Makefile`` whitespace is significant and the identation are tabs
+and not spaces
