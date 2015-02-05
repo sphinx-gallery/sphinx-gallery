@@ -21,7 +21,7 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    gallery_conf = app.config.gallery_conf
+    gallery_conf = app.config.sphinxgallery_conf
 
     root_dir = os.path.join(app.builder.srcdir, gallery_conf['root_dir'])
     gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_gallery'])
