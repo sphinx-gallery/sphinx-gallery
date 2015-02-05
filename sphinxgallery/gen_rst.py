@@ -517,8 +517,12 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
                         '')
                 my_stdout = my_stdout.strip().expandtabs()
                 if my_stdout:
-                    stdout = '**Script output**::\n\n  %s\n\n' % (
-                        '\n  '.join(my_stdout.split('\n')))
+                    stdout = """**Script output**:\n
+.. rst-class:: max_height
+
+  ::
+
+    {}\n""".format('\n    '.join(my_stdout.split('\n')))
                 open(stdout_path, 'w').write(stdout)
                 open(time_path, 'w').write('%f' % time_elapsed)
                 os.chdir(cwd)

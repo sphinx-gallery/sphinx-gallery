@@ -71,3 +71,9 @@ div.thumbnailContainer div p {
 div.thumbnailContainer div a {
     display: block; /* To have a better hover behavior */
 }
+
+.max-height pre {
+    /* For very long outpt: restrict the max height */
+    overflow-y: scroll;
+    max-height: 30em;
+}
