@@ -50,12 +50,12 @@ After installing you need to include in your Sphinx ``conf.py`` file:
 
 .. code-block:: python
 
+    import sphinxgallery
     extensions = [
         ...
         'sphinxgallery.gen_rst',
         ]
 
-    import sphinxgallery
     html_static_path = ['_static', sphinxgallery._path_static()]
 
 

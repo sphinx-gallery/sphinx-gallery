@@ -59,7 +59,7 @@ DEFAULT_CONF = {
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
-    app.add_config_value('gallery_conf', DEFAULT_CONF, 'html')
+    app.add_config_value('sphinxgallery_conf', DEFAULT_CONF, 'html')
     app.add_stylesheet('gallery.css')
 
     app.connect('builder-inited', generate_gallery_rst)
