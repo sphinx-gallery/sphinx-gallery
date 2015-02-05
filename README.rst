@@ -77,10 +77,19 @@ respect the same structure of the main ``examples`` folder.
 
 If these instructions are not clear enough, this package uses itself, to generated
 its own example gallery. So check the directory structure and the contents of the
-files.
+files. That is all, our module shall take care of the rest.
 
-That is all, our module shall take care of the rest.
-Once you build the documentation, our extension will generate a ``auto_examples``
-directory and populate it with rst files containing the gallery and each example.
-Then Sphinx will give this files its regular processing and you can enjoy your
-generated gallery unde the same path.
+Building the documentation locally
+----------------------------------
+
+In your sphinx documentation directory, usually ``doc`` execute::
+    $ make html
+
+This will start the build of your complete documentation including the examples
+gallery. Once documentation is build, our extension will have generated a ``auto_examples``
+directory and populated it with rst files containing the gallery and each example.
+Sphinx gives this files its regular processing and you can enjoy your
+generated gallery unde the same path. That means you will find the gallery in the path::
+    _build/html/auto_examples/index.html
+that you can open under your favourite browser.
+
