@@ -35,7 +35,7 @@ You will also need have installed:
 * pillow
 * joblib
 
-But if you don't the ``setuptools`` will try to install them for you::
+To install::
 
     $ git clone https://github.com/sphinx-gallery/sphinx-gallery
     $ cd sphinx-gallery
