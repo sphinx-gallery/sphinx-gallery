@@ -20,6 +20,7 @@ import gzip
 import posixpath
 import subprocess
 import warnings
+from copy import deepcopy
 import sphinxgallery
 
 # Try Python 2 first, otherwise load from Python 3
@@ -36,6 +37,16 @@ except ImportError:
     import urllib.parse
     from urllib.error import HTTPError, URLError
 
+has_mayavi = False
+try:
+    from mayavi import mlab
+    has_mayavi = True
+except Exception, e:
+    try:
+        from enthought.mayavi import mlab
+        has_mayavi = True
+    except Exception, e:
+        pass
 
 try:
     # Python 2 built-in
@@ -116,6 +127,31 @@ def _get_data(url):
 
 mem = joblib.Memory(cachedir='_build')
 get_data = mem.cache(_get_data)
+
+
+def scale_image(in_fname, max_width):
+    """Scale image such that width <= max_width
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        import Image
+    img = Image.open(in_fname)
+    width_in, height_in = img.size
+
+    if width_in <= max_width:
+        return
+
+    scale = max_width / float(width_in)
+
+    width_sc = int(round(scale * width_in))
+    height_sc = int(round(scale * height_in))
+
+    # resize the image
+    img.thumbnail((width_sc, height_sc), Image.ANTIALIAS)
+
+    # overwrite the image
+    img.save(in_fname)
 
 
 def parse_sphinx_searchindex(searchindex):
@@ -653,7 +689,7 @@ def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, se
     """)  # clear at the end of the section
 
 # modules for which we embed links into example code
-DOCMODULES = ['sklearn', 'matplotlib', 'numpy', 'scipy']
+DOCMODULES = ['sklearn', 'matplotlib', 'numpy', 'scipy', 'mayavi']
 
 
 def make_thumbnail(in_fname, out_fname, width, height):
@@ -842,6 +878,10 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
             t0 = time()
             import matplotlib.pyplot as plt
             plt.close('all')
+
+            if has_mayavi:
+                mlab.close(all=True)
+
             cwd = os.getcwd()
             try:
                 # First CD in the original example dir, so that any file
@@ -892,6 +932,19 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
 
                     fig.savefig(image_path % fig_mngr.num, **kwargs)
                     figure_list.append(image_fname % fig_mngr.num)
+
+                if has_mayavi:
+                    e = mlab.get_engine()
+                    last_fig_num = len(figure_list)
+                    for scene in e.scenes:
+                        last_fig_num += 1
+                        print(image_path % last_fig_num)
+                        mlab.savefig(image_path % last_fig_num, figure=scene)
+                        # make sure the image is not too large
+                        scale_image(image_path % last_fig_num, 850)
+                        figure_list.append(image_fname % last_fig_num)
+                    mlab.close(all=True)
+
             except:
                 print(80 * '_')
                 print('%s is not compiling:' % fname)
@@ -987,6 +1040,9 @@ def embed_code_links(app, exception):
         'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
         'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
     }
+    if has_mayavi:
+        resolver_urls['mayavi'] = 'http://docs.enthought.com/mayavi/mayavi'
+
     for this_module, url in resolver_urls.items():
         try:
             doc_resolvers[this_module] = SphinxDocLinkResolver(url)
