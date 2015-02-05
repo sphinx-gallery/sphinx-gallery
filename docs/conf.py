@@ -14,6 +14,7 @@
 
 import sys
 import os
+from datetime import date
 import sphinxgallery
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -53,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Sphinx-Gallery'
-copyright = u'2014, Óscar Nájera'
+copyright = u'2014-%s, Óscar Nájera' % date.today().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
