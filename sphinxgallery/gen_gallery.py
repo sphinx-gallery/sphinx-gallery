@@ -21,7 +21,12 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    gallery_conf = app.config.sphinxgallery_conf
+    input_conf = app.config.sphinxgallery_conf
+    gallery_conf = DEFAULT_CONF
+    for conf, value in input_conf.items():
+        gallery_conf[conf] = value
+
+    app.config.sphinxgallery_conf = gallery_conf # this assures I can call the config in other places
 
     root_dir = os.path.join(app.builder.srcdir, gallery_conf['root_dir'])
     gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_gallery'])
@@ -55,7 +60,12 @@ DEFAULT_CONF = {
     'root_dir'          : '../examples',
     'examples_gallery'  : 'auto_examples',
     'mod_generated'     : 'modules/generated',
-    'doc_module'        : ('sphinxgallery', 'numpy')}
+    'doc_module'        : 'sphinxgallery',
+    'resolver_urls'     : {
+        'matplotlib': 'http://matplotlib.org',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1',
+        'scipy': 'http://docs.scipy.org/doc/scipy-0.15.1/reference'}
+    }
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')

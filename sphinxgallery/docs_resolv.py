@@ -302,17 +302,13 @@ def embed_code_links(app, exception):
         # Don't embed hyperlinks when a latex builder is used.
         return
 
+    gallery_conf = app.config.sphinxgallery_conf
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
-    doc_resolvers['sklearn'] = SphinxDocLinkResolver(app.builder.outdir,
+    doc_resolvers[gallery_conf['doc_module']] = SphinxDocLinkResolver(app.builder.outdir,
                                                      relative=True)
 
-    resolver_urls = {
-        'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
-        'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
-    }
-    for this_module, url in resolver_urls.items():
+    for this_module, url in gallery_conf['resolver_urls'].items():
         try:
             doc_resolvers[this_module] = SphinxDocLinkResolver(url)
         except HTTPError as e:
