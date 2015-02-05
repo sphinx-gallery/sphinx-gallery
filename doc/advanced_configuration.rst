@@ -2,6 +2,9 @@
 Advanced Configuration
 ======================
 
+Changing default directories
+============================
+
 Within your Sphinx ``conf.py`` file you need to add a configuration dictionary:
 
 .. code-block:: python
@@ -13,8 +16,13 @@ Within your Sphinx ``conf.py`` file you need to add a configuration dictionary:
 
 Directory paths are relative to your ``conf.py`` location.
 
-Changing default directories
-============================
+Linking to external documentations
+==================================
+
+
+
+Establishing local calls to examples
+====================================
 
 
 .. include:: modules/generated/numpy.linspace.examples
