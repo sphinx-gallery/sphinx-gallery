@@ -16,6 +16,7 @@ Contents:
    :maxdepth: 2
 
    getting_started
+   advanced_configuration
    auto_examples/index
 
 
