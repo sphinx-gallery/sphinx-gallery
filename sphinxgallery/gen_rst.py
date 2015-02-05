@@ -30,6 +30,16 @@ except ImportError:
     from io import StringIO
     import pickle
 
+has_mayavi = False
+try:
+    from mayavi import mlab
+    has_mayavi = True
+except Exception, e:
+    try:
+        from enthought.mayavi import mlab
+        has_mayavi = True
+    except Exception, e:
+        pass
 
 try:
     # Python 2 built-in
@@ -76,6 +86,7 @@ class Tee(object):
     def flush(self):
         self.file1.flush()
         self.file2.flush()
+
 
 
 ###############################################################################
@@ -308,9 +319,10 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, pl
     """)  # clear at the end of the section
 
 
-def make_thumbnail(in_fname, out_fname, width, height):
-    """Make a thumbnail with the same aspect ratio centered in an
-       image with a given width and height
+def scale_image(in_fname, out_fname, max_width, max_height):
+    """Scales an image with the same aspect ratio centered in an
+       image with a given max_width and max_height
+       if in_fname == out_fname the image can only be scaled down
     """
     # local import to avoid testing dependency on PIL:
     try:
@@ -319,13 +331,16 @@ def make_thumbnail(in_fname, out_fname, width, height):
         import Image
     img = Image.open(in_fname)
     width_in, height_in = img.size
-    scale_w = width / float(width_in)
-    scale_h = height / float(height_in)
+    scale_w = max_width / float(width_in)
+    scale_h = max_height / float(height_in)
 
-    if height_in * scale_w <= height:
+    if height_in * scale_w <= max_height:
         scale = scale_w
     else:
         scale = scale_h
+
+    if scale >= 1.0 and in_fname == out_fname:
+        return
 
     width_sc = int(round(scale * width_in))
     height_sc = int(round(scale * height_in))
@@ -334,8 +349,8 @@ def make_thumbnail(in_fname, out_fname, width, height):
     img.thumbnail((width_sc, height_sc), Image.ANTIALIAS)
 
     # insert centered
-    thumb = Image.new('RGB', (width, height), (255, 255, 255))
-    pos_insert = ((width - width_sc) // 2, (height - height_sc) // 2)
+    thumb = Image.new('RGB', (max_width, max_height), (255, 255, 255))
+    pos_insert = ((max_width - width_sc) // 2, (max_height - height_sc) // 2)
     thumb.paste(img, pos_insert)
 
     thumb.save(out_fname)
@@ -495,6 +510,10 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
             t0 = time()
             import matplotlib.pyplot as plt
             plt.close('all')
+
+            if has_mayavi:
+                mlab.close(all=True)
+
             cwd = os.getcwd()
             try:
                 # First CD in the original example dir, so that any file
@@ -549,6 +568,20 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
 
                     fig.savefig(image_path % fig_mngr.num, **kwargs)
                     figure_list.append(image_fname % fig_mngr.num)
+
+                if has_mayavi:
+                    e = mlab.get_engine()
+                    last_fig_num = len(figure_list)
+                    for scene in e.scenes:
+                        last_fig_num += 1
+                        image_path_name = image_path % last_fig_num
+                        print(image_path_name)
+                        mlab.savefig(image_path_name, figure=scene)
+                        # make sure the image is not too large
+                        scale_image(image_path_name, image_path_name, 850, 999)
+                        figure_list.append(image_fname % last_fig_num)
+                    mlab.close(all=True)
+
             except:
                 print(80 * '_')
                 print('%s is not compiling:' % fname)
@@ -567,11 +600,11 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
 
         # generate thumb file
         if os.path.exists(first_image_file):
-            make_thumbnail(first_image_file, thumb_file, 400, 280)
+            scale_image(first_image_file, thumb_file, 400, 280)
 
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        make_thumbnail(sphinxgallery.path_static()+'/no_image.png', thumb_file, 200, 140)
+        scale_image(sphinxgallery._path_static()+'/no_image.png', thumb_file, 200, 140)
 
     docstring, short_desc, end_row = extract_docstring(example_file)
 
@@ -601,5 +634,4 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
                    for entry in example_code_obj.values()
                    if entry['module'].startswith(gallery_conf['doc_module']))
     return backrefs
-
 
