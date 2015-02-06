@@ -34,11 +34,11 @@ has_mayavi = False
 try:
     from mayavi import mlab
     has_mayavi = True
-except Exception, e:
+except Exception as e:
     try:
         from enthought.mayavi import mlab
         has_mayavi = True
-    except Exception, e:
+    except Exception as e:
         pass
 
 try:
