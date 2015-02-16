@@ -12,6 +12,7 @@ from time import time
 import ast
 import os
 import re
+import codecs
 import shutil
 import traceback
 import glob
@@ -132,7 +133,7 @@ SINGLE_IMAGE = """
 def extract_docstring(filename, ignore_heading=False):
     """ Extract a module-level docstring, if any
     """
-    lines = open(filename).readlines()
+    lines = codecs.open(filename, 'r', 'utf8').readlines()
     start_row = 0
     if lines[0].startswith('#!'):
         lines.pop(0)
@@ -146,7 +147,7 @@ def extract_docstring(filename, ignore_heading=False):
         if tok_type in ('NEWLINE', 'COMMENT', 'NL', 'INDENT', 'DEDENT'):
             continue
         elif tok_type == 'STRING':
-            docstring = eval(tok_content)
+            docstring = eval(tok_content).decode('utf8')
             # If the docstring is formatted with several paragraphs, extract
             # the first one:
             paragraphs = '\n'.join(
@@ -225,7 +226,7 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     else:
         target = './%s.html' % link_name[:-3]
 
-    out = """
+    out = u"""
 .. raw:: html
 
     <div class="thumbnailContainer" tooltip="{}">
@@ -288,7 +289,7 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, pl
             for backref in backrefs:
                 include_path = os.path.join(gallery_conf['mod_generated'], '%s.examples' % backref)
                 seen = backref in seen_backrefs
-                with open(include_path, 'a' if seen else 'w') as ex_file:
+                with codecs.open(include_path, 'a' if seen else 'w', 'utf8') as ex_file:
                     if not seen:
                         # heading
                         print(file=ex_file)
@@ -585,7 +586,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
             image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
+    f = codecs.open(os.path.join(target_dir, base_image_name + '.rst'), 'w', 'utf8')
     f.write(this_template % locals())
     f.flush()
 

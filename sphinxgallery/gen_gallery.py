@@ -5,6 +5,7 @@ Created on Wed Jan 28 10:38:13 2015
 @author: oscar
 """
 import os
+import codecs
 from sphinxgallery.gen_rst import generate_dir_rst
 from sphinxgallery.docs_resolv import embed_code_links
 
@@ -37,7 +38,7 @@ def generate_gallery_rst(app):
             os.makedirs(workdir)
 
     # we create an index.rst with all examples
-    fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
+    fhindex = codecs.open(os.path.join(gallery_dir, 'index.rst'), 'w', 'utf8')
     fhindex.write("""
 
 .. _examples-index:
@@ -66,6 +67,7 @@ DEFAULT_CONF = {
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1',
         'scipy': 'http://docs.scipy.org/doc/scipy-0.15.1/reference'}
     }
+
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
@@ -96,6 +98,7 @@ def setup(app):
         for filename in filelist:
             if filename.endswith('png'):
                 os.remove(os.path.join(build_image_dir, filename))
+
 
 def setup_module():
     # HACK: Stop nosetests running setup() above
