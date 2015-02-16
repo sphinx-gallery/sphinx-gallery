@@ -79,35 +79,35 @@ class Tee(object):
 
 
 ###############################################################################
-rst_template = """
+rst_template = u"""
 
-.. _example_%(short_fname)s:
+.. _example_{short_fname}:
 
-%(docstring)s
+{docstring}
 
-**Python source code:** :download:`%(fname)s <%(fname)s>`
+**Python source code:** :download:`{fname} <{fname}>`
 
-.. literalinclude:: %(fname)s
-    :lines: %(end_row)s-
+.. literalinclude:: {fname}
+    :lines: {end_row}-
     """
 
-plot_rst_template = """
+plot_rst_template = u"""
 
-.. _example_%(short_fname)s:
+.. _example_{short_fname}:
 
-%(docstring)s
+{docstring}
 
-%(image_list)s
+{image_list}
 
-%(stdout)s
+{stdout}
 
-**Python source code:** :download:`%(fname)s <%(fname)s>`
+**Python source code:** :download:`{fname} <{fname}>`
 
-.. literalinclude:: %(fname)s
-    :lines: %(end_row)s-
+.. literalinclude:: {fname}
+    :lines: {end_row}-
 
-**Total running time of the example:** %(time_elapsed) .2f seconds
-(%(time_m) .0f minutes %(time_s) .2f seconds)
+**Total running time of the example:** {time_elapsed:.2} seconds
+({time_m:.0f} minutes {time_s:.2} seconds)
     """
 
 # The following strings are used when we have several pictures: we use
@@ -255,7 +255,7 @@ def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, pl
         target_dir = example_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
         print( 80 * '_')
-        print ('Example directory %s does not have a README.txt file' %
+        print('Example directory %s does not have a README.txt file' %
                src_dir)
         print( 'Skipping this directory')
         print( 80 * '_')
@@ -587,7 +587,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
 
     time_m, time_s = divmod(time_elapsed, 60)
     f = codecs.open(os.path.join(target_dir, base_image_name + '.rst'), 'w', 'utf8')
-    f.write(this_template % locals())
+    f.write(this_template.format(**locals()))
     f.flush()
 
     # save variables so we can later add links to the documentation
