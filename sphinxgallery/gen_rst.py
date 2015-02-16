@@ -147,7 +147,10 @@ def extract_docstring(filename, ignore_heading=False):
         if tok_type in ('NEWLINE', 'COMMENT', 'NL', 'INDENT', 'DEDENT'):
             continue
         elif tok_type == 'STRING':
-            docstring = eval(tok_content).decode('utf8')
+            try:
+                docstring = eval(tok_content).decode('utf8')
+            except AttributeError:
+                docstring = eval(tok_content) # Because py3 works without decode
             # If the docstring is formatted with several paragraphs, extract
             # the first one:
             paragraphs = '\n'.join(
