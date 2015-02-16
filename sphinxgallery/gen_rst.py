@@ -586,9 +586,9 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
             image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = codecs.open(os.path.join(target_dir, base_image_name + '.rst'), 'w', 'utf8')
-    f.write(this_template.format(**locals()))
-    f.flush()
+    with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
+                     'w', 'utf8') as output_file:
+        output_file.write(this_template.format(**locals()))
 
     # save variables so we can later add links to the documentation
     example_code_obj = identify_names(open(example_file).read())
