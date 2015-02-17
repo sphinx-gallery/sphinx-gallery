@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 
 N = 50
-x = np.linspace(-1,2,50)
+x = np.linspace(-1, 2, 50)
 colors = np.random.rand(N)
 area = np.pi * (15 * np.random.rand(N))**2
 for i in range(5):
