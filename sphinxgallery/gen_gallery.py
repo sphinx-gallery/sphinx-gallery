@@ -19,10 +19,7 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    input_conf = app.config.sphinxgallery_conf
-    gallery_conf = DEFAULT_CONF
-    for conf, value in input_conf.items():
-        gallery_conf[conf] = value
+    gallery_conf.update(app.config.sphinxgallery_conf)
 
     # this assures I can call the config in other places
     app.config.sphinxgallery_conf = gallery_conf
@@ -55,7 +52,7 @@ Examples
     fhindex.flush()
 
 
-DEFAULT_CONF = {
+gallery_conf = {
     'root_dir'          : '../examples',
     'examples_gallery'  : 'auto_examples',
     'mod_generated'     : 'modules/generated',
@@ -68,7 +65,7 @@ DEFAULT_CONF = {
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
-    app.add_config_value('sphinxgallery_conf', DEFAULT_CONF, 'html')
+    app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
     app.connect('builder-inited', generate_gallery_rst)

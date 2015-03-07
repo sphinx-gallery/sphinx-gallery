@@ -26,7 +26,7 @@ setup(
     # install_requires= ['Sphinx', 'matplotlib', 'pillow'],
     install_requires=[],
     setup_requires=['nose>=1.0'],
-    license=' 3-clause BSD',
+    license='3-clause BSD',
     classifiers=['Intended Audience :: Developers',
                  'Development Status :: 3 - Alpha',
                  'Framework :: Sphinx :: Extension',
