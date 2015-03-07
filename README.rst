@@ -33,7 +33,6 @@ You will also need have installed:
 * Sphinx
 * matplotlib
 * pillow
-* joblib
 
 To install::
 

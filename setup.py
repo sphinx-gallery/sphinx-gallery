@@ -21,7 +21,7 @@ setup(
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',
     # XXX : don't force requirements in setup.py as it tends to break people
-    # install_requires= ['Sphinx', 'matplotlib', 'pillow', 'joblib'],
+    # install_requires= ['Sphinx', 'matplotlib', 'pillow'],
     install_requires=[],
     setup_requires=['nose>=1.0']
 )
