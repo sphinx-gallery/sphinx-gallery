@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Author: Óscar Nájera
+# License: 3-clause BSD
 """
 Installer Sphinx extension for gallery generator
 """
@@ -23,5 +25,11 @@ setup(
     # XXX : don't force requirements in setup.py as it tends to break people
     # install_requires= ['Sphinx', 'matplotlib', 'pillow'],
     install_requires=[],
-    setup_requires=['nose>=1.0']
+    setup_requires=['nose>=1.0'],
+    license=' 3-clause BSD',
+    classifiers=['Intended Audience :: Developers',
+                 'Development Status :: 3 - Alpha',
+                 'Framework :: Sphinx :: Extension',
+                 'Programming Language :: Python',
+                 ],
 )

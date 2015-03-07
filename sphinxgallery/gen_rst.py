@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
+# Author: Óscar Nájera
+# License: 3-clause BSD
 """
-Example generation for the scikit learn
-
 Generate the rst files for the examples by iterating over the python
 example files.
 
