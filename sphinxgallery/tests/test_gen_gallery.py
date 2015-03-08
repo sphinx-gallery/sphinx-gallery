@@ -18,9 +18,16 @@ def test_shelve():
     test_string = 'test information'
     shelve_file = 'shelve_file'
     with tempfile.NamedTemporaryFile() as fid:
-        fid.write(test_string)
+        try:
+            fid.write(test_string)
+        except TypeError:
+            fid.write(test_string.encode())
+
         fid.seek(0)
         _get_data(fid.name, shelve_file, test_string)
 
     _get_data(fid.name, shelve_file, test_string)
-    _get_data(unicode(fid.name), shelve_file, test_string)
+    try:
+        _get_data(unicode(fid.name), shelve_file, test_string)
+    except NameError:
+        pass

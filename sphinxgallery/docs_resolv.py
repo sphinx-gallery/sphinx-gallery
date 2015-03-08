@@ -53,8 +53,11 @@ def _get_data(url):
 def get_data(url, cached_file='_build/searchindex'):
     """Persistent dictionary usage to retrieve the search indexes"""
 
-    if isinstance(url, unicode):
-        url = url.encode('utf-8')
+    try:
+        if isinstance(url, unicode):
+            url = url.encode('utf-8')
+    except NameError:
+        pass
 
     search_index = shelve.open(cached_file)
     if url in search_index:
