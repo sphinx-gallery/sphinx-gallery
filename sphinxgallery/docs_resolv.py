@@ -46,18 +46,17 @@ def _get_data(url):
     else:
         with open(url, 'r') as fid:
             data = fid.read()
-        fid.close()
 
     return data
 
 
-def get_data(url):
+def get_data(url, cached_file='_build/searchindex'):
     """Persistent dictionary usage to retrieve the search indexes"""
 
     if isinstance(url, unicode):
         url = url.encode('utf-8')
 
-    search_index = shelve.open('_build/searchindex')
+    search_index = shelve.open(cached_file)
     if url in search_index:
         data = search_index[url]
     else:
