@@ -55,7 +55,7 @@ def get_data(url, cached_file='_build/searchindex'):
     """Persistent dictionary usage to retrieve the search indexes"""
 
     # shelve keys need to be str in python 2
-    if sys.version_info.major == 2 and isinstance(url, unicode):
+    if sys.version_info[0] == 2 and isinstance(url, unicode):
         url = url.encode('utf-8')
 
     search_index = shelve.open(cached_file)

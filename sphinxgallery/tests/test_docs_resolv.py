@@ -29,6 +29,6 @@ def test_shelve():
     assert_equals(sg.get_data(fid.name, shelve_file), test_string)
 
     # shelve keys need to be str in python 2, deal with unicode input
-    if sys.version_info.major == 2:
+    if sys.version_info[0] == 2:
         unicode_name = unicode(fid.name)
         assert_equals(sg.get_data(unicode_name, shelve_file), test_string)
