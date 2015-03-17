@@ -9,6 +9,7 @@ import os
 import posixpath
 import re
 import shelve
+import sys
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -53,11 +54,9 @@ def _get_data(url):
 def get_data(url, cached_file='_build/searchindex'):
     """Persistent dictionary usage to retrieve the search indexes"""
 
-    try:
-        if isinstance(url, unicode):
-            url = url.encode('utf-8')
-    except NameError:
-        pass
+    # shelve keys need to be str in python 2
+    if sys.version_info.major == 2 and isinstance(url, unicode):
+        url = url.encode('utf-8')
 
     search_index = shelve.open(cached_file)
     if url in search_index:
