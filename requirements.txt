@@ -1,5 +1,4 @@
 matplotlib
 pillow
 sphinx
-joblib
 nose
