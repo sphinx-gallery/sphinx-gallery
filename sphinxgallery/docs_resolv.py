@@ -324,12 +324,16 @@ def embed_code_links(app, exception):
     gallery_conf = app.config.sphinxgallery_conf
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
-    doc_resolvers[gallery_conf['doc_module']] = SphinxDocLinkResolver(app.builder.outdir,
-                                                     relative=True)
 
-    for this_module, url in gallery_conf['resolver_urls'].items():
+    for this_module, url in gallery_conf['reference_url'].items():
         try:
-            doc_resolvers[this_module] = SphinxDocLinkResolver(url)
+            if url == '':
+                doc_resolvers[this_module] = SphinxDocLinkResolver(
+                                                            app.builder.outdir,
+                                                            relative=True)
+            else:
+                doc_resolvers[this_module] = SphinxDocLinkResolver(url)
+
         except HTTPError as e:
             print("The following HTTP Error has occurred:\n")
             print(e.code)

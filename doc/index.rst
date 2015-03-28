@@ -11,13 +11,18 @@ It is extracted from the scikit-learn project and aims to be an
 independent general purpose extension.
 
 Contents:
+---------
 
 .. toctree::
    :maxdepth: 2
 
    getting_started
    advanced_configuration
-   auto_examples/index
+   reference
+
+Sphinx-Gallery Show: :ref:`examples-index`
+''''''''''''''''''''''''''''''''''''''''''
+
 
 
 Indices and tables

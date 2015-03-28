@@ -271,4 +271,5 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
-sphinxgallery_conf = {'doc_module' : 'numpy'}
+sphinxgallery_conf = {'doc_module' : ('sphinxgallery', 'numpy'),
+                      'reference_url': {'sphinxgallery' : ''}}

@@ -19,7 +19,9 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    gallery_conf.update(app.config.sphinxgallery_conf)
+    tmp_conf = app.config.sphinxgallery_conf
+    gallery_conf['reference_url'].update(tmp_conf.pop('reference_url'))
+    gallery_conf.update(tmp_conf)
 
     # this assures I can call the config in other places
     app.config.sphinxgallery_conf = gallery_conf
@@ -38,8 +40,8 @@ def generate_gallery_rst(app):
 
 .. _examples-index:
 
-Examples
-========
+Gallery of Examples
+===================
 
 """)
     # Here we don't use an os.walk, but we recurse only twice: flat is
@@ -56,8 +58,8 @@ gallery_conf = {
     'root_dir'          : '../examples',
     'examples_gallery'  : 'auto_examples',
     'mod_generated'     : 'modules/generated',
-    'doc_module'        : 'sphinxgallery',
-    'resolver_urls'     : {
+    'doc_module'        : (),
+    'reference_url' : {
         'matplotlib': 'http://matplotlib.org',
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1',
         'scipy': 'http://docs.scipy.org/doc/scipy-0.15.1/reference'}
