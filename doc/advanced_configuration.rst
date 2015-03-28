@@ -47,8 +47,8 @@ dictionary within your Sphinx ``conf.py`` file :
 Establishing local references to examples
 =========================================
 
-Certainly comands in your examples linking to their documentation is not enough.
-Sphinx-Gallery alse enables you, when documenting your modules, to reference
+Linking commands in your examples to their documentation is not enough.
+Sphinx-Gallery also enables you, when documenting your modules, to reference
 into examples that use that particular module.
 
 In that case within your Sphinx ``conf.py`` file you need to add to their
@@ -57,7 +57,7 @@ configuration dictionary:
 .. code-block:: python
 
     sphinxgallery_conf = {
-        # path where to store your example linker templat
+        # path where to store your example linker templates
         'mod_example_dir'     : 'modules/generated',
 
         # Your documented modules. You can use a string or a list of strings
