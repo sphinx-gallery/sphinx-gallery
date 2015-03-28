@@ -13,8 +13,8 @@ Within your Sphinx ``conf.py`` file you need to add a configuration dictionary:
 .. code-block:: python
 
     sphinxgallery_conf = {
-        'root_dir'          : '../examples',              # path to your examples scripts
-        'examples_gallery'  : 'auto_examples'}            # path where to save gallery generated examples
+        'examples_dir' : '../examples',              # path to your examples scripts
+        'gallery_dir'  : 'auto_examples'}            # path where to save gallery generated examples
 
 
 Directory paths are relative to your ``conf.py`` location.
@@ -58,9 +58,10 @@ configuration dictionary:
 
     sphinxgallery_conf = {
         # path where to store your example linker templat
-        'mod_generated'     : 'modules/generated',
+        'mod_example_dir'     : 'modules/generated',
+
         # Your documented modules. You can use a string or a list of strings
-        'doc_module'        : ('sphinxgallery', 'numpy')}
+        'doc_module'          : ('sphinxgallery', 'numpy')}
 
 The path you specified will get populated with the links to examples using your
 module and their methods. Then within your sphinx documentation files you
