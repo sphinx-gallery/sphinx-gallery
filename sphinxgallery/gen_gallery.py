@@ -19,9 +19,7 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    tmp_conf = app.config.sphinxgallery_conf
-    gallery_conf['reference_url'].update(tmp_conf.pop('reference_url'))
-    gallery_conf.update(tmp_conf)
+    gallery_conf.update(app.config.sphinxgallery_conf)
 
     # this assures I can call the config in other places
     app.config.sphinxgallery_conf = gallery_conf
@@ -59,11 +57,8 @@ gallery_conf = {
     'examples_gallery'  : 'auto_examples',
     'mod_generated'     : 'modules/generated',
     'doc_module'        : (),
-    'reference_url' : {
-        'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1',
-        'scipy': 'http://docs.scipy.org/doc/scipy-0.15.1/reference'}
-    }
+    'reference_url'     : {},
+}
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
