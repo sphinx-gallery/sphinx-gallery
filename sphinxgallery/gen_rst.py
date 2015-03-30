@@ -30,16 +30,21 @@ except ImportError:
     from io import StringIO
     import pickle
 
-has_mayavi = False
-try:
-    from mayavi import mlab
-    has_mayavi = True
-except Exception as e:
-    try:
-        from enthought.mayavi import mlab
-        has_mayavi = True
-    except Exception as e:
-        pass
+def config_mayavi(gallery_config):
+    if gallery_config['use_mayavi']:
+        global mlab
+        try:
+            from mayavi import mlab
+            return True
+        except Exception as e:
+            try:
+                from enthought.mayavi import mlab
+                return True
+            except Exception as e:
+                raise
+    else:
+        return False
+
 
 try:
     # Python 2 built-in
@@ -258,6 +263,8 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
 def generate_dir_rst(directory, fhindex, root_dir, example_dir, gallery_conf, plot_gallery, seen_backrefs):
     """ Generate the rst file for an example directory.
     """
+    gallery_conf['use_mayavi'] = config_mayavi(gallery_conf)
+
     if not directory == '.':
         src_dir = os.path.join(root_dir, directory)
         target_dir = os.path.join(example_dir, directory)
@@ -511,7 +518,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
             import matplotlib.pyplot as plt
             plt.close('all')
 
-            if has_mayavi:
+            if gallery_conf['use_mayavi']:
                 mlab.close(all=True)
 
             cwd = os.getcwd()
@@ -569,7 +576,7 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, gallery_conf, plot_g
                     fig.savefig(image_path % fig_mngr.num, **kwargs)
                     figure_list.append(image_fname % fig_mngr.num)
 
-                if has_mayavi:
+                if gallery_conf['use_mayavi']:
                     e = mlab.get_engine()
                     last_fig_num = len(figure_list)
                     for scene in e.scenes:

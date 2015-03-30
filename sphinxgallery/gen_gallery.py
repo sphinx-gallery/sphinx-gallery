@@ -57,6 +57,7 @@ gallery_conf = {
     'examples_gallery'  : 'auto_examples',
     'mod_generated'     : 'modules/generated',
     'doc_module'        : 'sphinxgallery',
+    'use_mayavi'        : False,
     'resolver_urls'     : {
         'matplotlib': 'http://matplotlib.org',
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1',
