@@ -114,7 +114,7 @@ plot_rst_template = """
 # an html div tag that our CSS uses to turn the lists into horizontal
 # lists.
 HLIST_HEADER = """
-.. rst-class:: horizontal
+.. rst-class:: sphx-glr-horizontal
 
 """
 
@@ -229,7 +229,7 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     out = """
 .. raw:: html
 
-    <div class="thumbnailContainer" tooltip="{}">
+    <div class="sphx-glr-thumbContainer" tooltip="{}">
 
 .. figure:: {}
     :target: {}
@@ -519,7 +519,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
                 my_stdout = my_stdout.strip().expandtabs()
                 if my_stdout:
                     stdout = """**Script output**:\n
-.. rst-class:: max_height
+.. rst-class:: sphx-glr-script-out
 
   ::
 
