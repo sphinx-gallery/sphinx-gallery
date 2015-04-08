@@ -23,8 +23,18 @@ Directory paths are relative to your ``conf.py`` location.
 Linking to external documentations
 ==================================
 
-Sphinx-Gallery enables you to hyperlink commands in your example scripts to the
-matching location in their online documentation . Have a look at this in action
+Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
+you can link the used functions to their matching online documentation. As such
+code snippets within the gallery appear like this
+
+.. raw:: html
+
+    <div class="highlight-python"><div class="highlight"><pre>
+    <span class="n">y</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.9.1/reference/generated/numpy.sin.html#numpy.sin"><span class="n">np</span><span class="o">.</span><span class="n">sin</span></a><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    </pre></div>
+    </div>
+
+Have a look at this in full action
 in our example :ref:`example_plot_gallery_version.py`.
 
 To make this work in your documentation you need to include to the configuration
