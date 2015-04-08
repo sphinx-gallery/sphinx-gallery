@@ -442,7 +442,7 @@ def identify_names(code):
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
     """ Generate the rst file for a given example.
 
-    Returns the set of sklearn functions/classes imported in the example.
+    Returns the set of functions/classes imported in the example.
     """
     base_image_name = os.path.splitext(fname)[0]
     image_fname = '%s_%%03d.png' % base_image_name

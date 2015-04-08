@@ -34,8 +34,8 @@ dictionary within your Sphinx ``conf.py`` file :
 
     sphinxgallery_conf = {
         'reference_url':  {
-                 # Modules you locally document use an empty string
-                'sphinxgallery': '',
+                 # Modules you locally document use a None
+                'sphinxgallery': None,
 
                 # External python modules use their documentation websites
                 'matplotlib': 'http://matplotlib.org',
@@ -65,7 +65,7 @@ configuration dictionary:
 
 The path you specified will get populated with the links to examples using your
 module and their methods. Then within your sphinx documentation files you
-include this lines to include this links::
+include these lines to include these links::
 
     .. include:: modules/generated/numpy.linspace.examples
     .. raw:: html

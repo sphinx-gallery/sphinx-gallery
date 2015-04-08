@@ -327,7 +327,7 @@ def embed_code_links(app, exception):
 
     for this_module, url in gallery_conf['reference_url'].items():
         try:
-            if url == '':
+            if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                                                             app.builder.outdir,
                                                             relative=True)
