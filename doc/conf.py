@@ -110,6 +110,9 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 html_theme = 'default'
 
+def setup(app):
+    app.add_stylesheet('theme_override.css')
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -271,4 +274,9 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
-sphinxgallery_conf = {'doc_module' : 'numpy'}
+sphinxgallery_conf = {'doc_module': ('sphinxgallery', 'numpy'),
+                      'reference_url': {
+        'sphinxgallery': None,
+        'matplotlib': 'http://matplotlib.org',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
+    }
