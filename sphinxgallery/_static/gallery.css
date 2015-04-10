@@ -1,9 +1,10 @@
 .sphx-glr-thumbContainer {
   box-shadow: none;
-  border: solid white 1px;
-  padding-top: 5px;
   background: #FFF;
   margin: 5px;
+  padding-top: 5px;
+  min-height: 230px;
+  border: solid white 1px;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px; }
@@ -16,16 +17,11 @@
     margin: 0 0 .1em 0; }
   .sphx-glr-thumbContainer .figure {
     float: left;
-    margin: 10px 11px 7em 11px;
-    border-radius: 10px;
-    border: 2px solid #FFF;
-    background-color: #FFF;
-    width: 150px;
-    height: 100px; }
+    margin: 10px;
+    width: 160px; }
   .sphx-glr-thumbContainer img {
-    max-width: 160px;
+    max-width: 100%;
     max-height: 160px;
-    margin: auto auto auto -8px;
     display: inline; }
   .sphx-glr-thumbContainer[tooltip] {
     position: relative;
