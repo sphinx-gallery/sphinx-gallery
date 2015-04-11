@@ -209,35 +209,29 @@ def line_count_sort(file_list, target_dir):
     return np.array(unsorted[index][:, 0]).tolist()
 
 
-def _thumbnail_div(subdir, full_dir, fname, snippet):
+def _thumbnail_div(full_dir, fname, snippet):
     """Generates RST to place a thumbnail in a gallery"""
     thumb = os.path.join(full_dir, 'images', 'thumb',
                          'sphx_glr_%s.png' % fname[:-3])
-    link_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
-    ref_name = os.path.join(subdir, fname).replace(os.path.sep, '_')
+    link_name = os.path.join(full_dir, fname)
+    ref_name = link_name.replace(os.path.sep, '_')
     if ref_name.startswith('._'):
         ref_name = ref_name[2:]
-    if link_name.startswith('._'):
-        link_name = link_name[2:]
-    if full_dir != '.':
-        target = './%s/%s.html' % (full_dir, fname[:-3])
-    else:
-        target = './%s.html' % link_name[:-3]
 
     out = """
 .. raw:: html
 
     <div class="sphx-glr-thumbContainer" tooltip="{}">
 
-.. figure:: {}
-    :target: {}
+.. figure:: /{}
+    :target: /{}.html
 
     :ref:`example_{}`
 
 .. raw:: html
 
     </div>
-""".format(snippet, thumb, target, ref_name)
+""".format(snippet, thumb, link_name[:-3], ref_name)
 
     return out
 
@@ -257,11 +251,11 @@ def scan_used_functions(example_file, gallery_conf):
     return backrefs
 
 
-def write_backreferces(example_file, seen_backrefs, gallery_conf,
-                       directory, fname, snippet):
+def write_backreferces(seen_backrefs, gallery_conf,
+                       target_dir, fname, snippet):
     """Writes down back reference files, which include a thumbnail list
     of examples using a certain module"""
-
+    example_file = os.path.join(target_dir, fname)
     backrefs = scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['mod_example_dir'],
@@ -272,8 +266,7 @@ def write_backreferces(example_file, seen_backrefs, gallery_conf,
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write(heading + '\n')
                 ex_file.write('-' * len(heading) + '\n')
-            rel_dir = os.path.join(gallery_conf['gallery_dir'], directory)
-            ex_file.write(_thumbnail_div(directory, rel_dir, fname, snippet))
+            ex_file.write(_thumbnail_div(target_dir, fname, snippet))
             seen_backrefs.add(backref)
 
 
@@ -301,14 +294,13 @@ def generate_dir_rst(directory, examples_dir, gallery_dir,
                                      src_dir)
     for fname in sorted_listdir:
         if fname.endswith('py'):
-            generate_file_rst(fname, target_dir, src_dir,
-                              gallery_conf, plot_gallery)
+            generate_file_rst(fname, target_dir, src_dir, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
-            write_backreferces(new_fname, seen_backrefs, gallery_conf,
-                               directory, fname, snippet)
+            write_backreferces(seen_backrefs, gallery_conf,
+                               target_dir, fname, snippet)
 
-            fhindex += _thumbnail_div(directory, directory, fname, snippet)
+            fhindex += _thumbnail_div(target_dir, fname, snippet)
             fhindex += """
 
 .. toctree::
@@ -461,22 +453,13 @@ def identify_names(code):
     return example_code_obj
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
-    """ Generate the rst file for a given example.
-
-    Returns the set of functions/classes imported in the example.
-    """
+def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
+    """ Generate the rst file for a given example."""
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
 
     this_template = rst_template
-    last_dir = os.path.split(src_dir)[-1]
-    # to avoid leading . in file names, and wrong names in links
-    if last_dir == '.' or last_dir == 'examples':
-        last_dir = ''
-    else:
-        last_dir += '_'
-    short_fname = last_dir + fname
+    short_fname = target_dir.replace(os.path.sep, '_') + '_'  + fname
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
@@ -546,9 +529,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
   ::
 
     {}\n""".format('\n    '.join(my_stdout.split('\n')))
+                os.chdir(cwd)
                 open(stdout_path, 'w').write(stdout)
                 open(time_path, 'w').write('%f' % time_elapsed)
-                os.chdir(cwd)
 
                 # In order to save every figure we have two solutions :
                 # * iterate from 1 to infinity and call plt.fignum_exists(n)
