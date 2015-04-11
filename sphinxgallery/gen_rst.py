@@ -242,10 +242,27 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     return out
 
 
+def write_backreferces(backrefs, seen_backrefs, gallery_conf,
+                       directory, fname, snippet):
+    """Writes down back reference files, which include a thumbnail list
+    of examples using a certain module"""
+    for backref in backrefs:
+        include_path = os.path.join(gallery_conf['mod_example_dir'],
+                                    '%s.examples' % backref)
+        seen = backref in seen_backrefs
+        with open(include_path, 'a' if seen else 'w') as ex_file:
+            if not seen:
+                heading = 'Examples using ``%s``' % backref
+                ex_file.write(heading + '\n')
+                ex_file.write('-' * len(heading) + '\n')
+            rel_dir = os.path.join(gallery_conf['gallery_dir'], directory)
+            ex_file.write(_thumbnail_div(directory, rel_dir, fname, snippet))
+            seen_backrefs.add(backref)
+
+
 def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
                      gallery_conf, plot_gallery, seen_backrefs):
-    """ Generate the rst file for an example directory.
-    """
+    """ Generate the rst file for an example directory"""
     if not directory == '.':
         src_dir = os.path.join(examples_dir, directory)
         target_dir = os.path.join(gallery_dir, directory)
@@ -260,13 +277,7 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
         print(80 * '_')
         return
 
-    fhindex.write("""
-
-
-%s
-
-
-""" % open(os.path.join(src_dir, 'README.txt')).read())
+    fhindex.write("""%s""" % open(os.path.join(src_dir, 'README.txt')).read())
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = line_count_sort(os.listdir(src_dir),
@@ -277,6 +288,9 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
                                          gallery_conf, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
+            write_backreferces(backrefs, seen_backrefs, gallery_conf,
+                               directory, fname, snippet)
+
             fhindex.write(_thumbnail_div(directory, directory, fname, snippet))
             fhindex.write("""
 
@@ -286,29 +300,10 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
    %s/%s
 
 """ % (directory, fname[:-3]))
-            for backref in backrefs:
-                include_path = os.path.join(gallery_conf['mod_example_dir'],
-                                            '%s.examples' % backref)
-                seen = backref in seen_backrefs
-                with open(include_path, 'a' if seen else 'w') as ex_file:
-                    if not seen:
-                        # heading
-                        print(file=ex_file)
-                        print('Examples using ``%s``' % backref, file=ex_file)
-                        print('-----------------%s--' % ('-' * len(backref)),
-                              file=ex_file)
-                        print(file=ex_file)
-                    rel_dir = os.path.join(gallery_conf['gallery_dir'],
-                                           directory)
-                    ex_file.write(_thumbnail_div(directory, rel_dir, fname,
-                                                 snippet))
-                    seen_backrefs.add(backref)
 
-    fhindex.write("""
-.. raw:: html
-
-    <div style='clear:both'></div>
-    """)  # clear at the end of the section
+# clear at the end of the section
+    fhindex.write(""".. raw:: html\n
+    <div style='clear:both'></div>\n""")
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
