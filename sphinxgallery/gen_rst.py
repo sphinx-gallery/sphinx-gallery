@@ -242,10 +242,27 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     return out
 
 
-def write_backreferces(backrefs, seen_backrefs, gallery_conf,
+def scan_used_functions(example_file, gallery_conf):
+    """save variables so we can later add links to the documentation"""
+    example_code_obj = identify_names(open(example_file).read())
+    if example_code_obj:
+        codeobj_fname = example_file[:-3] + '_codeobj.pickle'
+        with open(codeobj_fname, 'wb') as fid:
+            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
+
+    backrefs = set('{module_short}.{name}'.format(**entry)
+                   for entry in example_code_obj.values()
+                   if entry['module'].startswith(gallery_conf['doc_module']))
+
+    return backrefs
+
+
+def write_backreferces(example_file, seen_backrefs, gallery_conf,
                        directory, fname, snippet):
     """Writes down back reference files, which include a thumbnail list
     of examples using a certain module"""
+
+    backrefs = scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['mod_example_dir'],
                                     '%s.examples' % backref)
@@ -284,11 +301,11 @@ def generate_dir_rst(directory, examples_dir, gallery_dir,
                                      src_dir)
     for fname in sorted_listdir:
         if fname.endswith('py'):
-            backrefs = generate_file_rst(fname, target_dir, src_dir,
-                                         gallery_conf, plot_gallery)
+            generate_file_rst(fname, target_dir, src_dir,
+                              gallery_conf, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
-            write_backreferces(backrefs, seen_backrefs, gallery_conf,
+            write_backreferces(new_fname, seen_backrefs, gallery_conf,
                                directory, fname, snippet)
 
             fhindex += _thumbnail_div(directory, directory, fname, snippet)
@@ -595,15 +612,3 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
     f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
     f.write(this_template % locals())
     f.flush()
-
-    # save variables so we can later add links to the documentation
-    example_code_obj = identify_names(open(example_file).read())
-    if example_code_obj:
-        codeobj_fname = example_file[:-3] + '_codeobj.pickle'
-        with open(codeobj_fname, 'wb') as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
-
-    backrefs = set('{module_short}.{name}'.format(**entry)
-                   for entry in example_code_obj.values()
-                   if entry['module'].startswith(gallery_conf['doc_module']))
-    return backrefs
