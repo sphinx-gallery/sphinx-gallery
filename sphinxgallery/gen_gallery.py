@@ -66,12 +66,14 @@ Gallery of Examples
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     seen_backrefs = set()
-    generate_dir_rst('.', fhindex, examples_dir, gallery_dir, gallery_conf,
-                     plot_gallery, seen_backrefs)
+
+    fhindex.write(generate_dir_rst('.', examples_dir, gallery_dir,
+                                   gallery_conf, plot_gallery, seen_backrefs))
     for directory in sorted(os.listdir(examples_dir)):
         if os.path.isdir(os.path.join(examples_dir, directory)):
-            generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
-                             gallery_conf, plot_gallery, seen_backrefs)
+            fhindex.write(generate_dir_rst(directory, examples_dir,
+                                           gallery_dir, gallery_conf,
+                                           plot_gallery, seen_backrefs))
     fhindex.flush()
 
 

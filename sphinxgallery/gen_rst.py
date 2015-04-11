@@ -260,7 +260,7 @@ def write_backreferces(backrefs, seen_backrefs, gallery_conf,
             seen_backrefs.add(backref)
 
 
-def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
+def generate_dir_rst(directory, examples_dir, gallery_dir,
                      gallery_conf, plot_gallery, seen_backrefs):
     """ Generate the rst file for an example directory"""
     if not directory == '.':
@@ -277,7 +277,7 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
         print(80 * '_')
         return
 
-    fhindex.write("""%s""" % open(os.path.join(src_dir, 'README.txt')).read())
+    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = line_count_sort(os.listdir(src_dir),
@@ -291,19 +291,21 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
             write_backreferces(backrefs, seen_backrefs, gallery_conf,
                                directory, fname, snippet)
 
-            fhindex.write(_thumbnail_div(directory, directory, fname, snippet))
-            fhindex.write("""
+            fhindex += _thumbnail_div(directory, directory, fname, snippet)
+            fhindex += """
 
 .. toctree::
    :hidden:
 
    %s/%s
 
-""" % (directory, fname[:-3]))
+""" % (directory, fname[:-3])
 
 # clear at the end of the section
-    fhindex.write(""".. raw:: html\n
-    <div style='clear:both'></div>\n""")
+    fhindex += """.. raw:: html\n
+    <div style='clear:both'></div>\n"""
+
+    return fhindex
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
