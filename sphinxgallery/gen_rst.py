@@ -270,15 +270,9 @@ def write_backreferces(seen_backrefs, gallery_conf,
             seen_backrefs.add(backref)
 
 
-def generate_dir_rst(directory, examples_dir, gallery_dir,
-                     gallery_conf, plot_gallery, seen_backrefs):
-    """ Generate the rst file for an example directory"""
-    if not directory == '.':
-        src_dir = os.path.join(examples_dir, directory)
-        target_dir = os.path.join(gallery_dir, directory)
-    else:
-        src_dir = examples_dir
-        target_dir = gallery_dir
+def generate_dir_rst(src_dir, target_dir, gallery_conf,
+                     plot_gallery, seen_backrefs):
+    """Generate the rst file for an example directory"""
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
         print(80 * '_')
         print('Example directory %s does not have a README.txt file' %
@@ -306,9 +300,9 @@ def generate_dir_rst(directory, examples_dir, gallery_dir,
 .. toctree::
    :hidden:
 
-   %s/%s
+   /%s/%s
 
-""" % (directory, fname[:-3])
+""" % (target_dir, fname[:-3])
 
 # clear at the end of the section
     fhindex += """.. raw:: html\n
