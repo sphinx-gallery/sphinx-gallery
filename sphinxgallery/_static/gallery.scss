@@ -1,4 +1,4 @@
-.sphx-glr-thumbContainer {
+div.sphx-glr-thumbContainer {
 	box-shadow: none;
 	background: #FFF;
 	margin: 5px;
@@ -8,10 +8,12 @@
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
 	border-radius: 5px;
-	&:hover {
-	box-shadow: 0 0 15px rgba(142, 176, 202, 0.5);
-	border: solid #B4DDFC 1px;
-	}
+	float:left;
+	position:relative;
+		&:hover {
+		box-shadow: 0 0 15px rgba(142, 176, 202, 0.5);
+		border: solid #B4DDFC 1px;
+		}
 
 	a {
 	display: block;
@@ -22,7 +24,6 @@
 	}
 
 	.figure {
-	float: left;
 	margin: 10px;
 	width: 160px;
 	}
@@ -34,8 +35,6 @@
 	}
 
 	&[tooltip] {
-		position: relative;
-		float: left;
 		&:hover:after {
 		background: rgba(0,0,0,.8);
 		-webkit-border-radius: 5px;
@@ -48,6 +47,7 @@
 		position: absolute;
 		z-index: 98;
 		width: 220px;
+		bottom: 52%;
 		}
 		&:hover:before {
 		content: "";
@@ -57,6 +57,7 @@
 		border-color: #333 transparent;
 		border-width: 18px 0px 0px 20px;
 		left: 85%;
+		bottom: 58%;
 		}
 	}
 }
