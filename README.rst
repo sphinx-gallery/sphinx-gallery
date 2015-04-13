@@ -99,7 +99,7 @@ Extending your Makefile
 -----------------------
 Once your gallery is working you might need remove completely all renerated files by
 sphinx-gallery to have a clean build, or you might want to build the gallery without
-runnig the examples files. For this you need to extend your ``Makefile`` with::
+running the examples files. For this you need to extend your ``Makefile`` with::
 
     clean:
             rm -rf $(BUILDDIR)/*
