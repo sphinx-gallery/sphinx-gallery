@@ -10,7 +10,6 @@ Files that generate images should start with 'plot'
 """
 from __future__ import division, print_function
 from time import time
-import ast
 import os
 import re
 import shutil
@@ -20,15 +19,14 @@ import sys
 import subprocess
 import warnings
 import sphinxgallery
+from sphinxgallery.backreferences import write_backreferces, _thumbnail_div
 
 
 # Try Python 2 first, otherwise load from Python 3
 try:
     from StringIO import StringIO
-    import cPickle as pickle
 except ImportError:
     from io import StringIO
-    import pickle
 
 
 try:
@@ -209,67 +207,6 @@ def line_count_sort(file_list, target_dir):
     return np.array(unsorted[index][:, 0]).tolist()
 
 
-def _thumbnail_div(full_dir, fname, snippet):
-    """Generates RST to place a thumbnail in a gallery"""
-    thumb = os.path.join(full_dir, 'images', 'thumb',
-                         'sphx_glr_%s.png' % fname[:-3])
-    link_name = os.path.join(full_dir, fname)
-    ref_name = link_name.replace(os.path.sep, '_')
-    if ref_name.startswith('._'):
-        ref_name = ref_name[2:]
-
-    out = """
-.. raw:: html
-
-    <div class="sphx-glr-thumbContainer" tooltip="{}">
-
-.. figure:: /{}
-    :target: /{}.html
-
-    :ref:`example_{}`
-
-.. raw:: html
-
-    </div>
-""".format(snippet, thumb, link_name[:-3], ref_name)
-
-    return out
-
-
-def scan_used_functions(example_file, gallery_conf):
-    """save variables so we can later add links to the documentation"""
-    example_code_obj = identify_names(open(example_file).read())
-    if example_code_obj:
-        codeobj_fname = example_file[:-3] + '_codeobj.pickle'
-        with open(codeobj_fname, 'wb') as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
-
-    backrefs = set('{module_short}.{name}'.format(**entry)
-                   for entry in example_code_obj.values()
-                   if entry['module'].startswith(gallery_conf['doc_module']))
-
-    return backrefs
-
-
-def write_backreferces(seen_backrefs, gallery_conf,
-                       target_dir, fname, snippet):
-    """Writes down back reference files, which include a thumbnail list
-    of examples using a certain module"""
-    example_file = os.path.join(target_dir, fname)
-    backrefs = scan_used_functions(example_file, gallery_conf)
-    for backref in backrefs:
-        include_path = os.path.join(gallery_conf['mod_example_dir'],
-                                    '%s.examples' % backref)
-        seen = backref in seen_backrefs
-        with open(include_path, 'a' if seen else 'w') as ex_file:
-            if not seen:
-                heading = 'Examples using ``%s``' % backref
-                ex_file.write(heading + '\n')
-                ex_file.write('-' * len(heading) + '\n')
-            ex_file.write(_thumbnail_div(target_dir, fname, snippet))
-            seen_backrefs.add(backref)
-
-
 def generate_dir_rst(src_dir, target_dir, gallery_conf,
                      plot_gallery, seen_backrefs):
     """Generate the rst file for an example directory"""
@@ -356,104 +293,13 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def get_short_module_name(module_name, obj_name):
-    """ Get the shortest possible module name """
-    parts = module_name.split('.')
-    short_name = module_name
-    for i in range(len(parts) - 1, 0, -1):
-        short_name = '.'.join(parts[:i])
-        try:
-            exec('from %s import %s' % (short_name, obj_name))
-        except ImportError:
-            # get the last working module name
-            short_name = '.'.join(parts[:(i + 1)])
-            break
-    return short_name
-
-
-class NameFinder(ast.NodeVisitor):
-    """Finds the longest form of variable names and their imports in code
-
-    Only retains names from imported modules.
-    """
-
-    def __init__(self):
-        super(NameFinder, self).__init__()
-        self.imported_names = {}
-        self.accessed_names = set()
-
-    def visit_Import(self, node, prefix=''):
-        for alias in node.names:
-            local_name = alias.asname or alias.name
-            self.imported_names[local_name] = prefix + alias.name
-
-    def visit_ImportFrom(self, node):
-        self.visit_Import(node, node.module + '.')
-
-    def visit_Name(self, node):
-        self.accessed_names.add(node.id)
-
-    def visit_Attribute(self, node):
-        attrs = []
-        while isinstance(node, ast.Attribute):
-            attrs.append(node.attr)
-            node = node.value
-
-        if isinstance(node, ast.Name):
-            # This is a.b, not e.g. a().b
-            attrs.append(node.id)
-            self.accessed_names.add('.'.join(reversed(attrs)))
-        else:
-            # need to get a in a().b
-            self.visit(node)
-
-    def get_mapping(self):
-        for name in self.accessed_names:
-            local_name = name.split('.', 1)[0]
-            remainder = name[len(local_name):]
-            if local_name in self.imported_names:
-                # Join import path to relative path
-                full_name = self.imported_names[local_name] + remainder
-                yield name, full_name
-
-
-def identify_names(code):
-    """Builds a codeobj summary by identifying and resovles used names
-
-    >>> code = '''
-    ... from a.b import c
-    ... import d as e
-    ... print(c)
-    ... e.HelloWorld().f.g
-    ... '''
-    >>> for name, o in sorted(identify_names(code).items()):
-    ...     print(name, o['name'], o['module'], o['module_short'])
-    c c a.b a.b
-    e.HelloWorld HelloWorld d d
-    """
-    finder = NameFinder()
-    finder.visit(ast.parse(code))
-
-    example_code_obj = {}
-    for name, full_name in finder.get_mapping():
-        # name is as written in file (e.g. np.asarray)
-        # full_name includes resolved import path (e.g. numpy.asarray)
-        module, attribute = full_name.rsplit('.', 1)
-        # get shortened module name
-        module_short = get_short_module_name(module, attribute)
-        cobj = {'name': attribute, 'module': module,
-                'module_short': module_short}
-        example_code_obj[name] = cobj
-    return example_code_obj
-
-
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example."""
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
 
     this_template = rst_template
-    short_fname = target_dir.replace(os.path.sep, '_') + '_'  + fname
+    short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
