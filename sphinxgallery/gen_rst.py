@@ -570,7 +570,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        scale_image(os.join.path(sphinxgallery.path_static(), 'no_image.png'),
+        scale_image(os.path.join(sphinxgallery.path_static(), 'no_image.png'),
                     thumb_file, 200, 140)
 
     docstring, short_desc, end_row = extract_docstring(example_file)
