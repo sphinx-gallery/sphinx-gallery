@@ -45,10 +45,12 @@ Gallery of Examples
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     seen_backrefs = set()
-    generate_dir_rst('.', fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
+    generate_dir_rst('.', fhindex, examples_dir, gallery_dir, gallery_conf,
+                     plot_gallery, seen_backrefs)
     for directory in sorted(os.listdir(examples_dir)):
         if os.path.isdir(os.path.join(examples_dir, directory)):
-            generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
+            generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
+                             gallery_conf, plot_gallery, seen_backrefs)
     fhindex.flush()
 
 
@@ -59,6 +61,7 @@ gallery_conf = {
     'doc_module'     : (),
     'reference_url'  : {},
 }
+
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
@@ -89,6 +92,7 @@ def setup(app):
         for filename in filelist:
             if filename.endswith('png'):
                 os.remove(os.path.join(build_image_dir, filename))
+
 
 def setup_module():
     # HACK: Stop nosetests running setup() above
