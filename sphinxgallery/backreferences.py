@@ -5,6 +5,7 @@
 Reviews generated example files in order to keep track of used modules
 """
 
+from __future__ import print_function
 import ast
 import os
 # Try Python 2 first, otherwise load from Python 3
