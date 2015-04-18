@@ -293,6 +293,117 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
+def execute_script(image_dir, thumb_file, image_fname, base_image_name,
+                   src_file, fname):
+    image_path = os.path.join(image_dir, image_fname)
+    stdout_path = os.path.join(image_dir,
+                               'stdout_%s.txt' % base_image_name)
+    time_path = os.path.join(image_dir,
+                             'time_%s.txt' % base_image_name)
+    # The following is a list containing all the figure names
+    figure_list = []
+    first_image_file = image_path % 1
+    if os.path.exists(stdout_path):
+        stdout = open(stdout_path).read()
+    else:
+        stdout = ''
+    if os.path.exists(time_path):
+        time_elapsed = float(open(time_path).read())
+
+    if not os.path.exists(first_image_file) or \
+       os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime:
+        # We need to execute the code
+        print('plotting %s' % fname)
+        t0 = time()
+        import matplotlib.pyplot as plt
+        plt.close('all')
+        cwd = os.getcwd()
+        try:
+            # First CD in the original example dir, so that any file
+            # created by the example get created in this directory
+            orig_stdout = sys.stdout
+            os.chdir(os.path.dirname(src_file))
+            my_buffer = StringIO()
+            my_stdout = Tee(sys.stdout, my_buffer)
+            sys.stdout = my_stdout
+            my_globals = {'pl': plt, '__name__': 'gallery'}
+            execfile(os.path.basename(src_file), my_globals)
+            time_elapsed = time() - t0
+            sys.stdout = orig_stdout
+            my_stdout = my_buffer.getvalue()
+
+            if '__doc__' in my_globals:
+                # The __doc__ is often printed in the example, we
+                # don't with to echo it
+                my_stdout = my_stdout.replace(
+                    my_globals['__doc__'],
+                    '')
+            my_stdout = my_stdout.strip().expandtabs()
+            if my_stdout:
+                stdout = """**Script output**:\n
+.. rst-class:: sphx-glr-script-out
+
+  ::
+
+{}\n""".format('\n    '.join(my_stdout.split('\n')))
+            os.chdir(cwd)
+            open(stdout_path, 'w').write(stdout)
+            open(time_path, 'w').write('%f' % time_elapsed)
+
+            # In order to save every figure we have two solutions :
+            # * iterate from 1 to infinity and call plt.fignum_exists(n)
+            #   (this requires the figures to be numbered
+            #    incrementally: 1, 2, 3 and not 1, 2, 5)
+            # * iterate over [fig_mngr.num for fig_mngr in
+            #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
+            fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
+            for fig_mngr in fig_managers:
+                # Set the fig_num figure as the current figure as we can't
+                # save a figure that's not the current figure.
+                fig = plt.figure(fig_mngr.num)
+                kwargs = {}
+                to_rgba = matplotlib.colors.colorConverter.to_rgba
+                for attr in ['facecolor', 'edgecolor']:
+                    fig_attr = getattr(fig, 'get_' + attr)()
+                    default_attr = matplotlib.rcParams['figure.' + attr]
+                    if to_rgba(fig_attr) != to_rgba(default_attr):
+                        kwargs[attr] = fig_attr
+
+                fig.savefig(image_path % fig_mngr.num, **kwargs)
+                figure_list.append(image_fname % fig_mngr.num)
+        except:
+            print(80 * '_')
+            print('%s is not compiling:' % fname)
+            traceback.print_exc()
+            print(80 * '_')
+        finally:
+            os.chdir(cwd)
+            sys.stdout = orig_stdout
+
+        print(" - time elapsed : %.2g sec" % time_elapsed)
+    else:
+        figure_list = [f[len(image_dir):]
+                       for f in glob.glob(image_path.replace("%03d",
+                                            '[0-9][0-9][0-9]'))]
+    figure_list.sort()
+
+    # generate thumb file
+    if os.path.exists(first_image_file):
+        scale_image(first_image_file, thumb_file, 400, 280)
+
+    # Depending on whether we have one or more figures, we're using a
+    # horizontal list or a single rst call to 'image'.
+    if len(figure_list) == 1:
+        figure_name = figure_list[0]
+        image_list = SINGLE_IMAGE % figure_name.lstrip('/')
+    else:
+        image_list = HLIST_HEADER
+        for figure_name in figure_list:
+            image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+
+    return image_list, time_elapsed, stdout
+
+
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example."""
     base_image_name = os.path.splitext(fname)[0]
@@ -304,115 +415,25 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
 
-    # The following is a list containing all the figure names
-    figure_list = []
-
     image_dir = os.path.join(target_dir, 'images')
     thumb_dir = os.path.join(image_dir, 'thumb')
+    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s.png' % base_image_name)
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
-    image_path = os.path.join(image_dir, image_fname)
-    stdout_path = os.path.join(image_dir,
-                               'stdout_%s.txt' % base_image_name)
-    time_path = os.path.join(image_dir,
-                             'time_%s.txt' % base_image_name)
-    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s.png' % base_image_name)
+
     time_elapsed = 0
     if plot_gallery and fname.startswith('plot'):
         # generate the plot as png image if file name
         # starts with plot and if it is more recent than an
         # existing image.
+        image_list, time_elapsed, stdout = execute_script(image_dir,
+                                                          thumb_file,
+                                                          image_fname,
+                                                          base_image_name,
+                                                          src_file, fname)
         this_template = plot_rst_template
-        first_image_file = image_path % 1
-        if os.path.exists(stdout_path):
-            stdout = open(stdout_path).read()
-        else:
-            stdout = ''
-        if os.path.exists(time_path):
-            time_elapsed = float(open(time_path).read())
-
-        if not os.path.exists(first_image_file) or \
-           os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime:
-            # We need to execute the code
-            print('plotting %s' % fname)
-            t0 = time()
-            import matplotlib.pyplot as plt
-            plt.close('all')
-            cwd = os.getcwd()
-            try:
-                # First CD in the original example dir, so that any file
-                # created by the example get created in this directory
-                orig_stdout = sys.stdout
-                os.chdir(os.path.dirname(src_file))
-                my_buffer = StringIO()
-                my_stdout = Tee(sys.stdout, my_buffer)
-                sys.stdout = my_stdout
-                my_globals = {'pl': plt, '__name__': 'gallery'}
-                execfile(os.path.basename(src_file), my_globals)
-                time_elapsed = time() - t0
-                sys.stdout = orig_stdout
-                my_stdout = my_buffer.getvalue()
-
-                if '__doc__' in my_globals:
-                    # The __doc__ is often printed in the example, we
-                    # don't with to echo it
-                    my_stdout = my_stdout.replace(
-                        my_globals['__doc__'],
-                        '')
-                my_stdout = my_stdout.strip().expandtabs()
-                if my_stdout:
-                    stdout = """**Script output**:\n
-.. rst-class:: sphx-glr-script-out
-
-  ::
-
-    {}\n""".format('\n    '.join(my_stdout.split('\n')))
-                os.chdir(cwd)
-                open(stdout_path, 'w').write(stdout)
-                open(time_path, 'w').write('%f' % time_elapsed)
-
-                # In order to save every figure we have two solutions :
-                # * iterate from 1 to infinity and call plt.fignum_exists(n)
-                #   (this requires the figures to be numbered
-                #    incrementally: 1, 2, 3 and not 1, 2, 5)
-                # * iterate over [fig_mngr.num for fig_mngr in
-                #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
-                fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
-                for fig_mngr in fig_managers:
-                    # Set the fig_num figure as the current figure as we can't
-                    # save a figure that's not the current figure.
-                    fig = plt.figure(fig_mngr.num)
-                    kwargs = {}
-                    to_rgba = matplotlib.colors.colorConverter.to_rgba
-                    for attr in ['facecolor', 'edgecolor']:
-                        fig_attr = getattr(fig, 'get_' + attr)()
-                        default_attr = matplotlib.rcParams['figure.' + attr]
-                        if to_rgba(fig_attr) != to_rgba(default_attr):
-                            kwargs[attr] = fig_attr
-
-                    fig.savefig(image_path % fig_mngr.num, **kwargs)
-                    figure_list.append(image_fname % fig_mngr.num)
-            except:
-                print(80 * '_')
-                print('%s is not compiling:' % fname)
-                traceback.print_exc()
-                print(80 * '_')
-            finally:
-                os.chdir(cwd)
-                sys.stdout = orig_stdout
-
-            print(" - time elapsed : %.2g sec" % time_elapsed)
-        else:
-            figure_list = [f[len(image_dir):]
-                           for f in glob.glob(image_path.replace("%03d",
-                                                '[0-9][0-9][0-9]'))]
-        figure_list.sort()
-
-        # generate thumb file
-        if os.path.exists(first_image_file):
-            scale_image(first_image_file, thumb_file, 400, 280)
 
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
@@ -420,16 +441,6 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                     thumb_file, 200, 140)
 
     docstring, short_desc, end_row = extract_docstring(example_file)
-
-    # Depending on whether we have one or more figures, we're using a
-    # horizontal list or a single rst call to 'image'.
-    if len(figure_list) == 1:
-        figure_name = figure_list[0]
-        image_list = SINGLE_IMAGE % figure_name.lstrip('/')
-    else:
-        image_list = HLIST_HEADER
-        for figure_name in figure_list:
-            image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     time_m, time_s = divmod(time_elapsed, 60)
     f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
