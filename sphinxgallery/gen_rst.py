@@ -55,16 +55,15 @@ try:
     import matplotlib
     matplotlib.use('Agg')
 except ImportError:
-    # this script can be imported by nosetest to find tests to run: we should not
-    # impose the matplotlib requirement in that case.
+    # this script can be imported by nosetest to find tests to run: we should
+    # not impose the matplotlib requirement in that case.
     pass
 
 
 ###############################################################################
-# A tee object to redict streams to multiple outputs
 
 class Tee(object):
-
+    """A tee object to redirect streams to multiple outputs"""
     def __init__(self, file1, file2):
         self.file1 = file1
         self.file2 = file2
@@ -130,6 +129,7 @@ SINGLE_IMAGE = """
     :align: center
 """
 
+
 def extract_docstring(filename, ignore_heading=False):
     """ Extract a module-level docstring, if any
     """
@@ -171,11 +171,8 @@ def extract_docstring(filename, ignore_heading=False):
     return docstring, first_par, erow + 1 + start_row
 
 
-
-
-
 def extract_line_count(filename, target_dir):
-    # Extract the line count of a file
+    """Extract the line count of a file"""
     example_file = os.path.join(target_dir, filename)
     lines = open(example_file).readlines()
     start_row = 0
@@ -197,7 +194,7 @@ def extract_line_count(filename, target_dir):
 
 
 def line_count_sort(file_list, target_dir):
-    # Sort the list of examples by line-count
+    """Sort the list of examples by line-count"""
     new_list = [x for x in file_list if x.endswith('.py')]
     unsorted = np.zeros(shape=(len(new_list), 2))
     unsorted = unsorted.astype(np.object)
@@ -244,7 +241,8 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     return out
 
 
-def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs):
+def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir,
+                     gallery_conf, plot_gallery, seen_backrefs):
     """ Generate the rst file for an example directory.
     """
     if not directory == '.':
@@ -254,11 +252,11 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
         src_dir = examples_dir
         target_dir = gallery_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print( 80 * '_')
-        print ('Example directory %s does not have a README.txt file' %
-               src_dir)
-        print( 'Skipping this directory')
-        print( 80 * '_')
+        print(80 * '_')
+        print('Example directory %s does not have a README.txt file' %
+              src_dir)
+        print('Skipping this directory')
+        print(80 * '_')
         return
 
     fhindex.write("""
@@ -274,7 +272,8 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
                                      src_dir)
     for fname in sorted_listdir:
         if fname.endswith('py'):
-            backrefs = generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery)
+            backrefs = generate_file_rst(fname, target_dir, src_dir,
+                                         gallery_conf, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
             fhindex.write(_thumbnail_div(directory, directory, fname, snippet))
@@ -287,7 +286,8 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
 
 """ % (directory, fname[:-3]))
             for backref in backrefs:
-                include_path = os.path.join(gallery_conf['mod_example_dir'], '%s.examples' % backref)
+                include_path = os.path.join(gallery_conf['mod_example_dir'],
+                                            '%s.examples' % backref)
                 seen = backref in seen_backrefs
                 with open(include_path, 'a' if seen else 'w') as ex_file:
                     if not seen:
@@ -297,8 +297,10 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
                         print('-----------------%s--' % ('-' * len(backref)),
                               file=ex_file)
                         print(file=ex_file)
-                    rel_dir = os.path.join(gallery_conf['gallery_dir'], directory)
-                    ex_file.write(_thumbnail_div(directory, rel_dir, fname, snippet))
+                    rel_dir = os.path.join(gallery_conf['gallery_dir'],
+                                           directory)
+                    ex_file.write(_thumbnail_div(directory, rel_dir, fname,
+                                                 snippet))
                     seen_backrefs.add(backref)
 
     fhindex.write("""
@@ -308,9 +310,10 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
     """)  # clear at the end of the section
 
 
-def make_thumbnail(in_fname, out_fname, width, height):
-    """Make a thumbnail with the same aspect ratio centered in an
-       image with a given width and height
+def scale_image(in_fname, out_fname, max_width, max_height):
+    """Scales an image with the same aspect ratio centered in an
+       image with a given max_width and max_height
+       if in_fname == out_fname the image can only be scaled down
     """
     # local import to avoid testing dependency on PIL:
     try:
@@ -319,13 +322,16 @@ def make_thumbnail(in_fname, out_fname, width, height):
         import Image
     img = Image.open(in_fname)
     width_in, height_in = img.size
-    scale_w = width / float(width_in)
-    scale_h = height / float(height_in)
+    scale_w = max_width / float(width_in)
+    scale_h = max_height / float(height_in)
 
-    if height_in * scale_w <= height:
+    if height_in * scale_w <= max_height:
         scale = scale_w
     else:
         scale = scale_h
+
+    if scale >= 1.0 and in_fname == out_fname:
+        return
 
     width_sc = int(round(scale * width_in))
     height_sc = int(round(scale * height_in))
@@ -334,8 +340,8 @@ def make_thumbnail(in_fname, out_fname, width, height):
     img.thumbnail((width_sc, height_sc), Image.ANTIALIAS)
 
     # insert centered
-    thumb = Image.new('RGB', (width, height), (255, 255, 255))
-    pos_insert = ((width - width_sc) // 2, (height - height_sc) // 2)
+    thumb = Image.new('RGB', (max_width, max_height), (255, 255, 255))
+    pos_insert = ((max_width - width_sc) // 2, (max_height - height_sc) // 2)
     thumb.paste(img, pos_insert)
 
     thumb.save(out_fname)
@@ -345,7 +351,8 @@ def make_thumbnail(in_fname, out_fname, width, height):
         try:
             subprocess.call(["optipng", "-quiet", "-o", "9", out_fname])
         except Exception:
-            warnings.warn('Install optipng to reduce the size of the generated images')
+            warnings.warn('Install optipng to reduce the size of the \
+                          generated images')
 
 
 def get_short_module_name(module_name, obj_name):
@@ -567,11 +574,12 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
 
         # generate thumb file
         if os.path.exists(first_image_file):
-            make_thumbnail(first_image_file, thumb_file, 400, 280)
+            scale_image(first_image_file, thumb_file, 400, 280)
 
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        make_thumbnail(sphinxgallery.path_static()+'/no_image.png', thumb_file, 200, 140)
+        scale_image(os.path.join(sphinxgallery.path_static(), 'no_image.png'),
+                    thumb_file, 200, 140)
 
     docstring, short_desc, end_row = extract_docstring(example_file)
 
