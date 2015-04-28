@@ -46,7 +46,6 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    dir(app.builder)
     build_image_dir = os.path.join(app.builder.outdir, '_images')
     clean_gallery_out(build_image_dir)
 
