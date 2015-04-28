@@ -445,7 +445,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
     Returns the set of functions/classes imported in the example.
     """
     base_image_name = os.path.splitext(fname)[0]
-    image_fname = '%s_%%03d.png' % base_image_name
+    image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
 
     this_template = rst_template
     last_dir = os.path.split(src_dir)[-1]
@@ -473,7 +473,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
                                'stdout_%s.txt' % base_image_name)
     time_path = os.path.join(image_dir,
                              'time_%s.txt' % base_image_name)
-    thumb_file = os.path.join(thumb_dir, base_image_name + '.png')
+    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s.png' % base_image_name)
     time_elapsed = 0
     if plot_gallery and fname.startswith('plot'):
         # generate the plot as png image if file name
