@@ -214,7 +214,8 @@ def line_count_sort(file_list, target_dir):
 
 def _thumbnail_div(subdir, full_dir, fname, snippet):
     """Generates RST to place a thumbnail in a gallery"""
-    thumb = os.path.join(full_dir, 'images', 'thumb', fname[:-3] + '.png')
+    thumb = os.path.join(full_dir, 'images', 'thumb',
+                         'sphx_glr_%s.png' % fname[:-3])
     link_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
     ref_name = os.path.join(subdir, fname).replace(os.path.sep, '_')
     if ref_name.startswith('._'):
