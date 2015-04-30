@@ -7,6 +7,28 @@ from sphinxgallery.gen_rst import generate_dir_rst
 from sphinxgallery.docs_resolv import embed_code_links
 
 
+def clean_gallery_out(build_image_dir):
+    # Sphinx hack: sphinx copies generated images to the build directory
+    #  each time the docs are made.  If the desired image name already
+    #  exists, it appends a digit to prevent overwrites.  The problem is,
+    #  the directory is never cleared.  This means that each time you build
+    #  the docs, the number of images in the directory grows.
+    #
+    # This question has been asked on the sphinx development list, but there
+    #  was no response: http://osdir.com/ml/sphinx-dev/2011-02/msg00123.html
+    #
+    # The following is a hack that prevents this behavior by clearing the
+    #  image build directory each time the docs are built.  If sphinx
+    #  changes their layout between versions, this will not work (though
+    #  it should probably not cause a crash).  Tested successfully
+    #  on Sphinx 1.0.7
+    if os.path.exists(build_image_dir):
+        filelist = os.listdir(build_image_dir)
+        for filename in filelist:
+            if filename.startswith('sphx_glr') and filename.endswith('png'):
+                os.remove(os.path.join(build_image_dir, filename))
+
+
 def generate_gallery_rst(app):
     """Starts the gallery configuration and recursively scans the examples
     directory in order to populate the examples gallery
@@ -23,6 +45,9 @@ def generate_gallery_rst(app):
 
     if not plot_gallery:
         return
+
+    build_image_dir = os.path.join(app.builder.outdir, '_images')
+    clean_gallery_out(build_image_dir)
 
     examples_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_dir'])
     gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
@@ -69,26 +94,6 @@ def setup(app):
 
     app.connect('build-finished', embed_code_links)
 
-    # Sphinx hack: sphinx copies generated images to the build directory
-    #  each time the docs are made.  If the desired image name already
-    #  exists, it appends a digit to prevent overwrites.  The problem is,
-    #  the directory is never cleared.  This means that each time you build
-    #  the docs, the number of images in the directory grows.
-    #
-    # This question has been asked on the sphinx development list, but there
-    #  was no response: http://osdir.com/ml/sphinx-dev/2011-02/msg00123.html
-    #
-    # The following is a hack that prevents this behavior by clearing the
-    #  image build directory each time the docs are built.  If sphinx
-    #  changes their layout between versions, this will not work (though
-    #  it should probably not cause a crash).  Tested successfully
-    #  on Sphinx 1.0.7
-    build_image_dir = '_build/html/_images'
-    if os.path.exists(build_image_dir):
-        filelist = os.listdir(build_image_dir)
-        for filename in filelist:
-            if filename.endswith('png'):
-                os.remove(os.path.join(build_image_dir, filename))
 
 def setup_module():
     # HACK: Stop nosetests running setup() above
