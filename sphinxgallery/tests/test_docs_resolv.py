@@ -15,20 +15,20 @@ def test_shelve():
     """Test if shelve can be caches information
     retrieved after file is deleted"""
     test_string = 'test information'
-    shelve_file = 'shelve_test_file'
+    tmp_cache = tempfile.mkdtemp()
     with tempfile.NamedTemporaryFile('w') as fid:
         fid.write(test_string)
         fid.seek(0)
 
         # recovers data from temporary file and caches it in the shelve
-        file_data = sg.get_data(fid.name, shelve_file)
+        file_data = sg.get_data(fid.name, tmp_cache)
         # tests recovered data matches
         assert_equals(file_data, test_string)
 
     # test if cached data is available after temporary file has vanished
-    assert_equals(sg.get_data(fid.name, shelve_file), test_string)
+    assert_equals(sg.get_data(fid.name, tmp_cache), test_string)
 
     # shelve keys need to be str in python 2, deal with unicode input
     if sys.version_info[0] == 2:
         unicode_name = unicode(fid.name)
-        assert_equals(sg.get_data(unicode_name, shelve_file), test_string)
+        assert_equals(sg.get_data(unicode_name, tmp_cache), test_string)
