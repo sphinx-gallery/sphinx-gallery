@@ -237,9 +237,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
 .. toctree::
    :hidden:
 
-   /%s/%s
+   /%s/%s\n""" % (target_dir, fname[:-3])
 
-""" % (target_dir, fname[:-3])
 
 # clear at the end of the section
     fhindex += """.. raw:: html\n
@@ -345,7 +344,7 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
 
   ::
 
-{}\n""".format('\n    '.join(my_stdout.split('\n')))
+    {}\n""".format('\n    '.join(my_stdout.split('\n')))
             os.chdir(cwd)
             open(stdout_path, 'w').write(stdout)
             open(time_path, 'w').write('%f' % time_elapsed)
