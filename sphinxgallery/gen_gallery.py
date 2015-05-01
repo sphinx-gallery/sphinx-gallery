@@ -47,11 +47,14 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    clean_gallery_out(app.builder.outdir)
+    #clean_gallery_out(app.builder.outdir)
 
-    examples_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_dir'])
-    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
-    mod_examples_dir = os.path.join(app.builder.srcdir, gallery_conf['mod_example_dir'])
+    examples_dir = os.path.relpath(gallery_conf['examples_dir'],
+                                   app.builder.srcdir)
+    gallery_dir = os.path.relpath(gallery_conf['gallery_dir'],
+                                  app.builder.srcdir)
+    mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
+                                       app.builder.srcdir)
 
     for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
         if not os.path.exists(workdir):
