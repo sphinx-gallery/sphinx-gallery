@@ -7,7 +7,7 @@ from sphinxgallery.gen_rst import generate_dir_rst
 from sphinxgallery.docs_resolv import embed_code_links
 
 
-def clean_gallery_out(build_image_dir):
+def clean_gallery_out(build_dir):
     # Sphinx hack: sphinx copies generated images to the build directory
     #  each time the docs are made.  If the desired image name already
     #  exists, it appends a digit to prevent overwrites.  The problem is,
@@ -22,6 +22,7 @@ def clean_gallery_out(build_image_dir):
     #  changes their layout between versions, this will not work (though
     #  it should probably not cause a crash).  Tested successfully
     #  on Sphinx 1.0.7
+    build_image_dir = os.path.join(build_dir, '_images')
     if os.path.exists(build_image_dir):
         filelist = os.listdir(build_image_dir)
         for filename in filelist:
@@ -46,8 +47,7 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    build_image_dir = os.path.join(app.builder.outdir, '_images')
-    clean_gallery_out(build_image_dir)
+    clean_gallery_out(app.builder.outdir)
 
     examples_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_dir'])
     gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
