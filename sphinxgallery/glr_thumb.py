@@ -57,11 +57,11 @@ class GlrThumb(Figure):
         if isinstance(figure_node, nodes.system_message):
             return [figure_node]
 
-        tno = glr_thumb('', figure_node)
+        thumbnail_node = glr_thumb('', figure_node)
 
-        tno['tooltip'] = self.options.pop('tooltip', None)
+        thumbnail_node['tooltip'] = self.options.pop('tooltip', None)
 
-        return [tno]
+        return [thumbnail_node]
 
 
 def setup(app):
