@@ -16,14 +16,15 @@ class glr_thumb(nodes.General, nodes.Element):
     pass
 
 
-def visit_glr_thumb_node(self, node):
+def visit_glr_thumb(self, node):
     snippet = node['tooltip']
     attrs = {"class": "sphx-glr-thumbContainer",
              "tooltip": snippet}
+    import pdb; pdb.set_trace()
     self.body.append(self.starttag(node, "a", href=node['target']))
     self.body.append(self.starttag(node, "div", **attrs))
 
-def depart_glr_thumb_node(self, node):
+def depart_glr_thumb(self, node):
     self.body.append('</div></a>\n')
 
 
@@ -59,5 +60,5 @@ class GlrThumb(Figure):
 
 def setup(app):
 
-    app.add_node(glr_thumb, html=(visit_glr_thumb_node, depart_glr_thumb_node))
+    app.add_node(glr_thumb, html=(visit_glr_thumb, depart_glr_thumb))
     app.add_directive('glr_thumb', GlrThumb)

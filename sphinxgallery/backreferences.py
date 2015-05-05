@@ -136,7 +136,7 @@ def _thumbnail_div(full_dir, fname, snippet):
     out = """
 .. glr_thumb:: /{}
     :tooltip: {}
-    :reftarget: /{}
+    :reftarget: /{}.html
 
     {}
 
