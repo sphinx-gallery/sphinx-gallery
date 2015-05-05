@@ -138,7 +138,7 @@ def _thumbnail_div(full_dir, fname, snippet):
     :tooltip: {}
     :reftarget: /{}
 
-    :ref:`example_{}`
+    {}
 
 """.format(thumb, snippet, link_name[:-3], ref_name)
 

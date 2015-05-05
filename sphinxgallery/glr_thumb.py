@@ -20,10 +20,11 @@ def visit_glr_thumb_node(self, node):
     snippet = node['tooltip']
     attrs = {"class": "sphx-glr-thumbContainer",
              "tooltip": snippet}
+    self.body.append(self.starttag(node, "a", href=node['target']))
     self.body.append(self.starttag(node, "div", **attrs))
 
 def depart_glr_thumb_node(self, node):
-    self.body.append('</div>\n')
+    self.body.append('</div></a>\n')
 
 
 class GlrThumb(Figure):
@@ -35,20 +36,23 @@ class GlrThumb(Figure):
     def run(self):
         tar = self.options.pop('reftarget')
         target = ws_re.sub(' ', tar)
-        reference_node = addnodes.pending_xref(reftype='doc',
-                                               reftarget=target,
-                                               refexplicit='')
+#        reference_node = addnodes.pending_xref(reftype='doc',
+#                                               reftarget=target,
+#                                               refexplicit='')
 #        reference_node = nodes.reference(refuri=target)
         (figure_node, ) = Figure.run(self)
         if isinstance(figure_node, nodes.system_message):
             return [figure_node]
 
-        reference_node += figure_node
+        tno = glr_thumb('', figure_node)
+#        reference_node += figure_node
 #        figure_node += reference_node
 #        return [reference_node]
-        tno = glr_thumb('', reference_node)
+#        tno = glr_thumb('', reference_node)
+
 #        import pdb; pdb.set_trace()
         tno['tooltip'] = self.options.pop('tooltip', None)
+        tno['target'] = target
 
         return [tno]
 
