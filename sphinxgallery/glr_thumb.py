@@ -62,9 +62,3 @@ class GlrThumb(Figure):
         thumbnail_node['tooltip'] = self.options.pop('tooltip', None)
 
         return [thumbnail_node]
-
-
-def setup(app):
-
-    app.add_node(glr_thumb, html=(visit_glr_thumb, depart_glr_thumb))
-    app.add_directive('glr_thumb', GlrThumb)

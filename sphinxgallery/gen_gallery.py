@@ -5,6 +5,7 @@
 import os
 from sphinxgallery.gen_rst import generate_dir_rst
 from sphinxgallery.docs_resolv import embed_code_links
+import sphinxgallery.glr_thumb as glr_thumb
 
 
 def clean_gallery_out(build_dir):
@@ -92,6 +93,11 @@ def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
     app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
+
+    app.add_node(glr_thumb.glr_thumb,
+                 html=(glr_thumb.visit_glr_thumb,
+                       glr_thumb.depart_glr_thumb))
+    app.add_directive('glr_thumb', glr_thumb.GlrThumb)
 
 
     app.connect('builder-inited', generate_gallery_rst)

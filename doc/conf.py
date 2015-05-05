@@ -38,7 +38,6 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinxgallery.gen_gallery',
-    'sphinxgallery.glr_thumb',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
