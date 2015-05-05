@@ -128,19 +128,17 @@ def _thumbnail_div(full_dir, fname, snippet):
     """Generates RST to place a thumbnail in a gallery"""
     thumb = os.path.join(full_dir, 'images', 'thumb',
                          'sphx_glr_%s.png' % fname[:-3])
-    link_name = os.path.join(full_dir, fname)
-    ref_name = link_name.replace(os.path.sep, '_')
+    ref_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
     if ref_name.startswith('._'):
         ref_name = ref_name[2:]
 
     out = """
 .. glr_thumb:: /{}
     :tooltip: {}
-    :reftarget: /{}.html
 
-    {}
+    :ref:`example_{}`
 
-""".format(thumb, snippet, link_name[:-3], ref_name)
+""".format(thumb, snippet, ref_name)
 
     return out
 

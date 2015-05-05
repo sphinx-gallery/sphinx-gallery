@@ -6,54 +6,60 @@ Created on Tue May  5 14:44:57 2015
 """
 
 from docutils import nodes
-from sphinx import addnodes
-from sphinx.util import ws_re
 from docutils.parsers.rst import directives
 from docutils.parsers.rst.directives.images import Figure
 
 
 class glr_thumb(nodes.General, nodes.Element):
+    """General docutils node to track the sphinx gallery thumbnails"""
     pass
 
 
 def visit_glr_thumb(self, node):
+    """Instructions to render the gallery thumbnails
+
+    The containig div is first created. Later information is copied from
+    the resolved link in the caption into the reference link on the image.
+    This way the image becames clickable an links to the example.
+    """
     snippet = node['tooltip']
     attrs = {"class": "sphx-glr-thumbContainer",
              "tooltip": snippet}
-    import pdb; pdb.set_trace()
-    self.body.append(self.starttag(node, "a", href=node['target']))
+
     self.body.append(self.starttag(node, "div", **attrs))
 
+    # Puts the resolved reference of the caption into the image
+    # If references could not be solved, empty link in the caption. But
+    # important to bring attention which file is not resolved
+    try:
+        node[0][0]['refuri'] = node[0][1][0]['refuri']
+    except KeyError:
+        raise KeyError('Could not resolve reference {rawsource}'
+                       ' in file {source}'.format(**node[0][1].__dict__))
+
+
 def depart_glr_thumb(self, node):
-    self.body.append('</div></a>\n')
+    self.body.append('</div>\n')
 
 
 class GlrThumb(Figure):
+    """Local Directive to hold the sphinx gallery thumbnail
+
+    The figure directive is nested in this directive allowing to allocate
+    newer options"""
 
     option_spec = Figure.option_spec.copy()
     option_spec['tooltip'] = directives.unchanged_required
-    option_spec['reftarget'] = directives.unchanged_required
 
     def run(self):
-        tar = self.options.pop('reftarget')
-        target = ws_re.sub(' ', tar)
-#        reference_node = addnodes.pending_xref(reftype='doc',
-#                                               reftarget=target,
-#                                               refexplicit='')
-#        reference_node = nodes.reference(refuri=target)
+        self.options['target'] = u'#'
         (figure_node, ) = Figure.run(self)
         if isinstance(figure_node, nodes.system_message):
             return [figure_node]
 
         tno = glr_thumb('', figure_node)
-#        reference_node += figure_node
-#        figure_node += reference_node
-#        return [reference_node]
-#        tno = glr_thumb('', reference_node)
 
-#        import pdb; pdb.set_trace()
         tno['tooltip'] = self.options.pop('tooltip', None)
-        tno['target'] = target
 
         return [tno]
 
