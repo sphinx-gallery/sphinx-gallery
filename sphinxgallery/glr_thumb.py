@@ -12,6 +12,18 @@ from docutils.parsers.rst import directives
 from docutils.parsers.rst.directives.images import Figure
 
 
+class glr_thumb(nodes.General, nodes.Element):
+    pass
+
+
+def visit_glr_thumb_node(self, node):
+    pass
+
+
+def depart_glr_thumb_node(self, node):
+    pass
+
+
 class GlrThumb(Figure):
 
     option_spec = Figure.option_spec.copy()
