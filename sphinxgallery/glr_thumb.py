@@ -35,17 +35,19 @@ class GlrThumb(Figure):
     def run(self):
         tar = self.options.pop('reftarget')
         target = ws_re.sub(' ', tar)
-#        reference_node = addnodes.pending_xref(reftype='doc',
-#                                               reftarget=target,
-#                                               refexplicit='')
+        reference_node = addnodes.pending_xref(reftype='doc',
+                                               reftarget=target,
+                                               refexplicit='')
+#        reference_node = nodes.reference(refuri=target)
         (figure_node, ) = Figure.run(self)
         if isinstance(figure_node, nodes.system_message):
             return [figure_node]
 
-#        reference_node += figure_node
-
+        reference_node += figure_node
+#        figure_node += reference_node
 #        return [reference_node]
-        tno = glr_thumb('', figure_node)
+        tno = glr_thumb('', reference_node)
+#        import pdb; pdb.set_trace()
         tno['tooltip'] = self.options.pop('tooltip', None)
 
         return [tno]
