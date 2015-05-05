@@ -17,16 +17,19 @@ class glr_thumb(nodes.General, nodes.Element):
 
 
 def visit_glr_thumb_node(self, node):
-    pass
-
+    snippet = node['tooltip']
+    attrs = {"class": "sphx-glr-thumbContainer",
+             "tooltip": snippet}
+    self.body.append(self.starttag(node, "div", **attrs))
 
 def depart_glr_thumb_node(self, node):
-    pass
+    self.body.append('</div>\n')
 
 
 class GlrThumb(Figure):
 
     option_spec = Figure.option_spec.copy()
+    option_spec['tooltip'] = directives.unchanged_required
     option_spec['reftarget'] = directives.unchanged_required
 
     def run(self):
@@ -42,7 +45,10 @@ class GlrThumb(Figure):
 #        reference_node += figure_node
 
 #        return [reference_node]
-        return [figure_node]
+        tno = glr_thumb('', figure_node)
+        tno['tooltip'] = self.options.pop('tooltip', None)
+
+        return [tno]
 
 
 def setup(app):

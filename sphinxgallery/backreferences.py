@@ -134,19 +134,13 @@ def _thumbnail_div(full_dir, fname, snippet):
         ref_name = ref_name[2:]
 
     out = """
-.. raw:: html
-
-    <div class="sphx-glr-thumbContainer" tooltip="{}">
-
 .. glr_thumb:: /{}
+    :tooltip: {}
     :reftarget: /{}
 
     :ref:`example_{}`
 
-.. raw:: html
-
-    </div>
-""".format(snippet, thumb, link_name[:-3], ref_name)
+""".format(thumb, snippet, link_name[:-3], ref_name)
 
     return out
 
