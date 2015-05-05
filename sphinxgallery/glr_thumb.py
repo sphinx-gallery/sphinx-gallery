@@ -43,6 +43,8 @@ class GlrThumb(Figure):
 
 #        return [reference_node]
         return [figure_node]
+
+
 def setup(app):
 
     app.add_node(glr_thumb, html=(visit_glr_thumb_node, depart_glr_thumb_node))

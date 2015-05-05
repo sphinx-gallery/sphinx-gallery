@@ -5,7 +5,6 @@
 import os
 from sphinxgallery.gen_rst import generate_dir_rst
 from sphinxgallery.docs_resolv import embed_code_links
-from sphinxgallery.backreferences import GlrThumb
 
 
 def clean_gallery_out(build_dir):
@@ -88,7 +87,6 @@ gallery_conf = {
     'doc_module'     : (),
     'reference_url'  : {},
 }
-
 
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
