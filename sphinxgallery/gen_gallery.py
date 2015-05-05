@@ -5,6 +5,7 @@
 import os
 from sphinxgallery.gen_rst import generate_dir_rst
 from sphinxgallery.docs_resolv import embed_code_links
+from sphinxgallery.backreferences import GlrThumb
 
 
 def clean_gallery_out(build_dir):
@@ -94,6 +95,7 @@ def setup(app):
     app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
+    app.add_directive('glr_thumb', GlrThumb)
     app.connect('builder-inited', generate_gallery_rst)
 
     app.connect('build-finished', embed_code_links)

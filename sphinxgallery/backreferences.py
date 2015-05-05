@@ -8,6 +8,13 @@ Reviews generated example files in order to keep track of used modules
 from __future__ import print_function
 import ast
 import os
+
+from docutils import nodes
+from sphinx import addnodes
+from sphinx.util import ws_re
+from docutils.parsers.rst import directives
+from docutils.parsers.rst.directives.images import Figure
+
 # Try Python 2 first, otherwise load from Python 3
 try:
     import cPickle as pickle
@@ -121,6 +128,26 @@ def scan_used_functions(example_file, gallery_conf):
     return backrefs
 
 
+class GlrThumb(Figure):
+
+    option_spec = Figure.option_spec.copy()
+    option_spec['reftarget'] = directives.unchanged_required
+
+    def run(self):
+        tar = self.options.pop('reftarget')
+        target = ws_re.sub(' ', tar)
+#        reference_node = addnodes.pending_xref(reftype='doc',
+#                                               reftarget=target,
+#                                               refexplicit='')
+        (figure_node, ) = Figure.run(self)
+        if isinstance(figure_node, nodes.system_message):
+            return [figure_node]
+
+#        reference_node += figure_node
+
+#        return [reference_node]
+        return [figure_node]
+
 def _thumbnail_div(full_dir, fname, snippet):
     """Generates RST to place a thumbnail in a gallery"""
     thumb = os.path.join(full_dir, 'images', 'thumb',
@@ -135,8 +162,8 @@ def _thumbnail_div(full_dir, fname, snippet):
 
     <div class="sphx-glr-thumbContainer" tooltip="{}">
 
-.. figure:: /{}
-    :target: /{}.html
+.. glr_thumb:: /{}
+    :reftarget: /{}
 
     :ref:`example_{}`
 
