@@ -48,7 +48,7 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    #clean_gallery_out(app.builder.outdir)
+    clean_gallery_out(app.builder.outdir)
 
     examples_dir = os.path.relpath(gallery_conf['examples_dir'],
                                    app.builder.srcdir)

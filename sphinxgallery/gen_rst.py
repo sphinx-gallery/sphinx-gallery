@@ -19,7 +19,7 @@ import sys
 import subprocess
 import warnings
 import sphinxgallery
-from sphinxgallery.backreferences import write_backreferces, _thumbnail_div
+from sphinxgallery.backreferences import write_backreferences, _thumbnail_div
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -228,7 +228,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
             generate_file_rst(fname, target_dir, src_dir, plot_gallery)
             new_fname = os.path.join(src_dir, fname)
             _, snippet, _ = extract_docstring(new_fname, True)
-            write_backreferces(seen_backrefs, gallery_conf,
+            write_backreferences(seen_backrefs, gallery_conf,
                                target_dir, fname, snippet)
 
             fhindex += _thumbnail_div(target_dir, fname, snippet)

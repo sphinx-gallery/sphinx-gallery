@@ -143,8 +143,8 @@ def _thumbnail_div(full_dir, fname, snippet):
     return out
 
 
-def write_backreferces(seen_backrefs, gallery_conf,
-                       target_dir, fname, snippet):
+def write_backreferences(seen_backrefs, gallery_conf,
+                         target_dir, fname, snippet):
     """Writes down back reference files, which include a thumbnail list
     of examples using a certain module"""
     example_file = os.path.join(target_dir, fname)
