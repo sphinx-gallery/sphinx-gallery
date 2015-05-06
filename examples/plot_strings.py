@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-==============================
-Constrainded Text output frame
-==============================
+=============================
+Constrained Text output frame
+=============================
 
 This example captures the stdout and includes it in the
 example. If output is too long it becomes automatically
