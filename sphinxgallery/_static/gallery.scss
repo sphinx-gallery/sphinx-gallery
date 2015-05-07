@@ -15,8 +15,13 @@ div.sphx-glr-thumbContainer {
 		border: solid #B4DDFC 1px;
 		}
 
-	a {
+	a.internal {
 	display: block;
+	position: absolute;
+	padding: 150px 10px 0px 10px;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
 	}
 
 	p {

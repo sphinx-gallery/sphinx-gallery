@@ -94,11 +94,6 @@ def setup(app):
     app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
-    app.add_node(glr_thumb.glr_thumb,
-                 html=(glr_thumb.visit_glr_thumb,
-                       glr_thumb.depart_glr_thumb))
-    app.add_directive('glr_thumb', glr_thumb.GlrThumb)
-
 
     app.connect('builder-inited', generate_gallery_rst)
 
