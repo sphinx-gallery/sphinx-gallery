@@ -5,7 +5,6 @@
 import os
 from sphinxgallery.gen_rst import generate_dir_rst
 from sphinxgallery.docs_resolv import embed_code_links
-import sphinxgallery.glr_thumb as glr_thumb
 
 
 def clean_gallery_out(build_dir):
