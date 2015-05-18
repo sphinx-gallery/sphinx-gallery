@@ -416,7 +416,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 
     image_dir = os.path.join(target_dir, 'images')
     thumb_dir = os.path.join(image_dir, 'thumb')
-    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s.png' % base_image_name)
+    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
     if not os.path.exists(thumb_dir):
