@@ -2,9 +2,10 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
+from __future__ import division, print_function, absolute_import
 import os
-from sphinxgallery.gen_rst import generate_dir_rst
-from sphinxgallery.docs_resolv import embed_code_links
+from .gen_rst import generate_dir_rst
+from .docs_resolv import embed_code_links
 
 
 def clean_gallery_out(build_dir):

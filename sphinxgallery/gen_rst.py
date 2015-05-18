@@ -8,7 +8,7 @@ example files.
 Files that generate images should start with 'plot'
 
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 from time import time
 import os
 import re
@@ -18,8 +18,8 @@ import glob
 import sys
 import subprocess
 import warnings
-import sphinxgallery
-from sphinxgallery.backreferences import write_backreferences, _thumbnail_div
+from . import path_static as glr_path_static
+from .backreferences import write_backreferences, _thumbnail_div
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -436,7 +436,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        scale_image(os.path.join(sphinxgallery.path_static(), 'no_image.png'),
+        scale_image(os.path.join(glr_path_static(), 'no_image.png'),
                     thumb_file, 200, 140)
 
     docstring, short_desc, end_row = extract_docstring(example_file)
