@@ -3,6 +3,7 @@
 # License: 3-clause BSD
 
 import os
+import codecs
 from sphinxgallery.gen_rst import generate_dir_rst
 from sphinxgallery.docs_resolv import embed_code_links
 
@@ -58,7 +59,7 @@ def generate_gallery_rst(app):
             os.makedirs(workdir)
 
     # we create an index.rst with all examples
-    fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
+    fhindex = codecs.open(os.path.join(gallery_dir, 'index.rst'), 'w', 'utf8')
     fhindex.write("""
 
 .. _examples-index:
@@ -85,6 +86,7 @@ gallery_conf = {
     'reference_url'  : {},
 }
 
+
 def setup(app):
     app.add_config_value('plot_gallery', True, 'html')
     app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
@@ -93,6 +95,7 @@ def setup(app):
     app.connect('builder-inited', generate_gallery_rst)
 
     app.connect('build-finished', embed_code_links)
+
 
 
 def setup_module():

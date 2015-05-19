@@ -13,6 +13,7 @@ from time import time
 import ast
 import os
 import re
+import codecs
 import shutil
 import traceback
 import glob
@@ -79,35 +80,35 @@ class Tee(object):
 
 
 ###############################################################################
-rst_template = """
+rst_template = u"""
 
-.. _example_%(short_fname)s:
+.. _example_{short_fname}:
 
-%(docstring)s
+{docstring}
 
-**Python source code:** :download:`%(fname)s <%(fname)s>`
+**Python source code:** :download:`{fname} <{fname}>`
 
-.. literalinclude:: %(fname)s
-    :lines: %(end_row)s-
+.. literalinclude:: {fname}
+    :lines: {end_row}-
     """
 
-plot_rst_template = """
+plot_rst_template = u"""
 
-.. _example_%(short_fname)s:
+.. _example_{short_fname}:
 
-%(docstring)s
+{docstring}
 
-%(image_list)s
+{image_list}
 
-%(stdout)s
+{stdout}
 
-**Python source code:** :download:`%(fname)s <%(fname)s>`
+**Python source code:** :download:`{fname} <{fname}>`
 
-.. literalinclude:: %(fname)s
-    :lines: %(end_row)s-
+.. literalinclude:: {fname}
+    :lines: {end_row}-
 
-**Total running time of the example:** %(time_elapsed) .2f seconds
-(%(time_m) .0f minutes %(time_s) .2f seconds)
+**Total running time of the example:** {time_elapsed:.2} seconds
+({time_m:.0f} minutes {time_s:.2} seconds)
     """
 
 # The following strings are used when we have several pictures: we use
@@ -133,7 +134,7 @@ SINGLE_IMAGE = """
 def extract_docstring(filename, ignore_heading=False):
     """ Extract a module-level docstring, if any
     """
-    lines = open(filename).readlines()
+    lines = codecs.open(filename, 'r', 'utf8').readlines()
     start_row = 0
     if lines[0].startswith('#!'):
         lines.pop(0)
@@ -147,7 +148,10 @@ def extract_docstring(filename, ignore_heading=False):
         if tok_type in ('NEWLINE', 'COMMENT', 'NL', 'INDENT', 'DEDENT'):
             continue
         elif tok_type == 'STRING':
-            docstring = eval(tok_content)
+            try:
+                docstring = eval(tok_content).decode('utf8')
+            except AttributeError:
+                docstring = eval(tok_content) # Because py3 works without decode
             # If the docstring is formatted with several paragraphs, extract
             # the first one:
             paragraphs = '\n'.join(
@@ -227,7 +231,7 @@ def _thumbnail_div(subdir, full_dir, fname, snippet):
     else:
         target = './%s.html' % link_name[:-3]
 
-    out = """
+    out = u"""
 .. raw:: html
 
     <div class="sphx-glr-thumbContainer" tooltip="{}">
@@ -256,7 +260,7 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
         target_dir = gallery_dir
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
         print( 80 * '_')
-        print ('Example directory %s does not have a README.txt file' %
+        print('Example directory %s does not have a README.txt file' %
                src_dir)
         print( 'Skipping this directory')
         print( 80 * '_')
@@ -290,7 +294,7 @@ def generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf
             for backref in backrefs:
                 include_path = os.path.join(gallery_conf['mod_example_dir'], '%s.examples' % backref)
                 seen = backref in seen_backrefs
-                with open(include_path, 'a' if seen else 'w') as ex_file:
+                with codecs.open(include_path, 'a' if seen else 'w', 'utf8') as ex_file:
                     if not seen:
                         # heading
                         print(file=ex_file)
@@ -587,9 +591,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery):
             image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
-    f.write(this_template % locals())
-    f.flush()
+    with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
+                     'w', 'utf8') as output_file:
+        output_file.write(this_template.format(**locals()))
 
     # save variables so we can later add links to the documentation
     example_code_obj = identify_names(open(example_file).read())
