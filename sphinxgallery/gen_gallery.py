@@ -2,12 +2,13 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
+from __future__ import division, print_function, absolute_import
 import os
-from sphinxgallery.gen_rst import generate_dir_rst
-from sphinxgallery.docs_resolv import embed_code_links
+from .gen_rst import generate_dir_rst
+from .docs_resolv import embed_code_links
 
 
-def clean_gallery_out(build_image_dir):
+def clean_gallery_out(build_dir):
     # Sphinx hack: sphinx copies generated images to the build directory
     #  each time the docs are made.  If the desired image name already
     #  exists, it appends a digit to prevent overwrites.  The problem is,
@@ -22,6 +23,7 @@ def clean_gallery_out(build_image_dir):
     #  changes their layout between versions, this will not work (though
     #  it should probably not cause a crash).  Tested successfully
     #  on Sphinx 1.0.7
+    build_image_dir = os.path.join(build_dir, '_images')
     if os.path.exists(build_image_dir):
         filelist = os.listdir(build_image_dir)
         for filename in filelist:
@@ -46,12 +48,14 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    build_image_dir = os.path.join(app.builder.outdir, '_images')
-    clean_gallery_out(build_image_dir)
+    clean_gallery_out(app.builder.outdir)
 
-    examples_dir = os.path.join(app.builder.srcdir, gallery_conf['examples_dir'])
-    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
-    mod_examples_dir = os.path.join(app.builder.srcdir, gallery_conf['mod_example_dir'])
+    examples_dir = os.path.relpath(gallery_conf['examples_dir'],
+                                   app.builder.srcdir)
+    gallery_dir = os.path.relpath(gallery_conf['gallery_dir'],
+                                  app.builder.srcdir)
+    mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
+                                       app.builder.srcdir)
 
     for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
         if not os.path.exists(workdir):
@@ -59,21 +63,21 @@ def generate_gallery_rst(app):
 
     # we create an index.rst with all examples
     fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
-    fhindex.write("""
-
-.. _examples-index:
+    fhindex.write(""".. _examples-index:
 
 Gallery of Examples
-===================
-
-""")
+===================\n\n""")
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     seen_backrefs = set()
-    generate_dir_rst('.', fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
+    fhindex.write(generate_dir_rst(examples_dir, gallery_dir, gallery_conf,
+                                   plot_gallery, seen_backrefs))
     for directory in sorted(os.listdir(examples_dir)):
         if os.path.isdir(os.path.join(examples_dir, directory)):
-            generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
+            src_dir = os.path.join(examples_dir, directory)
+            target_dir = os.path.join(gallery_dir, directory)
+            fhindex.write(generate_dir_rst(src_dir, target_dir, gallery_conf,
+                                           plot_gallery, seen_backrefs))
     fhindex.flush()
 
 
@@ -90,9 +94,11 @@ def setup(app):
     app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
+
     app.connect('builder-inited', generate_gallery_rst)
 
     app.connect('build-finished', embed_code_links)
+
 
 
 def setup_module():
