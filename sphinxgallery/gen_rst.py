@@ -242,7 +242,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
 
 # clear at the end of the section
     fhindex += """.. raw:: html\n
-    <div style='clear:both'></div>\n"""
+    <div style='clear:both'></div>\n\n"""
 
     return fhindex
 
