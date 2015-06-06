@@ -14,7 +14,6 @@ import os
 import re
 import shutil
 import traceback
-import glob
 import sys
 import subprocess
 import warnings
@@ -301,7 +300,6 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
                              'time_%s.txt' % base_image_name)
     # The following is a list containing all the figure names
     time_elapsed = 0
-    figure_list = []
     first_image_file = image_path % 1
     if os.path.exists(stdout_path):
         stdout = open(stdout_path).read()
@@ -310,62 +308,57 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
     if os.path.exists(time_path):
         time_elapsed = float(open(time_path).read())
 
-    if not os.path.exists(first_image_file) or \
-       os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime:
-        # We need to execute the code
-        print('plotting %s' % fname)
-        t0 = time()
+    # We need to execute the code
+    print('plotting %s' % fname)
+    t0 = time()
 
-        plt.close('all')
-        cwd = os.getcwd()
-        try:
-            # First CD in the original example dir, so that any file
-            # created by the example get created in this directory
-            orig_stdout = sys.stdout
-            os.chdir(os.path.dirname(src_file))
-            my_buffer = StringIO()
-            my_stdout = Tee(sys.stdout, my_buffer)
-            sys.stdout = my_stdout
-            my_globals = {'pl': plt, '__name__': 'gallery'}
-            execfile(os.path.basename(src_file), my_globals)
-            time_elapsed = time() - t0
-            sys.stdout = orig_stdout
-            my_stdout = my_buffer.getvalue()
+    plt.close('all')
+    cwd = os.getcwd()
+    try:
+        # First CD in the original example dir, so that any file
+        # created by the example get created in this directory
+        orig_stdout = sys.stdout
+        os.chdir(os.path.dirname(src_file))
+        my_buffer = StringIO()
+        my_stdout = Tee(sys.stdout, my_buffer)
+        sys.stdout = my_stdout
+        my_globals = {'pl': plt, '__name__': 'gallery'}
+        execfile(os.path.basename(src_file), my_globals)
+        time_elapsed = time() - t0
+        sys.stdout = orig_stdout
+        my_stdout = my_buffer.getvalue()
 
-            if '__doc__' in my_globals:
-                # The __doc__ is often printed in the example, we
-                # don't with to echo it
-                my_stdout = my_stdout.replace(
-                    my_globals['__doc__'],
-                    '')
-            my_stdout = my_stdout.strip().expandtabs()
-            if my_stdout:
-                stdout = """**Script output**:\n
+        if '__doc__' in my_globals:
+            # The __doc__ is often printed in the example, we
+            # don't with to echo it
+            my_stdout = my_stdout.replace(
+                my_globals['__doc__'],
+                '')
+        my_stdout = my_stdout.strip().expandtabs()
+        if my_stdout:
+            stdout = """**Script output**:\n
 .. rst-class:: sphx-glr-script-out
 
   ::
 
-    {}\n""".format('\n    '.join(my_stdout.split('\n')))
-            os.chdir(cwd)
-            open(stdout_path, 'w').write(stdout)
-            open(time_path, 'w').write('%f' % time_elapsed)
-            figure_list = save_figures(image_path, image_fname)
+{}\n""".format('\n    '.join(my_stdout.split('\n')))
+        os.chdir(cwd)
+        open(stdout_path, 'w').write(stdout)
+        open(time_path, 'w').write('%f' % time_elapsed)
+        figure_list = save_figures(image_path, image_fname)
 
 
-        except:
-            print(80 * '_')
-            print('%s is not compiling:' % fname)
-            traceback.print_exc()
-            print(80 * '_')
-        finally:
-            os.chdir(cwd)
-            sys.stdout = orig_stdout
+    except:
+        print(80 * '_')
+        print('%s is not compiling:' % fname)
+        traceback.print_exc()
+        print(80 * '_')
+    finally:
+        os.chdir(cwd)
+        sys.stdout = orig_stdout
 
-        print(" - time elapsed : %.2g sec" % time_elapsed)
-    else:
-        figure_list = [f[len(image_dir):]
-                       for f in glob.glob(image_path.replace("%03d",
-                                            '[0-9][0-9][0-9]'))]
+    print(" - time elapsed : %.2g sec" % time_elapsed)
+
     figure_list.sort()
 
     # generate thumb file
@@ -412,10 +405,15 @@ def save_figures(image_path, image_fname):
     return figure_list
 
 
+def _plots_are_current(src_file, image_file):
+    first_image_file = image_file.format(1)
+    needs_replot = (not os.path.exists(first_image_file) or
+               os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
+    return not needs_replot
+
+
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example."""
-    base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
 
     this_template = rst_template
     short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
@@ -423,13 +421,20 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
 
+    base_image_name = os.path.splitext(fname)[0]
+    image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
+
     image_dir = os.path.join(target_dir, 'images')
+    image_file = os.path.join(image_dir, image_fname)
     thumb_dir = os.path.join(image_dir, 'thumb')
     thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
+
+    if _plots_are_current(src_file, image_file):
+        return
 
     time_elapsed = 0
     if plot_gallery and fname.startswith('plot'):
