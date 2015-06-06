@@ -24,5 +24,5 @@ def test_path():
     in_dir.makedirs()
     assert set(tmp_dir.listdir()) == set(['test.txt', 'in_dir'])
 
-    file_name = Path('file{:03}.png')
+    file_name = Path('file{0:03}.png')
     assert file_name.format(15) == 'file015.png'
