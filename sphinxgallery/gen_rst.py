@@ -225,15 +225,14 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
     sorted_listdir = line_count_sort(os.listdir(src_dir),
                                      src_dir)
     for fname in sorted_listdir:
-        if fname.endswith('py'):
-            generate_file_rst(fname, target_dir, src_dir, plot_gallery)
-            new_fname = os.path.join(src_dir, fname)
-            _, snippet, _ = extract_docstring(new_fname, True)
-            write_backreferences(seen_backrefs, gallery_conf,
-                               target_dir, fname, snippet)
+        generate_file_rst(fname, target_dir, src_dir, plot_gallery)
+        new_fname = os.path.join(src_dir, fname)
+        _, snippet, _ = extract_docstring(new_fname, True)
+        write_backreferences(seen_backrefs, gallery_conf,
+                             target_dir, fname, snippet)
 
-            fhindex += _thumbnail_div(target_dir, fname, snippet)
-            fhindex += """
+        fhindex += _thumbnail_div(target_dir, fname, snippet)
+        fhindex += """
 
 .. toctree::
    :hidden:
@@ -411,6 +410,7 @@ def save_figures(image_path, image_fname):
         fig.savefig(image_path % fig_mngr.num, **kwargs)
         figure_list.append(image_fname % fig_mngr.num)
     return figure_list
+
 
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example."""
