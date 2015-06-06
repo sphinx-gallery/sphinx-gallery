@@ -171,7 +171,7 @@ def extract_docstring(filename, ignore_heading=False):
 
 def extract_line_count(filename, target_dir):
     """Extract the line count of a file"""
-    example_file = os.path.join(target_dir, filename)
+    example_file = target_dir.pjoin(filename)
     lines = open(example_file).readlines()
     start_row = 0
     if lines and lines[0].startswith('#!'):
@@ -221,15 +221,15 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
 
     fhindex = open(gallery_readme).read()
     target_dir.makedirs()
-    sorted_listdir = line_count_sort(os.listdir(src_dir),
+    sorted_listdir = line_count_sort(src_dir.listdir(),
                                      src_dir)
     for fname in sorted_listdir:
         if fname.endswith('py'):
             generate_file_rst(fname, target_dir, src_dir, plot_gallery)
-            new_fname = os.path.join(src_dir, fname)
+            new_fname = src_dir.pjoin(fname)
             _, snippet, _ = extract_docstring(new_fname, True)
             write_backreferences(seen_backrefs, gallery_conf,
-                               target_dir, fname, snippet)
+                                 target_dir, fname, snippet)
 
             fhindex += _thumbnail_div(target_dir, fname, snippet)
             fhindex += """
@@ -294,23 +294,21 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 
 def execute_script(image_dir, thumb_file, image_fname, base_image_name,
                    src_file, fname):
-    image_path = os.path.join(image_dir, image_fname)
-    stdout_path = os.path.join(image_dir,
-                               'stdout_%s.txt' % base_image_name)
-    time_path = os.path.join(image_dir,
-                             'time_%s.txt' % base_image_name)
+    image_path = image_dir.pjoin(image_fname)
+    stdout_path = image_dir.pjoin('stdout_%s.txt' % base_image_name)
+    time_path = image_dir.pjoin('time_%s.txt' % base_image_name)
     # The following is a list containing all the figure names
     time_elapsed = 0
     figure_list = []
     first_image_file = image_path % 1
-    if os.path.exists(stdout_path):
+    if stdout_path.exists:
         stdout = open(stdout_path).read()
     else:
         stdout = ''
-    if os.path.exists(time_path):
+    if time_path.exists:
         time_elapsed = float(open(time_path).read())
 
-    if not os.path.exists(first_image_file) or \
+    if not first_image_file.exists or \
        os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime:
         # We need to execute the code
         print('plotting %s' % fname)
@@ -388,7 +386,7 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
     figure_list.sort()
 
     # generate thumb file
-    if os.path.exists(first_image_file):
+    if first_image_file.exists:
         scale_image(first_image_file, thumb_file, 400, 280)
 
     # Depending on whether we have one or more figures, we're using a
@@ -406,22 +404,23 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
 
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example."""
-    base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
+
 
     this_template = rst_template
     short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
-    src_file = os.path.join(src_dir, fname)
-    example_file = os.path.join(target_dir, fname)
+
+    src_file = src_dir.pjoin(fname)
+    example_file = target_dir.pjoin(fname)
     shutil.copyfile(src_file, example_file)
 
-    image_dir = os.path.join(target_dir, 'images')
-    thumb_dir = os.path.join(image_dir, 'thumb')
-    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
-    if not os.path.exists(image_dir):
-        os.makedirs(image_dir)
-    if not os.path.exists(thumb_dir):
-        os.makedirs(thumb_dir)
+    image_dir = target_dir.pjoin('images')
+    image_dir.makedirs()
+    thumb_dir = image_dir.pjoin('thumb')
+    thumb_dir.makedirs()
+
+    base_image_name = os.path.splitext(fname)[0]
+    image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
+    thumb_file = thumb_dir.pjoin('sphx_glr_%s_thumb.png' % base_image_name)
 
     time_elapsed = 0
     if plot_gallery and fname.startswith('plot'):
@@ -435,7 +434,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                                                           src_file, fname)
         this_template = plot_rst_template
 
-    if not os.path.exists(thumb_file):
+    if not thumb_file.exists:
         # create something to replace the thumbnail
         scale_image(os.path.join(glr_path_static(), 'no_image.png'),
                     thumb_file, 200, 140)
@@ -443,6 +442,6 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     docstring, short_desc, end_row = extract_docstring(example_file)
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
+    f = open(target_dir.pjoin(base_image_name + '.rst'), 'w')
     f.write(this_template % locals())
     f.flush()
