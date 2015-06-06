@@ -16,6 +16,7 @@ def test_path():
 
     tmp_file = tmp_dir.pjoin('test.txt')
     assert tmp_file.psplit() == [tmp_dir, 'test.txt']
+    assert tmp_dir.pjoin('a', 'o').psplit() == [tmp_dir.pjoin('a'), 'o']
 
     with open(tmp_file, 'w') as test_file:
         test_file.write('testing')
