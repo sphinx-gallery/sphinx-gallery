@@ -92,16 +92,19 @@ def generate_gallery_rst(app):
 
     clean_gallery_out(app.builder.outdir)
 
-    examples_dir = os.path.relpath(gallery_conf['examples_dir'],
-                                   app.builder.srcdir)
-    gallery_dir = os.path.relpath(gallery_conf['gallery_dir'],
-                                  app.builder.srcdir)
-    mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
-                                       app.builder.srcdir)
+    examples_dir = Path(os.path.relpath(gallery_conf['examples_dir'],
+                                   app.builder.srcdir))
+    if not examples_dir.exists:
+        print("No examples directory found at", examples_dir)
+        return
 
-    for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
-        if not os.path.exists(workdir):
-            os.makedirs(workdir)
+    gallery_dir = Path(os.path.relpath(gallery_conf['gallery_dir'],
+                                  app.builder.srcdir))
+    mod_examples_dir = Path(os.path.relpath(gallery_conf['mod_example_dir'],
+                                       app.builder.srcdir))
+
+    for workdir in [gallery_dir, mod_examples_dir]:
+        workdir.makedirs()
 
     # we create an index.rst with all examples
     fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
