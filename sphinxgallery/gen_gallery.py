@@ -4,6 +4,7 @@
 
 from __future__ import division, print_function, absolute_import
 import os
+from . import glr_path_static
 from .gen_rst import generate_dir_rst
 from .docs_resolv import embed_code_links
 
@@ -44,6 +45,7 @@ def generate_gallery_rst(app):
 
     # this assures I can call the config in other places
     app.config.sphinxgallery_conf = gallery_conf
+    app.config.html_static_path.append(glr_path_static())
 
     if not plot_gallery:
         return

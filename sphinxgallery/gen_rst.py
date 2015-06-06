@@ -18,7 +18,7 @@ import glob
 import sys
 import subprocess
 import warnings
-from . import path_static as glr_path_static
+from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
 
 

@@ -55,8 +55,6 @@ After installing you need to include in your Sphinx ``conf.py`` file:
         'sphinxgallery.gen_gallery',
         ]
 
-    html_static_path = ['_static', sphinxgallery.path_static()]
-
 
 you need to have a folder called ``examples`` in your main repository directory.
 This folder needs
