@@ -52,6 +52,7 @@ try:
     # matplotlib
     import matplotlib
     matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
 except ImportError:
     # this script can be imported by nosetest to find tests to run: we should
     # not impose the matplotlib requirement in that case.
@@ -315,7 +316,7 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
         # We need to execute the code
         print('plotting %s' % fname)
         t0 = time()
-        import matplotlib.pyplot as plt
+
         plt.close('all')
         cwd = os.getcwd()
         try:
@@ -349,28 +350,9 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
             os.chdir(cwd)
             open(stdout_path, 'w').write(stdout)
             open(time_path, 'w').write('%f' % time_elapsed)
+            figure_list = save_figures(image_path, image_fname)
 
-            # In order to save every figure we have two solutions :
-            # * iterate from 1 to infinity and call plt.fignum_exists(n)
-            #   (this requires the figures to be numbered
-            #    incrementally: 1, 2, 3 and not 1, 2, 5)
-            # * iterate over [fig_mngr.num for fig_mngr in
-            #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
-            fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
-            for fig_mngr in fig_managers:
-                # Set the fig_num figure as the current figure as we can't
-                # save a figure that's not the current figure.
-                fig = plt.figure(fig_mngr.num)
-                kwargs = {}
-                to_rgba = matplotlib.colors.colorConverter.to_rgba
-                for attr in ['facecolor', 'edgecolor']:
-                    fig_attr = getattr(fig, 'get_' + attr)()
-                    default_attr = matplotlib.rcParams['figure.' + attr]
-                    if to_rgba(fig_attr) != to_rgba(default_attr):
-                        kwargs[attr] = fig_attr
 
-                fig.savefig(image_path % fig_mngr.num, **kwargs)
-                figure_list.append(image_fname % fig_mngr.num)
         except:
             print(80 * '_')
             print('%s is not compiling:' % fname)
@@ -403,6 +385,32 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
 
     return image_list, time_elapsed, stdout
 
+
+def save_figures(image_path, image_fname):
+    figure_list = []
+    # In order to save every figure we have two solutions :
+    # * iterate from 1 to infinity and call plt.fignum_exists(n)
+    #   (this requires the figures to be numbered
+    #    incrementally: 1, 2, 3 and not 1, 2, 5)
+    # * iterate over [fig_mngr.num for fig_mngr in
+    #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
+
+    fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
+    for fig_mngr in fig_managers:
+        # Set the fig_num figure as the current figure as we can't
+        # save a figure that's not the current figure.
+        fig = plt.figure(fig_mngr.num)
+        kwargs = {}
+        to_rgba = matplotlib.colors.colorConverter.to_rgba
+        for attr in ['facecolor', 'edgecolor']:
+            fig_attr = getattr(fig, 'get_' + attr)()
+            default_attr = matplotlib.rcParams['figure.' + attr]
+            if to_rgba(fig_attr) != to_rgba(default_attr):
+                kwargs[attr] = fig_attr
+
+        fig.savefig(image_path % fig_mngr.num, **kwargs)
+        figure_list.append(image_fname % fig_mngr.num)
+    return figure_list
 
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example."""
