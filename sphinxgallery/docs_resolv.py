@@ -10,6 +10,7 @@ import posixpath
 import re
 import shelve
 import sys
+from .gen_gallery import Path
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -58,7 +59,7 @@ def get_data(url, gallery_dir):
     if sys.version_info[0] == 2 and isinstance(url, unicode):
         url = url.encode('utf-8')
 
-    cached_file = os.path.join(gallery_dir, 'searchindex')
+    cached_file = gallery_dir.pjoin('searchindex')
     search_index = shelve.open(cached_file)
     if url in search_index:
         data = search_index[url]
@@ -327,12 +328,15 @@ def embed_code_links(app, exception):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
 
-    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
+    doc_src = Path(app.builder.srcdir)
+    gallery_dir = doc_src.pjoin(gallery_conf['gallery_dir'])
+    doc_out = Path(app.builder.outdir)
+
     for this_module, url in gallery_conf['reference_url'].items():
         try:
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
-                                                            app.builder.outdir,
+                                                            doc_out,
                                                             gallery_dir,
                                                             relative=True)
             else:
@@ -350,8 +354,7 @@ def embed_code_links(app, exception):
                   "Error:\n".format(this_module))
             print(e.args)
 
-    html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
-                                                    gallery_conf['gallery_dir']))
+    html_gallery_dir = os.path.abspath(doc_out.pjoin(gallery_conf['gallery_dir']))
 
     # patterns for replacement
     link_pattern = '<a href="%s">%s</a>'
@@ -363,10 +366,10 @@ def embed_code_links(app, exception):
             print('\tprocessing: %s' % fname)
             full_fname = os.path.join(html_gallery_dir, dirpath, fname)
             subpath = dirpath[len(html_gallery_dir) + 1:]
-            pickle_fname = os.path.join(gallery_dir, subpath,
-                                        fname[:-5] + '_codeobj.pickle')
+            pickle_fname = gallery_dir.pjoin(subpath,
+                                             fname[:-5] + '_codeobj.pickle')
 
-            if os.path.exists(pickle_fname):
+            if pickle_fname.exists:
                 # we have a pickle file with the objects to embed links for
                 with open(pickle_fname, 'rb') as fid:
                     example_code_obj = pickle.load(fid)

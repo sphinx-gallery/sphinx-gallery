@@ -107,7 +107,6 @@ def generate_gallery_rst(app):
         workdir.makedirs()
 
 
-
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     seen_backrefs = set()
@@ -126,6 +125,7 @@ def generate_gallery_rst(app):
             fhindex.write(gallery_conf['gallery_header'])
             fhindex.write(gallery_index)
             fhindex.flush()
+
 
 GALLERY_HEADER = """.. _examples-index:
 
