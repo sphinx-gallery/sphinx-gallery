@@ -210,7 +210,8 @@ def line_count_sort(file_list, target_dir):
 def generate_dir_rst(src_dir, target_dir, gallery_conf,
                      plot_gallery, seen_backrefs):
     """Generate the rst file for an example directory"""
-    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
+    gallery_readme = src_dir.pjoin('README.txt')
+    if not gallery_readme.exists:
         print(80 * '_')
         print('Example directory %s does not have a README.txt file' %
               src_dir)
@@ -218,9 +219,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
         print(80 * '_')
         return ""  # because string is an expected return type
 
-    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
+    fhindex = open(gallery_readme).read()
+    target_dir.makedirs()
     sorted_listdir = line_count_sort(os.listdir(src_dir),
                                      src_dir)
     for fname in sorted_listdir:
