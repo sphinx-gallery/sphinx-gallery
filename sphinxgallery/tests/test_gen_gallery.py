@@ -5,12 +5,12 @@
 Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
-import sphinxgallery.gen_gallery as sg
+from sphinxgallery import Path
 import tempfile
 
 
 def test_path():
-    tmp_dir = sg.Path(tempfile.mkdtemp())
+    tmp_dir = Path(tempfile.mkdtemp())
     assert tmp_dir.exists
     assert tmp_dir.isdir
 
@@ -24,5 +24,5 @@ def test_path():
     in_dir.makedirs()
     assert set(tmp_dir.listdir()) == set(['test.txt', 'in_dir'])
 
-    file_name = sg.Path('file{:03}.png')
+    file_name = Path('file{:03}.png')
     assert file_name.format(15) == 'file015.png'

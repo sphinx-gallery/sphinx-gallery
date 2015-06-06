@@ -10,7 +10,7 @@ import posixpath
 import re
 import shelve
 import sys
-from .gen_gallery import Path
+from . import Path
 
 # Try Python 2 first, otherwise load from Python 3
 try:
