@@ -12,9 +12,6 @@ def glr_path_static():
 class Path(str):
     """Path object for manipulating directory and file paths."""
 
-    def __init__(self, path):
-        super(Path, self).__init__(path)
-
     @property
     def isdir(self):
         return os.path.isdir(self)
