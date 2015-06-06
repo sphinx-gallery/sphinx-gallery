@@ -64,12 +64,12 @@ def clean_gallery_out(build_dir):
     #  changes their layout between versions, this will not work (though
     #  it should probably not cause a crash).  Tested successfully
     #  on Sphinx 1.0.7
-    build_image_dir = os.path.join(build_dir, '_images')
-    if os.path.exists(build_image_dir):
-        filelist = os.listdir(build_image_dir)
+    build_image_dir = build_dir.pjoin('_images')
+    if build_image_dir.exists:
+        filelist = build_image_dir.listdir()
         for filename in filelist:
             if filename.startswith('sphx_glr') and filename.endswith('png'):
-                os.remove(os.path.join(build_image_dir, filename))
+                os.remove(build_image_dir.pjoin(filename))
 
 
 def generate_gallery_rst(app):
@@ -90,7 +90,7 @@ def generate_gallery_rst(app):
     if not plot_gallery:
         return
 
-    clean_gallery_out(app.builder.outdir)
+    clean_gallery_out(Path(app.builder.outdir))
 
     examples_dir = Path(os.path.relpath(gallery_conf['examples_dir'],
                                         app.builder.srcdir))
