@@ -128,45 +128,77 @@ SINGLE_IMAGE = """
 """
 
 
-def extract_docstring(filename, ignore_heading=False):
+def extract_docstring(filename):
     """ Extract a module-level docstring, if any
     """
-    lines = open(filename).readlines()
-    start_row = 0
-    if lines[0].startswith('#!'):
-        lines.pop(0)
-        start_row = 1
-    docstring = ''
-    first_par = ''
-    line_iterator = iter(lines)
-    tokens = tokenize.generate_tokens(lambda: next(line_iterator))
-    for tok_type, tok_content, _, (erow, _), _ in tokens:
-        tok_type = token.tok_name[tok_type]
-        if tok_type in ('NEWLINE', 'COMMENT', 'NL', 'INDENT', 'DEDENT'):
-            continue
-        elif tok_type == 'STRING':
-            docstring = eval(tok_content)
-            # If the docstring is formatted with several paragraphs, extract
-            # the first one:
-            paragraphs = '\n'.join(
-                line.rstrip() for line
-                in docstring.split('\n')).split('\n\n')
-            if paragraphs:
-                if ignore_heading:
-                    if len(paragraphs) > 1:
-                        first_par = re.sub('\n', ' ', paragraphs[1])
-                        first_par = ((first_par[:95] + '...')
-                                     if len(first_par) > 95 else first_par)
-                    else:
-                        raise ValueError("Docstring not found by gallery.\n"
-                                         "Please check the layout of your"
-                                         " example file:\n {}\n and make sure"
-                                         " it's correct".format(filename))
-                else:
-                    first_par = paragraphs[0]
 
-        break
-    return docstring, first_par, erow + 1 + start_row
+    (srow, erow), first_text = split_code_and_text_blocks(filename)[0]
+
+    paragraphs = first_text.split('\n\n')
+    if len(first_text) > 1:
+        first_par = re.sub('\n', ' ', paragraphs[1])
+        first_par = ((first_par[:95] + '...')
+                     if len(first_par) > 95 else first_par)
+    else:
+        raise ValueError("Docstring not found by gallery.\n"
+                         "Please check the layout of your"
+                         " example file:\n {}\n and make sure"
+                         " it's correct".format(filename))
+
+    return eval(first_text), first_par, erow
+
+
+def analyze_blocks(source_file):
+    """Return starting line numbers of code and text blocks
+    Returns
+    -------
+    block_edges : list of int
+        Line number for the start of each block and last line
+    """
+    block_edges = []
+    with open(source_file) as f:
+        token_iter = tokenize.generate_tokens(f.readline)
+        for token_tuple in token_iter:
+            t_id, t_str, (srow, scol), (erow, ecol), src_line = token_tuple
+            tok_name = token.tok_name[t_id]
+            if tok_name == 'STRING' and scol == 0:
+                # Add one point to line after text (for later slicing)
+                block_edges.extend((srow, erow+1))
+
+    if not block_edges:  # no text blocks
+        raise ValueError("Docstring not found by gallery.\n"
+                         "Please check the layout of your"
+                         " example file:\n {}\n and make sure"
+                         " it's correct".format(source_file))
+    else:
+        # append last line if missig
+        if not block_edges[-1] == erow:  # iffy: I'm using end state of loop
+            block_edges.append(erow)
+
+    return block_edges
+
+
+def split_code_and_text_blocks(source_file):
+    """Return list with source file separated into code and text blocks.
+    Returns
+    -------
+    blocks : list of (label, (start, end+1), content)
+        List where each element is a tuple with the label ('text' or 'code'),
+        the (start, end+1) line numbers, and content string of block.
+    """
+    block_edges = analyze_blocks(source_file)
+
+    with open(source_file) as f:
+        source_lines = f.readlines()
+
+    # Every other block should be a text block
+    blocks = []
+    slice_ranges = zip(block_edges[:-1], block_edges[1:])
+    for start, end in slice_ranges:
+        # subtract 1 from indices b/c line numbers start at 1, not 0
+        content = ''.join(source_lines[start-1:end-1])
+        blocks.append(((start, end), content))
+    return blocks
 
 
 def extract_line_count(filename, target_dir):
@@ -221,12 +253,11 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
     fhindex = open(os.path.join(src_dir, 'README.txt')).read()
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
-    sorted_listdir = line_count_sort(os.listdir(src_dir),
-                                     src_dir)
+    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir)) if fname.endswith('py')]
     for fname in sorted_listdir:
         generate_file_rst(fname, target_dir, src_dir, plot_gallery)
         new_fname = os.path.join(src_dir, fname)
-        _, snippet, _ = extract_docstring(new_fname, True)
+        _, snippet, _ = extract_docstring(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
                              target_dir, fname, snippet)
 
