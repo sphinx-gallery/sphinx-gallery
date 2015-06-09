@@ -124,6 +124,21 @@ def scan_used_functions(example_file, gallery_conf):
     return backrefs
 
 
+THUMBNAIL_TEMPLATE = """
+.. raw:: html
+
+    <div class="sphx-glr-thumbContainer" tooltip="{snippet}">
+
+.. figure:: /{thumbnail}
+
+    :ref:`example_{ref_name}`
+
+.. raw:: html
+
+    </div>
+"""
+
+
 def _thumbnail_div(full_dir, fname, snippet):
     """Generates RST to place a thumbnail in a gallery"""
     thumb = os.path.join(full_dir, 'images', 'thumb',
@@ -132,21 +147,9 @@ def _thumbnail_div(full_dir, fname, snippet):
     if ref_name.startswith('._'):
         ref_name = ref_name[2:]
 
-    out = """
-.. raw:: html
 
-    <div class="sphx-glr-thumbContainer" tooltip="{}">
-
-.. figure:: /{}
-
-    :ref:`example_{}`
-
-.. raw:: html
-
-    </div>
-""".format(snippet, thumb, ref_name)
-
-    return out
+    return THUMBNAIL_TEMPLATE.format(snippet=snippet,
+                                     thumbnail=thumb, ref_name=ref_name)
 
 
 def write_backreferences(seen_backrefs, gallery_conf,
