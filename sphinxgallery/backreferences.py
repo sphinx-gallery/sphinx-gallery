@@ -131,7 +131,7 @@ THUMBNAIL_TEMPLATE = """
 
 .. figure:: /{thumbnail}
 
-    :ref:`example_{filename}`
+    :ref:`example_{ref_name}`
 
 .. raw:: html
 
@@ -149,7 +149,7 @@ def _thumbnail_div(full_dir, fname, snippet):
 
 
     return THUMBNAIL_TEMPLATE.format(snippet=snippet,
-                                     thumbnail=thumb, filename=ref_name)
+                                     thumbnail=thumb, ref_name=ref_name)
 
 
 def write_backreferences(seen_backrefs, gallery_conf,
