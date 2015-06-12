@@ -37,3 +37,8 @@ install:
 script:
     - if [ "$DISTRIB" == "ubuntu" ]; then python setup.py nosetests; fi
     - if [ "$DISTRIB" == "conda" ]; then nosetests; fi
+    - cd doc
+    - which python
+    - which sphinx-build
+    - make html
+
