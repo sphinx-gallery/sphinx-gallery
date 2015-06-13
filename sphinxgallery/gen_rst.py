@@ -133,6 +133,7 @@ def extract_docstring(filename):
 
 def analyze_blocks(source_file):
     """Return starting line numbers of code and text blocks
+
     Returns
     -------
     block_edges : list of int
@@ -163,6 +164,7 @@ def analyze_blocks(source_file):
 
 def split_code_and_text_blocks(source_file):
     """Return list with source file separated into code and text blocks.
+
     Returns
     -------
     blocks : list of (label, (start, end+1), content)
