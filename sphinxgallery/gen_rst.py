@@ -378,33 +378,34 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
         open(time_path, 'w').write('%f' % time_elapsed)
         figure_list = save_figures(image_path, image_fname)
 
+        # Depending on whether we have one or more figures, we're using a
+        # horizontal list or a single rst call to 'image'.
+        if len(figure_list) == 1:
+            figure_name = figure_list[0]
+            image_list = SINGLE_IMAGE % figure_name.lstrip('/')
+        else:
+            image_list = HLIST_HEADER
+            for figure_name in figure_list:
+                image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     except:
+        image_list = '%s is not compiling:' % fname
         print(80 * '_')
-        print('%s is not compiling:' % fname)
+        print(image_list)
         traceback.print_exc()
         print(80 * '_')
+        image_list = '
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
 
-    figure_list.sort()
 
     # generate thumb file
     if os.path.exists(first_image_file):
         scale_image(first_image_file, thumb_file, 400, 280)
 
-    # Depending on whether we have one or more figures, we're using a
-    # horizontal list or a single rst call to 'image'.
-    if len(figure_list) == 1:
-        figure_name = figure_list[0]
-        image_list = SINGLE_IMAGE % figure_name.lstrip('/')
-    else:
-        image_list = HLIST_HEADER
-        for figure_name in figure_list:
-            image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     return image_list, time_elapsed, stdout
 
