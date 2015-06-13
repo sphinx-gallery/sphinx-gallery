@@ -76,36 +76,28 @@ class Tee(object):
 
 
 ###############################################################################
-rst_template = """
+RST_TEMPLATE = """
 
 .. _example_%(short_fname)s:
 
-%(docstring)s
+%(docstring)s\n
+"""
 
-**Python source code:** :download:`%(fname)s <%(fname)s>`
-
-.. literalinclude:: %(fname)s
-    :lines: %(end_row)s-
-    """
-
-plot_rst_template = """
-
-.. _example_%(short_fname)s:
-
-%(docstring)s
-
+PLOT_OUT_TEMPLATE = """
 %(image_list)s
 
 %(stdout)s
 
+**Total running time of the example:** %(time_elapsed) .2f seconds
+(%(time_m) .0f minutes %(time_s) .2f seconds)"""
+
+
+CODE_TEMPLATE = """
 **Python source code:** :download:`%(fname)s <%(fname)s>`
 
 .. literalinclude:: %(fname)s
     :lines: %(end_row)s-
-
-**Total running time of the example:** %(time_elapsed) .2f seconds
-(%(time_m) .0f minutes %(time_s) .2f seconds)
-    """
+"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -446,7 +438,7 @@ def _plots_are_current(src_file, image_file):
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example."""
 
-    this_template = rst_template
+    this_template = RST_TEMPLATE
     short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
@@ -477,7 +469,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                                                           image_fname,
                                                           base_image_name,
                                                           src_file, fname)
-        this_template = plot_rst_template
+        this_template += PLOT_OUT_TEMPLATE
 
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
@@ -488,5 +480,6 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 
     time_m, time_s = divmod(time_elapsed, 60)
     f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
+    this_template += CODE_TEMPLATE
     f.write(this_template % locals())
     f.flush()
