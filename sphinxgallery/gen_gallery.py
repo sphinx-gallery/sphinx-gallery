@@ -65,10 +65,6 @@ def generate_gallery_rst(app):
 
     # we create an index.rst with all examples
     fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
-    fhindex.write(""".. _examples-index:
-
-Gallery of Examples
-===================\n\n""")
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     seen_backrefs = set()
