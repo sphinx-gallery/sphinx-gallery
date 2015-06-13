@@ -105,12 +105,12 @@ HLIST_HEADER = """
 HLIST_IMAGE_TEMPLATE = """
     *
 
-      .. image:: images/%s
+      .. image:: /%s
             :scale: 47
 """
 
 SINGLE_IMAGE = """
-.. image:: images/%s
+.. image:: /%s
     :align: center
 """
 
@@ -310,16 +310,15 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def execute_script(image_dir, thumb_file, image_fname, base_image_name,
+def execute_script(image_path, base_image_name,
                    src_file, fname):
-    image_path = os.path.join(image_dir, image_fname)
+    image_dir, image_fname = os.path.split(image_path)
     stdout_path = os.path.join(image_dir,
                                'stdout_%s.txt' % base_image_name)
     time_path = os.path.join(image_dir,
                              'time_%s.txt' % base_image_name)
     # The following is a list containing all the figure names
     time_elapsed = 0
-    first_image_file = image_path % 1
     if os.path.exists(stdout_path):
         stdout = open(stdout_path).read()
     else:
@@ -364,7 +363,7 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
         os.chdir(cwd)
         open(stdout_path, 'w').write(stdout)
         open(time_path, 'w').write('%f' % time_elapsed)
-        figure_list = save_figures(image_path, image_fname)
+        figure_list = save_figures(image_path)
 
         # Depending on whether we have one or more figures, we're using a
         # horizontal list or a single rst call to 'image'.
@@ -391,7 +390,7 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
     return image_list, time_elapsed, stdout
 
 
-def save_figures(image_path, image_fname):
+def save_figures(image_path):
     figure_list = []
     # In order to save every figure we have two solutions :
     # * iterate from 1 to infinity and call plt.fignum_exists(n)
@@ -414,7 +413,7 @@ def save_figures(image_path, image_fname):
                 kwargs[attr] = fig_attr
 
         fig.savefig(image_path % fig_mngr.num, **kwargs)
-        figure_list.append(image_fname % fig_mngr.num)
+        figure_list.append(image_path % fig_mngr.num)
     return figure_list
 
 
@@ -445,7 +444,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
 
     image_dir = os.path.join(target_dir, 'images')
-    image_file = os.path.join(image_dir, image_fname)
+    image_path = os.path.join(image_dir, image_fname)
     thumb_dir = os.path.join(image_dir, 'thumb')
     thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
     if not os.path.exists(image_dir):
@@ -453,7 +452,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
 
-    if _plots_are_current(src_file, image_file):
+    if _plots_are_current(src_file, image_path):
         return
 
     time_elapsed = 0
@@ -461,19 +460,17 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
         # generate the plot as png image if file name
         # starts with plot and if it is more recent than an
         # existing image.
-        image_list, time_elapsed, stdout = execute_script(image_dir,
-                                                          thumb_file,
-                                                          image_fname,
+        image_list, time_elapsed, stdout = execute_script(image_path,
                                                           base_image_name,
                                                           src_file, fname)
         this_template += PLOT_OUT_TEMPLATE
 
 
     # generate thumb file
-##TODO SOLVE THIS DEP
+    first_image_file = image_path % 1
     if os.path.exists(first_image_file):
         scale_image(first_image_file, thumb_file, 400, 280)
-    if not os.path.exists(thumb_file):
+    elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
         scale_image(os.path.join(glr_path_static(), 'no_image.png'),
                     thumb_file, 200, 140)
