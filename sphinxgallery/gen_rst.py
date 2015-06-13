@@ -109,7 +109,7 @@ CODE_OUTPUT = """**Script output**:\n
 
   ::
 
-    {}\n"""
+    {0}\n"""
 
 def extract_docstring(filename):
     """ Extract a module-level docstring, if any
