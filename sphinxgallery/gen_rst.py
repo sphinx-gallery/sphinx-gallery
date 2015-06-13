@@ -114,6 +114,12 @@ SINGLE_IMAGE = """
     :align: center
 """
 
+CODE_OUTPUT = """**Script output**:\n
+.. rst-class:: sphx-glr-script-out
+
+  ::
+
+    {}\n"""
 
 def extract_docstring(filename):
     """ Extract a module-level docstring, if any
@@ -318,24 +324,28 @@ def execute_script(image_path, src_file, fname):
 
     # We need to execute the code
     print('plotting %s' % fname)
-    t0 = time()
 
     plt.close('all')
     cwd = os.getcwd()
+    # Redirect output to stdout and
+    orig_stdout = sys.stdout
+    my_buffer = StringIO()
+    my_stdout = Tee(sys.stdout, my_buffer)
+    sys.stdout = my_stdout
+
     try:
         # First CD in the original example dir, so that any file
         # created by the example get created in this directory
-        orig_stdout = sys.stdout
         os.chdir(os.path.dirname(src_file))
-        my_buffer = StringIO()
-        my_stdout = Tee(sys.stdout, my_buffer)
-        sys.stdout = my_stdout
         my_globals = {'pl': plt, '__name__': 'gallery'}
+
+        t0 = time()
         execfile(os.path.basename(src_file), my_globals)
         time_elapsed = time() - t0
-        sys.stdout = orig_stdout
-        my_stdout = my_buffer.getvalue()
 
+        sys.stdout = orig_stdout
+
+        my_stdout = my_buffer.getvalue()
         if '__doc__' in my_globals:
             # The __doc__ is often printed in the example, we
             # don't with to echo it
@@ -344,12 +354,7 @@ def execute_script(image_path, src_file, fname):
                 '')
         my_stdout = my_stdout.strip().expandtabs()
         if my_stdout:
-            stdout = """**Script output**:\n
-.. rst-class:: sphx-glr-script-out
-
-  ::
-
-    {}\n""".format('\n    '.join(my_stdout.split('\n')))
+            stdout = CODE_OUTPUT.format('\n    '.join(my_stdout.split('\n')))
         os.chdir(cwd)
         figure_list = save_figures(image_path)
 
