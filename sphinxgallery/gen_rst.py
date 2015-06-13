@@ -388,12 +388,6 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
 
-
-    # generate thumb file
-    if os.path.exists(first_image_file):
-        scale_image(first_image_file, thumb_file, 400, 280)
-
-
     return image_list, time_elapsed, stdout
 
 
@@ -474,6 +468,11 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
                                                           src_file, fname)
         this_template += PLOT_OUT_TEMPLATE
 
+
+    # generate thumb file
+##TODO SOLVE THIS DEP
+    if os.path.exists(first_image_file):
+        scale_image(first_image_file, thumb_file, 400, 280)
     if not os.path.exists(thumb_file):
         # create something to replace the thumbnail
         scale_image(os.path.join(glr_path_static(), 'no_image.png'),
