@@ -394,7 +394,6 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
         print(image_list)
         traceback.print_exc()
         print(80 * '_')
-        image_list = '
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
