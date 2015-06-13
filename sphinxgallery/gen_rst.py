@@ -360,7 +360,7 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
 
   ::
 
-{}\n""".format('\n    '.join(my_stdout.split('\n')))
+    {}\n""".format('\n    '.join(my_stdout.split('\n')))
         os.chdir(cwd)
         open(stdout_path, 'w').write(stdout)
         open(time_path, 'w').write('%f' % time_elapsed)
@@ -481,7 +481,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 
 #    docstring, short_desc, end_row = extract_docstring(example_file)
     script_blocks = split_code_and_text_blocks(example_file)
-    docstring = script_blocks[0][2]
+    docstring = eval(script_blocks[0][2])
     code = codestr2rst(script_blocks[1][2])
 
     time_m, time_s = divmod(time_elapsed, 60)
