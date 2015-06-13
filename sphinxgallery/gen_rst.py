@@ -89,15 +89,10 @@ PLOT_OUT_TEMPLATE = """
 %(stdout)s
 
 **Total running time of the example:** %(time_elapsed) .2f seconds
-(%(time_m) .0f minutes %(time_s) .2f seconds)"""
+(%(time_m) .0f minutes %(time_s) .2f seconds)\n\n"""
 
 
-CODE_TEMPLATE = """
-**Python source code:** :download:`%(fname)s <%(fname)s>`
-
-.. literalinclude:: %(fname)s
-    :lines: %(end_row)s-
-"""
+CODE_DOWNLOAD = """**Python source code:** :download:`%(fname)s <%(fname)s>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -124,7 +119,7 @@ def extract_docstring(filename):
     """ Extract a module-level docstring, if any
     """
 
-    (srow, erow), first_text = split_code_and_text_blocks(filename)[0]
+    __, (srow, erow), first_text = split_code_and_text_blocks(filename)[0]
 
     paragraphs = first_text.split('\n\n')
     if len(first_text) > 1:
@@ -186,10 +181,11 @@ def split_code_and_text_blocks(source_file):
     # Every other block should be a text block
     blocks = []
     slice_ranges = zip(block_edges[:-1], block_edges[1:])
-    for start, end in slice_ranges:
+    for i, (start, end) in enumerate(slice_ranges):
+        block_label = 'text' if i % 2 == 0 else 'code'
         # subtract 1 from indices b/c line numbers start at 1, not 0
         content = ''.join(source_lines[start-1:end-1])
-        blocks.append(((start, end), content))
+        blocks.append((block_label, (start, end), content))
     return blocks
 
 
@@ -435,6 +431,13 @@ def _plots_are_current(src_file, image_file):
     return not needs_replot
 
 
+def codestr2rst(codestr):
+    """Return reStructuredText code block from code string"""
+    code_directive = "\n.. code-block:: python\n\n"
+    indented_block = '\t' + codestr.replace('\n', '\n\t')
+    return code_directive + indented_block
+
+
 def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     """ Generate the rst file for a given example."""
 
@@ -476,10 +479,13 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
         scale_image(os.path.join(glr_path_static(), 'no_image.png'),
                     thumb_file, 200, 140)
 
-    docstring, short_desc, end_row = extract_docstring(example_file)
+#    docstring, short_desc, end_row = extract_docstring(example_file)
+    script_blocks = split_code_and_text_blocks(example_file)
+    docstring = script_blocks[0][2]
+    code = codestr2rst(script_blocks[1][2])
 
     time_m, time_s = divmod(time_elapsed, 60)
     f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
-    this_template += CODE_TEMPLATE
+    this_template += CODE_DOWNLOAD + code
     f.write(this_template % locals())
     f.flush()
