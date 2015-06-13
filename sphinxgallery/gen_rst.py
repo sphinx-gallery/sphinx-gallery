@@ -400,13 +400,14 @@ def save_figures(image_path):
             if to_rgba(fig_attr) != to_rgba(default_attr):
                 kwargs[attr] = fig_attr
 
-        fig.savefig(image_path % fig_mngr.num, **kwargs)
-        figure_list.append(image_path % fig_mngr.num)
+        current_fig = image_path.format(fig_mngr.num)
+        fig.savefig(current_fig, **kwargs)
+        figure_list.append(current_fig)
     return figure_list
 
 
 def _plots_are_current(src_file, image_file):
-    first_image_file = image_file  % 1
+    first_image_file = image_file.format(1)
     needs_replot = (not os.path.exists(first_image_file) or
                os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
     return not needs_replot
@@ -429,7 +430,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     shutil.copyfile(src_file, example_file)
 
     base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
+    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
 
     image_dir = os.path.join(target_dir, 'images')
     image_path = os.path.join(image_dir, image_fname)
@@ -454,7 +455,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 
 
     # generate thumb file
-    first_image_file = image_path % 1
+    first_image_file = image_path.format(1)
     if os.path.exists(first_image_file):
         scale_image(first_image_file, thumb_file, 400, 280)
     elif not os.path.exists(thumb_file):
