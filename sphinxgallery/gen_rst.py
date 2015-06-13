@@ -310,21 +310,11 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def execute_script(image_path, base_image_name,
-                   src_file, fname):
+def execute_script(image_path, src_file, fname):
     image_dir, image_fname = os.path.split(image_path)
-    stdout_path = os.path.join(image_dir,
-                               'stdout_%s.txt' % base_image_name)
-    time_path = os.path.join(image_dir,
-                             'time_%s.txt' % base_image_name)
     # The following is a list containing all the figure names
     time_elapsed = 0
-    if os.path.exists(stdout_path):
-        stdout = open(stdout_path).read()
-    else:
-        stdout = ''
-    if os.path.exists(time_path):
-        time_elapsed = float(open(time_path).read())
+    stdout = ''
 
     # We need to execute the code
     print('plotting %s' % fname)
@@ -361,8 +351,6 @@ def execute_script(image_path, base_image_name,
 
     {}\n""".format('\n    '.join(my_stdout.split('\n')))
         os.chdir(cwd)
-        open(stdout_path, 'w').write(stdout)
-        open(time_path, 'w').write('%f' % time_elapsed)
         figure_list = save_figures(image_path)
 
         # Depending on whether we have one or more figures, we're using a
@@ -418,7 +406,7 @@ def save_figures(image_path):
 
 
 def _plots_are_current(src_file, image_file):
-    first_image_file = image_file.format(1)
+    first_image_file = image_file  % 1
     needs_replot = (not os.path.exists(first_image_file) or
                os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
     return not needs_replot
@@ -461,7 +449,6 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
         # starts with plot and if it is more recent than an
         # existing image.
         image_list, time_elapsed, stdout = execute_script(image_path,
-                                                          base_image_name,
                                                           src_file, fname)
         this_template += PLOT_OUT_TEMPLATE
 
