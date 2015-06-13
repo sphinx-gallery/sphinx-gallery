@@ -27,16 +27,6 @@ try:
 except ImportError:
     from io import StringIO
 
-
-try:
-    # Python 2 built-in
-    execfile
-except NameError:
-    def execfile(filename, global_vars=None, local_vars=None):
-        with open(filename) as f:
-            code = compile(f.read(), filename, 'exec')
-            exec(code, global_vars, local_vars)
-
 try:
     basestring
 except NameError:
@@ -125,7 +115,7 @@ def extract_docstring(filename):
     """ Extract a module-level docstring, if any
     """
 
-    __, (srow, erow), first_text = split_code_and_text_blocks(filename)[0]
+    _, (srow, erow), first_text = split_code_and_text_blocks(filename)[0]
 
     paragraphs = first_text.split('\n\n')
     if len(first_text) > 1:
@@ -316,7 +306,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def execute_script(image_path, src_file, fname):
+def execute_script(image_path, src_file, fname, code_block):
     image_dir, image_fname = os.path.split(image_path)
     # The following is a list containing all the figure names
     time_elapsed = 0
@@ -329,32 +319,25 @@ def execute_script(image_path, src_file, fname):
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
-    my_buffer = StringIO()
-    my_stdout = Tee(sys.stdout, my_buffer)
-    sys.stdout = my_stdout
 
     try:
         # First CD in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
         my_globals = {'pl': plt, '__name__': 'gallery'}
+        my_buffer = StringIO()
+        my_stdout = Tee(sys.stdout, my_buffer)
+        sys.stdout = my_stdout
 
         t0 = time()
-        execfile(os.path.basename(src_file), my_globals)
+        exec(code_block, my_globals)
         time_elapsed = time() - t0
 
         sys.stdout = orig_stdout
 
-        my_stdout = my_buffer.getvalue()
-        if '__doc__' in my_globals:
-            # The __doc__ is often printed in the example, we
-            # don't with to echo it
-            my_stdout = my_stdout.replace(
-                my_globals['__doc__'],
-                '')
-        my_stdout = my_stdout.strip().expandtabs()
+        my_stdout = my_buffer.getvalue().strip().expandtabs()
         if my_stdout:
-            stdout = CODE_OUTPUT.format('\n    '.join(my_stdout.split('\n')))
+            stdout = CODE_OUTPUT.format(my_stdout.replace('\n', '\n    '))
         os.chdir(cwd)
         figure_list = save_figures(image_path)
 
@@ -450,12 +433,18 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
         return
 
     time_elapsed = 0
+#    docstring, short_desc, end_row = extract_docstring(example_file)
+    script_blocks = split_code_and_text_blocks(example_file)
+    docstring = eval(script_blocks[0][2])
+    coderst = codestr2rst(script_blocks[1][2])
+
     if plot_gallery and fname.startswith('plot'):
         # generate the plot as png image if file name
         # starts with plot and if it is more recent than an
         # existing image.
         image_list, time_elapsed, stdout = execute_script(image_path,
-                                                          src_file, fname)
+                                                          src_file, fname,
+                                                          script_blocks[1][2])
         this_template += PLOT_OUT_TEMPLATE
 
 
@@ -468,13 +457,9 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
         scale_image(os.path.join(glr_path_static(), 'no_image.png'),
                     thumb_file, 200, 140)
 
-#    docstring, short_desc, end_row = extract_docstring(example_file)
-    script_blocks = split_code_and_text_blocks(example_file)
-    docstring = eval(script_blocks[0][2])
-    code = codestr2rst(script_blocks[1][2])
 
     time_m, time_s = divmod(time_elapsed, 60)
     f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
-    this_template += CODE_DOWNLOAD + code
+    this_template += CODE_DOWNLOAD + coderst
     f.write(this_template % locals())
     f.flush()
