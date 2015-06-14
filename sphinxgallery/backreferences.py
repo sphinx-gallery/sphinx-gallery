@@ -144,9 +144,6 @@ def _thumbnail_div(full_dir, fname, snippet):
     thumb = os.path.join(full_dir, 'images', 'thumb',
                          'sphx_glr_%s_thumb.png' % fname[:-3])
     ref_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
-    if ref_name.startswith('._'):
-        ref_name = ref_name[2:]
-
 
     return THUMBNAIL_TEMPLATE.format(snippet=snippet,
                                      thumbnail=thumb, ref_name=ref_name)
