@@ -227,7 +227,7 @@ def line_count_sort(file_list, target_dir):
 
 def generate_dir_rst(src_dir, target_dir, gallery_conf,
                      plot_gallery, seen_backrefs):
-    """Generate the rst file for an example directory"""
+    """Generate the gallery rst for an example directory"""
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
         print(80 * '_')
         print('Example directory %s does not have a README.txt file' %
@@ -309,6 +309,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 
 
 def execute_script(image_path, src_file, fname, code_block):
+    """Executes the code block of the example file"""
     image_dir, image_fname = os.path.split(image_path)
     # The following is a list containing all the figure names
     time_elapsed = 0
@@ -369,6 +370,13 @@ def execute_script(image_path, src_file, fname, code_block):
 
 
 def save_figures(image_path):
+    """Save all the matlplotlib figures of the example
+
+    Parameters
+    ----------
+    image_path : str
+        Path where plots are saved (format string which accepts figure number)
+    """
     figure_list = []
     # In order to save every figure we have two solutions :
     # * iterate from 1 to infinity and call plt.fignum_exists(n)
