@@ -414,7 +414,7 @@ def _plots_are_current(src_file, image_file):
 def codestr2rst(codestr):
     """Return reStructuredText code block from code string"""
     code_directive = "\n.. code-block:: python\n\n"
-    indented_block = '\t' + codestr.replace('\n', '\n\t')
+    indented_block = '    ' + codestr.replace('\n', '\n    ')
     return code_directive + indented_block
 
 

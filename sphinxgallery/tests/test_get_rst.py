@@ -18,3 +18,13 @@ def test_split_code_and_text_blocks():
     assert_equals(blocks[0][1], (2, 11))
     assert_equals(blocks[1][0], 'code')
     assert_equals(blocks[1][1], (11, 16))
+
+
+def test_codestr2rst():
+    """Test the correct translation of a code block into rst"""
+    output = sg.codestr2rst('print("hello world")')
+    reference = """
+.. code-block:: python
+
+    print("hello world")"""
+    assert_equals(reference, output)
