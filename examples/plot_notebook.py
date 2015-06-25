@@ -48,12 +48,12 @@ plt.xlabel('$x$')
 plt.ylabel('$y$')
 
 """
-Include a new comment and a new plot
+Include a new comment and new multiple plots
 """
 plt.figure()
-plt.plot(x, -np.exp(-x))
-plt.xlabel('$x$')
-plt.ylabel('$-\exp(-x)$')
+plt.imshow(z, cmap=plt.cm.get_cmap('hot'))
+plt.figure()
+plt.imshow(z, cmap=plt.cm.get_cmap('Spectral'), interpolation='none')
 
 
 plt.show()

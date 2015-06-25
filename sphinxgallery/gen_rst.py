@@ -66,17 +66,9 @@ class Tee(object):
 
 
 ###############################################################################
-
-PLOT_OUT_TEMPLATE = """
-{image_list}
-
-{stdout}
-
-**Total running time of the script:** {time_elapsed:.2} seconds
-(%(time_m) .0f minutes %(time_s) .2f seconds)\n\n"""
-
-
-CODE_DOWNLOAD = """\n**Python source code:** :download:`%(fname)s <%(fname)s>`\n"""
+CODE_DOWNLOAD = """**Total running time of the script:** 
+(%(time_m) .0f minutes %(time_s) .2f seconds)\n\n
+\n**Download Python source code:** :download:`%(fname)s <%(fname)s>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -302,7 +294,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def execute_script(image_path, example_globals, src_file, fname, code_block):
+def execute_script(image_path, example_globals, start_num, src_file, fname, code_block):
     """Executes the code block of the example file"""
     image_dir, image_fname = os.path.split(image_path)
     # The following is a list containing all the figure names
@@ -335,7 +327,7 @@ def execute_script(image_path, example_globals, src_file, fname, code_block):
         if my_stdout:
             stdout = CODE_OUTPUT.format(my_stdout.replace('\n', '\n    '))
         os.chdir(cwd)
-        figure_list = save_figures(image_path)
+        figure_list = save_figures(image_path, start_num)
 
         # Depending on whether we have one or more figures, we're using a
         # horizontal list or a single rst call to 'image'.
@@ -359,10 +351,10 @@ def execute_script(image_path, example_globals, src_file, fname, code_block):
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
 
-    return dict(image_list=image_list, time_elapsed=time_elapsed, stdout=stdout)
+    return dict(image_list=image_list, stdout=stdout), time_elapsed, start_num + len(figure_list)
 
 
-def save_figures(image_path):
+def save_figures(image_path, start_num):
     """Save all the matlplotlib figures of the example
 
     Parameters
@@ -391,7 +383,7 @@ def save_figures(image_path):
             if to_rgba(fig_attr) != to_rgba(default_attr):
                 kwargs[attr] = fig_attr
 
-        current_fig = image_path.format(fig_mngr.num)
+        current_fig = image_path.format(start_num + fig_mngr.num)
         fig.savefig(current_fig, **kwargs)
         figure_list.append(current_fig)
     return figure_list
@@ -446,14 +438,18 @@ def generate_file_rst(fname, target_dir, src_dir):
             this_template += convert_func[blabel](bcontent)
     else:
         example_globals = {}
+        start_num = 0
         for i, (blabel, brange, bcontent) in enumerate(script_blocks):
             if blabel == 'code':
                 this_template += codestr2rst(bcontent)
-                code_output = execute_script(image_path, example_globals,
-                                                          src_file, fname,
-                                                          bcontent)
+                code_output, time, start_num = execute_script(image_path, example_globals,
+                                             start_num, src_file, fname,
+                                             bcontent)
+                                             
 #                import pdb; pdb.set_trace()
-                this_template += PLOT_OUT_TEMPLATE.format(**code_output)
+                time_elapsed += time
+
+                this_template += "\n\n{0}\n\n{1}".format(**code_output)
             else:
                 this_template += eval(bcontent)
 
