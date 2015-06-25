@@ -300,7 +300,8 @@ def execute_script(image_dir, thumb_file, image_fname, base_image_name,
     # The following is a list containing all the figure names
     time_elapsed = 0
     figure_list = []
-    first_image_file = image_path % 1
+    
+    first_image_file = image_path.format(1)
     if stdout_path.exists:
         stdout = open(stdout_path).read()
     else:
@@ -419,7 +420,7 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
     thumb_dir.makedirs()
 
     base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
+    image_fname = 'sphx_glr_{0}_{{0:03}}.png'.format(base_image_name)
     thumb_file = thumb_dir.pjoin('sphx_glr_%s_thumb.png' % base_image_name)
 
     time_elapsed = 0
