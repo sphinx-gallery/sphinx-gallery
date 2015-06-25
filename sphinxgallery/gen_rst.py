@@ -66,23 +66,17 @@ class Tee(object):
 
 
 ###############################################################################
-RST_TEMPLATE = """
-
-.. _example_%(short_fname)s:
-
-%(docstring)s\n
-"""
 
 PLOT_OUT_TEMPLATE = """
-%(image_list)s
+{image_list}
 
-%(stdout)s
+{stdout}
 
-**Total running time of the example:** %(time_elapsed) .2f seconds
+**Total running time of the script:** {time_elapsed:.2} seconds
 (%(time_m) .0f minutes %(time_s) .2f seconds)\n\n"""
 
 
-CODE_DOWNLOAD = """**Python source code:** :download:`%(fname)s <%(fname)s>`\n"""
+CODE_DOWNLOAD = """\n**Python source code:** :download:`%(fname)s <%(fname)s>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -241,7 +235,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
         os.makedirs(target_dir)
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir)) if fname.endswith('py')]
     for fname in sorted_listdir:
-        generate_file_rst(fname, target_dir, src_dir, plot_gallery)
+        generate_file_rst(fname, target_dir, src_dir)
         new_fname = os.path.join(src_dir, fname)
         _, snippet, _ = extract_docstring(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
@@ -308,7 +302,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def execute_script(image_path, src_file, fname, code_block):
+def execute_script(image_path, example_globals, src_file, fname, code_block):
     """Executes the code block of the example file"""
     image_dir, image_fname = os.path.split(image_path)
     # The following is a list containing all the figure names
@@ -327,13 +321,12 @@ def execute_script(image_path, src_file, fname, code_block):
         # First CD in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
-        my_globals = {'pl': plt, '__name__': 'gallery'}
         my_buffer = StringIO()
         my_stdout = Tee(sys.stdout, my_buffer)
         sys.stdout = my_stdout
 
         t0 = time()
-        exec(code_block, my_globals)
+        exec(code_block, example_globals)
         time_elapsed = time() - t0
 
         sys.stdout = orig_stdout
@@ -366,7 +359,7 @@ def execute_script(image_path, src_file, fname, code_block):
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
 
-    return image_list, time_elapsed, stdout
+    return dict(image_list=image_list, time_elapsed=time_elapsed, stdout=stdout)
 
 
 def save_figures(image_path):
@@ -418,10 +411,10 @@ def codestr2rst(codestr):
     return code_directive + indented_block
 
 
-def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
+def generate_file_rst(fname, target_dir, src_dir):
     """ Generate the rst file for a given example."""
 
-    this_template = RST_TEMPLATE
+    this_template = """\n\n.. _example_%(short_fname)s:\n\n"""
     short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
@@ -446,16 +439,23 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 #    docstring, short_desc, end_row = extract_docstring(example_file)
     script_blocks = split_code_and_text_blocks(example_file)
     docstring = eval(script_blocks[0][2])
-    coderst = codestr2rst(script_blocks[1][2])
 
-    if plot_gallery and fname.startswith('plot'):
-        # generate the plot as png image if file name
-        # starts with plot and if it is more recent than an
-        # existing image.
-        image_list, time_elapsed, stdout = execute_script(image_path,
+    if not fname.startswith('plot'):
+        convert_func = dict(code=codestr2rst, text=eval)
+        for blabel, brange, bcontent in script_blocks:
+            this_template += convert_func[blabel](bcontent)
+    else:
+        example_globals = {}
+        for i, (blabel, brange, bcontent) in enumerate(script_blocks):
+            if blabel == 'code':
+                this_template += codestr2rst(bcontent)
+                code_output = execute_script(image_path, example_globals,
                                                           src_file, fname,
-                                                          script_blocks[1][2])
-        this_template += PLOT_OUT_TEMPLATE
+                                                          bcontent)
+#                import pdb; pdb.set_trace()
+                this_template += PLOT_OUT_TEMPLATE.format(**code_output)
+            else:
+                this_template += eval(bcontent)
 
 
     # generate thumb file
@@ -470,6 +470,6 @@ def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
 
     time_m, time_s = divmod(time_elapsed, 60)
     f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
-    this_template += CODE_DOWNLOAD + coderst
+    this_template += CODE_DOWNLOAD
     f.write(this_template % locals())
     f.flush()
