@@ -275,7 +275,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 def save_thumbnail(image_path, base_image_name):
     """Save the thumbnail image"""
     first_image_file = image_path.format(1)
-    thumb_dir = first_image_file.psplit()[0].pjoin('thumb')
+    thumb_dir = first_image_file.psplit()[0].pjoin('thumb').makedirs()
     thumb_file = thumb_dir.pjoin('sphx_glr_%s_thumb.png' % base_image_name)
     if first_image_file.exists:
         scale_image(first_image_file, thumb_file, 400, 280)
