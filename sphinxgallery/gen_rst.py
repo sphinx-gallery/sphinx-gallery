@@ -34,7 +34,6 @@ except NameError:
 
 import token
 import tokenize
-import numpy as np
 
 try:
     # make sure that the Agg backend is set before importing any
@@ -97,24 +96,6 @@ CODE_OUTPUT = """**Script output**:\n
 
     {0}\n"""
 
-def extract_intro(filename):
-    """ Extract the first paragraph of module-level docstring. max:95 char"""
-
-    first_text = split_code_and_text_blocks(filename)[0][-1]
-
-    paragraphs = first_text.split('\n\n')
-    if len(first_text) > 1:
-        first_par = re.sub('\n', ' ', paragraphs[1])
-        first_par = ((first_par[:95] + '...')
-                     if len(first_par) > 95 else first_par)
-    else:
-        raise ValueError("Missing first paragraph."
-                         "Please check the layout of your"
-                         " example file:\n {}\n and make sure"
-                         " it's correct.".format(filename))
-
-    return first_par
-
 
 def analyze_blocks(source_file):
     """Return starting line numbers of code and text blocks
@@ -172,47 +153,27 @@ def split_code_and_text_blocks(source_file):
     return blocks
 
 
-def extract_line_count(filename, target_dir):
-    """Extract the line count of a file"""
-    example_file = os.path.join(target_dir, filename)
-    lines = open(example_file).readlines()
-    start_row = 0
-    if lines and lines[0].startswith('#!'):
-        lines.pop(0)
-        start_row = 1
-    line_iterator = iter(lines)
-    tokens = tokenize.generate_tokens(lambda: next(line_iterator))
-    check_docstring = True
-    erow_docstring = 0
-    for tok_type, _, _, (erow, _), _ in tokens:
-        tok_type = token.tok_name[tok_type]
-        if tok_type in ('NEWLINE', 'COMMENT', 'NL', 'INDENT', 'DEDENT'):
-            continue
-        elif (tok_type == 'STRING') and check_docstring:
-            erow_docstring = erow
-            check_docstring = False
-    return erow_docstring+1+start_row, erow+1+start_row
+def extract_intro(filename):
+    """ Extract the first paragraph of module-level docstring. max:95 char"""
+
+    first_text = split_code_and_text_blocks(filename)[0][-1]
+
+    paragraphs = first_text.split('\n\n')
+    if len(first_text) > 1:
+        first_par = re.sub('\n', ' ', paragraphs[1])
+        first_par = ((first_par[:95] + '...')
+                     if len(first_par) > 95 else first_par)
+    else:
+        raise ValueError("Missing first paragraph."
+                         "Please check the layout of your"
+                         " example file:\n {}\n and make sure"
+                         " it's correct.".format(filename))
+
+    return first_par
 
 
-def line_count_sort(file_list, target_dir):
-    """Sort the list of examples by line-count"""
-    new_list = [x for x in file_list if x.endswith('.py')]
-    unsorted = np.zeros(shape=(len(new_list), 2))
-    unsorted = unsorted.astype(np.object)
-    for count, exmpl in enumerate(new_list):
-        docstr_lines, total_lines = extract_line_count(exmpl, target_dir)
-        unsorted[count][1] = total_lines - docstr_lines
-        unsorted[count][0] = exmpl
-    index = np.lexsort((unsorted[:, 0].astype(np.str),
-                        unsorted[:, 1].astype(np.float)))
-    if not len(unsorted):
-        return []
-    return np.array(unsorted[index][:, 0]).tolist()
-
-
-def generate_dir_rst(src_dir, target_dir, gallery_conf,
-                     plot_gallery, seen_backrefs):
-    """Generate the gallery rst for an example directory"""
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
+    """Generate the gallery reStructuredText for an example directory"""
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
         print(80 * '_')
         print('Example directory %s does not have a README.txt file' %
@@ -224,7 +185,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
     fhindex = open(os.path.join(src_dir, 'README.txt')).read()
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
-    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir)) if fname.endswith('py')]
+    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
+                                if fname.endswith('py')]
     for fname in sorted_listdir:
         generate_file_rst(fname, target_dir, src_dir)
         new_fname = os.path.join(src_dir, fname)
