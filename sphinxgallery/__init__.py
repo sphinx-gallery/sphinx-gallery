@@ -32,6 +32,7 @@ class Path(str):
     def makedirs(self):
         if not self.exists:
             os.makedirs(self)
+        return self
 
     def listdir(self):
         return os.listdir(self)

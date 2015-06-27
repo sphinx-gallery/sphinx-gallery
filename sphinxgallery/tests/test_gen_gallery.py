@@ -21,7 +21,7 @@ def test_path():
     with open(tmp_file, 'w') as test_file:
         test_file.write('testing')
     in_dir = tmp_dir.pjoin('in_dir')
-    in_dir.makedirs()
+    assert in_dir == in_dir.makedirs()
     assert set(tmp_dir.listdir()) == set(['test.txt', 'in_dir'])
 
     file_name = Path('file{0:03}.png')
