@@ -380,12 +380,10 @@ def execute_script(image_path, example_globals, fig_count, src_file, fname, code
     return code_output, time_elapsed, fig_count + len(figure_list)
 
 
-
 def generate_file_rst(fname, target_dir, src_dir):
     """ Generate the rst file for a given example."""
 
-    this_template = """\n\n.. _example_%(short_fname)s:\n\n"""
-    short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
+
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
@@ -407,7 +405,9 @@ def generate_file_rst(fname, target_dir, src_dir):
 
     time_elapsed = 0
     script_blocks = split_code_and_text_blocks(example_file)
-    docstring = eval(script_blocks[0][2])
+
+    short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
+    this_template = """\n\n.. _example_{0}:\n\n""".format(short_fname)
 
     if not fname.startswith('plot'):
         convert_func = dict(code=codestr2rst, text=eval)
@@ -423,7 +423,6 @@ def generate_file_rst(fname, target_dir, src_dir):
                                              fig_count, src_file, fname,
                                              bcontent)
 
-#                import pdb; pdb.set_trace()
                 time_elapsed += time
 
                 this_template += code_output
@@ -431,7 +430,6 @@ def generate_file_rst(fname, target_dir, src_dir):
                 this_template += eval(bcontent)
 
     save_thumbnail(image_path, thumb_file)
-
 
 
     time_m, time_s = divmod(time_elapsed, 60)
