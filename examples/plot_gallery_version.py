@@ -35,14 +35,25 @@ def layers(n, m):
 
 
 fig = plt.figure()
-plt.xticks([])
-plt.yticks([])
-
-plt.annotate(
-    'Introducing Sphinx-Gallery ' + sphinxgallery.__version__,
-    xy=(12, 4), arrowprops=dict(arrowstyle='->'), xytext=(15, -4))
-
 d = layers(3, 100)
-plt.stackplot(range(100), d.T, baseline='wiggle')
+try:
+    with plt.xkcd():
+        plt.stackplot(range(100), d.T, baseline='wiggle')
+        plt.annotate(
+            'Introducing Sphinx-Gallery ' + sphinxgallery.__version__,
+            xy=(12, 4), arrowprops=dict(arrowstyle='->'), xytext=(15, -4))
+except:
+    x = range(100)
+    for mixture in d.T:
+       mixture[[0, -1]] = 0.
+       plt.fill(x, mixture, alpha=0.9)
+
+    plt.annotate(
+            'Introducing Sphinx-Gallery ' + sphinxgallery.__version__,
+            xy=(12, 4), arrowprops=dict(arrowstyle='->'), xytext=(22, 6))
+finally:
+    plt.xticks([])
+    plt.yticks([])
+
 
 plt.show()
