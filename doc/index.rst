@@ -19,6 +19,7 @@ Contents:
    getting_started
    advanced_configuration
    reference
+   auto_examples/index
 
 Sphinx-Gallery Show: :ref:`examples-index`
 ''''''''''''''''''''''''''''''''''''''''''
