@@ -153,6 +153,13 @@ def split_code_and_text_blocks(source_file):
     return blocks
 
 
+def codestr2rst(codestr):
+    """Return reStructuredText code block from code string"""
+    code_directive = "\n.. code-block:: python\n\n"
+    indented_block = '    ' + codestr.replace('\n', '\n    ')
+    return code_directive + indented_block
+
+
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
@@ -172,42 +179,50 @@ def extract_intro(filename):
     return first_par
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
-    """Generate the gallery reStructuredText for an example directory"""
-    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print(80 * '_')
-        print('Example directory %s does not have a README.txt file' %
-              src_dir)
-        print('Skipping this directory')
-        print(80 * '_')
-        return ""  # because string is an expected return type
+def _plots_are_current(src_file, image_file):
+    """Test existence of image file and later touch time to source script"""
 
-    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
-    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
-                                if fname.endswith('py')]
-    for fname in sorted_listdir:
-        generate_file_rst(fname, target_dir, src_dir)
-        new_fname = os.path.join(src_dir, fname)
-        intro = extract_intro(new_fname)
-        write_backreferences(seen_backrefs, gallery_conf,
-                             target_dir, fname, intro)
-
-        fhindex += _thumbnail_div(target_dir, fname, intro)
-        fhindex += """
-
-.. toctree::
-   :hidden:
-
-   /%s/%s\n""" % (target_dir, fname[:-3])
+    first_image_file = image_file.format(1)
+    needs_replot = (not os.path.exists(first_image_file) or
+              os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
+    return not needs_replot
 
 
-# clear at the end of the section
-    fhindex += """.. raw:: html\n
-    <div style='clear:both'></div>\n\n"""
+def save_figures(image_path, fig_count):
+    """Save all open matlplotlib figures of the example code-block
 
-    return fhindex
+    Parameters
+    ----------
+    image_path : str
+        Path where plots are saved (format string which accepts figure number)
+    fig_count : int
+        Previous figure number count. Figure number add from this number
+    """
+    figure_list = []
+    # In order to save every figure we have two solutions :
+    # * iterate from 1 to infinity and call plt.fignum_exists(n)
+    #   (this requires the figures to be numbered
+    #    incrementally: 1, 2, 3 and not 1, 2, 5)
+    # * iterate over [fig_mngr.num for fig_mngr in
+    #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
+
+    fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
+    for fig_mngr in fig_managers:
+        # Set the fig_num figure as the current figure as we can't
+        # save a figure that's not the current figure.
+        fig = plt.figure(fig_mngr.num)
+        kwargs = {}
+        to_rgba = matplotlib.colors.colorConverter.to_rgba
+        for attr in ['facecolor', 'edgecolor']:
+            fig_attr = getattr(fig, 'get_' + attr)()
+            default_attr = matplotlib.rcParams['figure.' + attr]
+            if to_rgba(fig_attr) != to_rgba(default_attr):
+                kwargs[attr] = fig_attr
+
+        current_fig = image_path.format(fig_count + fig_mngr.num)
+        fig.savefig(current_fig, **kwargs)
+        figure_list.append(current_fig)
+    return figure_list
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
@@ -253,6 +268,44 @@ def scale_image(in_fname, out_fname, max_width, max_height):
         except Exception:
             warnings.warn('Install optipng to reduce the size of the \
                           generated images')
+
+
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
+    """Generate the gallery reStructuredText for an example directory"""
+    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
+        print(80 * '_')
+        print('Example directory %s does not have a README.txt file' %
+              src_dir)
+        print('Skipping this directory')
+        print(80 * '_')
+        return ""  # because string is an expected return type
+
+    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
+                                if fname.endswith('py')]
+    for fname in sorted_listdir:
+        generate_file_rst(fname, target_dir, src_dir)
+        new_fname = os.path.join(src_dir, fname)
+        intro = extract_intro(new_fname)
+        write_backreferences(seen_backrefs, gallery_conf,
+                             target_dir, fname, intro)
+
+        fhindex += _thumbnail_div(target_dir, fname, intro)
+        fhindex += """
+
+.. toctree::
+   :hidden:
+
+   /%s/%s\n""" % (target_dir, fname[:-3])
+
+
+# clear at the end of the section
+    fhindex += """.. raw:: html\n
+    <div style='clear:both'></div>\n\n"""
+
+    return fhindex
 
 
 def execute_script(image_path, example_globals, fig_count, src_file, fname, code_block):
@@ -315,54 +368,6 @@ def execute_script(image_path, example_globals, fig_count, src_file, fname, code
 
     return code_output, time_elapsed, fig_count + len(figure_list)
 
-
-def save_figures(image_path, fig_count):
-    """Save all the matlplotlib figures of the example
-
-    Parameters
-    ----------
-    image_path : str
-        Path where plots are saved (format string which accepts figure number)
-    """
-    figure_list = []
-    # In order to save every figure we have two solutions :
-    # * iterate from 1 to infinity and call plt.fignum_exists(n)
-    #   (this requires the figures to be numbered
-    #    incrementally: 1, 2, 3 and not 1, 2, 5)
-    # * iterate over [fig_mngr.num for fig_mngr in
-    #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
-
-    fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
-    for fig_mngr in fig_managers:
-        # Set the fig_num figure as the current figure as we can't
-        # save a figure that's not the current figure.
-        fig = plt.figure(fig_mngr.num)
-        kwargs = {}
-        to_rgba = matplotlib.colors.colorConverter.to_rgba
-        for attr in ['facecolor', 'edgecolor']:
-            fig_attr = getattr(fig, 'get_' + attr)()
-            default_attr = matplotlib.rcParams['figure.' + attr]
-            if to_rgba(fig_attr) != to_rgba(default_attr):
-                kwargs[attr] = fig_attr
-
-        current_fig = image_path.format(fig_count + fig_mngr.num)
-        fig.savefig(current_fig, **kwargs)
-        figure_list.append(current_fig)
-    return figure_list
-
-
-def _plots_are_current(src_file, image_file):
-    first_image_file = image_file.format(1)
-    needs_replot = (not os.path.exists(first_image_file) or
-               os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
-    return not needs_replot
-
-
-def codestr2rst(codestr):
-    """Return reStructuredText code block from code string"""
-    code_directive = "\n.. code-block:: python\n\n"
-    indented_block = '    ' + codestr.replace('\n', '\n    ')
-    return code_directive + indented_block
 
 
 def generate_file_rst(fname, target_dir, src_dir):
