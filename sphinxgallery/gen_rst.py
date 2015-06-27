@@ -97,11 +97,10 @@ CODE_OUTPUT = """**Script output**:\n
 
     {0}\n"""
 
-def extract_docstring(filename):
-    """ Extract a module-level docstring, if any
-    """
+def extract_intro(filename):
+    """ Extract the first paragraph of module-level docstring. max:95 char"""
 
-    _, (srow, erow), first_text = split_code_and_text_blocks(filename)[0]
+    first_text = split_code_and_text_blocks(filename)[0][-1]
 
     paragraphs = first_text.split('\n\n')
     if len(first_text) > 1:
@@ -109,12 +108,12 @@ def extract_docstring(filename):
         first_par = ((first_par[:95] + '...')
                      if len(first_par) > 95 else first_par)
     else:
-        raise ValueError("Docstring not found by gallery.\n"
+        raise ValueError("Missing first paragraph."
                          "Please check the layout of your"
                          " example file:\n {}\n and make sure"
-                         " it's correct".format(filename))
+                         " it's correct.".format(filename))
 
-    return eval(first_text), first_par, erow
+    return first_par
 
 
 def analyze_blocks(source_file):
@@ -229,11 +228,11 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf,
     for fname in sorted_listdir:
         generate_file_rst(fname, target_dir, src_dir)
         new_fname = os.path.join(src_dir, fname)
-        _, snippet, _ = extract_docstring(new_fname)
+        intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
-                             target_dir, fname, snippet)
+                             target_dir, fname, intro)
 
-        fhindex += _thumbnail_div(target_dir, fname, snippet)
+        fhindex += _thumbnail_div(target_dir, fname, intro)
         fhindex += """
 
 .. toctree::
@@ -429,7 +428,6 @@ def generate_file_rst(fname, target_dir, src_dir):
         return
 
     time_elapsed = 0
-#    docstring, short_desc, end_row = extract_docstring(example_file)
     script_blocks = split_code_and_text_blocks(example_file)
     docstring = eval(script_blocks[0][2])
 
