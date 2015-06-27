@@ -79,7 +79,7 @@ def generate_gallery_rst(app):
                                               seen_backrefs)
 
     # we create a gallery_index with all examples
-    with open('index.rst', 'w') as fhindex:
+    with open(gallery_dir.pjoin('index.rst'), 'w') as fhindex:
             fhindex.write(gallery_index)
             fhindex.flush()
 
