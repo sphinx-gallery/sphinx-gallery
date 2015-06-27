@@ -33,8 +33,11 @@ def layers(n, m):
             bump(a[:, i])
     return np.abs(a)
 
-with plt.xkcd():
-
+try:
+    plt.xkcd()
+except:
+    pass
+finally:
     fig = plt.figure()
     plt.xticks([])
     plt.yticks([])
