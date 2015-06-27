@@ -319,7 +319,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex
 
 
-def execute_script(image_path, example_globals, fig_count, src_file, fname, code_block):
+def execute_script(image_path, example_globals, fig_count, src_file, code_block):
     """Executes the code block of the example file"""
     image_dir, image_fname = os.path.split(image_path)
     # The following is a list containing all the figure names
@@ -327,7 +327,7 @@ def execute_script(image_path, example_globals, fig_count, src_file, fname, code
     stdout = ''
 
     # We need to execute the code
-    print('plotting %s' % fname)
+    print('plotting %s' % src_file)
 
     plt.close('all')
     cwd = os.getcwd()
@@ -365,7 +365,7 @@ def execute_script(image_path, example_globals, fig_count, src_file, fname, code
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     except:
-        image_list = '%s is not compiling:' % fname
+        image_list = '%s is not compiling:' % src_file
         print(80 * '_')
         print(image_list)
         traceback.print_exc()
@@ -388,17 +388,18 @@ def generate_file_rst(fname, target_dir, src_dir):
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
 
-    base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
-
     image_dir = os.path.join(target_dir, 'images')
-    image_path = os.path.join(image_dir, image_fname)
-    thumb_dir = os.path.join(image_dir, 'thumb')
-    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
+
+    thumb_dir = os.path.join(image_dir, 'thumb')
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
+
+
+    base_image_name = os.path.splitext(fname)[0]
+    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
+    image_path = os.path.join(image_dir, image_fname)
 
     if _plots_are_current(src_file, image_path):
         return
@@ -406,34 +407,33 @@ def generate_file_rst(fname, target_dir, src_dir):
     time_elapsed = 0
     script_blocks = split_code_and_text_blocks(example_file)
 
-    short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
-    this_template = """\n\n.. _example_{0}:\n\n""".format(short_fname)
+    ref_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
+    example_rst = """\n\n.. _example_{0}:\n\n""".format(ref_fname)
 
     if not fname.startswith('plot'):
         convert_func = dict(code=codestr2rst, text=eval)
         for blabel, brange, bcontent in script_blocks:
-            this_template += convert_func[blabel](bcontent)
+            example_rst += convert_func[blabel](bcontent)
     else:
         example_globals = {}
         fig_count = 0
         for i, (blabel, brange, bcontent) in enumerate(script_blocks):
             if blabel == 'code':
-                this_template += codestr2rst(bcontent)
+                example_rst += codestr2rst(bcontent)
                 code_output, time, fig_count = execute_script(image_path, example_globals,
-                                             fig_count, src_file, fname,
-                                             bcontent)
+                                             fig_count, src_file, bcontent)
 
                 time_elapsed += time
 
-                this_template += code_output
+                example_rst += code_output
             else:
-                this_template += eval(bcontent)
+                example_rst += eval(bcontent)
 
+    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
     save_thumbnail(image_path, thumb_file)
 
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
-    this_template += CODE_DOWNLOAD
-    f.write(this_template % locals())
-    f.flush()
+    with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
+        example_rst += CODE_DOWNLOAD
+        f.write(example_rst % locals())
