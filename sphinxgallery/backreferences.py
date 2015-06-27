@@ -80,7 +80,7 @@ def get_short_module_name(module_name, obj_name):
 
 
 def identify_names(code):
-    """Builds a codeobj summary by identifying and resovles used names
+    """Builds a codeobj summary by identifying and resolving used names
 
     >>> code = '''
     ... from a.b import c

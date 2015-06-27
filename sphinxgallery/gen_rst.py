@@ -66,7 +66,7 @@ class Tee(object):
 
 
 ###############################################################################
-CODE_DOWNLOAD = """**Total running time of the script:** 
+CODE_DOWNLOAD = """**Total running time of the script:**
 (%(time_m) .0f minutes %(time_s) .2f seconds)\n\n
 \n**Download Python source code:** :download:`%(fname)s <%(fname)s>`\n"""
 
@@ -141,7 +141,7 @@ def analyze_blocks(source_file):
                          " example file:\n {}\n and make sure"
                          " it's correct".format(source_file))
     else:
-        # append last line if missig
+        # append last line if missing
         if not block_edges[-1] == erow:  # iffy: I'm using end state of loop
             block_edges.append(erow)
 
@@ -446,7 +446,7 @@ def generate_file_rst(fname, target_dir, src_dir):
                 code_output, time, fig_count = execute_script(image_path, example_globals,
                                              fig_count, src_file, fname,
                                              bcontent)
-                                             
+
 #                import pdb; pdb.set_trace()
                 time_elapsed += time
 
