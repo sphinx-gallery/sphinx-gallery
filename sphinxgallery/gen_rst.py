@@ -10,6 +10,7 @@ Files that generate images should start with 'plot'
 """
 from __future__ import division, print_function, absolute_import
 from time import time
+import ast
 import os
 import re
 import shutil
@@ -66,8 +67,8 @@ class Tee(object):
 
 ###############################################################################
 CODE_DOWNLOAD = """**Total running time of the script:**
-(%(time_m) .0f minutes %(time_s) .2f seconds)\n\n
-\n**Download Python source code:** :download:`%(fname)s <%(fname)s>`\n"""
+({0:.0f} minutes {1:.3f} seconds)\n\n
+\n**Download Python source code:** :download:`{2} <{2}>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -271,12 +272,14 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def save_thumbnail(image_path, thumb_file):
+def save_thumbnail(image_path, base_image_name):
     """Save the thumbnail image"""
     first_image_file = image_path.format(1)
-    if os.path.exists(first_image_file):
+    thumb_dir = first_image_file.psplit()[0].pjoin('thumb')
+    thumb_file = thumb_dir.pjoin('sphx_glr_%s_thumb.png' % base_image_name)
+    if first_image_file.exists:
         scale_image(first_image_file, thumb_file, 400, 280)
-    elif not os.path.exists(thumb_file):
+    elif not thumb_file.exists:
         # create something to replace the thumbnail
         scale_image(os.path.join(glr_path_static(), 'no_image.png'),
                     thumb_file, 200, 140)
@@ -318,15 +321,13 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex
 
 
-def execute_script(image_path, example_globals, fig_count, src_file, fname, code_block):
+def execute_script(code_block, example_globals, image_path, fig_count, src_file):
     """Executes the code block of the example file"""
-    image_dir, image_fname = os.path.split(image_path)
-    # The following is a list containing all the figure names
     time_elapsed = 0
     stdout = ''
 
     # We need to execute the code
-    print('plotting %s' % fname)
+    print('plotting %s' % src_file)
 
     plt.close('all')
     cwd = os.getcwd()
@@ -341,9 +342,9 @@ def execute_script(image_path, example_globals, fig_count, src_file, fname, code
         my_stdout = Tee(sys.stdout, my_buffer)
         sys.stdout = my_stdout
 
-        t0 = time()
+        t_start = time()
         exec(code_block, example_globals)
-        time_elapsed = time() - t0
+        time_elapsed = time() - t_start
 
         sys.stdout = orig_stdout
 
@@ -364,7 +365,7 @@ def execute_script(image_path, example_globals, fig_count, src_file, fname, code
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     except:
-        image_list = '%s is not compiling:' % fname
+        image_list = '%s is not compiling:' % src_file
         print(80 * '_')
         print(image_list)
         traceback.print_exc()
@@ -387,12 +388,10 @@ def generate_file_rst(fname, target_dir, src_dir):
     shutil.copyfile(src_file, example_file)
 
     image_dir = target_dir.pjoin('images').makedirs()
-    thumb_dir = image_dir.pjoin('thumb').makedirs()
 
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path = os.path.join(image_dir, image_fname)
-    thumb_file = thumb_dir.pjoin('sphx_glr_%s_thumb.png' % base_image_name)
 
     if _plots_are_current(src_file, image_path):
         return
@@ -401,34 +400,35 @@ def generate_file_rst(fname, target_dir, src_dir):
 
     script_blocks = split_code_and_text_blocks(example_file)
 
-    short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
-    this_template = """\n\n.. _example_{0}:\n\n""".format(short_fname)
+    ref_fname = example_file.replace(os.path.sep, '_')
+    example_rst = """\n\n.. _example_{0}:\n\n""".format(ref_fname)
 
     if not fname.startswith('plot'):
         convert_func = dict(code=codestr2rst, text=eval)
         for blabel, brange, bcontent in script_blocks:
-            this_template += convert_func[blabel](bcontent)
+            example_rst += convert_func[blabel](bcontent)
     else:
         example_globals = {}
         fig_count = 0
-        for i, (blabel, brange, bcontent) in enumerate(script_blocks):
+        for blabel, brange, bcontent in script_blocks:
             if blabel == 'code':
-                this_template += codestr2rst(bcontent)
-                code_output, time, fig_count = execute_script(image_path, example_globals,
-                                             fig_count, src_file, fname,
-                                             bcontent)
+                example_rst += codestr2rst(bcontent)
+                code_output, rtime, fig_count = execute_script(bcontent,
+                                                               example_globals,
+                                                               image_path,
+                                                               fig_count,
+                                                               src_file)
 
-                time_elapsed += time
+                time_elapsed += rtime
 
-                this_template += code_output
+                example_rst += code_output
             else:
-                this_template += eval(bcontent)
+                example_rst += ast.literal_eval(bcontent)
 
-    save_thumbnail(image_path, thumb_file)
-
+    save_thumbnail(image_path, base_image_name)
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = open(target_dir.pjoin(base_image_name + '.rst'), 'w')
-    this_template += CODE_DOWNLOAD
-    f.write(this_template % locals())
-    f.flush()
+
+    with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
+        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname)
+        f.write(example_rst)
