@@ -69,13 +69,13 @@ def generate_gallery_rst(app):
     # better than nested.
     seen_backrefs = set()
     fhindex.write(generate_dir_rst(examples_dir, gallery_dir, gallery_conf,
-                                   plot_gallery, seen_backrefs))
+                                   seen_backrefs))
     for directory in sorted(os.listdir(examples_dir)):
         if os.path.isdir(os.path.join(examples_dir, directory)):
             src_dir = os.path.join(examples_dir, directory)
             target_dir = os.path.join(gallery_dir, directory)
             fhindex.write(generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                           plot_gallery, seen_backrefs))
+                                           seen_backrefs))
     fhindex.flush()
 
 
@@ -88,15 +88,14 @@ gallery_conf = {
 }
 
 def setup(app):
+    """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('plot_gallery', True, 'html')
     app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
-
     app.connect('builder-inited', generate_gallery_rst)
 
     app.connect('build-finished', embed_code_links)
-
 
 
 def setup_module():
