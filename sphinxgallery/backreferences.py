@@ -80,7 +80,7 @@ def get_short_module_name(module_name, obj_name):
 
 
 def identify_names(code):
-    """Builds a codeobj summary by identifying and resovles used names
+    """Builds a codeobj summary by identifying and resolving used names
 
     >>> code = '''
     ... from a.b import c
@@ -144,9 +144,6 @@ def _thumbnail_div(full_dir, fname, snippet):
     thumb = os.path.join(full_dir, 'images', 'thumb',
                          'sphx_glr_%s_thumb.png' % fname[:-3])
     ref_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
-    if ref_name.startswith('._'):
-        ref_name = ref_name[2:]
-
 
     return THUMBNAIL_TEMPLATE.format(snippet=snippet,
                                      thumbnail=thumb, ref_name=ref_name)
@@ -156,7 +153,7 @@ def write_backreferences(seen_backrefs, gallery_conf,
                          target_dir, fname, snippet):
     """Writes down back reference files, which include a thumbnail list
     of examples using a certain module"""
-    example_file = os.path.join(target_dir, fname)
+    example_file = target_dir.pjoin(fname)
     backrefs = scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['mod_example_dir'],
