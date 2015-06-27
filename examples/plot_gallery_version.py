@@ -33,20 +33,16 @@ def layers(n, m):
             bump(a[:, i])
     return np.abs(a)
 
-try:
-    plt.xkcd()
-except:
-    pass
-finally:
-    fig = plt.figure()
-    plt.xticks([])
-    plt.yticks([])
 
-    plt.annotate(
-        'Introducing Sphinx-Gallery ' + sphinxgallery.__version__,
-        xy=(12, 4), arrowprops=dict(arrowstyle='->'), xytext=(15, -4))
+fig = plt.figure()
+plt.xticks([])
+plt.yticks([])
 
-    d = layers(3, 100)
-    plt.stackplot(range(100), d.T, baseline='wiggle')
+plt.annotate(
+    'Introducing Sphinx-Gallery ' + sphinxgallery.__version__,
+    xy=(12, 4), arrowprops=dict(arrowstyle='->'), xytext=(15, -4))
+
+d = layers(3, 100)
+plt.stackplot(range(100), d.T, baseline='wiggle')
 
 plt.show()
