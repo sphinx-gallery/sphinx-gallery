@@ -10,6 +10,7 @@ Files that generate images should start with 'plot'
 """
 from __future__ import division, print_function, absolute_import
 from time import time
+import ast
 import os
 import re
 import shutil
@@ -427,7 +428,7 @@ def generate_file_rst(fname, target_dir, src_dir):
 
                 example_rst += code_output
             else:
-                example_rst += eval(bcontent)
+                example_rst += ast.literal_eval(bcontent)
 
     thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
     save_thumbnail(image_path, thumb_file)
