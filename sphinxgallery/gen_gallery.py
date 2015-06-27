@@ -84,7 +84,6 @@ def generate_gallery_rst(app):
     # we create a gallery_index with all examples
     gallery_file = gallery_dir.pjoin('index'+app.config.source_suffix)
     with open(gallery_file, 'w') as fhindex:
-            fhindex.write(gallery_conf['gallery_header'])
             fhindex.write(gallery_index)
             fhindex.flush()
 
