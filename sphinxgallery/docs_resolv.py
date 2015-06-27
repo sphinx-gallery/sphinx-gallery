@@ -58,6 +58,8 @@ def get_data(url, gallery_dir):
     # shelve keys need to be str in python 2
     if sys.version_info[0] == 2 and isinstance(url, unicode):
         url = url.encode('utf-8')
+    if isinstance(url, Path):
+        url = url.strip()
 
     cached_file = gallery_dir.pjoin('searchindex')
     search_index = shelve.open(cached_file)

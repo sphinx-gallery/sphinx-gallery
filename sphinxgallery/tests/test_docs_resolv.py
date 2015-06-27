@@ -22,7 +22,9 @@ def test_shelve():
         fid.seek(0)
 
         # recovers data from temporary file and caches it in the shelve
-        file_data = sg.get_data(fid.name, tmp_cache)
+        # use Path class in name to test bug, shelve only accepts str as key
+        file_data = sg.get_data(Path(fid.name), tmp_cache)
+
         # tests recovered data matches
         assert_equals(file_data, test_string)
 
