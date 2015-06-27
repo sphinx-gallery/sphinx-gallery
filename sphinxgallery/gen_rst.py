@@ -67,8 +67,8 @@ class Tee(object):
 
 ###############################################################################
 CODE_DOWNLOAD = """**Total running time of the script:**
-(%(time_m) .0f minutes %(time_s) .2f seconds)\n\n
-\n**Download Python source code:** :download:`%(fname)s <%(fname)s>`\n"""
+({0:.0f} minutes {1:.3f} seconds)\n\n
+\n**Download Python source code:** :download:`{2} <{2}>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -271,9 +271,15 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def save_thumbnail(image_path, thumb_file):
+def save_thumbnail(image_path, base_image_name):
     """Save the thumbnail image"""
     first_image_file = image_path.format(1)
+    thumb_dir = os.path.join(os.path.dirname(first_image_file), 'thumb')
+    if not os.path.exists(thumb_dir):
+        os.makedirs(thumb_dir)
+
+    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
+
     if os.path.exists(first_image_file):
         scale_image(first_image_file, thumb_file, 400, 280)
     elif not os.path.exists(thumb_file):
@@ -320,10 +326,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex
 
 
-def execute_script(image_path, example_globals, fig_count, src_file, code_block):
+def execute_script(code_block, example_globals, image_path, fig_count, src_file):
     """Executes the code block of the example file"""
-    image_dir, image_fname = os.path.split(image_path)
-    # The following is a list containing all the figure names
     time_elapsed = 0
     stdout = ''
 
@@ -343,9 +347,9 @@ def execute_script(image_path, example_globals, fig_count, src_file, code_block)
         my_stdout = Tee(sys.stdout, my_buffer)
         sys.stdout = my_stdout
 
-        t0 = time()
+        t_start = time()
         exec(code_block, example_globals)
-        time_elapsed = time() - t0
+        time_elapsed = time() - t_start
 
         sys.stdout = orig_stdout
 
@@ -384,7 +388,6 @@ def execute_script(image_path, example_globals, fig_count, src_file, code_block)
 def generate_file_rst(fname, target_dir, src_dir):
     """ Generate the rst file for a given example."""
 
-
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
@@ -392,11 +395,6 @@ def generate_file_rst(fname, target_dir, src_dir):
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
-
-    thumb_dir = os.path.join(image_dir, 'thumb')
-    if not os.path.exists(thumb_dir):
-        os.makedirs(thumb_dir)
-
 
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
@@ -408,7 +406,7 @@ def generate_file_rst(fname, target_dir, src_dir):
     time_elapsed = 0
     script_blocks = split_code_and_text_blocks(example_file)
 
-    ref_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
+    ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _example_{0}:\n\n""".format(ref_fname)
 
     if not fname.startswith('plot'):
@@ -418,23 +416,24 @@ def generate_file_rst(fname, target_dir, src_dir):
     else:
         example_globals = {}
         fig_count = 0
-        for i, (blabel, brange, bcontent) in enumerate(script_blocks):
+        for blabel, brange, bcontent in script_blocks:
             if blabel == 'code':
                 example_rst += codestr2rst(bcontent)
-                code_output, time, fig_count = execute_script(image_path, example_globals,
-                                             fig_count, src_file, bcontent)
+                code_output, rtime, fig_count = execute_script(bcontent,
+                                                               example_globals,
+                                                               image_path,
+                                                               fig_count,
+                                                               src_file)
 
-                time_elapsed += time
+                time_elapsed += rtime
 
                 example_rst += code_output
             else:
                 example_rst += ast.literal_eval(bcontent)
 
-    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
-    save_thumbnail(image_path, thumb_file)
-
+    save_thumbnail(image_path, base_image_name)
 
     time_m, time_s = divmod(time_elapsed, 60)
     with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
-        example_rst += CODE_DOWNLOAD
-        f.write(example_rst % locals())
+        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname)
+        f.write(example_rst)
