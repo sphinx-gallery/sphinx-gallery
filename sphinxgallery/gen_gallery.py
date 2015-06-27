@@ -34,8 +34,10 @@ def clean_gallery_out(build_dir):
 
 
 def generate_gallery_rst(app):
-    """Starts the gallery configuration and recursively scans the examples
-    directory in order to populate the examples gallery
+    """Generate the Main examples gallery reStructuredText
+
+    Start the sphinx-gallery configuration and recursively scan the examples
+    directories in order to populate the examples gallery
     """
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)
@@ -67,32 +69,24 @@ def generate_gallery_rst(app):
     for workdir in [gallery_dir, mod_examples_dir]:
         workdir.makedirs()
 
-
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
     seen_backrefs = set()
     gallery_index = generate_dir_rst(examples_dir, gallery_dir, gallery_conf,
-                                     plot_gallery, seen_backrefs)
-
+                                     seen_backrefs)
     for directory in sorted(os.listdir(examples_dir)):
         if os.path.isdir(os.path.join(examples_dir, directory)):
             src_dir = examples_dir.pjoin(directory)
             target_dir = gallery_dir.pjoin(directory)
             gallery_index += generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                              plot_gallery, seen_backrefs)
+                                              seen_backrefs)
 
-    # we create an index.rst with all examples
-    with open(gallery_dir.pjoin('index'+app.config.source_suffix), 'w') as fhindex:
+    # we create a gallery_index with all examples
+    gallery_file = gallery_dir.pjoin('index'+app.config.source_suffix)
+    with open(gallery_file, 'w') as fhindex:
             fhindex.write(gallery_conf['gallery_header'])
             fhindex.write(gallery_index)
             fhindex.flush()
-
-
-GALLERY_HEADER = """.. _examples-index:
-
-Gallery of Examples
-===================\n\n"""
-
 
 gallery_conf = {
     'examples_dir'   : '../examples',
@@ -100,20 +94,17 @@ gallery_conf = {
     'mod_example_dir': 'modules/generated',
     'doc_module'     : (),
     'reference_url'  : {},
-
-    'gallery_header' : GALLERY_HEADER,
 }
 
 def setup(app):
+    """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('plot_gallery', True, 'html')
     app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
-
     app.connect('builder-inited', generate_gallery_rst)
 
     app.connect('build-finished', embed_code_links)
-
 
 
 def setup_module():

@@ -349,7 +349,7 @@ def embed_code_links(app, exception):
         except URLError as e:
             print("\n...\n"
                   "Warning: Embedding the documentation hyperlinks requires "
-                  "internet access.\nPlease check your network connection.\n"
+                  "Internet access.\nPlease check your network connection.\n"
                   "Unable to continue embedding `{0}` links due to a URL "
                   "Error:\n".format(this_module))
             print(e.args)
