@@ -292,9 +292,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         print(80 * '_')
         return ""  # because string is an expected return type
 
-    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
+    fhindex = open(src_dir.pjoin('README.txt')).read()
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
                                 if fname.endswith('py')]
     for fname in sorted_listdir:
@@ -388,10 +386,8 @@ def generate_file_rst(fname, target_dir, src_dir):
     example_file = target_dir.pjoin(fname)
     shutil.copyfile(src_file, example_file)
 
-    image_dir = target_dir.pjoin('images')
-    image_dir.makedirs()
-    thumb_dir = image_dir.pjoin('thumb')
-    thumb_dir.makedirs()
+    image_dir = target_dir.pjoin('images').makedirs()
+    thumb_dir = image_dir.pjoin('thumb').makedirs()
 
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'

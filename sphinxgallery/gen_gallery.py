@@ -62,12 +62,9 @@ def generate_gallery_rst(app):
         return
 
     gallery_dir = Path(os.path.relpath(gallery_conf['gallery_dir'],
-                                       app.builder.srcdir))
+                                       app.builder.srcdir)).makedirs()
     mod_examples_dir = Path(os.path.relpath(gallery_conf['mod_example_dir'],
-                                            app.builder.srcdir))
-
-    for workdir in [gallery_dir, mod_examples_dir]:
-        workdir.makedirs()
+                                            app.builder.srcdir)).makedirs()
 
     # Here we don't use an os.walk, but we recurse only twice: flat is
     # better than nested.
@@ -77,7 +74,7 @@ def generate_gallery_rst(app):
     for directory in sorted(os.listdir(examples_dir)):
         if os.path.isdir(os.path.join(examples_dir, directory)):
             src_dir = examples_dir.pjoin(directory)
-            target_dir = gallery_dir.pjoin(directory)
+            target_dir = gallery_dir.pjoin(directory).makedirs()
             gallery_index += generate_dir_rst(src_dir, target_dir, gallery_conf,
                                               seen_backrefs)
 
