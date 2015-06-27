@@ -33,8 +33,10 @@ def clean_gallery_out(build_dir):
 
 
 def generate_gallery_rst(app):
-    """Starts the gallery configuration and recursively scans the examples
-    directory in order to populate the examples gallery
+    """Generate the Main examples gallery reStructuredText
+
+    Start the sphinx-gallery configuration and recursively scan the examples
+    directories in order to populate the examples gallery
     """
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)

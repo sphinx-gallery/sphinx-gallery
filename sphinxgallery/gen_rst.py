@@ -270,6 +270,17 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
+def save_thumbnail(image_path, thumb_file):
+    """Save the thumbnail image"""
+    first_image_file = image_path.format(1)
+    if os.path.exists(first_image_file):
+        scale_image(first_image_file, thumb_file, 400, 280)
+    elif not os.path.exists(thumb_file):
+        # create something to replace the thumbnail
+        scale_image(os.path.join(glr_path_static(), 'no_image.png'),
+                    thumb_file, 200, 140)
+
+
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
@@ -419,15 +430,8 @@ def generate_file_rst(fname, target_dir, src_dir):
             else:
                 this_template += eval(bcontent)
 
+    save_thumbnail(image_path, thumb_file)
 
-    # generate thumb file
-    first_image_file = image_path.format(1)
-    if os.path.exists(first_image_file):
-        scale_image(first_image_file, thumb_file, 400, 280)
-    elif not os.path.exists(thumb_file):
-        # create something to replace the thumbnail
-        scale_image(os.path.join(glr_path_static(), 'no_image.png'),
-                    thumb_file, 200, 140)
 
 
     time_m, time_s = divmod(time_elapsed, 60)
