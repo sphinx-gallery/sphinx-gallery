@@ -410,15 +410,15 @@ def generate_file_rst(fname, target_dir, src_dir):
     example_rst = """\n\n.. _example_{0}:\n\n""".format(ref_fname)
 
     if not fname.startswith('plot'):
-        convert_func = dict(code=codestr2rst, text=eval)
+        convert_func = dict(code=codestr2rst, text=ast.literal_eval)
         for blabel, brange, bcontent in script_blocks:
-            example_rst += convert_func[blabel](bcontent)
+            example_rst += convert_func[blabel](bcontent)+'\n'
     else:
         example_globals = {}
         fig_count = 0
         for blabel, brange, bcontent in script_blocks:
             if blabel == 'code':
-                example_rst += codestr2rst(bcontent)
+                example_rst += codestr2rst(bcontent)+'\n'
                 code_output, rtime, fig_count = execute_script(bcontent,
                                                                example_globals,
                                                                image_path,
@@ -429,7 +429,7 @@ def generate_file_rst(fname, target_dir, src_dir):
 
                 example_rst += code_output
             else:
-                example_rst += ast.literal_eval(bcontent)
+                example_rst += ast.literal_eval(bcontent)+'\n'
 
     save_thumbnail(image_path, base_image_name)
 

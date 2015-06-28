@@ -63,8 +63,8 @@ plt.imshow(z, cmap=plt.cm.get_cmap('Spectral'), interpolation='none')
 
 """
 There's some subtle differences between strings and comments which I'll
-demonstrate below. (Some of this only makes sense if you look at the raw python
-file.)
+demonstrate below. (Some of this only makes sense if you look at the
+:download:`raw python script <plot_notebook.py>`)
 
 # Comments in text blocks remain nested in the text.
 """
@@ -75,7 +75,7 @@ def dummy():
 
 # Code comments are not strings and are left in code blocks.
 
-"Any string that's not saved to a variable is converted to text.\n"
+"Any string that's not saved to a variable is converted to text."
 
 string = """
 Triple-quoted string which tries to break parser but doesn't.
