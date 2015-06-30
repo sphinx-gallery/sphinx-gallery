@@ -14,3 +14,10 @@ framed into a text area.
 # License: BSD 3 clause
 
 print('This is a long test Output\n' * 50)
+
+"""
+One line out
+"""
+
+print('one line out')
+
