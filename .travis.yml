@@ -1,4 +1,5 @@
 language: python
+sudo: false
 
 virtualenv:
         system_site_packages: true
