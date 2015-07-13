@@ -274,6 +274,12 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
+try:
+    from mayavi import mlab
+    use_mayavi = True
+except ImportError, e:
+    use_mayavi = False
+
 sphinxgallery_conf = {
     'doc_module': ('sphinxgallery', 'numpy'),
     'reference_url': {
@@ -282,4 +288,5 @@ sphinxgallery_conf = {
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
     'examples_dir'   : ['../examples', '../tutorials'],
     'gallery_dir'    : ['auto_examples', 'tutorials'],
+    'use_mayavi': use_mayavi,
     }

@@ -15,6 +15,8 @@ env:
         - DISTRIB="ubuntu" PYTHON_VERSION="2.7"
         # This environment tests the oldest supported anaconda env
         - DISTRIB="conda" PYTHON_VERSION="2.6"
+        # This environment tests is for mayavi
+        - DISTRIB="conda" PYTHON_VERSION="2.7"
         # This environment tests the newest supported anaconda env
         - DISTRIB="conda" PYTHON_VERSION="3.4"
 
@@ -29,9 +31,13 @@ before_install:
 
 install:
     - if [ "$DISTRIB" == "conda" ]; then
-         conda create --yes -n testenv python=$PYTHON_VERSION pip numpy
-         setuptools matplotlib pillow sphinx nose;
-         source activate testenv; fi
+        conda create --yes -n testenv python=$PYTHON_VERSION pip numpy
+        setuptools matplotlib pillow sphinx nose;
+        if [ "$PYTHON_VERSION" == "2.7" ]; then
+          conda install --yes --quiet mayavi;
+        fi;
+        source activate testenv;
+      fi;
     - pip install -r requirements.txt
     - python setup.py install
 

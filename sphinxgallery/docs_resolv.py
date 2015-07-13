@@ -409,6 +409,8 @@ def embed_code_links(app, exception):
     """Embed hyperlinks to documentation into example code"""
     if exception is not None:
         return
+    if not app.builder.config.plot_gallery:
+        return  # no need to embed
     print('Embedding documentation hyperlinks in examples..')
 
     if app.builder.name == 'latex':
