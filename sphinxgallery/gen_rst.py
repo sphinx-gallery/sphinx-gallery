@@ -332,7 +332,7 @@ def execute_script(code_block, example_globals, image_path, fig_count, src_file)
     stdout = ''
 
     # We need to execute the code
-    print('plotting %s' % src_file)
+    print('plotting code blocks in %s' % src_file)
 
     plt.close('all')
     cwd = os.getcwd()
@@ -369,7 +369,7 @@ def execute_script(code_block, example_globals, image_path, fig_count, src_file)
             for figure_name in figure_list:
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
-    except:
+    except Exception:
         image_list = '%s is not compiling:' % src_file
         print(80 * '_')
         print(image_list)
