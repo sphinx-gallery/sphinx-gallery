@@ -1,5 +1,11 @@
 language: python
 sudo: false
+addons:
+  apt:
+    packages:
+    - python-numpy
+    - python-matplotlib
+    - python-pip
 
 virtualenv:
         system_site_packages: true
@@ -13,12 +19,6 @@ env:
         - DISTRIB="conda" PYTHON_VERSION="3.4"
 
 before_install:
-    - if [ "$DISTRIB" == "ubuntu" ]; then
-         sudo apt-get update -qq;
-         sudo apt-get install -qq python-numpy python-matplotlib
-         python-setuptools;
-      fi
-
     - if [ "$DISTRIB" == "conda" ]; then
          wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
          chmod +x miniconda.sh;
