@@ -33,9 +33,6 @@ try:
 except NameError:
     basestring = str
 
-import token
-import tokenize
-
 try:
     # make sure that the Agg backend is set before importing any
     # matplotlib
@@ -276,7 +273,8 @@ def save_thumbnail(image_path, base_image_name):
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
 
-    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
+    thumb_file = os.path.join(thumb_dir,
+                              'sphx_glr_%s_thumb.png' % base_image_name)
 
     if os.path.exists(first_image_file):
         scale_image(first_image_file, thumb_file, 400, 280)
@@ -424,7 +422,7 @@ def generate_file_rst(fname, target_dir, src_dir):
 
                 time_elapsed += rtime
                 # Single example style
-                if len(script_blocks)==2:
+                if len(script_blocks) == 2:
                     example_rst += code_output
                     example_rst += codestr2rst(bcontent)+'\n'
                 # Notebook style
