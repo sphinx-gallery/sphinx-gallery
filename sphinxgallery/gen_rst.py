@@ -96,6 +96,14 @@ CODE_OUTPUT = """**Script output**:\n
 
 
 def split_code_and_text_blocks(source_file):
+    """Return list with source file separated into code and text blocks.
+
+    Returns
+    -------
+    blocks : list of (label, content)
+        List where each element is a tuple with the label ('text' or 'code'),
+        and content string of block.
+    """
     f = open(source_file)
 
     blocks = []
