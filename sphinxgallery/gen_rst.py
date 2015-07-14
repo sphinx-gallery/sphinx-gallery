@@ -130,7 +130,9 @@ def split_code_and_text_blocks(source_file):
             if 20*'#' in line:
                 continue_text = True
                 if len(block) > 1:
-                    blocks.append(('code', block.strip()))
+
+
+                    blocks.append(('code', block))
                     block = '"""'
                 continue
         if line.startswith('#') and continue_text:
@@ -151,7 +153,7 @@ def split_code_and_text_blocks(source_file):
         if continue_text:
             blocks.append(('text', block))
         else:
-            blocks.append(('code', block.strip()))
+            blocks.append(('code', block))
 
     f.close()
     return blocks
@@ -384,7 +386,7 @@ def execute_script(code_block, example_globals, image_path, fig_count, src_file)
         sys.stdout = orig_stdout
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
-    code_output = "\n{0}\n\n{1}".format(image_list, stdout)
+    code_output = "\n{0}\n\n{1}\n\n".format(image_list, stdout)
 
     return code_output, time_elapsed, fig_count + len(figure_list)
 
@@ -411,7 +413,7 @@ def generate_file_rst(fname, target_dir, src_dir):
     script_blocks = split_code_and_text_blocks(example_file)
 
     ref_fname = example_file.replace(os.path.sep, '_')
-    example_rst = """\n\n.. _example_{0}:\n\n""".format(ref_fname)
+    example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
     if not fname.startswith('plot'):
         convert_func = dict(code=codestr2rst, text=ast.literal_eval)

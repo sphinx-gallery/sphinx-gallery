@@ -131,7 +131,7 @@ THUMBNAIL_TEMPLATE = """
 
 .. figure:: /{thumbnail}
 
-    :ref:`example_{ref_name}`
+    :ref:`sphx_glr_{ref_name}`
 
 .. raw:: html
 
