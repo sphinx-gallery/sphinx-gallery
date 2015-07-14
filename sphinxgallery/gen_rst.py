@@ -98,59 +98,56 @@ CODE_OUTPUT = """**Script output**:\n
     {0}\n"""
 
 
-def analyze_blocks(source_file):
-    """Return starting line numbers of code and text blocks
-
-    Returns
-    -------
-    block_edges : list of int
-        Line number for the start of each block and last line
-    """
-    block_edges = []
-    with open(source_file) as f:
-        token_iter = tokenize.generate_tokens(f.readline)
-        for token_tuple in token_iter:
-            t_id, t_str, (srow, scol), (erow, ecol), src_line = token_tuple
-            tok_name = token.tok_name[t_id]
-            if tok_name == 'STRING' and scol == 0:
-                # Add one point to line after text (for later slicing)
-                block_edges.extend((srow, erow+1))
-
-    if not block_edges:  # no text blocks
-        raise ValueError("Docstring not found by gallery.\n"
-                         "Please check the layout of your"
-                         " example file:\n {}\n and make sure"
-                         " it's correct".format(source_file))
-    else:
-        # append last line if missing
-        if not block_edges[-1] == erow:  # iffy: I'm using end state of loop
-            block_edges.append(erow)
-
-    return block_edges
-
-
 def split_code_and_text_blocks(source_file):
-    """Return list with source file separated into code and text blocks.
+    f=open(source_file)
 
-    Returns
-    -------
-    blocks : list of (label, (start, end+1), content)
-        List where each element is a tuple with the label ('text' or 'code'),
-        the (start, end+1) line numbers, and content string of block.
-    """
-    block_edges = analyze_blocks(source_file)
-
-    with open(source_file) as f:
-        source_lines = f.readlines()
-
-    # Every other block should be a text block
     blocks = []
-    slice_ranges = zip(block_edges[:-1], block_edges[1:])
-    for i, (start, end) in enumerate(slice_ranges):
-        block_label = 'text' if i % 2 == 0 else 'code'
-        # subtract 1 from indices b/c line numbers start at 1, not 0
-        content = ''.join(source_lines[start-1:end-1])
-        blocks.append((block_label, (start, end), content))
+    block = ''
+
+    header_string = 0
+    continue_text = False
+    for line in f:
+        # python docstring
+        if line.startswith('"""') and not header_string:
+            header_string += 1
+            block = line
+            continue
+        elif line.startswith('"""') and header_string==1:
+            header_string += 1
+            block += line
+            blocks.append(('text', block))
+            block= ''
+            continue
+
+
+        # comment blocks
+        if line.startswith('#') and not continue_text:
+            if 20*'#' in line:
+                continue_text = True
+                if len(block) > 1:
+                    blocks.append(('code', block.strip()))
+                    block = '"""'
+                continue
+        if line.startswith('#') and continue_text:
+            block += line[1:].lstrip()
+            continue
+        if not line.startswith('#') and continue_text:
+
+            block += '"""'
+            blocks.append(('text', block))
+            block = ''
+            continue_text = False
+
+        # code blocks
+        block += line
+
+    # close  last block
+    if len(block) > 1:
+        if continue_text:
+            blocks.append(('text', block))
+        else:
+            blocks.append(('code', block.strip()))
+
     return blocks
 
 
@@ -411,12 +408,12 @@ def generate_file_rst(fname, target_dir, src_dir):
 
     if not fname.startswith('plot'):
         convert_func = dict(code=codestr2rst, text=ast.literal_eval)
-        for blabel, brange, bcontent in script_blocks:
+        for blabel, bcontent in script_blocks:
             example_rst += convert_func[blabel](bcontent)+'\n'
     else:
         example_globals = {}
         fig_count = 0
-        for blabel, brange, bcontent in script_blocks:
+        for blabel, bcontent in script_blocks:
             if blabel == 'code':
                 code_output, rtime, fig_count = execute_script(bcontent,
                                                                example_globals,
