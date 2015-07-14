@@ -21,7 +21,7 @@ def test_thumbnail_div():
 
 .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
 
-    :ref:`example_fake_dir_test_file.py`
+    :ref:`sphx_glr_fake_dir_test_file.py`
 
 .. raw:: html
 
