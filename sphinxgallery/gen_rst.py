@@ -129,7 +129,7 @@ def split_code_and_text_blocks(source_file):
                     block = '"""'
                 continue
         if line.startswith('#') and continue_text:
-            block += line[1:].lstrip()
+            block += line[2:]
             continue
         if not line.startswith('#') and continue_text:
 
