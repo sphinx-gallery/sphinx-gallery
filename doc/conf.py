@@ -274,9 +274,12 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
-sphinxgallery_conf = {'doc_module': ('sphinxgallery', 'numpy'),
-                      'reference_url': {
+sphinxgallery_conf = {
+    'doc_module': ('sphinxgallery', 'numpy'),
+    'reference_url': {
         'sphinxgallery': None,
         'matplotlib': 'http://matplotlib.org',
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
+    'examples_dir'   : ['../examples'],
+    'gallery_dir'    : ['auto_examples'],
     }

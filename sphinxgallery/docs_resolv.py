@@ -313,21 +313,12 @@ class SphinxDocLinkResolver(object):
         return link
 
 
-def embed_code_links(app, exception):
-    """Embed hyperlinks to documentation into example code"""
-    if exception is not None:
-        return
-    print('Embedding documentation hyperlinks in examples..')
-
-    if app.builder.name == 'latex':
-        # Don't embed hyperlinks when a latex builder is used.
-        return
-
-    gallery_conf = app.config.sphinxgallery_conf
+def _embed_code_links(app, gallery_conf, gallery_dir):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
 
-    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
+    gallery_dirs = os.path.join(app.builder.srcdir, gallery_dir)
+
     for this_module, url in gallery_conf['reference_url'].items():
         try:
             if url is None:
@@ -351,7 +342,7 @@ def embed_code_links(app, exception):
             print(e.args)
 
     html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
-                                                    gallery_conf['gallery_dir']))
+                                                    gallery_dir))
 
     # patterns for replacement
     link_pattern = '<a href="%s">%s</a>'
@@ -412,3 +403,24 @@ def embed_code_links(app, exception):
                             line = expr.sub(substitute_link, line)
                             fid.write(line.encode('utf-8'))
     print('[done]')
+
+
+
+def embed_code_links(app, exception):
+    """Embed hyperlinks to documentation into example code"""
+    if exception is not None:
+        return
+    print('Embedding documentation hyperlinks in examples..')
+
+    if app.builder.name == 'latex':
+        # Don't embed hyperlinks when a latex builder is used.
+        return
+
+    gallery_conf = app.config.sphinxgallery_conf
+
+    gallery_dirs = gallery_conf['gallery_dir']
+    if not isinstance(gallery_dirs, list):
+        gallery_dirs = [gallery_dirs]
+
+    for gallery_dir in gallery_dirs:
+        _embed_code_links(app, gallery_conf, gallery_dir)
