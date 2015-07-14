@@ -418,7 +418,6 @@ def generate_file_rst(fname, target_dir, src_dir):
         fig_count = 0
         for blabel, brange, bcontent in script_blocks:
             if blabel == 'code':
-                example_rst += codestr2rst(bcontent)+'\n'
                 code_output, rtime, fig_count = execute_script(bcontent,
                                                                example_globals,
                                                                image_path,
@@ -426,8 +425,14 @@ def generate_file_rst(fname, target_dir, src_dir):
                                                                src_file)
 
                 time_elapsed += rtime
-
-                example_rst += code_output
+                # Single example style
+                if len(script_blocks)==2:
+                    example_rst += code_output
+                    example_rst += codestr2rst(bcontent)+'\n'
+                # Notebook style
+                else:
+                    example_rst += codestr2rst(bcontent)+'\n'
+                    example_rst += code_output
             else:
                 example_rst += ast.literal_eval(bcontent)+'\n'
 
