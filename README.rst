@@ -41,8 +41,8 @@ To install::
     $ python setup.py develop
 
 
-Setting up your project
-=======================
+Setting up your project by the defaults
+=======================================
 
 After installing you need to include in your Sphinx ``conf.py`` file:
 

@@ -19,6 +19,24 @@ Within your Sphinx ``conf.py`` file you need to add a configuration dictionary:
 
 Directory paths are relative to your ``conf.py`` location.
 
+Having Multiple galleries
+-------------------------
+
+Sphinx-Gallery only supports up to subfolder level in its gallery directories.
+This might be a limitation for you. Or you might want to have separate
+galleries for different purposes, an examples gallery and a tutorials gallery.
+For this you use in your Sphinx ``conf.py`` file a list of directories in
+the sphinx configuration dictionary:
+
+.. code-block:: python
+
+    sphinxgallery_conf = {
+        'examples_dir'   : ['../examples', '../tutorials'],
+        'gallery_dir'    : ['auto_examples', 'tutorials'],
+    }
+
+Keep in mind that both list have to be of the same length.
+
 
 Linking to external documentations
 ==================================
@@ -44,7 +62,7 @@ dictionary within your Sphinx ``conf.py`` file :
 
     sphinxgallery_conf = {
         'reference_url':  {
-                 # Modules you locally document use a None
+                 # The module you locally document uses a None
                 'sphinxgallery': None,
 
                 # External python modules use their documentation websites
@@ -92,3 +110,5 @@ That will be rendered as
 .. raw:: html
 
         <div style='clear:both'></div>
+
+
