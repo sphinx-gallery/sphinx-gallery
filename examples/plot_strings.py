@@ -16,7 +16,6 @@ framed into a text area.
 print('This is a long test Output\n' * 50)
 
 ####################################
-#One line out
+# One line out
 
 print('one line out')
-

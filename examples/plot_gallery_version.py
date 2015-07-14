@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 import sphinxgallery
 
 np.random.seed(32)
+
+
 def layers(n, m):
     """
     Return *n* random Gaussian mixtures, each of length *m*.
@@ -42,15 +44,14 @@ try:
         plt.annotate(
             'Introducing Sphinx-Gallery ' + sphinxgallery.__version__,
             xy=(12, 4), arrowprops=dict(arrowstyle='->'), xytext=(15, -4))
-except:
+except Exception:
     x = range(100)
     for mixture in d.T:
-       mixture[[0, -1]] = 0.
-       plt.fill(x, mixture, alpha=0.9)
+        mixture[[0, -1]] = 0.
+        plt.fill(x, mixture, alpha=0.9)
 
-    plt.annotate(
-            'Introducing Sphinx-Gallery ' + sphinxgallery.__version__,
-            xy=(12, 4), arrowprops=dict(arrowstyle='->'), xytext=(22, 6))
+    plt.annotate('Introducing Sphinx-Gallery ' + sphinxgallery.__version__,
+                 xy=(12, 4), arrowprops=dict(arrowstyle='->'), xytext=(22, 6))
 finally:
     plt.xticks([])
     plt.yticks([])
