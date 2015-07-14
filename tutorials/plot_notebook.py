@@ -38,9 +38,9 @@ import matplotlib.pyplot as plt
 # This code block is executed, although it produces no output. Lines starting
 # with a simple hash are code comment and get treated as part of the code
 # block. To include this new comment string we started the new block with a
-# long line of hasshes.
+# long line of hashes.
 #
-# The sphinx-gallery parser will assume everything after this spliter and that
+# The sphinx-gallery parser will assume everything after this splitter and that
 # continues to start with a **comment hash and space** (respecting code style)
 # is text that has to be rendered in
 # html format. Keep in mind to always keep your comments always together by
@@ -83,7 +83,7 @@ def dummy():
     """Dummy function to make sure docstrings don't get rendered as text"""
     pass
 
-# Code comments not preceded by the hash spliter are left in code blocks.
+# Code comments not preceded by the hash splitter are left in code blocks.
 
 string = """
 Triple-quoted string which tries to break parser but doesn't.
