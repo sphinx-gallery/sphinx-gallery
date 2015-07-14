@@ -203,6 +203,10 @@ def save_figures(image_path, fig_count):
         Path where plots are saved (format string which accepts figure number)
     fig_count : int
         Previous figure number count. Figure number add from this number
+
+    Returns
+    -------
+    list of strings containing the full path to each figure
     """
     figure_list = []
     # In order to save every figure we have two solutions :
