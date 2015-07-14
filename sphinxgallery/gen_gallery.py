@@ -64,6 +64,8 @@ def generate_gallery_rst(app):
 
     mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
                                        app.builder.srcdir)
+    seen_backrefs = set()
+
     for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
         examples_dir = os.path.relpath(examples_dir,
                                        app.builder.srcdir)
@@ -78,7 +80,6 @@ def generate_gallery_rst(app):
         fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
-        seen_backrefs = set()
         fhindex.write(generate_dir_rst(examples_dir, gallery_dir, gallery_conf,
                                        seen_backrefs))
         for directory in sorted(os.listdir(examples_dir)):
