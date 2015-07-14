@@ -99,26 +99,26 @@ CODE_OUTPUT = """**Script output**:\n
 
 
 def split_code_and_text_blocks(source_file):
-    f=open(source_file)
+    f = open(source_file)
 
     blocks = []
     block = ''
 
-    header_string = 0
+    has_header_string = 0
     continue_text = False
     for line in f:
         # python docstring
-        if line.startswith('"""') and not header_string:
-            header_string += 1
+        if line.startswith('"""') and not has_header_string:
+            has_header_string += 1
             block = line
             continue
-        elif line.startswith('"""') and header_string==1:
-            header_string += 1
+        # because we only allow for one single docstring
+        elif line.startswith('"""') and has_header_string == 1:
+            has_header_string += 1
             block += line
             blocks.append(('text', block))
-            block= ''
+            block = ''
             continue
-
 
         # comment blocks
         if line.startswith('#') and not continue_text:
@@ -148,6 +148,7 @@ def split_code_and_text_blocks(source_file):
         else:
             blocks.append(('code', block.strip()))
 
+    f.close()
     return blocks
 
 
