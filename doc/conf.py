@@ -280,6 +280,6 @@ sphinxgallery_conf = {
         'sphinxgallery': None,
         'matplotlib': 'http://matplotlib.org',
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
-    'examples_dir'   : ['../examples'],
-    'gallery_dir'    : ['auto_examples'],
+    'examples_dir'   : ['../examples', '../tutorials'],
+    'gallery_dir'    : ['auto_examples', 'tutorials'],
     }

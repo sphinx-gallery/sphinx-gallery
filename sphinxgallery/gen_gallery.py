@@ -62,13 +62,13 @@ def generate_gallery_rst(app):
     if not isinstance(gallery_dirs, list):
         gallery_dirs = [gallery_dirs]
 
+    mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
+                                       app.builder.srcdir)
     for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
         examples_dir = os.path.relpath(examples_dir,
                                        app.builder.srcdir)
         gallery_dir = os.path.relpath(gallery_dir,
                                       app.builder.srcdir)
-        mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
-                                           app.builder.srcdir)
 
         for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
             if not os.path.exists(workdir):

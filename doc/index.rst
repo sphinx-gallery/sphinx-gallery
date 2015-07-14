@@ -20,6 +20,7 @@ Contents:
    advanced_configuration
    reference
    auto_examples/index
+   tutorials/index
 
 Sphinx-Gallery Show: :ref:`examples-index`
 ''''''''''''''''''''''''''''''''''''''''''
