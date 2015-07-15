@@ -344,7 +344,7 @@ def execute_script(code_block, example_globals, image_path, fig_count, src_file)
     orig_stdout = sys.stdout
 
     try:
-        # First CD in the original example dir, so that any file
+        # First cd in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
         my_buffer = StringIO()
