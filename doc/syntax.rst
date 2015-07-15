@@ -15,7 +15,7 @@ Then the executable code of your script.
 For a quick reference have a look at the example
 :ref:`sphx_glr_auto_examples_plot_gallery_version.py`
 
-In this 2 block structure. The website is rendered ordered with
+In this 2 block structure, the website is rendered ordered with
 the docstring, then output images and output code. Finally the
 generating code script.
 
