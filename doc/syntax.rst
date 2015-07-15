@@ -33,6 +33,6 @@ For a clear example refer to the rendered example
 :ref:`sphx_glr_tutorials_plot_notebook.py` and compare it to the generating
 :download:`original python script <tutorials/plot_notebook.py>`
 
-In this multiblock structure. The website is rendered ordered by the
+In this multiblock structure, the website is rendered ordered by the
 leading docstring. Then executable python code is presented and after
 its output in images and test, following  the intuitive notebook structure.
