@@ -8,11 +8,11 @@ For your examples to work you have to make them valid python code.
 Simple examples
 ===============
 
-This are the base of a python script of module. The structure follows
-a leading docstring that must reStructuredText syntax and a header.
+This is the base of a python script of module. The structure follows
+a leading docstring that must follow reStructuredText syntax and a header.
 Then the executable code of your script.
 
-For a quick referece have a look at the example
+For a quick reference have a look at the example
 :ref:`sphx_glr_auto_examples_plot_gallery_version.py`
 
 In this 2 block structure. The website is rendered ordered with

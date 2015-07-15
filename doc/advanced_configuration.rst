@@ -35,7 +35,7 @@ the sphinx configuration dictionary:
         'gallery_dir'    : ['auto_examples', 'tutorials'],
     }
 
-Keep in mind that both list have to be of the same length.
+Keep in mind that both lists have to be of the same length.
 
 
 Linking to external documentations
