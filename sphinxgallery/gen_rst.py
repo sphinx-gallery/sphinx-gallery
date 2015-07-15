@@ -195,7 +195,7 @@ def _plots_are_current(src_file, image_file):
 
 
 def save_figures(image_path, fig_count):
-    """Save all open matlplotlib figures of the example code-block
+    """Save all open matplotlib figures of the example code-block
 
     Parameters
     ----------
@@ -209,12 +209,6 @@ def save_figures(image_path, fig_count):
     list of strings containing the full path to each figure
     """
     figure_list = []
-    # In order to save every figure we have two solutions :
-    # * iterate from 1 to infinity and call plt.fignum_exists(n)
-    #   (this requires the figures to be numbered
-    #    incrementally: 1, 2, 3 and not 1, 2, 5)
-    # * iterate over [fig_mngr.num for fig_mngr in
-    #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
 
     fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
     for fig_mngr in fig_managers:
