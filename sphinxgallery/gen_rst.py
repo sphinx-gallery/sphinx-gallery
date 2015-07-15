@@ -133,7 +133,7 @@ def split_code_and_text_blocks(source_file):
 
 
                     blocks.append(('code', block))
-                    block = '"""'
+                block = '"""'
                 continue
         if line.startswith('#') and continue_text:
             block += line[2:]
@@ -151,6 +151,7 @@ def split_code_and_text_blocks(source_file):
     # close  last block
     if len(block) > 1:
         if continue_text:
+            block += '"""'
             blocks.append(('text', block))
         else:
             blocks.append(('code', block))
