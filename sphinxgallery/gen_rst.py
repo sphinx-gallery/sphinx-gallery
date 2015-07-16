@@ -11,6 +11,8 @@ Files that generate images should start with 'plot'
 from __future__ import division, print_function, absolute_import
 from time import time
 import ast
+import token
+import tokenize
 import os
 import re
 import shutil
@@ -95,6 +97,39 @@ CODE_OUTPUT = """**Script output**:\n
     {0}\n"""
 
 
+def analyze_blocks(source_file):
+    """Return starting line numbers of code and text blocks
+
+    Returns
+    -------
+    block_edges : list of int
+        Line number for the start of each block and last line
+    """
+    block_edges = []
+    text_edges = []
+    with open(source_file) as f:
+        token_iter = tokenize.generate_tokens(f.readline)
+        for token_tuple in token_iter:
+            t_id, t_str, (srow, scol), (erow, ecol), src_line = token_tuple
+            tok_name = token.tok_name[t_id]
+            if tok_name == 'STRING' and scol == 0:
+                # Add one point to line after text (for later slicing)
+                block_edges.extend((srow, erow+1))
+                text_edges.append((srow, erow+1))
+
+    if not block_edges:  # no text blocks
+        raise ValueError("Docstring not found by gallery.\n"
+                         "Please check the layout of your"
+                         " example file:\n {}\n and make sure"
+                         " it's correct".format(source_file))
+    else:
+        # append last line if missing
+        if not block_edges[-1] == erow:  # iffy: I'm using end state of loop
+            block_edges.append(erow)
+
+    return sorted(set(block_edges)), text_edges
+
+
 def split_code_and_text_blocks(source_file):
     """Return list with source file separated into code and text blocks.
 
@@ -104,60 +139,38 @@ def split_code_and_text_blocks(source_file):
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
     """
-    f = open(source_file)
+    block_edges, text_edges = analyze_blocks(source_file)
 
+    with open(source_file) as f:
+        source_lines = f.readlines()
+
+    # Every other block should be a text block
     blocks = []
-    block = ''
+    slice_ranges = zip(block_edges[:-1], block_edges[1:])
+    for i, (start, end) in enumerate(slice_ranges):
+        block_label = 'text' if (start, end) in text_edges else 'code'
+        # subtract 1 from indices b/c line numbers start at 1, not 0
+        content = ''.join(source_lines[start-1:end-1])
+        blocks.append((block_label, (start, end), content))
 
-    has_header_string = 0
-    continue_text = False
-    for line in f:
-        # python docstring
-        if line.startswith('"""') and not has_header_string:
-            has_header_string += 1
-            block = line
-            continue
-        # because we only allow for one single docstring
-        elif line.startswith('"""') and has_header_string == 1:
-            has_header_string += 1
-            block += line
-            blocks.append(('text', block))
-            block = ''
-            continue
-
-        # comment blocks
-        if line.startswith('#') and not continue_text:
-            if 20*'#' in line:
-                continue_text = True
-                if len(block) > 1:
-
-
-                    blocks.append(('code', block))
-                block = '"""'
-                continue
-        if line.startswith('#') and continue_text:
-            block += line[2:]
-            continue
-        if not line.startswith('#') and continue_text:
-
-            block += '"""'
-            blocks.append(('text', block))
-            block = ''
-            continue_text = False
-
-        # code blocks
-        block += line
-
-    # close  last block
-    if len(block) > 1:
-        if continue_text:
-            block += '"""'
-            blocks.append(('text', block))
-        else:
-            blocks.append(('code', block))
-
-    f.close()
-    return blocks
+    blocks = [s for s in blocks if s[-1].strip() != '']
+    newblocks = []
+    for block_label, (start, end), content in blocks:
+        if block_label == 'text':
+            newblocks.append(('text', content))
+        if block_label == 'code':
+            split_block = re.split('^#{20,}.*\s((?:^#.*\s)*)',
+                                   content, flags=re.M)
+            for split_code_block in split_block:
+                if split_code_block is None or split_code_block.strip() == '':
+                    continue
+                elif split_code_block.startswith('#'):
+                    coment_block = re.sub('^# |^#', '', split_code_block,
+                                          flags=re.M)
+                    newblocks.append(('text', coment_block))
+                else:
+                    newblocks.append(('code', split_code_block))
+    return newblocks
 
 
 def codestr2rst(codestr):
@@ -165,6 +178,14 @@ def codestr2rst(codestr):
     code_directive = "\n.. code-block:: python\n\n"
     indented_block = '    ' + codestr.replace('\n', '\n    ')
     return code_directive + indented_block
+
+
+def text2string(content):
+    """Returns a string without the extra triple quotes"""
+    try:
+        return ast.literal_eval(content)+'\n'
+    except:
+        return content
 
 
 def extract_intro(filename):
@@ -345,7 +366,7 @@ def execute_script(code_block, example_globals, image_path, fig_count, src_file)
     orig_stdout = sys.stdout
 
     try:
-        # First cd in the original example dir, so that any file
+        # First CD in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
         my_buffer = StringIO()
@@ -415,7 +436,7 @@ def generate_file_rst(fname, target_dir, src_dir):
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
     if not fname.startswith('plot'):
-        convert_func = dict(code=codestr2rst, text=ast.literal_eval)
+        convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:
             example_rst += convert_func[blabel](bcontent)+'\n'
     else:
@@ -439,7 +460,7 @@ def generate_file_rst(fname, target_dir, src_dir):
                     example_rst += codestr2rst(bcontent)+'\n'
                     example_rst += code_output
             else:
-                example_rst += ast.literal_eval(bcontent)+'\n'
+                example_rst += text2string(bcontent)+'\n'
 
     save_thumbnail(image_path, base_image_name)
 
