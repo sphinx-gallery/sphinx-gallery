@@ -159,14 +159,14 @@ def split_code_and_text_blocks(source_file):
         if block_label == 'text':
             newblocks.append(('text', content))
         if block_label == 'code':
-            split_block = re.split('^#{20,}.*\s((?:^#.*\s)*)',
-                                   content, flags=re.M)
+            pattern = re.compile('^#{20,}.*\s((?:^#.*\s)*)', flags=re.M)
+            split_block = re.split(pattern, content)
             for split_code_block in split_block:
                 if split_code_block is None or split_code_block.strip() == '':
                     continue
                 elif split_code_block.startswith('#'):
-                    coment_block = re.sub('^# |^#', '', split_code_block,
-                                          flags=re.M)
+                    sub_pat = re.compile('^# |^#', flags=re.M)
+                    coment_block = re.sub(sub_pat, '', split_code_block)
                     newblocks.append(('text', coment_block))
                 else:
                     newblocks.append(('code', split_code_block))
