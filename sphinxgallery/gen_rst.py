@@ -11,8 +11,6 @@ Files that generate images should start with 'plot'
 from __future__ import division, print_function, absolute_import
 from time import time
 import ast
-import token
-import tokenize
 import os
 import re
 import shutil
@@ -117,26 +115,19 @@ def split_code_and_text_blocks(source_file):
     end_doc = [m.end() for m in re.finditer('"""', source_lines)][1]
     source_lines = source_lines[end_doc:]
 
-    blocks.append(('code', source_lines))
+    pattern = re.compile('^#{20,}.*\s((?:^#.*\s)*)', flags=re.M)
+    split_block = re.split(pattern, source_lines)
+    for split_code_block in split_block:
+        if split_code_block is None or split_code_block.strip() == '':
+            continue
+        elif split_code_block.startswith('#'):
+            sub_pat = re.compile('^# |^#', flags=re.M)
+            coment_block = re.sub(sub_pat, '', split_code_block)
+            blocks.append(('text', coment_block))
+        else:
+            blocks.append(('code', split_code_block))
 
-    blocks = [s for s in blocks if s[-1].strip() != '']
-    newblocks = []
-    for block_label, content in blocks:
-        if block_label == 'text':
-            newblocks.append(('text', content))
-        if block_label == 'code':
-            pattern = re.compile('^#{20,}.*\s((?:^#.*\s)*)', flags=re.M)
-            split_block = re.split(pattern, content)
-            for split_code_block in split_block:
-                if split_code_block is None or split_code_block.strip() == '':
-                    continue
-                elif split_code_block.startswith('#'):
-                    sub_pat = re.compile('^# |^#', flags=re.M)
-                    coment_block = re.sub(sub_pat, '', split_code_block)
-                    newblocks.append(('text', coment_block))
-                else:
-                    newblocks.append(('code', split_code_block))
-    return newblocks
+    return blocks
 
 
 def codestr2rst(codestr):
