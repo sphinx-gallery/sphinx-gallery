@@ -18,6 +18,7 @@ import traceback
 import sys
 import subprocess
 import warnings
+from textwrap import dedent
 from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
 
@@ -121,8 +122,8 @@ def split_code_and_text_blocks(source_file):
         if split_code_block is None or split_code_block.strip() == '':
             continue
         elif split_code_block.startswith('#'):
-            sub_pat = re.compile('^# |^#', flags=re.M)
-            coment_block = re.sub(sub_pat, '', split_code_block)
+            sub_pat = re.compile('^#', flags=re.M)
+            coment_block = dedent(re.sub(sub_pat, '', split_code_block))
             blocks.append(('text', coment_block))
         else:
             blocks.append(('code', split_code_block))
