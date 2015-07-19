@@ -4,6 +4,11 @@
 The Header Docstring
 ====================
 
+When writting latex in a python string keep in mind to escape the backslashes
+or use a raw docstring
+
+.. math:: \\sin (x)
+
 Closing this string quotes on same line"""
 
 
@@ -24,6 +29,13 @@ import matplotlib.pyplot as plt
 
 #############################################
 # And a single line of hashes can split your blocks
+
+
+################################################################################
+# Latex in the comments does not need to be escaped
+#
+# .. math::
+#    \sin
 
 def dummy():
     """This should not be part of a 'text' block'"""
