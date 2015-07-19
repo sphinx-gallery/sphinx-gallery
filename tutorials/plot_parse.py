@@ -60,7 +60,7 @@ def dummy():
 # .. code-block:: python
 #
 #     def dummy2():
-#         \"\"\"Function docstring\"\"\"
+#         """Function docstring"""
 #     ####################################
 #     # This comment inside python indentation
 #     # breaks the block structure and is not

@@ -12,7 +12,7 @@
  ('text',
   '\n####################################################################\n\nMaking a line cut in sphinx\n'),
  ('text',
-  '.. warning::\n    The next kind of comments are not supported and become to hard to escape\n    so just don\'t code like this.\n\n.. code-block:: python\n\n    def dummy2():\n        \\"\\"\\"Function docstring\\"\\"\\"\n    ####################################\n    # This comment inside python indentation\n    # breaks the block structure and is not\n    # supported\n        dummy2\n\n'),
+  '.. warning::\n    The next kind of comments are not supported and become to hard to escape\n    so just don\'t code like this.\n\n.. code-block:: python\n\n    def dummy2():\n        """Function docstring"""\n    ####################################\n    # This comment inside python indentation\n    # breaks the block structure and is not\n    # supported\n        dummy2\n\n'),
  ('code', '\n"""Free strings are not supported they remain part of the code"""\n\n'),
  ('text',
   'New lines can be included in you block comments and the parser\nis capable of retaining this significant whitespace to work with sphinx\n\nSo the reStructuredText headers survive\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n'),
