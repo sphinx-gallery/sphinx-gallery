@@ -113,9 +113,9 @@ def split_code_and_text_blocks(source_file):
     doc_string = ast.get_docstring(ast.parse(source_lines))
 
     blocks = [('text', doc_string)]
-    # Remove from source docstring, and closing whitespace with triple quotes
-    end_doc = source_lines.find(doc_string) + len(doc_string)
-    source_lines = source_lines[end_doc:].lstrip()[3:]
+    # Remove from source_lines the docstring
+    end_doc = [m.end() for m in re.finditer('"""', source_lines)][1]
+    source_lines = source_lines[end_doc:]
 
     blocks.append(('code', source_lines))
 
