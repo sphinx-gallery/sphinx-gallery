@@ -19,7 +19,7 @@ Closing this string quotes on same line"""
 import numpy as np
 
 ##################################################
-a=1
+A = 1
 
 import matplotlib.pyplot as plt
 
@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 # And a single line of hashes can split your blocks
 
 
-################################################################################
+###############################################################################
 # Latex in the comments does not need to be escaped
 #
 # .. math::
@@ -40,8 +40,8 @@ import matplotlib.pyplot as plt
 def dummy():
     """This should not be part of a 'text' block'"""
 
-     ######################################
-     # Comment inside code to remain here
+    ######################################
+    # Comment inside code to remain here
     pass
 
 # this should not be part of a 'text' block
@@ -50,9 +50,9 @@ def dummy():
 #
 # ####################################################################
 #
-#Making a line cut in sphinx
+# Making a line cut in sphinx
 
-################################################################################
+###############################################################################
 # .. warning::
 #     The next kind of comments are not supported and become to hard to escape
 #     so just don't code like this.
@@ -78,13 +78,12 @@ def dummy():
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-
 print('one')
 
 print('two')
 ##################################################
 #
-a=1
+B = 1
 
 ##############################################################################
 # End comments
