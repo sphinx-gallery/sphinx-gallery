@@ -69,7 +69,7 @@ Your python scripts in the examples folder need to have a main comment. Written
 in rst syntax to be used in the generated file in the example gallery.
 
 You can have subfolders in your ``examples`` directory, those will be recursively
-scaned by the gallery extension and presented in the gallery. Subfolder have to
+scanned by the gallery extension and presented in the gallery. Subfolder have to
 respect the same structure of the main ``examples`` folder.
 
 If these instructions are not clear enough, this package uses itself, to generated
@@ -95,7 +95,7 @@ that you can open under your favourite browser.
 
 Extending your Makefile
 -----------------------
-Once your gallery is working you might need remove completely all renerated files by
+Once your gallery is working you might need remove completely all generated files by
 sphinx-gallery to have a clean build, or you might want to build the gallery without
 running the examples files. For this you need to extend your ``Makefile`` with::
 
@@ -109,5 +109,5 @@ running the examples files. For this you need to extend your ``Makefile`` with::
             @echo
             @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-Remember that for in ``Makefile`` whitespace is significant and the identation are tabs
+Remember that for in ``Makefile`` whitespace is significant and the indentation are tabs
 and not spaces

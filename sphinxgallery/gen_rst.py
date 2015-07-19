@@ -97,39 +97,6 @@ CODE_OUTPUT = """**Script output**:\n
     {0}\n"""
 
 
-def analyze_blocks(source_file):
-    """Return starting line numbers of code and text blocks
-
-    Returns
-    -------
-    block_edges : list of int
-        Line number for the start of each block and last line
-    """
-    block_edges = []
-    text_edges = []
-    with open(source_file) as f:
-        token_iter = tokenize.generate_tokens(f.readline)
-        for token_tuple in token_iter:
-            t_id, t_str, (srow, scol), (erow, ecol), src_line = token_tuple
-            tok_name = token.tok_name[t_id]
-            if tok_name == 'STRING' and scol == 0:
-                # Add one point to line after text (for later slicing)
-                block_edges.extend((srow, erow+1))
-                text_edges.append((srow, erow+1))
-
-    if not block_edges:  # no text blocks
-        raise ValueError("Docstring not found by gallery.\n"
-                         "Please check the layout of your"
-                         " example file:\n {}\n and make sure"
-                         " it's correct".format(source_file))
-    else:
-        # append last line if missing
-        if not block_edges[-1] == erow:  # iffy: I'm using end state of loop
-            block_edges.append(erow)
-
-    return sorted(set(block_edges)), text_edges
-
-
 def split_code_and_text_blocks(source_file):
     """Return list with source file separated into code and text blocks.
 
@@ -139,23 +106,22 @@ def split_code_and_text_blocks(source_file):
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
     """
-    block_edges, text_edges = analyze_blocks(source_file)
 
     with open(source_file) as f:
-        source_lines = f.readlines()
+        source_lines = f.read()
 
-    # Every other block should be a text block
-    blocks = []
-    slice_ranges = zip(block_edges[:-1], block_edges[1:])
-    for i, (start, end) in enumerate(slice_ranges):
-        block_label = 'text' if (start, end) in text_edges else 'code'
-        # subtract 1 from indices b/c line numbers start at 1, not 0
-        content = ''.join(source_lines[start-1:end-1])
-        blocks.append((block_label, (start, end), content))
+    doc_string = ast.get_docstring(ast.parse(source_lines))
+
+    blocks = [('text', doc_string)]
+    # Remove from source docstring, and closing whitespace with triple quotes
+    end_doc = source_lines.find(doc_string) + len(doc_string)
+    source_lines = source_lines[end_doc:].lstrip()[3:]
+
+    blocks.append(('code', source_lines))
 
     blocks = [s for s in blocks if s[-1].strip() != '']
     newblocks = []
-    for block_label, (start, end), content in blocks:
+    for block_label, content in blocks:
         if block_label == 'text':
             newblocks.append(('text', content))
         if block_label == 'code':
@@ -345,7 +311,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
    /%s/%s\n""" % (target_dir, fname[:-3])
 
 
-# clear at the end of the section
+    # clear at the end of the section
     fhindex += """.. raw:: html\n
     <div style='clear:both'></div>\n\n"""
 
@@ -366,7 +332,7 @@ def execute_script(code_block, example_globals, image_path, fig_count, src_file)
     orig_stdout = sys.stdout
 
     try:
-        # First CD in the original example dir, so that any file
+        # First cd in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
         my_buffer = StringIO()

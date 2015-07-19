@@ -40,24 +40,23 @@ def dummy():
 #
 #Making a line cut in sphinx
 
-"""
-.. warning::
-    The next kind of comments are not supported and become to hard to escape
-    so just don't code like this.
+################################################################################
+# .. warning::
+#     The next kind of comments are not supported and become to hard to escape
+#     so just don't code like this.
+#
+# .. code-block:: python
+#
+#     def dummy2():
+#         \"\"\"Function docstring\"\"\"
+#     ####################################
+#     # This comment inside python indentation
+#     # breaks the block structure and is not
+#     # supported
+#         dummy2
+#
 
-.. code-block:: python
-
-    def dummy2():
-        \"\"\"Function docstring\"\"\"
-    ####################################
-    # This comment inside python indentation
-    # breaks the block structure and is not
-    # supported
-        dummy2
-
-"""
-
-"""Free strings are supported"""
+"""Free strings are not supported they remain part of the code"""
 
 ##############################################################################
 # New lines can be included in you block comments and the parser

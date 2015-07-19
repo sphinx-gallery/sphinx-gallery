@@ -1,5 +1,5 @@
 [('text',
-  '"""\n====================\nThe Header Docstring\n====================\n\nClosing this string quotes on same line"""\n'),
+  '====================\nThe Header Docstring\n====================\n\nClosing this string quotes on same line'),
  ('text', 'Direct first comment\nwith second line\n'),
  ('code', '\nimport numpy as np\n\n'),
  ('code', 'a=1\n\nimport matplotlib.pyplot as plt\n\n'),
@@ -11,12 +11,12 @@
  ('text',
   '\n####################################################################\n\nMaking a line cut in sphinx\n'),
  ('text',
-  '"""\n.. warning::\n    The next kind of comments are not supported and become to hard to escape\n    so just don\'t code like this.\n\n.. code-block:: python\n\n    def dummy2():\n        \\"\\"\\"Function docstring\\"\\"\\"\n    ####################################\n    # This comment inside python indentation\n    # breaks the block structure and is not\n    # supported\n        dummy2\n\n"""\n'),
- ('text', '"""Free strings are supported"""\n'),
+  '.. warning::\n    The next kind of comments are not supported and become to hard to escape\n    so just don\'t code like this.\n\n.. code-block:: python\n\n    def dummy2():\n        \\"\\"\\"Function docstring\\"\\"\\"\n    ####################################\n    # This comment inside python indentation\n    # breaks the block structure and is not\n    # supported\n        dummy2\n\n'),
+ ('code', '\n"""Free strings are not supported they remain part of the code"""\n\n'),
  ('text',
   'New lines can be included in you block comments and the parser\nis capable of retaining this significant whitespace to work with sphinx\n\nSo the reStructuredText headers survive\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n'),
  ('code', "\n\n\nprint('one')\n\nprint('two')\n"),
  ('text', '\n'),
  ('code', 'a=1\n\n'),
  ('text',
-  "End comments\n\nThat's all folks !\n\n.. literalinclude:: plot_parse.py\n\n\n")] 
+  "End comments\n\nThat's all folks !\n\n.. literalinclude:: plot_parse.py\n\n\n")]
