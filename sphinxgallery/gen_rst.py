@@ -109,9 +109,9 @@ def split_code_and_text_blocks(source_file):
     with open(source_file) as f:
         source_lines = f.read()
 
-    doc_string = ast.get_docstring(ast.parse(source_lines))
+    docstring = ast.get_docstring(ast.parse(source_lines))
 
-    blocks = [('text', doc_string)]
+    blocks = [('text', docstring)]
     # Remove from source_lines the docstring
     end_doc = [m.end() for m in re.finditer('"""', source_lines)][1]
     source_lines = source_lines[end_doc:]
