@@ -117,6 +117,39 @@ CODE_OUTPUT = """**Script output**:\n
 {0}\n"""
 
 
+def get_docstring_and_rest(filename):
+    """Separate `filename` content between docstring and the rest
+
+    Strongly inspired from ast.get_docstring.
+
+    Returns
+    -------
+    docstring: str
+        docstring of `filename`
+    rest: str
+        `filename` content without the docstring
+    """
+    with open(filename) as f:
+        content = f.read()
+
+    node = ast.parse(content)
+    if not isinstance(node, ast.Module):
+        raise TypeError("This function only supports modules. "
+                        "You provided {0}".format(node.__class__.__name__))
+    if node.body and isinstance(node.body[0], ast.Expr) and \
+       isinstance(node.body[0].value, ast.Str):
+        docstring_node = node.body[0]
+        docstring = docstring_node.value.s
+        # This get the content of the file after the docstring last line
+        # Note: 'maxsplit' argument is not a keyword argument in python2
+        rest = content.split('\n', docstring_node.lineno)[-1]
+        return docstring, rest
+    else:
+        raise ValueError(('Could not find docstring in file "{0}". '
+                          'A docstring is required by sphinx-gallery')
+                         .format(filename))
+
+
 def split_code_and_text_blocks(source_file):
     """Return list with source file separated into code and text blocks.
 
@@ -126,19 +159,12 @@ def split_code_and_text_blocks(source_file):
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
     """
-
-    with open(source_file) as f:
-        source_lines = f.read()
-
-    docstring = ast.get_docstring(ast.parse(source_lines))
+    docstring, rest_of_content = get_docstring_and_rest(source_file)
 
     blocks = [('text', docstring)]
-    # Remove from source_lines the docstring
-    end_doc = [m.end() for m in re.finditer('"""', source_lines)][1]
-    source_lines = source_lines[end_doc:]
 
     pattern = re.compile('^#{20,}.*\s((?:^#.*\s)*)', flags=re.M)
-    split_block = re.split(pattern, source_lines)
+    split_block = re.split(pattern, rest_of_content)
     for split_code_block in split_block:
         if split_code_block is None or split_code_block.strip() == '':
             continue
