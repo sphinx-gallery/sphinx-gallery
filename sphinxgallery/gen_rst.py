@@ -18,7 +18,7 @@ import traceback
 import sys
 import subprocess
 import warnings
-from textwrap import indent, dedent
+from textwrap import dedent
 from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
 
@@ -45,6 +45,27 @@ except ImportError:
     # not impose the matplotlib requirement in that case.
     pass
 
+
+try:
+    # textwrap indent only exists in python 3
+    from textwrap import indent
+except ImportError:
+    def indent(text, prefix, predicate=None):
+        """Adds 'prefix' to the beginning of selected lines in 'text'.
+
+        If 'predicate' is provided, 'prefix' will only be added to the lines
+        where 'predicate(line)' is True. If 'predicate' is not provided,
+        it will default to adding 'prefix' to all non-empty lines that do not
+        consist solely of whitespace characters.
+        """
+        if predicate is None:
+            def predicate(line):
+                return line.strip()
+
+        def prefixed_lines():
+            for line in text.splitlines(True):
+                yield (prefix + line if predicate(line) else line)
+        return ''.join(prefixed_lines())
 
 ###############################################################################
 
@@ -134,7 +155,7 @@ def split_code_and_text_blocks(source_file):
 def codestr2rst(codestr):
     """Return reStructuredText code block from code string"""
     code_directive = "\n.. code-block:: python\n\n"
-    indented_block = indent(codestr, '    ')
+    indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
 
@@ -340,7 +361,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
         my_stdout = my_buffer.getvalue().strip().expandtabs()
         if my_stdout:
-            stdout = CODE_OUTPUT.format(indent(my_stdout))
+            stdout = CODE_OUTPUT.format(indent(my_stdout, ' ' * 4))
         os.chdir(cwd)
         figure_list = save_figures(image_path, fig_count)
 
