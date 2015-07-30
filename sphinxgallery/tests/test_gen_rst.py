@@ -5,8 +5,10 @@
 Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
+import tempfile
+
 import sphinxgallery.gen_rst as sg
-from nose.tools import assert_equals
+from nose.tools import assert_equals, assert_false
 import ast
 
 
@@ -38,3 +40,29 @@ def test_codestr2rst():
 
     print("hello world")"""
     assert_equals(reference, output)
+
+
+def test_extract_intro():
+    with tempfile.NamedTemporaryFile('w') as f:
+        f.write('\n'.join(['"""'
+                           'Docstring header',
+                           '================',
+                           '',
+                           'This is the description of the example',
+                           'which goes on and on',
+                           '',
+                           '',
+                           'And this is a second paragraph',
+                           '"""',
+                           '',
+                           '# and now comes the module code',
+                           'x, y = 1, 2']))
+
+        f.flush()
+
+        result = sg.extract_intro(f.name)
+        assert_false('Docstring' in result)
+        assert_equals(
+            result,
+            'This is the description of the example which goes on and on')
+        assert_false('second paragraph' in result)
