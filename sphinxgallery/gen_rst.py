@@ -18,7 +18,7 @@ import traceback
 import sys
 import subprocess
 import warnings
-from textwrap import dedent
+from textwrap import indent, dedent
 from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
 
@@ -93,7 +93,7 @@ CODE_OUTPUT = """**Script output**:\n
 
   ::
 
-    {0}\n"""
+{0}\n"""
 
 
 def split_code_and_text_blocks(source_file):
@@ -134,7 +134,7 @@ def split_code_and_text_blocks(source_file):
 def codestr2rst(codestr):
     """Return reStructuredText code block from code string"""
     code_directive = "\n.. code-block:: python\n\n"
-    indented_block = '    ' + codestr.replace('\n', '\n    ')
+    indented_block = indent(codestr, '    ')
     return code_directive + indented_block
 
 
@@ -340,7 +340,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
         my_stdout = my_buffer.getvalue().strip().expandtabs()
         if my_stdout:
-            stdout = CODE_OUTPUT.format(my_stdout.replace('\n', '\n    '))
+            stdout = CODE_OUTPUT.format(indent(my_stdout))
         os.chdir(cwd)
         figure_list = save_figures(image_path, fig_count)
 
