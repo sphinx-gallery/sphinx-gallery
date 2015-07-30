@@ -196,20 +196,21 @@ def text2string(content):
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
-    first_text = split_code_and_text_blocks(filename)[0][-1]
+    docstring, _ = get_docstring_and_rest(filename)
 
-    paragraphs = first_text.split('\n\n')
-    if len(first_text) > 1:
-        first_par = re.sub('\n', ' ', paragraphs[1])
-        first_par = ((first_par[:95] + '...')
-                     if len(first_par) > 95 else first_par)
+    # lstrip is just in case docstring has a '\n\n' at the beginning
+    paragraphs = docstring.lstrip().split('\n\n')
+    if len(paragraphs) > 1:
+        first_paragraph = re.sub('\n', ' ', paragraphs[1])
+        first_paragraph = (first_paragraph[:95] + '...'
+                           if len(first_paragraph) > 95 else first_paragraph)
     else:
-        raise ValueError("Missing first paragraph."
-                         "Please check the layout of your"
-                         " example file:\n {}\n and make sure"
-                         " it's correct.".format(filename))
+        raise ValueError(
+            "Example docstring should have a header for the example title "
+            "and at least a paragraph explaining what the example is about. "
+            "Please check the example file:\n {}\n".format(filename))
 
-    return first_par
+    return first_paragraph
 
 
 def _plots_are_current(src_file, image_file):
