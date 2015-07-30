@@ -401,6 +401,9 @@ def generate_file_rst(fname, target_dir, src_dir):
     else:
         example_globals = {}
         fig_count = 0
+        # A simple example has two blocks: one for the
+        # example introduction/explanation and one for the code
+        is_example_notebook_like = len(script_blocks) > 2
         for blabel, bcontent in script_blocks:
             if blabel == 'code':
                 code_output, rtime, fig_count = execute_script(bcontent,
@@ -410,14 +413,14 @@ def generate_file_rst(fname, target_dir, src_dir):
                                                                src_file)
 
                 time_elapsed += rtime
-                # Single example style
-                if len(script_blocks) == 2:
-                    example_rst += code_output
+
+                if is_example_notebook_like:
                     example_rst += codestr2rst(bcontent)+'\n'
-                # Notebook style
+                    example_rst += code_output
                 else:
-                    example_rst += codestr2rst(bcontent)+'\n'
                     example_rst += code_output
+                    example_rst += codestr2rst(bcontent)+'\n'
+
             else:
                 example_rst += text2string(bcontent)+'\n'
 
