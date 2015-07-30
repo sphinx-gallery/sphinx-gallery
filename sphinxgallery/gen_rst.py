@@ -123,8 +123,8 @@ def split_code_and_text_blocks(source_file):
             continue
         elif split_code_block.startswith('#'):
             sub_pat = re.compile('^#', flags=re.M)
-            coment_block = dedent(re.sub(sub_pat, '', split_code_block))
-            blocks.append(('text', coment_block))
+            comment_block = dedent(re.sub(sub_pat, '', split_code_block))
+            blocks.append(('text', comment_block))
         else:
             blocks.append(('code', split_code_block))
 
@@ -169,8 +169,9 @@ def _plots_are_current(src_file, image_file):
     """Test existence of image file and later touch time to source script"""
 
     first_image_file = image_file.format(1)
-    needs_replot = (not os.path.exists(first_image_file) or
-              os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
+    needs_replot = (
+        not os.path.exists(first_image_file) or
+        os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
     return not needs_replot
 
 
@@ -286,7 +287,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
-                                if fname.endswith('py')]
+                      if fname.endswith('py')]
     for fname in sorted_listdir:
         generate_file_rst(fname, target_dir, src_dir)
         new_fname = os.path.join(src_dir, fname)
@@ -302,7 +303,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
    /%s/%s\n""" % (target_dir, fname[:-3])
 
-
     # clear at the end of the section
     fhindex += """.. raw:: html\n
     <div style='clear:both'></div>\n\n"""
@@ -310,7 +310,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex
 
 
-def execute_script(code_block, example_globals, image_path, fig_count, src_file):
+def execute_script(code_block, example_globals, image_path, fig_count,
+                   src_file):
     """Executes the code block of the example file"""
     time_elapsed = 0
     stdout = ''
