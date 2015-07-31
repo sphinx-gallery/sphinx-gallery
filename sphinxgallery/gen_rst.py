@@ -261,10 +261,12 @@ def save_figures(image_path, fig_count, gallery_conf):
     if gallery_conf.get('use_mayavi', False):
         from mayavi import mlab
         e = mlab.get_engine()
-        last_fig_num = len(figure_list)
-        for scene in e.scenes:
-            last_fig_num += 1
-            current_fig = image_path.format(last_fig_num)
+        last_matplotlib_fig_num = len(figure_list)
+        total_fig_num = last_matplotlib_fig_num + len(e.scenes)
+        mayavi_fig_nums = range(last_matplotlib_fig_num, total_fig_num)
+
+        for scene, mayavi_fig_num in zip(e.scenes, mayavi_fig_nums):
+            current_fig = image_path.format(mayavi_fig_num)
             mlab.savefig(current_fig, figure=scene)
             # make sure the image is not too large
             scale_image(current_fig, current_fig, 850, 999)
@@ -461,6 +463,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     exec_script = fname.startswith('plot')
     use_mayavi = gallery_conf.get('use_mayavi', False)
     if not use_mayavi and any('mayavi' in bl[1] for bl in script_blocks):
+        # this says that we don't want to execute an example that uses mayavi
+        # if use_mayavi is False. Otherwise the demo gallery does not build
+        # fine if mayavi is not present.
         exec_script = False
 
     if not exec_script:

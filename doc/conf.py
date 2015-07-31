@@ -277,7 +277,7 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 try:
     from mayavi import mlab
     use_mayavi = True
-except ImportError, e:
+except ImportError:
     use_mayavi = False
 
 sphinxgallery_conf = {
