@@ -33,8 +33,10 @@ def clean_gallery_out(build_dir):
 
 
 def generate_gallery_rst(app):
-    """Starts the gallery configuration and recursively scans the examples
-    directory in order to populate the examples gallery
+    """Generate the Main examples gallery reStructuredText
+
+    Start the sphinx-gallery configuration and recursively scan the examples
+    directories in order to populate the examples gallery
     """
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)
@@ -52,35 +54,42 @@ def generate_gallery_rst(app):
 
     clean_gallery_out(app.builder.outdir)
 
-    examples_dir = os.path.relpath(gallery_conf['examples_dir'],
-                                   app.builder.srcdir)
-    gallery_dir = os.path.relpath(gallery_conf['gallery_dir'],
-                                  app.builder.srcdir)
+    examples_dirs = gallery_conf['examples_dir']
+    gallery_dirs = gallery_conf['gallery_dir']
+
+    if not isinstance(examples_dirs, list):
+        examples_dirs = [examples_dirs]
+    if not isinstance(gallery_dirs, list):
+        gallery_dirs = [gallery_dirs]
+
     mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
                                        app.builder.srcdir)
-
-    for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
-        if not os.path.exists(workdir):
-            os.makedirs(workdir)
-
-    # we create an index.rst with all examples
-    fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
-    fhindex.write(""".. _examples-index:
-
-Gallery of Examples
-===================\n\n""")
-    # Here we don't use an os.walk, but we recurse only twice: flat is
-    # better than nested.
     seen_backrefs = set()
-    fhindex.write(generate_dir_rst(examples_dir, gallery_dir, gallery_conf,
-                                   plot_gallery, seen_backrefs))
-    for directory in sorted(os.listdir(examples_dir)):
-        if os.path.isdir(os.path.join(examples_dir, directory)):
-            src_dir = os.path.join(examples_dir, directory)
-            target_dir = os.path.join(gallery_dir, directory)
-            fhindex.write(generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                           plot_gallery, seen_backrefs))
-    fhindex.flush()
+
+    for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
+        examples_dir = os.path.relpath(examples_dir,
+                                       app.builder.srcdir)
+        gallery_dir = os.path.relpath(gallery_dir,
+                                      app.builder.srcdir)
+
+        for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
+            if not os.path.exists(workdir):
+                os.makedirs(workdir)
+
+        # we create an index.rst with all examples
+        fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
+        # Here we don't use an os.walk, but we recurse only twice: flat is
+        # better than nested.
+        fhindex.write(generate_dir_rst(examples_dir, gallery_dir, gallery_conf,
+                                       seen_backrefs))
+        for directory in sorted(os.listdir(examples_dir)):
+            if os.path.isdir(os.path.join(examples_dir, directory)):
+                src_dir = os.path.join(examples_dir, directory)
+                target_dir = os.path.join(gallery_dir, directory)
+                fhindex.write(generate_dir_rst(src_dir, target_dir,
+                                               gallery_conf,
+                                               seen_backrefs))
+        fhindex.flush()
 
 
 gallery_conf = {
@@ -91,16 +100,16 @@ gallery_conf = {
     'reference_url'  : {},
 }
 
+
 def setup(app):
+    """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('plot_gallery', True, 'html')
     app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
-
     app.connect('builder-inited', generate_gallery_rst)
 
     app.connect('build-finished', embed_code_links)
-
 
 
 def setup_module():

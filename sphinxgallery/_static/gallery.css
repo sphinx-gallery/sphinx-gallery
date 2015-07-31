@@ -53,7 +53,7 @@ div.sphx-glr-thumbContainer {
     bottom: 58%; }
 
 .sphx-glr-script-out pre {
-  overflow-y: scroll;
+  overflow-y: auto;
   max-height: 30em; }
 
 ul.sphx-glr-horizontal {
