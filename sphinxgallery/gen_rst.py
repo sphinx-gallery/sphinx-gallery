@@ -191,7 +191,7 @@ def text2string(content):
     """Returns a string without the extra triple quotes"""
     try:
         return ast.literal_eval(content) + '\n'
-    except:
+    except Exception:
         return content
 
 
