@@ -69,8 +69,10 @@ except ImportError:
 
 ###############################################################################
 
+
 class Tee(object):
     """A tee object to redirect streams to multiple outputs"""
+
     def __init__(self, file1, file2):
         self.file1 = file1
         self.file2 = file2
@@ -188,7 +190,7 @@ def codestr2rst(codestr):
 def text2string(content):
     """Returns a string without the extra triple quotes"""
     try:
-        return ast.literal_eval(content)+'\n'
+        return ast.literal_eval(content) + '\n'
     except:
         return content
 
@@ -445,7 +447,7 @@ def generate_file_rst(fname, target_dir, src_dir):
     if not fname.startswith('plot'):
         convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:
-            example_rst += convert_func[blabel](bcontent)+'\n'
+            example_rst += convert_func[blabel](bcontent) + '\n'
     else:
         example_globals = {}
         fig_count = 0
@@ -463,14 +465,14 @@ def generate_file_rst(fname, target_dir, src_dir):
                 time_elapsed += rtime
 
                 if is_example_notebook_like:
-                    example_rst += codestr2rst(bcontent)+'\n'
+                    example_rst += codestr2rst(bcontent) + '\n'
                     example_rst += code_output
                 else:
                     example_rst += code_output
-                    example_rst += codestr2rst(bcontent)+'\n'
+                    example_rst += codestr2rst(bcontent) + '\n'
 
             else:
-                example_rst += text2string(bcontent)+'\n'
+                example_rst += text2string(bcontent) + '\n'
 
     save_thumbnail(image_path, base_image_name)
 

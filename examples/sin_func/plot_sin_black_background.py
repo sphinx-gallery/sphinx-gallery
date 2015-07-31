@@ -24,7 +24,7 @@ axes.yaxis.set_tick_params(color=fg_color, labelcolor=fg_color)
 for spine in axes.spines.values():
     spine.set_color(fg_color)
 
-x = np.linspace(0, 2*np.pi, 100)
+x = np.linspace(0, 2 * np.pi, 100)
 y = np.sin(x)
 
 plt.plot(x, y, 'cyan', axes=axes)

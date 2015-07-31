@@ -323,9 +323,9 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         try:
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
-                                                            app.builder.outdir,
-                                                            gallery_dir,
-                                                            relative=True)
+                    app.builder.outdir,
+                    gallery_dir,
+                    relative=True)
             else:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(url,
                                                                    gallery_dir)
@@ -403,7 +403,6 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             line = expr.sub(substitute_link, line)
                             fid.write(line.encode('utf-8'))
     print('[done]')
-
 
 
 def embed_code_links(app, exception):

@@ -10,7 +10,6 @@ import ast
 import os
 
 
-
 # Try Python 2 first, otherwise load from Python 3
 try:
     import cPickle as pickle

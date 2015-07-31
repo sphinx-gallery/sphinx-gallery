@@ -93,11 +93,11 @@ def generate_gallery_rst(app):
 
 
 gallery_conf = {
-    'examples_dir'   : '../examples',
-    'gallery_dir'    : 'auto_examples',
+    'examples_dir': '../examples',
+    'gallery_dir': 'auto_examples',
     'mod_example_dir': 'modules/generated',
-    'doc_module'     : (),
-    'reference_url'  : {},
+    'doc_module': (),
+    'reference_url': {},
 }
 
 
