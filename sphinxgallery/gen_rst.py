@@ -389,7 +389,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
-    figure_list = []
+
     try:
         # First cd in the original example dir, so that any file
         # created by the example get created in this directory
@@ -421,6 +421,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     except Exception:
+        figure_list = []
         image_list = '%s is not compiling:' % src_file
         print(80 * '_')
         print(image_list)
