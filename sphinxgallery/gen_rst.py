@@ -258,7 +258,7 @@ def save_figures(image_path, fig_count, gallery_conf):
         fig.savefig(current_fig, **kwargs)
         figure_list.append(current_fig)
 
-    if gallery_conf.get('use_mayavi', False):
+    if gallery_conf.get('find_mayavi_figures', False):
         from mayavi import mlab
         e = mlab.get_engine()
         last_matplotlib_fig_num = len(figure_list)
@@ -461,15 +461,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
-    exec_script = fname.startswith('plot')
-    use_mayavi = gallery_conf.get('use_mayavi', False)
-    if not use_mayavi and any('mayavi' in bl[1] for bl in script_blocks):
-        # this says that we don't want to execute an example that uses mayavi
-        # if use_mayavi is False. Otherwise the demo gallery does not build
-        # fine if mayavi is not present.
-        exec_script = False
-
-    if not exec_script:
+    if not fname.startswith('plot'):
         convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:
             example_rst += convert_func[blabel](bcontent) + '\n'
