@@ -6,7 +6,7 @@ Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
 import sphinxgallery.backreferences as sg
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 
 
 def test_thumbnail_div():
@@ -28,4 +28,4 @@ def test_thumbnail_div():
     </div>
 """
 
-    assert_equals(html_div, reference)
+    assert_equal(html_div, reference)

@@ -8,7 +8,7 @@ from __future__ import division, absolute_import, print_function
 import sphinxgallery.docs_resolv as sg
 import tempfile
 import sys
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 
 
 def test_shelve():
@@ -23,12 +23,12 @@ def test_shelve():
         # recovers data from temporary file and caches it in the shelve
         file_data = sg.get_data(fid.name, tmp_cache)
         # tests recovered data matches
-        assert_equals(file_data, test_string)
+        assert_equal(file_data, test_string)
 
     # test if cached data is available after temporary file has vanished
-    assert_equals(sg.get_data(fid.name, tmp_cache), test_string)
+    assert_equal(sg.get_data(fid.name, tmp_cache), test_string)
 
     # shelve keys need to be str in python 2, deal with unicode input
     if sys.version_info[0] == 2:
         unicode_name = unicode(fid.name)
-        assert_equals(sg.get_data(unicode_name, tmp_cache), test_string)
+        assert_equal(sg.get_data(unicode_name, tmp_cache), test_string)

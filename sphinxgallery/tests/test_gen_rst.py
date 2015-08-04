@@ -8,7 +8,7 @@ from __future__ import division, absolute_import, print_function
 import tempfile
 
 import sphinxgallery.gen_rst as sg
-from nose.tools import assert_equals, assert_false
+from nose.tools import assert_equal, assert_false
 import ast
 
 
@@ -17,8 +17,8 @@ def test_split_code_and_text_blocks():
 
     blocks = sg.split_code_and_text_blocks('examples/just_code.py')
 
-    assert_equals(blocks[0][0], 'text')
-    assert_equals(blocks[1][0], 'code')
+    assert_equal(blocks[0][0], 'text')
+    assert_equal(blocks[1][0], 'code')
 
 
 def test_bug_cases_of_notebook_syntax():
@@ -29,7 +29,7 @@ def test_bug_cases_of_notebook_syntax():
         ref_blocks = ast.literal_eval(reference.read())
         blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
-        assert_equals(blocks, ref_blocks)
+        assert_equal(blocks, ref_blocks)
 
 
 def test_codestr2rst():
@@ -39,7 +39,7 @@ def test_codestr2rst():
 .. code-block:: python
 
     print("hello world")"""
-    assert_equals(reference, output)
+    assert_equal(reference, output)
 
 
 def test_extract_intro():
@@ -62,7 +62,7 @@ def test_extract_intro():
 
         result = sg.extract_intro(f.name)
         assert_false('Docstring' in result)
-        assert_equals(
+        assert_equal(
             result,
             'This is the description of the example which goes on and on')
         assert_false('second paragraph' in result)
