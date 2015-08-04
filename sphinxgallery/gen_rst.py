@@ -225,7 +225,7 @@ def _plots_are_current(src_file, image_file):
     return not needs_replot
 
 
-def save_figures(image_path, fig_count):
+def save_figures(image_path, fig_count, gallery_conf):
     """Save all open matplotlib figures of the example code-block
 
     Parameters
@@ -257,6 +257,22 @@ def save_figures(image_path, fig_count):
         current_fig = image_path.format(fig_count + fig_mngr.num)
         fig.savefig(current_fig, **kwargs)
         figure_list.append(current_fig)
+
+    if gallery_conf.get('find_mayavi_figures', False):
+        from mayavi import mlab
+        e = mlab.get_engine()
+        last_matplotlib_fig_num = len(figure_list)
+        total_fig_num = last_matplotlib_fig_num + len(e.scenes)
+        mayavi_fig_nums = range(last_matplotlib_fig_num, total_fig_num)
+
+        for scene, mayavi_fig_num in zip(e.scenes, mayavi_fig_nums):
+            current_fig = image_path.format(mayavi_fig_num)
+            mlab.savefig(current_fig, figure=scene)
+            # make sure the image is not too large
+            scale_image(current_fig, current_fig, 850, 999)
+            figure_list.append(current_fig)
+        mlab.close(all=True)
+
     return figure_list
 
 
@@ -339,7 +355,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
                       if fname.endswith('py')]
     for fname in sorted_listdir:
-        generate_file_rst(fname, target_dir, src_dir)
+        generate_file_rst(fname, target_dir, src_dir, gallery_conf)
         new_fname = os.path.join(src_dir, fname)
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
@@ -361,7 +377,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
 
 def execute_script(code_block, example_globals, image_path, fig_count,
-                   src_file):
+                   src_file, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
     stdout = ''
@@ -392,7 +408,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, ' ' * 4))
         os.chdir(cwd)
-        figure_list = save_figures(image_path, fig_count)
+        figure_list = save_figures(image_path, fig_count, gallery_conf)
 
         # Depending on whether we have one or more figures, we're using a
         # horizontal list or a single rst call to 'image'.
@@ -405,6 +421,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     except Exception:
+        figure_list = []
         image_list = '%s is not compiling:' % src_file
         print(80 * '_')
         print(image_list)
@@ -420,7 +437,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     return code_output, time_elapsed, fig_count + len(figure_list)
 
 
-def generate_file_rst(fname, target_dir, src_dir):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """ Generate the rst file for a given example."""
 
     src_file = os.path.join(src_dir, fname)
@@ -460,7 +477,8 @@ def generate_file_rst(fname, target_dir, src_dir):
                                                                example_globals,
                                                                image_path,
                                                                fig_count,
-                                                               src_file)
+                                                               src_file,
+                                                               gallery_conf)
 
                 time_elapsed += rtime
 

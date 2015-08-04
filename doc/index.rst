@@ -22,6 +22,7 @@ Contents:
    reference
    auto_examples/index
    tutorials/index
+   auto_mayavi_examples/index
 
 Sphinx-Gallery Show: :ref:`examples-index`
 ''''''''''''''''''''''''''''''''''''''''''
