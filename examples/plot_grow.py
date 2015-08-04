@@ -8,7 +8,6 @@ A simple example for ploting two figures of a exponential
 function in order to test the autonomy of the gallery
 stacking multiple images.
 """
-
 # Code source: Óscar Nájera
 # License: BSD 3 clause
 
