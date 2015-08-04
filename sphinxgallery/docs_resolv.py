@@ -409,16 +409,18 @@ def embed_code_links(app, exception):
     """Embed hyperlinks to documentation into example code"""
     if exception is not None:
         return
+
     # No need to waste time embedding hyperlinks when not running the examples
     # XXX: also at the time of writing this fixes make html-noplot
     # for some reason I don't fully understand
     if not app.builder.config.plot_gallery:
         return
-    print('Embedding documentation hyperlinks in examples..')
 
+    # Don't embed hyperlinks when a latex builder is used.
     if app.builder.name == 'latex':
-        # Don't embed hyperlinks when a latex builder is used.
         return
+
+    print('Embedding documentation hyperlinks in examples..')
 
     gallery_conf = app.config.sphinxgallery_conf
 
