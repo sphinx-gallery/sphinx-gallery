@@ -32,6 +32,28 @@ def test_bug_cases_of_notebook_syntax():
         assert_equal(blocks, ref_blocks)
 
 
+def test_direct_comment_after_docstring():
+    # For more details see
+    # https://github.com/sphinx-gallery/sphinx-gallery/pull/49
+    with tempfile.NamedTemporaryFile('w') as f:
+        f.write('\n'.join(['"Docstring"',
+                           '# and now comes the module code',
+                           '# with a second line of comment',
+                           'x, y = 1, 2',
+                           '']))
+        f.flush()
+
+        result = sg.split_code_and_text_blocks(f.name)
+
+    expected_result = [
+        ('text', 'Docstring'),
+        ('code', '\n'.join(['# and now comes the module code',
+                            '# with a second line of comment',
+                            'x, y = 1, 2',
+                            '']))]
+    assert_equal(result, expected_result)
+
+
 def test_codestr2rst():
     """Test the correct translation of a code block into rst"""
     output = sg.codestr2rst('print("hello world")')
