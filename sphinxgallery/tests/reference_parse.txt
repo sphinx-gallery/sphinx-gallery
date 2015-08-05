@@ -17,7 +17,6 @@
  ('text',
   'New lines can be included in you block comments and the parser\nis capable of retaining this significant whitespace to work with sphinx\n\nSo the reStructuredText headers survive\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n'),
  ('code', "\n\nprint('one')\n\nprint('two')\n"),
- ('text', '\n'),
  ('code', 'B = 1\n\n'),
  ('text',
   "End comments\n\nThat's all folks !\n\n.. literalinclude:: plot_parse.py\n\n\n")]

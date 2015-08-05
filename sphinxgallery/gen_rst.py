@@ -165,17 +165,26 @@ def split_code_and_text_blocks(source_file):
 
     blocks = [('text', docstring)]
 
-    pattern = re.compile('^#{20,}.*\s((?:^#.*\s)*)', flags=re.M)
-    split_block = re.split(pattern, rest_of_content)
-    for split_code_block in split_block:
-        if split_code_block is None or split_code_block.strip() == '':
-            continue
-        elif split_code_block.startswith('#'):
-            sub_pat = re.compile('^#', flags=re.M)
-            comment_block = dedent(re.sub(sub_pat, '', split_code_block))
-            blocks.append(('text', comment_block))
-        else:
-            blocks.append(('code', split_code_block))
+    pattern = re.compile(
+        r'(?P<header_line>^#{20,}.*)\s(?P<text_content>(?:^#.*\s)*)',
+        flags=re.M)
+
+    pos_so_far = 0
+    for match in re.finditer(pattern, rest_of_content):
+        match_start_pos, match_end_pos = match.span()
+        code_block_content = rest_of_content[pos_so_far:match_start_pos]
+        text_content = match.group('text_content')
+        sub_pat = re.compile('^#', flags=re.M)
+        text_block_content = dedent(re.sub(sub_pat, '', text_content))
+        if code_block_content.strip():
+            blocks.append(('code', code_block_content))
+        if text_block_content.strip():
+            blocks.append(('text', text_block_content))
+        pos_so_far = match_end_pos
+
+    remaining_content = rest_of_content[pos_so_far:]
+    if remaining_content.strip():
+        blocks.append(('code', remaining_content))
 
     return blocks
 
