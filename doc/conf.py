@@ -284,6 +284,9 @@ try:
     find_mayavi_figures = True
     examples_dirs.append('../mayavi_examples')
     gallery_dirs.append('auto_mayavi_examples')
+    # Do not pop up any mayavi windows while running the
+    # examples. These are very annoying since they steal the focus.
+    mlab.options.offscreen = True
 except ImportError:
     find_mayavi_figures = False
 
