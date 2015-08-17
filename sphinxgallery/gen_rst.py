@@ -475,7 +475,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         for blabel, bcontent in script_blocks:
             example_rst += convert_func[blabel](bcontent) + '\n'
     else:
-        example_globals = {}
+        # A lot of examples contains 'print(__doc__)' for example in
+        # scikit-learn so that running the example prints some useful
+        # information. Because the docstring has been separated from
+        # the code blocks in sphinx-gallery, __doc__ is actually
+        # __builtin__.__doc__ in the execution context and we do not
+        # want to print it
+        example_globals = {'__doc__': ''}
         fig_count = 0
         # A simple example has two blocks: one for the
         # example introduction/explanation and one for the code
