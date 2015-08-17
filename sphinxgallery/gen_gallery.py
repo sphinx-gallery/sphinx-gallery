@@ -54,8 +54,8 @@ def generate_gallery_rst(app):
 
     clean_gallery_out(app.builder.outdir)
 
-    examples_dirs = gallery_conf['examples_dir']
-    gallery_dirs = gallery_conf['gallery_dir']
+    examples_dirs = gallery_conf['examples_dirs']
+    gallery_dirs = gallery_conf['gallery_dirs']
 
     if not isinstance(examples_dirs, list):
         examples_dirs = [examples_dirs]
@@ -93,8 +93,8 @@ def generate_gallery_rst(app):
 
 
 gallery_conf = {
-    'examples_dir': '../examples',
-    'gallery_dir': 'auto_examples',
+    'examples_dirs': '../examples',
+    'gallery_dirs': 'auto_examples',
     'mod_example_dir': 'modules/generated',
     'doc_module': (),
     'reference_url': {},

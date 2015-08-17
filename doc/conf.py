@@ -274,16 +274,18 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
+examples_dirs = ['../examples', '../tutorials']
+gallery_dirs = ['auto_examples', 'tutorials']
 
 try:
+    # Run the mayavi examples and find the mayavi figures if mayavi is
+    # installed
     from mayavi import mlab
     find_mayavi_figures = True
-    examples_dir = ['../examples', '../tutorials', '../mayavi_examples']
-    gallery_dir = ['auto_examples', 'tutorials', 'auto_mayavi_examples']
+    examples_dirs.append('../mayavi_examples')
+    gallery_dirs.append('auto_mayavi_examples')
 except ImportError:
     find_mayavi_figures = False
-    examples_dir = ['../examples', '../tutorials']
-    gallery_dir = ['auto_examples', 'tutorials']
 
 
 sphinxgallery_conf = {
@@ -292,7 +294,7 @@ sphinxgallery_conf = {
         'sphinxgallery': None,
         'matplotlib': 'http://matplotlib.org',
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
-    'examples_dir': examples_dir,
-    'gallery_dir': gallery_dir,
+    'examples_dirs': examples_dirs,
+    'gallery_dirs': gallery_dirs,
     'find_mayavi_figures': find_mayavi_figures,
     }
