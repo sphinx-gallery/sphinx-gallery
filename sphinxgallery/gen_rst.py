@@ -330,7 +330,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def save_thumbnail(image_path, base_image_name):
+def save_thumbnail(image_path, base_image_name, gallery_conf):
     """Save the thumbnail image"""
     first_image_file = image_path.format(1)
     thumb_dir = os.path.join(os.path.dirname(first_image_file), 'thumb')
@@ -344,8 +344,10 @@ def save_thumbnail(image_path, base_image_name):
         scale_image(first_image_file, thumb_file, 400, 280)
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        scale_image(os.path.join(glr_path_static(), 'no_image.png'),
-                    thumb_file, 200, 140)
+        default_thumb_file = os.path.join(glr_path_static(), 'no_image.png')
+        default_thumb_file = gallery_conf.get("default_thumb_file",
+                                              default_thumb_file)
+        scale_image(default_thumb_file, thumb_file, 200, 140)
 
 
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
@@ -507,7 +509,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             else:
                 example_rst += text2string(bcontent) + '\n'
 
-    save_thumbnail(image_path, base_image_name)
+    save_thumbnail(image_path, base_image_name, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
     with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:

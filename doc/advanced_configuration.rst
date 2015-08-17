@@ -112,3 +112,15 @@ That will be rendered as
         <div style='clear:both'></div>
 
 
+Using a custom default thumbnail image
+======================================
+
+In case you want to use your own image for the thumbnail of examples that do
+not generate any plot, you can specify it by editing your Sphinx ``conf.py``
+file. You need to add to the configuration dictionary a key called
+`default_thumb_file`. For example:
+
+.. code-block:: python
+
+    sphinxgallery_conf = {
+        'default_thumb_file'     : 'path/to/thumb/file.png'}}
