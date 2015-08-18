@@ -319,8 +319,6 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
 
-    gallery_dirs = os.path.join(app.builder.srcdir, gallery_dir)
-
     for this_module, url in gallery_conf['reference_url'].items():
         try:
             if url is None:
