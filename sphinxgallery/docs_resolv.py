@@ -70,6 +70,64 @@ def get_data(url, gallery_dir):
     return data
 
 
+def _select_block(str_in, start_tag, end_tag):
+    """Select first block delimited by start_tag and end_tag"""
+    start_pos = str_in.find(start_tag)
+    if start_pos < 0:
+        raise ValueError('start_tag not found')
+    depth = 0
+    for pos in range(start_pos, len(str_in)):
+        if str_in[pos] == start_tag:
+            depth += 1
+        elif str_in[pos] == end_tag:
+            depth -= 1
+
+        if depth == 0:
+            break
+    sel = str_in[start_pos + 1:pos]
+    return sel
+
+
+def _parse_dict_recursive(dict_str):
+    """Parse a dictionary from the search index"""
+    dict_out = dict()
+    pos_last = 0
+    pos = dict_str.find(':')
+    while pos >= 0:
+        key = dict_str[pos_last:pos]
+        if dict_str[pos + 1] == '[':
+            # value is a list
+            pos_tmp = dict_str.find(']', pos + 1)
+            if pos_tmp < 0:
+                raise RuntimeError('error when parsing dict')
+            value = dict_str[pos + 2: pos_tmp].split(',')
+            # try to convert elements to int
+            for i in range(len(value)):
+                try:
+                    value[i] = int(value[i])
+                except ValueError:
+                    pass
+        elif dict_str[pos + 1] == '{':
+            # value is another dictionary
+            subdict_str = _select_block(dict_str[pos:], '{', '}')
+            value = _parse_dict_recursive(subdict_str)
+            pos_tmp = pos + len(subdict_str)
+        else:
+            raise ValueError('error when parsing dict: unknown elem')
+
+        key = key.strip('"')
+        if len(key) > 0:
+            dict_out[key] = value
+
+        pos_last = dict_str.find(',', pos_tmp)
+        if pos_last < 0:
+            break
+        pos_last += 1
+        pos = dict_str.find(':', pos_last)
+
+    return dict_out
+
+
 def parse_sphinx_searchindex(searchindex):
     """Parse a Sphinx search index
 
@@ -85,62 +143,6 @@ def parse_sphinx_searchindex(searchindex):
     objects : dict
         The objects parsed from the search index.
     """
-    def _select_block(str_in, start_tag, end_tag):
-        """Select first block delimited by start_tag and end_tag"""
-        start_pos = str_in.find(start_tag)
-        if start_pos < 0:
-            raise ValueError('start_tag not found')
-        depth = 0
-        for pos in range(start_pos, len(str_in)):
-            if str_in[pos] == start_tag:
-                depth += 1
-            elif str_in[pos] == end_tag:
-                depth -= 1
-
-            if depth == 0:
-                break
-        sel = str_in[start_pos + 1:pos]
-        return sel
-
-    def _parse_dict_recursive(dict_str):
-        """Parse a dictionary from the search index"""
-        dict_out = dict()
-        pos_last = 0
-        pos = dict_str.find(':')
-        while pos >= 0:
-            key = dict_str[pos_last:pos]
-            if dict_str[pos + 1] == '[':
-                # value is a list
-                pos_tmp = dict_str.find(']', pos + 1)
-                if pos_tmp < 0:
-                    raise RuntimeError('error when parsing dict')
-                value = dict_str[pos + 2: pos_tmp].split(',')
-                # try to convert elements to int
-                for i in range(len(value)):
-                    try:
-                        value[i] = int(value[i])
-                    except ValueError:
-                        pass
-            elif dict_str[pos + 1] == '{':
-                # value is another dictionary
-                subdict_str = _select_block(dict_str[pos:], '{', '}')
-                value = _parse_dict_recursive(subdict_str)
-                pos_tmp = pos + len(subdict_str)
-            else:
-                raise ValueError('error when parsing dict: unknown elem')
-
-            key = key.strip('"')
-            if len(key) > 0:
-                dict_out[key] = value
-
-            pos_last = dict_str.find(',', pos_tmp)
-            if pos_last < 0:
-                break
-            pos_last += 1
-            pos = dict_str.find(':', pos_last)
-
-        return dict_out
-
     # Make sure searchindex uses UTF-8 encoding
     if hasattr(searchindex, 'decode'):
         searchindex = searchindex.decode('UTF-8')
