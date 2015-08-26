@@ -364,7 +364,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
-                      if fname.endswith('py')]
+                      if fname.endswith('.py')]
     for fname in sorted_listdir:
         generate_file_rst(fname, target_dir, src_dir, gallery_conf)
         new_fname = os.path.join(src_dir, fname)
