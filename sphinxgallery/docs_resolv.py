@@ -416,8 +416,12 @@ def embed_code_links(app, exception):
     if not app.builder.config.plot_gallery:
         return
 
-    # Don't embed hyperlinks when a latex builder is used.
-    if app.builder.name == 'latex':
+    # XXX: Whitelist of builders for which it makes sense to embed
+    # hyperlinks inside the example html. Note that the link embedding
+    # require searchindex.js to exist for the links to the local doc
+    # and there does not seem to be a good way of knowing which
+    # builders creates a searchindex.js.
+    if app.builder.name not in ['html', 'readthedocs']:
         return
 
     print('Embedding documentation hyperlinks in examples..')
