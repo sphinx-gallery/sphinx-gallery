@@ -128,24 +128,32 @@ THUMBNAIL_TEMPLATE = """
 
     <div class="sphx-glr-thumbContainer" tooltip="{snippet}">
 
-.. figure:: /{thumbnail}
+.. only:: html
 
-    :ref:`sphx_glr_{ref_name}`
+    .. figure:: /{thumbnail}
+
+        :ref:`sphx_glr_{ref_name}`
 
 .. raw:: html
 
     </div>
 """
 
+BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
+.. only:: not html
 
-def _thumbnail_div(full_dir, fname, snippet):
+    * :ref:`sphx_glr_{ref_name}`
+"""
+
+
+def _thumbnail_div(full_dir, fname, snippet, is_backref=False):
     """Generates RST to place a thumbnail in a gallery"""
     thumb = os.path.join(full_dir, 'images', 'thumb',
                          'sphx_glr_%s_thumb.png' % fname[:-3])
     ref_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
 
-    return THUMBNAIL_TEMPLATE.format(snippet=snippet,
-                                     thumbnail=thumb, ref_name=ref_name)
+    template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
+    return template.format(snippet=snippet, thumbnail=thumb, ref_name=ref_name)
 
 
 def write_backreferences(seen_backrefs, gallery_conf,
@@ -163,5 +171,6 @@ def write_backreferences(seen_backrefs, gallery_conf,
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write(heading + '\n')
                 ex_file.write('-' * len(heading) + '\n')
-            ex_file.write(_thumbnail_div(target_dir, fname, snippet))
+            ex_file.write(_thumbnail_div(target_dir, fname, snippet,
+                                         is_backref=True))
             seen_backrefs.add(backref)
