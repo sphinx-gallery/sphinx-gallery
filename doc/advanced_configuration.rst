@@ -13,8 +13,8 @@ Within your Sphinx ``conf.py`` file you need to add a configuration dictionary:
 .. code-block:: python
 
     sphinxgallery_conf = {
-        'examples_dir' : '../examples',              # path to your examples scripts
-        'gallery_dir'  : 'auto_examples'}            # path where to save gallery generated examples
+        'examples_dirs' : '../examples',              # path to your examples scripts
+        'gallery_dirs'  : 'auto_examples'}            # path where to save gallery generated examples
 
 
 Directory paths are relative to your ``conf.py`` location.
@@ -31,8 +31,8 @@ the sphinx configuration dictionary:
 .. code-block:: python
 
     sphinxgallery_conf = {
-        'examples_dir'   : ['../examples', '../tutorials'],
-        'gallery_dir'    : ['auto_examples', 'tutorials'],
+        'examples_dirs'   : ['../examples', '../tutorials'],
+        'gallery_dirs'    : ['auto_examples', 'tutorials'],
     }
 
 Keep in mind that both lists have to be of the same length.
