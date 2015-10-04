@@ -25,3 +25,11 @@ Sphinx-Gallery Reference
 
 .. automodule:: sphinx_gallery.docs_resolv
     :members:
+
+
+.. currentmodule:: sphinxgallery
+
+.. autosummary::
+
+   sphinxgallery.gen_gallery.generate_gallery_rst
+   sphinxgallery.gen_rst
