@@ -75,24 +75,37 @@ dictionary within your Sphinx ``conf.py`` file :
 Establishing local references to examples
 =========================================
 
-Linking commands in your examples to their documentation is not enough.
-Sphinx-Gallery also enables you, when documenting your modules, to reference
-into examples that use that particular module.
+Sphinx-Gallery also enables you, when documenting your modules, to
+reference into the examples that use that particular class or
+function. For example if we are documenting the numpy.linspace
+function its possible to embedd a small gallery of examples using it
+like this:
 
-In that case within your Sphinx ``conf.py`` file you need to add to their
-configuration dictionary:
+.. include:: modules/generated/numpy.linspace.examples
+.. raw:: html
+
+        <div style='clear:both'></div>
+
+
+
+For such behavior to be available you have to extend in your
+Sphinx-Gallery configuration directory with:
 
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        # path where to store your example linker templates
+        # path to store the module using example template
         'mod_example_dir'     : 'modules/generated',
 
         # Your documented modules. You can use a string or a list of strings
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
-The path you specified will get populated with the links to examples using your
-module and their methods. Then within your sphinx documentation files you
+The path you specify in ``mod_example_dir`` will get populated with
+ReStructuredText files describing the examples thumbnails with links
+to them but only for the specific module.
+
+
+Then within your sphinx documentation files you
 include these lines to include these links::
 
     .. include:: modules/generated/numpy.linspace.examples
@@ -100,16 +113,28 @@ include these lines to include these links::
 
         <div style='clear:both'></div>
 
-The file you are including is referenced with its relative path to your defined
-directory and includes all the module specific location. In this case
-``numpy.linspace``.
+Auto documenting your API with links to examples
+------------------------------------------------
 
-That will be rendered as
+The previous feature can be automated for all your modules combining
+it with the standard sphinx extension `autosummary
+<http://sphinx-doc.org/ext/autosummary.html>`. First enable it in your
+``conf.py`` extensions list.
 
-.. include:: modules/generated/numpy.linspace.examples
-.. raw:: html
+.. code-block:: python
 
-        <div style='clear:both'></div>
+    import sphinxgallery
+    extensions = [
+        ...
+	'sphinx.ext.autodoc',
+        ]
+
+Then append to your template files for classes and functions::
+
+    .. include:: {{module}}.{{objname}}.examples
+    .. raw:: html
+
+	<div class="clearer"></div>
 
 
 Using a custom default thumbnail image
