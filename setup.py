@@ -19,6 +19,7 @@ setup(
     version=sphinx_gallery.__version__,
     packages=find_packages(),
     package_data={'sphinx_gallery': ['_static/gallery.css', '_static/no_image.png']},
+    scripts=['bin/copy_sphinxgallery.sh'],
     url="https://github.com/sphinx-gallery/sphinx-gallery",
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',
