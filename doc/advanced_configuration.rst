@@ -134,7 +134,7 @@ Then append to your template files for classes and functions::
     .. include:: {{module}}.{{objname}}.examples
     .. raw:: html
 
-	<div class="clearer"></div>
+	<div class='clear:both'></div>
 
 
 Using a custom default thumbnail image

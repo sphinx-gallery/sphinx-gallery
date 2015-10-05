@@ -3,7 +3,7 @@
 # License: 3-clause BSD
 """
 ========================
-Backrefecences Generator
+Backreferences Generator
 ========================
 
 Reviews generated example files in order to keep track of used modules
