@@ -97,12 +97,14 @@ Sphinx-Gallery configuration directory with:
         # path to store the module using example template
         'mod_example_dir'     : 'modules/generated',
 
-        # Your documented modules. You can use a string or a list of strings
+        # Your documented modules. In this case sphinxgallery and numpy
+        # in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
 The path you specify in ``mod_example_dir`` will get populated with
 ReStructuredText files describing the examples thumbnails with links
-to them but only for the specific module.
+to them but only for the specific module. Keep in mind is relavive to
+the `conf.py` file.
 
 
 Then within your sphinx documentation files you
@@ -126,15 +128,52 @@ it with the standard sphinx extension `autosummary
     import sphinxgallery
     extensions = [
         ...
-	'sphinx.ext.autodoc',
+	'sphinx.ext.autosummary',
         ]
 
-Then append to your template files for classes and functions::
+Change your template files so that they include a block that put the
+examples links. For example, the `class.rst` template can look like
+this ::
+
+    {{ fullname }}
+    {{ underline }}
+
+    .. currentmodule:: {{ module }}
+
+    .. autoclass:: {{ objname }}
+
+    {% block methods %}
+    .. automethod:: __init__
+
+    {% if methods %}
+    .. rubric:: Methods
+
+    .. autosummary::
+    {% for item in methods %}
+	~{{ name }}.{{ item }}
+    {%- endfor %}
+    {% endif %}
+    {% endblock %}
+
+    {% block attributes %}
+    {% if attributes %}
+    .. rubric:: Attributes
+
+    .. autosummary::
+    {% for item in attributes %}
+	~{{ name }}.{{ item }}
+    {%- endfor %}
+    {% endif %}
+    {% endblock %}
+
+
+    .. Sphinx Gallery insert examples thumbnails block
 
     .. include:: {{module}}.{{objname}}.examples
+
     .. raw:: html
 
-	<div class='clear:both'></div>
+	<div style='clear:both'></div>
 
 
 Using a custom default thumbnail image
