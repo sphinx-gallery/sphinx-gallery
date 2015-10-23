@@ -174,7 +174,7 @@ def write_backreferences(seen_backrefs, gallery_conf,
             if not seen:
                 heading = '\n\nExamples using ``%s``' % backref
                 ex_file.write(heading + '\n')
-                ex_file.write('-' * len(heading) + '\n')
+                ex_file.write('^' * len(heading) + '\n')
             ex_file.write(_thumbnail_div(target_dir, fname, snippet,
                                          is_backref=True))
             seen_backrefs.add(backref)
