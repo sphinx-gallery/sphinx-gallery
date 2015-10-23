@@ -119,8 +119,9 @@ Auto documenting your API with links to examples
 ------------------------------------------------
 
 The previous feature can be automated for all your modules combining
-it with the standard sphinx extension `autosummary
-<http://sphinx-doc.org/ext/autosummary.html>`. First enable it in your
+it with the standard sphinx extensions `autodoc
+<http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
+<http://sphinx-doc.org/ext/autosummary.html>`_. First enable it in your
 ``conf.py`` extensions list.
 
 .. code-block:: python
@@ -128,52 +129,22 @@ it with the standard sphinx extension `autosummary
     import sphinxgallery
     extensions = [
         ...
+        'sphinx.ext.autodoc',
 	'sphinx.ext.autosummary',
         ]
 
-Change your template files so that they include a block that put the
-examples links. For example, the `class.rst` template can look like
-this ::
+    # generate autosummary even if no references
+    autosummary_generate = True
 
-    {{ fullname }}
-    {{ underline }}
+To document all your modules and their functions you can put to your
+autosummary template for modules. For example for this documentation
+we use:
 
-    .. currentmodule:: {{ module }}
+.. literalinclude:: _templates/module.rst
 
-    .. autoclass:: {{ objname }}
+Then when documenting your API you call autosummary like:
 
-    {% block methods %}
-    .. automethod:: __init__
-
-    {% if methods %}
-    .. rubric:: Methods
-
-    .. autosummary::
-    {% for item in methods %}
-	~{{ name }}.{{ item }}
-    {%- endfor %}
-    {% endif %}
-    {% endblock %}
-
-    {% block attributes %}
-    {% if attributes %}
-    .. rubric:: Attributes
-
-    .. autosummary::
-    {% for item in attributes %}
-	~{{ name }}.{{ item }}
-    {%- endfor %}
-    {% endif %}
-    {% endblock %}
-
-
-    .. Sphinx Gallery insert examples thumbnails block
-
-    .. include:: {{module}}.{{objname}}.examples
-
-    .. raw:: html
-
-	<div style='clear:both'></div>
+.. literalinclude:: reference.rst
 
 
 Using a custom default thumbnail image
