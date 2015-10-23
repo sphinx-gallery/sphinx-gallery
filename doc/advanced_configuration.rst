@@ -159,3 +159,16 @@ file. You need to add to the configuration dictionary a key called
 
     sphinx_gallery_conf = {
         'default_thumb_file'     : 'path/to/thumb/file.png'}}
+
+
+Embedding Sphinx-Gallery inside your documentation script extensions
+====================================================================
+
+If you want to embed Sphinx-Gallery in your project instead of putting
+it as a dependency you can call our emdeding script inside your in
+your Sphinx extension folder::
+
+  $ copy_sphinxgallery.sh
+
+This will download directly from PyPI our latest released code and do
+a git add to the downloaded files.
