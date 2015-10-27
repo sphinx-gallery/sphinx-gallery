@@ -12,7 +12,7 @@ Within your Sphinx ``conf.py`` file you need to add a configuration dictionary:
 
 .. code-block:: python
 
-    sphinxgallery_conf = {
+    sphinx_gallery_conf = {
         'examples_dirs' : '../examples',              # path to your examples scripts
         'gallery_dirs'  : 'auto_examples'}            # path where to save gallery generated examples
 
@@ -30,7 +30,7 @@ the sphinx configuration dictionary:
 
 .. code-block:: python
 
-    sphinxgallery_conf = {
+    sphinx_gallery_conf = {
         'examples_dirs'   : ['../examples', '../tutorials'],
         'gallery_dirs'    : ['auto_examples', 'tutorials'],
     }
@@ -60,10 +60,10 @@ dictionary within your Sphinx ``conf.py`` file :
 
 .. code-block:: python
 
-    sphinxgallery_conf = {
+    sphinx_gallery_conf = {
         'reference_url':  {
                  # The module you locally document uses a None
-                'sphinxgallery': None,
+                'sphinx_gallery': None,
 
                 # External python modules use their documentation websites
                 'matplotlib': 'http://matplotlib.org',
@@ -84,12 +84,12 @@ configuration dictionary:
 
 .. code-block:: python
 
-    sphinxgallery_conf = {
+    sphinx_gallery_conf = {
         # path where to store your example linker templates
         'mod_example_dir'     : 'modules/generated',
 
         # Your documented modules. You can use a string or a list of strings
-        'doc_module'          : ('sphinxgallery', 'numpy')}
+        'doc_module'          : ('sphinx_gallery', 'numpy')}
 
 The path you specified will get populated with the links to examples using your
 module and their methods. Then within your sphinx documentation files you
@@ -122,5 +122,5 @@ file. You need to add to the configuration dictionary a key called
 
 .. code-block:: python
 
-    sphinxgallery_conf = {
+    sphinx_gallery_conf = {
         'default_thumb_file'     : 'path/to/thumb/file.png'}}

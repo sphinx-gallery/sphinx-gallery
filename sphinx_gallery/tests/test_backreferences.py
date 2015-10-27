@@ -5,7 +5,7 @@
 Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
-import sphinxgallery.backreferences as sg
+import sphinx_gallery.backreferences as sg
 from nose.tools import assert_equal
 
 

@@ -7,7 +7,7 @@ Testing the rst files generator
 from __future__ import division, absolute_import, print_function
 import tempfile
 
-import sphinxgallery.gen_rst as sg
+import sphinx_gallery.gen_rst as sg
 from nose.tools import assert_equal, assert_false
 import ast
 
@@ -25,7 +25,7 @@ def test_bug_cases_of_notebook_syntax():
     """Test over the known requirements of supported syntax in the
     notebook styled comments"""
 
-    with open('sphinxgallery/tests/reference_parse.txt') as reference:
+    with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
         blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
