@@ -49,10 +49,10 @@ After installing you need to include in your Sphinx ``conf.py`` file:
 
 .. code-block:: python
 
-    import sphinxgallery
+    import sphinx_gallery
     extensions = [
         ...
-        'sphinxgallery.gen_gallery',
+        'sphinx_gallery.gen_gallery',
         ]
 
 

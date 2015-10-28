@@ -3,25 +3,25 @@ Sphinx-Gallery Reference
 ========================
 
 
-.. automodule:: sphinxgallery
+.. automodule:: sphinx_gallery
     :members:
 
-.. autodata:: sphinxgallery.__version__
+.. autodata:: sphinx_gallery.__version__
     :annotation: Sphinx Gallery current version
 
-.. include:: modules/generated/sphinxgallery.__version__.examples
+.. include:: modules/generated/sphinx_gallery.__version__.examples
 .. raw:: html
 
         <div style='clear:both'></div>
 
-.. automodule:: sphinxgallery.gen_gallery
+.. automodule:: sphinx_gallery.gen_gallery
     :members:
 
-.. automodule:: sphinxgallery.backreferences
+.. automodule:: sphinx_gallery.backreferences
     :members:
 
-.. automodule:: sphinxgallery.gen_rst
+.. automodule:: sphinx_gallery.gen_rst
     :members:
 
-.. automodule:: sphinxgallery.docs_resolv
+.. automodule:: sphinx_gallery.docs_resolv
     :members:
