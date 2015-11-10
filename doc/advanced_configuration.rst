@@ -97,7 +97,7 @@ Sphinx-Gallery configuration directory with:
         # path to store the module using example template
         'mod_example_dir'     : 'modules/generated',
 
-        # Your documented modules. In this case sphinxgallery and numpy
+        # Your documented modules. In this case sphinx_gallery and numpy
         # in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
@@ -126,7 +126,7 @@ it with the standard sphinx extensions `autodoc
 
 .. code-block:: python
 
-    import sphinxgallery
+    import sphinx_gallery
     extensions = [
         ...
         'sphinx.ext.autodoc',

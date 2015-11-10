@@ -3,7 +3,7 @@
 Sphinx-Gallery API Reference
 ============================
 
-.. currentmodule:: sphinxgallery
+.. currentmodule:: sphinx_gallery
 
 .. autosummary::
    :toctree: modules/generated/
