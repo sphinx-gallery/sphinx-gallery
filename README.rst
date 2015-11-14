@@ -10,7 +10,9 @@ Getting Started to Sphinx-Gallery
     :alt: Documentation Status
 
 
-Sphinx extension for automatic generation of an example gallery.
+A Sphinx extension that builds an HTML version of any python
+script and puts it into an examples gallery.
+
 It is extracted from the scikit-learn project and aims to be an
 independent general purpose extension.
 
@@ -25,8 +27,9 @@ You can do a direct install via pip by using::
 Install as developer
 --------------------
 
-You can get the latest development source from our Github repository.
-You need  ``setuptools`` installed in your system to install.
+You can get the latest development source from our Github
+repository. You need ``setuptools`` installed in your system to
+install Sphinx-Gallery.
 
 You will also need have installed:
 
@@ -34,18 +37,38 @@ You will also need have installed:
 * matplotlib
 * pillow
 
-To install::
+To install everything do::
 
     $ git clone https://github.com/sphinx-gallery/sphinx-gallery
     $ cd sphinx-gallery
+    $ pip install -r requirements.txt
     $ python setup.py develop
-
 
 Setting up your project
 =======================
 
-After installing you need to include in your Sphinx ``conf.py`` file:
+Let's say your python project looks like this::
 
+    .
+    ├── doc
+    │   ├── conf.py
+    │   ├── index.rst
+    │   └── Makefile
+    ├── py_module
+    │   ├── __init__.py
+    │   └── mod.py
+    └── examples
+	├── plot_example.py
+	├── example.py
+	└── README.txt
+
+Your python module is on ``py_module``, examples on how to use it are
+in ``examples`` and the ``doc`` folder hold the base documentation
+structure you get from executing ``sphinx-quickstart``.
+
+
+To get Sphinx-Gallery into your project we have to extend the Sphinx
+``doc/conf.py`` file with:
 
 .. code-block:: python
 
@@ -55,31 +78,52 @@ After installing you need to include in your Sphinx ``conf.py`` file:
         'sphinx_gallery.gen_gallery',
         ]
 
+This is to load Sphinx-Gallery as one of your extensions, the ellipsis
+``...`` is to represent your other loaded extensions.
 
-you need to have a folder called ``examples`` in your main repository directory.
-This folder needs
+Now to declare your project structure, we add a configuration
+dictionary for Sphinx-Gallery. The examples directory ``../exaples``
+is declared with a relative path from the ``conf.py`` file location.
 
-* A ``README.txt`` file with rst syntax to present your gallery
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+	# path to your examples scripts
+	'examples_dirs' : '../examples',
+	# path where to save gallery generated examples
+	'gallery_dirs'  : 'auto_examples'}
+
+The ``gallery_dirs`` is the folder where Sphinx-Gallery will store the
+coverted python scripts into rst files that Sphinx will process into
+HTML.
+
+The structure of the examples folder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are some extra instructions on how to present your examples to Sphinx-Gallery.
+
+* A mandatory ``README.txt`` file with rst syntax to introduce your gallery
 * ``plot_examples.py`` files. Python scripts that have to be executed
   and output a plot that will be presented in your gallery
 * ``examples.py`` files. Python scripts that will not be executed but will be presented
   in the gallery
 
-Your python scripts in the examples folder need to have a main comment. Written
-in rst syntax to be used in the generated file in the example gallery.
+All the python scripts in the examples folder need to have a docstring. Written
+in rst syntax as it is used in the generated file for the example gallery.
 
-You can have subfolders in your ``examples`` directory, those will be recursively
-scanned by the gallery extension and presented in the gallery. Subfolder have to
-respect the same structure of the main ``examples`` folder.
+You can have subfolders in your ``examples`` directory, those will be
+recursively scanned by the gallery extension and presented in the
+gallery, as long as they also have a ``README.txt`` file. Subfolders
+have to respect the same structure examples folder.
 
 If these instructions are not clear enough, this package uses itself, to generated
 its own example gallery. So check the directory structure and the contents of the
-files. That is all, our module shall take care of the rest.
+files.
 
 Building the documentation locally
 ----------------------------------
 
-In your sphinx documentation directory, usually ``doc`` execute::
+In your sphinx documentation directory, ``doc`` execute::
 
     $ make html
 

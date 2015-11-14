@@ -5,22 +5,8 @@ Advanced Configuration
 Here are the personal configurations that you can modify within Sphinx-Gallery.
 
 
-Changing default directories
-============================
-
-Within your Sphinx ``conf.py`` file you need to add a configuration dictionary:
-
-.. code-block:: python
-
-    sphinx_gallery_conf = {
-        'examples_dirs' : '../examples',              # path to your examples scripts
-        'gallery_dirs'  : 'auto_examples'}            # path where to save gallery generated examples
-
-
-Directory paths are relative to your ``conf.py`` location.
-
 Having Multiple galleries
--------------------------
+=========================
 
 Sphinx-Gallery only supports up to subfolder level in its gallery directories.
 This might be a limitation for you. Or you might want to have separate
