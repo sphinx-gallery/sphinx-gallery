@@ -8,7 +8,7 @@ Here are the personal configurations that you can modify within Sphinx-Gallery.
 Having Multiple galleries
 =========================
 
-Sphinx-Gallery only supports up to subfolder level in its gallery directories.
+Sphinx-Gallery only supports up to sub-folder level in its gallery directories.
 This might be a limitation for you. Or you might want to have separate
 galleries for different purposes, an examples gallery and a tutorials gallery.
 For this you use in your Sphinx ``conf.py`` file a list of directories in
@@ -64,7 +64,7 @@ Establishing local references to examples
 Sphinx-Gallery also enables you, when documenting your modules, to
 reference to the examples that use that particular class or
 function. For example if we are documenting the numpy.linspace
-function its possible to embedd a small gallery of examples using it
+function its possible to embed a small gallery of examples using it
 like this:
 
 .. include:: modules/generated/numpy.linspace.examples

@@ -82,7 +82,7 @@ This is to load Sphinx-Gallery as one of your extensions, the ellipsis
 ``...`` is to represent your other loaded extensions.
 
 Now to declare your project structure, we add a configuration
-dictionary for Sphinx-Gallery. The examples directory ``../exaples``
+dictionary for Sphinx-Gallery. The examples directory ``../examples``
 is declared with a relative path from the ``conf.py`` file location.
 
 .. code-block:: python
@@ -94,7 +94,7 @@ is declared with a relative path from the ``conf.py`` file location.
 	'gallery_dirs'  : 'auto_examples'}
 
 The ``gallery_dirs`` is the folder where Sphinx-Gallery will store the
-coverted python scripts into rst files that Sphinx will process into
+converted python scripts into rst files that Sphinx will process into
 HTML.
 
 The structure of the examples folder
@@ -111,9 +111,9 @@ There are some extra instructions on how to present your examples to Sphinx-Gall
 All the python scripts in the examples folder need to have a docstring. Written
 in rst syntax as it is used in the generated file for the example gallery.
 
-You can have subfolders in your ``examples`` directory, those will be
+You can have sub-folders in your ``examples`` directory, those will be
 recursively scanned by the gallery extension and presented in the
-gallery, as long as they also have a ``README.txt`` file. Subfolders
+gallery, as long as they also have a ``README.txt`` file. Sub-folders
 have to respect the same structure examples folder.
 
 If these instructions are not clear enough, this package uses itself, to generated
@@ -128,14 +128,14 @@ In your sphinx documentation directory, ``doc`` execute::
     $ make html
 
 This will start the build of your complete documentation including the examples
-gallery. Once documentation is build, our extension will have generated a ``auto_examples``
+gallery. Once documentation is build, our extension will have generated an ``auto_examples``
 directory and populated it with rst files containing the gallery and each example.
 Sphinx gives this files its regular processing and you can enjoy your
-generated gallery unde the same path. That means you will find the gallery in the path::
+generated gallery under the same path. That means you will find the gallery in the path::
 
     _build/html/auto_examples/index.html
 
-that you can open under your favourite browser.
+that you can open under your favorite browser.
 
 Extending your Makefile
 -----------------------
@@ -153,5 +153,5 @@ running the examples files. For this you need to extend your ``Makefile`` with::
             @echo
             @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-Remember that for in ``Makefile`` whitespace is significant and the indentation are tabs
+Remember that for in ``Makefile`` white space is significant and the indentation are tabs
 and not spaces
