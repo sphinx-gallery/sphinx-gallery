@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
+"""
+========================
+Sphinx-Gallery Generator
+========================
+
+Attaches Sphinx-Gallery to Sphinx in order to generate the galleries
+when building the documentation.
+"""
+
 
 from __future__ import division, print_function, absolute_import
 import os

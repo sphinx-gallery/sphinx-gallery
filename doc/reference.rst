@@ -1,27 +1,15 @@
-========================
-Sphinx-Gallery Reference
-========================
 
+============================
+Sphinx-Gallery API Reference
+============================
 
-.. automodule:: sphinx_gallery
-    :members:
+.. currentmodule:: sphinx_gallery
 
-.. autodata:: sphinx_gallery.__version__
-    :annotation: Sphinx Gallery current version
+.. autosummary::
+   :toctree: modules/generated/
+   :template: module.rst
 
-.. include:: modules/generated/sphinx_gallery.__version__.examples
-.. raw:: html
-
-        <div style='clear:both'></div>
-
-.. automodule:: sphinx_gallery.gen_gallery
-    :members:
-
-.. automodule:: sphinx_gallery.backreferences
-    :members:
-
-.. automodule:: sphinx_gallery.gen_rst
-    :members:
-
-.. automodule:: sphinx_gallery.docs_resolv
-    :members:
+   gen_gallery
+   backreferences
+   gen_rst
+   docs_resolv
