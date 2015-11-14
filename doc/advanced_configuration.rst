@@ -170,5 +170,7 @@ your Sphinx extension folder::
 
   $ copy_sphinxgallery.sh
 
-This will download directly from PyPI our latest released code and do
-a git add to the downloaded files.
+This will download directly from PyPI our latest released code and
+save it to the current folder. This is a striped version of the
+Sphinx-Gallery module to incorporate in your project. You should also
+add it to your version control system.
