@@ -98,7 +98,7 @@ coverted python scripts into rst files that Sphinx will process into
 HTML.
 
 The structure of the examples folder
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 There are some extra instructions on how to present your examples to Sphinx-Gallery.
 
