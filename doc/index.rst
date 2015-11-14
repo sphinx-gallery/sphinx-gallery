@@ -6,9 +6,26 @@
 Welcome to Sphinx-Gallery's documentation!
 ==========================================
 
-Sphinx extension for automatic generation of an example gallery.
+A Sphinx extension that builds an HTML version of any python
+script and puts it into an examples gallery.
+
 It is extracted from the scikit-learn project and aims to be an
 independent general purpose extension.
+
+Why do we need it?
+------------------
+
+* Because we have a lot of code that does something good enough for
+  someone to learn about it.
+* Looking to the visual output is simpler to our minds than reading
+  the source code.
+* The Gallery workflow:
+   * Search for something that more or less looks to what you want
+   * Learn about it
+
+A quick preview
+---------------
+
 
 Contents:
 ---------
