@@ -18,9 +18,9 @@ import sphinx_gallery.backreferences as spback
 filename = spback.__file__.replace('.pyc', '.py')
 file_code = open(filename, 'r').read()
 names = spback.identify_names(file_code)
-figheight = (len(names)+.5)
+figheight = len(names)+.5
 
-fontsize = 0.3 * 72
+fontsize = 22
 fig = plt.figure()
 
 for i, (name, obj) in enumerate(names.items()):

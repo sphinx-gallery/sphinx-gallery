@@ -76,7 +76,7 @@ Establishing local references to examples
 =========================================
 
 Sphinx-Gallery also enables you, when documenting your modules, to
-reference into the examples that use that particular class or
+reference to the examples that use that particular class or
 function. For example if we are documenting the numpy.linspace
 function its possible to embedd a small gallery of examples using it
 like this:
@@ -103,7 +103,7 @@ Sphinx-Gallery configuration directory with:
 
 The path you specify in ``mod_example_dir`` will get populated with
 ReStructuredText files describing the examples thumbnails with links
-to them but only for the specific module. Keep in mind is relavive to
+to them but only for the specific module. Keep in mind is relative to
 the `conf.py` file.
 
 
