@@ -10,7 +10,7 @@ Getting Started to Sphinx-Gallery
     :alt: Documentation Status
 
 
-A Sphinx extension that builds an HTML version of any python
+A Sphinx extension that builds an HTML version of any Python
 script and puts it into an examples gallery.
 
 It is extracted from the scikit-learn project and aims to be an
@@ -27,9 +27,9 @@ You can do a direct install via pip by using::
 Install as developer
 --------------------
 
-You can get the latest development source from our Github
-repository. You need ``setuptools`` installed in your system to
-install Sphinx-Gallery.
+You can get the latest development source from our `Github repository
+<http://https://github.com/sphinx-gallery/sphinx-gallery>`. You need
+``setuptools`` installed in your system to install Sphinx-Gallery.
 
 You will also need have installed:
 
@@ -47,7 +47,7 @@ To install everything do::
 Setting up your project
 =======================
 
-Let's say your python project looks like this::
+Let's say your Python project looks like this::
 
     .
     ├── doc
@@ -62,7 +62,7 @@ Let's say your python project looks like this::
 	├── example.py
 	└── README.txt
 
-Your python module is on ``py_module``, examples on how to use it are
+Your Python module is on ``py_module``, examples on how to use it are
 in ``examples`` and the ``doc`` folder hold the base documentation
 structure you get from executing ``sphinx-quickstart``.
 
@@ -94,7 +94,7 @@ is declared with a relative path from the ``conf.py`` file location.
 	'gallery_dirs'  : 'auto_examples'}
 
 The ``gallery_dirs`` is the folder where Sphinx-Gallery will store the
-converted python scripts into rst files that Sphinx will process into
+converted Python scripts into rst files that Sphinx will process into
 HTML.
 
 The structure of the examples folder
@@ -108,7 +108,7 @@ There are some extra instructions on how to present your examples to Sphinx-Gall
 * ``examples.py`` files. Python scripts that will not be executed but will be presented
   in the gallery
 
-All the python scripts in the examples folder need to have a docstring. Written
+All the Python scripts in the examples folder need to have a docstring. Written
 in rst syntax as it is used in the generated file for the example gallery.
 
 You can have sub-folders in your ``examples`` directory, those will be

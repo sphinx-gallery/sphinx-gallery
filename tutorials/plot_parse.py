@@ -4,7 +4,7 @@
 The Header Docstring
 ====================
 
-When writting latex in a python string keep in mind to escape the backslashes
+When writting latex in a Python string keep in mind to escape the backslashes
 or use a raw docstring
 
 .. math:: \\sin (x)
