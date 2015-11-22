@@ -6,28 +6,25 @@
 Welcome to Sphinx-Gallery's documentation!
 ==========================================
 
-A Sphinx extension that builds an HTML version of any python
-script and puts it into an examples gallery.
+A `Sphinx <http://sphinx-doc.org/>`_ extension that builds an HTML
+gallery of examples from any set of Python scripts.
 
 It is extracted from the scikit-learn project and aims to be an
 independent general purpose extension.
 
-Why do we need it?
+Why Sphinx-Galley?
 ------------------
 
-* Because we have a lot of code that does something good enough for
-  someone to learn about it.
-* Looking to the visual output is simpler to our minds than reading
-  the source code.
-* The Gallery workflow:
-   * Search for something that more or less looks to what you want
-   * Learn about it
+* Simple examples that run out of the box are the best way to learn a
+  library
+* Pleasing, organized, visual layouts
+* Links, searching, backlinks throughout examples and documentation
 
-How does it look like
----------------------
 
-You can structure your gallery from your python scripts and embed it
-in any place of your website. And it look like the next sample.
+What does it look like?
+-----------------------
+
+Here is an example gallery generated from a few Python scripts.
 
 .. include:: modules/generated/numpy.linspace.examples
 .. raw:: html
