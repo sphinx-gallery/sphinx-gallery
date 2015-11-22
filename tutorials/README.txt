@@ -4,7 +4,7 @@ Secondary gallery
 =================
 
 
-.. _general_tutorials:
+.. _notebook_examples:
 
 Notebook styled examples
 ------------------------

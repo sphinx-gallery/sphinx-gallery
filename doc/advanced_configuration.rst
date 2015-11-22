@@ -4,8 +4,9 @@ Advanced Configuration
 
 Here are the personal configurations that you can modify within Sphinx-Gallery.
 
+.. _multiple_galleries_config:
 
-Having Multiple galleries
+Manage Multiple galleries
 =========================
 
 Sphinx-Gallery only supports up to sub-folder level in its gallery directories.
@@ -23,9 +24,10 @@ the sphinx configuration dictionary:
 
 Keep in mind that both lists have to be of the same length.
 
+.. _link_to_documentation:
 
-Linking to external documentations
-==================================
+Linking to documentation
+========================
 
 Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
 you can link the used functions to their matching online documentation. As such
@@ -57,6 +59,7 @@ dictionary within your Sphinx ``conf.py`` file :
         }
 
 
+.. _references_to_examples:
 
 Establishing local references to examples
 =========================================

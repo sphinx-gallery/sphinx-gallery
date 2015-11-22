@@ -44,8 +44,11 @@ To install everything do::
     $ pip install -r requirements.txt
     $ python setup.py develop
 
-Setting up your project
-=======================
+
+.. _set_up_your_project:
+
+Set up your project
+===================
 
 Let's say your Python project looks like this::
 
