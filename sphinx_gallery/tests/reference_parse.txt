@@ -1,5 +1,5 @@
 [('text',
-  '\n====================\nThe Header Docstring\n====================\n\nWhen writting latex in a python string keep in mind to escape the backslashes\nor use a raw docstring\n\n.. math:: \\sin (x)\n\nClosing this string quotes on same line'),
+  '\n====================\nThe Header Docstring\n====================\n\nWhen writting latex in a Python string keep in mind to escape the backslashes\nor use a raw docstring\n\n.. math:: \\sin (x)\n\nClosing this string quotes on same line'),
  ('text', 'Direct first comment\nwith second line\n'),
  ('code', '\nimport numpy as np\n\n'),
  ('code', 'A = 1\n\nimport matplotlib.pyplot as plt\n\n'),
