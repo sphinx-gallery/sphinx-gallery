@@ -20,8 +20,10 @@ the docstring, then output images and output code. Finally the
 generating code script.
 
 
-Notebook Styled examples
-========================
+.. _notebook_examples_syntax:
+
+Notebook Styled examples syntax
+===============================
 
 It is also possible to have more complicated examples, for which you
 want to embed more documenting strings within your code and separating

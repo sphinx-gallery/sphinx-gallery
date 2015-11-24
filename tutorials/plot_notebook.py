@@ -4,20 +4,20 @@
 Notebook styled examples
 ========================
 
-The gallery is capable of transforming python files into reStructuredText files
+The gallery is capable of transforming Python files into reStructuredText files
 with a notebook structure. For this to be used you need to respect some syntax
 rules.
 
 It makes a lot of sense to contrast this output rst file with the
-:download:`original python script <plot_notebook.py>` to get better feeling of
+:download:`original Python script <plot_notebook.py>` to get better feeling of
 the necessary file structure.
 
-Anything before the python script docstring is ignored by sphinx-gallery and
+Anything before the Python script docstring is ignored by sphinx-gallery and
 will not appear in the rst file, nor will it be executed.
-This python docstring requires an reStructuredText title to name the file and
+This Python docstring requires an reStructuredText title to name the file and
 correctly build the reference links.
 
-Once you close the docstring you would be writing python code. This code gets
+Once you close the docstring you would be writing Python code. This code gets
 executed by sphinx gallery shows the plots and attaches the generating code.
 Nevertheless you can break your code into blocks and give the rendered file
 a notebook style. In this case you have to include a code comment breaker
@@ -62,7 +62,7 @@ plt.xlabel('$x$')
 plt.ylabel('$y$')
 
 ###########################################################################
-# Again it is possble to continue the discussion with a new python string. This
+# Again it is possble to continue the discussion with a new Python string. This
 # time to introduce the next code block generates 2 separate figures.
 
 plt.figure()
@@ -74,7 +74,7 @@ plt.imshow(z, cmap=plt.cm.get_cmap('Spectral'), interpolation='none')
 # There's some subtle differences between rendered html rendered comment
 # strings and code comment strings which I'll demonstrate below. (Some of this
 # only makes sense if you look at the
-# :download:`raw python script <plot_notebook.py>`)
+# :download:`raw Python script <plot_notebook.py>`)
 #
 # Comments in comment blocks remain nested in the text.
 
@@ -90,7 +90,7 @@ Triple-quoted string which tries to break parser but doesn't.
 """
 
 ############################################################################
-# Finally, I'll call ``show`` at the end just so someone running the python
+# Finally, I'll call ``show`` at the end just so someone running the Python
 # code directly will see the plots; this is not necessary for creating the docs
 
 plt.show()

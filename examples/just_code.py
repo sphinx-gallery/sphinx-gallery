@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 =====================
-A short python script
+A short Python script
 =====================
 
 A script that is not executed when gallery is generated but nevertheless

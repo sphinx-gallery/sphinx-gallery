@@ -4,25 +4,12 @@ Advanced Configuration
 
 Here are the personal configurations that you can modify within Sphinx-Gallery.
 
+.. _multiple_galleries_config:
 
-Changing default directories
-============================
+Manage Multiple galleries
+=========================
 
-Within your Sphinx ``conf.py`` file you need to add a configuration dictionary:
-
-.. code-block:: python
-
-    sphinx_gallery_conf = {
-        'examples_dirs' : '../examples',              # path to your examples scripts
-        'gallery_dirs'  : 'auto_examples'}            # path where to save gallery generated examples
-
-
-Directory paths are relative to your ``conf.py`` location.
-
-Having Multiple galleries
--------------------------
-
-Sphinx-Gallery only supports up to subfolder level in its gallery directories.
+Sphinx-Gallery only supports up to sub-folder level in its gallery directories.
 This might be a limitation for you. Or you might want to have separate
 galleries for different purposes, an examples gallery and a tutorials gallery.
 For this you use in your Sphinx ``conf.py`` file a list of directories in
@@ -37,9 +24,10 @@ the sphinx configuration dictionary:
 
 Keep in mind that both lists have to be of the same length.
 
+.. _link_to_documentation:
 
-Linking to external documentations
-==================================
+Linking to documentation
+========================
 
 Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
 you can link the used functions to their matching online documentation. As such
@@ -71,6 +59,7 @@ dictionary within your Sphinx ``conf.py`` file :
         }
 
 
+.. _references_to_examples:
 
 Establishing local references to examples
 =========================================
@@ -78,7 +67,7 @@ Establishing local references to examples
 Sphinx-Gallery also enables you, when documenting your modules, to
 reference to the examples that use that particular class or
 function. For example if we are documenting the numpy.linspace
-function its possible to embedd a small gallery of examples using it
+function its possible to embed a small gallery of examples using it
 like this:
 
 .. include:: modules/generated/numpy.linspace.examples
