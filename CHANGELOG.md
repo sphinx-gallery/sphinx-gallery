@@ -1,8 +1,32 @@
 # Change Log
 
 ## [Unreleased](https://github.com/sphinx-gallery/sphinx-gallery/tree/HEAD)
+[Full Changelog](https://github.com/sphinx-gallery/sphinx-gallery/compare/v0.0.11...HEAD)
 
-[Full Changelog](https://github.com/sphinx-gallery/sphinx-gallery/compare/v0.0.10...HEAD)
+**Closed issues:**
+
+- Modularize features [\#7](https://github.com/sphinx-gallery/sphinx-gallery/issues/7)
+
+**Merged pull requests:**
+
+- Documentation Changes [\#68](https://github.com/sphinx-gallery/sphinx-gallery/pull/68) ([Titan-C](https://github.com/Titan-C))
+
+## [v0.0.11](https://github.com/sphinx-gallery/sphinx-gallery/tree/v0.0.11) (2015-11-14)
+[Full Changelog](https://github.com/sphinx-gallery/sphinx-gallery/compare/v0.0.10...v0.0.11)
+
+### Incompatible Changes
+
+  Sphinx-Gallery renames its python module name to sphinx\_gallery
+  this follows the discussion raised in
+  [\#47](https://github.com/sphinx-gallery/sphinx-gallery/issues/47)
+  and resolved with
+  [\#66](https://github.com/sphinx-gallery/sphinx-gallery/pull/66)
+  ([lesteve](https://github.com/lesteve))
+
+### Highlights
+
+  This release incorporates the Notebook styled examples for the
+  gallery with PR [\#36](https://github.com/sphinx-gallery/sphinx-gallery/pull/36) ([Titan-C](https://github.com/Titan-C))
 
 **Fixed bugs:**
 
@@ -16,7 +40,6 @@
 - python warning when "print\(\_\_doc\_\_\)" [\#55](https://github.com/sphinx-gallery/sphinx-gallery/issues/55)
 - Including module references automatically during runtime [\#52](https://github.com/sphinx-gallery/sphinx-gallery/issues/52)
 - gallery\_dir and examples\_dir should be plural in sphinx\_gallery\_conf [\#48](https://github.com/sphinx-gallery/sphinx-gallery/issues/48)
-- Rename package to sphinx\_gallery rather than sphinxgallery? [\#47](https://github.com/sphinx-gallery/sphinx-gallery/issues/47)
 - Please support in-line documentation in indented block [\#43](https://github.com/sphinx-gallery/sphinx-gallery/issues/43)
 - Multiple galleries or subsubfolders [\#41](https://github.com/sphinx-gallery/sphinx-gallery/issues/41)
 - Support for absolute paths in 'examples\_dir' and 'gallery\_dir' [\#40](https://github.com/sphinx-gallery/sphinx-gallery/issues/40)
@@ -26,35 +49,32 @@
 
 **Merged pull requests:**
 
-- \[MRG\] Rename sphinxgallery package to sphinx\_gallery [\#66](https://github.com/sphinx-gallery/sphinx-gallery/pull/66) ([lesteve](https://github.com/lesteve))
 - \[MRG\] Documentation cleaning [\#63](https://github.com/sphinx-gallery/sphinx-gallery/pull/63) ([Titan-C](https://github.com/Titan-C))
 - Shell script for the local embeding [\#62](https://github.com/sphinx-gallery/sphinx-gallery/pull/62) ([Titan-C](https://github.com/Titan-C))
 - \[MRG+1\] BUG fix don't show example thumbnails in latex docs [\#59](https://github.com/sphinx-gallery/sphinx-gallery/pull/59) ([jnothman](https://github.com/jnothman))
 - MRG : allow custom default thumbnail in gallery [\#54](https://github.com/sphinx-gallery/sphinx-gallery/pull/54) ([agramfort](https://github.com/agramfort))
 - Fix gen\_rst.split\_code\_and\_text\_blocks with comment right after the docstring [\#51](https://github.com/sphinx-gallery/sphinx-gallery/pull/51) ([lesteve](https://github.com/lesteve))
 - Mayavi support [\#42](https://github.com/sphinx-gallery/sphinx-gallery/pull/42) ([agramfort](https://github.com/agramfort))
-- \[Review\] Code refactoring, block execution of scripts [\#36](https://github.com/sphinx-gallery/sphinx-gallery/pull/36) ([Titan-C](https://github.com/Titan-C))
 - Test over the thumbnail generator [\#34](https://github.com/sphinx-gallery/sphinx-gallery/pull/34) ([Titan-C](https://github.com/Titan-C))
 
 ## [v0.0.10](https://github.com/sphinx-gallery/sphinx-gallery/tree/v0.0.10) (2015-05-29)
 [Full Changelog](https://github.com/sphinx-gallery/sphinx-gallery/compare/v0.0.9-dev1...v0.0.10)
 
+## Highlights
+
+  This release allows to use the Back references. This features
+  incorporates fine grained examples galleries listing examples using
+  a particular function. [\#26](https://github.com/sphinx-gallery/sphinx-gallery/pull/26) ([Titan-C](https://github.com/Titan-C))
+
 **Closed issues:**
 
 - Add example scripts in 'examples' subfolders [\#32](https://github.com/sphinx-gallery/sphinx-gallery/issues/32)
-
-## [v0.0.9-dev1](https://github.com/sphinx-gallery/sphinx-gallery/tree/v0.0.9-dev1) (2015-05-20)
-[Full Changelog](https://github.com/sphinx-gallery/sphinx-gallery/compare/v0.0.9...v0.0.9-dev1)
-
-**Closed issues:**
-
 - Fails on non-standard doc build location [\#29](https://github.com/sphinx-gallery/sphinx-gallery/issues/29)
 
 **Merged pull requests:**
 
 - Image clean [\#31](https://github.com/sphinx-gallery/sphinx-gallery/pull/31) ([Titan-C](https://github.com/Titan-C))
 - Shelve now stored in gallery\_dir [\#30](https://github.com/sphinx-gallery/sphinx-gallery/pull/30) ([Titan-C](https://github.com/Titan-C))
-- scale image in stead of make thumbnail and independent backrefereces function [\#26](https://github.com/sphinx-gallery/sphinx-gallery/pull/26) ([Titan-C](https://github.com/Titan-C))
 
 ## [v0.0.9](https://github.com/sphinx-gallery/sphinx-gallery/tree/v0.0.9) (2015-04-22)
 [Full Changelog](https://github.com/sphinx-gallery/sphinx-gallery/compare/v0.0.8...v0.0.9)
@@ -109,4 +129,4 @@
 ## [v0.0.3](https://github.com/sphinx-gallery/sphinx-gallery/tree/v0.0.3) (2014-12-24)
 
 
-\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *The skeleton of this Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
