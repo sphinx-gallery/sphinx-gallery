@@ -70,6 +70,19 @@ p.sphx-glr-horizontal {
     margin-bottom: 0px;
 }
 
+div.sphx-glr-download {
+    padding: 1ex;
+    margin: 1em auto 1ex auto;
+    border-radius: 4px;
+    max-width: 45ex;
+    background-color: #ffc;
+    border: 1px solid #C2C22D;
+}
+
+div.sphx-glr-download a {
+    color: #4B4600;
+}
+
 ul.sphx-glr-horizontal {
   padding: 0px;
   list-style: none; }
