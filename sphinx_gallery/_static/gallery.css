@@ -55,7 +55,9 @@ div.sphx-glr-thumbContainer {
 
 .sphx-glr-script-out pre {
   overflow-y: auto;
-  max-height: 30em; }
+  max-height: 30em;
+  background-color: #FFFFFE;
+}
 
 ul.sphx-glr-horizontal {
   padding: 0px;
