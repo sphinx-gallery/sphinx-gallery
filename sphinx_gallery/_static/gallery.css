@@ -53,13 +53,17 @@ div.sphx-glr-thumbContainer {
     left: 85%;
     bottom: 58%; }
 
+div.sphx-glr-script-out div.highlight {
+    background-color: transparent;
+}
+
 .sphx-glr-script-out pre {
   overflow: auto;
   max-height: 30em;
   background-color: #FFFFFE;
   margin-left: 1ex;
+  margin-top: 0px;
   padding-left: 1ex;
-  max-height: 50em;
 }
 
 p.sphx-glr-horizontal {

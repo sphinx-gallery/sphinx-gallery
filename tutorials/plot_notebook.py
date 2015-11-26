@@ -90,6 +90,11 @@ Triple-quoted string which tries to break parser but doesn't.
 """
 
 ############################################################################
+# Output of the script is captured:
+
+print('Some output from Python')
+
+############################################################################
 # Finally, I'll call ``show`` at the end just so someone running the Python
 # code directly will see the plots; this is not necessary for creating the docs
 
