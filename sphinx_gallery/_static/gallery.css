@@ -60,7 +60,8 @@ div.sphx-glr-script-out div.highlight {
 .sphx-glr-script-out pre {
   overflow: auto;
   max-height: 30em;
-  background-color: #FFFFFE;
+  background-color: #FAFAE2;
+  border: none;
   margin-left: 1ex;
   margin-top: 0px;
   padding-left: 1ex;
