@@ -482,10 +482,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     script_blocks = split_code_and_text_blocks(example_file)
 
+    amount_of_code = sum([len(bcontent)
+                         for blabel, bcontent in script_blocks
+                         if blabel == 'code'])
+
     if _plots_are_current(src_file, image_path):
-        amount_of_code = sum([len(bcontent)
-                            for blabel, bcontent in script_blocks
-                            if blabel == 'code'])
         return amount_of_code
 
     time_elapsed = 0
@@ -529,10 +530,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
             else:
                 example_rst += text2string(bcontent) + '\n'
-
-    amount_of_code = sum([len(bcontent)
-                          for blabel, bcontent in script_blocks
-                          if blabel == 'code'])
 
     save_thumbnail(image_path, base_image_name, gallery_conf)
 
