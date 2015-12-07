@@ -6,6 +6,7 @@ Parser for Jupyter notebooks
 
 from __future__ import division, absolute_import, print_function
 import nbformat
+import os
 import warnings
 
 notebook_skeleton = {
@@ -35,8 +36,9 @@ notebook_skeleton = {
 
 
 class notebook_file(object):
-    def __init__(self, nb_file_name):
-        self.file_name = nb_file_name
+    def __init__(self, file_name, target_dir):
+        self.file_name = file_name.replace('.py', '.ipynb')
+        self.write_file = os.path.join(target_dir, self.file_name)
         self.work_notebook = nbformat.from_dict(notebook_skeleton)
         self.add_code("%matplotlib inline")
 
@@ -58,5 +60,5 @@ class notebook_file(object):
         })
         self.work_notebook["cells"].append(markdown_cell)
 
-    def write_file(self):
-        nbformat.write(self.work_notebook, self.file_name)
+    def save_file(self):
+        nbformat.write(self.work_notebook, self.write_file)
