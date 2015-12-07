@@ -3,3 +3,4 @@ matplotlib
 pillow
 sphinx
 nose
+nbformat
