@@ -11,7 +11,8 @@ Class that holds the Ipython notebook information
 # License: 3-clause BSD
 
 from __future__ import division, absolute_import, print_function
-import nbformat
+from copy import deepcopy
+import json
 import os
 
 NOTEBOOK_SKELETON = {
@@ -58,7 +59,7 @@ class Notebook(object):
 
         self.file_name = file_name.replace('.py', '.ipynb')
         self.write_file = os.path.join(target_dir, self.file_name)
-        self.work_notebook = nbformat.from_dict(NOTEBOOK_SKELETON)
+        self.work_notebook = deepcopy(NOTEBOOK_SKELETON)
         self.add_code_cell("%matplotlib inline")
 
     def add_code_cell(self, code):
@@ -70,13 +71,13 @@ class Notebook(object):
             Cell content
         """
 
-        code_cell = nbformat.from_dict({
+        code_cell = {
             "cell_type": "code",
             "execution_count": None,
             "metadata": {"collapsed": False},
             "outputs": [],
             "source": [code.strip()]
-            })
+            }
         self.work_notebook["cells"].append(code_cell)
 
     def add_markdown_cell(self, text):
@@ -87,13 +88,14 @@ class Notebook(object):
         code : str
             Cell content
         """
-        markdown_cell = nbformat.from_dict({
+        markdown_cell = {
             "cell_type": "markdown",
             "metadata": {},
             "source": [text]
-        })
+        }
         self.work_notebook["cells"].append(markdown_cell)
 
     def save_file(self):
         """Saves the notebook to a file"""
-        nbformat.write(self.work_notebook, self.write_file)
+        with open(self.write_file, 'w') as out_nb:
+            json.dump(self.work_notebook, out_nb, indent=2)
