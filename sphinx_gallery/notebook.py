@@ -14,6 +14,7 @@ from __future__ import division, absolute_import, print_function
 from copy import deepcopy
 import json
 import os
+import re
 
 NOTEBOOK_SKELETON = {
     "cells": [],
@@ -88,6 +89,8 @@ class Notebook(object):
         code : str
             Cell content
         """
+        top_heading = re.compile(r'^=+$\s^([\w\s]+)^=+$', flags=re.M)
+        text = re.sub(top_heading, r'# \1', text)
         markdown_cell = {
             "cell_type": "markdown",
             "metadata": {},
