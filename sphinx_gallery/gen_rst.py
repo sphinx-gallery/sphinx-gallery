@@ -66,7 +66,7 @@ except ImportError:
 
 from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
-from .notebook import notebook_file
+from .notebook import Notebook
 
 try:
     basestring
@@ -551,7 +551,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
-    example_nb = notebook_file(fname, target_dir)
+    example_nb = Notebook(fname, target_dir)
 
     filename_pattern = gallery_conf.get('filename_pattern')
     if re.search(filename_pattern, src_file):
@@ -576,7 +576,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                                                                gallery_conf)
 
                 time_elapsed += rtime
-                example_nb.add_code(bcontent)
+                example_nb.add_code_cell(bcontent)
 
                 if is_example_notebook_like:
                     example_rst += codestr2rst(bcontent) + '\n'
@@ -587,7 +587,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
             else:
                 example_rst += text2string(bcontent) + '\n'
-                example_nb.add_markdown(bcontent)
+                example_nb.add_markdown_cell(bcontent)
     else:
         convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:
@@ -598,7 +598,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()
     with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
-        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname, example_nb.file_name)
+        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname,
+                                            example_nb.file_name)
         f.write(example_rst)
 
     return amount_of_code
