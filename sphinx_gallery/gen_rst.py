@@ -438,13 +438,15 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
         # Depending on whether we have one or more figures, we're using a
         # horizontal list or a single rst call to 'image'.
+        image_list = ""
         if len(figure_list) == 1:
             figure_name = figure_list[0]
             image_list = SINGLE_IMAGE % figure_name.lstrip('/')
-        else:
+        elif len(figure_list) > 1:
             image_list = HLIST_HEADER
             for figure_name in figure_list:
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+
 
     except Exception:
         figure_list = []
