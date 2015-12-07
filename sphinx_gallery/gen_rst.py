@@ -587,7 +587,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
             else:
                 example_rst += text2string(bcontent) + '\n'
-                example_nb.add_markdown_cell(bcontent)
+                example_nb.add_markdown_cell(text2string(bcontent))
     else:
         convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:

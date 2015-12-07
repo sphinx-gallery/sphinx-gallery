@@ -69,12 +69,13 @@ class Notebook(object):
         code : str
             Cell content
         """
+
         code_cell = nbformat.from_dict({
             "cell_type": "code",
             "execution_count": None,
             "metadata": {"collapsed": False},
             "outputs": [],
-            "source": [code]
+            "source": [code.strip()]
             })
         self.work_notebook["cells"].append(code_cell)
 
