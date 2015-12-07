@@ -91,6 +91,8 @@ class Notebook(object):
         """
         top_heading = re.compile(r'^=+$\s^([\w\s]+)^=+$', flags=re.M)
         text = re.sub(top_heading, r'# \1', text)
+        one_line_math = re.compile(r'^.. math::(.+)', flags=re.M)
+        text = re.sub(one_line_math, r'\\begin{equation}\n\1\n\end{equation}\n', text)
         markdown_cell = {
             "cell_type": "markdown",
             "metadata": {},
