@@ -14,6 +14,9 @@ it corresponds mathematically to the function:
 
     x \\rightarrow \\sin(x)
 
+Here the function :math:`\\sin` is evaluated at each point the variable
+:math:`x` is defined.
+
 Note that ``sphinx-gallery`` automatically creates labels for each example from
 its filename. You can thus refer to it from any part of the documentation,
 including from other examples, as here
