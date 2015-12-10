@@ -449,12 +449,14 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
 
     except Exception:
-        figure_list = []
-        image_list = '%s is not compiling:' % src_file
         print(80 * '_')
-        print(image_list)
+        print('%s is not compiling:' % src_file)
         traceback.print_exc()
         print(80 * '_')
+
+        figure_list = []
+        exception_msg = indent(traceback.format_exc(), '    ')
+        image_list = '.. warning:: \n\n{0}'.format(exception_msg)
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
