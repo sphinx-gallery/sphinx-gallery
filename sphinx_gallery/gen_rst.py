@@ -240,7 +240,7 @@ def _plots_are_current(src_file, image_file):
     has_image = os.path.exists(first_image_file)
 
     with open(src_file, 'r') as src_data:
-        src_content = src_data.read()
+        src_content = src_data.read().encode('utf-8')
         src_md5 = hashlib.md5(src_content).hexdigest()
 
     src_md5_file = src_file + '.md5'
