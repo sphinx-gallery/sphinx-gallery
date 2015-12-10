@@ -13,18 +13,19 @@ Files that generate images should start with 'plot'
 
 """
 from __future__ import division, print_function, absolute_import
+from . import glr_path_static
+from .backreferences import write_backreferences, _thumbnail_div
+from textwrap import dedent
 from time import time
 import ast
+import hashlib
 import os
 import re
 import shutil
-import traceback
-import sys
 import subprocess
+import sys
+import traceback
 import warnings
-from textwrap import dedent
-from . import glr_path_static
-from .backreferences import write_backreferences, _thumbnail_div
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -236,10 +237,25 @@ def _plots_are_current(src_file, image_file):
     """Test existence of image file and later touch time to source script"""
 
     first_image_file = image_file.format(1)
-    needs_replot = (
-        not os.path.exists(first_image_file) or
-        os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
-    return not needs_replot
+    has_image = os.path.exists(first_image_file)
+
+    with open(src_file, 'r') as src_data:
+        src_content = src_data.read()
+        src_md5 = hashlib.md5(src_content).hexdigest()
+
+    src_md5_file = src_file + '.md5'
+    src_file_changed = True
+    if os.path.exists(src_md5_file):
+        with open(src_md5_file, 'r') as file_checksum:
+            ref_md5 = file_checksum.read()
+        if src_md5 == ref_md5:
+            src_file_changed = False
+
+    if src_file_changed:
+        with open(src_md5_file, 'w') as file_checksum:
+            file_checksum.write(src_md5)
+
+    return has_image and not src_file_changed
 
 
 def save_figures(image_path, fig_count, gallery_conf):
