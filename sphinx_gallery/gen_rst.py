@@ -397,7 +397,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
                              target_dir, fname, intro)
-        this_entry =  _thumbnail_div(target_dir, fname, intro) + """
+        this_entry = _thumbnail_div(target_dir, fname, intro) + """
 
 .. toctree::
    :hidden:
@@ -501,10 +501,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     script_blocks = split_code_and_text_blocks(example_file)
 
     amount_of_code = sum([len(bcontent)
-                         for blabel, bcontent in script_blocks
-                         if blabel == 'code'])
+                          for blabel, bcontent in script_blocks
+                          if blabel == 'code'])
 
-    if _plots_are_current(src_file, image_path):
+    if _plots_are_current(example_file, image_path):
         return amount_of_code
 
     time_elapsed = 0
