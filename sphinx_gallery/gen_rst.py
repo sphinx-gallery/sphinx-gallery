@@ -459,6 +459,11 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         figure_list = []
         exception_msg = indent(formatted_exception, ' ' * 4)
         image_list = '.. container:: sphx-glr-traceback \n\n{0}'.format(exception_msg)
+
+        # Overrides the output thumbnail in the gallery for easy identification
+        broken_img = os.path.join(glr_path_static(), 'broken_example.png')
+        broken_example = os.path.join(cwd, image_path.format(1))
+        shutil.copyfile(broken_img, broken_example)
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
