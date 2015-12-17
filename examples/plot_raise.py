@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+"""
+=============================
+Examples that fail to execute
+=============================
+
+When scripts fail their gallery thumbnail is replaced with the broken
+image stamp. Thus allowing easy identification in the gallery display.
+
+You also get the python traceback of the failed code block
+"""
+
+
+# Code source: Óscar Nájera
+# License: BSD 3 clause
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.pcolormesh(np.random.randn(100, 100))
+
+###############################################################################
+# Sphinx gallery as it executes scripts by block will continue
+# evaluating the script after exceptions
+
+aeiou
