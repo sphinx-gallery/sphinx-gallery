@@ -462,8 +462,9 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
         # Overrides the output thumbnail in the gallery for easy identification
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
-        broken_example = os.path.join(cwd, image_path.format(1))
-        shutil.copyfile(broken_img, broken_example)
+        shutil.copyfile(broken_img, os.path.join(cwd, image_path.format(1)))
+        fig_count += 1 # raise count to avoid overwriting image
+
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
