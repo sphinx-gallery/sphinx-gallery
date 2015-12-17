@@ -449,14 +449,16 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
 
     except Exception:
+        formatted_exception = traceback.format_exc()
+
         print(80 * '_')
         print('%s is not compiling:' % src_file)
-        traceback.print_exc()
+        print(formatted_exception)
         print(80 * '_')
 
         figure_list = []
-        exception_msg = indent(traceback.format_exc(), '    ')
-        image_list = '.. warning:: \n\n{0}'.format(exception_msg)
+        exception_msg = indent(formatted_exception, ' ' * 4)
+        image_list = '.. container:: sphx-glr-traceback \n\n{0}'.format(exception_msg)
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
