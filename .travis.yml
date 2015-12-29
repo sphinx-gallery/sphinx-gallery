@@ -7,6 +7,7 @@ addons:
     - python-matplotlib
     - python-pip
     - python-coverage
+    - xvfb # For mayavi headless
 
 virtualenv:
         system_site_packages: true
@@ -38,6 +39,9 @@ install:
         if [ "$PYTHON_VERSION" == "2.7" ]; then
           conda install --yes --quiet mayavi;
           conda upgrade --yes --all;
+          # virtual framebuffer for mayavi rendering
+          Xvfb :1 -screen 0 1280x1024x24 -auth localhost &
+          export DISPLAY=:1
         fi;
       fi;
     - pip install -r requirements.txt
