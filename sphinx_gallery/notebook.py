@@ -22,21 +22,21 @@ def ipy_notebook_skeleton():
         "cells": [],
         "metadata": {
             "kernelspec": {
-                "display_name": "Python " + str(py_version.major),
+                "display_name": "Python " + str(py_version[0]),
                 "language": "python",
-                "name": "python" + str(py_version.major)
+                "name": "python" + str(py_version[0])
             },
             "language_info": {
                 "codemirror_mode": {
                     "name": "ipython",
-                    "version": py_version.major
+                    "version": py_version[0]
                 },
                 "file_extension": ".py",
                 "mimetype": "text/x-python",
                 "name": "python",
                 "nbconvert_exporter": "python",
-                "pygments_lexer": "ipython" + str(py_version.major),
-                "version": '{}.{}.{}'.format(*sys.version_info[:3])
+                "pygments_lexer": "ipython" + str(py_version[0]),
+                "version": '{0}.{1}.{2}'.format(*sys.version_info[:3])
             }
         },
         "nbformat": 4,
