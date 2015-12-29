@@ -6,6 +6,7 @@ addons:
     - python-numpy
     - python-matplotlib
     - python-pip
+    - python-coverage
 
 virtualenv:
         system_site_packages: true
@@ -32,7 +33,7 @@ before_install:
 install:
     - if [ "$DISTRIB" == "conda" ]; then
         conda create --yes -n testenv python=$PYTHON_VERSION pip numpy
-        setuptools matplotlib pillow sphinx nose;
+        setuptools matplotlib pillow sphinx nose coverage;
         if [ "$PYTHON_VERSION" == "2.7" ]; then
           conda install --yes --quiet mayavi;
         fi;
