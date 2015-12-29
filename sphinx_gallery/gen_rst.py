@@ -233,11 +233,8 @@ def extract_intro(filename):
     return first_paragraph
 
 
-def _plots_are_current(src_file, image_file):
-    """Test existence of image file and later touch time to source script"""
-
-    first_image_file = image_file.format(1)
-    has_image = os.path.exists(first_image_file)
+def get_md5sum(src_file):
+    """Returns md5sum of file"""
 
     with open(src_file, 'r') as src_data:
         src_content = src_data.read()
@@ -247,6 +244,13 @@ def _plots_are_current(src_file, image_file):
             src_content = src_content.encode('utf-8')
 
         src_md5 = hashlib.md5(src_content).hexdigest()
+    return src_md5
+
+
+def check_md5sum_change(src_file):
+    """Returns True if src_file has a different md5sum"""
+
+    src_md5 = get_md5sum(src_file)
 
     src_md5_file = src_file + '.md5'
     src_file_changed = True
@@ -259,6 +263,17 @@ def _plots_are_current(src_file, image_file):
     if src_file_changed:
         with open(src_md5_file, 'w') as file_checksum:
             file_checksum.write(src_md5)
+
+    return src_file_changed
+
+
+def _plots_are_current(src_file, image_file):
+    """Test existence of image file and no change in md5sum of
+    example"""
+
+    first_image_file = image_file.format(1)
+    has_image = os.path.exists(first_image_file)
+    src_file_changed = check_md5sum_change(src_file)
 
     return has_image and not src_file_changed
 
