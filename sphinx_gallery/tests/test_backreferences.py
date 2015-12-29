@@ -17,7 +17,7 @@ def test_thumbnail_div():
     reference = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbContainer" tooltip="test formating">
+    <div class="sphx-glr-thumbcontainer" tooltip="test formating">
 
 .. only:: html
 
@@ -42,7 +42,7 @@ def test_backref_thumbnail_div():
     reference = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbContainer" tooltip="test formating">
+    <div class="sphx-glr-thumbcontainer" tooltip="test formating">
 
 .. only:: html
 
