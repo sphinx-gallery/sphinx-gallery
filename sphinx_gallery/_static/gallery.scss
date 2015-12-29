@@ -10,6 +10,7 @@
   min-height: 230px;
   padding-top: 5px;
   position: relative;
+
   &:hover {
     border: solid #b4ddfc 1px;
     box-shadow: 0 0 15px rgba(142, 176, 202, .5);
@@ -19,15 +20,13 @@
     bottom: 0;
     display: block;
     left: 0;
-    padding: 150px 10px 0 10px;
+    padding: 150px 10px 0;
     position: absolute;
     right: 0;
     top: 0;
   }
 
-  p {
-    margin: 0 0 .1em 0;
-  }
+  p {margin: 0 0 .1em 0;}
 
   .figure {
     margin: 10px;
@@ -46,7 +45,7 @@
       -webkit-border-radius: 5px;
       -moz-border-radius: 5px;
       border-radius: 5px;
-      color: white;
+      color: #fff;
       content: attr(tooltip);
       left: 95%;
       padding: 5px 15px;
@@ -55,6 +54,7 @@
       width: 220px;
       bottom: 52%;
     }
+
     &:hover:before {
       border: solid;
       border-color: #333 transparent;
@@ -70,19 +70,23 @@
 
 .sphx-glr-script-out {
   color: #888;
+  margin: 0;
   .highlight {background-color: transparent;}
   pre {
     background-color: #fafae2;
     border: 0;
     margin-left: 1ex;
+    margin-top: 0;
     max-height: 30em;
-    overflow-y: auto;
+    overflow: auto;
     padding-left: 1ex;
-    word-break: break-word;}
+    word-break: break-word;
+  }
+
   +p { margin-top: 1.8em;}
 }
 
-div.sphx-glr-download {
+.sphx-glr-download {
   background-color: #ffc;
   border: 1px solid #c2c22d;
   border-radius: 4px;
