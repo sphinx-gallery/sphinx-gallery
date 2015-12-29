@@ -8,7 +8,7 @@ from __future__ import division, absolute_import, print_function
 import tempfile
 
 import sphinx_gallery.gen_rst as sg
-from nose.tools import assert_equal, assert_false
+from nose.tools import assert_equal, assert_false, assert_true
 import ast
 
 
@@ -88,3 +88,19 @@ def test_extract_intro():
             result,
             'This is the description of the example which goes on and on')
         assert_false('second paragraph' in result)
+
+def test_md5sums():
+    """Test md5sum check functions work on know file content"""
+
+    with tempfile.NamedTemporaryFile('w') as f:
+        f.write('Local test\n')
+        f.flush()
+        file_md5 = sg.get_md5sum(f.name)
+        # verify correct md5sum
+        assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
+        # True because is a new file
+        assert_true(sg.check_md5sum_change(f.name))
+        # False because file has not changed since last check
+        assert_false(sg.check_md5sum_change(f.name))
+
+    sg.os.remove(f.name+'.md5')
