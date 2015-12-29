@@ -11,41 +11,45 @@ Class that holds the Ipython notebook information
 # License: 3-clause BSD
 
 from __future__ import division, absolute_import, print_function
-from copy import deepcopy
 import json
 import os
 import re
+import sys
 
-NOTEBOOK_SKELETON = {
-    "cells": [],
-    "metadata": {
-        "kernelspec": {
-            "display_name": "Python 2",
-            "language": "python2",
-            "name": "python2"
-        },
-        "language_info": {
-            "codemirror_mode": {
-                "name": "ipython",
-                "version": 2
+def ipy_notebook_skeleton():
+    py_version = sys.version_info
+    notebook_skeleton = {
+        "cells": [],
+        "metadata": {
+            "kernelspec": {
+                "display_name": "Python " + str(py_version.major),
+                "language": "python",
+                "name": "python" + str(py_version.major)
             },
-            "file_extension": ".py",
-            "mimetype": "text/x-python",
-            "name": "python",
-            "nbconvert_exporter": "python",
-            "pygments_lexer": "ipython2",
-            "version": "2.7.10"
-        }
-    },
-    "nbformat": 4,
-    "nbformat_minor": 0
-}
+            "language_info": {
+                "codemirror_mode": {
+                    "name": "ipython",
+                    "version": py_version.major
+                },
+                "file_extension": ".py",
+                "mimetype": "text/x-python",
+                "name": "python",
+                "nbconvert_exporter": "python",
+                "pygments_lexer": "ipython" + str(py_version.major),
+                "version": '{}.{}.{}'.format(*sys.version_info[:3])
+            }
+        },
+        "nbformat": 4,
+        "nbformat_minor": 0
+    }
+    return notebook_skeleton
+
 
 def rst2md(text):
     """Converts the RST text from the examples docstrigs and comments
     into markdown text for the IPython notebooks"""
 
-    top_heading = re.compile(r'^=+$\s^([\w\s]+)^=+$', flags=re.M)
+    top_heading = re.compile(r'^=+$\s^([\w\s-]+)^=+$', flags=re.M)
     text = re.sub(top_heading, r'# \1', text)
 
     math_eq = re.compile(r'^\.\. math::((?:.+)?(?:\n+^  .+)*)', flags=re.M)
@@ -75,7 +79,7 @@ class Notebook(object):
 
         self.file_name = file_name.replace('.py', '.ipynb')
         self.write_file = os.path.join(target_dir, self.file_name)
-        self.work_notebook = deepcopy(NOTEBOOK_SKELETON)
+        self.work_notebook = ipy_notebook_skeleton()
         self.add_code_cell("%matplotlib inline")
 
     def add_code_cell(self, code):
