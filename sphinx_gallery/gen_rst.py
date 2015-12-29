@@ -197,9 +197,9 @@ def split_code_and_text_blocks(source_file):
     return blocks
 
 
-def codestr2rst(codestr):
+def codestr2rst(codestr, lang='python'):
     """Return reStructuredText code block from code string"""
-    code_directive = "\n.. code-block:: python\n\n"
+    code_directive = "\n.. code-block:: {0}\n\n".format(lang)
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
@@ -457,8 +457,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         print(80 * '_')
 
         figure_list = []
-        exception_msg = indent(formatted_exception, ' ' * 4)
-        image_list = '.. container:: sphx-glr-traceback \n\n{0}'.format(exception_msg)
+        image_list = codestr2rst(formatted_exception, 'pytb')
 
         # Overrides the output thumbnail in the gallery for easy identification
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
