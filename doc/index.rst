@@ -12,7 +12,7 @@ gallery of examples from any set of Python scripts.
 It is extracted from the scikit-learn project and aims to be an
 independent general purpose extension.
 
-Why Sphinx-Galley?
+Why Sphinx-Gallery?
 ------------------
 
 * Simple examples that run out of the box are the best way to learn a
