@@ -34,10 +34,11 @@ install:
     - if [ "$DISTRIB" == "conda" ]; then
         conda create --yes -n testenv python=$PYTHON_VERSION pip numpy
         setuptools matplotlib pillow sphinx nose coverage;
+        source activate testenv;
         if [ "$PYTHON_VERSION" == "2.7" ]; then
           conda install --yes --quiet mayavi;
+          conda upgrade --yes --all;
         fi;
-        source activate testenv;
       fi;
     - pip install -r requirements.txt
     - python setup.py install
