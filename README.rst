@@ -28,7 +28,7 @@ Install as developer
 --------------------
 
 You can get the latest development source from our `Github repository
-<http://https://github.com/sphinx-gallery/sphinx-gallery>`. You need
+<https://github.com/sphinx-gallery/sphinx-gallery>`_. You need
 ``setuptools`` installed in your system to install Sphinx-Gallery.
 
 You will also need have installed:
