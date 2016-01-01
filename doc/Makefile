@@ -58,6 +58,11 @@ html-noplot:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html-quick_fail:
+	$(SPHINXBUILD) -D quick_fail=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
