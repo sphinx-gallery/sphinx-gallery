@@ -507,7 +507,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
-    if not fname.startswith('plot'):
+    if not fname.startswith('plot') or not gallery_conf['plot_gallery']:
         convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:
             example_rst += convert_func[blabel](bcontent) + '\n'

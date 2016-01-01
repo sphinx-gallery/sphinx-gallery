@@ -53,13 +53,11 @@ def generate_gallery_rst(app):
         plot_gallery = bool(app.builder.config.plot_gallery)
 
     gallery_conf.update(app.config.sphinx_gallery_conf)
+    gallery_conf.update(plot_gallery=plot_gallery)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
     app.config.html_static_path.append(glr_path_static())
-
-    if not plot_gallery:
-        return
 
     clean_gallery_out(app.builder.outdir)
 
