@@ -163,3 +163,33 @@ This will download directly from PyPI our latest released code and
 save it to the current folder. This is a striped version of the
 Sphinx-Gallery module to incorporate in your project. You should also
 add it to your version control system.
+
+
+Dealing with failing Gallery example scripts
+============================================
+
+As your project evolves some of your example scripts might stop
+executing properly. Sphinx-Gallery assist you in the discovery process
+of those bugged examples. The defaul behavior is to replace the
+thumbnail of those examples in the gallery with the broken
+thumbnail. That allows you to find with a quick glance of the gallery
+which examples failed. Broken examples remain accessible in the html
+view of the gallery and the traceback message is written for the
+failling code block. Refer to example
+:ref:`sphx_glr_auto_examples_plot_raise.py` to view the default
+behavior.
+
+An extra functionality of Sphinx-Gallery is the early fail option. In
+this mode the gallery build process breaks as soon as an exeption
+occurs in the execution of the examples scripts. To activate this
+modality you need to pass a flag at the build process. It can be done
+by including in your ``Makefile``::
+
+    html-quick_fail:
+        $(SPHINXBUILD) -D quick_fail=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+        @echo
+        @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+
+Remember that for ``Makefile`` white space is significant and the indentation are tabs
+and not spaces
