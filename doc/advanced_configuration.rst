@@ -164,6 +164,23 @@ save it to the current folder. This is a striped version of the
 Sphinx-Gallery module to incorporate in your project. You should also
 add it to your version control system.
 
+Build the Gallery without executing the examples
+================================================
+
+Sphinx-Gallery can parse all your examples and build the gallery
+without executing any of the scripts. This is just for speed
+visiulization processes of the gallery and the size it take your
+website display, or any use you can imagine for it. To achive this you
+need to pass the no plot option in the build process by modifiying
+your ``Makefile`` with::
+
+    html-noplot:
+        $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+        @echo
+        @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+Remember that for ``Makefile`` white space is significant and the indentation are tabs
+and not spaces
 
 Dealing with failing Gallery example scripts
 ============================================
