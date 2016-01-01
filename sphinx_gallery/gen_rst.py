@@ -13,9 +13,6 @@ Files that generate images should start with 'plot'
 
 """
 from __future__ import division, print_function, absolute_import
-from . import glr_path_static
-from .backreferences import write_backreferences, _thumbnail_div
-from textwrap import dedent
 from time import time
 import ast
 import hashlib
@@ -29,28 +26,7 @@ import warnings
 
 
 # Try Python 2 first, otherwise load from Python 3
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
-try:
-    basestring
-except NameError:
-    basestring = str
-
-try:
-    # make sure that the Agg backend is set before importing any
-    # matplotlib
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-except ImportError:
-    # this script can be imported by nosetest to find tests to run: we should
-    # not impose the matplotlib requirement in that case.
-    pass
-
-
+from textwrap import dedent
 try:
     # textwrap indent only exists in python 3
     from textwrap import indent
@@ -71,6 +47,31 @@ except ImportError:
             for line in text.splitlines(True):
                 yield (prefix + line if predicate(line) else line)
         return ''.join(prefixed_lines())
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+try:
+    # make sure that the Agg backend is set before importing any
+    # matplotlib
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+except ImportError:
+    # this script can be imported by nosetest to find tests to run: we should
+    # not impose the matplotlib requirement in that case.
+    pass
+
+from . import glr_path_static
+from .backreferences import write_backreferences, _thumbnail_div
+
+try:
+    basestring
+except NameError:
+    basestring = str
+
 
 ###############################################################################
 
