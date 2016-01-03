@@ -14,6 +14,9 @@ it corresponds mathematically to the function:
 
     x \\rightarrow \\sin(x)
 
+.. seealso::
+    :ref:`sphx_glr_auto_examples_sin_func_plot_sin_black_background.py` for a
+    fancier plot
 """
 
 # Code source: Óscar Nájera
