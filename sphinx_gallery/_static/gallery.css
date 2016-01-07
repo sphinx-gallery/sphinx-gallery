@@ -78,10 +78,12 @@
   padding-left: 1ex;
   word-break: break-word;
 }
-.sphx-glr-script-out + p {
+blockquote.sphx-glr-script-out + p {
   margin-top: 1.8em;
 }
-
+blockquote.sphx-glr-script-out {
+  margin-left: 0pt;
+}
 .sphx-glr-download {
   background-color: #ffc;
   border: 1px solid #c2c22d;
