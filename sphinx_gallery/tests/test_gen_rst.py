@@ -13,7 +13,7 @@ from nose.tools import assert_equal, assert_false, assert_true
 import sphinx_gallery.gen_rst as sg
 
 
-content = ['"""'
+CONTENT = ['"""'
            'Docstring header',
            '================',
            '',
@@ -83,7 +83,7 @@ def test_codestr2rst():
 
 def test_extract_intro():
     with tempfile.NamedTemporaryFile('w') as f:
-        f.write('\n'.join(content))
+        f.write('\n'.join(CONTENT))
 
         f.flush()
 
@@ -118,7 +118,7 @@ def test_pattern_matching():
     gallery_dir = tempfile.mkdtemp()
 
     gallery_conf = {
-        'fname_pattern': '%s/plot_0*' % examples_dir,
+        'filename_pattern': 'plot_0*',
         'examples_dirs': examples_dir,
         'gallery_dirs': gallery_dir,
         'mod_example_dir': 'modules/generated',
@@ -131,7 +131,7 @@ def test_pattern_matching():
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
         with open(op.join(examples_dir, fname), 'w') as f:
-            f.write('\n'.join(content))
+            f.write('\n'.join(CONTENT))
             f.flush()
         # generate rst file
         sg.generate_file_rst(fname, gallery_dir, examples_dir, gallery_conf)

@@ -18,7 +18,7 @@ import ast
 import hashlib
 import os
 import re
-import glob
+import fnmatch
 import shutil
 import subprocess
 import sys
@@ -550,8 +550,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
-    fname_pattern = gallery_conf.get('fname_pattern', 'plot_*')
-    if os.path.join(src_dir, fname) not in glob.glob(fname_pattern):
+    filename_pattern = gallery_conf.get('filename_pattern', 'plot_*')
+    if not fnmatch.fnmatch(fname, filename_pattern):
         convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:
             example_rst += convert_func[blabel](bcontent) + '\n'
