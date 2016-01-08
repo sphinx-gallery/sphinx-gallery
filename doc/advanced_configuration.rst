@@ -29,14 +29,14 @@ Keep in mind that both lists have to be of the same length.
 Building examples matching a pattern
 ====================================
 
-By default, Sphinx-Gallery execute only examples beginning with ``plot_``. However,
+By default, Sphinx-Gallery execute only examples beginning with ``plot``. However,
 if this naming convention does not suit your project, you can modify this pattern
 in your Sphinx ``conf.py``. For example:
 
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        'filename_pattern'  : '^plot_compute_'
+        'filename_pattern'  : '/plot_compute_'
     }
 
 will build all examples starting with ``plot_compute_``. This is also useful if you
@@ -46,7 +46,7 @@ skip building examples starting with ``plot_long_examples_``, you would do:
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        'filename_pattern' : '^(?!plot_long_examples_).+'
+        'filename_pattern' : '^(?!/plot_long_examples_).+'
     }
 
 Alternatively, you may want to build only one example so that you can

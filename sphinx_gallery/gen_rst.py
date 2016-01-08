@@ -23,6 +23,7 @@ import subprocess
 import sys
 import traceback
 import warnings
+import os.path as op
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -378,18 +379,18 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 def save_thumbnail(image_path, base_image_name, gallery_conf):
     """Save the thumbnail image"""
     first_image_file = image_path.format(1)
-    thumb_dir = os.path.join(os.path.dirname(first_image_file), 'thumb')
-    if not os.path.exists(thumb_dir):
+    thumb_dir = op.join(op.dirname(first_image_file), 'thumb')
+    if not op.exists(thumb_dir):
         os.makedirs(thumb_dir)
 
-    thumb_file = os.path.join(thumb_dir,
-                              'sphx_glr_%s_thumb.png' % base_image_name)
+    thumb_file = op.join(thumb_dir,
+                         'sphx_glr_%s_thumb.png' % base_image_name)
 
-    if os.path.exists(first_image_file):
+    if op.exists(first_image_file):
         scale_image(first_image_file, thumb_file, 400, 280)
-    elif not os.path.exists(thumb_file):
+    elif not op.exists(thumb_file):
         # create something to replace the thumbnail
-        default_thumb_file = os.path.join(glr_path_static(), 'no_image.png')
+        default_thumb_file = op.join(glr_path_static(), 'no_image.png')
         default_thumb_file = gallery_conf.get("default_thumb_file",
                                               default_thumb_file)
         scale_image(default_thumb_file, thumb_file, 200, 140)
@@ -397,7 +398,7 @@ def save_thumbnail(image_path, base_image_name, gallery_conf):
 
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
-    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
+    if not op.exists(op.join(src_dir, 'README.txt')):
         print(80 * '_')
         print('Example directory %s does not have a README.txt file' %
               src_dir)
@@ -405,8 +406,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         print(80 * '_')
         return ""  # because string is an expected return type
 
-    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
-    if not os.path.exists(target_dir):
+    fhindex = open(op.join(src_dir, 'README.txt')).read()
+    if not op.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
                       if fname.endswith('.py')]
@@ -414,7 +415,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     for fname in sorted_listdir:
         amount_of_code = generate_file_rst(fname, target_dir, src_dir,
                                            gallery_conf)
-        new_fname = os.path.join(src_dir, fname)
+        new_fname = op.join(src_dir, fname)
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
                              target_dir, fname, intro)
@@ -456,7 +457,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     try:
         # First cd in the original example dir, so that any file
         # created by the example get created in this directory
-        os.chdir(os.path.dirname(src_file))
+        os.chdir(op.dirname(src_file))
         my_buffer = StringIO()
         my_stdout = Tee(sys.stdout, my_buffer)
         sys.stdout = my_stdout
@@ -498,7 +499,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         # Overrides the output thumbnail in the gallery for easy identification
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
         shutil.copyfile(broken_img, os.path.join(cwd, image_path.format(1)))
-        fig_count += 1 # raise count to avoid overwriting image
+        fig_count += 1  # raise count to avoid overwriting image
 
         # Breaks build on first example error
 
@@ -522,17 +523,17 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         files.
     """
 
-    src_file = os.path.join(src_dir, fname)
-    example_file = os.path.join(target_dir, fname)
+    src_file = op.join(src_dir, fname)
+    example_file = op.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
 
-    image_dir = os.path.join(target_dir, 'images')
-    if not os.path.exists(image_dir):
+    image_dir = op.join(target_dir, 'images')
+    if not op.exists(image_dir):
         os.makedirs(image_dir)
 
-    base_image_name = os.path.splitext(fname)[0]
+    base_image_name = op.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
-    image_path = os.path.join(image_dir, image_fname)
+    image_path = op.join(image_dir, image_fname)
 
     script_blocks = split_code_and_text_blocks(example_file)
 
@@ -545,11 +546,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     time_elapsed = 0
 
-    ref_fname = example_file.replace(os.path.sep, '_')
+    ref_fname = example_file.replace(op.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
-    filename_pattern = gallery_conf.get('filename_pattern', '^plot_')
-    if re.match(filename_pattern, fname):
+    filename_pattern = gallery_conf.get('filename_pattern', op.sep + 'plot')
+    if re.search(filename_pattern, op.realpath(op.join(src_dir, fname))):
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
         # information. Because the docstring has been separated from
@@ -589,7 +590,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     save_thumbnail(image_path, base_image_name, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
-    with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
+    with open(op.join(target_dir, base_image_name + '.rst'), 'w') as f:
         example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname)
         f.write(example_rst)
     return amount_of_code

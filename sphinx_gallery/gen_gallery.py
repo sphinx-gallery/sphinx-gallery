@@ -101,7 +101,7 @@ def generate_gallery_rst(app):
 
 
 gallery_conf = {
-    'filename_pattern': '^plot_',
+    'filename_pattern': os.path.sep + 'plot',
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
     'mod_example_dir': 'modules/generated',

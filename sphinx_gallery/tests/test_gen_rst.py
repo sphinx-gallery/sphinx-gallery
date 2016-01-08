@@ -118,7 +118,7 @@ def test_pattern_matching():
     gallery_dir = tempfile.mkdtemp()
 
     gallery_conf = {
-        'filename_pattern': '^plot_0',
+        'filename_pattern': '/plot_0',
         'examples_dirs': examples_dir,
         'gallery_dirs': gallery_dir,
         'mod_example_dir': 'modules/generated',
