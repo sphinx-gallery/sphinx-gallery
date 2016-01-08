@@ -485,7 +485,6 @@ def execute_script(code_block, example_globals, image_path, fig_count,
             for figure_name in figure_list:
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
-
     except Exception:
         formatted_exception = traceback.format_exc()
 
@@ -551,11 +550,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
     filename_pattern = gallery_conf.get('filename_pattern', 'plot_*')
-    if not fnmatch.fnmatch(fname, filename_pattern):
-        convert_func = dict(code=codestr2rst, text=text2string)
-        for blabel, bcontent in script_blocks:
-            example_rst += convert_func[blabel](bcontent) + '\n'
-    else:
+    if fnmatch.fnmatch(fname, filename_pattern):
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
         # information. Because the docstring has been separated from
@@ -587,6 +582,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
             else:
                 example_rst += text2string(bcontent) + '\n'
+    else:
+        convert_func = dict(code=codestr2rst, text=text2string)
+        for blabel, bcontent in script_blocks:
+            example_rst += convert_func[blabel](bcontent) + '\n'
 
     save_thumbnail(image_path, base_image_name, gallery_conf)
 
