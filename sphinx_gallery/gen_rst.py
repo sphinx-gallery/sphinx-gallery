@@ -550,7 +550,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
     filename_pattern = gallery_conf.get('filename_pattern', op.sep + 'plot')
-    if re.search(filename_pattern, op.realpath(op.join(src_dir, fname))):
+    if re.search(filename_pattern, src_file):
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
         # information. Because the docstring has been separated from
