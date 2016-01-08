@@ -29,20 +29,37 @@ Keep in mind that both lists have to be of the same length.
 Building examples matching a pattern
 ====================================
 
-Sphinx-Gallery allows you to build only a subset of examples with a user-specified 
-pattern. This is useful if you want to write documentation linking to a specific
-example. This option allows you build only the relevant example saving yourself
-the trouble of building all the examples. For this, you specify a pattern using
-Unix shell-style wildcards (which are *not* the same as regular expressions) in your
-Sphinx ``conf.py``. For example:
+By default, Sphinx-Gallery execute only examples beginning with ``plot_``. However,
+if this naming convention does not suit your project, you can modify this pattern
+in your Sphinx ``conf.py``. For example:
 
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        'filename_pattern'  : ['plot_*']
+        'filename_pattern'  : '^plot_compute_'
     }
 
-will build all examples starting the ``plot_``.
+will build all examples starting with ``plot_compute_``. This is also useful if you
+want to build only a subset of the examples, or skip some examples. For example, to
+skip building examples starting with ``plot_long_examples_``, you would do:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern' : '^(?!plot_long_examples_).+'
+    }
+
+Alternatively, you may want to build only one example so that you can
+link it in the documentation. In that case, you would do:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern' : 'plot_awesome_example.py'
+    }
+
+The patterns are parsed as regular expressions. See the `regular expressions module`_
+for more details.
 
 .. _link_to_documentation:
 
@@ -229,3 +246,5 @@ by including in your ``Makefile``::
 
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
 and not spaces
+
+.. _regular expressions module: https://docs.python.org/2/library/re.html
