@@ -6,8 +6,8 @@ Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
 import ast
-import os.path as op
 import tempfile
+import re
 import os
 from nose.tools import assert_equal, assert_false, assert_true
 import sphinx_gallery.gen_rst as sg
@@ -118,7 +118,7 @@ def test_pattern_matching():
     gallery_dir = tempfile.mkdtemp()
 
     gallery_conf = {
-        'filename_pattern': '/plot_0',
+        'filename_pattern': os.path.sep + 'plot_0',
         'examples_dirs': examples_dir,
         'gallery_dirs': gallery_dir,
         'mod_example_dir': 'modules/generated',
@@ -130,16 +130,17 @@ def test_pattern_matching():
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
-        with open(op.join(examples_dir, fname), 'w') as f:
+        with open(os.path.join(examples_dir, fname), 'w') as f:
             f.write('\n'.join(CONTENT))
             f.flush()
         # generate rst file
         sg.generate_file_rst(fname, gallery_dir, examples_dir, gallery_conf)
         # read rst file and check if it contains code output
-        rst_fname = op.splitext(fname)[0] + '.rst'
-        with open(op.join(gallery_dir, rst_fname), 'r') as f:
+        rst_fname = os.path.splitext(fname)[0] + '.rst'
+        with open(os.path.join(gallery_dir, rst_fname), 'r') as f:
             rst = f.read()
-            if rst_fname == 'plot_0.rst':
+            if re.search(gallery_conf['filename_pattern'],
+                         os.path.join(gallery_dir, rst_fname)):
                 assert_true(code_output in rst)
             else:
                 assert_false(code_output in rst)

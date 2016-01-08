@@ -23,7 +23,6 @@ import subprocess
 import sys
 import traceback
 import warnings
-import os.path as op
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -384,7 +383,7 @@ def save_thumbnail(image_path, base_image_name, gallery_conf):
         os.makedirs(thumb_dir)
 
     thumb_file = os.path.join(thumb_dir,
-                         'sphx_glr_%s_thumb.png' % base_image_name)
+                              'sphx_glr_%s_thumb.png' % base_image_name)
 
     if os.path.exists(first_image_file):
         scale_image(first_image_file, thumb_file, 400, 280)
@@ -549,8 +548,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
-    filename_pattern = gallery_conf.get('filename_pattern',
-                                        os.path.sep + 'plot')
+    filename_pattern = gallery_conf.get('filename_pattern')
     if re.search(filename_pattern, src_file):
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful

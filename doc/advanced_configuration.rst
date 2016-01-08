@@ -39,18 +39,14 @@ in your Sphinx ``conf.py``. For example:
         'filename_pattern'  : '/plot_compute_'
     }
 
-will build all examples starting with ``plot_compute_``. This is also useful if you
-want to build only a subset of the examples, or skip some examples. For example, to
-skip building examples starting with ``plot_long_examples_``, you would do:
+will build all examples starting with ``plot_compute_``. The key ``filename_pattern`` accepts
+regular expressions which will be matched with the full path of the example. This is the reason
+the leading ``'/'`` is required. Users are advised to use ``os.path.sep`` instead of ``'/'``
+if they want to be agnostic to the operating system.
 
-.. code-block:: python
-
-    sphinx_gallery_conf = {
-        'filename_pattern' : '^(?!/plot_long_examples_).+'
-    }
-
-Alternatively, you may want to build only one example so that you can
-link it in the documentation. In that case, you would do:
+This option is also useful if you want to build only a subset of the examples. For example, you may
+want to build only one example so that you can link it in the documentation. In that case,
+you would do:
 
 .. code-block:: python
 
@@ -58,8 +54,25 @@ link it in the documentation. In that case, you would do:
         'filename_pattern' : 'plot_awesome_example.py'
     }
 
-The patterns are parsed as regular expressions. See the `regular expressions module`_
-for more details.
+Similarly, to build only examples in a specific directory, you can do:
+
+.. code-blocK:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern' : '/directory/plot_'
+    }
+
+Alternatively, you can skip some examples. For example, to skip building examples
+starting with ``plot_long_examples_``, you would do:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern' : '^((?!/plot_long_examples).)*$'
+    }
+
+As the patterns are parsed as regular expressions, users are advised to consult the
+`regular expressions module`_ for more details.
 
 .. _link_to_documentation:
 
