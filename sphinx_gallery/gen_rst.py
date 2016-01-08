@@ -120,9 +120,7 @@ SINGLE_IMAGE = """
 
 CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
 
- **Output**:\n
-
-  ::
+ Out::
 
 {0}\n"""
 
