@@ -24,6 +24,26 @@ the sphinx configuration dictionary:
 
 Keep in mind that both lists have to be of the same length.
 
+.. _build_pattern:
+
+Building examples matching a pattern
+====================================
+
+Sphinx-Gallery allows you to build only a subset of examples with a user-specified 
+pattern. This is useful if you want to write documentation linking to a specific
+example. This option allows you build only the relevant example saving yourself
+the trouble of building all the examples. For this, you specify a pattern using
+Unix shell-style wildcards (which are *not* the same as regular expressions) in your
+Sphinx ``conf.py``. For example:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern'  : ['plot_*']
+    }
+
+will build all examples starting the ``plot_``.
+
 .. _link_to_documentation:
 
 Linking to documentation
