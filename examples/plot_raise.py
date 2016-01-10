@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 =============================
-Examples that fail to execute
+Example that fails to execute
 =============================
 
 When scripts fail their gallery thumbnail is replaced with the broken
@@ -30,4 +30,4 @@ plt.pcolormesh(np.random.randn(100, 100))
 ###############################################################################
 # Here is another error raising Block
 
-raise IOError
+plt.plot('Strings are not a valid argument for the plot function')

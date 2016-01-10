@@ -457,7 +457,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         print(80 * '_')
 
         figure_list = []
-        image_list = codestr2rst(formatted_exception, 'pytb')
+        image_list = codestr2rst(formatted_exception, lang='pytb')
 
         # Overrides the output thumbnail in the gallery for easy identification
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
