@@ -156,5 +156,5 @@ running the examples files. For this you need to extend your ``Makefile`` with::
             @echo
             @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-Remember that for in ``Makefile`` white space is significant and the indentation are tabs
+Remember that for ``Makefile`` white space is significant and the indentation are tabs
 and not spaces

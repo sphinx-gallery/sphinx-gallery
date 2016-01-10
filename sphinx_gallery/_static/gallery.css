@@ -61,6 +61,13 @@
   z-index: 99;
 }
 
+.highlight-pytb pre {
+  background-color: #ffe4e4;
+  border: 1px solid #f66;
+  margin-top: 10px;
+  padding: 7px;
+}
+
 .sphx-glr-script-out {
   color: #888;
   margin: 0;

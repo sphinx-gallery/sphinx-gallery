@@ -197,9 +197,9 @@ def split_code_and_text_blocks(source_file):
     return blocks
 
 
-def codestr2rst(codestr):
+def codestr2rst(codestr, lang='python'):
     """Return reStructuredText code block from code string"""
-    code_directive = "\n.. code-block:: python\n\n"
+    code_directive = "\n.. code-block:: {0}\n\n".format(lang)
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
@@ -449,12 +449,26 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
 
     except Exception:
+        formatted_exception = traceback.format_exc()
+
+        print(80 * '_')
+        print('%s is not compiling:' % src_file)
+        print(formatted_exception)
+        print(80 * '_')
+
         figure_list = []
-        image_list = '%s is not compiling:' % src_file
-        print(80 * '_')
-        print(image_list)
-        traceback.print_exc()
-        print(80 * '_')
+        image_list = codestr2rst(formatted_exception, lang='pytb')
+
+        # Overrides the output thumbnail in the gallery for easy identification
+        broken_img = os.path.join(glr_path_static(), 'broken_example.png')
+        shutil.copyfile(broken_img, os.path.join(cwd, image_path.format(1)))
+        fig_count += 1 # raise count to avoid overwriting image
+
+        # Breaks build on first example error
+
+        if gallery_conf['abort_on_example_error']:
+            raise
+
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
@@ -498,7 +512,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
-    if not fname.startswith('plot'):
+    if not fname.startswith('plot') or not gallery_conf['plot_gallery']:
         convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:
             example_rst += convert_func[blabel](bcontent) + '\n'

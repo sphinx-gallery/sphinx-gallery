@@ -154,8 +154,8 @@ Embedding Sphinx-Gallery inside your documentation script extensions
 ====================================================================
 
 If you want to embed Sphinx-Gallery in your project instead of putting
-it as a dependency you can call our emdeding script inside your in
-your Sphinx extension folder::
+it as a dependency you can call our embedding script inside your
+Sphinx extensions folder::
 
   $ copy_sphinxgallery.sh
 
@@ -163,3 +163,49 @@ This will download directly from PyPI our latest released code and
 save it to the current folder. This is a striped version of the
 Sphinx-Gallery module to incorporate in your project. You should also
 add it to your version control system.
+
+Build the Gallery without executing the examples
+================================================
+
+Sphinx-Gallery can parse all your examples and build the gallery
+without executing any of the scripts. This is just for speed
+visualization processes of the gallery and the size it takes your
+website to display, or any use you can imagine for it. To achieve this you
+need to pass the no plot option in the build process by modifying
+your ``Makefile`` with::
+
+    html-noplot:
+        $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+        @echo
+        @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+Remember that for ``Makefile`` white space is significant and the indentation are tabs
+and not spaces
+
+Dealing with failing Gallery example scripts
+============================================
+
+As your project evolves some of your example scripts might stop
+executing properly. Sphinx-Gallery assist you in the discovery process
+of those bugged examples. The default behavior is to replace the
+thumbnail of those examples in the gallery with the broken
+thumbnail. That allows you to find with a quick glance of the gallery
+which examples failed. Broken examples remain accessible in the html
+view of the gallery and the traceback message is written for the
+failing code block. Refer to example
+:ref:`sphx_glr_auto_examples_plot_raise.py` to view the default
+behavior.
+
+An extra functionality of Sphinx-Gallery is the early fail option. In
+this mode the gallery build process breaks as soon as an exception
+occurs in the execution of the examples scripts. To activate this
+behavior you need to pass a flag at the build process. It can be done
+by including in your ``Makefile``::
+
+    html_abort_on_example_error:
+	$(SPHINXBUILD) -D abort_on_example_error=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+Remember that for ``Makefile`` white space is significant and the indentation are tabs
+and not spaces
