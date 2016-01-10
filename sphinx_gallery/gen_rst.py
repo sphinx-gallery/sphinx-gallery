@@ -464,7 +464,9 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         shutil.copyfile(broken_img, os.path.join(cwd, image_path.format(1)))
         fig_count += 1 # raise count to avoid overwriting image
 
-        if gallery_conf['quick_fail']: # Break build as soon as possible
+        # Breaks build on first example error
+
+        if gallery_conf['abort_on_example_error']:
             raise
 
     finally:
