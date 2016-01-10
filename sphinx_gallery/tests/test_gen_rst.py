@@ -5,11 +5,11 @@
 Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
-import tempfile
-
-import sphinx_gallery.gen_rst as sg
-from nose.tools import assert_equal, assert_false, assert_true
 import ast
+import tempfile
+import os
+from nose.tools import assert_equal, assert_false, assert_true
+import sphinx_gallery.gen_rst as sg
 
 
 def test_split_code_and_text_blocks():
@@ -103,4 +103,4 @@ def test_md5sums():
         # False because file has not changed since last check
         assert_false(sg.check_md5sum_change(f.name))
 
-    sg.os.remove(f.name+'.md5')
+    os.remove(f.name + '.md5')
