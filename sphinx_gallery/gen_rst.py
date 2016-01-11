@@ -484,7 +484,6 @@ def execute_script(code_block, example_globals, image_path, fig_count,
             for figure_name in figure_list:
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
-
     except Exception:
         formatted_exception = traceback.format_exc()
 
@@ -499,7 +498,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         # Overrides the output thumbnail in the gallery for easy identification
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
         shutil.copyfile(broken_img, os.path.join(cwd, image_path.format(1)))
-        fig_count += 1 # raise count to avoid overwriting image
+        fig_count += 1  # raise count to avoid overwriting image
 
         # Breaks build on first example error
 
@@ -549,11 +548,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
-    if not fname.startswith('plot') or not gallery_conf['plot_gallery']:
-        convert_func = dict(code=codestr2rst, text=text2string)
-        for blabel, bcontent in script_blocks:
-            example_rst += convert_func[blabel](bcontent) + '\n'
-    else:
+    filename_pattern = gallery_conf.get('filename_pattern')
+    if re.search(filename_pattern, src_file):
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
         # information. Because the docstring has been separated from
@@ -585,6 +581,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
             else:
                 example_rst += text2string(bcontent) + '\n'
+    else:
+        convert_func = dict(code=codestr2rst, text=text2string)
+        for blabel, bcontent in script_blocks:
+            example_rst += convert_func[blabel](bcontent) + '\n'
 
     save_thumbnail(image_path, base_image_name, gallery_conf)
 

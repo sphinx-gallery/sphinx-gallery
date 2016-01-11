@@ -24,6 +24,56 @@ the sphinx configuration dictionary:
 
 Keep in mind that both lists have to be of the same length.
 
+.. _build_pattern:
+
+Building examples matching a pattern
+====================================
+
+By default, Sphinx-Gallery execute only examples beginning with ``plot``. However,
+if this naming convention does not suit your project, you can modify this pattern
+in your Sphinx ``conf.py``. For example:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern'  : '/plot_compute_'
+    }
+
+will build all examples starting with ``plot_compute_``. The key ``filename_pattern`` accepts
+regular expressions which will be matched with the full path of the example. This is the reason
+the leading ``'/'`` is required. Users are advised to use ``os.sep`` instead of ``'/'`` if 
+they want to be agnostic to the operating system.
+
+This option is also useful if you want to build only a subset of the examples. For example, you may
+want to build only one example so that you can link it in the documentation. In that case,
+you would do:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern' : 'plot_awesome_example.py'
+    }
+
+Similarly, to build only examples in a specific directory, you can do:
+
+.. code-blocK:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern' : '/directory/plot_'
+    }
+
+Alternatively, you can skip some examples. For example, to skip building examples
+starting with ``plot_long_examples_``, you would do:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        'filename_pattern' : '/plot_(?!long_examples)'
+    }
+
+As the patterns are parsed as regular expressions, users are advised to consult the
+`regular expressions module`_ for more details.
+
 .. _link_to_documentation:
 
 Linking to documentation
@@ -209,3 +259,5 @@ by including in your ``Makefile``::
 
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
 and not spaces
+
+.. _regular expressions module: https://docs.python.org/2/library/re.html
