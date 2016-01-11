@@ -140,6 +140,12 @@ generated gallery under the same path. That means you will find the gallery in t
 
 that you can open under your favorite browser.
 
+Once a build is completed all your examples outputs are in cache. Thus
+future rebuilds of your project will not trigger the full execution of
+all your examples saving your a large amount of time on each
+iteration. Only examples which have changed (comparison evaluated by
+md5sum) are built again.
+
 Extending your Makefile
 -----------------------
 Once your gallery is working you might need remove completely all generated files by

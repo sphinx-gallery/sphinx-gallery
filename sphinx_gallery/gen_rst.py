@@ -15,41 +15,18 @@ Files that generate images should start with 'plot'
 from __future__ import division, print_function, absolute_import
 from time import time
 import ast
+import hashlib
 import os
 import re
 import shutil
-import traceback
-import sys
 import subprocess
+import sys
+import traceback
 import warnings
-from textwrap import dedent
-from . import glr_path_static
-from .backreferences import write_backreferences, _thumbnail_div
 
 
 # Try Python 2 first, otherwise load from Python 3
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
-try:
-    basestring
-except NameError:
-    basestring = str
-
-try:
-    # make sure that the Agg backend is set before importing any
-    # matplotlib
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-except ImportError:
-    # this script can be imported by nosetest to find tests to run: we should
-    # not impose the matplotlib requirement in that case.
-    pass
-
-
+from textwrap import dedent
 try:
     # textwrap indent only exists in python 3
     from textwrap import indent
@@ -70,6 +47,31 @@ except ImportError:
             for line in text.splitlines(True):
                 yield (prefix + line if predicate(line) else line)
         return ''.join(prefixed_lines())
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+try:
+    # make sure that the Agg backend is set before importing any
+    # matplotlib
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+except ImportError:
+    # this script can be imported by nosetest to find tests to run: we should
+    # not impose the matplotlib requirement in that case.
+    pass
+
+from . import glr_path_static
+from .backreferences import write_backreferences, _thumbnail_div
+
+try:
+    basestring
+except NameError:
+    basestring = str
+
 
 ###############################################################################
 
@@ -232,14 +234,49 @@ def extract_intro(filename):
     return first_paragraph
 
 
+def get_md5sum(src_file):
+    """Returns md5sum of file"""
+
+    with open(src_file, 'r') as src_data:
+        src_content = src_data.read()
+
+        # data needs to be encoded in python3 before hashing
+        if sys.version_info[0] == 3:
+            src_content = src_content.encode('utf-8')
+
+        src_md5 = hashlib.md5(src_content).hexdigest()
+    return src_md5
+
+
+def check_md5sum_change(src_file):
+    """Returns True if src_file has a different md5sum"""
+
+    src_md5 = get_md5sum(src_file)
+
+    src_md5_file = src_file + '.md5'
+    src_file_changed = True
+    if os.path.exists(src_md5_file):
+        with open(src_md5_file, 'r') as file_checksum:
+            ref_md5 = file_checksum.read()
+        if src_md5 == ref_md5:
+            src_file_changed = False
+
+    if src_file_changed:
+        with open(src_md5_file, 'w') as file_checksum:
+            file_checksum.write(src_md5)
+
+    return src_file_changed
+
+
 def _plots_are_current(src_file, image_file):
-    """Test existence of image file and later touch time to source script"""
+    """Test existence of image file and no change in md5sum of
+    example"""
 
     first_image_file = image_file.format(1)
-    needs_replot = (
-        not os.path.exists(first_image_file) or
-        os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
-    return not needs_replot
+    has_image = os.path.exists(first_image_file)
+    src_file_changed = check_md5sum_change(src_file)
+
+    return has_image and not src_file_changed
 
 
 def save_figures(image_path, fig_count, gallery_conf):
@@ -381,7 +418,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
                              target_dir, fname, intro)
-        this_entry =  _thumbnail_div(target_dir, fname, intro) + """
+        this_entry = _thumbnail_div(target_dir, fname, intro) + """
 
 .. toctree::
    :hidden:
@@ -501,10 +538,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     script_blocks = split_code_and_text_blocks(example_file)
 
     amount_of_code = sum([len(bcontent)
-                         for blabel, bcontent in script_blocks
-                         if blabel == 'code'])
+                          for blabel, bcontent in script_blocks
+                          if blabel == 'code'])
 
-    if _plots_are_current(src_file, image_path):
+    if _plots_are_current(example_file, image_path):
         return amount_of_code
 
     time_elapsed = 0
