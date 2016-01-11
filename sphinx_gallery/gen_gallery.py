@@ -12,6 +12,7 @@ when building the documentation.
 
 
 from __future__ import division, print_function, absolute_import
+import re
 import os
 from . import glr_path_static
 from .gen_rst import generate_dir_rst
@@ -101,7 +102,7 @@ def generate_gallery_rst(app):
 
 
 gallery_conf = {
-    'filename_pattern': os.path.sep + 'plot',
+    'filename_pattern': re.escape(os.sep) + 'plot',
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
     'mod_example_dir': 'modules/generated',

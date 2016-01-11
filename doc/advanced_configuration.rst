@@ -41,8 +41,8 @@ in your Sphinx ``conf.py``. For example:
 
 will build all examples starting with ``plot_compute_``. The key ``filename_pattern`` accepts
 regular expressions which will be matched with the full path of the example. This is the reason
-the leading ``'/'`` is required. Users are advised to use ``os.path.sep`` instead of ``'/'``
-if they want to be agnostic to the operating system.
+the leading ``'/'`` is required. Users are advised to use ``os.sep`` instead of ``'/'`` if 
+they want to be agnostic to the operating system.
 
 This option is also useful if you want to build only a subset of the examples. For example, you may
 want to build only one example so that you can link it in the documentation. In that case,
@@ -68,7 +68,7 @@ starting with ``plot_long_examples_``, you would do:
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        'filename_pattern' : '^((?!/plot_long_examples).)*$'
+        'filename_pattern' : '/plot_(?!long_examples)'
     }
 
 As the patterns are parsed as regular expressions, users are advised to consult the
