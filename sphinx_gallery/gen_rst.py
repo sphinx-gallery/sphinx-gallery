@@ -589,9 +589,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                 example_rst += text2string(bcontent) + '\n'
                 example_nb.add_markdown_cell(text2string(bcontent))
     else:
-        convert_func = dict(code=codestr2rst, text=text2string)
         for blabel, bcontent in script_blocks:
-            example_rst += convert_func[blabel](bcontent) + '\n'
+            if blabel == 'code':
+                example_rst += codestr2rst(bcontent) + '\n'
+                example_nb.add_code_cell(bcontent)
+            else:
+                example_rst += bcontent + '\n'
+                example_nb.add_markdown_cell(text2string(bcontent))
 
     save_thumbnail(image_path, base_image_name, gallery_conf)
 
