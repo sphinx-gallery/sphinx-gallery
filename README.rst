@@ -75,7 +75,6 @@ To get Sphinx-Gallery into your project we have to extend the Sphinx
 
 .. code-block:: python
 
-    import sphinx_gallery
     extensions = [
         ...
         'sphinx_gallery.gen_gallery',
