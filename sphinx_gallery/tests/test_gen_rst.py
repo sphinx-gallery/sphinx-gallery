@@ -6,12 +6,13 @@ Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
 import ast
+import json
 import tempfile
 import re
 import os
 from nose.tools import assert_equal, assert_false, assert_true
 import sphinx_gallery.gen_rst as sg
-import sphinx_gallery.notebook as gnb
+from sphinx_gallery import notebook
 
 
 CONTENT = ['"""'
@@ -150,7 +151,7 @@ def test_pattern_matching():
 def test_ipy_notebook():
     """Test that written ipython notebook file corresponds to python object"""
     with tempfile.NamedTemporaryFile('w+') as f:
-        example_nb = gnb.Notebook(f.name, os.path.dirname(f.name))
+        example_nb = notebook.Notebook(f.name, os.path.dirname(f.name))
         blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
         for blabel, bcontent in blocks:
@@ -162,4 +163,4 @@ def test_ipy_notebook():
         example_nb.save_file()
 
         f.flush()
-        assert_equal(gnb.json.load(f), example_nb.work_notebook)
+        assert_equal(json.load(f), example_nb.work_notebook)

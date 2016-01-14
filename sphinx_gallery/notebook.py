@@ -17,6 +17,7 @@ import re
 import sys
 
 def ipy_notebook_skeleton():
+    """Returns a dictionary with the elements of a Jupyter notebook"""
     py_version = sys.version_info
     notebook_skeleton = {
         "cells": [],
@@ -60,6 +61,7 @@ def rst2md(text):
     text = re.sub(inline_math, r'$\1$', text)
 
     return text
+
 
 class Notebook(object):
     """Ipython notebook object
