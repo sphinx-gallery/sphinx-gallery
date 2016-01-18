@@ -1,9 +1,24 @@
 Change Log
 ==========
 
-Master
-------
+v0.0.12
+-------
 
+Highlights
+''''''''''
+
+Example scripts are now availible for download as IPython Notebooks
+`#75 <https://github.com/sphinx-gallery/sphinx-gallery/pull/75>`_
+
+New features
+------------
+
+* Configurable filename pattern to which example scripts are executed
+  for the Gallery
+* Examples script update check are now by md5sum check and not date
+* Broken Examples now display a Broken thumbnail in the gallery view,
+  inside the rendered example traceback is printed. User can also set
+  build process to abort as soon as an example fails.
 * Sorting examples by script size
 * Improve examples style
 
