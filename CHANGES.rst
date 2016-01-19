@@ -1,13 +1,13 @@
 Change Log
 ==========
 
-v0.0.12
--------
+v0.1.0
+------
 
 Highlights
 ''''''''''
 
-Example scripts are now availible for download as IPython Notebooks
+Example scripts are now available for download as IPython Notebooks
 `#75 <https://github.com/sphinx-gallery/sphinx-gallery/pull/75>`_
 
 New features
