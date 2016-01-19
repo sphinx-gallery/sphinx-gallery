@@ -128,7 +128,7 @@ def test_pattern_matching():
         'reference_url': {},
     }
 
-    code_output = '**Output**:\n\n\n  ::\n\n    output\n\n\n\n'
+    code_output = '\n Out::\n\n      output\n\n'
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
