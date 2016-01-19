@@ -128,7 +128,7 @@ CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
 
  Out::
 
-{0}\n"""
+  {0}\n"""
 
 
 def get_docstring_and_rest(filename):
