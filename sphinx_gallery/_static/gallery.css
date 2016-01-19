@@ -74,21 +74,24 @@
 }
 .sphx-glr-script-out .highlight {
   background-color: transparent;
+  margin-left: 2.5em;
+  margin-top: -1.4em;
 }
-.sphx-glr-script-out pre {
+.sphx-glr-script-out .highlight pre {
   background-color: #fafae2;
   border: 0;
-  margin-left: 1ex;
-  margin-top: 0;
   max-height: 30em;
   overflow: auto;
   padding-left: 1ex;
+  margin: 0px;
   word-break: break-word;
 }
 .sphx-glr-script-out + p {
   margin-top: 1.8em;
 }
-
+blockquote.sphx-glr-script-out {
+  margin-left: 0pt;
+}
 .sphx-glr-download {
   background-color: #ffc;
   border: 1px solid #c2c22d;
