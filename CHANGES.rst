@@ -13,8 +13,8 @@ Example scripts are now available for download as IPython Notebooks
 New features
 ------------
 
-* Configurable filename pattern to which example scripts are executed
-  for the Gallery
+* Configurable filename pattern to select which example scripts are
+  executed while building the Gallery
 * Examples script update check are now by md5sum check and not date
 * Broken Examples now display a Broken thumbnail in the gallery view,
   inside the rendered example traceback is printed. User can also set
