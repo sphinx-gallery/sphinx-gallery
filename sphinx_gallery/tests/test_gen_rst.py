@@ -123,6 +123,7 @@ def test_pattern_matching():
         'filename_pattern': re.escape(os.sep) + 'plot_0',
         'examples_dirs': examples_dir,
         'gallery_dirs': gallery_dir,
+        'plot_gallery': True,
         'mod_example_dir': 'modules/generated',
         'doc_module': (),
         'reference_url': {},
