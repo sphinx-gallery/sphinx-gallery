@@ -41,6 +41,8 @@ follows the discussion raised in `#47
 resolved with `#66
 <https://github.com/sphinx-gallery/sphinx-gallery/pull/66>`_
 
+The gallery configuration dictionary also changes its name to ``sphinx_gallery_conf``
+
 From PR `#36
 <https://github.com/sphinx-gallery/sphinx-gallery/pull/36>`_ it is
 decided into a new namespace convention for images, thumbnails and
