@@ -581,7 +581,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                     example_rst += code_output
                 else:
                     example_rst += code_output
-                    if code_output:
+                    if 'sphx-glr-script-out' in code_output:
                         # Add some vertical space after output
                         example_rst += "\n\n|\n\n"
                     example_rst += codestr2rst(bcontent) + '\n'
