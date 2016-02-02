@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+v0.1.1
+------
+
+Bug Fixes
+'''''''''
+
+* Restore the html-noplot functionality
+* Gallery CSS now implictly enforces thumbnails width
+
 v0.1.0
 ------
 
