@@ -482,6 +482,9 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     time_elapsed = 0
     stdout = ''
 
+    if src_file in gallery_conf['failed_examples']:
+        return '', 0, 0
+
     # We need to execute the code
     print('plotting code blocks in %s' % src_file)
 
