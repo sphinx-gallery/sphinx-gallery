@@ -12,11 +12,21 @@ when building the documentation.
 
 
 from __future__ import division, print_function, absolute_import
+import copy
 import re
 import os
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
+
+DEFAULT_GALLERY_CONF = {
+    'filename_pattern': re.escape(os.sep) + 'plot',
+    'examples_dirs': '../examples',
+    'gallery_dirs': 'auto_examples',
+    'mod_example_dir': os.path.join('modules', 'generated'),
+    'doc_module': (),
+    'reference_url': {},
+}
 
 
 def clean_gallery_out(build_dir):
@@ -55,8 +65,10 @@ def generate_gallery_rst(app):
     except TypeError:
         plot_gallery = bool(app.builder.config.plot_gallery)
 
+    gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     gallery_conf.update(app.config.sphinx_gallery_conf)
     gallery_conf.update(plot_gallery=plot_gallery)
+    gallery_conf.update(failed_examples=[])
     gallery_conf.update(
         abort_on_example_error=app.builder.config.abort_on_example_error)
 
@@ -143,21 +155,11 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
-gallery_conf = {
-    'filename_pattern': re.escape(os.sep) + 'plot',
-    'examples_dirs': '../examples',
-    'gallery_dirs': 'auto_examples',
-    'mod_example_dir': os.path.join('modules', 'generated'),
-    'doc_module': (),
-    'reference_url': {},
-}
-
-
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('plot_gallery', True, 'html')
     app.add_config_value('abort_on_example_error', False, 'html')
-    app.add_config_value('sphinx_gallery_conf', gallery_conf, 'html')
+    app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
     app.add_stylesheet('gallery.css')
 
     if 'sphinx.ext.autodoc' in app._extensions:

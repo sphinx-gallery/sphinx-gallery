@@ -545,6 +545,8 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         # `raise RuntimeError` by the `my_stdout` call, maybe use `.get()`?
         if gallery_conf['abort_on_example_error']:
             raise
+        # Stores failing file
+        gallery_conf['failed_examples'].append(src_file)
 
     finally:
         os.chdir(cwd)

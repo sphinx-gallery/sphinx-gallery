@@ -434,3 +434,6 @@ def embed_code_links(app, exception):
 
     for gallery_dir in gallery_dirs:
         _embed_code_links(app, gallery_conf, gallery_dir)
+
+    sys.stderr.write("Failed examples:")
+    sys.stderr.write(str(gallery_conf['failed_examples']))
