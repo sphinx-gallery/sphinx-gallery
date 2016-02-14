@@ -96,6 +96,7 @@ class Tee(object):
 
 class MixedEncodingStringIO(StringIO):
     """Helper when both ASCII and unicode strings will be written"""
+
     def write(self, data):
         if not isinstance(data, unicode):
             data = data.decode('utf-8')
@@ -526,11 +527,10 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     except Exception:
         formatted_exception = traceback.format_exc()
 
-        sys.stdout = orig_stdout  # need this here so these lines don't bomb
-        print(80 * '_')
-        print('%s is not compiling:' % src_file)
-        print(formatted_exception)
-        print(80 * '_')
+        sys.stderr.write(80 * '_' + '\n')
+        sys.stderr.write('%s is not compiling:' % src_file)
+        sys.stderr.write(formatted_exception)
+        sys.stderr.write(80 * '_' + '\n')
 
         figure_list = []
         image_list = codestr2rst(formatted_exception, lang='pytb')
