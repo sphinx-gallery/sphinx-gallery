@@ -27,6 +27,10 @@ DEFAULT_GALLERY_CONF = {
     'mod_example_dir': os.path.join('modules', 'generated'),
     'doc_module': (),
     'reference_url': {},
+    # build options
+    'plot_gallery': True,
+    'abort_on_example_error': False,
+    'failed_examples': [],
 }
 
 

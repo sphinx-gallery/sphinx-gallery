@@ -8,6 +8,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import ast
 import codecs
+import copy
 import json
 import tempfile
 import re
@@ -17,6 +18,7 @@ import shutil
 from nose.tools import assert_equal, assert_false, assert_true
 
 import sphinx_gallery.gen_rst as sg
+from sphinx_gallery import gen_gallery
 from sphinx_gallery import notebook
 import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
@@ -127,20 +129,21 @@ def test_md5sums():
     os.remove(f.name + '.md5')
 
 
+def build_temp_setup(**kwargs):
+    """Sets a test build up"""
+
+    gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
+    gallery_conf.update(examples_dir=tempfile.mkdtemp(),
+                        gallery_dir=tempfile.mkdtemp())
+    gallery_conf.update(kwargs)
+    return gallery_conf
+
+
 def test_pattern_matching():
     """Test if only examples matching pattern are executed"""
-    examples_dir = tempfile.mkdtemp()
-    gallery_dir = tempfile.mkdtemp()
 
-    gallery_conf = {
-        'filename_pattern': re.escape(os.sep) + 'plot_0',
-        'examples_dirs': examples_dir,
-        'gallery_dirs': gallery_dir,
-        'plot_gallery': True,
-        'mod_example_dir': 'modules/generated',
-        'doc_module': (),
-        'reference_url': {},
-    }
+    gallery_conf = build_temp_setup(
+        filename_pattern=re.escape(os.sep) + 'plot_0')
 
     code_output = ('\n Out::\n'
                    '\n'
@@ -155,7 +158,8 @@ def test_pattern_matching():
                          encoding='utf-8') as f:
             f.write('\n'.join(CONTENT))
         # generate rst file
-        sg.generate_file_rst(fname, gallery_dir, examples_dir, gallery_conf)
+        sg.generate_file_rst(fname, gallery_conf['gallery_dir'],
+                             gallery_conf['examples_dir'], gallery_conf)
         # read rst file and check if it contains code output
         rst_fname = os.path.splitext(fname)[0] + '.rst'
         with codecs.open(os.path.join(gallery_dir, rst_fname),
