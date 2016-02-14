@@ -15,6 +15,7 @@ from __future__ import division, print_function, absolute_import
 import copy
 import re
 import os
+import sys
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
@@ -153,6 +154,16 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
     if not os.path.exists(examples_path):
         # touch file
         open(examples_path, 'w').close()
+
+
+def exit_on_fail_examples(app, exception):
+    """Embed hyperlinks to documentation into example code"""
+    if exception is not None:
+        return
+    gallery_conf = app.config.sphinx_gallery_conf
+    sys.stderr.write("Failed examples:")
+    sys.stderr.write(str(gallery_conf['failed_examples']))
+    sys.exit(1)
 
 
 def setup(app):
