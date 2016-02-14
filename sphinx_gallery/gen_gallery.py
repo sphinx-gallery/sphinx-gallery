@@ -160,10 +160,12 @@ def exit_on_fail_examples(app, exception):
     """Embed hyperlinks to documentation into example code"""
     if exception is not None:
         return
+
     gallery_conf = app.config.sphinx_gallery_conf
-    sys.stderr.write("Failed examples:")
-    sys.stderr.write(str(gallery_conf['failed_examples']))
-    sys.exit(1)
+    if len(gallery_conf['failed_examples']):
+        sys.stderr.write("Failed examples:\n\n")
+        sys.stderr.write("\n".join(gallery_conf['failed_examples']) + '\n\n')
+        sys.exit(1)
 
 
 def setup(app):
@@ -178,6 +180,7 @@ def setup(app):
 
     app.connect('builder-inited', generate_gallery_rst)
 
+    app.connect('build-finished', exit_on_fail_examples)
     app.connect('build-finished', embed_code_links)
 
 
