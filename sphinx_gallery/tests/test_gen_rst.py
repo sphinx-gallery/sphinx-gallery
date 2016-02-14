@@ -138,6 +138,27 @@ def build_temp_setup(**kwargs):
     gallery_conf.update(kwargs)
     return gallery_conf
 
+def test_fail_example():
+    """Test that failing examples are only executed until failing block"""
+
+    gallery_conf = build_temp_setup(filename_pattern='raise.py')
+
+    failing_code = CONTENT + ['#'*79, 'First_test_fail', '#'*79, 'second_fail']
+
+    with open(os.path.join(gallery_conf['examples_dir'], 'raise.py'), 'w') as f:
+        f.write('\n'.join(failing_code))
+
+    sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
+                         gallery_conf['examples_dir'], gallery_conf)
+
+    # read rst file and check if it contains traceback output
+    with open(os.path.join(gallery_conf['gallery_dir'], 'raise.rst'), 'r') as f:
+        ex_failing_blocks = f.read().count('pytb')
+        if ex_failing_blocks == 0:
+            raise 'Did not run into errors in bad code'
+        elif ex_failing_blocks > 1:
+            raise 'Did not stop executing script after error'
+
 
 def test_pattern_matching():
     """Test if only examples matching pattern are executed"""
