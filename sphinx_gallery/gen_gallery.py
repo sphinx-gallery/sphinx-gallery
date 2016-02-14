@@ -103,11 +103,26 @@ def generate_gallery_rst(app):
         fhindex.flush()
 
 
+def touch_empty_backreferences(app, what, name, obj, options, lines):
+    """Generate empty back-reference example files
+
+    This avoids inclusion errors/warnings if there are no gallery
+    examples for a class / module that is being parsed by autodoc"""
+
+    examples_path = os.path.join(app.srcdir,
+                                 app.config.sphinx_gallery_conf["mod_example_dir"],
+                                 "%s.examples" % name)
+
+    if not os.path.exists(examples_path):
+        # touch file
+        open(examples_path, 'w').close()
+
+
 gallery_conf = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
-    'mod_example_dir': 'modules/generated',
+    'mod_example_dir': os.path.join('modules', 'generated'),
     'doc_module': (),
     'reference_url': {},
 }
@@ -119,6 +134,9 @@ def setup(app):
     app.add_config_value('abort_on_example_error', False, 'html')
     app.add_config_value('sphinx_gallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
+
+    if 'sphinx.ext.autodoc' in app._extensions:
+        app.connect('autodoc-process-docstring', touch_empty_backreferences)
 
     app.connect('builder-inited', generate_gallery_rst)
 
