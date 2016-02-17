@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+v0.1.2
+------
+
+Bug Fixes
+.........
+
+* Examples that use ``if __name__ == '__main__'`` guards are now run
+
 v0.1.1
 ------
 
