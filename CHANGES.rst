@@ -8,6 +8,8 @@ Bug Fixes
 .........
 
 * Examples that use ``if __name__ == '__main__'`` guards are now run
+* Added vertical space between code output and code source in non
+  notebook examples
 
 v0.1.1
 ------
