@@ -531,7 +531,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         formatted_exception = traceback.format_exc()
 
         sys.stderr.write(80 * '_' + '\n')
-        sys.stderr.write('%s is not compiling:' % src_file)
+        sys.stderr.write('%s failed to execute correctly:' % src_file)
         sys.stderr.write(formatted_exception)
         sys.stderr.write(80 * '_' + '\n')
 
