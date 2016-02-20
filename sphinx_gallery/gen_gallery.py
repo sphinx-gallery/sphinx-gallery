@@ -31,6 +31,7 @@ DEFAULT_GALLERY_CONF = {
     'plot_gallery': True,
     'abort_on_example_error': False,
     'failed_examples': [],
+    'examples_expected_to_fail': set(),
 }
 
 
@@ -166,9 +167,19 @@ def exit_on_fail_examples(app, exception):
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    if len(gallery_conf['failed_examples']):
-        sys.stderr.write("Failed examples:\n\n")
-        sys.stderr.write("\n".join(gallery_conf['failed_examples']) + '\n\n')
+    failed_examples = set(gallery_conf['failed_examples'])
+    ex_fail_examples = set(gallery_conf['examples_expected_to_fail'])
+
+    unexpected_ex_fails = failed_examples.difference(ex_fail_examples)
+    if unexpected_ex_fails:
+        sys.stderr.write("Unexpected failing examples:\n\n")
+        sys.stderr.write("\n".join(unexpected_ex_fails) + '\n\n')
+        sys.exit(1)
+
+    unexpected_ex_pass = ex_fail_examples.difference(failed_examples)
+    if unexpected_ex_pass:
+        sys.stderr.write("Examples that are not failing anymore:\n\n")
+        sys.stderr.write("\n".join(unexpected_ex_pass) + '\n\n')
         sys.exit(1)
 
 
