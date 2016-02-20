@@ -184,7 +184,6 @@ def exit_on_fail_examples(app, exception):
         for fail_example in still_ex_fails:
             sys.stderr.write(fail_example + ' failed leaving traceback:\n')
             sys.stderr.write(gallery_conf['failed_examples'][fail_example] +'\n')
-        sys.exit(1)
 
     unexpected_ex_pass = ex_fail_examples.difference(failed_examples)
     if unexpected_ex_pass:
