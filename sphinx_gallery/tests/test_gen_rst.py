@@ -155,9 +155,9 @@ def test_fail_example():
     with open(os.path.join(gallery_conf['gallery_dir'], 'raise.rst'), 'r') as f:
         ex_failing_blocks = f.read().count('pytb')
         if ex_failing_blocks == 0:
-            raise 'Did not run into errors in bad code'
+            raise ValueError('Did not run into errors in bad code')
         elif ex_failing_blocks > 1:
-            raise 'Did not stop executing script after error'
+            raise ValueError('Did not stop executing script after error')
 
 
 def test_pattern_matching():
