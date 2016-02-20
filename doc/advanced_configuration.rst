@@ -267,7 +267,17 @@ failing code block. Refer to example
 :ref:`sphx_glr_auto_examples_plot_raise.py` to view the default
 behavior.
 
-An extra functionality of Sphinx-Gallery is the early fail option. In
+The build is also failed exiting with code 1 and giving you a summary
+of the failed examples with their repective traceback. This way you
+are aware of failing examples right after the build and can find them
+easily.
+
+There are some additional options at your hand to deal with broken examples.
+
+Abort build on first fail
+-------------------------
+
+Sphinx-Gallery provides the early fail option. In
 this mode the gallery build process breaks as soon as an exception
 occurs in the execution of the examples scripts. To activate this
 behavior you need to pass a flag at the build process. It can be done
@@ -280,5 +290,28 @@ by including in your ``Makefile``::
 
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
 and not spaces
+
+Don't fail the build on exit
+----------------------------
+
+It migth be the case that you want to keep the gallery even with
+failed examples. Thus you can configure Sphinx-Gallery to allow
+certain examples to fail and not to trow a failed build exit code 1 if
+only known to fail examples have failed. For this you need to list all
+the examples you want to allow to fail during build. Change your
+`conf.py` accordingly:
+
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        ...
+	'examples_expected_to_fail': ['../examples/plot_raise.py']
+    }
+
+Here you list the examples you allow to fail during the build process,
+keep in mind to specify the full relavite path from your `conf.py` to
+the example script.
+
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
