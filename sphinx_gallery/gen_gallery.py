@@ -30,7 +30,7 @@ DEFAULT_GALLERY_CONF = {
     # build options
     'plot_gallery': True,
     'abort_on_example_error': False,
-    'failed_examples': [],
+    'failed_examples': {},
     'examples_expected_to_fail': set(),
 }
 
@@ -173,7 +173,17 @@ def exit_on_fail_examples(app, exception):
     unexpected_ex_fails = failed_examples.difference(ex_fail_examples)
     if unexpected_ex_fails:
         sys.stderr.write("Unexpected failing examples:\n\n")
-        sys.stderr.write("\n".join(unexpected_ex_fails) + '\n\n')
+        for fail_example in unexpected_ex_fails:
+            sys.stderr.write(fail_example + ' failed leaving traceback:\n')
+            sys.stderr.write(gallery_conf['failed_examples'][fail_example] +'\n')
+        sys.exit(1)
+
+    still_ex_fails = failed_examples.intersection(ex_fail_examples)
+    if still_ex_fails:
+        sys.stderr.write("Known failing examples, still failing:\n\n")
+        for fail_example in still_ex_fails:
+            sys.stderr.write(fail_example + ' failed leaving traceback:\n')
+            sys.stderr.write(gallery_conf['failed_examples'][fail_example] +'\n')
         sys.exit(1)
 
     unexpected_ex_pass = ex_fail_examples.difference(failed_examples)
