@@ -4,8 +4,12 @@ Change Log
 git master
 ----------
 
-New features
+New Features
 ''''''''''''
+
+* End of build summary of failing examples with traceback. It is
+  possible to declare expected to fail examples, otherwise the build
+  exits with 1 and fails.
 
 * Print aggregated and sorted list of computation times of all examples
   in the console during the build.
@@ -41,7 +45,7 @@ Example scripts are now available for download as IPython Notebooks
 `#75 <https://github.com/sphinx-gallery/sphinx-gallery/pull/75>`_
 
 New features
-------------
+''''''''''''
 
 * Configurable filename pattern to select which example scripts are
   executed while building the Gallery
