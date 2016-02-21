@@ -16,6 +16,18 @@ script and puts it into an examples gallery.
 It is extracted from the scikit-learn project and aims to be an
 independent general purpose extension.
 
+Who uses Sphinx-Gallery
+-----------------------
+
+* `Sphinx-Gallery <http://sphinx-gallery.readthedocs.org/en/latest/auto_examples/index.html>`_
+* `NiLearn <http://nilearn.github.io/auto_examples/index.html>`_
+* `MNE-python <http://ww.martinos.org/mne/stable/auto_examples/index.html>`_
+* `PyStruct <http://pystruct.github.io/auto_examples/index.html>`_
+* `GIMLi <http://www.pygimli.org/_examples_auto/index.html>`_
+* `Nestle <http://kbarbary.github.io/nestle/examples/index.html>`_
+* `pyRiemann <http://pythonhosted.org/pyriemann/auto_examples/index.html>`_
+
+
 Getting the package
 ===================
 
