@@ -405,7 +405,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
               src_dir)
         print('Skipping this directory')
         print(80 * '_')
-        return ""  # because string is an expected return type
+        return "", []  # because string is an expected return type
 
     fhindex = open(os.path.join(src_dir, 'README.txt')).read()
     if not os.path.exists(target_dir):
