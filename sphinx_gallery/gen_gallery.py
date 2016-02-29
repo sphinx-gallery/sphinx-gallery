@@ -77,6 +77,8 @@ def generate_gallery_rst(app):
                                        app.builder.srcdir)
     seen_backrefs = set()
 
+    computation_times = []
+
     for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
         examples_dir = os.path.relpath(examples_dir,
                                        app.builder.srcdir)
@@ -91,16 +93,31 @@ def generate_gallery_rst(app):
         fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
-        fhindex.write(generate_dir_rst(examples_dir, gallery_dir, gallery_conf,
-                                       seen_backrefs))
+        this_fhindex, this_computation_times = \
+            generate_dir_rst(examples_dir, gallery_dir, gallery_conf,
+                             seen_backrefs)
+
+        computation_times += this_computation_times
+
+        fhindex.write(this_fhindex)
         for directory in sorted(os.listdir(examples_dir)):
             if os.path.isdir(os.path.join(examples_dir, directory)):
                 src_dir = os.path.join(examples_dir, directory)
                 target_dir = os.path.join(gallery_dir, directory)
-                fhindex.write(generate_dir_rst(src_dir, target_dir,
-                                               gallery_conf,
-                                               seen_backrefs))
+                this_fhindex, this_computation_times = \
+                    generate_dir_rst(src_dir, target_dir, gallery_conf,
+                                     seen_backrefs)
+                fhindex.write(this_fhindex)
+                computation_times += this_computation_times
+
         fhindex.flush()
+
+    print("Computation time summary:")
+    for time_elapsed, fname in sorted(computation_times)[::-1]:
+        if time_elapsed is not None:
+            print("\t- %s : %.2g sec" % (fname, time_elapsed))
+        else:
+            print("\t- %s : not run" % fname)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):

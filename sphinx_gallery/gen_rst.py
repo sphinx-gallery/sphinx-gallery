@@ -405,7 +405,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
               src_dir)
         print('Skipping this directory')
         print(80 * '_')
-        return ""  # because string is an expected return type
+        return "", []  # because string is an expected return type
 
     fhindex = open(os.path.join(src_dir, 'README.txt')).read()
     if not os.path.exists(target_dir):
@@ -413,9 +413,11 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
                       if fname.endswith('.py')]
     entries_text = []
+    computation_times = []
     for fname in sorted_listdir:
-        amount_of_code = generate_file_rst(fname, target_dir, src_dir,
-                                           gallery_conf)
+        amount_of_code, time_elapsed = \
+            generate_file_rst(fname, target_dir, src_dir, gallery_conf)
+        computation_times.append((time_elapsed, fname))
         new_fname = os.path.join(src_dir, fname)
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
@@ -438,7 +440,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     fhindex += """.. raw:: html\n
     <div style='clear:both'></div>\n\n"""
 
-    return fhindex
+    return fhindex, computation_times
 
 
 def execute_script(code_block, example_globals, image_path, fig_count,
@@ -543,7 +545,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                           if blabel == 'code'])
 
     if _plots_are_current(example_file, image_path):
-        return amount_of_code
+        return amount_of_code, None
 
     time_elapsed = 0
 
@@ -612,4 +614,4 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                                             example_nb.file_name)
         f.write(example_rst)
 
-    return amount_of_code
+    return amount_of_code, time_elapsed

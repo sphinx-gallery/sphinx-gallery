@@ -4,6 +4,12 @@ Change Log
 v0.1.2
 ------
 
+New features
+------------
+
+* Print aggregated and sorted list of computation times of all examples
+  in the console during the build.
+
 Bug Fixes
 .........
 
