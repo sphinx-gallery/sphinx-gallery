@@ -545,7 +545,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                           if blabel == 'code'])
 
     if _plots_are_current(example_file, image_path):
-        return amount_of_code, None
+        return amount_of_code, 0
 
     time_elapsed = 0
 

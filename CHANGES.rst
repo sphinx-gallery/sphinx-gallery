@@ -1,14 +1,18 @@
 Change Log
 ==========
 
-v0.1.2
-------
+git master
+----------
 
 New features
-------------
+''''''''''''
 
 * Print aggregated and sorted list of computation times of all examples
   in the console during the build.
+
+
+v0.1.2
+------
 
 Bug Fixes
 .........
