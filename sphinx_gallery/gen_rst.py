@@ -240,7 +240,8 @@ def extract_thumbnail_number(text):
     """ Pull out the thumbnail image number specified in the docstring. """
 
     # check whether the user has specified a specific thumbnail image
-    pattr = re.compile("^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$", flags=re.MULTILINE)
+    pattr = re.compile(
+        "^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$", flags=re.MULTILINE)
     match = pattr.search(text)
 
     if match is None:
@@ -250,6 +251,7 @@ def extract_thumbnail_number(text):
         thumbnail_number = int(match.groups()[0])
 
     return thumbnail_number
+
 
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
@@ -422,6 +424,11 @@ def save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf):
 
     if os.path.exists(thumbnail_image_path):
         scale_image(thumbnail_image_path, thumb_file, 400, 280)
+
+    elif os.path.exists(base_image_name.format('broken')):
+        broken_img = os.path.join(glr_path_static(), 'broken_example.png')
+        scale_image(broken_img, thumb_file, 200, 140)
+
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
         default_thumb_file = os.path.join(glr_path_static(), 'no_image.png')
@@ -538,10 +545,10 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         figure_list = []
         image_list = codestr2rst(formatted_exception, lang='pytb')
 
-        # Overrides the output thumbnail in the gallery for easy identification
-        broken_img = os.path.join(glr_path_static(), 'broken_example.png')
-        shutil.copyfile(broken_img, os.path.join(cwd, image_path.format(1)))
-        fig_count += 1  # raise count to avoid overwriting image
+        # Touches a broken image file
+        broken_img = image_path.format('broken')
+        if not os.path.exists(broken_img):
+            open(broken_img, 'w').close()
 
         # Breaks build on first example error
         # XXX This check can break during testing e.g. if you uncomment the
