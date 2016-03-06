@@ -22,7 +22,7 @@ from .docs_resolv import embed_code_links
 
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
-    'examples_dirs': '../examples',
+    'examples_dirs': os.path.join('..', 'examples'),
     'gallery_dirs': 'auto_examples',
     'mod_example_dir': os.path.join('modules', 'generated'),
     'doc_module': (),
