@@ -136,14 +136,17 @@ def build_temp_setup(**kwargs):
     gallery_conf.update(examples_dir=tempfile.mkdtemp(),
                         gallery_dir=tempfile.mkdtemp())
     gallery_conf.update(kwargs)
+
     return gallery_conf
+
 
 def test_fail_example():
     """Test that failing examples are only executed until failing block"""
 
     gallery_conf = build_temp_setup(filename_pattern='raise.py')
 
-    failing_code = CONTENT + ['#'*79, 'First_test_fail', '#'*79, 'second_fail']
+    failing_code = CONTENT + ['#' * 79,
+                              'First_test_fail', '#' * 79, 'second_fail']
 
     with open(os.path.join(gallery_conf['examples_dir'], 'raise.py'), 'w') as f:
         f.write('\n'.join(failing_code))
