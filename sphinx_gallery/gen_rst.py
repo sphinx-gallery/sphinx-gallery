@@ -546,7 +546,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         image_list = codestr2rst(formatted_exception, lang='pytb')
 
         # Touches a broken image file
-        broken_img = image_path.format('broken')
+        broken_img = os.path.join(cwd, image_path.format(-1))
         if not os.path.exists(broken_img):
             open(broken_img, 'w').close()
 
