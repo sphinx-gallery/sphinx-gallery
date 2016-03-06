@@ -268,7 +268,7 @@ failing code block. Refer to example
 behavior.
 
 The build is also failed exiting with code 1 and giving you a summary
-of the failed examples with their repective traceback. This way you
+of the failed examples with their respective traceback. This way you
 are aware of failing examples right after the build and can find them
 easily.
 
@@ -294,7 +294,7 @@ and not spaces
 Don't fail the build on exit
 ----------------------------
 
-It migth be the case that you want to keep the gallery even with
+It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow
 certain examples to fail and not to trow a failed build exit code 1 if
 only known to fail examples have failed. For this you need to list all
@@ -310,7 +310,7 @@ the examples you want to allow to fail during build. Change your
     }
 
 Here you list the examples you allow to fail during the build process,
-keep in mind to specify the full relavite path from your `conf.py` to
+keep in mind to specify the full relative path from your `conf.py` to
 the example script.
 
 
