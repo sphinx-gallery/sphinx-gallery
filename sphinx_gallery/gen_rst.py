@@ -312,6 +312,14 @@ def _plots_are_current(src_file, image_path):
     example"""
 
     has_image = os.path.exists(image_path)
+
+    # if example failed on previous builds
+    broken_img = image_file.format(-1)
+    if os.path.exists(broken_img):
+        has_image = False
+        # to avoid considering example as failed on future builds
+        os.remove(broken_img)
+
     src_file_changed = check_md5sum_change(src_file)
 
     return has_image and not src_file_changed
