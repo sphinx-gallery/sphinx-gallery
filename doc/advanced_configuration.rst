@@ -40,7 +40,7 @@ in your Sphinx ``conf.py``. For example:
     }
 
 will build all examples starting with ``plot_compute_``. The key ``filename_pattern`` accepts
-regular expressions which will be matched with the full path of the example. This is the reason
+`regular expressions`_ which will be matched with the full path of the example. This is the reason
 the leading ``'/'`` is required. Users are advised to use ``os.sep`` instead of ``'/'`` if 
 they want to be agnostic to the operating system.
 
@@ -53,6 +53,9 @@ you would do:
     sphinx_gallery_conf = {
         'filename_pattern' : 'plot_awesome_example.py'
     }
+
+Here, one should escape the dot ``'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
+one is targetting a specific file, it is most certainly going to match the dot in the filename.
 
 Similarly, to build only examples in a specific directory, you can do:
 
@@ -71,8 +74,8 @@ starting with ``plot_long_examples_``, you would do:
         'filename_pattern' : '/plot_(?!long_examples)'
     }
 
-As the patterns are parsed as regular expressions, users are advised to consult the
-`regular expressions module`_ for more details.
+As the patterns are parsed as `regular expressions`_, users are advised to consult the
+`regular expressions`_ module for more details.
 
 .. _link_to_documentation:
 
@@ -260,4 +263,4 @@ by including in your ``Makefile``::
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
 and not spaces
 
-.. _regular expressions module: https://docs.python.org/2/library/re.html
+.. _regular expressions: https://docs.python.org/2/library/re.html
