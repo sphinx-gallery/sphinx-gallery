@@ -49,9 +49,9 @@ except ImportError:
         return ''.join(prefixed_lines())
 
 try:
-    from StringIO import StringIO
+    from BytesIO import BytesIO
 except ImportError:
-    from io import StringIO
+    from io import BytesIO
 
 try:
     # make sure that the Agg backend is set before importing any
@@ -93,6 +93,15 @@ class Tee(object):
         self.file2.flush()
 
 
+class MyBytesIO(BytesIO):
+    """Wrapper class to act like StringIO while writing unicode strings"""
+    def write(self, data):
+        return super(MyBytesIO, self).write(data.encode('utf-8'))
+
+    def getvalue(self):
+        return super(MyBytesIO, self).getvalue().decode('utf-8')
+
+
 ###############################################################################
 CODE_DOWNLOAD = """**Total running time of the script:**
 ({0:.0f} minutes {1:.3f} seconds)\n\n
@@ -124,7 +133,7 @@ SINGLE_IMAGE = """
 """
 
 
-CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
+CODE_OUTPUT = u""".. rst-class:: sphx-glr-script-out
 
  Out::
 
@@ -143,7 +152,7 @@ def get_docstring_and_rest(filename):
     rest: str
         `filename` content without the docstring
     """
-    with open(filename) as f:
+    with open(filename, 'rb') as f:
         content = f.read()
 
     node = ast.parse(content)
@@ -156,7 +165,7 @@ def get_docstring_and_rest(filename):
         docstring = docstring_node.value.s
         # This get the content of the file after the docstring last line
         # Note: 'maxsplit' argument is not a keyword argument in python2
-        rest = content.split('\n', docstring_node.lineno)[-1]
+        rest = content.decode('utf-8').split('\n', docstring_node.lineno)[-1]
         return docstring, rest
     else:
         raise ValueError(('Could not find docstring in file "{0}". '
@@ -203,8 +212,8 @@ def split_code_and_text_blocks(source_file):
 
 def codestr2rst(codestr, lang='python'):
     """Return reStructuredText code block from code string"""
-    code_directive = "\n.. code-block:: {0}\n\n".format(lang)
-    indented_block = indent(codestr, ' ' * 4)
+    code_directive = u"\n.. code-block:: {0}\n\n".format(lang)
+    indented_block = indent(codestr, u' ' * 4)
     return code_directive + indented_block
 
 
@@ -461,7 +470,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         # First cd in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
-        my_buffer = StringIO()
+        my_buffer = MyBytesIO()
         my_stdout = Tee(sys.stdout, my_buffer)
         sys.stdout = my_stdout
 
@@ -473,7 +482,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
         my_stdout = my_buffer.getvalue().strip().expandtabs()
         if my_stdout:
-            stdout = CODE_OUTPUT.format(indent(my_stdout, ' ' * 4))
+            stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
         figure_list = save_figures(image_path, fig_count, gallery_conf)
 
@@ -514,7 +523,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         sys.stdout = orig_stdout
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
-    code_output = "\n{0}\n\n{1}\n\n".format(image_list, stdout)
+    code_output = u"\n{0}\n\n{1}\n\n".format(image_list, stdout)
 
     return code_output, time_elapsed, fig_count + len(figure_list)
 
@@ -550,7 +559,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed = 0
 
     ref_fname = example_file.replace(os.path.sep, '_')
-    example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
+    example_rst = u"""\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
     example_nb = Notebook(fname, target_dir)
 
     filename_pattern = gallery_conf.get('filename_pattern')
@@ -609,9 +618,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()
-    with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
+    with open(os.path.join(target_dir, base_image_name + '.rst'), 'wb') as f:
         example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname,
                                             example_nb.file_name)
-        f.write(example_rst)
+        f.write(example_rst.encode('utf-8'))
 
     return amount_of_code, time_elapsed

@@ -28,7 +28,7 @@ CONTENT = ['"""'
            '',
            '# and now comes the module code',
            'x, y = 1, 2',
-           'print("'"output"'") # need some code output']
+           'print(u"' u"Óscar output" '") # need some code output']
 
 
 def test_split_code_and_text_blocks():
@@ -84,17 +84,17 @@ def test_codestr2rst():
 
 
 def test_extract_intro():
-    with tempfile.NamedTemporaryFile('w') as f:
-        f.write('\n'.join(CONTENT))
+    with tempfile.NamedTemporaryFile('wb') as f:
+        f.write(u'\n'.join(CONTENT).encode('utf-8'))
 
         f.flush()
 
         result = sg.extract_intro(f.name)
-        assert_false('Docstring' in result)
-        assert_equal(
-            result,
-            'This is the description of the example which goes on and on')
-        assert_false('second paragraph' in result)
+    assert_false('Docstring' in result)
+    assert_equal(
+        result,
+        'This is the description of the example which goes on and on')
+    assert_false('second paragraph' in result)
 
 
 def test_md5sums():
@@ -129,19 +129,19 @@ def test_pattern_matching():
         'reference_url': {},
     }
 
-    code_output = '\n Out::\n\n      output\n\n'
+    code_output = u'\n Out::\n\n      Óscar output\n\n'
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
-        with open(os.path.join(examples_dir, fname), 'w') as f:
-            f.write('\n'.join(CONTENT))
+        with open(os.path.join(examples_dir, fname), 'wb') as f:
+            f.write('\n'.join(CONTENT).encode('utf-8'))
             f.flush()
         # generate rst file
         sg.generate_file_rst(fname, gallery_dir, examples_dir, gallery_conf)
         # read rst file and check if it contains code output
         rst_fname = os.path.splitext(fname)[0] + '.rst'
-        with open(os.path.join(gallery_dir, rst_fname), 'r') as f:
-            rst = f.read()
+        with open(os.path.join(gallery_dir, rst_fname), 'rb') as f:
+            rst = f.read().decode('utf-8')
             if re.search(gallery_conf['filename_pattern'],
                          os.path.join(gallery_dir, rst_fname)):
                 assert_true(code_output in rst)
