@@ -49,9 +49,9 @@ except ImportError:
         return ''.join(prefixed_lines())
 
 try:
-    from BytesIO import BytesIO
+    from StringIO import StringIO
 except ImportError:
-    from io import BytesIO
+    from io import StringIO
 
 try:
     # make sure that the Agg backend is set before importing any
@@ -72,6 +72,7 @@ try:
     basestring
 except NameError:
     basestring = str
+    unicode = str
 
 
 ###############################################################################
@@ -86,20 +87,11 @@ class Tee(object):
 
     def write(self, data):
         self.file1.write(data)
-        self.file2.write(data)
+        self.file2.write(unicode(data))  # this is the StringIO
 
     def flush(self):
         self.file1.flush()
         self.file2.flush()
-
-
-class MyBytesIO(BytesIO):
-    """Wrapper class to act like StringIO while writing unicode strings"""
-    def write(self, data):
-        return super(MyBytesIO, self).write(data.encode('utf-8'))
-
-    def getvalue(self):
-        return super(MyBytesIO, self).getvalue().decode('utf-8')
 
 
 ###############################################################################
@@ -472,7 +464,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         # First cd in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
-        my_buffer = MyBytesIO()
+        my_buffer = StringIO()
         my_stdout = Tee(sys.stdout, my_buffer)
         sys.stdout = my_stdout
 
@@ -502,6 +494,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     except Exception:
         formatted_exception = traceback.format_exc()
 
+        sys.stdout = orig_stdout  # need this here so these lines don't bomb
         print(80 * '_')
         print('%s is not compiling:' % src_file)
         print(formatted_exception)
@@ -521,8 +514,8 @@ def execute_script(code_block, example_globals, image_path, fig_count,
             raise
 
     finally:
-        os.chdir(cwd)
         sys.stdout = orig_stdout
+        os.chdir(cwd)
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
     code_output = u"\n{0}\n\n{1}\n\n".format(image_list, stdout)

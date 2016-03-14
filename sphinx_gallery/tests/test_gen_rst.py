@@ -27,8 +27,17 @@ CONTENT = ['"""'
            '"""',
            '',
            '# and now comes the module code',
+           'import logging',
+           'import sys',
            'x, y = 1, 2',
-           'print(u"' u"Óscar output" '") # need some code output']
+           'print(u"' u"Óscar output" '") # need some code output',
+           'logger = logging.getLogger()',
+           'logger.setLevel(logging.INFO)',
+           'lh = logging.StreamHandler(sys.stdout)',
+           'lh.setFormatter(logging.Formatter("log:%(message)s"))',
+           'logger.addHandler(lh)',
+           'logger.info(u"' u"Óscar" '")',
+           ]
 
 
 def test_split_code_and_text_blocks():
@@ -129,7 +138,7 @@ def test_pattern_matching():
         'reference_url': {},
     }
 
-    code_output = u'\n Out::\n\n      Óscar output\n\n'
+    code_output = u'\n Out::\n\n      Óscar output\n    log:Óscar\n\n'
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
@@ -144,6 +153,9 @@ def test_pattern_matching():
             rst = f.read().decode('utf-8')
             if re.search(gallery_conf['filename_pattern'],
                          os.path.join(gallery_dir, rst_fname)):
+                print(code_output)
+                print('')
+                print(rst)
                 assert_true(code_output in rst)
             else:
                 assert_false(code_output in rst)
