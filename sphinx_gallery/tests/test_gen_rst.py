@@ -4,8 +4,10 @@
 """
 Testing the rst files generator
 """
-from __future__ import division, absolute_import, print_function
+from __future__ import (division, absolute_import, print_function,
+                        unicode_literals)
 import ast
+import codecs
 import json
 import tempfile
 import re
@@ -20,7 +22,7 @@ CONTENT = ['"""'
            '================',
            '',
            'This is the description of the example',
-           u'which goes on and on, Óscar',
+           'which goes on and on, Óscar',
            '',
            '',
            'And this is a second paragraph',
@@ -30,13 +32,13 @@ CONTENT = ['"""'
            'import logging',
            'import sys',
            'x, y = 1, 2',
-           'print(u"' u"Óscar output" '") # need some code output',
+           'print(u"Óscar output") # need some code output',
            'logger = logging.getLogger()',
            'logger.setLevel(logging.INFO)',
            'lh = logging.StreamHandler(sys.stdout)',
            'lh.setFormatter(logging.Formatter("log:%(message)s"))',
            'logger.addHandler(lh)',
-           'logger.info(u"' u"Óscar" '")',
+           'logger.info(u"Óscar")',
            ]
 
 
@@ -70,7 +72,6 @@ def test_direct_comment_after_docstring():
                            'x, y = 1, 2',
                            '']))
         f.flush()
-
         result = sg.split_code_and_text_blocks(f.name)
 
     expected_result = [
@@ -94,15 +95,13 @@ def test_codestr2rst():
 
 def test_extract_intro():
     with tempfile.NamedTemporaryFile('wb') as f:
-        f.write(u'\n'.join(CONTENT).encode('utf-8'))
-
+        f.write('\n'.join(CONTENT).encode('utf-8'))
         f.flush()
-
         result = sg.extract_intro(f.name)
     assert_false('Docstring' in result)
     assert_equal(
         result,
-        u'This is the description of the example which goes on and on, Óscar')
+        'This is the description of the example which goes on and on, Óscar')
     assert_false('second paragraph' in result)
 
 
@@ -138,27 +137,27 @@ def test_pattern_matching():
         'reference_url': {},
     }
 
-    code_output = u'\n Out::\n\n      Óscar output\n    log:Óscar\n\n'
+    code_output = '\n Out::\n\n      Óscar output\n    log:Óscar\n\n'
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
-        with open(os.path.join(examples_dir, fname), 'wb') as f:
-            f.write('\n'.join(CONTENT).encode('utf-8'))
-            f.flush()
+        with codecs.open(os.path.join(examples_dir, fname), 'w', 'utf-8') as f:
+            f.write('\n'.join(CONTENT))
         # generate rst file
         sg.generate_file_rst(fname, gallery_dir, examples_dir, gallery_conf)
         # read rst file and check if it contains code output
         rst_fname = os.path.splitext(fname)[0] + '.rst'
-        with open(os.path.join(gallery_dir, rst_fname), 'rb') as f:
-            rst = f.read().decode('utf-8')
-            if re.search(gallery_conf['filename_pattern'],
-                         os.path.join(gallery_dir, rst_fname)):
-                print(code_output)
-                print('')
-                print(rst)
-                assert_true(code_output in rst)
-            else:
-                assert_false(code_output in rst)
+        with codecs.open(os.path.join(gallery_dir, rst_fname),
+                         'r', 'utf-8') as f:
+            rst = f.read()
+        if re.search(gallery_conf['filename_pattern'],
+                     os.path.join(gallery_dir, rst_fname)):
+            print(code_output)
+            print('')
+            print(rst)
+            assert_true(code_output in rst)
+        else:
+            assert_false(code_output in rst)
 
 
 def test_ipy_notebook():
