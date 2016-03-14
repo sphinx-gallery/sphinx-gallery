@@ -51,10 +51,13 @@ you would do:
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        'filename_pattern' : 'plot_awesome_example\.py'
+        'filename_pattern' : 'plot_awesome_example.py'
     }
 
-Here, we escape ``'.'`` because it is a special character in `regular expressions`_. Similarly, to build only examples in a specific directory, you can do:
+Here, one should escape the dot ``'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
+one is targetting a specific file, it is most certainly going to match the dot in the filename.
+
+Similarly, to build only examples in a specific directory, you can do:
 
 .. code-blocK:: python
 
