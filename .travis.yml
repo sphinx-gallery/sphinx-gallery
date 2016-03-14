@@ -39,7 +39,7 @@ install:
         if [ "$PYTHON_VERSION" == "2.7" ]; then
           conda install --yes --quiet mayavi;
           conda upgrade --yes --all;
-          conda upgrade --yes pyface;
+          pip install --upgrade pyface;
         fi;
       fi;
     - pip install -r requirements.txt
