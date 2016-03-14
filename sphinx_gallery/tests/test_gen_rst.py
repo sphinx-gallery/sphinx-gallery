@@ -20,7 +20,7 @@ CONTENT = ['"""'
            '================',
            '',
            'This is the description of the example',
-           'which goes on and on',
+           u'which goes on and on, Óscar',
            '',
            '',
            'And this is a second paragraph',
@@ -93,7 +93,7 @@ def test_extract_intro():
     assert_false('Docstring' in result)
     assert_equal(
         result,
-        'This is the description of the example which goes on and on')
+        u'This is the description of the example which goes on and on, Óscar')
     assert_false('second paragraph' in result)
 
 

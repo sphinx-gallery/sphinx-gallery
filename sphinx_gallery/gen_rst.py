@@ -163,6 +163,8 @@ def get_docstring_and_rest(filename):
        isinstance(node.body[0].value, ast.Str):
         docstring_node = node.body[0]
         docstring = docstring_node.value.s
+        if hasattr(docstring, 'decode'):  # python2.7
+            docstring = docstring.decode('utf-8')
         # This get the content of the file after the docstring last line
         # Note: 'maxsplit' argument is not a keyword argument in python2
         rest = content.decode('utf-8').split('\n', docstring_node.lineno)[-1]
