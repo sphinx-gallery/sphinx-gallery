@@ -530,7 +530,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         fig_count += 1  # raise count to avoid overwriting image
 
         # Breaks build on first example error
-
+        # Eventually this should hopefully be unified with the default conf
         if gallery_conf.get('abort_on_example_error', True):
             raise
 
