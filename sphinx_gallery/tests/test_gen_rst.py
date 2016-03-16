@@ -17,29 +17,31 @@ import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import notebook
 
 
-CONTENT = ['"""'
-           'Docstring header',
-           '================',
-           '',
-           'This is the description of the example',
-           'which goes on and on, Óscar',
-           '',
-           '',
-           'And this is a second paragraph',
-           '"""',
-           '',
-           '# and now comes the module code',
-           'import logging',
-           'import sys',
-           'x, y = 1, 2',
-           'print(u"Óscar output") # need some code output',
-           'logger = logging.getLogger()',
-           'logger.setLevel(logging.INFO)',
-           'lh = logging.StreamHandler(sys.stdout)',
-           'lh.setFormatter(logging.Formatter("log:%(message)s"))',
-           'logger.addHandler(lh)',
-           'logger.info(u"Óscar")',
-           ]
+CONTENT = [
+    '"""'
+    'Docstring header',
+    '================',
+    '',
+    'This is the description of the example',
+    'which goes on and on, Óscar',
+    '',
+    '',
+    'And this is a second paragraph',
+    '"""',
+    '',
+    '# and now comes the module code',
+    'import logging',
+    'import sys',
+    'x, y = 1, 2',
+    'print(u"Óscar output") # need some code output',
+    'logger = logging.getLogger()',
+    'logger.setLevel(logging.INFO)',
+    'lh = logging.StreamHandler(sys.stdout)',
+    'lh.setFormatter(logging.Formatter("log:%(message)s"))',
+    'logger.addHandler(lh)',
+    'logger.info(u"Óscar")',
+    'print(r"$\\langle n_\\uparrow n_\\downarrow \\rangle$")',
+]
 
 
 def test_split_code_and_text_blocks():
@@ -137,7 +139,12 @@ def test_pattern_matching():
         'reference_url': {},
     }
 
-    code_output = '\n Out::\n\n      Óscar output\n    log:Óscar\n\n'
+    code_output = ('\n Out::\n'
+                   '\n'
+                   '      Óscar output\n'
+                   '    log:Óscar\n'
+                   '    $\\langle n_\\uparrow n_\\downarrow \\rangle$\n\n'
+                   )
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:

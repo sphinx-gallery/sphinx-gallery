@@ -43,8 +43,8 @@ plt.show()
 print('pass')
 
 ###############################################################################
-# (Does not work in Sphinx-Gallery)
-# ---------------------------------
+# And then:
+# ---------
 
 plt.plot(x, (1 - x) / 4)
 plt.ylabel(r'$\langle n_\uparrow n_\downarrow \rangle$')

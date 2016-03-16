@@ -12,8 +12,9 @@ example files.
 Files that generate images should start with 'plot'
 
 """
-from __future__ import (division, print_function, absolute_import,
-                        unicode_literals)
+# Don't use unicode_literals here (be explicit with u"..." instead) otherwise
+# tricky errors come up with exec(code_blocks, ...) calls
+from __future__ import division, print_function, absolute_import
 from time import time
 import ast
 import codecs
@@ -139,7 +140,8 @@ SINGLE_IMAGE = """
 """
 
 
-CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
+# This one could contain unicode
+CODE_OUTPUT = u""".. rst-class:: sphx-glr-script-out
 
  Out::
 
@@ -486,6 +488,8 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         sys.stdout = my_stdout
 
         t_start = time()
+        # don't use unicode_literals at the top of this file or you get
+        # nasty errors here on Py2.7
         exec(code_block, example_globals)
         time_elapsed = time() - t_start
 
@@ -493,7 +497,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
         my_stdout = my_buffer.getvalue().strip().expandtabs()
         if my_stdout:
-            stdout = CODE_OUTPUT.format(indent(my_stdout, ' ' * 4))
+            stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
         figure_list = save_figures(image_path, fig_count, gallery_conf)
 
@@ -527,7 +531,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
         # Breaks build on first example error
 
-        if gallery_conf['abort_on_example_error']:
+        if gallery_conf.get('abort_on_example_error', True):
             raise
 
     finally:
@@ -535,7 +539,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         os.chdir(cwd)
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
-    code_output = "\n{0}\n\n{1}\n\n".format(image_list, stdout)
+    code_output = u"\n{0}\n\n{1}\n\n".format(image_list, stdout)
 
     return code_output, time_elapsed, fig_count + len(figure_list)
 
