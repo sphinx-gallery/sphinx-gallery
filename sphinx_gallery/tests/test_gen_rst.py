@@ -148,20 +148,18 @@ def test_pattern_matching():
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
-        with codecs.open(os.path.join(examples_dir, fname), 'w', 'utf-8') as f:
+        with codecs.open(os.path.join(examples_dir, fname), mode='w',
+                         encoding='utf-8') as f:
             f.write('\n'.join(CONTENT))
         # generate rst file
         sg.generate_file_rst(fname, gallery_dir, examples_dir, gallery_conf)
         # read rst file and check if it contains code output
         rst_fname = os.path.splitext(fname)[0] + '.rst'
         with codecs.open(os.path.join(gallery_dir, rst_fname),
-                         'r', 'utf-8') as f:
+                         mode='r', encoding='utf-8') as f:
             rst = f.read()
         if re.search(gallery_conf['filename_pattern'],
                      os.path.join(gallery_dir, rst_fname)):
-            print(code_output)
-            print('')
-            print(rst)
             assert_true(code_output in rst)
         else:
             assert_false(code_output in rst)

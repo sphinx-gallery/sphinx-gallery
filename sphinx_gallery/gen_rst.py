@@ -535,8 +535,8 @@ def execute_script(code_block, example_globals, image_path, fig_count,
             raise
 
     finally:
-        sys.stdout = orig_stdout
         os.chdir(cwd)
+        sys.stdout = orig_stdout
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
     code_output = u"\n{0}\n\n{1}\n\n".format(image_list, stdout)
@@ -635,7 +635,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
-                     'w', 'utf-8') as f:
+                     mode='w', encoding='utf-8') as f:
         example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname,
                                             example_nb.file_name)
         f.write(example_rst)
