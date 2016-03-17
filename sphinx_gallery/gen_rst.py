@@ -51,10 +51,7 @@ except ImportError:
                 yield (prefix + line if predicate(line) else line)
         return ''.join(prefixed_lines())
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 try:
     # make sure that the Agg backend is set before importing any
