@@ -52,9 +52,9 @@ except ImportError:
         return ''.join(prefixed_lines())
 
 try:
-    from BytesIO import BytesIO
+    from StringIO import StringIO
 except ImportError:
-    from io import BytesIO
+    from io import StringIO
 
 try:
     # make sure that the Agg backend is set before importing any
@@ -97,17 +97,13 @@ class Tee(object):
         self.file2.flush()
 
 
-class MyBytesIO(BytesIO):
-    """Helper to deal with unicode not having buffer interface on Py2.7"""
+class MixedEncodingStringIO(StringIO):
+    """Helper when both ASCII and unicode strings will be written"""
     def write(self, data):
-        # "unicode" objects don't have a buffer interface on Py2.7,
-        # so we need to manually convert
-        if isinstance(data, unicode):
-            data = data.encode('utf-8')
-        super(MyBytesIO, self).write(data)
+        if not isinstance(data, unicode):
+            data = data.decode('utf-8')
+        StringIO.write(self, data)
 
-    def getvalue(self):
-        return super(MyBytesIO, self).getvalue().decode('utf-8')
 
 ###############################################################################
 CODE_DOWNLOAD = """**Total running time of the script:**
@@ -483,7 +479,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         # First cd in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
-        my_buffer = MyBytesIO()
+        my_buffer = MixedEncodingStringIO()
         my_stdout = Tee(sys.stdout, my_buffer)
         sys.stdout = my_stdout
 
@@ -496,6 +492,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         sys.stdout = orig_stdout
 
         my_stdout = my_buffer.getvalue().strip().expandtabs()
+        # raise RuntimeError
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
@@ -530,8 +527,9 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         fig_count += 1  # raise count to avoid overwriting image
 
         # Breaks build on first example error
-        # Eventually this should hopefully be unified with the default conf
-        if gallery_conf.get('abort_on_example_error', True):
+        # XXX This check can break during testing e.g. if you uncomment the
+        # `raise RuntimeError` by the `my_stdout` call, maybe use `.get()`?
+        if gallery_conf['abort_on_example_error']:
             raise
 
     finally:
