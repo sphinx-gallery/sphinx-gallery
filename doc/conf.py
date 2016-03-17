@@ -291,7 +291,7 @@ try:
     # Do not pop up any mayavi windows while running the
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
-except ImportError:
+except Exception:  # can raise all sorts of errors
     find_mayavi_figures = False
 
 
