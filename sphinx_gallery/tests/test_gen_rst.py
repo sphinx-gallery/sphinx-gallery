@@ -4,8 +4,10 @@
 """
 Testing the rst files generator
 """
-from __future__ import division, absolute_import, print_function
+from __future__ import (division, absolute_import, print_function,
+                        unicode_literals)
 import ast
+import codecs
 import json
 import tempfile
 import re
@@ -15,20 +17,31 @@ import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import notebook
 
 
-CONTENT = ['"""'
-           'Docstring header',
-           '================',
-           '',
-           'This is the description of the example',
-           'which goes on and on',
-           '',
-           '',
-           'And this is a second paragraph',
-           '"""',
-           '',
-           '# and now comes the module code',
-           'x, y = 1, 2',
-           'print("'"output"'") # need some code output']
+CONTENT = [
+    '"""'
+    'Docstring header',
+    '================',
+    '',
+    'This is the description of the example',
+    'which goes on and on, Óscar',
+    '',
+    '',
+    'And this is a second paragraph',
+    '"""',
+    '',
+    '# and now comes the module code',
+    'import logging',
+    'import sys',
+    'x, y = 1, 2',
+    'print(u"Óscar output") # need some code output',
+    'logger = logging.getLogger()',
+    'logger.setLevel(logging.INFO)',
+    'lh = logging.StreamHandler(sys.stdout)',
+    'lh.setFormatter(logging.Formatter("log:%(message)s"))',
+    'logger.addHandler(lh)',
+    'logger.info(u"Óscar")',
+    'print(r"$\\langle n_\\uparrow n_\\downarrow \\rangle$")',
+]
 
 
 def test_split_code_and_text_blocks():
@@ -61,7 +74,6 @@ def test_direct_comment_after_docstring():
                            'x, y = 1, 2',
                            '']))
         f.flush()
-
         result = sg.split_code_and_text_blocks(f.name)
 
     expected_result = [
@@ -84,17 +96,15 @@ def test_codestr2rst():
 
 
 def test_extract_intro():
-    with tempfile.NamedTemporaryFile('w') as f:
-        f.write('\n'.join(CONTENT))
-
+    with tempfile.NamedTemporaryFile('wb') as f:
+        f.write('\n'.join(CONTENT).encode('utf-8'))
         f.flush()
-
         result = sg.extract_intro(f.name)
-        assert_false('Docstring' in result)
-        assert_equal(
-            result,
-            'This is the description of the example which goes on and on')
-        assert_false('second paragraph' in result)
+    assert_false('Docstring' in result)
+    assert_equal(
+        result,
+        'This is the description of the example which goes on and on, Óscar')
+    assert_false('second paragraph' in result)
 
 
 def test_md5sums():
@@ -129,24 +139,30 @@ def test_pattern_matching():
         'reference_url': {},
     }
 
-    code_output = '\n Out::\n\n      output\n\n'
+    code_output = ('\n Out::\n'
+                   '\n'
+                   '      Óscar output\n'
+                   '    log:Óscar\n'
+                   '    $\\langle n_\\uparrow n_\\downarrow \\rangle$\n\n'
+                   )
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
-        with open(os.path.join(examples_dir, fname), 'w') as f:
+        with codecs.open(os.path.join(examples_dir, fname), mode='w',
+                         encoding='utf-8') as f:
             f.write('\n'.join(CONTENT))
-            f.flush()
         # generate rst file
         sg.generate_file_rst(fname, gallery_dir, examples_dir, gallery_conf)
         # read rst file and check if it contains code output
         rst_fname = os.path.splitext(fname)[0] + '.rst'
-        with open(os.path.join(gallery_dir, rst_fname), 'r') as f:
+        with codecs.open(os.path.join(gallery_dir, rst_fname),
+                         mode='r', encoding='utf-8') as f:
             rst = f.read()
-            if re.search(gallery_conf['filename_pattern'],
-                         os.path.join(gallery_dir, rst_fname)):
-                assert_true(code_output in rst)
-            else:
-                assert_false(code_output in rst)
+        if re.search(gallery_conf['filename_pattern'],
+                     os.path.join(gallery_dir, rst_fname)):
+            assert_true(code_output in rst)
+        else:
+            assert_false(code_output in rst)
 
 
 def test_ipy_notebook():

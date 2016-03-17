@@ -12,9 +12,12 @@ example files.
 Files that generate images should start with 'plot'
 
 """
+# Don't use unicode_literals here (be explicit with u"..." instead) otherwise
+# tricky errors come up with exec(code_blocks, ...) calls
 from __future__ import division, print_function, absolute_import
 from time import time
 import ast
+import codecs
 import hashlib
 import os
 import re
@@ -72,6 +75,7 @@ try:
     basestring
 except NameError:
     basestring = str
+    unicode = str
 
 
 ###############################################################################
@@ -91,6 +95,14 @@ class Tee(object):
     def flush(self):
         self.file1.flush()
         self.file2.flush()
+
+
+class MixedEncodingStringIO(StringIO):
+    """Helper when both ASCII and unicode strings will be written"""
+    def write(self, data):
+        if not isinstance(data, unicode):
+            data = data.decode('utf-8')
+        StringIO.write(self, data)
 
 
 ###############################################################################
@@ -124,7 +136,8 @@ SINGLE_IMAGE = """
 """
 
 
-CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
+# This one could contain unicode
+CODE_OUTPUT = u""".. rst-class:: sphx-glr-script-out
 
  Out::
 
@@ -143,7 +156,10 @@ def get_docstring_and_rest(filename):
     rest: str
         `filename` content without the docstring
     """
-    with open(filename) as f:
+    # can't use codecs.open(filename, 'r', 'utf-8') here b/c ast doesn't
+    # seem to work with unicode strings in Python2.7
+    # "SyntaxError: encoding declaration in Unicode string"
+    with open(filename, 'rb') as f:
         content = f.read()
 
     node = ast.parse(content)
@@ -154,9 +170,11 @@ def get_docstring_and_rest(filename):
        isinstance(node.body[0].value, ast.Str):
         docstring_node = node.body[0]
         docstring = docstring_node.value.s
+        if hasattr(docstring, 'decode'):  # python2.7
+            docstring = docstring.decode('utf-8')
         # This get the content of the file after the docstring last line
         # Note: 'maxsplit' argument is not a keyword argument in python2
-        rest = content.split('\n', docstring_node.lineno)[-1]
+        rest = content.decode('utf-8').split('\n', docstring_node.lineno)[-1]
         return docstring, rest
     else:
         raise ValueError(('Could not find docstring in file "{0}". '
@@ -461,19 +479,22 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         # First cd in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
-        my_buffer = StringIO()
+        my_buffer = MixedEncodingStringIO()
         my_stdout = Tee(sys.stdout, my_buffer)
         sys.stdout = my_stdout
 
         t_start = time()
+        # don't use unicode_literals at the top of this file or you get
+        # nasty errors here on Py2.7
         exec(code_block, example_globals)
         time_elapsed = time() - t_start
 
         sys.stdout = orig_stdout
 
         my_stdout = my_buffer.getvalue().strip().expandtabs()
+        # raise RuntimeError
         if my_stdout:
-            stdout = CODE_OUTPUT.format(indent(my_stdout, ' ' * 4))
+            stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
         figure_list = save_figures(image_path, fig_count, gallery_conf)
 
@@ -491,6 +512,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     except Exception:
         formatted_exception = traceback.format_exc()
 
+        sys.stdout = orig_stdout  # need this here so these lines don't bomb
         print(80 * '_')
         print('%s is not compiling:' % src_file)
         print(formatted_exception)
@@ -505,7 +527,8 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         fig_count += 1  # raise count to avoid overwriting image
 
         # Breaks build on first example error
-
+        # XXX This check can break during testing e.g. if you uncomment the
+        # `raise RuntimeError` by the `my_stdout` call, maybe use `.get()`?
         if gallery_conf['abort_on_example_error']:
             raise
 
@@ -514,7 +537,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         sys.stdout = orig_stdout
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
-    code_output = "\n{0}\n\n{1}\n\n".format(image_list, stdout)
+    code_output = u"\n{0}\n\n{1}\n\n".format(image_list, stdout)
 
     return code_output, time_elapsed, fig_count + len(figure_list)
 
@@ -609,7 +632,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()
-    with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
+    with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
+                     mode='w', encoding='utf-8') as f:
         example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname,
                                             example_nb.file_name)
         f.write(example_rst)
