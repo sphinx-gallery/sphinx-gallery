@@ -141,7 +141,7 @@ def test_pattern_matching():
 
     code_output = ('\n Out::\n'
                    '\n'
-                   '      Óscar output\n'
+                   '    Óscar output\n'
                    '    log:Óscar\n'
                    '    $\\langle n_\\uparrow n_\\downarrow \\rangle$\n\n'
                    )
