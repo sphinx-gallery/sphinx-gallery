@@ -304,4 +304,5 @@ sphinx_gallery_conf = {
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'find_mayavi_figures': find_mayavi_figures,
+    'filename_pattern': '^((?!skip_).)*$',
     }
