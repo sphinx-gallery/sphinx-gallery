@@ -7,11 +7,11 @@ This example is not run
 The code in this example should not be run because we will exclude
 it from processing using a regular expression to ignore any file
 that begins with 'skip_'. We do this by setting
-``filename_pattern = '/(?!skip_)'``
+``filename_pattern = '^((?!skip_).)*$'``
 
 """
 
-print("This output should not appear!")
+print("Output from this print should not appear!")
 
 ##################################################################
 # More text.
