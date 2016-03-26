@@ -236,7 +236,7 @@ def text2string(content):
 
 
 def extract_thumbnail_number(docstring):
-    """  """
+    """ Pull out the thumbnail image number specified in the docstring. """
 
     # check whether the user has specified a specific thumbnail image
     pattr = re.compile("^\s*thumbnail:\s*([0-9]+)\s*$", flags=re.MULTILINE)
