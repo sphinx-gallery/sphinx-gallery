@@ -188,7 +188,11 @@ def split_code_and_text_blocks(source_file):
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
     """
+    config = dict()
+
     docstring, rest_of_content = get_docstring_and_rest(source_file)
+    docstring, thumbnail_number = extract_thumbnail_number(docstring)
+    config['thumbnail_number'] = thumbnail_number
 
     blocks = [('text', docstring)]
 
@@ -213,7 +217,7 @@ def split_code_and_text_blocks(source_file):
     if remaining_content.strip():
         blocks.append(('code', remaining_content))
 
-    return blocks
+    return blocks, config
 
 
 def codestr2rst(codestr, lang='python'):
@@ -231,10 +235,27 @@ def text2string(content):
         return content
 
 
+def extract_thumbnail_number(docstring):
+    """  """
+
+    # check whether the user has specified a specific thumbnail image
+    pattr = re.compile("^\s*thumbnail:\s*([0-9]+)\s*$", flags=re.MULTILINE)
+    match = pattr.search(docstring)
+    try:
+        thumbnail_number = int(match.groups()[0])
+    except AttributeError:
+        thumbnail_number = 1 # by default, use the first figure created
+
+    # remove the thumbnail configuration option from the docstring
+    docstring = pattr.sub("", docstring)
+
+    return docstring, thumbnail_number
+
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
     docstring, _ = get_docstring_and_rest(filename)
+    docstring, _ = extract_thumbnail_number(docstring)
 
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
@@ -392,9 +413,9 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def save_thumbnail(image_path, base_image_name, gallery_conf):
+def save_thumbnail(image_path, base_image_name, gallery_conf, thumb_num=1):
     """Save the thumbnail image"""
-    first_image_file = image_path.format(1)
+    first_image_file = image_path.format(thumb_num)
     thumb_dir = os.path.join(os.path.dirname(first_image_file), 'thumb')
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
@@ -558,7 +579,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path = os.path.join(image_dir, image_fname)
 
-    script_blocks = split_code_and_text_blocks(example_file)
+    script_blocks, config = split_code_and_text_blocks(example_file)
 
     amount_of_code = sum([len(bcontent)
                           for blabel, bcontent in script_blocks
@@ -625,7 +646,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                 example_rst += bcontent + '\n'
                 example_nb.add_markdown_cell(text2string(bcontent))
 
-    save_thumbnail(image_path, base_image_name, gallery_conf)
+    save_thumbnail(image_path, base_image_name, gallery_conf,
+                   thumb_num=config['thumbnail_number'])
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()
