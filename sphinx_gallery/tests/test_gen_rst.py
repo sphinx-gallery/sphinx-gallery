@@ -181,3 +181,33 @@ def test_ipy_notebook():
 
         f.flush()
         assert_equal(json.load(f), example_nb.work_notebook)
+
+
+def test_save_figures():
+    """Test file naming when saving figures."""
+    import matplotlib.pylab as plt
+    from mayavi import mlab
+    examples_dir = tempfile.mkdtemp()
+    gallery_conf = {
+        'examples_dirs': examples_dir,
+        'plot_gallery': True,
+        'find_mayavi_figures': True,
+    }
+    mlab.test_plot3d()
+    plt.plot(1, 1)
+    fig_list = sg.save_figures(examples_dir + '/image{0}.png', 0, gallery_conf)
+    assert_equal(len(fig_list), 2)
+    assert fig_list[0].endswith('image1.png')
+    assert fig_list[1].endswith('image2.png')
+    for fig in fig_list:
+        os.remove(fig)
+    mlab.test_plot3d()
+    plt.plot(1, 1)
+    fig_list = sg.save_figures(examples_dir + '/image{0}.png', 2, gallery_conf)
+    assert_equal(len(fig_list), 2)
+    assert fig_list[0].endswith('image3.png')
+    assert fig_list[1].endswith('image4.png')
+    plt.close('all')
+    for fig in fig_list:
+        os.remove(fig)
+    os.rmdir(examples_dir)
