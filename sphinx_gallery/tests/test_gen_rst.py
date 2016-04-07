@@ -15,10 +15,10 @@ import os
 import nose
 import shutil
 from nose.tools import assert_equal, assert_false, assert_true
-import matplotlib.pylab as plt
+
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import notebook
-
+import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
 CONTENT = [
     '"""'
