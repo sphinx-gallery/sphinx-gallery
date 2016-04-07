@@ -12,10 +12,13 @@ import json
 import tempfile
 import re
 import os
+import nose
+import shutil
 from nose.tools import assert_equal, assert_false, assert_true
+
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import notebook
-
+import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
 CONTENT = [
     '"""'
@@ -181,3 +184,31 @@ def test_ipy_notebook():
 
         f.flush()
         assert_equal(json.load(f), example_nb.work_notebook)
+
+
+def test_save_figures():
+    """Test file naming when saving figures. Requires mayavi."""
+    try:
+        from mayavi import mlab
+    except ImportError:
+        raise nose.SkipTest('Mayavi not installed')
+    mlab.options.offscreen = True
+    examples_dir = tempfile.mkdtemp()
+
+    gallery_conf = {'find_mayavi_figures': True}
+    mlab.test_plot3d()
+    plt.plot(1, 1)
+    fname_template = os.path.join(examples_dir, 'image{0}.png')
+    fig_list = sg.save_figures(fname_template, 0, gallery_conf)
+    assert_equal(len(fig_list), 2)
+    assert fig_list[0].endswith('image1.png')
+    assert fig_list[1].endswith('image2.png')
+
+    mlab.test_plot3d()
+    plt.plot(1, 1)
+    fig_list = sg.save_figures(fname_template, 2, gallery_conf)
+    assert_equal(len(fig_list), 2)
+    assert fig_list[0].endswith('image3.png')
+    assert fig_list[1].endswith('image4.png')
+
+    shutil.rmtree(examples_dir)
