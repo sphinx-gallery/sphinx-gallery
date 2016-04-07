@@ -12,7 +12,10 @@ import json
 import tempfile
 import re
 import os
+import nose
+import shutil
 from nose.tools import assert_equal, assert_false, assert_true
+import matplotlib.pylab as plt
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import notebook
 
@@ -185,32 +188,27 @@ def test_ipy_notebook():
 
 def test_save_figures():
     """Test file naming when saving figures. Requires mayavi."""
-    import matplotlib.pylab as plt
     try:
         from mayavi import mlab
     except ImportError:
-        return  # Skip if mayavi is not available.
+        raise nose.SkipTest('Mayavi not installed')
+    mlab.options.offscreen = True
     examples_dir = tempfile.mkdtemp()
-    gallery_conf = {
-        'examples_dirs': examples_dir,
-        'plot_gallery': True,
-        'find_mayavi_figures': True,
-    }
+
+    gallery_conf = {'find_mayavi_figures': True}
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fig_list = sg.save_figures(examples_dir + '/image{0}.png', 0, gallery_conf)
+    fname_template = os.path.join(examples_dir, 'image{0}.png')
+    fig_list = sg.save_figures(fname_template, 0, gallery_conf)
     assert_equal(len(fig_list), 2)
     assert fig_list[0].endswith('image1.png')
     assert fig_list[1].endswith('image2.png')
-    for fig in fig_list:
-        os.remove(fig)
+
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fig_list = sg.save_figures(examples_dir + '/image{0}.png', 2, gallery_conf)
+    fig_list = sg.save_figures(fname_template, 2, gallery_conf)
     assert_equal(len(fig_list), 2)
     assert fig_list[0].endswith('image3.png')
     assert fig_list[1].endswith('image4.png')
-    plt.close('all')
-    for fig in fig_list:
-        os.remove(fig)
-    os.rmdir(examples_dir)
+
+    shutil.rmtree(examples_dir)
