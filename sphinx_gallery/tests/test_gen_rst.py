@@ -184,9 +184,12 @@ def test_ipy_notebook():
 
 
 def test_save_figures():
-    """Test file naming when saving figures."""
+    """Test file naming when saving figures. Requires mayavi."""
     import matplotlib.pylab as plt
-    from mayavi import mlab
+    try:
+        from mayavi import mlab
+    except ImportError:
+        return  # Skip if mayavi is not available.
     examples_dir = tempfile.mkdtemp()
     gallery_conf = {
         'examples_dirs': examples_dir,
