@@ -148,14 +148,17 @@ def test_fail_example():
     failing_code = CONTENT + ['#' * 79,
                               'First_test_fail', '#' * 79, 'second_fail']
 
-    with open(os.path.join(gallery_conf['examples_dir'], 'raise.py'), 'w') as f:
+    with codecs.open(os.path.join(gallery_conf['examples_dir'], 'raise.py'),
+                     mode='w', encoding='utf-8') as f:
         f.write('\n'.join(failing_code))
 
     sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
                          gallery_conf['examples_dir'], gallery_conf)
 
     # read rst file and check if it contains traceback output
-    with open(os.path.join(gallery_conf['gallery_dir'], 'raise.rst'), 'r') as f:
+
+    with codecs.open(os.path.join(gallery_conf['gallery_dir'], 'raise.rst'),
+                     mode='r', encoding='utf-8') as f:
         ex_failing_blocks = f.read().count('pytb')
         if ex_failing_blocks == 0:
             raise ValueError('Did not run into errors in bad code')
@@ -178,8 +181,8 @@ def test_pattern_matching():
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
-        with codecs.open(os.path.join(gallery_conf['examples_dir'], fname), mode='w',
-                         encoding='utf-8') as f:
+        with codecs.open(os.path.join(gallery_conf['examples_dir'], fname),
+                         mode='w', encoding='utf-8') as f:
             f.write('\n'.join(CONTENT))
         # generate rst file
         sg.generate_file_rst(fname, gallery_conf['gallery_dir'],
