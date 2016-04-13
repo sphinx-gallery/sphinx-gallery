@@ -246,9 +246,6 @@ def extract_thumbnail_number(text):
     except AttributeError:
         thumbnail_number = 1 # by default, use the first figure created
 
-    # remove the thumbnail configuration option from the document
-    text = pattr.sub("", text)
-
     return text, thumbnail_number
 
 def extract_intro(filename):
