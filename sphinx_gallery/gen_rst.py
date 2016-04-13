@@ -191,7 +191,7 @@ def split_code_and_text_blocks(source_file):
     config = dict()
 
     docstring, rest_of_content = get_docstring_and_rest(source_file)
-    docstring, thumbnail_number = extract_thumbnail_number(docstring)
+    rest_of_content, thumbnail_number = extract_thumbnail_number(rest_of_content)
     config['thumbnail_number'] = thumbnail_number
 
     blocks = [('text', docstring)]
@@ -235,27 +235,26 @@ def text2string(content):
         return content
 
 
-def extract_thumbnail_number(docstring):
+def extract_thumbnail_number(text):
     """ Pull out the thumbnail image number specified in the docstring. """
 
     # check whether the user has specified a specific thumbnail image
-    pattr = re.compile("^\s*thumbnail:\s*([0-9]+)\s*$", flags=re.MULTILINE)
-    match = pattr.search(docstring)
+    pattr = re.compile("^#\s*sphinx_gallery_thumbnail_number:\s*([0-9]+)\s*$", flags=re.MULTILINE)
+    match = pattr.search(text)
     try:
         thumbnail_number = int(match.groups()[0])
     except AttributeError:
         thumbnail_number = 1 # by default, use the first figure created
 
-    # remove the thumbnail configuration option from the docstring
-    docstring = pattr.sub("", docstring)
+    # remove the thumbnail configuration option from the document
+    text = pattr.sub("", text)
 
-    return docstring, thumbnail_number
+    return text, thumbnail_number
 
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
     docstring, _ = get_docstring_and_rest(filename)
-    docstring, _ = extract_thumbnail_number(docstring)
 
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
