@@ -12,6 +12,8 @@ docstring in the example file.
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
+
+# The next line is to pick the figure showing the negative exponential in orange
 # sphinx_gallery_thumbnail_number: 2
 
 import numpy as np
