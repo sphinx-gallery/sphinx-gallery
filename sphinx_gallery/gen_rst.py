@@ -407,16 +407,16 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 
 def save_thumbnail(image_path, base_image_name, gallery_conf, thumb_num=1):
     """Save the thumbnail image"""
-    first_image_file = image_path.format(thumb_num)
-    thumb_dir = os.path.join(os.path.dirname(first_image_file), 'thumb')
+    image_file = image_path.format(thumb_num)
+    thumb_dir = os.path.join(os.path.dirname(image_file), 'thumb')
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
 
     thumb_file = os.path.join(thumb_dir,
                               'sphx_glr_%s_thumb.png' % base_image_name)
 
-    if os.path.exists(first_image_file):
-        scale_image(first_image_file, thumb_file, 400, 280)
+    if os.path.exists(image_file):
+        scale_image(image_file, thumb_file, 400, 280)
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
         default_thumb_file = os.path.join(glr_path_static(), 'no_image.png')
