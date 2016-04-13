@@ -188,12 +188,8 @@ def split_code_and_text_blocks(source_file):
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
     """
-    config = dict()
 
     docstring, rest_of_content = get_docstring_and_rest(source_file)
-    thumbnail_number = extract_thumbnail_number(rest_of_content)
-    config['thumbnail_number'] = thumbnail_number
-
     blocks = [('text', docstring)]
 
     pattern = re.compile(
@@ -217,7 +213,7 @@ def split_code_and_text_blocks(source_file):
     if remaining_content.strip():
         blocks.append(('code', remaining_content))
 
-    return blocks, config
+    return blocks
 
 
 def codestr2rst(codestr, lang='python'):
@@ -575,7 +571,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path = os.path.join(image_dir, image_fname)
 
-    script_blocks, config = split_code_and_text_blocks(example_file)
+    script_blocks = split_code_and_text_blocks(example_file)
+
+    # read specification of the figure to display as thumbnail from main text
+    _, content = get_docstring_and_rest(example_file)
+    thumbnail_number = extract_thumbnail_number(content)
 
     amount_of_code = sum([len(bcontent)
                           for blabel, bcontent in script_blocks
@@ -643,7 +643,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                 example_nb.add_markdown_cell(text2string(bcontent))
 
     save_thumbnail(image_path, base_image_name, gallery_conf,
-                   thumb_num=config['thumbnail_number'])
+                   thumb_num=thumbnail_number)
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()
