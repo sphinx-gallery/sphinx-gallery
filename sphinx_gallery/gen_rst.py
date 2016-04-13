@@ -352,9 +352,9 @@ def save_figures(image_path, fig_count, gallery_conf):
     if gallery_conf.get('find_mayavi_figures', False):
         from mayavi import mlab
         e = mlab.get_engine()
-        last_matplotlib_fig_num = len(figure_list)
+        last_matplotlib_fig_num = fig_count + len(figure_list)
         total_fig_num = last_matplotlib_fig_num + len(e.scenes)
-        mayavi_fig_nums = range(last_matplotlib_fig_num, total_fig_num)
+        mayavi_fig_nums = range(last_matplotlib_fig_num + 1, total_fig_num + 1)
 
         for scene, mayavi_fig_num in zip(e.scenes, mayavi_fig_nums):
             current_fig = image_path.format(mayavi_fig_num)
