@@ -195,7 +195,7 @@ def test_thumbnail_number():
                                test_str]))
             f.flush()
             _,cfg = sg.split_code_and_text_blocks(f.name)
-        assert cfg['thumbnail_number'] == 2
+        assert_equal(cfg['thumbnail_number'], 2)
 
 def test_save_figures():
     """Test file naming when saving figures. Requires mayavi."""
