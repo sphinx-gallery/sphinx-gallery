@@ -187,9 +187,10 @@ def test_ipy_notebook():
 
 def test_thumbnail_number():
     # which plot to show as the thumbnail image
-    for test_str in ['# sphinx_gallery_thumbnail_number: 2',
-                     '# sphinx_gallery_thumbnail_number:2',
-                     '#sphinx_gallery_thumbnail_number: 2']:
+    for test_str in ['# sphinx_gallery_thumbnail_number= 2',
+                     '# sphinx_gallery_thumbnail_number=2',
+                     '#sphinx_gallery_thumbnail_number = 2',
+                     '    # sphinx_gallery_thumbnail_number=2']:
         with tempfile.NamedTemporaryFile('w') as f:
             f.write('\n'.join(['"Docstring"',
                                test_str]))

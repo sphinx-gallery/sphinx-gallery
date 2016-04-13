@@ -13,9 +13,6 @@ docstring in the example file.
 # Code source: Óscar Nájera
 # License: BSD 3 clause
 
-# The next line is to pick the figure showing the negative exponential in orange
-# sphinx_gallery_thumbnail_number: 2
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -28,6 +25,8 @@ def main():
     plt.xlabel('$x$')
     plt.ylabel('$\exp(x)$')
 
+    # The next line is to pick the figure showing the negative exponential in orange
+    # sphinx_gallery_thumbnail_number = 2
     plt.figure()
     plt.plot(x, -np.exp(-x), color='orange', linewidth=4)
     plt.xlabel('$x$')

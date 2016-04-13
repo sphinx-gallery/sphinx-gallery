@@ -239,7 +239,7 @@ def extract_thumbnail_number(text):
     """ Pull out the thumbnail image number specified in the docstring. """
 
     # check whether the user has specified a specific thumbnail image
-    pattr = re.compile("^#\s*sphinx_gallery_thumbnail_number:\s*([0-9]+)\s*$", flags=re.MULTILINE)
+    pattr = re.compile("^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$", flags=re.MULTILINE)
     match = pattr.search(text)
     try:
         thumbnail_number = int(match.groups()[0])
