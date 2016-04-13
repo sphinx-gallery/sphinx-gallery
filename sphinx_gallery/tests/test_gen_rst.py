@@ -50,7 +50,7 @@ CONTENT = [
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split"""
 
-    blocks,_ = sg.split_code_and_text_blocks('examples/just_code.py')
+    blocks, _ = sg.split_code_and_text_blocks('examples/just_code.py')
 
     assert_equal(blocks[0][0], 'text')
     assert_equal(blocks[1][0], 'code')
@@ -62,7 +62,7 @@ def test_bug_cases_of_notebook_syntax():
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
-        blocks,_ = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+        blocks, _ = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
         assert_equal(blocks, ref_blocks)
 
@@ -172,7 +172,7 @@ def test_ipy_notebook():
     """Test that written ipython notebook file corresponds to python object"""
     with tempfile.NamedTemporaryFile('w+') as f:
         example_nb = notebook.Notebook(f.name, os.path.dirname(f.name))
-        blocks,_ = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+        blocks, _ = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
         for blabel, bcontent in blocks:
             if blabel == 'code':
