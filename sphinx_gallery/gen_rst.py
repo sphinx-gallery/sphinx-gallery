@@ -191,7 +191,7 @@ def split_code_and_text_blocks(source_file):
     config = dict()
 
     docstring, rest_of_content = get_docstring_and_rest(source_file)
-    rest_of_content, thumbnail_number = extract_thumbnail_number(rest_of_content)
+    thumbnail_number = extract_thumbnail_number(rest_of_content)
     config['thumbnail_number'] = thumbnail_number
 
     blocks = [('text', docstring)]
@@ -246,7 +246,7 @@ def extract_thumbnail_number(text):
     except AttributeError:
         thumbnail_number = 1 # by default, use the first figure created
 
-    return text, thumbnail_number
+    return thumbnail_number
 
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
