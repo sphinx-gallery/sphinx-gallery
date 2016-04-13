@@ -47,7 +47,7 @@ CONTENT = [
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split"""
 
-    blocks = sg.split_code_and_text_blocks('examples/just_code.py')
+    blocks,_ = sg.split_code_and_text_blocks('examples/just_code.py')
 
     assert_equal(blocks[0][0], 'text')
     assert_equal(blocks[1][0], 'code')
@@ -59,7 +59,7 @@ def test_bug_cases_of_notebook_syntax():
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
-        blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+        blocks,_ = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
         assert_equal(blocks, ref_blocks)
 
@@ -74,7 +74,7 @@ def test_direct_comment_after_docstring():
                            'x, y = 1, 2',
                            '']))
         f.flush()
-        result = sg.split_code_and_text_blocks(f.name)
+        result,_ = sg.split_code_and_text_blocks(f.name)
 
     expected_result = [
         ('text', 'Docstring'),
@@ -169,7 +169,7 @@ def test_ipy_notebook():
     """Test that written ipython notebook file corresponds to python object"""
     with tempfile.NamedTemporaryFile('w+') as f:
         example_nb = notebook.Notebook(f.name, os.path.dirname(f.name))
-        blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+        blocks,_ = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
         for blabel, bcontent in blocks:
             if blabel == 'code':
@@ -181,3 +181,15 @@ def test_ipy_notebook():
 
         f.flush()
         assert_equal(json.load(f), example_nb.work_notebook)
+
+def test_thumbnail_number():
+    # which plot to show as the thumbnail image
+    for test_str in ['# sphinx_gallery_thumbnail_number: 2',
+                     '# sphinx_gallery_thumbnail_number:2',
+                     '#sphinx_gallery_thumbnail_number: 2']:
+        with tempfile.NamedTemporaryFile('w') as f:
+            f.write('\n'.join(['"Docstring"',
+                               test_str]))
+            f.flush()
+            _,cfg = sg.split_code_and_text_blocks(f.name)
+        assert cfg['thumbnail_number'] == 2
