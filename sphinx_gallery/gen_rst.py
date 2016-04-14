@@ -189,7 +189,6 @@ def split_code_and_text_blocks(source_file):
         and content string of block.
     """
     docstring, rest_of_content = get_docstring_and_rest(source_file)
-
     blocks = [('text', docstring)]
 
     pattern = re.compile(
@@ -230,6 +229,21 @@ def text2string(content):
     except Exception:
         return content
 
+
+def extract_thumbnail_number(text):
+    """ Pull out the thumbnail image number specified in the docstring. """
+
+    # check whether the user has specified a specific thumbnail image
+    pattr = re.compile("^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$", flags=re.MULTILINE)
+    match = pattr.search(text)
+
+    if match is None:
+        # by default, use the first figure created
+        thumbnail_number = 1
+    else:
+        thumbnail_number = int(match.groups()[0])
+
+    return thumbnail_number
 
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
@@ -285,12 +299,11 @@ def check_md5sum_change(src_file):
     return src_file_changed
 
 
-def _plots_are_current(src_file, image_file):
+def _plots_are_current(src_file, image_path):
     """Test existence of image file and no change in md5sum of
     example"""
 
-    first_image_file = image_file.format(1)
-    has_image = os.path.exists(first_image_file)
+    has_image = os.path.exists(image_path)
     src_file_changed = check_md5sum_change(src_file)
 
     return has_image and not src_file_changed
@@ -392,18 +405,17 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def save_thumbnail(image_path, base_image_name, gallery_conf):
+def save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf):
     """Save the thumbnail image"""
-    first_image_file = image_path.format(1)
-    thumb_dir = os.path.join(os.path.dirname(first_image_file), 'thumb')
+    thumb_dir = os.path.join(os.path.dirname(thumbnail_image_path), 'thumb')
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
 
     thumb_file = os.path.join(thumb_dir,
                               'sphx_glr_%s_thumb.png' % base_image_name)
 
-    if os.path.exists(first_image_file):
-        scale_image(first_image_file, thumb_file, 400, 280)
+    if os.path.exists(thumbnail_image_path):
+        scale_image(thumbnail_image_path, thumb_file, 400, 280)
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
         default_thumb_file = os.path.join(glr_path_static(), 'no_image.png')
@@ -556,15 +568,20 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
-    image_path = os.path.join(image_dir, image_fname)
+    image_path_template = os.path.join(image_dir, image_fname)
 
     script_blocks = split_code_and_text_blocks(example_file)
+
+    # read specification of the figure to display as thumbnail from main text
+    _, content = get_docstring_and_rest(example_file)
+    thumbnail_number = extract_thumbnail_number(content)
 
     amount_of_code = sum([len(bcontent)
                           for blabel, bcontent in script_blocks
                           if blabel == 'code'])
 
-    if _plots_are_current(example_file, image_path):
+    first_image_path = image_path_template.format(1)
+    if _plots_are_current(example_file, first_image_path):
         return amount_of_code, 0
 
     time_elapsed = 0
@@ -595,7 +612,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             if blabel == 'code':
                 code_output, rtime, fig_count = execute_script(bcontent,
                                                                example_globals,
-                                                               image_path,
+                                                               image_path_template,
                                                                fig_count,
                                                                src_file,
                                                                gallery_conf)
@@ -625,7 +642,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                 example_rst += bcontent + '\n'
                 example_nb.add_markdown_cell(text2string(bcontent))
 
-    save_thumbnail(image_path, base_image_name, gallery_conf)
+    thumbnail_image_path = image_path_template.format(thumbnail_number)
+    save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()

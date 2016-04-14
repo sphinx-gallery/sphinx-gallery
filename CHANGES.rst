@@ -9,6 +9,7 @@ New features
 
 * Print aggregated and sorted list of computation times of all examples
   in the console during the build.
+* For examples that create multiple figures, set the thumbnail image.
 
 
 v0.1.2

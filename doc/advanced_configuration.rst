@@ -41,7 +41,7 @@ in your Sphinx ``conf.py``. For example:
 
 will build all examples starting with ``plot_compute_``. The key ``filename_pattern`` accepts
 `regular expressions`_ which will be matched with the full path of the example. This is the reason
-the leading ``'/'`` is required. Users are advised to use ``os.sep`` instead of ``'/'`` if 
+the leading ``'/'`` is required. Users are advised to use ``os.sep`` instead of ``'/'`` if
 they want to be agnostic to the operating system.
 
 This option is also useful if you want to build only a subset of the examples. For example, you may
@@ -202,6 +202,24 @@ file. You need to add to the configuration dictionary a key called
     sphinx_gallery_conf = {
         'default_thumb_file'     : 'path/to/thumb/file.png'}}
 
+
+Choosing the thumbnail image from multiple figures
+==================================================
+
+For examples that generate multiple figures, the default behavior will use
+the first figure created in each as the thumbnail image displayed in the
+gallery. To change the thumbnail image to a figure generated later in
+an example script, add a comment to the example script to specify the
+number of the figure you would like to use as the thumbnail. For example,
+to use the 2nd figure created as the thumbnail:
+
+.. code-block:: python
+
+    # sphinx_gallery_thumbnail_number = 2
+
+The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
+:ref:`sphx_glr_auto_examples_plot_choose_thumbnail.py` for an example
+of this functionality.
 
 Embedding Sphinx-Gallery inside your documentation script extensions
 ====================================================================
