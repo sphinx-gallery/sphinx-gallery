@@ -188,7 +188,6 @@ def split_code_and_text_blocks(source_file):
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
     """
-
     docstring, rest_of_content = get_docstring_and_rest(source_file)
     blocks = [('text', docstring)]
 
@@ -237,10 +236,11 @@ def extract_thumbnail_number(text):
     # check whether the user has specified a specific thumbnail image
     pattr = re.compile("^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$", flags=re.MULTILINE)
     match = pattr.search(text)
-    try:
+
+    if match is None: # by default, use the first figure created
+        thumbnail_number = 1
+    else:
         thumbnail_number = int(match.groups()[0])
-    except AttributeError:
-        thumbnail_number = 1 # by default, use the first figure created
 
     return thumbnail_number
 
