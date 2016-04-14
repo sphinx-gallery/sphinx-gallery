@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+.. _choose-thumbnail-example:
+
 ===========================
 Choosing the thumbnail plot
 ===========================
