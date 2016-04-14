@@ -237,7 +237,8 @@ def extract_thumbnail_number(text):
     pattr = re.compile("^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$", flags=re.MULTILINE)
     match = pattr.search(text)
 
-    if match is None: # by default, use the first figure created
+    if match is None:
+        # by default, use the first figure created
         thumbnail_number = 1
     else:
         thumbnail_number = int(match.groups()[0])

@@ -203,7 +203,7 @@ file. You need to add to the configuration dictionary a key called
         'default_thumb_file'     : 'path/to/thumb/file.png'}}
 
 
-choosing the thumbnail image from multiple figures
+Choosing the thumbnail image from multiple figures
 ==================================================
 
 For examples that generate multiple figures, the default behavior will use
@@ -215,10 +215,11 @@ to use the 2nd figure created as the thumbnail:
 
 .. code-block:: python
 
-    sphinx_gallery_thumbnail_number = 2
+    # sphinx_gallery_thumbnail_number = 2
 
 The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
-:ref:`choose-thumbnail-example` for an example of this functionality.
+:ref:`sphx_glr_auto_examples_plot_choose_thumbnail.py` for an example
+of this functionality.
 
 Embedding Sphinx-Gallery inside your documentation script extensions
 ====================================================================

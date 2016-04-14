@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-.. _choose-thumbnail-example:
-
-===========================
-Choosing the thumbnail plot
-===========================
+=============================
+Choosing the thumbnail figure
+=============================
 
 An example to demonstrate how to choose which figure is displayed as the
 thumbnail if the example generates more than one figure. This is done by
