@@ -25,7 +25,8 @@ def main():
     plt.xlabel('$x$')
     plt.ylabel('$\exp(x)$')
 
-    # The next line is to pick the figure showing the negative exponential in orange
+    # The next line sets the thumbnail for the second figure in the gallery
+    #   (plot with negative exponential in orange)
     # sphinx_gallery_thumbnail_number = 2
     plt.figure()
     plt.plot(x, -np.exp(-x), color='orange', linewidth=4)
