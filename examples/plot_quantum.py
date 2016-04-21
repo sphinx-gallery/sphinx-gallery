@@ -60,7 +60,7 @@ mu = np.linspace(0, 3, 800)
 for b in [10, 20, 30]:
     n = 2 * (np.exp(b * (mu - 1)) + np.exp(b * (2 * mu - 3))) / \
         (1 + np.exp(b * (mu - 1)) * (2 + np.exp(b * (mu - 2))))
-    plt.plot(mu, n, label=r"$\beta={}$".format(b))
+    plt.plot(mu, n, label=r"$\beta={0}$".format(b))
 plt.xlabel(r'$\mu$ ($\epsilon=1$, $U=1$)')
 plt.ylabel(r'$\langle N \rangle=\langle n_\uparrow \rangle+\langle n_\downarrow\rangle$')
 plt.legend(loc=0)
