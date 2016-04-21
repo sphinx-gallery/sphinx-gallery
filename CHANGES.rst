@@ -4,7 +4,7 @@ Change Log
 git master
 ----------
 
-New Features
+New features
 ''''''''''''
 
 * End of build summary of failing examples with traceback. It is
