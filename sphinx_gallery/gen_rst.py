@@ -303,14 +303,14 @@ def check_md5sum_change(src_file):
     return src_file_changed
 
 
-def _plots_are_current(src_file, image_path):
+def _plots_are_current(src_file, image_path_template):
     """Test existence of image file and no change in md5sum of
     example"""
 
-    has_image = os.path.exists(image_path)
+    has_image = os.path.exists(image_path_template.format(1))
 
     # if example failed on previous builds
-    broken_img_mark = image_path.format(-1)
+    broken_img_mark = image_path_template.format(-1)
     if os.path.exists(broken_img_mark):
         has_image = False
         # to avoid considering example as failed on future builds
@@ -426,8 +426,9 @@ def save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf):
     thumb_file = os.path.join(thumb_dir,
                               'sphx_glr_%s_thumb.png' % base_image_name)
 
-    broken_img_mark = 'sphx_glr_' + base_image_name + '_-01.png'
-    if os.path.exists(base_image_name.format('broken')):
+    broken_img_mark = os.path.join(os.path.dirname(
+        thumbnail_image_path), 'sphx_glr_' + base_image_name + '_-01.png')
+    if os.path.exists(broken_img_mark):
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
         scale_image(broken_img, thumb_file, 200, 140)
 
@@ -602,8 +603,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                           for blabel, bcontent in script_blocks
                           if blabel == 'code'])
 
-    first_image_path = image_path_template.format(1)
-    if _plots_are_current(example_file, first_image_path):
+    if _plots_are_current(example_file, image_path_template):
         return amount_of_code, 0
 
     time_elapsed = 0
