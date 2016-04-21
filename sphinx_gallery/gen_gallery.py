@@ -171,18 +171,20 @@ def exit_on_fail_examples(app, exception):
     failed_examples = set(gallery_conf['failed_examples'])
     ex_fail_examples = set(gallery_conf['examples_expected_to_fail'])
 
+    still_ex_fails = failed_examples.intersection(ex_fail_examples)
+    expected_fail_msg = []
+    if still_ex_fails:
+        expected_fail_msg.append("Known failing examples, still failing:")
+        for fail_example in still_ex_fails:
+            expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
+                                     gallery_conf['failed_examples'][fail_example] + '\n')
+        warnings.warn("\n".join(expected_fail_msg))
+
     unexpected_ex_fails = failed_examples.difference(ex_fail_examples)
     fail_msgs = []
     if unexpected_ex_fails:
         fail_msgs.append("Unexpected failing examples:")
         for fail_example in unexpected_ex_fails:
-            fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
-                             gallery_conf['failed_examples'][fail_example] + '\n')
-
-    still_ex_fails = failed_examples.intersection(ex_fail_examples)
-    if still_ex_fails:
-        fail_msgs.append("Known failing examples, still failing:")
-        for fail_example in still_ex_fails:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
                              gallery_conf['failed_examples'][fail_example] + '\n')
 
