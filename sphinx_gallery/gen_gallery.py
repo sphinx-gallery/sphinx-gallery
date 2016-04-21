@@ -16,6 +16,7 @@ import copy
 import re
 import os
 import sys
+import warnings
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
@@ -171,25 +172,28 @@ def exit_on_fail_examples(app, exception):
     ex_fail_examples = set(gallery_conf['examples_expected_to_fail'])
 
     unexpected_ex_fails = failed_examples.difference(ex_fail_examples)
+    fail_msgs = []
     if unexpected_ex_fails:
-        sys.stderr.write("Unexpected failing examples:\n\n")
+        fail_msgs.append("Unexpected failing examples:")
         for fail_example in unexpected_ex_fails:
-            sys.stderr.write(fail_example + ' failed leaving traceback:\n')
-            sys.stderr.write(gallery_conf['failed_examples'][fail_example] +'\n')
-        sys.exit(1)
+            fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
+                             gallery_conf['failed_examples'][fail_example] + '\n')
 
     still_ex_fails = failed_examples.intersection(ex_fail_examples)
     if still_ex_fails:
-        sys.stderr.write("Known failing examples, still failing:\n\n")
+        fail_msgs.append("Known failing examples, still failing:")
         for fail_example in still_ex_fails:
-            sys.stderr.write(fail_example + ' failed leaving traceback:\n')
-            sys.stderr.write(gallery_conf['failed_examples'][fail_example] +'\n')
+            fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
+                             gallery_conf['failed_examples'][fail_example] + '\n')
 
     unexpected_ex_pass = ex_fail_examples.difference(failed_examples)
     if unexpected_ex_pass:
-        sys.stderr.write("Examples that are not failing anymore:\n\n")
-        sys.stderr.write("\n".join(unexpected_ex_pass) + '\n\n')
-        sys.exit(1)
+        fail_msgs.append("Examples that are not failing anymore:\n"
+                         "\n".join(unexpected_ex_pass))
+
+    if fail_msgs:
+        raise ValueError("Not all Gallery example builds were successful\n\n" +
+                         "\n".join(fail_msgs) + "-" * 79)
 
 
 def setup(app):
