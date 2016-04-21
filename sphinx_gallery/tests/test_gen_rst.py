@@ -123,10 +123,6 @@ def test_md5sums():
         assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
         # True because is a new file
         assert_true(sg.check_md5sum_change(f.name))
-        # False because file has not changed since last check
-        assert_false(sg.check_md5sum_change(f.name))
-
-    os.remove(f.name + '.md5')
 
 
 def build_temp_setup(**kwargs):
@@ -216,6 +212,7 @@ def test_ipy_notebook():
         f.flush()
         assert_equal(json.load(f), example_nb.work_notebook)
 
+
 def test_thumbnail_number():
     # which plot to show as the thumbnail image
     for test_str in ['# sphinx_gallery_thumbnail_number= 2',
@@ -229,6 +226,7 @@ def test_thumbnail_number():
             _, content = sg.get_docstring_and_rest(f.name)
             thumbnail_number = sg.extract_thumbnail_number(content)
         assert_equal(thumbnail_number, 2)
+
 
 def test_save_figures():
     """Test file naming when saving figures. Requires mayavi."""

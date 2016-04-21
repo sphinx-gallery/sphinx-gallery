@@ -300,10 +300,6 @@ def check_md5sum_change(src_file):
         if src_md5 == ref_md5:
             src_file_changed = False
 
-    if src_file_changed:
-        with open(src_md5_file, 'w') as file_checksum:
-            file_checksum.write(src_md5)
-
     return src_file_changed
 
 
@@ -666,6 +662,12 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             else:
                 example_rst += bcontent + '\n'
                 example_nb.add_markdown_cell(text2string(bcontent))
+
+    # Writes md5 checksum if example has build correctly
+    broken_img_mark = image_path_template.format(-1)
+    if not os.path.exists(broken_img_mark):
+        with open(example_file + '.md5', 'w') as file_checksum:
+            file_checksum.write(get_md5sum(example_file))
 
     thumbnail_image_path = image_path_template.format(thumbnail_number)
     save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf)
