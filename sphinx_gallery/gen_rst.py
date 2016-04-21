@@ -543,10 +543,10 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     except Exception:
         formatted_exception = traceback.format_exc()
 
-        sys.stderr.write(80 * '_' + '\n')
-        sys.stderr.write('%s failed to execute correctly:' % src_file)
-        sys.stderr.write(formatted_exception)
-        sys.stderr.write(80 * '_' + '\n')
+        fail_example_warning = 80 * '_' + '\n' + \
+            '%s failed to execute correctly:' % src_file + \
+            formatted_exception + 80 * '_' + '\n'
+        warnings.warn(fail_example_warning)
 
         figure_list = []
         image_list = codestr2rst(formatted_exception, lang='pytb')
