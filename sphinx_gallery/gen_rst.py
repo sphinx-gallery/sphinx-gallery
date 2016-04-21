@@ -310,11 +310,11 @@ def _plots_are_current(src_file, image_path):
     has_image = os.path.exists(image_path)
 
     # if example failed on previous builds
-    broken_img = image_file.format(-1)
-    if os.path.exists(broken_img):
+    broken_img_mark = image_path.format(-1)
+    if os.path.exists(broken_img_mark):
         has_image = False
         # to avoid considering example as failed on future builds
-        os.remove(broken_img)
+        os.remove(broken_img_mark)
 
     src_file_changed = check_md5sum_change(src_file)
 
@@ -426,12 +426,13 @@ def save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf):
     thumb_file = os.path.join(thumb_dir,
                               'sphx_glr_%s_thumb.png' % base_image_name)
 
-    if os.path.exists(thumbnail_image_path):
-        scale_image(thumbnail_image_path, thumb_file, 400, 280)
-
-    elif os.path.exists(base_image_name.format('broken')):
+    broken_img_mark = 'sphx_glr_' + base_image_name + '_-01.png'
+    if os.path.exists(base_image_name.format('broken')):
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
         scale_image(broken_img, thumb_file, 200, 140)
+
+    elif os.path.exists(thumbnail_image_path):
+        scale_image(thumbnail_image_path, thumb_file, 400, 280)
 
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
@@ -550,9 +551,9 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         image_list = codestr2rst(formatted_exception, lang='pytb')
 
         # Touches a broken image file
-        broken_img = os.path.join(cwd, image_path.format(-1))
-        if not os.path.exists(broken_img):
-            open(broken_img, 'w').close()
+        broken_img_mark = os.path.join(cwd, image_path.format(-1))
+        if not os.path.exists(broken_img_mark):
+            open(broken_img_mark, 'w').close()
 
         # Breaks build on first example error
         # XXX This check can break during testing e.g. if you uncomment the
