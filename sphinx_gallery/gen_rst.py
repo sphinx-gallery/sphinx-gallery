@@ -304,21 +304,18 @@ def check_md5sum_change(src_file):
 
 
 def _plots_are_current(src_file, image_path_template):
-    """Test existence of image file and no change in md5sum of
-    example"""
-
-    has_image = os.path.exists(image_path_template.format(1))
+    """Test for broken image file and checks md5sum changes"""
 
     # if example failed on previous builds
     broken_img_mark = image_path_template.format(-1)
     if os.path.exists(broken_img_mark):
-        has_image = False
         # to avoid considering example as failed on future builds
         os.remove(broken_img_mark)
+        return False
 
     src_file_changed = check_md5sum_change(src_file)
 
-    return has_image and not src_file_changed
+    return not src_file_changed
 
 
 def save_figures(image_path, fig_count, gallery_conf):
