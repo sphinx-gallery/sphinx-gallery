@@ -495,7 +495,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
     time_elapsed = 0
     stdout = ''
 
-    if src_file in gallery_conf['failed_examples']:
+    if src_file in gallery_conf['failing_examples']:
         return '', 0, 0
 
     # We need to execute the code
@@ -562,7 +562,7 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         if gallery_conf['abort_on_example_error']:
             raise
         # Stores failing file
-        gallery_conf['failed_examples'].update({src_file: formatted_exception})
+        gallery_conf['failing_examples'][src_file] = formatted_exception
 
     finally:
         os.chdir(cwd)

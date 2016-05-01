@@ -15,7 +15,6 @@ from __future__ import division, print_function, absolute_import
 import copy
 import re
 import os
-import sys
 import warnings
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
@@ -31,8 +30,8 @@ DEFAULT_GALLERY_CONF = {
     # build options
     'plot_gallery': True,
     'abort_on_example_error': False,
-    'failed_examples': {},
-    'examples_expected_to_fail': set(),
+    'failing_examples': {},
+    'expected_failing_examples': set(),
 }
 
 
@@ -168,27 +167,27 @@ def exit_on_fail_examples(app, exception):
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    failed_examples = set(gallery_conf['failed_examples'])
-    ex_fail_examples = set(gallery_conf['examples_expected_to_fail'])
+    failing_examples = set(gallery_conf['failing_examples'])
+    ex_fail_examples = set(gallery_conf['expected_failing_examples'])
 
-    still_ex_fails = failed_examples.intersection(ex_fail_examples)
+    still_ex_fails = failing_examples.intersection(ex_fail_examples)
     expected_fail_msg = []
     if still_ex_fails:
         expected_fail_msg.append("Known failing examples, still failing:")
         for fail_example in still_ex_fails:
             expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
-                                     gallery_conf['failed_examples'][fail_example] + '\n')
+                                     gallery_conf['failing_examples'][fail_example] + '\n')
         warnings.warn("\n".join(expected_fail_msg))
 
-    unexpected_ex_fails = failed_examples.difference(ex_fail_examples)
+    unexpected_ex_fails = failing_examples.difference(ex_fail_examples)
     fail_msgs = []
     if unexpected_ex_fails:
         fail_msgs.append("Unexpected failing examples:")
         for fail_example in unexpected_ex_fails:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
-                             gallery_conf['failed_examples'][fail_example] + '\n')
+                             gallery_conf['failing_examples'][fail_example] + '\n')
 
-    unexpected_ex_pass = ex_fail_examples.difference(failed_examples)
+    unexpected_ex_pass = ex_fail_examples.difference(failing_examples)
     if unexpected_ex_pass:
         fail_msgs.append("Examples that are not failing anymore:\n"
                          "\n".join(unexpected_ex_pass))

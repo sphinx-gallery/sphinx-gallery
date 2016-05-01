@@ -304,5 +304,5 @@ sphinx_gallery_conf = {
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'find_mayavi_figures': find_mayavi_figures,
-    'examples_expected_to_fail': set(['../examples/plot_raise.py'])
-    }
+    'expected_failing_examples': set(['../examples/plot_raise.py'])
+}

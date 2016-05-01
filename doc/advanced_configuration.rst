@@ -55,11 +55,11 @@ you would do:
     }
 
 Here, one should escape the dot ``'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
-one is targetting a specific file, it is most certainly going to match the dot in the filename.
+one is targeting a specific file, it is most certainly going to match the dot in the filename.
 
 Similarly, to build only examples in a specific directory, you can do:
 
-.. code-blocK:: python
+.. code-block:: python
 
     sphinx_gallery_conf = {
         'filename_pattern' : '/directory/plot_'
@@ -296,7 +296,7 @@ Don't fail the build on exit
 
 It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow
-certain examples to fail and not to trow a failed build exit code 1 if
+certain examples to fail and not to throw a failed build exit code 1 if
 only known to fail examples have failed. For this you need to list all
 the examples you want to allow to fail during build. Change your
 `conf.py` accordingly:
@@ -306,7 +306,7 @@ the examples you want to allow to fail during build. Change your
 
     sphinx_gallery_conf = {
         ...
-	'examples_expected_to_fail': ['../examples/plot_raise.py']
+	'expected_failing_examples': ['../examples/plot_raise.py']
     }
 
 Here you list the examples you allow to fail during the build process,
