@@ -80,6 +80,14 @@ def dummy():
 
 print('one')
 
+###############################################################################
+# Code block separators
+###############################################################################
+# Surrounding a comment line with lines of # like a block spliter also
+# works and creates a new header for that comment block
+# too. Nevertheless to get rich text formatting we advise to use
+# RestructuredText syntax in the comment blocks.
+
 print('two')
 ##################################################
 #

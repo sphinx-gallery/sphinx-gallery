@@ -201,7 +201,7 @@ def split_code_and_text_blocks(source_file):
         code_block_content = rest_of_content[pos_so_far:match_start_pos]
         text_content = match.group('text_content')
         sub_pat = re.compile('^#', flags=re.M)
-        text_block_content = dedent(re.sub(sub_pat, '', text_content))
+        text_block_content = dedent(re.sub(sub_pat, '', text_content)).lstrip()
         if code_block_content.strip():
             blocks.append(('code', code_block_content))
         if text_block_content.strip():
@@ -227,7 +227,7 @@ def text2string(content):
     try:
         return ast.literal_eval(content) + '\n'
     except Exception:
-        return content
+        return content + '\n'
 
 
 def extract_thumbnail_number(text):
