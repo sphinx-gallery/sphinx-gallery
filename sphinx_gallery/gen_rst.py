@@ -287,35 +287,21 @@ def get_md5sum(src_file):
     return src_md5
 
 
-def check_md5sum_change(src_file):
-    """Returns True if src_file has a different md5sum"""
+def md5sum_is_current(src_file):
+    """Returns True if src_file has the on disk stored md5sum"""
 
     src_md5 = get_md5sum(src_file)
 
     src_md5_file = src_file + '.md5'
-    src_file_changed = True
     if os.path.exists(src_md5_file):
         with open(src_md5_file, 'r') as file_checksum:
             ref_md5 = file_checksum.read()
         if src_md5 == ref_md5:
-            src_file_changed = False
+            return True
+        else:
+            os.remove(src_md5_file)
 
-    return src_file_changed
-
-
-def _plots_are_current(src_file, image_path_template):
-    """Test for broken image file and checks md5sum changes"""
-
-    # if example failed on previous builds
-    broken_img_mark = image_path_template.format(-1)
-    if os.path.exists(broken_img_mark):
-        # to avoid considering example as failed on future builds
-        os.remove(broken_img_mark)
-        return False
-
-    src_file_changed = check_md5sum_change(src_file)
-
-    return not src_file_changed
+    return False
 
 
 def save_figures(image_path, fig_count, gallery_conf):
@@ -414,18 +400,17 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf):
+def save_thumbnail(thumbnail_image_path, src_file, gallery_conf):
     """Save the thumbnail image"""
     thumb_dir = os.path.join(os.path.dirname(thumbnail_image_path), 'thumb')
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
 
+    base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir,
                               'sphx_glr_%s_thumb.png' % base_image_name)
 
-    broken_img_mark = os.path.join(os.path.dirname(
-        thumbnail_image_path), 'sphx_glr_' + base_image_name + '_-01.png')
-    if os.path.exists(broken_img_mark):
+    if src_file in gallery_conf['failing_examples']:
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
         scale_image(broken_img, thumb_file, 200, 140)
 
@@ -548,11 +533,6 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         figure_list = []
         image_list = codestr2rst(formatted_exception, lang='pytb')
 
-        # Touches a broken image file
-        broken_img_mark = os.path.join(cwd, image_path.format(-1))
-        if not os.path.exists(broken_img_mark):
-            open(broken_img_mark, 'w').close()
-
         # Breaks build on first example error
         # XXX This check can break during testing e.g. if you uncomment the
         # `raise RuntimeError` by the `my_stdout` call, maybe use `.get()`?
@@ -600,7 +580,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                           for blabel, bcontent in script_blocks
                           if blabel == 'code'])
 
-    if _plots_are_current(example_file, image_path_template):
+    if md5sum_is_current(example_file):
         return amount_of_code, 0
 
     time_elapsed = 0
@@ -662,8 +642,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                 example_nb.add_markdown_cell(text2string(bcontent))
 
     # Writes md5 checksum if example has build correctly
-    broken_img_mark = image_path_template.format(-1)
-    if not os.path.exists(broken_img_mark):
+    if not src_file in gallery_conf['failing_examples']:
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(example_file))
 

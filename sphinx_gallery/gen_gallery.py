@@ -189,7 +189,7 @@ def exit_on_fail_examples(app, exception):
 
     unexpected_ex_pass = ex_fail_examples.difference(failing_examples)
     if unexpected_ex_pass:
-        fail_msgs.append("Examples that are not failing anymore:\n"
+        fail_msgs.append("Examples that are not failing anymore:\n" +
                          "\n".join(unexpected_ex_pass))
 
     if fail_msgs:

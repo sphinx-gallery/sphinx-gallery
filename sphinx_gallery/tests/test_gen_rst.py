@@ -121,8 +121,8 @@ def test_md5sums():
         file_md5 = sg.get_md5sum(f.name)
         # verify correct md5sum
         assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
-        # True because is a new file
-        assert_true(sg.check_md5sum_change(f.name))
+        # False because is a new file
+        assert_false(sg.md5sum_is_current(f.name))
 
 
 def build_temp_setup(**kwargs):
