@@ -79,6 +79,9 @@ def generate_gallery_rst(app):
 
     computation_times = []
 
+    # cd to the appropriate directory regardless of sphinx configuration
+    working_dir = os.getcwd()
+    os.chdir(app.builder.srcdir)
     for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
         examples_dir = os.path.relpath(examples_dir,
                                        app.builder.srcdir)
@@ -88,7 +91,6 @@ def generate_gallery_rst(app):
         for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
             if not os.path.exists(workdir):
                 os.makedirs(workdir)
-
         # we create an index.rst with all examples
         fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
         # Here we don't use an os.walk, but we recurse only twice: flat is
@@ -111,6 +113,9 @@ def generate_gallery_rst(app):
                 computation_times += this_computation_times
 
         fhindex.flush()
+
+    # Back to initial directory
+    os.chdir(working_dir)
 
     print("Computation time summary:")
     for time_elapsed, fname in sorted(computation_times)[::-1]:
