@@ -13,10 +13,10 @@ You also get the python traceback of the failed code block
 iae
 
 ###############################################################################
-# Sphinx gallery as it executes scripts by block will continue
-# evaluating the script after exceptions, but there is no warranty
-# figure ordering will continue to match block's code. Anyway when the
-# script is broken, you should try to fix it first.
+# Sphinx gallery will stop executing the remaining code blocks after
+# the exception has occurred in the example script. Nevertheless the
+# html will still render all the example annotated text and
+# code blocks, just no output.
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
