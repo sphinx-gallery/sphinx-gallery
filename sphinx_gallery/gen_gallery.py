@@ -161,7 +161,7 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
-def exit_on_fail_examples(app, exception):
+def sumarize_failing_examples(app, exception):
     """Embed hyperlinks to documentation into example code"""
     if exception is not None:
         return
@@ -177,7 +177,7 @@ def exit_on_fail_examples(app, exception):
         for fail_example in still_ex_fails:
             expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
                                      gallery_conf['failing_examples'][fail_example] + '\n')
-        warnings.warn("\n".join(expected_fail_msg))
+        print("\n".join(expected_fail_msg))
 
     unexpected_ex_fails = failing_examples.difference(ex_fail_examples)
     fail_msgs = []
@@ -209,7 +209,7 @@ def setup(app):
 
     app.connect('builder-inited', generate_gallery_rst)
 
-    app.connect('build-finished', exit_on_fail_examples)
+    app.connect('build-finished', sumarize_failing_examples)
     app.connect('build-finished', embed_code_links)
 
 
