@@ -15,7 +15,7 @@ from __future__ import division, print_function, absolute_import
 import re
 import os
 from . import glr_path_static
-from .gen_rst import generate_dir_rst
+from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 
 
@@ -57,7 +57,8 @@ def generate_gallery_rst(app):
 
     gallery_conf.update(app.config.sphinx_gallery_conf)
     gallery_conf.update(plot_gallery=plot_gallery)
-    gallery_conf.update(abort_on_example_error=app.builder.config.abort_on_example_error)
+    gallery_conf.update(
+        abort_on_example_error=app.builder.config.abort_on_example_error)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
@@ -112,6 +113,7 @@ def generate_gallery_rst(app):
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
 
+        fhindex.write(SPHX_GLR_SIG)
         fhindex.flush()
 
     # Back to initial directory
@@ -132,7 +134,8 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
     examples for a class / module that is being parsed by autodoc"""
 
     examples_path = os.path.join(app.srcdir,
-                                 app.config.sphinx_gallery_conf["mod_example_dir"],
+                                 app.config.sphinx_gallery_conf[
+                                     "mod_example_dir"],
                                  "%s.examples" % name)
 
     if not os.path.exists(examples_path):

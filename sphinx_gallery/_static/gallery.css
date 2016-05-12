@@ -125,3 +125,13 @@ ul.sphx-glr-horizontal li {
 ul.sphx-glr-horizontal img {
   height: auto !important;
 }
+
+p.sphx-glr-signature a.reference.external {
+  background-color: #EBECED;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  padding: 3px;
+  position: absolute;
+  right: 15px;
+}
