@@ -288,7 +288,7 @@ def get_md5sum(src_file):
 
 
 def md5sum_is_current(src_file):
-    """Returns True if src_file has the on disk stored md5sum"""
+    """Returns True if src_file has the same md5 hash as the one stored on disk"""
 
     src_md5 = get_md5sum(src_file)
 

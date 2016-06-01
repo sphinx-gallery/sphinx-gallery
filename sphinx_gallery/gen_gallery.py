@@ -74,7 +74,6 @@ def generate_gallery_rst(app):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     gallery_conf.update(app.config.sphinx_gallery_conf)
     gallery_conf.update(plot_gallery=plot_gallery)
-    gallery_conf.update(failed_examples=[])
     gallery_conf.update(
         abort_on_example_error=app.builder.config.abort_on_example_error)
 
@@ -168,18 +167,20 @@ def sumarize_failing_examples(app, exception):
 
     gallery_conf = app.config.sphinx_gallery_conf
     failing_examples = set(gallery_conf['failing_examples'])
-    ex_fail_examples = set(gallery_conf['expected_failing_examples'])
+    expected_failing_examples = set(gallery_conf['expected_failing_examples'])
 
-    still_ex_fails = failing_examples.intersection(ex_fail_examples)
+    still_failing_examples = failing_examples.intersection(
+        expected_failing_examples)
     expected_fail_msg = []
-    if still_ex_fails:
+    if still_failing_examples:
         expected_fail_msg.append("Known failing examples, still failing:")
-        for fail_example in still_ex_fails:
+        for fail_example in still_failing_examples:
             expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
                                      gallery_conf['failing_examples'][fail_example] + '\n')
         print("\n".join(expected_fail_msg))
 
-    unexpected_ex_fails = failing_examples.difference(ex_fail_examples)
+    unexpected_ex_fails = failing_examples.difference(
+        expected_failing_examples)
     fail_msgs = []
     if unexpected_ex_fails:
         fail_msgs.append("Unexpected failing examples:")
@@ -187,14 +188,14 @@ def sumarize_failing_examples(app, exception):
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
                              gallery_conf['failing_examples'][fail_example] + '\n')
 
-    unexpected_ex_pass = ex_fail_examples.difference(failing_examples)
+    unexpected_ex_pass = expected_failing_examples.difference(failing_examples)
     if unexpected_ex_pass:
         fail_msgs.append("Examples that are not failing anymore:\n" +
                          "\n".join(unexpected_ex_pass))
 
     if fail_msgs:
-        raise ValueError("Not all Gallery example builds were successful\n\n" +
-                         "\n".join(fail_msgs) + "-" * 79)
+        raise ValueError("Here is a summary of the problems encountered when"
+                         "running the examples\n\n" + "\n".join(fail_msgs) + "-" * 79)
 
 
 def setup(app):
