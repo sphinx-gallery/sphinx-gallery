@@ -296,10 +296,9 @@ Don't fail the build on exit
 
 It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow
-certain examples to fail and not to throw a failed build exit code 1 if
-only known to fail examples have failed. For this you need to list all
-the examples you want to allow to fail during build. Change your
-`conf.py` accordingly:
+certain examples to fail and still exit with a 0 exit code. For this
+you need to list all the examples you want to allow to fail during
+build. Change your `conf.py` accordingly:
 
 
 .. code-block:: python

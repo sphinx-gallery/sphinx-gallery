@@ -16,7 +16,7 @@ iae
 # Sphinx gallery will stop executing the remaining code blocks after
 # the exception has occurred in the example script. Nevertheless the
 # html will still render all the example annotated text and
-# code blocks, just no output.
+# code blocks, but no output will be shown.
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
