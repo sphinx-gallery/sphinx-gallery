@@ -123,10 +123,15 @@ def test_md5sums():
         assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
         # False because is a new file
         assert_false(sg.md5sum_is_current(f.name))
+        # Write md5sum to file to check is current
+        with open(f.name + '.md5', 'w') as file_checksum:
+            file_checksum.write(file_md5)
+        assert_true(sg.md5sum_is_current(f.name))
+    os.remove(f.name + '.md5')
 
 
-def build_temp_setup(**kwargs):
-    """Sets a test build up"""
+def build_test_configuration(**kwargs):
+    """Sets up a test sphinx-gallery configuration"""
 
     gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
     gallery_conf.update(examples_dir=tempfile.mkdtemp(),
@@ -139,7 +144,7 @@ def build_temp_setup(**kwargs):
 def test_fail_example():
     """Test that failing examples are only executed until failing block"""
 
-    gallery_conf = build_temp_setup(filename_pattern='raise.py')
+    gallery_conf = build_test_configuration(filename_pattern='raise.py')
 
     failing_code = CONTENT + ['#' * 79,
                               'First_test_fail', '#' * 79, 'second_fail']
@@ -165,7 +170,7 @@ def test_fail_example():
 def test_pattern_matching():
     """Test if only examples matching pattern are executed"""
 
-    gallery_conf = build_temp_setup(
+    gallery_conf = build_test_configuration(
         filename_pattern=re.escape(os.sep) + 'plot_0')
 
     code_output = ('\n Out::\n'
