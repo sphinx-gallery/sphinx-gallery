@@ -10,7 +10,9 @@ New features
 * Print aggregated and sorted list of computation times of all examples
   in the console during the build.
 * For examples that create multiple figures, set the thumbnail image.
-
+* The ``abort_on_example_error`` option can now be specified in
+  ``sphinx_gallery_conf`` (although the build option takes precedence over the
+  ``sphinx_gallery_conf`` option).
 
 v0.1.2
 ------

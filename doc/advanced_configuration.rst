@@ -279,6 +279,9 @@ by including in your ``Makefile``::
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
-and not spaces
+and not spaces.
+
+Alternatively, you can also instead add the ``abort_on_example_error`` option to
+the ``sphinx_gallery_conf`` inside your ``conf.py`` configuration file.
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
