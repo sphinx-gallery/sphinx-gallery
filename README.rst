@@ -26,6 +26,7 @@ Who uses Sphinx-Gallery
 * `GIMLi <http://www.pygimli.org/_examples_auto/index.html>`_
 * `Nestle <http://kbarbary.github.io/nestle/examples/index.html>`_
 * `pyRiemann <http://pythonhosted.org/pyriemann/auto_examples/index.html>`_
+* `scikit-image <http://scikit-image.org/docs/dev/auto_examples/>`_
 
 
 Getting the package
