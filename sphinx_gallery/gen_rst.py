@@ -298,8 +298,6 @@ def md5sum_is_current(src_file):
             ref_md5 = file_checksum.read()
         if src_md5 == ref_md5:
             return True
-        else:
-            os.remove(src_md5_file)
 
     return False
 
@@ -471,12 +469,13 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex, computation_times
 
 
-def execute_script(code_block, example_globals, image_path, fig_count,
-                   src_file, gallery_conf):
+def execute_codeblock(code_block, example_globals, image_path, fig_count,
+                      src_file, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
     stdout = ''
 
+    # If the example is marked as failing skip executing its blocks
     if src_file in gallery_conf['failing_examples']:
         return '', 0, 0
 
@@ -609,12 +608,12 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         is_example_notebook_like = len(script_blocks) > 2
         for blabel, bcontent in script_blocks:
             if blabel == 'code':
-                code_output, rtime, fig_count = execute_script(bcontent,
-                                                               example_globals,
-                                                               image_path_template,
-                                                               fig_count,
-                                                               src_file,
-                                                               gallery_conf)
+                code_output, rtime, fig_count = execute_codeblock(bcontent,
+                                                                  example_globals,
+                                                                  image_path_template,
+                                                                  fig_count,
+                                                                  src_file,
+                                                                  gallery_conf)
 
                 time_elapsed += rtime
                 example_nb.add_code_cell(bcontent)
