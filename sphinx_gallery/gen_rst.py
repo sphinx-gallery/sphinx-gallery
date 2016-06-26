@@ -551,10 +551,14 @@ def execute_codeblock(code_block, example_globals, image_path, fig_count,
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
-    """ Generate the rst file for a given example.
+    """Generate the rst file for a given example.
 
-        Returns the amout of code (in characters) of the corresponding
-        files.
+    Returns
+    -------
+    amount_of_code: int
+        character count of the corresponding python script in file
+    time_elapsed: float
+        seconds required to run the script
     """
 
     src_file = os.path.join(src_dir, fname)
