@@ -601,61 +601,52 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     filename_pattern = gallery_conf.get('filename_pattern')
     execute_script = re.search(filename_pattern, src_file) and gallery_conf[
         'plot_gallery']
-    if execute_script:
-        example_globals = {
-            # A lot of examples contains 'print(__doc__)' for example in
-            # scikit-learn so that running the example prints some useful
-            # information. Because the docstring has been separated from
-            # the code blocks in sphinx-gallery, __doc__ is actually
-            # __builtin__.__doc__ in the execution context and we do not
-            # want to print it
-            '__doc__': '',
-            # Examples may contain if __name__ == '__main__' guards
-            # for in example scikit-learn if the example uses multiprocessing
-            '__name__': '__main__',
-            # Keeps track of generated figures
-            '__fig_count__': 0,
-            '__example_has_failed__': not execute_script,
-        }
+    example_globals = {
+        # A lot of examples contains 'print(__doc__)' for example in
+        # scikit-learn so that running the example prints some useful
+        # information. Because the docstring has been separated from
+        # the code blocks in sphinx-gallery, __doc__ is actually
+        # __builtin__.__doc__ in the execution context and we do not
+        # want to print it
+        '__doc__': '',
+        # Examples may contain if __name__ == '__main__' guards
+        # for in example scikit-learn if the example uses multiprocessing
+        '__name__': '__main__',
+        # Keeps track of generated figures
+        '__fig_count__': 0,
+        '__example_has_failed__': not execute_script,
+    }
 
-        # A simple example has two blocks: one for the
-        # example introduction/explanation and one for the code
-        is_example_notebook_like = len(script_blocks) > 2
-        for blabel, bcontent in script_blocks:
-            if blabel == 'code':
-                code_output, rtime = execute_codeblock(bcontent,
-                                                       example_globals,
-                                                       image_path_template,
-                                                       src_file,
-                                                       gallery_conf)
+    # A simple example has two blocks: one for the
+    # example introduction/explanation and one for the code
+    is_example_notebook_like = len(script_blocks) > 2
+    for blabel, bcontent in script_blocks:
+        if blabel == 'code':
+            code_output, rtime = execute_codeblock(bcontent,
+                                                   example_globals,
+                                                   image_path_template,
+                                                   src_file,
+                                                   gallery_conf)
 
-                time_elapsed += rtime
-                example_nb.add_code_cell(bcontent)
+            time_elapsed += rtime
+            example_nb.add_code_cell(bcontent)
 
-                if is_example_notebook_like:
-                    example_rst += codestr2rst(bcontent) + '\n'
-                    example_rst += code_output
-                else:
-                    example_rst += code_output
-                    if 'sphx-glr-script-out' in code_output:
-                        # Add some vertical space after output
-                        example_rst += "\n\n|\n\n"
-                    example_rst += codestr2rst(bcontent) + '\n'
-
-            else:
-                example_rst += text2string(bcontent) + '\n'
-                example_nb.add_markdown_cell(text2string(bcontent))
-    else:
-        for blabel, bcontent in script_blocks:
-            if blabel == 'code':
+            if is_example_notebook_like:
                 example_rst += codestr2rst(bcontent) + '\n'
-                example_nb.add_code_cell(bcontent)
+                example_rst += code_output
             else:
-                example_rst += bcontent + '\n'
-                example_nb.add_markdown_cell(text2string(bcontent))
+                example_rst += code_output
+                if 'sphx-glr-script-out' in code_output:
+                    # Add some vertical space after output
+                    example_rst += "\n\n|\n\n"
+                example_rst += codestr2rst(bcontent) + '\n'
+
+        else:
+            example_rst += text2string(bcontent) + '\n'
+            example_nb.add_markdown_cell(text2string(bcontent))
 
     # Writes md5 checksum if example has build correctly
-    if not src_file in gallery_conf['failing_examples']:
+    if src_file not in gallery_conf['failing_examples']:
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(example_file))
 
