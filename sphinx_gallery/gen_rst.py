@@ -555,9 +555,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     Returns
     -------
-    amount_of_code: int
+
+    amount_of_code : int
         character count of the corresponding python script in file
-    time_elapsed: float
+    time_elapsed : float
         seconds required to run the script
     """
 
