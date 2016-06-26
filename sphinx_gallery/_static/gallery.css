@@ -132,6 +132,5 @@ p.sphx-glr-signature a.reference.external {
   -webkit-border-radius: 5px;
   border-radius: 5px;
   padding: 3px;
-  position: absolute;
-  right: 15px;
+  font-size: 75%;
 }
