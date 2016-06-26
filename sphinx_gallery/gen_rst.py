@@ -646,7 +646,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             file_checksum.write(get_md5sum(example_file))
 
     thumbnail_image_path = image_path_template.format(thumbnail_number)
-    save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf)
+    save_thumbnail(thumbnail_image_path, src_file, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()

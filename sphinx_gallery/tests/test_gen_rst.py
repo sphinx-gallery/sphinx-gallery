@@ -259,3 +259,5 @@ def test_save_figures():
     assert fig_list[1].endswith('image4.png')
 
     shutil.rmtree(examples_dir)
+
+# TODO: test that broken thumbnail does appear when needed
