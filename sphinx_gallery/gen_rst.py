@@ -350,7 +350,18 @@ def save_figures(image_path, fig_count, gallery_conf):
             figure_list.append(current_fig)
         mlab.close(all=True)
 
-    return figure_list
+    # Depending on whether we have one or more figures, we're using a
+    # horizontal list or a single rst call to 'image'.
+    images_rst = ""
+    if len(figure_list) == 1:
+        figure_name = figure_list[0]
+        images_rst = SINGLE_IMAGE % figure_name.lstrip('/')
+    elif len(figure_list) > 1:
+        images_rst = HLIST_HEADER
+        for figure_name in figure_list:
+            images_rst += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+
+    return figure_list, images_rst
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
@@ -509,18 +520,9 @@ def execute_codeblock(code_block, example_globals, image_path,
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
-        figure_list = save_figures(image_path, fig_count, gallery_conf)
-
-        # Depending on whether we have one or more figures, we're using a
-        # horizontal list or a single rst call to 'image'.
-        image_list = ""
-        if len(figure_list) == 1:
-            figure_name = figure_list[0]
-            image_list = SINGLE_IMAGE % figure_name.lstrip('/')
-        elif len(figure_list) > 1:
-            image_list = HLIST_HEADER
-            for figure_name in figure_list:
-                image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+        fig_list, images_rst = save_figures(
+            image_path, fig_count, gallery_conf)
+        fig_num = len(fig_list)
 
     except Exception:
         formatted_exception = traceback.format_exc()
@@ -530,8 +532,8 @@ def execute_codeblock(code_block, example_globals, image_path,
             formatted_exception + 80 * '_' + '\n'
         warnings.warn(fail_example_warning)
 
-        figure_list = []
-        image_list = codestr2rst(formatted_exception, lang='pytb')
+        fig_num = 0
+        images_rst = codestr2rst(formatted_exception, lang='pytb')
 
         # Breaks build on first example error
         # XXX This check can break during testing e.g. if you uncomment the
@@ -547,8 +549,8 @@ def execute_codeblock(code_block, example_globals, image_path,
         sys.stdout = orig_stdout
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
-    code_output = u"\n{0}\n\n{1}\n\n".format(image_list, stdout)
-    example_globals['__fig_count__'] += len(figure_list)
+    code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
+    example_globals['__fig_count__'] += fig_num
 
     return code_output, time_elapsed
 
