@@ -469,15 +469,15 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex, computation_times
 
 
-def execute_codeblock(code_block, example_globals, image_path, fig_count,
+def execute_codeblock(code_block, example_globals, image_path,
                       src_file, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
     stdout = ''
 
     # If the example is marked as failing skip executing its blocks
-    if src_file in gallery_conf['failing_examples']:
-        return '', 0, 0
+    if example_globals['__example_has_failed__']:
+        return stdout, time_elapsed
 
     # We need to execute the code
     print('plotting code blocks in %s' % src_file)
@@ -486,6 +486,7 @@ def execute_codeblock(code_block, example_globals, image_path, fig_count,
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
+    fig_count = example_globals['__fig_count__']
 
     try:
         # First cd in the original example dir, so that any file
@@ -539,6 +540,7 @@ def execute_codeblock(code_block, example_globals, image_path, fig_count,
             raise
         # Stores failing file
         gallery_conf['failing_examples'][src_file] = formatted_exception
+        example_globals['__example_has_failed__'] = True
 
     finally:
         os.chdir(cwd)
@@ -546,8 +548,9 @@ def execute_codeblock(code_block, example_globals, image_path, fig_count,
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
     code_output = u"\n{0}\n\n{1}\n\n".format(image_list, stdout)
+    example_globals['__fig_count__'] += len(figure_list)
 
-    return code_output, time_elapsed, fig_count + len(figure_list)
+    return code_output, time_elapsed
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
@@ -594,7 +597,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_nb = Notebook(fname, target_dir)
 
     filename_pattern = gallery_conf.get('filename_pattern')
-    if re.search(filename_pattern, src_file) and gallery_conf['plot_gallery']:
+    execute_script = re.search(filename_pattern, src_file) and gallery_conf[
+        'plot_gallery']
+    if execute_script:
         example_globals = {
             # A lot of examples contains 'print(__doc__)' for example in
             # scikit-learn so that running the example prints some useful
@@ -605,20 +610,22 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             '__doc__': '',
             # Examples may contain if __name__ == '__main__' guards
             # for in example scikit-learn if the example uses multiprocessing
-            '__name__': '__main__'}
+            '__name__': '__main__',
+            # Keeps track of generated figures
+            '__fig_count__': 0,
+            '__example_has_failed__': not execute_script,
+        }
 
-        fig_count = 0
         # A simple example has two blocks: one for the
         # example introduction/explanation and one for the code
         is_example_notebook_like = len(script_blocks) > 2
         for blabel, bcontent in script_blocks:
             if blabel == 'code':
-                code_output, rtime, fig_count = execute_codeblock(bcontent,
-                                                                  example_globals,
-                                                                  image_path_template,
-                                                                  fig_count,
-                                                                  src_file,
-                                                                  gallery_conf)
+                code_output, rtime = execute_codeblock(bcontent,
+                                                       example_globals,
+                                                       image_path_template,
+                                                       src_file,
+                                                       gallery_conf)
 
                 time_elapsed += rtime
                 example_nb.add_code_cell(bcontent)
