@@ -195,7 +195,8 @@ def sumarize_failing_examples(app, exception):
 
     if fail_msgs:
         raise ValueError("Here is a summary of the problems encountered when "
-                         "running the examples\n\n" + "\n".join(fail_msgs) + "-" * 79)
+                         "running the examples\n\n" + "\n".join(fail_msgs) +
+                         "\n" + "-" * 79)
 
 
 def get_default_plot_gallery(conf):

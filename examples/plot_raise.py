@@ -30,6 +30,6 @@ iae
 # code blocks, but no output will be shown.
 
 ###############################################################################
-# Here is another error raising Block but will not be executed
+# Here is another error raising block but will not be executed
 
 plt.plot('Strings are not a valid argument for the plot function')

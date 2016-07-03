@@ -256,7 +256,7 @@ and not spaces.
 Alternatively, you can add the ``plot_gallery`` option to the
 ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
 configuration file to have it as a default. The highest precedence is
-always given to the `-D` flag of the build command.
+always given to the `-D` flag of the ``sphinx-build`` command.
 
 
 Dealing with failing Gallery example scripts
@@ -300,7 +300,7 @@ and not spaces.
 Alternatively, you can add the ``abort_on_example_error`` option to
 the ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
 configuration file to have it as a default. The highest precedence is
-always given to the `-D` flag of the build command.
+always given to the `-D` flag of the ``sphinx-build`` command.
 
 
 Don't fail the build on exit

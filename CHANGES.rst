@@ -8,7 +8,7 @@ New features
 ''''''''''''
 * Summary of failing examples with traceback at the end of the sphinx
   build. By default the build exits with a 1 exit code if an example
-  has failed. A list of of examples that are expected to fail can be
+  has failed. A list of examples that are expected to fail can be
   defined in `conf.py` and exit the build with 0
   exitcode. Alternatively it is possible to exit the build as soon as
   one example has failed.
@@ -17,7 +17,8 @@ New features
 * For examples that create multiple figures, set the thumbnail image.
 * The ``plot_gallery`` and ``abort_on_example_error`` options can now
   be specified in ``sphinx_gallery_conf``. The build option (``-D``
-  flag) takes precedence over the ``sphinx_gallery_conf`` option.
+  flag passed to ``sphinx-build``) takes precedence over the
+  ``sphinx_gallery_conf`` option.
 
 v0.1.2
 ------
