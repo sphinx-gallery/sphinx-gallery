@@ -194,15 +194,25 @@ def sumarize_failing_examples(app, exception):
                          "\n".join(unexpected_ex_pass))
 
     if fail_msgs:
-        raise ValueError("Here is a summary of the problems encountered when"
+        raise ValueError("Here is a summary of the problems encountered when "
                          "running the examples\n\n" + "\n".join(fail_msgs) + "-" * 79)
+
+
+def get_default_plot_gallery(conf):
+    return conf['sphinx_gallery_conf'].get('plot_gallery', True)
+
+
+def get_default_abort_on_example(conf):
+    return conf['sphinx_gallery_conf'].get('abort_on_example_error', False)
 
 
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
-    app.add_config_value('plot_gallery', True, 'html')
-    app.add_config_value('abort_on_example_error', False, 'html')
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
+    app.add_config_value('plot_gallery', get_default_plot_gallery, 'html')
+    app.add_config_value('abort_on_example_error',
+                         get_default_abort_on_example, 'html')
+
     app.add_stylesheet('gallery.css')
 
     if 'sphinx.ext.autodoc' in app._extensions:

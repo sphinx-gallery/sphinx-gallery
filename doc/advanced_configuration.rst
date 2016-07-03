@@ -251,7 +251,13 @@ your ``Makefile`` with::
         @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
-and not spaces
+and not spaces.
+
+Alternatively, you can add the ``plot_gallery`` option to the
+``sphinx_gallery_conf`` dictionary inside your ``conf.py``
+configuration file to have it as a default. The highest precedence is
+always given to the `-D` flag of the build command.
+
 
 Dealing with failing Gallery example scripts
 ============================================
@@ -289,7 +295,13 @@ by including in your ``Makefile``::
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
-and not spaces
+and not spaces.
+
+Alternatively, you can add the ``abort_on_example_error`` option to
+the ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
+configuration file to have it as a default. The highest precedence is
+always given to the `-D` flag of the build command.
+
 
 Don't fail the build on exit
 ----------------------------
