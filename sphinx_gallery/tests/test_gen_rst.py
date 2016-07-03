@@ -261,3 +261,4 @@ def test_save_figures():
     shutil.rmtree(examples_dir)
 
 # TODO: test that broken thumbnail does appear when needed
+# TODO: test that examples are not executed twice

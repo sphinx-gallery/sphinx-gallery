@@ -565,7 +565,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     Returns
     -------
-
     amount_of_code : int
         character count of the corresponding python script in file
     time_elapsed : float
@@ -573,12 +572,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """
 
     src_file = os.path.join(src_dir, fname)
+    example_file = os.path.join(target_dir, fname)
+    shutil.copyfile(src_file, example_file)
     script_blocks = split_code_and_text_blocks(src_file)
     amount_of_code = sum([len(bcontent)
                           for blabel, bcontent in script_blocks
                           if blabel == 'code'])
 
-    if md5sum_is_current(src_file):
+    if md5sum_is_current(example_file):
         return amount_of_code, 0
 
     image_dir = os.path.join(target_dir, 'images')
@@ -589,8 +590,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path_template = os.path.join(image_dir, image_fname)
 
-    example_file = os.path.join(target_dir, fname)
-    shutil.copyfile(src_file, example_file)
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
     example_nb = Notebook(fname, target_dir)
