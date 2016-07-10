@@ -459,7 +459,25 @@ def save_thumbnail(image_path_template, src_file, gallery_conf):
 
 
 def python_zip(file_list, target_dir, extension='.py'):
+    """Stores all files in file_list into an zip file
 
+    Parameters
+    ----------
+    file_list : list of str
+        Hold all the file names to be included in zip file
+    target_dir : str
+        name path of the directory where examples are being stored for
+        download in the gallery
+    extension : str
+        '.py' or '.ipynb' In order to deal with downloads of python
+        sources and jupyter notebooks the file extension from files in
+        file_list will be removed and replace with the value of this
+        variable while generating the zip file
+    Returns
+    -------
+    None : zip file is written as `target_dir_{python,jupyter}.zip`
+        depending on the extension
+"""
     zipname = '_python' if extension == '.py' else '_jupyter'
     zipname = target_dir + zipname + '.zip'
 
