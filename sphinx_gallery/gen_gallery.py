@@ -15,7 +15,6 @@ from __future__ import division, print_function, absolute_import
 import copy
 import re
 import os
-import warnings
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
@@ -163,6 +162,10 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
 def sumarize_failing_examples(app, exception):
     """Embed hyperlinks to documentation into example code"""
     if exception is not None:
+        return
+
+    # Under no-plot execution it failing examples play no role
+    if not app.config.sphinx_gallery_conf['plot_gallery']:
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
