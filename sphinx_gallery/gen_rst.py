@@ -644,7 +644,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     # Writes md5 checksum if example has build correctly
     # not failed and was initially meant to run(no-plot shall not cache md5sum)
-    if src_file not in gallery_conf['failing_examples'] and execute_script:
+    if example_globals['__sphx_glr_run_example__']:
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(example_file))
 
