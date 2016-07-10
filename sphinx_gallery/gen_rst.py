@@ -26,6 +26,7 @@ import subprocess
 import sys
 import traceback
 import warnings
+import zipfile
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -113,10 +114,19 @@ CODE_DOWNLOAD = """**Total running time of the script:**
 \n.. container:: sphx-glr-download
 
     :download:`Download Python source code: {2} <{2}>`\n
+
 \n.. container:: sphx-glr-download
 
     :download:`Download Jupyter notebook: {3} <{3}>`\n"""
 
+CODE_ZIP_DOWNLOAD = """
+\n.. container:: sphx-glr-download
+
+    :download:`Download all examples in Python source code: {0}_python </{0}_python.zip>`\n
+
+\n.. container:: sphx-glr-download
+
+    :download:`Download all examples in Jupyter notebook files: {0}_jupyter </{0}_jupyter.zip>`\n"""
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
 # lists.
@@ -448,6 +458,19 @@ def save_thumbnail(image_path_template, src_file, gallery_conf):
         scale_image(default_thumb_file, thumb_file, 200, 140)
 
 
+def python_zip(file_list, target_dir, extension='.py'):
+
+    zipname = '_python' if extension == '.py' else '_jupyter'
+    zipname = target_dir + zipname + '.zip'
+
+    zipf = zipfile.ZipFile(zipname, mode='w')
+    for fname in file_list:
+        file_src = os.path.splitext(fname)[0] + extension
+        example_file = os.path.join(target_dir, file_src)
+        zipf.write(example_file, arcname=file_src)
+    zipf.close()
+
+
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
@@ -459,6 +482,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         return "", []  # because string is an expected return type
 
     fhindex = open(os.path.join(src_dir, 'README.txt')).read()
+
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
@@ -490,6 +514,11 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     # clear at the end of the section
     fhindex += """.. raw:: html\n
     <div style='clear:both'></div>\n\n"""
+
+    fhindex += CODE_ZIP_DOWNLOAD.format(target_dir)
+
+    python_zip(sorted_listdir, target_dir)
+    python_zip(sorted_listdir, target_dir, ".ipynb")
 
     return fhindex, computation_times
 
