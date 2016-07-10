@@ -491,8 +491,8 @@ def execute_codeblock(code_block, example_globals, image_path,
     time_elapsed = 0
     stdout = ''
 
-    # If the example is marked as failing skip executing its blocks
-    if example_globals['__example_has_failed__']:
+    # If example is not suitable to run, skip executing its blocks
+    if not example_globals['__sphx_glr_run_example__']:
         return stdout, time_elapsed
 
     # We need to execute the code
@@ -547,7 +547,7 @@ def execute_codeblock(code_block, example_globals, image_path,
             raise
         # Stores failing file
         gallery_conf['failing_examples'][src_file] = formatted_exception
-        example_globals['__example_has_failed__'] = True
+        example_globals['__sphx_glr_run_example__'] = False
 
     finally:
         os.chdir(cwd)
@@ -610,7 +610,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         '__name__': '__main__',
         # Keeps track of generated figures
         '__fig_count__': 0,
-        '__example_has_failed__': not execute_script,
+        '__sphx_glr_run_example__': execute_script,
     }
 
     # A simple example has two blocks: one for the
