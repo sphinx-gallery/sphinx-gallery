@@ -643,7 +643,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             example_nb.add_markdown_cell(text2string(bcontent))
 
     # Writes md5 checksum if example has build correctly
-    if src_file not in gallery_conf['failing_examples']:
+    # not failed and was initially meant to run(no-plot shall not cache md5sum)
+    if src_file not in gallery_conf['failing_examples'] and execute_script:
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(example_file))
 

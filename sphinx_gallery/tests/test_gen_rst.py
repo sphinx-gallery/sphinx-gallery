@@ -262,3 +262,5 @@ def test_save_figures():
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice
+# TODO: test that examples are executed after a no-plot and produce
+#       the correct image in the thumbnail
