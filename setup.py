@@ -4,11 +4,11 @@
 """
 Installer Sphinx extension for gallery generator
 """
-
+import codecs
 from setuptools import setup, find_packages
 import sphinx_gallery
 
-with open('README.rst') as f:
+with codecs.open('README.rst', mode='r', encoding='utf-8') as f:
     long_description = f.read()
 
 
