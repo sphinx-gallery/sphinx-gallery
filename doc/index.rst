@@ -55,6 +55,8 @@ Features
   with the :ref:`notebook_examples_syntax`
 
 
+Sphinx-Gallery Show: :ref:`examples-index`
+------------------------------------------
 
 Contents:
 ---------
@@ -70,10 +72,6 @@ Contents:
    tutorials/index
    auto_mayavi_examples/index
    changes
-
-Sphinx-Gallery Show: :ref:`examples-index`
-''''''''''''''''''''''''''''''''''''''''''
-
 
 
 Indices and tables
