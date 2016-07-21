@@ -57,8 +57,19 @@ def generate_gallery_rst(app):
 
     gallery_conf.update(app.config.sphinx_gallery_conf)
     gallery_conf.update(plot_gallery=plot_gallery)
-    gallery_conf.update(
-        abort_on_example_error=app.builder.config.abort_on_example_error)
+
+    # If abort_on_example_error was specified in the sphinx_gallery_conf, we
+    # only override it if it was explicitly set in the build config. If it was
+    # not explicitly specified, it will be None, otherwise it will be
+    # True/False.
+    if app.builder.config.abort_on_example_error is None:
+        if 'abort_on_example_error' in gallery_conf:
+            pass  # use the value from sphinx_gallery_conf
+        else:
+            gallery_conf['abort_on_example_error'] = False
+    else:
+        gallery_conf['abort_on_example_error'] = \
+            app.builder.config.abort_on_example_error
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
@@ -156,7 +167,11 @@ gallery_conf = {
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('plot_gallery', True, 'html')
-    app.add_config_value('abort_on_example_error', False, 'html')
+
+    # We set the default abort_on_example_error to None here so that we can
+    # determine later if the option was explicitly set to False or True.
+    app.add_config_value('abort_on_example_error', None, 'html')
+
     app.add_config_value('sphinx_gallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
