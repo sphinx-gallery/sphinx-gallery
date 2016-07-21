@@ -160,7 +160,10 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
 
 
 def sumarize_failing_examples(app, exception):
-    """Embed hyperlinks to documentation into example code"""
+    """Collects the list of falling examples during build and prints them with the traceback
+
+    Raises ValueError if there where failing examples
+"""
     if exception is not None:
         return
 

@@ -296,8 +296,8 @@ def md5sum_is_current(src_file):
     if os.path.exists(src_md5_file):
         with open(src_md5_file, 'r') as file_checksum:
             ref_md5 = file_checksum.read()
-        if src_md5 == ref_md5:
-            return True
+
+        return src_md5 == ref_md5
 
     return False
 
@@ -311,10 +311,15 @@ def save_figures(image_path, fig_count, gallery_conf):
         Path where plots are saved (format string which accepts figure number)
     fig_count : int
         Previous figure number count. Figure number add from this number
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
-    list of strings containing the full path to each figure
+    figure_list : list of str
+        strings containing the full path to each figure
+    images_rst : str
+        rst code to embed the images in the document
     """
     figure_list = []
 

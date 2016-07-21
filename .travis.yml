@@ -56,7 +56,5 @@ script:
     - if [ "$DISTRIB" == "ubuntu" ]; then python setup.py nosetests; fi
     - if [ "$DISTRIB" == "conda" ]; then nosetests; fi
     - cd doc
-    # Test a fast run of no-plot
-    - make html
-    # Test the full run
     - make html-noplot
+    - make html

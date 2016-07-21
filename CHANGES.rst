@@ -10,7 +10,7 @@ New features
   build. By default the build exits with a 1 exit code if an example
   has failed. A list of examples that are expected to fail can be
   defined in `conf.py` and exit the build with 0
-  exitcode. Alternatively it is possible to exit the build as soon as
+  exit code. Alternatively it is possible to exit the build as soon as
   one example has failed.
 * Print aggregated and sorted list of computation times of all examples
   in the console during the build.
