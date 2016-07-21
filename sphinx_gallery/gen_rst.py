@@ -490,24 +490,21 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex, computation_times
 
 
-def execute_code_block(code_block, example_globals, image_path,
-                       src_file, gallery_conf):
+def execute_code_block(code_block, example_globals,
+                       block_vars, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
     stdout = ''
 
     # If example is not suitable to run, skip executing its blocks
-    if not example_globals['__sphx_glr_run_example__']:
+    if not block_vars['execute_script']:
         return stdout, time_elapsed
-
-    # We need to execute the code
-    print('plotting code blocks in %s' % src_file)
 
     plt.close('all')
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
-    fig_count = example_globals['__fig_count__']
+    src_file = block_vars['src_file']
 
     try:
         # First cd in the original example dir, so that any file
@@ -531,7 +528,7 @@ def execute_code_block(code_block, example_globals, image_path,
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
         fig_list, images_rst = save_figures(
-            image_path, fig_count, gallery_conf)
+            block_vars['image_path'], block_vars['fig_count'], gallery_conf)
         fig_num = len(fig_list)
 
     except Exception:
@@ -552,7 +549,7 @@ def execute_code_block(code_block, example_globals, image_path,
             raise
         # Stores failing file
         gallery_conf['failing_examples'][src_file] = formatted_exception
-        example_globals['__sphx_glr_run_example__'] = False
+        block_vars['execute_script'] = False
 
     finally:
         os.chdir(cwd)
@@ -560,7 +557,7 @@ def execute_code_block(code_block, example_globals, image_path,
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
     code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
-    example_globals['__fig_count__'] += fig_num
+    block_vars['fig_count'] += fig_num
 
     return code_output, time_elapsed
 
@@ -613,21 +610,19 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         # Examples may contain if __name__ == '__main__' guards
         # for in example scikit-learn if the example uses multiprocessing
         '__name__': '__main__',
-        # Keeps track of generated figures
-        '__fig_count__': 0,
-        '__sphx_glr_run_example__': execute_script,
     }
 
     # A simple example has two blocks: one for the
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
     time_elapsed = 0
+    block_vars = {'execute_script': execute_script, 'fig_count': 0,
+                  'image_path': image_path_template, 'src_file': src_file}
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
             code_output, rtime = execute_code_block(bcontent,
                                                     example_globals,
-                                                    image_path_template,
-                                                    src_file,
+                                                    block_vars,
                                                     gallery_conf)
 
             time_elapsed += rtime
@@ -649,7 +644,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     # Writes md5 checksum if example has build correctly
     # not failed and was initially meant to run(no-plot shall not cache md5sum)
-    if example_globals['__sphx_glr_run_example__']:
+    if block_vars['execute_script']:
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(example_file))
 
