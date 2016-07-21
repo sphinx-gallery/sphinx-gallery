@@ -163,11 +163,11 @@ def sumarize_failing_examples(app, exception):
     """Collects the list of falling examples during build and prints them with the traceback
 
     Raises ValueError if there where failing examples
-"""
+    """
     if exception is not None:
         return
 
-    # Under no-plot execution it failing examples play no role
+    # Under no-plot Examples are not run so nothing to summarize
     if not app.config.sphinx_gallery_conf['plot_gallery']:
         return
 
@@ -179,7 +179,7 @@ def sumarize_failing_examples(app, exception):
         expected_failing_examples)
     expected_fail_msg = []
     if still_failing_examples:
-        expected_fail_msg.append("Known failing examples, still failing:")
+        expected_fail_msg.append("Examples failing as expected:")
         for fail_example in still_failing_examples:
             expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
                                      gallery_conf['failing_examples'][fail_example] + '\n')
@@ -196,7 +196,7 @@ def sumarize_failing_examples(app, exception):
 
     unexpected_ex_pass = expected_failing_examples.difference(failing_examples)
     if unexpected_ex_pass:
-        fail_msgs.append("Examples that are not failing anymore:\n" +
+        fail_msgs.append("Examples expected to fail, but not failling:\n" +
                          "\n".join(unexpected_ex_pass))
 
     if fail_msgs:
@@ -205,20 +205,17 @@ def sumarize_failing_examples(app, exception):
                          "\n" + "-" * 79)
 
 
-def get_default_plot_gallery(conf):
-    return conf['sphinx_gallery_conf'].get('plot_gallery', True)
-
-
-def get_default_abort_on_example(conf):
-    return conf['sphinx_gallery_conf'].get('abort_on_example_error', False)
+def get_default_config_value(key):
+    def default_getter(conf):
+        return conf['sphinx_gallery_conf'].get(key, DEFAULT_GALLERY_CONF[key])
+    return default_getter
 
 
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
-    app.add_config_value('plot_gallery', get_default_plot_gallery, 'html')
-    app.add_config_value('abort_on_example_error',
-                         get_default_abort_on_example, 'html')
+    for key in ['plot_gallery', 'abort_on_example_error']:
+        app.add_config_value(key, get_default_config_value(key), 'html')
 
     app.add_stylesheet('gallery.css')
 

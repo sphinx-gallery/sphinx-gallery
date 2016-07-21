@@ -490,8 +490,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex, computation_times
 
 
-def execute_codeblock(code_block, example_globals, image_path,
-                      src_file, gallery_conf):
+def execute_code_block(code_block, example_globals, image_path,
+                       src_file, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
     stdout = ''
@@ -624,11 +624,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed = 0
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
-            code_output, rtime = execute_codeblock(bcontent,
-                                                   example_globals,
-                                                   image_path_template,
-                                                   src_file,
-                                                   gallery_conf)
+            code_output, rtime = execute_code_block(bcontent,
+                                                    example_globals,
+                                                    image_path_template,
+                                                    src_file,
+                                                    gallery_conf)
 
             time_elapsed += rtime
             example_nb.add_code_cell(bcontent)
