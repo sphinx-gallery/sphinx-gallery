@@ -175,29 +175,33 @@ def sumarize_failing_examples(app, exception):
     failing_examples = set(gallery_conf['failing_examples'])
     expected_failing_examples = set(gallery_conf['expected_failing_examples'])
 
-    still_failing_examples = failing_examples.intersection(
+    examples_expected_to_fail = failing_examples.intersection(
         expected_failing_examples)
     expected_fail_msg = []
-    if still_failing_examples:
+    if examples_expected_to_fail:
         expected_fail_msg.append("Examples failing as expected:")
-        for fail_example in still_failing_examples:
+        for fail_example in examples_expected_to_fail:
             expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
                                      gallery_conf['failing_examples'][fail_example] + '\n')
         print("\n".join(expected_fail_msg))
 
-    unexpected_ex_fails = failing_examples.difference(
+    examples_not_expected_to_fail = failing_examples.difference(
         expected_failing_examples)
     fail_msgs = []
-    if unexpected_ex_fails:
+    if examples_not_expected_to_fail:
         fail_msgs.append("Unexpected failing examples:")
-        for fail_example in unexpected_ex_fails:
+        for fail_example in examples_not_expected_to_fail:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
                              gallery_conf['failing_examples'][fail_example] + '\n')
 
-    unexpected_ex_pass = expected_failing_examples.difference(failing_examples)
-    if unexpected_ex_pass:
+    examples_not_expected_to_pass = expected_failing_examples.difference(
+        failing_examples)
+    if examples_not_expected_to_pass:
         fail_msgs.append("Examples expected to fail, but not failling:\n" +
-                         "\n".join(unexpected_ex_pass))
+                         "Please remove this examples from\n" +
+                         "sphinx_gallery_conf['expected_failing_examples']\n" +
+                         "in your conf.py file"
+                         "\n".join(examples_not_expected_to_pass))
 
     if fail_msgs:
         raise ValueError("Here is a summary of the problems encountered when "
