@@ -432,9 +432,5 @@ def embed_code_links(app, exception):
 
     gallery_conf = app.config.sphinx_gallery_conf
 
-    gallery_dirs = gallery_conf['gallery_dirs']
-    if not isinstance(gallery_dirs, list):
-        gallery_dirs = [gallery_dirs]
-
-    for gallery_dir in gallery_dirs:
+    for gallery_dir in gallery_conf['gallery_dirs']:
         _embed_code_links(app, gallery_conf, gallery_dir)
