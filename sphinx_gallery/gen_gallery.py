@@ -61,14 +61,14 @@ def clean_gallery_out(build_dir):
                 os.remove(os.path.join(build_image_dir, filename))
 
 
-def build_paths(gallery_conf_dirs, srcdir):
+def build_paths(gallery_conf, path_name, srcdir):
 
-    if not isinstance(gallery_conf_dirs, list):
-        gallery_conf_dirs = [gallery_conf_dirs]
+    if not isinstance(gallery_conf[path_name], list):
+        gallery_conf[path_name] = [gallery_conf[path_name]]
 
-    gallery_conf_dirs = [os.path.join(srcdir, work_dir)
-                         for work_dir in gallery_conf_dirs]
-    return gallery_conf_dirs
+    gallery_conf[path_name] = [os.path.join(srcdir, work_dir)
+                               for work_dir in gallery_conf[path_name]]
+    return gallery_conf[path_name]
 
 
 def generate_gallery_rst(app):
@@ -95,13 +95,13 @@ def generate_gallery_rst(app):
     clean_gallery_out(app.builder.outdir)
 
     examples_dirs = build_paths(
-        gallery_conf['examples_dirs'], app.builder.srcdir)
+        gallery_conf, 'examples_dirs', app.builder.srcdir)
     gallery_dirs = build_paths(
-        gallery_conf['gallery_dirs'], app.builder.srcdir)
+        gallery_conf, 'gallery_dirs', app.builder.srcdir)
     mod_examples_dir = os.path.join(
         app.builder.srcdir, gallery_conf['mod_example_dir'])
     gallery_conf['mod_example_dir'] = mod_examples_dir
-
+    gallery_conf['src_dir'] = app.builder.srcdir
     seen_backrefs = set()
 
     computation_times = []
@@ -176,7 +176,8 @@ def sumarize_failing_examples(app, exception):
 
     gallery_conf = app.config.sphinx_gallery_conf
     failing_examples = set(gallery_conf['failing_examples'])
-    expected_failing_examples = set(gallery_conf['expected_failing_examples'])
+    expected_failing_examples = set(build_paths(
+        gallery_conf, 'expected_failing_examples', app.builder.srcdir))
     print(failing_examples)
 
     examples_expected_to_fail = failing_examples.intersection(

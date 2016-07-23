@@ -357,11 +357,14 @@ def save_figures(image_path, fig_count, gallery_conf):
     images_rst = ""
     if len(figure_list) == 1:
         figure_name = figure_list[0]
-        images_rst = SINGLE_IMAGE % figure_name.lstrip('/')
+        fig_rst_path = os.path.relpath(figure_name, gallery_conf['src_dir'])
+        images_rst = SINGLE_IMAGE % fig_rst_path.lstrip('/')
     elif len(figure_list) > 1:
         images_rst = HLIST_HEADER
         for figure_name in figure_list:
-            images_rst += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+            fig_rst_path = os.path.relpath(
+                figure_name, gallery_conf['src_dir'])
+            images_rst += HLIST_IMAGE_TEMPLATE % fig_rst_path.lstrip('/')
 
     return figure_list, images_rst
 
@@ -459,6 +462,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
                       if fname.endswith('.py')]
     entries_text = []
     computation_times = []
+    target_path_name = os.path.relpath(target_dir, gallery_conf['src_dir'])
     for fname in sorted_listdir:
         amount_of_code, time_elapsed = \
             generate_file_rst(fname, target_dir, src_dir, gallery_conf)
@@ -467,7 +471,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
                              target_dir, fname, intro)
-        this_entry = _thumbnail_div(target_dir, fname, intro) + """
+        this_entry = _thumbnail_div(target_path_name, fname, intro) + """
 
 .. toctree::
    :hidden:
@@ -607,7 +611,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path_template = os.path.join(image_dir, image_fname)
 
-    ref_fname = example_file.replace(os.path.sep, '_')
+    file_target = os.path.relpath(example_file, gallery_conf['src_dir'])
+    ref_fname = file_target.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
     example_nb = Notebook(fname, target_dir)
 

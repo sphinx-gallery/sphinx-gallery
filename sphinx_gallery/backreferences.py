@@ -165,6 +165,7 @@ def write_backreferences(seen_backrefs, gallery_conf,
     """Writes down back reference files, which include a thumbnail list
     of examples using a certain module"""
     example_file = os.path.join(target_dir, fname)
+    target_path_name = os.path.relpath(target_dir, gallery_conf['src_dir'])
     backrefs = scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['mod_example_dir'],
@@ -175,6 +176,6 @@ def write_backreferences(seen_backrefs, gallery_conf,
                 heading = '\n\nExamples using ``%s``' % backref
                 ex_file.write(heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
-            ex_file.write(_thumbnail_div(target_dir, fname, snippet,
+            ex_file.write(_thumbnail_div(target_path_name, fname, snippet,
                                          is_backref=True))
             seen_backrefs.add(backref)
