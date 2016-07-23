@@ -341,8 +341,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                   "Error:\n".format(this_module))
             print(e.args)
 
-    html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
-                                                    gallery_dir))
+    gallery_path = os.path.relpath(gallery_dir, app.builder.srcdir)
+    html_gallery_dir = os.path.join(app.builder.outdir, gallery_path)
 
     # patterns for replacement
     link_pattern = ('<a href="%s" class="sphx-glr-code-links" '
