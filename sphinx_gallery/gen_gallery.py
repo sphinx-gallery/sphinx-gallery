@@ -12,11 +12,26 @@ when building the documentation.
 
 
 from __future__ import division, print_function, absolute_import
+import copy
 import re
 import os
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
+
+DEFAULT_GALLERY_CONF = {
+    'filename_pattern': re.escape(os.sep) + 'plot',
+    'examples_dirs': os.path.join('..', 'examples'),
+    'gallery_dirs': 'auto_examples',
+    'mod_example_dir': os.path.join('modules', 'generated'),
+    'doc_module': (),
+    'reference_url': {},
+    # build options
+    'plot_gallery': True,
+    'abort_on_example_error': False,
+    'failing_examples': {},
+    'expected_failing_examples': set(),
+}
 
 
 def clean_gallery_out(build_dir):
@@ -55,6 +70,7 @@ def generate_gallery_rst(app):
     except TypeError:
         plot_gallery = bool(app.builder.config.plot_gallery)
 
+    gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     gallery_conf.update(app.config.sphinx_gallery_conf)
     gallery_conf.update(plot_gallery=plot_gallery)
     gallery_conf.update(
@@ -143,21 +159,68 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
-gallery_conf = {
-    'filename_pattern': re.escape(os.sep) + 'plot',
-    'examples_dirs': '../examples',
-    'gallery_dirs': 'auto_examples',
-    'mod_example_dir': os.path.join('modules', 'generated'),
-    'doc_module': (),
-    'reference_url': {},
-}
+def sumarize_failing_examples(app, exception):
+    """Collects the list of falling examples during build and prints them with the traceback
+
+    Raises ValueError if there where failing examples
+    """
+    if exception is not None:
+        return
+
+    # Under no-plot Examples are not run so nothing to summarize
+    if not app.config.sphinx_gallery_conf['plot_gallery']:
+        return
+
+    gallery_conf = app.config.sphinx_gallery_conf
+    failing_examples = set(gallery_conf['failing_examples'])
+    expected_failing_examples = set(gallery_conf['expected_failing_examples'])
+
+    examples_expected_to_fail = failing_examples.intersection(
+        expected_failing_examples)
+    expected_fail_msg = []
+    if examples_expected_to_fail:
+        expected_fail_msg.append("Examples failing as expected:")
+        for fail_example in examples_expected_to_fail:
+            expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
+                                     gallery_conf['failing_examples'][fail_example] + '\n')
+        print("\n".join(expected_fail_msg))
+
+    examples_not_expected_to_fail = failing_examples.difference(
+        expected_failing_examples)
+    fail_msgs = []
+    if examples_not_expected_to_fail:
+        fail_msgs.append("Unexpected failing examples:")
+        for fail_example in examples_not_expected_to_fail:
+            fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
+                             gallery_conf['failing_examples'][fail_example] + '\n')
+
+    examples_not_expected_to_pass = expected_failing_examples.difference(
+        failing_examples)
+    if examples_not_expected_to_pass:
+        fail_msgs.append("Examples expected to fail, but not failling:\n" +
+                         "Please remove this examples from\n" +
+                         "sphinx_gallery_conf['expected_failing_examples']\n" +
+                         "in your conf.py file"
+                         "\n".join(examples_not_expected_to_pass))
+
+    if fail_msgs:
+        raise ValueError("Here is a summary of the problems encountered when "
+                         "running the examples\n\n" + "\n".join(fail_msgs) +
+                         "\n" + "-" * 79)
+
+
+def get_default_config_value(key):
+    def default_getter(conf):
+        return conf['sphinx_gallery_conf'].get(key, DEFAULT_GALLERY_CONF[key])
+    return default_getter
 
 
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
-    app.add_config_value('plot_gallery', True, 'html')
-    app.add_config_value('abort_on_example_error', False, 'html')
-    app.add_config_value('sphinx_gallery_conf', gallery_conf, 'html')
+    app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
+    for key in ['plot_gallery', 'abort_on_example_error']:
+        app.add_config_value(key, get_default_config_value(key), 'html')
+
     app.add_stylesheet('gallery.css')
 
     if 'sphinx.ext.autodoc' in app._extensions:
@@ -165,6 +228,7 @@ def setup(app):
 
     app.connect('builder-inited', generate_gallery_rst)
 
+    app.connect('build-finished', sumarize_failing_examples)
     app.connect('build-finished', embed_code_links)
 
 

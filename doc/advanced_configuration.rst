@@ -55,11 +55,11 @@ you would do:
     }
 
 Here, one should escape the dot ``'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
-one is targetting a specific file, it is most certainly going to match the dot in the filename.
+one is targeting a specific file, it is most certainly going to match the dot in the filename.
 
 Similarly, to build only examples in a specific directory, you can do:
 
-.. code-blocK:: python
+.. code-block:: python
 
     sphinx_gallery_conf = {
         'filename_pattern' : '/directory/plot_'
@@ -251,7 +251,13 @@ your ``Makefile`` with::
         @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
-and not spaces
+and not spaces.
+
+Alternatively, you can add the ``plot_gallery`` option to the
+``sphinx_gallery_conf`` dictionary inside your ``conf.py``
+configuration file to have it as a default. The highest precedence is
+always given to the `-D` flag of the ``sphinx-build`` command.
+
 
 Dealing with failing Gallery example scripts
 ============================================
@@ -267,7 +273,17 @@ failing code block. Refer to example
 :ref:`sphx_glr_auto_examples_plot_raise.py` to view the default
 behavior.
 
-An extra functionality of Sphinx-Gallery is the early fail option. In
+The build is also failed exiting with code 1 and giving you a summary
+of the failed examples with their respective traceback. This way you
+are aware of failing examples right after the build and can find them
+easily.
+
+There are some additional options at your hand to deal with broken examples.
+
+Abort build on first fail
+-------------------------
+
+Sphinx-Gallery provides the early fail option. In
 this mode the gallery build process breaks as soon as an exception
 occurs in the execution of the examples scripts. To activate this
 behavior you need to pass a flag at the build process. It can be done
@@ -279,6 +295,34 @@ by including in your ``Makefile``::
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
-and not spaces
+and not spaces.
+
+Alternatively, you can add the ``abort_on_example_error`` option to
+the ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
+configuration file to have it as a default. The highest precedence is
+always given to the `-D` flag of the ``sphinx-build`` command.
+
+
+Don't fail the build on exit
+----------------------------
+
+It might be the case that you want to keep the gallery even with
+failed examples. Thus you can configure Sphinx-Gallery to allow
+certain examples to fail and still exit with a 0 exit code. For this
+you need to list all the examples you want to allow to fail during
+build. Change your `conf.py` accordingly:
+
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        ...
+	'expected_failing_examples': ['../examples/plot_raise.py']
+    }
+
+Here you list the examples you allow to fail during the build process,
+keep in mind to specify the full relative path from your `conf.py` to
+the example script.
+
 
 .. _regular expressions: https://docs.python.org/2/library/re.html

@@ -32,6 +32,7 @@ import sphinx_gallery
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
@@ -113,6 +114,7 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = 'default'
+
 
 def setup(app):
     app.add_stylesheet('theme_override.css')
@@ -199,22 +201,22 @@ htmlhelp_basename = 'Sphinx-Gallerydoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'Sphinx-Gallery.tex', u'Sphinx-Gallery Documentation',
-   u'Óscar Nájera', 'manual'),
+    ('index', 'Sphinx-Gallery.tex', u'Sphinx-Gallery Documentation',
+     u'Óscar Nájera', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -257,9 +259,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Sphinx-Gallery', u'Sphinx-Gallery Documentation',
-   u'Óscar Nájera', 'Sphinx-Gallery', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'Sphinx-Gallery', u'Sphinx-Gallery Documentation',
+     u'Óscar Nájera', 'Sphinx-Gallery', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -304,4 +306,5 @@ sphinx_gallery_conf = {
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'find_mayavi_figures': find_mayavi_figures,
-    }
+    'expected_failing_examples': ['../examples/plot_raise.py']
+}

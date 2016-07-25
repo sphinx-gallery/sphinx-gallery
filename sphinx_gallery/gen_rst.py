@@ -96,6 +96,7 @@ class Tee(object):
 
 class MixedEncodingStringIO(StringIO):
     """Helper when both ASCII and unicode strings will be written"""
+
     def write(self, data):
         if not isinstance(data, unicode):
             data = data.decode('utf-8')
@@ -239,7 +240,8 @@ def extract_thumbnail_number(text):
     """ Pull out the thumbnail image number specified in the docstring. """
 
     # check whether the user has specified a specific thumbnail image
-    pattr = re.compile("^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$", flags=re.MULTILINE)
+    pattr = re.compile(
+        r"^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$", flags=re.MULTILINE)
     match = pattr.search(text)
 
     if match is None:
@@ -249,6 +251,7 @@ def extract_thumbnail_number(text):
         thumbnail_number = int(match.groups()[0])
 
     return thumbnail_number
+
 
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
@@ -284,34 +287,19 @@ def get_md5sum(src_file):
     return src_md5
 
 
-def check_md5sum_change(src_file):
-    """Returns True if src_file has a different md5sum"""
+def md5sum_is_current(src_file):
+    """Returns True if src_file has the same md5 hash as the one stored on disk"""
 
     src_md5 = get_md5sum(src_file)
 
     src_md5_file = src_file + '.md5'
-    src_file_changed = True
     if os.path.exists(src_md5_file):
         with open(src_md5_file, 'r') as file_checksum:
             ref_md5 = file_checksum.read()
-        if src_md5 == ref_md5:
-            src_file_changed = False
 
-    if src_file_changed:
-        with open(src_md5_file, 'w') as file_checksum:
-            file_checksum.write(src_md5)
+        return src_md5 == ref_md5
 
-    return src_file_changed
-
-
-def _plots_are_current(src_file, image_path):
-    """Test existence of image file and no change in md5sum of
-    example"""
-
-    has_image = os.path.exists(image_path)
-    src_file_changed = check_md5sum_change(src_file)
-
-    return has_image and not src_file_changed
+    return False
 
 
 def save_figures(image_path, fig_count, gallery_conf):
@@ -323,10 +311,15 @@ def save_figures(image_path, fig_count, gallery_conf):
         Path where plots are saved (format string which accepts figure number)
     fig_count : int
         Previous figure number count. Figure number add from this number
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
-    list of strings containing the full path to each figure
+    figure_list : list of str
+        strings containing the full path to each figure
+    images_rst : str
+        rst code to embed the images in the document
     """
     figure_list = []
 
@@ -362,7 +355,18 @@ def save_figures(image_path, fig_count, gallery_conf):
             figure_list.append(current_fig)
         mlab.close(all=True)
 
-    return figure_list
+    # Depending on whether we have one or more figures, we're using a
+    # horizontal list or a single rst call to 'image'.
+    images_rst = ""
+    if len(figure_list) == 1:
+        figure_name = figure_list[0]
+        images_rst = SINGLE_IMAGE % figure_name.lstrip('/')
+    elif len(figure_list) > 1:
+        images_rst = HLIST_HEADER
+        for figure_name in figure_list:
+            images_rst += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+
+    return figure_list, images_rst
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
@@ -410,17 +414,28 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf):
+def save_thumbnail(image_path_template, src_file, gallery_conf):
     """Save the thumbnail image"""
+    # read specification of the figure to display as thumbnail from main text
+    _, content = get_docstring_and_rest(src_file)
+    thumbnail_number = extract_thumbnail_number(content)
+    thumbnail_image_path = image_path_template.format(thumbnail_number)
+
     thumb_dir = os.path.join(os.path.dirname(thumbnail_image_path), 'thumb')
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
 
+    base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir,
                               'sphx_glr_%s_thumb.png' % base_image_name)
 
-    if os.path.exists(thumbnail_image_path):
+    if src_file in gallery_conf['failing_examples']:
+        broken_img = os.path.join(glr_path_static(), 'broken_example.png')
+        scale_image(broken_img, thumb_file, 200, 140)
+
+    elif os.path.exists(thumbnail_image_path):
         scale_image(thumbnail_image_path, thumb_file, 400, 280)
+
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
         default_thumb_file = os.path.join(glr_path_static(), 'no_image.png')
@@ -475,19 +490,21 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex, computation_times
 
 
-def execute_script(code_block, example_globals, image_path, fig_count,
-                   src_file, gallery_conf):
+def execute_code_block(code_block, example_globals,
+                       block_vars, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
     stdout = ''
 
-    # We need to execute the code
-    print('plotting code blocks in %s' % src_file)
+    # If example is not suitable to run, skip executing its blocks
+    if not block_vars['execute_script']:
+        return stdout, time_elapsed
 
     plt.close('all')
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
+    src_file = block_vars['src_file']
 
     try:
         # First cd in the original example dir, so that any file
@@ -510,62 +527,62 @@ def execute_script(code_block, example_globals, image_path, fig_count,
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
-        figure_list = save_figures(image_path, fig_count, gallery_conf)
-
-        # Depending on whether we have one or more figures, we're using a
-        # horizontal list or a single rst call to 'image'.
-        image_list = ""
-        if len(figure_list) == 1:
-            figure_name = figure_list[0]
-            image_list = SINGLE_IMAGE % figure_name.lstrip('/')
-        elif len(figure_list) > 1:
-            image_list = HLIST_HEADER
-            for figure_name in figure_list:
-                image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+        fig_list, images_rst = save_figures(
+            block_vars['image_path'], block_vars['fig_count'], gallery_conf)
+        fig_num = len(fig_list)
 
     except Exception:
         formatted_exception = traceback.format_exc()
 
-        sys.stdout = orig_stdout  # need this here so these lines don't bomb
-        print(80 * '_')
-        print('%s is not compiling:' % src_file)
-        print(formatted_exception)
-        print(80 * '_')
+        fail_example_warning = 80 * '_' + '\n' + \
+            '%s failed to execute correctly:' % src_file + \
+            formatted_exception + 80 * '_' + '\n'
+        warnings.warn(fail_example_warning)
 
-        figure_list = []
-        image_list = codestr2rst(formatted_exception, lang='pytb')
-
-        # Overrides the output thumbnail in the gallery for easy identification
-        broken_img = os.path.join(glr_path_static(), 'broken_example.png')
-        shutil.copyfile(broken_img, os.path.join(cwd, image_path.format(1)))
-        fig_count += 1  # raise count to avoid overwriting image
+        fig_num = 0
+        images_rst = codestr2rst(formatted_exception, lang='pytb')
 
         # Breaks build on first example error
         # XXX This check can break during testing e.g. if you uncomment the
         # `raise RuntimeError` by the `my_stdout` call, maybe use `.get()`?
         if gallery_conf['abort_on_example_error']:
             raise
+        # Stores failing file
+        gallery_conf['failing_examples'][src_file] = formatted_exception
+        block_vars['execute_script'] = False
 
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
 
     print(" - time elapsed : %.2g sec" % time_elapsed)
-    code_output = u"\n{0}\n\n{1}\n\n".format(image_list, stdout)
+    code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
+    block_vars['fig_count'] += fig_num
 
-    return code_output, time_elapsed, fig_count + len(figure_list)
+    return code_output, time_elapsed
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
-    """ Generate the rst file for a given example.
+    """Generate the rst file for a given example.
 
-        Returns the amout of code (in characters) of the corresponding
-        files.
+    Returns
+    -------
+    amount_of_code : int
+        character count of the corresponding python script in file
+    time_elapsed : float
+        seconds required to run the script
     """
 
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
+    script_blocks = split_code_and_text_blocks(src_file)
+    amount_of_code = sum([len(bcontent)
+                          for blabel, bcontent in script_blocks
+                          if blabel == 'code'])
+
+    if md5sum_is_current(example_file):
+        return amount_of_code, 0
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
@@ -575,80 +592,63 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path_template = os.path.join(image_dir, image_fname)
 
-    script_blocks = split_code_and_text_blocks(example_file)
-
-    # read specification of the figure to display as thumbnail from main text
-    _, content = get_docstring_and_rest(example_file)
-    thumbnail_number = extract_thumbnail_number(content)
-
-    amount_of_code = sum([len(bcontent)
-                          for blabel, bcontent in script_blocks
-                          if blabel == 'code'])
-
-    first_image_path = image_path_template.format(1)
-    if _plots_are_current(example_file, first_image_path):
-        return amount_of_code, 0
-
-    time_elapsed = 0
-
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
     example_nb = Notebook(fname, target_dir)
 
     filename_pattern = gallery_conf.get('filename_pattern')
-    if re.search(filename_pattern, src_file) and gallery_conf['plot_gallery']:
-        example_globals = {
-            # A lot of examples contains 'print(__doc__)' for example in
-            # scikit-learn so that running the example prints some useful
-            # information. Because the docstring has been separated from
-            # the code blocks in sphinx-gallery, __doc__ is actually
-            # __builtin__.__doc__ in the execution context and we do not
-            # want to print it
-            '__doc__': '',
-            # Examples may contain if __name__ == '__main__' guards
-            # for in example scikit-learn if the example uses multiprocessing
-            '__name__': '__main__'}
+    execute_script = re.search(filename_pattern, src_file) and gallery_conf[
+        'plot_gallery']
+    example_globals = {
+        # A lot of examples contains 'print(__doc__)' for example in
+        # scikit-learn so that running the example prints some useful
+        # information. Because the docstring has been separated from
+        # the code blocks in sphinx-gallery, __doc__ is actually
+        # __builtin__.__doc__ in the execution context and we do not
+        # want to print it
+        '__doc__': '',
+        # Examples may contain if __name__ == '__main__' guards
+        # for in example scikit-learn if the example uses multiprocessing
+        '__name__': '__main__',
+    }
 
-        fig_count = 0
-        # A simple example has two blocks: one for the
-        # example introduction/explanation and one for the code
-        is_example_notebook_like = len(script_blocks) > 2
-        for blabel, bcontent in script_blocks:
-            if blabel == 'code':
-                code_output, rtime, fig_count = execute_script(bcontent,
-                                                               example_globals,
-                                                               image_path_template,
-                                                               fig_count,
-                                                               src_file,
-                                                               gallery_conf)
+    # A simple example has two blocks: one for the
+    # example introduction/explanation and one for the code
+    is_example_notebook_like = len(script_blocks) > 2
+    time_elapsed = 0
+    block_vars = {'execute_script': execute_script, 'fig_count': 0,
+                  'image_path': image_path_template, 'src_file': src_file}
+    for blabel, bcontent in script_blocks:
+        if blabel == 'code':
+            code_output, rtime = execute_code_block(bcontent,
+                                                    example_globals,
+                                                    block_vars,
+                                                    gallery_conf)
 
-                time_elapsed += rtime
-                example_nb.add_code_cell(bcontent)
+            time_elapsed += rtime
+            example_nb.add_code_cell(bcontent)
 
-                if is_example_notebook_like:
-                    example_rst += codestr2rst(bcontent) + '\n'
-                    example_rst += code_output
-                else:
-                    example_rst += code_output
-                    if 'sphx-glr-script-out' in code_output:
-                        # Add some vertical space after output
-                        example_rst += "\n\n|\n\n"
-                    example_rst += codestr2rst(bcontent) + '\n'
-
-            else:
-                example_rst += text2string(bcontent) + '\n'
-                example_nb.add_markdown_cell(text2string(bcontent))
-    else:
-        for blabel, bcontent in script_blocks:
-            if blabel == 'code':
+            if is_example_notebook_like:
                 example_rst += codestr2rst(bcontent) + '\n'
-                example_nb.add_code_cell(bcontent)
+                example_rst += code_output
             else:
-                example_rst += bcontent + '\n'
-                example_nb.add_markdown_cell(text2string(bcontent))
+                example_rst += code_output
+                if 'sphx-glr-script-out' in code_output:
+                    # Add some vertical space after output
+                    example_rst += "\n\n|\n\n"
+                example_rst += codestr2rst(bcontent) + '\n'
 
-    thumbnail_image_path = image_path_template.format(thumbnail_number)
-    save_thumbnail(thumbnail_image_path, base_image_name, gallery_conf)
+        else:
+            example_rst += text2string(bcontent) + '\n'
+            example_nb.add_markdown_cell(text2string(bcontent))
+
+    # Writes md5 checksum if example has build correctly
+    # not failed and was initially meant to run(no-plot shall not cache md5sum)
+    if block_vars['execute_script']:
+        with open(example_file + '.md5', 'w') as file_checksum:
+            file_checksum.write(get_md5sum(example_file))
+
+    save_thumbnail(image_path_template, src_file, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb.save_file()

@@ -6,11 +6,19 @@ git master
 
 New features
 ''''''''''''
-
+* Summary of failing examples with traceback at the end of the sphinx
+  build. By default the build exits with a 1 exit code if an example
+  has failed. A list of examples that are expected to fail can be
+  defined in `conf.py` and exit the build with 0
+  exit code. Alternatively it is possible to exit the build as soon as
+  one example has failed.
 * Print aggregated and sorted list of computation times of all examples
   in the console during the build.
 * For examples that create multiple figures, set the thumbnail image.
-
+* The ``plot_gallery`` and ``abort_on_example_error`` options can now
+  be specified in ``sphinx_gallery_conf``. The build option (``-D``
+  flag passed to ``sphinx-build``) takes precedence over the
+  ``sphinx_gallery_conf`` option.
 
 v0.1.2
 ------
@@ -41,7 +49,7 @@ Example scripts are now available for download as IPython Notebooks
 `#75 <https://github.com/sphinx-gallery/sphinx-gallery/pull/75>`_
 
 New features
-------------
+''''''''''''
 
 * Configurable filename pattern to select which example scripts are
   executed while building the Gallery

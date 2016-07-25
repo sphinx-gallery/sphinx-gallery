@@ -8,6 +8,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import ast
 import codecs
+import copy
 import json
 import tempfile
 import re
@@ -17,6 +18,7 @@ import shutil
 from nose.tools import assert_equal, assert_false, assert_true
 
 import sphinx_gallery.gen_rst as sg
+from sphinx_gallery import gen_gallery
 from sphinx_gallery import notebook
 import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
@@ -119,28 +121,57 @@ def test_md5sums():
         file_md5 = sg.get_md5sum(f.name)
         # verify correct md5sum
         assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
-        # True because is a new file
-        assert_true(sg.check_md5sum_change(f.name))
-        # False because file has not changed since last check
-        assert_false(sg.check_md5sum_change(f.name))
-
+        # False because is a new file
+        assert_false(sg.md5sum_is_current(f.name))
+        # Write md5sum to file to check is current
+        with open(f.name + '.md5', 'w') as file_checksum:
+            file_checksum.write(file_md5)
+        assert_true(sg.md5sum_is_current(f.name))
     os.remove(f.name + '.md5')
+
+
+def build_test_configuration(**kwargs):
+    """Sets up a test sphinx-gallery configuration"""
+
+    gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
+    gallery_conf.update(examples_dir=tempfile.mkdtemp(),
+                        gallery_dir=tempfile.mkdtemp())
+    gallery_conf.update(kwargs)
+
+    return gallery_conf
+
+
+def test_fail_example():
+    """Test that failing examples are only executed until failing block"""
+
+    gallery_conf = build_test_configuration(filename_pattern='raise.py')
+
+    failing_code = CONTENT + ['#' * 79,
+                              'First_test_fail', '#' * 79, 'second_fail']
+
+    with codecs.open(os.path.join(gallery_conf['examples_dir'], 'raise.py'),
+                     mode='w', encoding='utf-8') as f:
+        f.write('\n'.join(failing_code))
+
+    sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
+                         gallery_conf['examples_dir'], gallery_conf)
+
+    # read rst file and check if it contains traceback output
+
+    with codecs.open(os.path.join(gallery_conf['gallery_dir'], 'raise.rst'),
+                     mode='r', encoding='utf-8') as f:
+        ex_failing_blocks = f.read().count('pytb')
+        if ex_failing_blocks == 0:
+            raise ValueError('Did not run into errors in bad code')
+        elif ex_failing_blocks > 1:
+            raise ValueError('Did not stop executing script after error')
 
 
 def test_pattern_matching():
     """Test if only examples matching pattern are executed"""
-    examples_dir = tempfile.mkdtemp()
-    gallery_dir = tempfile.mkdtemp()
 
-    gallery_conf = {
-        'filename_pattern': re.escape(os.sep) + 'plot_0',
-        'examples_dirs': examples_dir,
-        'gallery_dirs': gallery_dir,
-        'plot_gallery': True,
-        'mod_example_dir': 'modules/generated',
-        'doc_module': (),
-        'reference_url': {},
-    }
+    gallery_conf = build_test_configuration(
+        filename_pattern=re.escape(os.sep) + 'plot_0')
 
     code_output = ('\n Out::\n'
                    '\n'
@@ -151,18 +182,19 @@ def test_pattern_matching():
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
-        with codecs.open(os.path.join(examples_dir, fname), mode='w',
-                         encoding='utf-8') as f:
+        with codecs.open(os.path.join(gallery_conf['examples_dir'], fname),
+                         mode='w', encoding='utf-8') as f:
             f.write('\n'.join(CONTENT))
         # generate rst file
-        sg.generate_file_rst(fname, gallery_dir, examples_dir, gallery_conf)
+        sg.generate_file_rst(fname, gallery_conf['gallery_dir'],
+                             gallery_conf['examples_dir'], gallery_conf)
         # read rst file and check if it contains code output
         rst_fname = os.path.splitext(fname)[0] + '.rst'
-        with codecs.open(os.path.join(gallery_dir, rst_fname),
+        with codecs.open(os.path.join(gallery_conf['gallery_dir'], rst_fname),
                          mode='r', encoding='utf-8') as f:
             rst = f.read()
         if re.search(gallery_conf['filename_pattern'],
-                     os.path.join(gallery_dir, rst_fname)):
+                     os.path.join(gallery_conf['gallery_dir'], rst_fname)):
             assert_true(code_output in rst)
         else:
             assert_false(code_output in rst)
@@ -185,6 +217,7 @@ def test_ipy_notebook():
         f.flush()
         assert_equal(json.load(f), example_nb.work_notebook)
 
+
 def test_thumbnail_number():
     # which plot to show as the thumbnail image
     for test_str in ['# sphinx_gallery_thumbnail_number= 2',
@@ -199,6 +232,7 @@ def test_thumbnail_number():
             thumbnail_number = sg.extract_thumbnail_number(content)
         assert_equal(thumbnail_number, 2)
 
+
 def test_save_figures():
     """Test file naming when saving figures. Requires mayavi."""
     try:
@@ -212,16 +246,21 @@ def test_save_figures():
     mlab.test_plot3d()
     plt.plot(1, 1)
     fname_template = os.path.join(examples_dir, 'image{0}.png')
-    fig_list = sg.save_figures(fname_template, 0, gallery_conf)
+    fig_list, _ = sg.save_figures(fname_template, 0, gallery_conf)
     assert_equal(len(fig_list), 2)
     assert fig_list[0].endswith('image1.png')
     assert fig_list[1].endswith('image2.png')
 
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fig_list = sg.save_figures(fname_template, 2, gallery_conf)
+    fig_list, _ = sg.save_figures(fname_template, 2, gallery_conf)
     assert_equal(len(fig_list), 2)
     assert fig_list[0].endswith('image3.png')
     assert fig_list[1].endswith('image4.png')
 
     shutil.rmtree(examples_dir)
+
+# TODO: test that broken thumbnail does appear when needed
+# TODO: test that examples are not executed twice
+# TODO: test that examples are executed after a no-plot and produce
+#       the correct image in the thumbnail
