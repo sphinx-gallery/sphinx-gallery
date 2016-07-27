@@ -555,7 +555,6 @@ def execute_code_block(code_block, example_globals,
         os.chdir(cwd)
         sys.stdout = orig_stdout
 
-    print(" - time elapsed : %.2g sec" % time_elapsed)
     code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
     block_vars['fig_count'] += fig_num
 
@@ -618,6 +617,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed = 0
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
+    print('Executing file %s' % src_file)
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
             code_output, rtime = execute_code_block(bcontent,
@@ -658,5 +658,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                                             example_nb.file_name)
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
+
+    print("{0} ran in : {1:.2g} sec\n".format(src_file, time_elapsed))
 
     return amount_of_code, time_elapsed
