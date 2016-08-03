@@ -4,6 +4,9 @@ Change Log
 git master
 ----------
 
+v0.1.3
+------
+
 New features
 ''''''''''''
 * Summary of failing examples with traceback at the end of the sphinx
@@ -20,11 +23,17 @@ New features
   flag passed to ``sphinx-build``) takes precedence over the
   ``sphinx_gallery_conf`` option.
 
+Bug Fixes
+'''''''''
+
+* Failing examples are retried on every build
+
+
 v0.1.2
 ------
 
 Bug Fixes
-.........
+'''''''''
 
 * Examples that use ``if __name__ == '__main__'`` guards are now run
 * Added vertical space between code output and code source in non
