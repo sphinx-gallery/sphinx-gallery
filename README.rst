@@ -20,6 +20,7 @@ Who uses Sphinx-Gallery
 -----------------------
 
 * `Sphinx-Gallery <http://sphinx-gallery.readthedocs.io/en/latest/auto_examples/index.html>`_
+* `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
 * `NiLearn <http://nilearn.github.io/auto_examples/index.html>`_
 * `MNE-python <http://www.martinos.org/mne/stable/auto_examples/index.html>`_
 * `PyStruct <http://pystruct.github.io/auto_examples/index.html>`_
@@ -27,6 +28,7 @@ Who uses Sphinx-Gallery
 * `Nestle <http://kbarbary.github.io/nestle/examples/index.html>`_
 * `pyRiemann <http://pythonhosted.org/pyriemann/auto_examples/index.html>`_
 * `scikit-image <http://scikit-image.org/docs/dev/auto_examples/>`_
+* `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
 
 
 Getting the package

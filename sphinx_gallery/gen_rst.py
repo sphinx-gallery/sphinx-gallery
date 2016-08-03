@@ -659,6 +659,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 
-    print("{0} ran in : {1:.2g} sec\n".format(src_file, time_elapsed))
+    print("{0} ran in : {1:.2g} seconds\n".format(src_file, time_elapsed))
 
     return amount_of_code, time_elapsed
