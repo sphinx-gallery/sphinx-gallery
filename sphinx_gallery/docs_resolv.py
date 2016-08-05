@@ -232,7 +232,7 @@ class SphinxDocLinkResolver(object):
                 fname_idx = value[cobj['name']][0]
 
         if fname_idx is not None:
-            fname = self._searchindex['filenames'][fname_idx] + '.html'
+            fname = os.path.splitext(self._searchindex['filenames'][fname_idx])[0] + '.html'
 
             if self._is_windows:
                 fname = fname.replace('/', '\\')
