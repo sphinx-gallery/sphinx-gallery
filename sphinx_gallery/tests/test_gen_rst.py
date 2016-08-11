@@ -137,6 +137,7 @@ def build_test_configuration(**kwargs):
 
     gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
     gallery_conf.update(examples_dir=tempfile.mkdtemp(),
+                        src_dir='',
                         gallery_dir=tempfile.mkdtemp())
     gallery_conf.update(kwargs)
 
