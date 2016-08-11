@@ -236,19 +236,19 @@ def test_thumbnail_number():
         assert_equal(thumbnail_number, 2)
 
 
-def test_save_figures():
+def test_save_figures_mayavi():
     """Test file naming when saving figures. Requires mayavi."""
     try:
         from mayavi import mlab
     except ImportError:
         raise nose.SkipTest('Mayavi not installed')
     mlab.options.offscreen = True
-    examples_dir = tempfile.mkdtemp()
 
-    gallery_conf = {'find_mayavi_figures': True}
+    gallery_conf = build_test_configuration(find_mayavi_figures=True)
+
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fname_template = os.path.join(examples_dir, 'image{0}.png')
+    fname_template = os.path.join(gallery_conf['examples_dir'], 'image{0}.png')
     fig_list, _ = sg.save_figures(fname_template, 0, gallery_conf)
     assert_equal(len(fig_list), 2)
     assert fig_list[0].endswith('image1.png')
@@ -261,7 +261,7 @@ def test_save_figures():
     assert fig_list[0].endswith('image3.png')
     assert fig_list[1].endswith('image4.png')
 
-    shutil.rmtree(examples_dir)
+    shutil.rmtree(gallery_conf['examples_dir'])
 
 
 def test_zip_notebooks():
