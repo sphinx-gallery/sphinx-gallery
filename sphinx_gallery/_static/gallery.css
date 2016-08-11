@@ -121,10 +121,10 @@ div.sphx-glr-download a {
 }
 
 div.sphx-glr-download a:hover {
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 5px rgba(0,0,0,.25);
-    text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 5px rgba(0,0,0,.25);
+  text-decoration: none;
   background-image: none;
-    background-color: #d5d57e;
+  background-color: #d5d57e;
 }
 
 ul.sphx-glr-horizontal {
