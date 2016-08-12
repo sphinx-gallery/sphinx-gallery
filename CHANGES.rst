@@ -7,6 +7,8 @@ git master
 New features
 ''''''''''''
 * Enhanced CSS for download buttons
+* Download buttons at the end of each section in the gallery to
+  download all scripts or Jupyter notebooks together in a zip file.
 
 Bug Fixes
 '''''''''
