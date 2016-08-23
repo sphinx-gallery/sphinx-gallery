@@ -57,7 +57,7 @@ def rst2md(text):
     text = re.sub(math_eq,
                   lambda match: r'$${0}$$'.format(match.group(1).strip()),
                   text)
-    inline_math = re.compile(r':math:`(.+)`')
+    inline_math = re.compile(r':math:`(.+?)`')
     text = re.sub(inline_math, r'$\1$', text)
 
     return text
