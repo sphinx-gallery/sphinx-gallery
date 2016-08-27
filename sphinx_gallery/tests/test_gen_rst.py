@@ -268,10 +268,9 @@ def test_zip_notebooks():
     examples = [fname
                 for fname in sorted(os.listdir(gallery_conf['examples_dir']))
                 if fname.endswith('.py')]
-    sg.python_zip(examples, gallery_conf['examples_dir'],
+    zipfilepath = sg.python_zip(examples, gallery_conf['examples_dir'],
                   gallery_conf['gallery_dir'])
-    zipfilename = os.path.join(gallery_conf['gallery_dir'], "_python.zip")
-    zipf = zipfile.ZipFile(zipfilename)
+    zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
     if check:
         raise OSError("Bad file in zipfile: {0}".format(check))

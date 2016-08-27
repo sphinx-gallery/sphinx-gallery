@@ -122,11 +122,11 @@ CODE_DOWNLOAD = """**Total running time of the script:**
 CODE_ZIP_DOWNLOAD = """
 \n.. container:: sphx-glr-download
 
-    :download:`Download all examples in Python source code: {0}_python </{0}_python.zip>`\n
+    :download:`Download all examples in Python source code: {0} </{1}>`\n
 
 \n.. container:: sphx-glr-download
 
-    :download:`Download all examples in Jupyter notebook files: {0}_jupyter </{0}_jupyter.zip>`\n"""
+    :download:`Download all examples in Jupyter notebook files: {2} </{3}>`\n"""
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
 # lists.
@@ -476,10 +476,11 @@ def python_zip(file_list, src_path, zipfile_path, extension='.py'):
         variable while generating the zip file
     Returns
     -------
-    None : zip file is written as `target_dir_{python,jupyter}.zip`
+    str : zip file name, written as `target_dir_{python,jupyter}.zip`
         depending on the extension
 """
-    zipname = '_python' if extension == '.py' else '_jupyter'
+    zipname = src_path.replace(os.path.sep, '_')
+    zipname+= '_python' if extension == '.py' else '_jupyter'
     zipname = os.path.join(zipfile_path, zipname + '.zip')
 
     zipf = zipfile.ZipFile(zipname, mode='w')
@@ -488,6 +489,8 @@ def python_zip(file_list, src_path, zipfile_path, extension='.py'):
         example_file = os.path.join(src_path, file_src)
         zipf.write(example_file, arcname=file_src)
     zipf.close()
+
+    return zipname
 
 
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
@@ -534,10 +537,14 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     fhindex += """.. raw:: html\n
     <div style='clear:both'></div>\n\n"""
 
-    fhindex += CODE_ZIP_DOWNLOAD.format(target_dir)
 
-    python_zip(sorted_listdir, target_dir, target_dir)
-    python_zip(sorted_listdir, target_dir, target_dir, ".ipynb")
+    py_zipfile = python_zip(sorted_listdir, target_dir, target_dir)
+    jy_zipfile = python_zip(sorted_listdir, target_dir, target_dir, ".ipynb")
+
+    fhindex += CODE_ZIP_DOWNLOAD.format(os.path.basename(py_zipfile),
+                                        py_zipfile,
+                                        os.path.basename(jy_zipfile),
+                                        jy_zipfile)
 
     return fhindex, computation_times
 
