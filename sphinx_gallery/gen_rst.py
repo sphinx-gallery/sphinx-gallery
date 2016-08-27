@@ -538,13 +538,14 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     <div style='clear:both'></div>\n\n"""
 
 
-    py_zipfile = python_zip(sorted_listdir, target_dir, target_dir)
-    jy_zipfile = python_zip(sorted_listdir, target_dir, target_dir, ".ipynb")
+    if gallery_conf['download_section_examples']:
+        py_zipfile = python_zip(sorted_listdir, target_dir, target_dir)
+        jy_zipfile = python_zip(sorted_listdir, target_dir, target_dir, ".ipynb")
 
-    fhindex += CODE_ZIP_DOWNLOAD.format(os.path.basename(py_zipfile),
-                                        py_zipfile,
-                                        os.path.basename(jy_zipfile),
-                                        jy_zipfile)
+        fhindex += CODE_ZIP_DOWNLOAD.format(os.path.basename(py_zipfile),
+                                            py_zipfile,
+                                            os.path.basename(jy_zipfile),
+                                            jy_zipfile)
 
     return fhindex, computation_times
 

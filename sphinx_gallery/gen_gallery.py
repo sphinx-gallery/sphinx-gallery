@@ -28,6 +28,7 @@ DEFAULT_GALLERY_CONF = {
     'reference_url': {},
     # build options
     'plot_gallery': True,
+    'download_section_examples': True,
     'abort_on_example_error': False,
     'failing_examples': {},
     'expected_failing_examples': set(),

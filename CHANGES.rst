@@ -8,7 +8,10 @@ New features
 ''''''''''''
 * Enhanced CSS for download buttons
 * Download buttons at the end of each section in the gallery to
-  download all scripts or Jupyter notebooks together in a zip file.
+  download all python scripts or Jupyter notebooks together in a zip
+  file. New config variable `download_section_examples` to toggle this
+  effect. Activated by default
+
 
 Bug Fixes
 '''''''''
