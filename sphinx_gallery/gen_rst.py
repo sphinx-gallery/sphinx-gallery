@@ -111,7 +111,7 @@ CODE_DOWNLOAD = """**Total running time of the script:**
     :download:`Download Python source code: {2} <{2}>`\n
 \n.. container:: sphx-glr-download
 
-    :download:`Download IPython notebook: {3} <{3}>`\n"""
+    :download:`Download Jupyter notebook: {3} <{3}>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
