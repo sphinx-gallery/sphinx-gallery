@@ -15,6 +15,7 @@ import re
 import os
 import nose
 import shutil
+import zipfile
 from nose.tools import assert_equal, assert_false, assert_true
 
 import sphinx_gallery.gen_rst as sg
@@ -259,6 +260,22 @@ def test_save_figures():
     assert fig_list[1].endswith('image4.png')
 
     shutil.rmtree(examples_dir)
+
+
+def test_zip_notebooks():
+    """Test generated zipfiles are not corrupt"""
+    gallery_conf = build_test_configuration(examples_dir='examples')
+    examples = [fname
+                for fname in sorted(os.listdir(gallery_conf['examples_dir']))
+                if fname.endswith('.py')]
+    sg.python_zip(examples, gallery_conf['examples_dir'],
+                  gallery_conf['gallery_dir'])
+    zipfilename = os.path.join(gallery_conf['gallery_dir'], "_python.zip")
+    zipf = zipfile.ZipFile(zipfilename)
+    check = zipf.testzip()
+    if check:
+        raise OSError("Bad file in zipfile: {0}".format(check))
+
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice

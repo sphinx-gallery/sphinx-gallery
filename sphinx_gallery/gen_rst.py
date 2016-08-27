@@ -458,16 +458,17 @@ def save_thumbnail(image_path_template, src_file, gallery_conf):
         scale_image(default_thumb_file, thumb_file, 200, 140)
 
 
-def python_zip(file_list, target_dir, extension='.py'):
+def python_zip(file_list, src_path, zipfile_path, extension='.py'):
     """Stores all files in file_list into an zip file
 
     Parameters
     ----------
     file_list : list of str
         Hold all the file names to be included in zip file
-    target_dir : str
-        name path of the directory where examples are being stored for
-        download in the gallery
+    src_path : str
+        path to where the examples are located
+    zipfile_path : str
+        path to where the zipfile is stored
     extension : str
         '.py' or '.ipynb' In order to deal with downloads of python
         sources and jupyter notebooks the file extension from files in
@@ -479,12 +480,12 @@ def python_zip(file_list, target_dir, extension='.py'):
         depending on the extension
 """
     zipname = '_python' if extension == '.py' else '_jupyter'
-    zipname = target_dir + zipname + '.zip'
+    zipname = os.path.join(zipfile_path, zipname + '.zip')
 
     zipf = zipfile.ZipFile(zipname, mode='w')
     for fname in file_list:
         file_src = os.path.splitext(fname)[0] + extension
-        example_file = os.path.join(target_dir, file_src)
+        example_file = os.path.join(src_path, file_src)
         zipf.write(example_file, arcname=file_src)
     zipf.close()
 
@@ -535,8 +536,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
     fhindex += CODE_ZIP_DOWNLOAD.format(target_dir)
 
-    python_zip(sorted_listdir, target_dir)
-    python_zip(sorted_listdir, target_dir, ".ipynb")
+    python_zip(sorted_listdir, target_dir, target_dir)
+    python_zip(sorted_listdir, target_dir, target_dir, ".ipynb")
 
     return fhindex, computation_times
 
