@@ -565,6 +565,24 @@ def execute_code_block(code_block, example_globals,
     return code_output, time_elapsed
 
 
+def clean_modules():
+    """Remove "unload" seaborn from the name space
+
+    After a script is executed it can load a variety of setting that one
+    does not want to influence in other examples in the gallery."""
+
+    # Horrible code to 'unload' seaborn, so that it resets
+    # its default when is load
+    # Python does not support unloading of modules
+    # https://bugs.python.org/issue9072
+    for module in list(sys.modules.keys()):
+        if 'seaborn' in module:
+            del sys.modules[module]
+
+    # Reset Matplotlib to default
+    plt.rcdefaults()
+
+
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """Generate the rst file for a given example.
 
@@ -646,15 +664,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             example_rst += text2string(bcontent) + '\n'
             example_nb.add_markdown_cell(text2string(bcontent))
 
-    # Horrible code to 'unload' seaborn, so that it resets
-    # its default when is load
-    # Python does not support unloading of modules
-    # https://bugs.python.org/issue9072
-    if 'seaborn' in sys.modules:
-        del sys.modules['seaborn']
-
-    # Reset Matplotlib to default
-    plt.rcdefaults()
+    clean_modules()
 
     # Writes md5 checksum if example has build correctly
     # not failed and was initially meant to run(no-plot shall not cache md5sum)
