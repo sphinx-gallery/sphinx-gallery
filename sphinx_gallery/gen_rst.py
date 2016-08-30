@@ -93,6 +93,10 @@ class Tee(object):
         self.file1.flush()
         self.file2.flush()
 
+    # When called from a local terminal seaborn needs it in Python3
+    def isatty(self):
+        self.file1.isatty()
+
 
 class MixedEncodingStringIO(StringIO):
     """Helper when both ASCII and unicode strings will be written"""
