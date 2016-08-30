@@ -646,10 +646,12 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             example_rst += text2string(bcontent) + '\n'
             example_nb.add_markdown_cell(text2string(bcontent))
 
-    # Unload seaborn after all examples run
+    # Horrible code to 'unload' seaborn, so that it resets
+    # its default when is load
+    # Python does not support unloading of modules
+    # https://bugs.python.org/issue9072
     if 'seaborn' in sys.modules:
-        sys.modules['seaborn'].reset_defaults()
-        sys.modules['seaborn'].reset_orig()
+        del sys.modules['seaborn']
 
     # Reset Matplotlib to default
     plt.rcdefaults()
