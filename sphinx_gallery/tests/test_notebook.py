@@ -26,3 +26,43 @@ def test_latex_conversion():
 \begin{align}\mathcal{H} &= 0 \\
    \mathcal{G} &= D\end{align}"""
     assert_equal(align_eq_jmd, rst2md(align_eq))
+
+
+def test_convert():
+    """Test ReST conversion"""
+    rst = """hello
+
+.. contents::
+    :local:
+
+This is :math:`some` math :math:`stuff`.
+
+.. note::
+    Interpolation is a linear operation that can be performed also on
+    Raw and Epochs objects.
+
+.. warning::
+    Go away
+
+For more details on interpolation see the page :ref:`channel_interpolation`.
+.. _foo: bar
+
+.. image:: foobar
+  :alt: me
+  :whatever: you
+"""
+
+    markdown = """hello
+
+This is $some$ math $stuff$.
+
+<div class="alert alert-info"><h4>Note</h4><p>Interpolation is a linear operation that can be performed also on
+    Raw and Epochs objects.</p></div>
+
+<div class="alert alert-danger"><h4>Warning</h4><p>Go away</p></div>
+
+For more details on interpolation see the page `channel_interpolation`.
+
+![me](foobar)
+"""  # noqa
+    assert_equal(rst2md(rst), markdown)
