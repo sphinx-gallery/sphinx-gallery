@@ -642,6 +642,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             example_rst += text2string(bcontent) + '\n'
             example_nb.add_markdown_cell(text2string(bcontent))
 
+    # Unload seaborn after all examples run
+    if 'seaborn' in sys.modules:
+        sys.modules['seaborn'].reset_defaults()
+        sys.modules['seaborn'].reset_orig()
+
+    # Reset Matplotlib to default
+    plt.rcdefaults()
+
     # Writes md5 checksum if example has build correctly
     # not failed and was initially meant to run(no-plot shall not cache md5sum)
     if block_vars['execute_script']:
