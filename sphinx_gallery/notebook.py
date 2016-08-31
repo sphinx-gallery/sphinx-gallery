@@ -52,8 +52,8 @@ def directive_fun(match, directive):
     """Helper to fill in directives"""
     directive_to_alert = dict(note="info", warning="danger")
     return ('<div class="alert alert-{0}"><h4>{1}</h4><p>{2}</p></div>'
-            ''.format(directive_to_alert[directive], directive.capitalize(),
-                      match.group(1).strip()))
+            .format(directive_to_alert[directive], directive.capitalize(),
+                    match.group(1).strip()))
 
 
 def rst2md(text):
@@ -89,10 +89,11 @@ def rst2md(text):
     text = re.sub(contents, '', text)
 
     images = re.compile(
-        r'^\.\. image::(.*$)(\n *:alt:(.*$))?[\n +:\S+:.*$]*', flags=re.M)
+        r'^\.\. image::(.*$)(?:\n *:alt:(.*$)\n)?(?: +:\S+:.*$\n)*',
+        flags=re.M)
     text = re.sub(
         images, lambda match: '![{1}]({0})\n'.format(
-            match.group(1).strip(), (match.group(3) or '').strip()), text)
+            match.group(1).strip(), (match.group(2) or '').strip()), text)
 
     return text
 

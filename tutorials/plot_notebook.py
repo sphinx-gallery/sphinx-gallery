@@ -99,3 +99,16 @@ print('Some output from Python')
 # code directly will see the plots; this is not necessary for creating the docs
 
 plt.show()
+
+############################################################################
+# You can also include :math:`math` inline, or as separate equations:
+#
+# .. math::
+#
+#    \exp(j\pi) = -1
+#
+# You can also insert images:
+#
+# .. image:: http://www.sphinx-doc.org/en/stable/_static/sphinxheader.png
+#    :alt: Sphinx header
+#
