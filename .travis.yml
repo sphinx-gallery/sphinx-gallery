@@ -5,6 +5,7 @@ addons:
     packages:
     - python-numpy
     - python-matplotlib
+    - python-scipy
     - python-pip
     - python-coverage
     - xvfb # For mayavi headless
@@ -32,17 +33,24 @@ before_install:
       fi
 
 install:
+    # force no mkl because mayavi requires old version of numpy
+    # which then crashes with pandas and seaborn
     - if [ "$DISTRIB" == "conda" ]; then
-        conda create --yes -n testenv python=$PYTHON_VERSION pip numpy
-        setuptools matplotlib pillow sphinx nose coverage;
+        conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy
+        setuptools matplotlib pillow sphinx nose coverage seaborn;
         source activate testenv;
         if [ "$PYTHON_VERSION" == "2.7" ]; then
-          conda install --yes --quiet mayavi;
+          conda install --yes mayavi;
           conda upgrade --yes --all;
           pip install --upgrade pyface;
         fi;
       fi;
     - pip install -r requirements.txt
+    # This will build pandas as a dependency in ubuntu 12.04
+    - if [ "$DISTRIB" == "ubuntu" ]; then pip install seaborn; fi;
+
+    # Seaborn does not support python 2.6 thus is not available in conda
+    - if [ "$PYTHON_VERSION" == "2.6" ]; then pip install seaborn; fi;
     - python setup.py install
 
 # To test the mayavi environmen follow the instructions at

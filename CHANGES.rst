@@ -4,6 +4,18 @@ Change Log
 git master
 ----------
 
+New features
+''''''''''''
+* Enhanced CSS for download buttons
+
+Bug Fixes
+'''''''''
+* When seaborn is imported in a example the plot style preferences are
+  tranfered to plots executed aftewards. The CI is set up such that
+  users can follow how to get the compatible versions of
+  mayavi-pandas-seaborn and nomkl in a conda environment to have all
+  the features available.
+
 v0.1.3
 ------
 

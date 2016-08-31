@@ -93,6 +93,10 @@ class Tee(object):
         self.file1.flush()
         self.file2.flush()
 
+    # When called from a local terminal seaborn needs it in Python3
+    def isatty(self):
+        self.file1.isatty()
+
 
 class MixedEncodingStringIO(StringIO):
     """Helper when both ASCII and unicode strings will be written"""
@@ -561,6 +565,24 @@ def execute_code_block(code_block, example_globals,
     return code_output, time_elapsed
 
 
+def clean_modules():
+    """Remove "unload" seaborn from the name space
+
+    After a script is executed it can load a variety of setting that one
+    does not want to influence in other examples in the gallery."""
+
+    # Horrible code to 'unload' seaborn, so that it resets
+    # its default when is load
+    # Python does not support unloading of modules
+    # https://bugs.python.org/issue9072
+    for module in list(sys.modules.keys()):
+        if 'seaborn' in module:
+            del sys.modules[module]
+
+    # Reset Matplotlib to default
+    plt.rcdefaults()
+
+
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """Generate the rst file for a given example.
 
@@ -641,6 +663,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         else:
             example_rst += text2string(bcontent) + '\n'
             example_nb.add_markdown_cell(text2string(bcontent))
+
+    clean_modules()
 
     # Writes md5 checksum if example has build correctly
     # not failed and was initially meant to run(no-plot shall not cache md5sum)
