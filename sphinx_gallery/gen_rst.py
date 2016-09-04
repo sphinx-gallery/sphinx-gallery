@@ -26,7 +26,8 @@ import subprocess
 import sys
 import traceback
 import warnings
-import zipfile
+
+from .downloads import CODE_DOWNLOAD
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -109,24 +110,6 @@ class MixedEncodingStringIO(StringIO):
 
 
 ###############################################################################
-CODE_DOWNLOAD = """**Total running time of the script:**
-({0:.0f} minutes {1:.3f} seconds)\n\n
-\n.. container:: sphx-glr-download
-
-    :download:`Download Python source code: {2} <{2}>`\n
-
-\n.. container:: sphx-glr-download
-
-    :download:`Download Jupyter notebook: {3} <{3}>`\n"""
-
-CODE_ZIP_DOWNLOAD = """
-\n.. container:: sphx-glr-download
-
-    :download:`Download all examples in Python source code: {0} </{1}>`\n
-
-\n.. container:: sphx-glr-download
-
-    :download:`Download all examples in Jupyter notebook files: {2} </{3}>`\n"""
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
 # lists.
@@ -458,41 +441,6 @@ def save_thumbnail(image_path_template, src_file, gallery_conf):
         scale_image(default_thumb_file, thumb_file, 200, 140)
 
 
-def python_zip(file_list, src_path, zipfile_path, extension='.py'):
-    """Stores all files in file_list into an zip file
-
-    Parameters
-    ----------
-    file_list : list of str
-        Hold all the file names to be included in zip file
-    src_path : str
-        path to where the examples are located
-    zipfile_path : str
-        path to where the zipfile is stored
-    extension : str
-        '.py' or '.ipynb' In order to deal with downloads of python
-        sources and jupyter notebooks the file extension from files in
-        file_list will be removed and replace with the value of this
-        variable while generating the zip file
-    Returns
-    -------
-    str : zip file name, written as `target_dir_{python,jupyter}.zip`
-        depending on the extension
-"""
-    zipname = src_path.replace(os.path.sep, '_')
-    zipname+= '_python' if extension == '.py' else '_jupyter'
-    zipname = os.path.join(zipfile_path, zipname + '.zip')
-
-    zipf = zipfile.ZipFile(zipname, mode='w')
-    for fname in file_list:
-        file_src = os.path.splitext(fname)[0] + extension
-        example_file = os.path.join(src_path, file_src)
-        zipf.write(example_file, arcname=file_src)
-    zipf.close()
-
-    return zipname
-
-
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
@@ -536,16 +484,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     # clear at the end of the section
     fhindex += """.. raw:: html\n
     <div style='clear:both'></div>\n\n"""
-
-
-    if gallery_conf['download_section_examples']:
-        py_zipfile = python_zip(sorted_listdir, target_dir, target_dir)
-        jy_zipfile = python_zip(sorted_listdir, target_dir, target_dir, ".ipynb")
-
-        fhindex += CODE_ZIP_DOWNLOAD.format(os.path.basename(py_zipfile),
-                                            py_zipfile,
-                                            os.path.basename(jy_zipfile),
-                                            jy_zipfile)
 
     return fhindex, computation_times
 

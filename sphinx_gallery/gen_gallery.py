@@ -18,6 +18,7 @@ import os
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
+from .downloads import generate_zipfiles
 
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
@@ -129,6 +130,10 @@ def generate_gallery_rst(app):
                                      seen_backrefs)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
+
+        if gallery_conf['download_section_examples']:
+            download_fhindex = generate_zipfiles(gallery_dir)
+            fhindex.write(download_fhindex)
 
         fhindex.write(SPHX_GLR_SIG)
         fhindex.flush()
