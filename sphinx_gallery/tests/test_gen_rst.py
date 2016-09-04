@@ -21,6 +21,7 @@ from nose.tools import assert_equal, assert_false, assert_true
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import gen_gallery
 from sphinx_gallery import notebook
+from sphinx_gallery import downloads
 import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
 CONTENT = [
@@ -265,11 +266,9 @@ def test_save_figures():
 def test_zip_notebooks():
     """Test generated zipfiles are not corrupt"""
     gallery_conf = build_test_configuration(examples_dir='examples')
-    examples = [fname
-                for fname in sorted(os.listdir(gallery_conf['examples_dir']))
-                if fname.endswith('.py')]
-    zipfilepath = sg.python_zip(examples, gallery_conf['examples_dir'],
-                  gallery_conf['gallery_dir'])
+    examples = downloads.list_downloadable_sources(
+        gallery_conf['examples_dir'])
+    zipfilepath = downloads.python_zip(examples, gallery_conf['gallery_dir'])
     zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
     if check:
