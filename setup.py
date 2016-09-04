@@ -6,11 +6,20 @@ Installer Sphinx extension for gallery generator
 """
 
 import codecs
+import os
 from setuptools import setup, find_packages
 import sphinx_gallery
 
 with codecs.open('README.rst', mode='r', encoding='utf-8') as f:
     long_description = f.read()
+
+# XXX : don't force requirements in setup.py as it tends to break
+#       people's setups
+install_requires = []
+
+if os.environ.get('READTHEDOCS', None) == 'True':
+    # So that we can build documentation using seaborn
+    install_requires = ['seaborn']
 
 
 setup(
@@ -25,9 +34,7 @@ setup(
     url="https://github.com/sphinx-gallery/sphinx-gallery",
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',
-    # XXX : don't force requirements in setup.py as it tends to break people
-    # install_requires= ['Sphinx', 'matplotlib', 'pillow'],
-    install_requires=[],
+    install_requires=install_requires,
     setup_requires=['nose>=1.0'],
     license='3-clause BSD',
     classifiers=['Intended Audience :: Developers',
