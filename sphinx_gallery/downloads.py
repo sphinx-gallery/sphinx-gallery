@@ -12,15 +12,14 @@ from __future__ import absolute_import, division, print_function
 import os
 import zipfile
 
-CODE_DOWNLOAD = """**Total running time of the script:**
-({0:.0f} minutes {1:.3f} seconds)\n\n
+CODE_DOWNLOAD = """
 \n.. container:: sphx-glr-download
 
-    :download:`Download Python source code: {2} <{2}>`\n
+    :download:`Download Python source code: {0} <{0}>`\n
 
 \n.. container:: sphx-glr-download
 
-    :download:`Download Jupyter notebook: {3} <{3}>`\n"""
+    :download:`Download Jupyter notebook: {1} <{1}>`\n"""
 
 CODE_ZIP_DOWNLOAD = """
 \n.. container:: sphx-glr-download

@@ -672,8 +672,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_nb.save_file()
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:
-        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname,
-                                            example_nb.file_name)
+        example_rst += "**Total running time of the script:**" \
+                       " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
+                           time_m, time_s)
+        example_rst += CODE_DOWNLOAD.format(fname, example_nb.file_name)
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 
