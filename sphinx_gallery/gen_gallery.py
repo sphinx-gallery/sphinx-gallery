@@ -29,7 +29,7 @@ DEFAULT_GALLERY_CONF = {
     'reference_url': {},
     # build options
     'plot_gallery': True,
-    'download_section_examples': True,
+    'download_all_examples': True,
     'abort_on_example_error': False,
     'failing_examples': {},
     'expected_failing_examples': set(),
@@ -131,7 +131,7 @@ def generate_gallery_rst(app):
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
 
-        if gallery_conf['download_section_examples']:
+        if gallery_conf['download_all_examples']:
             download_fhindex = generate_zipfiles(gallery_dir)
             fhindex.write(download_fhindex)
 
