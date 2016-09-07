@@ -39,6 +39,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+*.orig
 
 # Translations
 *.mo
@@ -50,6 +51,7 @@ coverage.xml
 # Sphinx documentation
 doc/_build/
 doc/auto_examples
+doc/auto_mayavi_examples
 doc/tutorials/
 doc/modules/generated
 
