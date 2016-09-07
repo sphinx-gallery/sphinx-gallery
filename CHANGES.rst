@@ -11,7 +11,10 @@ New features
   scripts or Jupyter notebooks together in a zip file. New config
   variable `download_all_examples` to toggle this effect. Activated by
   default
-
+* Downloadable zip file with all examples as Python scripts and
+  notebooks for each gallery
+* Improved conversion of rst directives to markdown for the Jupyter
+  notebook text blocks
 
 Bug Fixes
 '''''''''
@@ -20,6 +23,8 @@ Bug Fixes
   users can follow how to get the compatible versions of
   mayavi-pandas-seaborn and nomkl in a conda environment to have all
   the features available.
+* Fix math conversion from example rst to Jupyter notebook text for
+  inline math and multiline equations
 
 v0.1.3
 ------
