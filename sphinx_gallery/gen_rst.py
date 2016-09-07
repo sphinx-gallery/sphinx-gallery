@@ -27,6 +27,8 @@ import sys
 import traceback
 import warnings
 
+from .downloads import CODE_DOWNLOAD
+
 
 # Try Python 2 first, otherwise load from Python 3
 from textwrap import dedent
@@ -108,15 +110,6 @@ class MixedEncodingStringIO(StringIO):
 
 
 ###############################################################################
-CODE_DOWNLOAD = """**Total running time of the script:**
-({0:.0f} minutes {1:.3f} seconds)\n\n
-\n.. container:: sphx-glr-download
-
-    :download:`Download Python source code: {2} <{2}>`\n
-\n.. container:: sphx-glr-download
-
-    :download:`Download Jupyter notebook: {3} <{3}>`\n"""
-
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
 # lists.
@@ -459,6 +452,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         return "", []  # because string is an expected return type
 
     fhindex = open(os.path.join(src_dir, 'README.txt')).read()
+
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
@@ -678,8 +672,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_nb.save_file()
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:
-        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname,
-                                            example_nb.file_name)
+        example_rst += "**Total running time of the script:**" \
+                       " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
+                           time_m, time_s)
+        example_rst += CODE_DOWNLOAD.format(fname, example_nb.file_name)
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 

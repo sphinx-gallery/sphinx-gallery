@@ -7,6 +7,11 @@ git master
 New features
 ''''''''''''
 * Enhanced CSS for download buttons
+* Download buttons at the end of the gallery to download all python
+  scripts or Jupyter notebooks together in a zip file. New config
+  variable `download_all_examples` to toggle this effect. Activated by
+  default
+
 
 Bug Fixes
 '''''''''

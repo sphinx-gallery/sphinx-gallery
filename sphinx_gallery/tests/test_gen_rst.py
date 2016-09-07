@@ -15,11 +15,13 @@ import re
 import os
 import nose
 import shutil
+import zipfile
 from nose.tools import assert_equal, assert_false, assert_true
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import gen_gallery
 from sphinx_gallery import notebook
+from sphinx_gallery import downloads
 import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
 CONTENT = [
@@ -259,6 +261,19 @@ def test_save_figures():
     assert fig_list[1].endswith('image4.png')
 
     shutil.rmtree(examples_dir)
+
+
+def test_zip_notebooks():
+    """Test generated zipfiles are not corrupt"""
+    gallery_conf = build_test_configuration(examples_dir='examples')
+    examples = downloads.list_downloadable_sources(
+        gallery_conf['examples_dir'])
+    zipfilepath = downloads.python_zip(examples, gallery_conf['gallery_dir'])
+    zipf = zipfile.ZipFile(zipfilepath)
+    check = zipf.testzip()
+    if check:
+        raise OSError("Bad file in zipfile: {0}".format(check))
+
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice

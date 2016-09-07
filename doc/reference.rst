@@ -13,3 +13,4 @@ Sphinx-Gallery API Reference
    backreferences
    gen_rst
    docs_resolv
+   downloads

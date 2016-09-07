@@ -17,7 +17,7 @@ It is extracted from the scikit-learn project and aims to be an
 independent general purpose extension.
 
 Who uses Sphinx-Gallery
------------------------
+=======================
 
 * `Sphinx-Gallery <http://sphinx-gallery.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
