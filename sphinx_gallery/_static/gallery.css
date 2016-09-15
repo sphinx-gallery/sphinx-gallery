@@ -103,6 +103,11 @@ thumbnail with its default link Background color */
 blockquote.sphx-glr-script-out {
   margin-left: 0pt;
 }
+
+div.sphx-glr-footer {
+    text-align: center;
+}
+
 div.sphx-glr-download {
   display: inline-block;
   margin: 1em auto 1ex 2ex;
@@ -115,11 +120,13 @@ div.sphx-glr-download a {
   border: 1px solid #c2c22d;
   color: #000;
   display: inline-block;
+  /* Not valid in old browser, hence we keep the line above to override */
+  display: table-caption;
   font-weight: bold;
-  max-width: 45ex;
   padding: 1ex;
   text-align: center;
 }
+
 
 div.sphx-glr-download code.download {
   display: inline-block;
@@ -143,8 +150,13 @@ ul.sphx-glr-horizontal img {
   height: auto !important;
 }
 
+p.sphx-glr-signature {
+  text-align: right;
+  margin-left: auto;
+  display: table;
+}
+
 p.sphx-glr-signature a.reference.external {
-  background-color: #EBECED;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   border-radius: 5px;

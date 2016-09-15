@@ -13,20 +13,24 @@ import os
 import zipfile
 
 CODE_DOWNLOAD = """
-\n.. container:: sphx-glr-download
+\n.. container:: sphx-glr-footer
 
-    :download:`Download Python source code: {0} <{0}>`\n
+\n  .. container:: sphx-glr-download
 
-\n.. container:: sphx-glr-download
+     :download:`Download Python source code: {0} <{0}>`\n
 
-    :download:`Download Jupyter notebook: {1} <{1}>`\n"""
+\n  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: {1} <{1}>`\n"""
 
 CODE_ZIP_DOWNLOAD = """
-\n.. container:: sphx-glr-download
+\n.. container:: sphx-glr-footer
+
+\n  .. container:: sphx-glr-download
 
     :download:`Download all examples in Python source code: {0} </{1}>`\n
 
-\n.. container:: sphx-glr-download
+\n  .. container:: sphx-glr-download
 
     :download:`Download all examples in Jupyter notebook files: {2} </{3}>`\n"""
 
