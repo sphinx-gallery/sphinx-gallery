@@ -127,6 +127,18 @@ div.sphx-glr-download a {
   text-align: center;
 }
 
+@media (min-width: 20em) {
+    div.sphx-glr-download a {
+	min-width: 10em;
+    }
+}
+
+@media (min-width: 30em) {
+    div.sphx-glr-download a {
+	min-width: 13em;
+    }
+}
+
 
 div.sphx-glr-download code.download {
   display: inline-block;
