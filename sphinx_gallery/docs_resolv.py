@@ -345,7 +345,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                                     gallery_dir))
 
     # patterns for replacement
-    link_pattern = '<a href="%s" class="sphx-glr-code-links">%s</a>'
+    link_pattern = ('<a href="%s" class="sphx-glr-code-links" '
+       'title="Link to documentation for %s">%s</a>')
     orig_pattern = '<span class="n">%s</span>'
     period = '<span class="o">.</span>'
 
@@ -382,7 +383,9 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                         parts = name.split('.')
                         name_html = period.join(orig_pattern % part
                                                 for part in parts)
-                        str_repl[name_html] = link_pattern % (link, name_html)
+                        str_repl[name_html] = link_pattern % (link,
+                            '%s.%s' % (cobj['module'], cobj['name']),
+                            name_html)
                 # do the replacement in the html file
 
                 # ensure greediness
