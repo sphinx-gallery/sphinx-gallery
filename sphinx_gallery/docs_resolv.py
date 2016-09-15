@@ -345,7 +345,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                                     gallery_dir))
 
     # patterns for replacement
-    link_pattern = '<a href="%s">%s</a>'
+    link_pattern = '<a href="%s" class="sphx-glr-code-links">%s</a>'
     orig_pattern = '<span class="n">%s</span>'
     period = '<span class="o">.</span>'
 
