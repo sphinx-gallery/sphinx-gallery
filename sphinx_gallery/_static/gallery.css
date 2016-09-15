@@ -130,6 +130,7 @@ div.sphx-glr-download a {
 
 div.sphx-glr-download code.download {
   display: inline-block;
+  white-space: normal;
 }
 
 div.sphx-glr-download a:hover {
@@ -150,18 +151,15 @@ ul.sphx-glr-horizontal img {
   height: auto !important;
 }
 
-p.sphx-glr-signature {
-  text-align: right;
-  margin-left: auto;
-  display: table;
-}
-
 p.sphx-glr-signature a.reference.external {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   border-radius: 5px;
   padding: 3px;
   font-size: 75%;
+  text-align: right;
+  margin-left: auto;
+  display: table;
 }
 
 a.sphx-glr-code-links:hover{
