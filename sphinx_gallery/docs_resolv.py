@@ -383,9 +383,10 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                         parts = name.split('.')
                         name_html = period.join(orig_pattern % part
                                                 for part in parts)
-                        str_repl[name_html] = link_pattern % (link,
-                            '%s.%s' % (cobj['module'], cobj['name']),
-                            name_html)
+                        full_function_name = '%s.%s' % (
+                            cobj['module'], cobj['name'])
+                        str_repl[name_html] = link_pattern % (
+                            link, full_function_name, name_html)
                 # do the replacement in the html file
 
                 # ensure greediness
