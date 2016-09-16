@@ -4,6 +4,9 @@ Change Log
 git master
 ----------
 
+v0.1.4
+------
+
 New features
 ''''''''''''
 * Enhanced CSS for download buttons
