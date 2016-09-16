@@ -346,7 +346,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
 
     # patterns for replacement
     link_pattern = ('<a href="%s" class="sphx-glr-code-links" '
-       'title="Link to documentation for %s">%s</a>')
+       'tooltip="Link to documentation for %s">%s</a>')
     orig_pattern = '<span class="n">%s</span>'
     period = '<span class="o">.</span>'
 

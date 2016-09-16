@@ -156,16 +156,17 @@ a.sphx-glr-code-links:hover{
     text-decoration: none;
 }
 
-a.sphx-glr-code-links[title]:hover:before{
+a.sphx-glr-code-links[tooltip]:hover:before{
     background: rgba(0,0,0,.8);
     border-radius: 5px;
     color: white;
-    content: attr(title);
+    content: attr(tooltip);
     padding: 5px 15px;
     position: absolute;
     z-index: 98;
     width: 15.5em;
     word-break: normal;
+    white-space: normal;
     display: inline-block;
     text-align: center;
     text-indent: 0;
