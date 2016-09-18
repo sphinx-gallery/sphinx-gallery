@@ -4,6 +4,17 @@ Change Log
 git master
 ----------
 
+Developer changes
+'''''''''''''''''
+* Support on the fly theme change for local builds of the
+  Sphinx-Gallery docs. Passing to the make target the variable `theme`
+  builds the docs with the new theme. All sphinx themes are availible
+  plus read the docs online theme under the value `rtd` as shown in this
+  usage example.::
+
+    $ make html theme=rtd
+
+
 v0.1.4
 ------
 
