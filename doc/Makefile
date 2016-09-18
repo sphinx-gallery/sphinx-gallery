@@ -21,9 +21,15 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
+# Theme variable default
+theme = default
+
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html       to make standalone HTML files"
+	@echo "             can include the sphinx theme to rendered with variable"
+	@echo "     theme=[default,rtd,alabaster,sphinxdoc,scrolls,agogo,"
+	@echo "            traditional,nature,haiku,pyramid,bizstyle]"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
 	@echo "  pickle     to make pickle files"
@@ -45,6 +51,7 @@ help:
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+
 clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf auto_examples/
@@ -53,16 +60,19 @@ clean:
 	rm -rf generated/*
 	rm -rf modules/generated/*
 
+html-noplot: export SPHX_GLR_THEME = $(theme)
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html_abort_on_example_error: export SPHX_GLR_THEME = $(theme)
 html_abort_on_example_error:
 	$(SPHINXBUILD) -D abort_on_example_error=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html: export SPHX_GLR_THEME = $(theme)
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
