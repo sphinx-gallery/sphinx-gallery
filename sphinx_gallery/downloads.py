@@ -32,7 +32,7 @@ CODE_ZIP_DOWNLOAD = """
 
 \n  .. container:: sphx-glr-download
 
-    :download:`Download all examples in Jupyter notebook files: {2} </{3}>`\n"""
+    :download:`Download all examples in Jupyter notebooks: {2} </{3}>`\n"""
 
 
 def python_zip(file_list, gallery_path, extension='.py'):
