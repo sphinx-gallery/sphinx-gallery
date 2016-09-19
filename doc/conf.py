@@ -113,7 +113,21 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+
+# The theme is set by the make target
+html_theme = os.environ.get('SPHX_GLR_THEME', 'default')
+
+# on_rtd is whether we are on readthedocs.org, this line of code grabbed
+# from docs.readthedocs.org
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+# only import rtd theme and set it if want to build docs locally
+if not on_rtd and html_theme == 'rtd':
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+# otherwise, readthedocs.org uses their theme by default, so no need to
+# specify it
 
 
 def setup(app):

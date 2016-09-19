@@ -4,6 +4,17 @@ Change Log
 git master
 ----------
 
+Developer changes
+'''''''''''''''''
+* Support on the fly theme change for local builds of the
+  Sphinx-Gallery docs. Passing to the make target the variable `theme`
+  builds the docs with the new theme. All sphinx themes are available
+  plus read the docs online theme under the value `rtd` as shown in this
+  usage example.::
+
+    $ make html theme=rtd
+
+
 v0.1.4
 ------
 
@@ -22,12 +33,12 @@ New features
 Bug Fixes
 '''''''''
 * When seaborn is imported in a example the plot style preferences are
-  tranfered to plots executed aftewards. The CI is set up such that
+  transferred to plots executed afterwards. The CI is set up such that
   users can follow how to get the compatible versions of
   mayavi-pandas-seaborn and nomkl in a conda environment to have all
   the features available.
 * Fix math conversion from example rst to Jupyter notebook text for
-  inline math and multiline equations
+  inline math and multi-line equations
 
 v0.1.3
 ------
@@ -71,7 +82,7 @@ Bug Fixes
 '''''''''
 
 * Restore the html-noplot functionality
-* Gallery CSS now implictly enforces thumbnails width
+* Gallery CSS now implicitly enforces thumbnails width
 
 v0.1.0
 ------
