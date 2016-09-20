@@ -150,6 +150,11 @@ div.sphx-glr-download a {
 div.sphx-glr-download code.download {
   display: inline-block;
   white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  /* border and background are given by the enclosing 'a' */
+  border: none;
+  background: none;
 }
 
 div.sphx-glr-download a:hover {
