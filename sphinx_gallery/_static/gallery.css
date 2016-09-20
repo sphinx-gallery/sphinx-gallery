@@ -140,6 +140,12 @@ div.sphx-glr-download a {
     }
 }
 
+@media (min-width: 40em) {
+    div.sphx-glr-download a {
+	min-width: 16em;
+    }
+}
+
 
 div.sphx-glr-download code.download {
   display: inline-block;
