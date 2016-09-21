@@ -128,6 +128,11 @@ div.sphx-glr-download a {
   text-align: center;
 }
 
+/* The last child of a download button is the file name */
+div.sphx-glr-download a span:last-child {
+    font-size: smaller;
+}
+
 @media (min-width: 20em) {
     div.sphx-glr-download a {
 	min-width: 10em;
