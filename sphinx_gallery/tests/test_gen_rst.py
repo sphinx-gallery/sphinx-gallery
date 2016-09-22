@@ -9,18 +9,17 @@ from __future__ import (division, absolute_import, print_function,
 import ast
 import codecs
 import copy
-import json
 import tempfile
 import re
 import os
-import nose
 import shutil
 import zipfile
+
+import nose
 from nose.tools import assert_equal, assert_false, assert_true
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import gen_gallery
-from sphinx_gallery import notebook
 from sphinx_gallery import downloads
 import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
@@ -200,24 +199,6 @@ def test_pattern_matching():
             assert_true(code_output in rst)
         else:
             assert_false(code_output in rst)
-
-
-def test_ipy_notebook():
-    """Test that written ipython notebook file corresponds to python object"""
-    with tempfile.NamedTemporaryFile('w+') as f:
-        example_nb = notebook.Notebook(f.name, os.path.dirname(f.name))
-        blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
-
-        for blabel, bcontent in blocks:
-            if blabel == 'code':
-                example_nb.add_code_cell(bcontent)
-            else:
-                example_nb.add_markdown_cell(sg.text2string(bcontent))
-
-        example_nb.save_file()
-
-        f.flush()
-        assert_equal(json.load(f), example_nb.work_notebook)
 
 
 def test_thumbnail_number():

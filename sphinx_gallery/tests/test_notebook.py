@@ -6,9 +6,12 @@ Testing the Jupyter notebook parser
 """
 
 from __future__ import division, absolute_import, print_function
-import re
+import json
+import os
+import tempfile
 from nose.tools import assert_equal, assert_false, assert_true
-from sphinx_gallery.notebook import rst2md
+import sphinx_gallery.gen_rst as sg
+from sphinx_gallery.notebook import rst2md, Notebook
 
 
 def test_latex_conversion():
@@ -66,3 +69,13 @@ For more details on interpolation see the page `channel_interpolation`.
 ![me](foobar)
 """  # noqa
     assert_equal(rst2md(rst), markdown)
+
+
+def test_ipy_notebook():
+    """Test that written ipython notebook file corresponds to python object"""
+    with tempfile.NamedTemporaryFile('w+') as f:
+        blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+        example_nb = Notebook(f.name, os.path.dirname(f.name), blocks)
+        example_nb.save_file()
+        f.flush()
+        assert_equal(json.load(f), example_nb.work_notebook)

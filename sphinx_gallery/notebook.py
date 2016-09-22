@@ -128,7 +128,6 @@ class Notebook(object):
         self.add_code_cell("%matplotlib inline")
         self.fill_notebook(script_blocks)
         self.save_file()
-        return self.file_name
 
     def add_code_cell(self, code):
         """Add a code cell to the notebook
@@ -178,6 +177,7 @@ class Notebook(object):
                 self.add_markdown_cell(text2string(bcontent))
 
     def save_file(self):
-        """Saves the notebook to a file"""
+        """Saves the notebook to a file, returns the filename"""
         with open(self.write_file, 'w') as out_nb:
             json.dump(self.work_notebook, out_nb, indent=2)
+        return self.file_name
