@@ -27,8 +27,6 @@ import sys
 import traceback
 import warnings
 
-from .downloads import CODE_DOWNLOAD
-
 
 # Try Python 2 first, otherwise load from Python 3
 from textwrap import dedent
@@ -83,7 +81,8 @@ except ImportError:
 
 from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
-from .notebook import Notebook
+from .downloads import CODE_DOWNLOAD
+from .notebook import Notebook, text2string
 
 try:
     basestring
@@ -238,14 +237,6 @@ def codestr2rst(codestr, lang='python'):
     code_directive = "\n.. code-block:: {0}\n\n".format(lang)
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
-
-
-def text2string(content):
-    """Returns a string without the extra triple quotes"""
-    try:
-        return ast.literal_eval(content) + '\n'
-    except Exception:
-        return content + '\n'
 
 
 def extract_thumbnail_number(text):
@@ -620,7 +611,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
-    example_nb = Notebook(fname, target_dir)
 
     filename_pattern = gallery_conf.get('filename_pattern')
     execute_script = re.search(filename_pattern, src_file) and gallery_conf[
@@ -653,7 +643,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                                                     gallery_conf)
 
             time_elapsed += rtime
-            example_nb.add_code_cell(bcontent)
 
             if is_example_notebook_like:
                 example_rst += codestr2rst(bcontent) + '\n'
@@ -667,7 +656,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
         else:
             example_rst += text2string(bcontent) + '\n'
-            example_nb.add_markdown_cell(text2string(bcontent))
 
     clean_modules()
 
@@ -680,13 +668,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     save_thumbnail(image_path_template, src_file, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
-    example_nb.save_file()
+    example_nb = Notebook(fname, target_dir, script_blocks)
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:
         example_rst += "**Total running time of the script:**" \
                        " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
                            time_m, time_s)
-        example_rst += CODE_DOWNLOAD.format(fname, example_nb.file_name)
+        example_rst += CODE_DOWNLOAD.format(fname, example_nb)
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 

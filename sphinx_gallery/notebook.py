@@ -18,6 +18,14 @@ import re
 import sys
 
 
+def text2string(content):
+    """Returns a string without the extra triple quotes"""
+    try:
+        return ast.literal_eval(content) + '\n'
+    except Exception:
+        return content + '\n'
+
+
 def ipy_notebook_skeleton():
     """Returns a dictionary with the elements of a Jupyter notebook"""
     py_version = sys.version_info
@@ -103,7 +111,7 @@ class Notebook(object):
 
     Constructs the file cell-by-cell and writes it at the end"""
 
-    def __init__(self, file_name, target_dir):
+    def __init__(self, file_name, target_dir, script_blocks):
         """Declare the skeleton of the notebook
 
         Parameters
@@ -118,6 +126,9 @@ class Notebook(object):
         self.write_file = os.path.join(target_dir, self.file_name)
         self.work_notebook = ipy_notebook_skeleton()
         self.add_code_cell("%matplotlib inline")
+        self.fill_notebook(script_blocks)
+        self.save_file()
+        return self.file_name
 
     def add_code_cell(self, code):
         """Add a code cell to the notebook
@@ -134,7 +145,7 @@ class Notebook(object):
             "metadata": {"collapsed": False},
             "outputs": [],
             "source": [code.strip()]
-            }
+        }
         self.work_notebook["cells"].append(code_cell)
 
     def add_markdown_cell(self, text):
@@ -151,6 +162,20 @@ class Notebook(object):
             "source": [rst2md(text)]
         }
         self.work_notebook["cells"].append(markdown_cell)
+
+    def fill_notebook(self, script_blocks):
+        """Writes the Jupyter notebook cells
+
+        Parameters
+        ----------
+        script_blocks : list of tuples
+        """
+
+        for blabel, bcontent in script_blocks:
+            if blabel == 'code':
+                self.add_code_cell(bcontent)
+            else:
+                self.add_markdown_cell(text2string(bcontent))
 
     def save_file(self):
         """Saves the notebook to a file"""
