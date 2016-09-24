@@ -10,13 +10,15 @@
    ---------
 
    {% for item in functions %}
+
    .. autofunction:: {{ item }}
 
-   .. include:: {{fullname}}.{{item}}.examples
+   .. include:: backreferences/{{fullname}}.{{item}}.examples
 
    .. raw:: html
 
 	       <div style='clear:both'></div>
+
    {%- endfor %}
    {% endif %}
    {% endblock %}

@@ -8,7 +8,7 @@ every module.
 .. currentmodule:: sphinx_gallery
 
 .. autosummary::
-   :toctree: modules/generated/
+   :toctree: gen_modules/
    :template: module.rst
 
    gen_gallery

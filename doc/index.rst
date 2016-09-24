@@ -26,7 +26,7 @@ What does it look like?
 
 Here is an example gallery generated from a few Python scripts.
 
-.. include:: modules/generated/numpy.sin.examples
+.. include:: gen_modules/backreferences/numpy.sin.examples
 .. raw:: html
 
         <div style='clear:both'></div>

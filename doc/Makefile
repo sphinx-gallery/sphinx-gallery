@@ -57,7 +57,7 @@ clean:
 	rm -rf auto_examples/
 	rm -rf auto_mayavi_examples/
 	rm -rf tutorials/
-	rm -rf modules/
+	rm -rf gen_modules/*
 
 html-noplot: export SPHX_GLR_THEME = $(theme)
 html-noplot:

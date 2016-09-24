@@ -120,17 +120,17 @@ References to examples (backreferences)
 Sphinx-Gallery also enables you, when documenting your modules, to
 reference to the examples that use that particular class or
 function. For example if we are documenting the ``numpy.exp``
-function its possible to embed a small gallery of examples using it
-like this:
+function its possible to embed a small gallery of examples that is
+specific to this function and looks like this:
 
-.. include:: modules/generated/numpy.exp.examples
+.. include:: gen_modules/backreferences/numpy.exp.examples
 .. raw:: html
 
         <div style='clear:both'></div>
 
 
 
-For such behavior to be available you have to extend in your
+For such behavior to be available you have activating it in your
 Sphinx-Gallery configuration directory with:
 
 .. code-block:: python
@@ -153,9 +153,10 @@ in mind that the path set in ``backreferences_dir`` is relative to the
 
 
 Then within your sphinx documentation files you
-include these lines to include these links::
+write these lines to include this reduced version of the Gallery,
+which has examples in use of a specific function::
 
-    .. include:: modules/generated/numpy.linspace.examples
+    .. include:: gen_modules/backreferences/numpy.exp.examples
     .. raw:: html
 
         <div style='clear:both'></div>
