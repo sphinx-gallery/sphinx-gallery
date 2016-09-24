@@ -3,6 +3,11 @@ Change Log
 
 git master
 ----------
+New features
+''''''''''''
+
+* Executable script to convert Python scripts into Jupyter Notebooks
+
 
 Bug Fixes
 '''''''''
