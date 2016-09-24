@@ -119,11 +119,11 @@ References to examples (backreferences)
 
 Sphinx-Gallery also enables you, when documenting your modules, to
 reference to the examples that use that particular class or
-function. For example if we are documenting the numpy.linspace
+function. For example if we are documenting the ``numpy.exp``
 function its possible to embed a small gallery of examples using it
 like this:
 
-.. include:: modules/generated/numpy.linspace.examples
+.. include:: modules/generated/numpy.exp.examples
 .. raw:: html
 
         <div style='clear:both'></div>
@@ -300,7 +300,7 @@ easily.
 There are some additional options at your hand to deal with broken examples.
 
 Abort build on first fail
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sphinx-Gallery provides the early fail option. In
 this mode the gallery build process breaks as soon as an exception
@@ -323,7 +323,7 @@ always given to the `-D` flag of the ``sphinx-build`` command.
 
 
 Don't fail the build on exit
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow

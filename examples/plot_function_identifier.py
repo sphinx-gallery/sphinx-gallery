@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-======================================
 Identifying function names in a script
 ======================================
 
@@ -18,19 +17,19 @@ import sphinx_gallery.backreferences as spback
 filename = spback.__file__.replace('.pyc', '.py')
 file_code = open(filename, 'r').read()
 names = spback.identify_names(file_code)
-figheight = len(names)+.5
+figheight = len(names) + .5
 
 fontsize = 22
 fig = plt.figure()
 
 for i, (name, obj) in enumerate(names.items()):
-    fig.text(0.3, (float(len(names)) - 0.5 - i)/figheight,
+    fig.text(0.3, (float(len(names)) - 0.5 - i) / figheight,
              name,
              ha="right",
              size=fontsize,
              transform=fig.transFigure,
              bbox=dict(boxstyle='square', fc="w", ec="k"))
-    fig.text(0.35, (float(len(names)) - 0.5 - i)/figheight,
+    fig.text(0.35, (float(len(names)) - 0.5 - i) / figheight,
              obj["module"],
              ha="left",
              size=fontsize,

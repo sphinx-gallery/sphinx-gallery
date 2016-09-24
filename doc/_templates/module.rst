@@ -27,9 +27,10 @@
    Classes
    -------
 
-   .. autosummary::
    {% for item in classes %}
-      {{ item }}
+   .. autoclass:: {{ item }}
+      :members:
+
    {%- endfor %}
    {% endif %}
    {% endblock %}

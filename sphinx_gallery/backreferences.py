@@ -2,7 +2,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
-========================
 Backreferences Generator
 ========================
 
