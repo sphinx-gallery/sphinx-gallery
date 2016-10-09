@@ -3,25 +3,33 @@ sudo: false
 addons:
   apt:
     packages:
-    - python-numpy
-    - python-matplotlib
-    - python-scipy
-    - python-pip
-    - python-coverage
     - xvfb # For mayavi headless
 
 virtualenv:
         system_site_packages: true
 
-env:
-    matrix:
-        - DISTRIB="ubuntu" PYTHON_VERSION="2.7"
-        # This environment tests the oldest supported anaconda env
-        - DISTRIB="conda" PYTHON_VERSION="2.6"
-        # This environment tests is for mayavi
-        - DISTRIB="conda" PYTHON_VERSION="2.7"
-        # This environment tests the newest supported anaconda env
-        - DISTRIB="conda" PYTHON_VERSION="3.4"
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      env: DISTRIB="ubuntu 14" PYTHON_VERSION="2.7"
+      addons:
+        apt:
+          packages:
+            - python-numpy
+            - python-matplotlib
+            - python-scipy
+            - python-pip
+            - python-coverage
+            - cython
+            - python-pandas
+    # This environment tests is for mayavi
+    - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="2.7"
+    # This environment tests the newest supported anaconda env
+    - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="3.4"
 
 before_install:
     - if [ "$DISTRIB" == "conda" ]; then
@@ -46,11 +54,8 @@ install:
         fi;
       fi;
     - pip install -r requirements.txt
-    # This will build pandas as a dependency in ubuntu 12.04
-    - if [ "$DISTRIB" == "ubuntu" ]; then pip install seaborn; fi;
+    - if [ "$DISTRIB" == "ubuntu 14" ]; then pip install seaborn; fi;
 
-    # Seaborn does not support python 2.6 thus is not available in conda
-    - if [ "$PYTHON_VERSION" == "2.6" ]; then pip install seaborn; fi;
     - python setup.py install
 
 # To test the mayavi environment follow the instructions at
