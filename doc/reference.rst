@@ -1,4 +1,6 @@
 
+.. _sphx_glr_api_reference:
+
 Sphinx-Gallery API Reference
 ============================
 

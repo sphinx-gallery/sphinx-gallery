@@ -117,11 +117,11 @@ dictionary within your Sphinx ``conf.py`` file :
 References to examples (backreferences)
 =======================================
 
-Sphinx-Gallery also enables you, when documenting your modules, to
-reference to the examples that use that particular class or
-function. For example if we are documenting the ``numpy.exp``
-function its possible to embed a small gallery of examples that is
-specific to this function and looks like this:
+Sphinx-Gallery enables you, when documenting your modules, to
+reference to the examples that use a particular function. For example
+if we are documenting the ``numpy.exp`` function its possible to embed
+a small gallery of examples that is specific to this function and
+looks like this:
 
 .. include:: gen_modules/backreferences/numpy.exp.examples
 .. raw:: html
@@ -130,8 +130,8 @@ specific to this function and looks like this:
 
 
 
-For such behavior to be available you have activating it in your
-Sphinx-Gallery configuration directory with:
+For such behavior to be available, you have to activate it in your
+Sphinx-Gallery configuration ``conf.py`` file with:
 
 .. code-block:: python
 
@@ -139,32 +139,32 @@ Sphinx-Gallery configuration directory with:
         # directory where function granular galleries are stored
         'backreferences_dir'  : 'gen_modules/backreferences',
 
-        # Your documented modules. In this case sphinx_gallery and numpy
-        # in a tuple of strings.
+        # Modules for which function level galleries are created.  In
+        # this case sphinx_gallery and numpy in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
 The path you specify in ``backreferences_dir``, here we choose
 ``gen_modules/backreferences`` will get populated with
-ReStructuredText files which each contains a reduced version of the
+ReStructuredText files, each of which contains a reduced version of the
 gallery specific to every function used across all the examples
 galleries and belonging to the modules listed in ``doc_module``. Keep
-in mind that the path set in ``backreferences_dir`` is relative to the
+in mind that the path set in ``backreferences_dir`` is **relative** to the
 ``conf.py`` file.
 
-
-Then within your sphinx documentation files you
-write these lines to include this reduced version of the Gallery,
-which has examples in use of a specific function::
+Then within your sphinx documentation ``.rst`` files you write these
+lines to include this reduced version of the Gallery, which has
+examples in use of a specific function, in this case ``numpy.exp``::
 
     .. include:: gen_modules/backreferences/numpy.exp.examples
     .. raw:: html
 
         <div style='clear:both'></div>
 
-The ``include`` directive takes a path relative to the file it is
-called from. In this case we put the file we declared in
-``backreferences_dir`` followed by the function whose examples we want
-to show and the file has the ``.examples`` extension.
+The ``include`` directive takes a path **relative** to the ``rst``
+file it is called from. In the case of this documentation file (which
+is in the same directory as ``conf.py``) we directly use the path
+declared in ``backreferences_dir`` followed by the function whose
+examples we want to show and the file has the ``.examples`` extension.
 
 Auto documenting your API with links to examples
 ------------------------------------------------
@@ -172,7 +172,7 @@ Auto documenting your API with links to examples
 The previous feature can be automated for all your modules combining
 it with the standard sphinx extensions `autodoc
 <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
-<http://sphinx-doc.org/ext/autosummary.html>`_. First enable it in your
+<http://sphinx-doc.org/ext/autosummary.html>`_. First enable them in your
 ``conf.py`` extensions list.
 
 .. code-block:: python
@@ -182,6 +182,7 @@ it with the standard sphinx extensions `autodoc
         ...
         'sphinx.ext.autodoc',
 	'sphinx.ext.autosummary',
+        'sphinx_gallery.gen_gallery',
         ]
 
     # generate autosummary even if no references
@@ -190,14 +191,16 @@ it with the standard sphinx extensions `autodoc
 `autodoc <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
 <http://sphinx-doc.org/ext/autosummary.html>`_ are very powerful
 extensions please read about them. In this example we'll explain how
-the :ref:`sphx_glr_api_reference` is automatically generated. The documentation is done at the module level. We first start with the ``reference.rst`` file
+the :ref:`sphx_glr_api_reference` is automatically generated. The
+documentation is done at the module level. We first start with the
+``reference.rst`` file
 
 .. literalinclude:: reference.rst
     :language: rst
 
 The important directives are ``currentmodule`` where we specify which
-module we are documenting, for our purpose is ``sphinx_gallery`` and
-``autosummary`` which will be responsible for generating the ``rst``
+module we are documenting, for our purpose is ``sphinx_gallery``. The
+``autosummary`` directive is responsible for generating the ``rst``
 files documenting each module.  ``autosummary`` takes the option
 *toctree* which is where the ``rst`` files are saved and *template*
 which is the file that describes how the module ``rst`` documentation
@@ -212,15 +215,15 @@ the module. There we have included the snippet introduced in the
 previous section. Keep in mind that the include directive is
 **relative** to the file location, and module documentation files are
 saved in the directory we specified in the *toctree* option of the
-``autosummary`` directive before and the files we are including are
-from the ``backreferences_dir`` configuration option setup for
-Sphinx-Gallery.
+``autosummary`` directive used before in the ``reference.rst`` file.
+The files we are including are from the ``backreferences_dir``
+configuration option setup for Sphinx-Gallery.
 
 .. literalinclude:: _templates/module.rst
-
-Then when documenting your API you call autosummary like:
-
-.. literalinclude:: reference.rst
+    :language: rst
+    :lines: 3-
+    :emphasize-lines: 12-22
+    :linenos:
 
 
 Using a custom default thumbnail image
