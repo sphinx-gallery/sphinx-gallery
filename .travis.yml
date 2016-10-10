@@ -53,7 +53,7 @@ install:
     - if [ "$PYTHON_VERSION" == "2.6" ]; then pip install seaborn; fi;
     - python setup.py install
 
-# To test the mayavi environmen follow the instructions at
+# To test the mayavi environment follow the instructions at
 # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
 before_script:
   - "export DISPLAY=:99.0"
