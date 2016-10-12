@@ -353,7 +353,7 @@ def figure_rst(figure_list, sources_dir):
 
 def scale_image(in_fname, out_fname, max_width, max_height):
     """Scales an image with the same aspect ratio centered in an
-       image with a given max_width and max_height
+       image box with the given max_width and max_height
        if in_fname == out_fname the image can only be scaled down
     """
     # local import to avoid testing dependency on PIL:
@@ -393,7 +393,17 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 
 
 def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
-    """Save the thumbnail image"""
+    """Generate and Save the thumbnail image
+
+    Parameters
+    ----------
+    image_path_template : str
+        holds the template where to save and how to name the image
+    src_file : str
+        path to source python file
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary
+    """
     # read specification of the figure to display as thumbnail from main text
     thumbnail_number = file_conf.get('thumbnail_number', 1)
     if not isinstance(thumbnail_number, int):
