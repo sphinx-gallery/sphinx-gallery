@@ -4,6 +4,7 @@ Change Log
 git master
 ----------
 
+
 Developer changes
 '''''''''''''''''
 * Support on the fly theme change for local builds of the
@@ -13,6 +14,9 @@ Developer changes
   usage example.::
 
     $ make html theme=rtd
+
+* Test Sphinx Gallery support on Ubuntu 14 packages, drop Ubuntu 12
+  support. Drop support for Python 2.6 in the conda environment
 
 
 v0.1.4
