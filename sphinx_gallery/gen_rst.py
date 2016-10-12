@@ -390,10 +390,10 @@ def save_figures(image_path_iterator, gallery_conf):
 
     Returns
     -------
-    images_rst : str
-        rst code to embed the images in the document
-    fig_num : int
-        number of figures saved
+    rst : str
+        The ReSTructuredText that will be rendered to HTML containing
+        the images. This is often produced by
+        :func:`sphinx_gallery.gen_rst.figure_rst`.
     """
     all_rst = u''
     prev_count = len(image_path_iterator)
@@ -701,7 +701,7 @@ def _reset_seaborn(gallery_conf, fname):
 _reset_dict = {
     'matplotlib': _reset_matplotlib,
     'seaborn': _reset_seaborn,
-    }
+}
 
 
 def clean_modules(gallery_conf, fname):
@@ -740,9 +740,16 @@ def executable_script(src_file, gallery_conf):
 def execute_script(script_blocks, script_vars, gallery_conf):
     """Execute and capture output from python script already in block structure
 
-    base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
-    image_path_template = os.path.join(image_dir, image_fname)
+    Parameters
+    ----------
+    script_blocks : list
+        (label, content, line_number)
+        List where each element is a tuple with the label ('text' or 'code'),
+        the corresponding content string of block and the leading line number
+    script_vars : dict
+        Configuration and run time variables
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
