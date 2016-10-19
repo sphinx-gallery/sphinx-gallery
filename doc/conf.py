@@ -313,6 +313,7 @@ except Exception:  # can raise all sorts of errors
 
 
 sphinx_gallery_conf = {
+    'backreferences_dir': 'gen_modules/backreferences',
     'doc_module': ('sphinx_gallery', 'numpy'),
     'reference_url': {
         'sphinx_gallery': None,

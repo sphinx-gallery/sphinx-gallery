@@ -114,8 +114,8 @@ dictionary within your Sphinx ``conf.py`` file :
 
 .. _references_to_examples:
 
-Establishing local references to examples
-=========================================
+References to examples (backreferences)
+=======================================
 
 Sphinx-Gallery also enables you, when documenting your modules, to
 reference to the examples that use that particular class or
@@ -136,17 +136,20 @@ Sphinx-Gallery configuration directory with:
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        # path to store the module using example template
-        'mod_example_dir'     : 'modules/generated',
+        # directory where function granular galleries are stored
+        'backreferences_dir'  : 'gen_modules/backreferences',
 
         # Your documented modules. In this case sphinx_gallery and numpy
         # in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
-The path you specify in ``mod_example_dir`` will get populated with
-ReStructuredText files describing the examples thumbnails with links
-to them but only for the specific module. Keep in mind is relative to
-the `conf.py` file.
+The path you specify in ``backreferences_dir``, here we choose
+``gen_modules/backreferences`` will get populated with
+ReStructuredText files which each contains a reduced version of the
+gallery specific to every function used across all the examples
+galleries and belonging to the modules listed in ``doc_module``. Keep
+in mind that the path set in ``backreferences_dir`` is relative to the
+``conf.py`` file.
 
 
 Then within your sphinx documentation files you
@@ -156,6 +159,11 @@ include these lines to include these links::
     .. raw:: html
 
         <div style='clear:both'></div>
+
+The ``include`` directive takes a path relative to the file it is
+called from. In this case we put the file we declared in
+``backreferences_dir`` followed by the function whose examples we want
+to show and the file has the ``.examples`` extension.
 
 Auto documenting your API with links to examples
 ------------------------------------------------
@@ -178,9 +186,34 @@ it with the standard sphinx extensions `autodoc
     # generate autosummary even if no references
     autosummary_generate = True
 
-To document all your modules and their functions you can put to your
-autosummary template for modules. For example for this documentation
-we use:
+`autodoc <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
+<http://sphinx-doc.org/ext/autosummary.html>`_ are very powerful
+extensions please read about them. In this example we'll explain how
+the :ref:`sphx_glr_api_reference` is automatically generated. The documentation is done at the module level. We first start with the ``reference.rst`` file
+
+.. literalinclude:: reference.rst
+    :language: rst
+
+The important directives are ``currentmodule`` where we specify which
+module we are documenting, for our purpose is ``sphinx_gallery`` and
+``autosummary`` which will be responsible for generating the ``rst``
+files documenting each module.  ``autosummary`` takes the option
+*toctree* which is where the ``rst`` files are saved and *template*
+which is the file that describes how the module ``rst`` documentation
+file is to be constructed, finally we write the modules we wish to
+document, in this case all modules of Sphinx-Gallery.
+
+The template file ``module.rst`` for the ``autosummary`` directive has
+to be saved in the path ``_templases/module.rst``. We present our
+configuration in the following block. The most relevant part is the
+loop defined between lines **12-22** that parses all the functions of
+the module. There we have included the snippet introduced in the
+previous section. Keep in mind that the include directive is
+**relative** to the file location, and module documentation files are
+saved in the directory we specified in the *toctree* option of the
+``autosummary`` directive before and the files we are including are
+from the ``backreferences_dir`` configuration option setup for
+Sphinx-Gallery.
 
 .. literalinclude:: _templates/module.rst
 
