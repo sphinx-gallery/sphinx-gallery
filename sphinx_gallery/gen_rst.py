@@ -55,11 +55,24 @@ except ImportError:
 
 from io import StringIO
 
+mpl_backend_msg = """
+
+Sphinx-Gallery relies on the matplotlib Agg backend to render figures
+and write them to files. You are currently using the {} backend.
+Sphinx-Gallery will terminate the build now, because changing backends
+is not well supported by matplotlib. We advise you to move
+sphinx_gallery imports before any matplotlib-dependent import. Moving
+sphinx_gallery imports at the top of your conf.py file should fix this
+issue.\n\n"""
+
 try:
     # make sure that the Agg backend is set before importing any
     # matplotlib
     import matplotlib
     matplotlib.use('Agg')
+    if matplotlib.get_backend() != 'agg':
+        raise ValueError(mpl_backend_msg.format(matplotlib.get_backend()))
+
     import matplotlib.pyplot as plt
 except ImportError:
     # this script can be imported by nosetest to find tests to run: we should

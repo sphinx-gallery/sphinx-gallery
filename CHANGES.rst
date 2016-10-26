@@ -4,6 +4,11 @@ Change Log
 git master
 ----------
 
+Bug Fixes
+'''''''''
+* Sphinx-Gallery now reminds the user to set the Agg backend in their
+  Sphinx configuration in case they are loading any other backend.
+
 v0.1.5
 ------
 
