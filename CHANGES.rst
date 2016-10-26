@@ -4,6 +4,16 @@ Change Log
 git master
 ----------
 
+v0.1.5
+------
+
+New features
+''''''''''''
+* CSS. Now a tooltip is displayed on the source code blocks to make
+  the doc-resolv functionality more discorverable. Function calls in
+  the source code blocks are hyperlinks to their online documentation.
+* Download buttons have a nicer look across all themes offered by
+  Sphinx
 
 Developer changes
 '''''''''''''''''
