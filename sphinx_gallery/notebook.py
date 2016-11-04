@@ -106,78 +106,80 @@ def rst2md(text):
     return text
 
 
-class Notebook(object):
-    """Jupyter notebook object
+def Notebook(file_name, target_dir, script_blocks):
+    """Write to file the Jupyter of the notebook
 
-    Constructs the file cell-by-cell and writes it at the end"""
+    Constructs the file cell-by-cell and writes it at the end
 
-    def __init__(self, file_name, target_dir, script_blocks):
-        """Declare the skeleton of the notebook
+    Parameters
+    ----------
+    file_name : str
+        original script file name, .py extension will be renamed
+    target_dir: str
+        directory where notebook file is to be saved
+    script_blocks: list
+        script execution cells
+    """
 
-        Parameters
-        ----------
-        file_name : str
-            original script file name, .py extension will be renamed
-        target_dir: str
-            directory where notebook file is to be saved
-        """
+    file_name = file_name.replace('.py', '.ipynb')
+    write_file = os.path.join(target_dir, file_name)
+    work_notebook = ipy_notebook_skeleton()
+    add_code_cell(work_notebook, "%matplotlib inline")
+    fill_notebook(work_notebook, script_blocks)
+    save_file(work_notebook, write_file)
 
-        self.file_name = file_name.replace('.py', '.ipynb')
-        self.write_file = os.path.join(target_dir, self.file_name)
-        self.work_notebook = ipy_notebook_skeleton()
-        self.add_code_cell("%matplotlib inline")
-        self.fill_notebook(script_blocks)
-        self.save_file()
 
-    def add_code_cell(self, code):
-        """Add a code cell to the notebook
+def add_code_cell(work_notebook, code):
+    """Add a code cell to the notebook
 
-        Parameters
-        ----------
-        code : str
-            Cell content
-        """
+    Parameters
+    ----------
+    code : str
+        Cell content
+    """
 
-        code_cell = {
-            "cell_type": "code",
-            "execution_count": None,
-            "metadata": {"collapsed": False},
-            "outputs": [],
-            "source": [code.strip()]
-        }
-        self.work_notebook["cells"].append(code_cell)
+    code_cell = {
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {"collapsed": False},
+        "outputs": [],
+        "source": [code.strip()]
+    }
+    work_notebook["cells"].append(code_cell)
 
-    def add_markdown_cell(self, text):
-        """Add a markdown cell to the notebook
 
-        Parameters
-        ----------
-        code : str
-            Cell content
-        """
-        markdown_cell = {
-            "cell_type": "markdown",
-            "metadata": {},
-            "source": [rst2md(text)]
-        }
-        self.work_notebook["cells"].append(markdown_cell)
+def add_markdown_cell(work_notebook, text):
+    """Add a markdown cell to the notebook
 
-    def fill_notebook(self, script_blocks):
-        """Writes the Jupyter notebook cells
+    Parameters
+    ----------
+    code : str
+        Cell content
+    """
+    markdown_cell = {
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": [rst2md(text)]
+    }
+    work_notebook["cells"].append(markdown_cell)
 
-        Parameters
-        ----------
-        script_blocks : list of tuples
-        """
 
-        for blabel, bcontent in script_blocks:
-            if blabel == 'code':
-                self.add_code_cell(bcontent)
-            else:
-                self.add_markdown_cell(text2string(bcontent))
+def fill_notebook(work_notebook, script_blocks):
+    """Writes the Jupyter notebook cells
 
-    def save_file(self):
-        """Saves the notebook to a file, returns the filename"""
-        with open(self.write_file, 'w') as out_nb:
-            json.dump(self.work_notebook, out_nb, indent=2)
-        return self.file_name
+    Parameters
+    ----------
+    script_blocks : list of tuples
+    """
+
+    for blabel, bcontent in script_blocks:
+        if blabel == 'code':
+            add_code_cell(work_notebook, bcontent)
+        else:
+            add_markdown_cell(work_notebook, text2string(bcontent))
+
+
+def save_file(work_notebook, write_file):
+    """Saves the notebook to a file, returns the filename"""
+    with open(write_file, 'w') as out_nb:
+        json.dump(work_notebook, out_nb, indent=2)
