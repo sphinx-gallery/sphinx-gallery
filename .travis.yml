@@ -32,6 +32,7 @@ matrix:
       env: DISTRIB="conda" PYTHON_VERSION="3.4"
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.5"
+
 before_install:
     - if [ "$DISTRIB" == "conda" ]; then
          wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;

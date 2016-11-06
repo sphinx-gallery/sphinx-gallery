@@ -20,8 +20,11 @@ import nose
 from nose.tools import assert_equal, assert_false, assert_true
 
 import sphinx_gallery.gen_rst as sg
+from sphinx_gallery.save_images import save_figures
 from sphinx_gallery import gen_gallery
 from sphinx_gallery import downloads
+from sphinx_gallery.save_images import save_figures
+
 import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
 CONTENT = [
@@ -92,16 +95,6 @@ def test_direct_comment_after_docstring():
                             'x, y = 1, 2',
                             '']))]
     assert_equal(result, expected_result)
-
-
-def test_codestr2rst():
-    """Test the correct translation of a code block into rst"""
-    output = sg.codestr2rst('print("hello world")')
-    reference = """
-.. code-block:: python
-
-    print("hello world")"""
-    assert_equal(reference, output)
 
 
 def test_extract_intro():
@@ -243,18 +236,20 @@ def test_save_figures():
     mlab.test_plot3d()
     plt.plot(1, 1)
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
-    assert_equal(fig_num, 2)
-    assert '/image1.png' in image_rst
-    assert '/image2.png' in image_rst
+
+    fig_list = save_figures(fname_template, 0, gallery_conf)
+    assert_equal(len(fig_list), 2)
+
+    for i, image_path in enumerate(fig_list):
+        assert_equal('image{}.png'.format(i + 1), image_path)
 
     mlab.test_plot3d()
     plt.plot(1, 1)
-    image_rst, fig_num = sg.save_figures(fname_template, 2, gallery_conf)
-    assert_equal(fig_num, 2)
-    assert '/image2.png' not in image_rst
-    assert '/image3.png' in image_rst
-    assert '/image4.png' in image_rst
+    n = 5
+    fig_list = save_figures(fname_template, n, gallery_conf)
+    assert_equal(len(fig_list), 2)
+    for i, image_path in enumerate(fig_list):
+        assert_equal('image{}.png'.format(i + 1 + n), image_path)
 
     shutil.rmtree(gallery_conf['gallery_dir'])
 
@@ -271,35 +266,15 @@ def test_zip_notebooks():
         raise OSError("Bad file in zipfile: {0}".format(check))
 
 
-def test_figure_rst():
-    """Testing rst of images"""
-    figure_list = ['sphx_glr_plot_1.png']
-    image_rst, fig_num = sg.figure_rst(figure_list, '.')
-    single_image = """
-.. image:: /sphx_glr_plot_1.png
-    :align: center
-"""
-    assert_equal(image_rst, single_image)
-    assert_equal(fig_num, 1)
+def test_prepare_execution_env():
 
-    image_rst, fig_num = sg.figure_rst(figure_list + ['second.png'], '.')
+    # TODO
+    gallery_conf = build_test_configuration(examples_dir='examples')
+    block_vars = sg.prepare_execution_env('fast_test.py',
+                                          gallery_conf['gallery_dir'],
+                                          gallery_conf['examples_dir'],
+                                          gallery_conf)
 
-    image_list_rst = """
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image:: /sphx_glr_plot_1.png
-            :scale: 47
-
-    *
-
-      .. image:: /second.png
-            :scale: 47
-"""
-    assert_equal(image_rst, image_list_rst)
-    assert_equal(fig_num, 2)
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice

@@ -10,7 +10,7 @@ Class that holds the Jupyter notebook information
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from __future__ import division, absolute_import, print_function
+from __future__ import absolute_import, division, print_function
 from functools import partial
 import argparse
 import json
