@@ -7,11 +7,10 @@ Testing the Jupyter notebook parser
 
 from __future__ import division, absolute_import, print_function
 import json
-import os
 import tempfile
-from nose.tools import assert_equal, assert_false, assert_true
+from nose.tools import assert_equal
 import sphinx_gallery.gen_rst as sg
-from sphinx_gallery.notebook import rst2md, Notebook
+from sphinx_gallery.notebook import rst2md, jupyter_notebook, save_notebook
 
 
 def test_latex_conversion():
@@ -71,11 +70,12 @@ For more details on interpolation see the page `channel_interpolation`.
     assert_equal(rst2md(rst), markdown)
 
 
-def test_ipy_notebook():
+def test_jupyter_notebook():
     """Test that written ipython notebook file corresponds to python object"""
-    with tempfile.NamedTemporaryFile('w+') as f:
-        blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
-        example_nb = Notebook(f.name, os.path.dirname(f.name), blocks)
-        example_nb.save_file()
-        f.flush()
-        assert_equal(json.load(f), example_nb.work_notebook)
+    blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+    example_nb = jupyter_notebook(blocks)
+
+    with tempfile.NamedTemporaryFile('w') as nb_file:
+        save_notebook(example_nb, nb_file.name)
+        with open(nb_file.name, "r") as fname:
+            assert_equal(json.load(fname), example_nb)

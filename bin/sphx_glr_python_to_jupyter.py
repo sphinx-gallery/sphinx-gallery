@@ -16,11 +16,11 @@ import argparse
 import os
 
 import sphinx_gallery.gen_rst as sg
-from sphinx_gallery.notebook import Notebook
+from sphinx_gallery.notebook import jupyter_notebook, save_notebook
 
 parser = argparse.ArgumentParser(
     description='Sphinx-Gallery Notebook converter')
-parser.add_argument('file', nargs='+',
+parser.add_argument('python_src_file', nargs='+',
                     help='Input Python file script to convert. '
                     'Supports multiple files and shell wildcards'
                     ' (e.g. *.py)')
@@ -29,12 +29,11 @@ parser.add_argument('file', nargs='+',
 def main():
     args = parser.parse_args()
 
-    for src_file in args.file:
-        file_name = os.path.basename(src_file)
+    for src_file in args.python_src_file:
         blocks = sg.split_code_and_text_blocks(src_file)
         print('Converting {0}'.format(src_file))
-        example_nb = Notebook(file_name, '.', blocks)
-        example_nb.save_file()
+        example_nb = jupyter_notebook(blocks)
+        save_notebook(example_nb, src_file.replace('.py', '.ipynb'))
 
 
 if __name__ == '__main__':

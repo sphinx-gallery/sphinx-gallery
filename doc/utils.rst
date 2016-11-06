@@ -5,7 +5,7 @@ Sphinx-Gallery Utilities
 Convert Python scripts into Jupyter Notebooks
 =============================================
 
-Sphinx Gallery exposes its python source to Jupyter notebook convert
+Sphinx Gallery exposes its python source to Jupyter notebook converter
 as a executable script too. To use this utility just call the script
 and give the Python source file as argument::
 

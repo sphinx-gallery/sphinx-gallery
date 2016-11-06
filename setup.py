@@ -30,7 +30,7 @@ setup(
     packages=find_packages(),
     package_data={'sphinx_gallery': ['_static/gallery.css', '_static/no_image.png',
                                      '_static/broken_example.png']},
-    scripts=['bin/copy_sphinxgallery.sh', 'bin/sphx_ex2nb.py'],
+    scripts=['bin/copy_sphinxgallery.sh', 'bin/sphx_glr_python_to_jupyter.py'],
     url="https://github.com/sphinx-gallery/sphinx-gallery",
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',

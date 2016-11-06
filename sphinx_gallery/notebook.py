@@ -13,7 +13,6 @@ Class that holds the Jupyter notebook information
 from __future__ import division, absolute_import, print_function
 from functools import partial
 import json
-import os
 import re
 import sys
 
@@ -26,7 +25,7 @@ def text2string(content):
         return content + '\n'
 
 
-def ipy_notebook_skeleton():
+def jupyter_notebook_skeleton():
     """Returns a dictionary with the elements of a Jupyter notebook"""
     py_version = sys.version_info
     notebook_skeleton = {
@@ -106,27 +105,20 @@ def rst2md(text):
     return text
 
 
-def Notebook(file_name, target_dir, script_blocks):
-    """Write to file the Jupyter of the notebook
-
-    Constructs the file cell-by-cell and writes it at the end
+def jupyter_notebook(script_blocks):
+    """Generate a Jupyter notebook file cell-by-cell
 
     Parameters
     ----------
-    file_name : str
-        original script file name, .py extension will be renamed
-    target_dir: str
-        directory where notebook file is to be saved
     script_blocks: list
         script execution cells
     """
 
-    file_name = file_name.replace('.py', '.ipynb')
-    write_file = os.path.join(target_dir, file_name)
-    work_notebook = ipy_notebook_skeleton()
+    work_notebook = jupyter_notebook_skeleton()
     add_code_cell(work_notebook, "%matplotlib inline")
     fill_notebook(work_notebook, script_blocks)
-    save_file(work_notebook, write_file)
+
+    return work_notebook
 
 
 def add_code_cell(work_notebook, code):
@@ -179,7 +171,7 @@ def fill_notebook(work_notebook, script_blocks):
             add_markdown_cell(work_notebook, text2string(bcontent))
 
 
-def save_file(work_notebook, write_file):
-    """Saves the notebook to a file, returns the filename"""
+def save_notebook(work_notebook, write_file):
+    """Saves the Jupyter work_notebook to write_file"""
     with open(write_file, 'w') as out_nb:
         json.dump(work_notebook, out_nb, indent=2)

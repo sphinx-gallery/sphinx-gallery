@@ -82,7 +82,7 @@ except ImportError:
 from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
 from .downloads import CODE_DOWNLOAD
-from .notebook import Notebook, text2string
+from .notebook import jupyter_notebook, text2string, save_notebook
 
 try:
     basestring
@@ -668,13 +668,15 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     save_thumbnail(image_path_template, src_file, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
-    example_nb = Notebook(fname, target_dir, script_blocks)
+    example_nb = jupyter_notebook(script_blocks)
+    save_notebook(example_nb, example_file.replace('.py', '.ipynb'))
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:
         example_rst += "**Total running time of the script:**" \
                        " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
                            time_m, time_s)
-        example_rst += CODE_DOWNLOAD.format(fname, example_nb.save_file())
+        example_rst += CODE_DOWNLOAD.format(fname,
+                                            fname.replace('.py', '.ipynb'))
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 
