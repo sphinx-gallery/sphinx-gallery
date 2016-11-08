@@ -6,8 +6,11 @@ git master
 
 Bug Fixes
 '''''''''
-* Sphinx-Gallery now reminds the user to set the Agg backend in their
-  Sphinx configuration in case they are loading any other backend.
+* Sphinx-Gallery now raises an exception if the matplotlib bakend can
+  not be set to ``'agg'``. This can happen for example if
+  matplotlib.pyplot is imported in conf.py. See `#157
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/157>`_ for
+  more details.
 
 v0.1.5
 ------
