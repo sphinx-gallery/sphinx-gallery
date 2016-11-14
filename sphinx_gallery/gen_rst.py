@@ -177,7 +177,7 @@ def get_docstring_and_rest(filename):
     with open(filename, 'rb') as f:
         content = f.read()
     # change from Windows format to UNIX for uniformity
-    content = content.replace('\r\n', '\n')
+    content = content.replace(b'\r\n', b'\n')
 
     node = ast.parse(content)
     if not isinstance(node, ast.Module):

@@ -265,7 +265,7 @@ def test_ipy_notebook():
                 example_nb.add_markdown_cell(sg.text2string(bcontent))
 
         example_nb.save_file()
-        with open(f.name, 'rb') as f:
+        with open(f.name, 'r') as f:
             assert_equal(json.load(f), example_nb.work_notebook)
     finally:
         os.remove(f.name)
