@@ -176,6 +176,8 @@ def get_docstring_and_rest(filename):
     # "SyntaxError: encoding declaration in Unicode string"
     with open(filename, 'rb') as f:
         content = f.read()
+    # change from Windows format to UNIX for uniformity
+    content = content.replace('\r\n', '\n')
 
     node = ast.parse(content)
     if not isinstance(node, ast.Module):
@@ -561,10 +563,10 @@ def execute_code_block(code_block, example_globals,
     except Exception:
         formatted_exception = traceback.format_exc()
 
-        fail_example_warning = 80 * '_' + '\n' + \
-            '%s failed to execute correctly:' % src_file + \
+        fail_example_warning = '\n' + 80 * '_' + '\n' + \
+            '%s failed to execute correctly:' % src_file + '\n' + \
             formatted_exception + 80 * '_' + '\n'
-        warnings.warn(fail_example_warning)
+        warnings.warn(fail_example_warning, stacklevel=3)
 
         fig_num = 0
         images_rst = codestr2rst(formatted_exception, lang='pytb')
@@ -615,6 +617,7 @@ def clean_modules(gallery_conf):
     if gallery_conf.get('find_mayavi_figures', False):
         from mayavi import mlab
         mlab.close(all=True)
+        assert len(mlab.get_engine().scenes) == 0
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):

@@ -15,40 +15,80 @@ import re
 import os
 import nose
 import shutil
+import warnings
 import zipfile
 from nose.tools import assert_equal, assert_false, assert_true
 
 import sphinx_gallery.gen_rst as sg
-from sphinx_gallery import gen_gallery
-from sphinx_gallery import notebook
-from sphinx_gallery import downloads
+from sphinx_gallery import gen_gallery, gen_rst, notebook, downloads
 import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
-CONTENT = [
-    '"""'
-    'Docstring header',
-    '================',
-    '',
-    'This is the description of the example',
-    'which goes on and on, Óscar',
-    '',
-    '',
-    'And this is a second paragraph',
-    '"""',
-    '',
-    '# and now comes the module code',
-    'import logging',
-    'import sys',
-    'x, y = 1, 2',
-    'print(u"Óscar output") # need some code output',
-    'logger = logging.getLogger()',
-    'logger.setLevel(logging.INFO)',
-    'lh = logging.StreamHandler(sys.stdout)',
-    'lh.setFormatter(logging.Formatter("log:%(message)s"))',
-    'logger.addHandler(lh)',
-    'logger.info(u"Óscar")',
-    'print(r"$\\langle n_\\uparrow n_\\downarrow \\rangle$")',
-]
+CONTENT = '''
+"""
+Docstring header
+================
+
+This is the description of the example
+which goes on and on, Óscar
+
+
+And this is a second paragraph
+"""
+
+# and now comes the module code
+import logging
+import sys
+x, y = 1, 2
+print(u"Óscar output") # need some code output
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+lh = logging.StreamHandler(sys.stdout)
+lh.setFormatter(logging.Formatter("log:%(message)s"))
+logger.addHandler(lh)
+logger.info(u"Óscar")
+print(r"$\\langle n_\\uparrow n_\\downarrow \\rangle$")
+'''.replace('\r\n', '\n').split('\n')
+
+
+FIGURE_CONTENT = '''
+"""
+Docstring header
+================
+
+Description.
+"""
+
+from mayavi import mlab
+import matplotlib.pyplot as plt
+
+###############################################################################
+# Section 1
+
+from mayavi import mlab
+fig = mlab.figure()
+mlab.draw()
+fig2 = plt.figure()
+assert len(mlab.get_engine().scenes) == 1
+assert plt.fignum_exists(fig2.number)
+
+###############################################################################
+# Section 2
+
+assert len(mlab.get_engine().scenes) == 1  # shall not be closed
+assert plt.fignum_exists(fig2.number)
+
+###############################################################################
+# Section 3
+
+mlab.close(all=True)
+plt.close('all')
+assert len(mlab.get_engine().scenes) == 0
+assert not plt.fignum_exists(fig2.number)
+fig = mlab.figure()
+fig2 = plt.figure()
+assert len(mlab.get_engine().scenes) == 1
+assert plt.fignum_exists(fig2.number)
+'''.replace('\r\n', '\n').split('\n')
 
 
 def test_split_code_and_text_blocks():
@@ -66,22 +106,24 @@ def test_bug_cases_of_notebook_syntax():
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
-        blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
-
-        assert_equal(blocks, ref_blocks)
+    blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+    assert_equal(blocks, ref_blocks)
 
 
 def test_direct_comment_after_docstring():
     # For more details see
     # https://github.com/sphinx-gallery/sphinx-gallery/pull/49
-    with tempfile.NamedTemporaryFile('w') as f:
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write('\n'.join(['"Docstring"',
                            '# and now comes the module code',
                            '# with a second line of comment',
                            'x, y = 1, 2',
                            '']))
-        f.flush()
+
+    try:
         result = sg.split_code_and_text_blocks(f.name)
+    finally:
+        os.remove(f.name)
 
     expected_result = [
         ('text', 'Docstring'),
@@ -103,23 +145,24 @@ def test_codestr2rst():
 
 
 def test_extract_intro():
-    with tempfile.NamedTemporaryFile('wb') as f:
+    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
         f.write('\n'.join(CONTENT).encode('utf-8'))
-        f.flush()
+    try:
         result = sg.extract_intro(f.name)
+    finally:
+        os.remove(f.name)
     assert_false('Docstring' in result)
-    assert_equal(
-        result,
-        'This is the description of the example which goes on and on, Óscar')
+    want = 'This is the description of the example which goes on and on, Óscar'
+    assert_equal(result, want)
     assert_false('second paragraph' in result)
 
 
 def test_md5sums():
     """Test md5sum check functions work on know file content"""
 
-    with tempfile.NamedTemporaryFile('w') as f:
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write('Local test\n')
-        f.flush()
+    try:
         file_md5 = sg.get_md5sum(f.name)
         # verify correct md5sum
         assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
@@ -129,6 +172,8 @@ def test_md5sums():
         with open(f.name + '.md5', 'w') as file_checksum:
             file_checksum.write(file_md5)
         assert_true(sg.md5sum_is_current(f.name))
+    finally:
+        os.remove(f.name)
     os.remove(f.name + '.md5')
 
 
@@ -155,8 +200,12 @@ def test_fail_example():
                      mode='w', encoding='utf-8') as f:
         f.write('\n'.join(failing_code))
 
-    sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
-                         gallery_conf['examples_dir'], gallery_conf)
+    with warnings.catch_warnings(record=True) as w:
+        sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
+                             gallery_conf['examples_dir'], gallery_conf)
+    assert_equal(len(w), 1)
+    assert_true(all(x in str(w[0].message)
+                    for x in ['_' * 10, "'First_test_fail' is not defined"]))
 
     # read rst file and check if it contains traceback output
 
@@ -204,8 +253,9 @@ def test_pattern_matching():
 
 def test_ipy_notebook():
     """Test that written ipython notebook file corresponds to python object"""
-    with tempfile.NamedTemporaryFile('w+') as f:
+    with tempfile.NamedTemporaryFile('w+', delete=False) as f:
         example_nb = notebook.Notebook(f.name, os.path.dirname(f.name))
+    try:
         blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
         for blabel, bcontent in blocks:
@@ -215,9 +265,10 @@ def test_ipy_notebook():
                 example_nb.add_markdown_cell(sg.text2string(bcontent))
 
         example_nb.save_file()
-
-        f.flush()
-        assert_equal(json.load(f), example_nb.work_notebook)
+        with open(f.name, 'rb') as f:
+            assert_equal(json.load(f), example_nb.work_notebook)
+    finally:
+        os.remove(f.name)
 
 
 def test_thumbnail_number():
@@ -226,12 +277,13 @@ def test_thumbnail_number():
                      '# sphinx_gallery_thumbnail_number=2',
                      '#sphinx_gallery_thumbnail_number = 2',
                      '    # sphinx_gallery_thumbnail_number=2']:
-        with tempfile.NamedTemporaryFile('w') as f:
-            f.write('\n'.join(['"Docstring"',
-                               test_str]))
-            f.flush()
+        with tempfile.NamedTemporaryFile('w', delete=False) as f:
+            f.write('\n'.join(['"Docstring"', test_str]))
+        try:
             _, content = sg.get_docstring_and_rest(f.name)
-            thumbnail_number = sg.extract_thumbnail_number(content)
+        finally:
+            os.remove(f.name)
+        thumbnail_number = sg.extract_thumbnail_number(content)
         assert_equal(thumbnail_number, 2)
 
 
@@ -250,17 +302,45 @@ def test_save_figures():
     fname_template = os.path.join(examples_dir, 'image{0}.png')
     fig_list, _ = sg.save_figures(fname_template, 0, gallery_conf)
     assert_equal(len(fig_list), 2)
-    assert fig_list[0].endswith('image1.png')
-    assert fig_list[1].endswith('image2.png')
+    assert_true(fig_list[0].endswith('image1.png'))
+    assert_true(fig_list[1].endswith('image2.png'))
+    gen_rst.clean_modules(gallery_conf)
+    # everything closed properly
+    assert_true(all(plt.fignum_exists(ii) is False for ii in range(10)))
+    assert_equal(len(mlab.get_engine().scenes), 0)
 
     mlab.test_plot3d()
     plt.plot(1, 1)
     fig_list, _ = sg.save_figures(fname_template, 2, gallery_conf)
     assert_equal(len(fig_list), 2)
-    assert fig_list[0].endswith('image3.png')
-    assert fig_list[1].endswith('image4.png')
-
+    assert_true(fig_list[0].endswith('image3.png'))
+    assert_true(fig_list[1].endswith('image4.png'))
+    gen_rst.clean_modules(gallery_conf)
     shutil.rmtree(examples_dir)
+
+    # test full pipeline
+    gallery_conf = build_test_configuration(
+        filename_pattern=re.escape(os.sep) + 'plot_0')
+    gallery_conf['find_mayavi_figures'] = True
+    with codecs.open(os.path.join(gallery_conf['examples_dir'], 'plot_0.py'),
+                     mode='w', encoding='utf-8') as f:
+        f.write('\n'.join(FIGURE_CONTENT))
+    sg.generate_file_rst('plot_0.py', gallery_conf['gallery_dir'],
+                         gallery_conf['examples_dir'], gallery_conf)
+    assert_true(all(plt.fignum_exists(ii) is False for ii in range(10)))
+    assert_equal(len(mlab.get_engine().scenes), 0)
+    # read rst file and check if it contains code output
+    rst_fname = os.path.splitext('plot_0.py')[0] + '.rst'
+    with codecs.open(os.path.join(gallery_conf['gallery_dir'], rst_fname),
+                     mode='r', encoding='utf-8') as f:
+        rst = f.read()
+    assert_true('AssertionError' not in rst, msg=rst)
+    # check image count, should be four total: 2 in Section 1, 0 in 2, 2 in 3
+    sections = rst.split('\nSection ')
+    assert_equal(len(sections), 4)
+    assert_equal(sections[1].count('.. image::'), 2)
+    assert_equal(sections[2].count('.. image::'), 0)
+    assert_equal(sections[3].count('.. image::'), 2)
 
 
 def test_zip_notebooks():
