@@ -37,6 +37,8 @@ CONTENT = [
     '"""',
     '',
     '# and now comes the module code',
+    'assert __name__ == "__main__"',
+    'assert ".py" in __file__',
     'import logging',
     'import sys',
     'x, y = 1, 2',
