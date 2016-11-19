@@ -8,9 +8,16 @@ Testing the Jupyter notebook parser
 from __future__ import division, absolute_import, print_function
 import json
 import tempfile
+import os
+from unittest import TestCase
 from nose.tools import assert_equal
 import sphinx_gallery.gen_rst as sg
-from sphinx_gallery.notebook import rst2md, jupyter_notebook, save_notebook
+from sphinx_gallery.notebook import rst2md, jupyter_notebook, save_notebook, python_to_jupyter_cli
+try:
+    FileNotFoundError
+except NameError:
+    # Python2
+    FileNotFoundError = IOError
 
 
 def test_latex_conversion():
@@ -79,3 +86,28 @@ def test_jupyter_notebook():
         save_notebook(example_nb, nb_file.name)
         with open(nb_file.name, "r") as fname:
             assert_equal(json.load(fname), example_nb)
+
+###############################################################################
+# Notebook shell utility
+
+
+class CommandLineTest(TestCase):
+    """Test the Sphinx-Gallery python to Jupyter notebook converter CLI"""
+
+    def test_with_empty_args(self):
+        """ User passes no args, should fail with SystemExit """
+        with self.assertRaises(SystemExit):
+            python_to_jupyter_cli([])
+
+    def test_missing_file(self):
+        """ User passes non existing file, should fail with FileNotFoundError """
+        with self.assertRaises(FileNotFoundError):
+            python_to_jupyter_cli(['nofile.py'])
+
+
+def test_file_is_generated():
+    """User passes good python file. Check notebook file is created"""
+
+    python_to_jupyter_cli(['examples/plot_quantum.py'])
+    assert os.path.isfile('examples/plot_quantum.ipynb')
+    os.remove('examples/plot_quantum.ipynb')

@@ -9,7 +9,7 @@ Sphinx Gallery exposes its python source to Jupyter notebook converter
 as a executable script too. To use this utility just call the script
 and give the Python source file as argument::
 
-  $ sphx_ex2nb.py python_script.py
+  $ sphx_glr_python_to_jupyter.py python_script.py
 
 
 Embedding Sphinx-Gallery inside your documentation script extensions

@@ -12,9 +12,11 @@ Class that holds the Jupyter notebook information
 
 from __future__ import division, absolute_import, print_function
 from functools import partial
+import argparse
 import json
 import re
 import sys
+from .py_source_parser import split_code_and_text_blocks
 
 
 def text2string(content):
@@ -175,3 +177,26 @@ def save_notebook(work_notebook, write_file):
     """Saves the Jupyter work_notebook to write_file"""
     with open(write_file, 'w') as out_nb:
         json.dump(work_notebook, out_nb, indent=2)
+
+
+###############################################################################
+# Notebook shell utility
+
+def python_to_jupyter_cli(args=None, namespace=None):
+    """Exposes the jupyter notebook renderer to the command line
+
+    Takes the same arguments as ArgumentParser.parse_args
+    """
+    parser = argparse.ArgumentParser(
+        description='Sphinx-Gallery Notebook converter')
+    parser.add_argument('python_src_file', nargs='+',
+                        help='Input Python file script to convert. '
+                        'Supports multiple files and shell wildcards'
+                        ' (e.g. *.py)')
+    args = parser.parse_args(args, namespace)
+
+    for src_file in args.python_src_file:
+        blocks = split_code_and_text_blocks(src_file)
+        print('Converting {0}'.format(src_file))
+        example_nb = jupyter_notebook(blocks)
+        save_notebook(example_nb, src_file.replace('.py', '.ipynb'))
