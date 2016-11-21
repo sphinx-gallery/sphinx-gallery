@@ -288,19 +288,15 @@ def extract_intro(filename):
 def get_md5sum(src_file):
     """Returns md5sum of file"""
 
-    with open(src_file, 'r') as src_data:
+    with open(src_file, 'rb') as src_data:
         src_content = src_data.read()
-
-        # data needs to be encoded in python3 before hashing
-        if sys.version_info[0] == 3:
-            src_content = src_content.encode('utf-8')
 
         src_md5 = hashlib.md5(src_content).hexdigest()
     return src_md5
 
 
 def md5sum_is_current(src_file):
-    """Returns True if src_file has the same md5 hash as the one stored on disk"""
+    """Checks whether src_file has the same md5 hash as the one on disk"""
 
     src_md5 = get_md5sum(src_file)
 
