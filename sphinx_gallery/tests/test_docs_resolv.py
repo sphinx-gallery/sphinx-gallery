@@ -6,6 +6,7 @@ Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
 import sphinx_gallery.docs_resolv as sg
+import os
 import tempfile
 import sys
 from nose.tools import assert_equal
@@ -16,14 +17,20 @@ def test_shelve():
     retrieved after file is deleted"""
     test_string = 'test information'
     tmp_cache = tempfile.mkdtemp()
-    with tempfile.NamedTemporaryFile('w') as fid:
+    # Don't use context manager for NamedTemporaryFile here:
+    # "Whether the name can be used to open the file a second time, while the
+    # named temporary file is still open, varies across platforms (it can be
+    # so used on Unix; it cannot on Windows NT or later)
+    with tempfile.NamedTemporaryFile('w', delete=False) as fid:
         fid.write(test_string)
-        fid.seek(0)
 
+    try:
         # recovers data from temporary file and caches it in the shelve
         file_data = sg.get_data(fid.name, tmp_cache)
         # tests recovered data matches
         assert_equal(file_data, test_string)
+    finally:
+        os.remove(fid.name)
 
     # test if cached data is available after temporary file has vanished
     assert_equal(sg.get_data(fid.name, tmp_cache), test_string)

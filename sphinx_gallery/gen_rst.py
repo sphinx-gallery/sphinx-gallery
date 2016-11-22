@@ -176,6 +176,8 @@ def get_docstring_and_rest(filename):
     # "SyntaxError: encoding declaration in Unicode string"
     with open(filename, 'rb') as f:
         content = f.read()
+    # change from Windows format to UNIX for uniformity
+    content = content.replace(b'\r\n', b'\n')
 
     node = ast.parse(content)
     if not isinstance(node, ast.Module):
@@ -331,11 +333,23 @@ def save_figures(image_path, fig_count, gallery_conf):
     """
     figure_list = []
 
+    # We don't actualy *close* figures until the entire script is done
+    # executing (in clean_modules) so that users have access to the figures
+    # in case they need to query properties (e.g., for Mayavi scene, the
+    # view transformation) in different code blocks.
+    # Instead we monkey-patch _sg_captured to the figure/scene.
+
+    # In the future we could even add an option to the scripts to allow
+    # recapturing within a code-block like (# sg:recapture1) could
+    # recapture figure number 1 even if it's already captured.
+
     fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
     for fig_mngr in fig_managers:
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         fig = plt.figure(fig_mngr.num)
+        if hasattr(fig, '_sg_captured'):
+            continue
         kwargs = {}
         to_rgba = matplotlib.colors.colorConverter.to_rgba
         for attr in ['facecolor', 'edgecolor']:
@@ -347,6 +361,7 @@ def save_figures(image_path, fig_count, gallery_conf):
         current_fig = image_path.format(fig_count + fig_mngr.num)
         fig.savefig(current_fig, **kwargs)
         figure_list.append(current_fig)
+        fig._sg_captured = True
 
     if gallery_conf.get('find_mayavi_figures', False):
         from mayavi import mlab
@@ -356,12 +371,14 @@ def save_figures(image_path, fig_count, gallery_conf):
         mayavi_fig_nums = range(last_matplotlib_fig_num + 1, total_fig_num + 1)
 
         for scene, mayavi_fig_num in zip(e.scenes, mayavi_fig_nums):
+            if hasattr(scene, '_sg_captured'):
+                continue
             current_fig = image_path.format(mayavi_fig_num)
             mlab.savefig(current_fig, figure=scene)
+            scene._sg_captured = True
             # make sure the image is not too large
             scale_image(current_fig, current_fig, 850, 999)
             figure_list.append(current_fig)
-        mlab.close(all=True)
 
     # Depending on whether we have one or more figures, we're using a
     # horizontal list or a single rst call to 'image'.
@@ -509,7 +526,6 @@ def execute_code_block(code_block, example_globals,
     if not block_vars['execute_script']:
         return stdout, time_elapsed
 
-    plt.close('all')
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
@@ -543,10 +559,10 @@ def execute_code_block(code_block, example_globals,
     except Exception:
         formatted_exception = traceback.format_exc()
 
-        fail_example_warning = 80 * '_' + '\n' + \
-            '%s failed to execute correctly:' % src_file + \
+        fail_example_warning = '\n' + 80 * '_' + '\n' + \
+            '%s failed to execute correctly:' % src_file + '\n' + \
             formatted_exception + 80 * '_' + '\n'
-        warnings.warn(fail_example_warning)
+        warnings.warn(fail_example_warning, stacklevel=3)
 
         fig_num = 0
         images_rst = codestr2rst(formatted_exception, lang='pytb')
@@ -570,11 +586,18 @@ def execute_code_block(code_block, example_globals,
     return code_output, time_elapsed
 
 
-def clean_modules():
-    """Remove "unload" seaborn from the name space
+def clean_modules(gallery_conf):
+    """Clean up after running a script
 
-    After a script is executed it can load a variety of setting that one
-    does not want to influence in other examples in the gallery."""
+    After a script is executed it can load a variety of settings that one
+    does not want to influence other examples in the gallery. Thus:
+
+        1. Remove "unload" seaborn from the name space
+        2. Reset matplotlib.rcParams
+        3. Close all matplotlib windows
+        4. Close all mayavi windows
+
+    """
 
     # Horrible code to 'unload' seaborn, so that it resets
     # its default when is load
@@ -586,6 +609,11 @@ def clean_modules():
 
     # Reset Matplotlib to default
     plt.rcdefaults()
+    plt.close('all')
+    if gallery_conf.get('find_mayavi_figures', False):
+        from mayavi import mlab
+        mlab.close(all=True)
+        assert len(mlab.get_engine().scenes) == 0
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
@@ -647,10 +675,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     print('Executing file %s' % src_file)
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
-            code_output, rtime = execute_code_block(bcontent,
-                                                    example_globals,
-                                                    block_vars,
-                                                    gallery_conf)
+            code_output, rtime = execute_code_block(
+                bcontent, example_globals, block_vars, gallery_conf)
 
             time_elapsed += rtime
             example_nb.add_code_cell(bcontent)
@@ -669,7 +695,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             example_rst += text2string(bcontent) + '\n'
             example_nb.add_markdown_cell(text2string(bcontent))
 
-    clean_modules()
+    clean_modules(gallery_conf)
 
     # Writes md5 checksum if example has build correctly
     # not failed and was initially meant to run(no-plot shall not cache md5sum)
