@@ -331,11 +331,11 @@ def save_figures(image_path, fig_count, gallery_conf):
     """
     figure_list = []
 
-    fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
-    for fig_mngr in fig_managers:
+    fig_numbers = plt.get_fignums()
+    for fig_num in fig_numbers:
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
-        fig = plt.figure(fig_mngr.num)
+        fig = plt.figure(fig_num)
         kwargs = {}
         to_rgba = matplotlib.colors.colorConverter.to_rgba
         for attr in ['facecolor', 'edgecolor']:
@@ -344,7 +344,7 @@ def save_figures(image_path, fig_count, gallery_conf):
             if to_rgba(fig_attr) != to_rgba(default_attr):
                 kwargs[attr] = fig_attr
 
-        current_fig = image_path.format(fig_count + fig_mngr.num)
+        current_fig = image_path.format(fig_count + fig_num)
         fig.savefig(current_fig, **kwargs)
         figure_list.append(current_fig)
 
