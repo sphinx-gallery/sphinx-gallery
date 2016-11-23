@@ -21,7 +21,7 @@ Who uses Sphinx-Gallery
 
 * `Sphinx-Gallery <http://sphinx-gallery.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
-* `NiLearn <http://nilearn.github.io/auto_examples/index.html>`_
+* `Nilearn <http://nilearn.github.io/auto_examples/index.html>`_
 * `MNE-python <http://www.martinos.org/mne/stable/auto_examples/index.html>`_
 * `PyStruct <http://pystruct.github.io/auto_examples/index.html>`_
 * `GIMLi <http://www.pygimli.org/_examples_auto/index.html>`_
