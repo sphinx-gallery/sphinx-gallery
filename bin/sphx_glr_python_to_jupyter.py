@@ -4,7 +4,7 @@ r"""
 Sphinx Gallery Notebook converter
 =================================
 
-Exposes the Sphinx-Gallery Notebook rederer to directly convert Python
+Exposes the Sphinx-Gallery Notebook renderer to directly convert Python
 scripts into Jupyter Notebooks.
 
 """
