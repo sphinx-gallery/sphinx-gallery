@@ -6,9 +6,26 @@ Testing the Jupyter notebook parser
 """
 
 from __future__ import division, absolute_import, print_function
-import re
-from nose.tools import assert_equal, assert_false, assert_true
-from sphinx_gallery.notebook import rst2md
+import json
+import tempfile
+import os
+
+from nose.tools import assert_equal
+from nose.tools import assert_raises
+try:
+    from nose.tools import assert_raises_regex
+except ImportError:
+    from nose.tools import assert_raises_regexp as assert_raises_regex
+
+
+import sphinx_gallery.gen_rst as sg
+from sphinx_gallery.notebook import (rst2md, jupyter_notebook, save_notebook,
+                                     python_to_jupyter_cli)
+try:
+    FileNotFoundError
+except NameError:
+    # Python2
+    FileNotFoundError = IOError
 
 
 def test_latex_conversion():
@@ -66,3 +83,40 @@ For more details on interpolation see the page `channel_interpolation`.
 ![me](foobar)
 """  # noqa
     assert_equal(rst2md(rst), markdown)
+
+
+def test_jupyter_notebook():
+    """Test that written ipython notebook file corresponds to python object"""
+    blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+    example_nb = jupyter_notebook(blocks)
+
+    with tempfile.NamedTemporaryFile('w') as nb_file:
+        save_notebook(example_nb, nb_file.name)
+        with open(nb_file.name, "r") as fname:
+            assert_equal(json.load(fname), example_nb)
+
+###############################################################################
+# Notebook shell utility
+
+
+def test_with_empty_args():
+    """ User passes no args, should fail with SystemExit """
+    assert_raises(SystemExit,
+                  python_to_jupyter_cli,
+                  [])
+
+
+def test_missing_file():
+    """ User passes non existing file, should fail with FileNotFoundError """
+    assert_raises_regex(FileNotFoundError,
+                        'No such file or directory.+nofile\.py',
+                        python_to_jupyter_cli,
+                        ['nofile.py'])
+
+
+def test_file_is_generated():
+    """User passes good python file. Check notebook file is created"""
+
+    python_to_jupyter_cli(['examples/plot_quantum.py'])
+    assert os.path.isfile('examples/plot_quantum.ipynb')
+    os.remove('examples/plot_quantum.ipynb')

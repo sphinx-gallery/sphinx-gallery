@@ -221,20 +221,6 @@ The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
 :ref:`sphx_glr_auto_examples_plot_choose_thumbnail.py` for an example
 of this functionality.
 
-Embedding Sphinx-Gallery inside your documentation script extensions
-====================================================================
-
-If you want to embed Sphinx-Gallery in your project instead of putting
-it as a dependency you can call our embedding script inside your
-Sphinx extensions folder::
-
-  $ copy_sphinxgallery.sh
-
-This will download directly from PyPI our latest released code and
-save it to the current folder. This is a stripped version of the
-Sphinx-Gallery module to incorporate in your project. You should also
-add it to your version control system.
-
 Build the Gallery without executing the examples
 ================================================
 

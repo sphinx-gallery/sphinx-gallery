@@ -12,5 +12,6 @@ Sphinx-Gallery API Reference
    gen_gallery
    backreferences
    gen_rst
+   py_source_parser
    docs_resolv
    downloads

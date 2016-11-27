@@ -59,7 +59,7 @@ Sphinx-Gallery Show: :ref:`examples-index`
 ------------------------------------------
 
 Contents:
----------
+=========
 
 .. toctree::
    :maxdepth: 2
@@ -67,6 +67,7 @@ Contents:
    getting_started
    advanced_configuration
    syntax
+   utils
    reference
    auto_examples/index
    tutorials/index

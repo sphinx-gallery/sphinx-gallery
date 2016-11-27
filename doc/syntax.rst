@@ -1,5 +1,5 @@
 =====================
-Sphinx-Gallery syntax
+Sphinx-Gallery Syntax
 =====================
 
 For your examples to work you have to make them valid python code.
