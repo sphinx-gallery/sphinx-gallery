@@ -60,3 +60,33 @@ def test_backref_thumbnail_div():
 """
 
     assert_equal(html_div, reference)
+
+
+def test_identify_names():
+    code_str = """
+import os
+os
+
+os.path.join
+
+import sphinx_gallery.back_references as br
+br.identify_names
+
+from sphinx_gallery.back_references import identify_names
+identify_names
+"""
+    res = sg.identify_names(code_str)
+    expected = {
+        'os.path.join':
+            {'name': 'join', 'module': 'os.path', 'module_short': 'os.path'},
+        'br.identify_names':
+            {'name': 'identify_names',
+             'module': 'sphinx_gallery.back_references',
+             'module_short': 'sphinx_gallery.back_references'},
+        'identify_names':
+            {'name': 'identify_names',
+             'module': 'sphinx_gallery.back_references',
+             'module_short': 'sphinx_gallery.back_references'}
+        }
+
+    assert_equal(expected, res)
