@@ -10,7 +10,7 @@ v0.1.6
 New features
 ''''''''''''
 
-* Executable script to convert Python scripts into Jupyter Notebooks `#148<https://github.com/sphinx-gallery/sphinx-gallery/pull/148>_`
+* Executable script to convert Python scripts into Jupyter Notebooks `#148 <https://github.com/sphinx-gallery/sphinx-gallery/pull/148>`_
 
 
 Bug Fixes
@@ -23,7 +23,7 @@ Bug Fixes
 * Fix ``backreferences.identify_names`` when module is used without
   attribute `#173
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/173>`_. Closes
-  `#172 <https://github.com/sphinx-gallery/sphinx-gallery/issues/172`_
+  `#172 <https://github.com/sphinx-gallery/sphinx-gallery/issues/172>`_
   and `#149
   <https://github.com/sphinx-gallery/sphinx-gallery/issues/149>`_
 * Raise FileNotFoundError when README.txt is not present in the main
