@@ -380,6 +380,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         return "", []  # because string is an expected return type
 
     fhindex = open(os.path.join(src_dir, 'README.txt')).read()
+    # Add empty lines to avoid bug in issue #165
+    fhindex += "\n\n"
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)

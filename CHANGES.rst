@@ -16,6 +16,12 @@ Bug Fixes
   matplotlib.pyplot is imported in conf.py. See `#157
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/157>`_ for
   more details.
+* Raise FileNotFoundError when README.txt is not present in the main
+  directory of the examples gallery(`#164
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/164>`_). Also
+  include extra empty lines after reading README.txt to obtain the
+  correct rendering of the html file.(`#165
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/165>`_)
 
 v0.1.5
 ------
