@@ -3,10 +3,14 @@ Change Log
 
 git master
 ----------
+
+v0.1.6
+----------
+
 New features
 ''''''''''''
 
-* Executable script to convert Python scripts into Jupyter Notebooks
+* Executable script to convert Python scripts into Jupyter Notebooks `#148<https://github.com/sphinx-gallery/sphinx-gallery/pull/148>_`
 
 
 Bug Fixes
@@ -16,12 +20,19 @@ Bug Fixes
   matplotlib.pyplot is imported in conf.py. See `#157
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/157>`_ for
   more details.
+* Fix ``backreferences.identify_names`` when module is used without
+  attribute `#173
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/173>`_. Closes
+  `#172 <https://github.com/sphinx-gallery/sphinx-gallery/issues/172`_
+  and `#149
+  <https://github.com/sphinx-gallery/sphinx-gallery/issues/149>`_
 * Raise FileNotFoundError when README.txt is not present in the main
   directory of the examples gallery(`#164
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/164>`_). Also
   include extra empty lines after reading README.txt to obtain the
   correct rendering of the html file.(`#165
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/165>`_)
+* Ship a License file in PyPI release
 
 v0.1.5
 ------

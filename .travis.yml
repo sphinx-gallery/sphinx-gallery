@@ -27,10 +27,11 @@ matrix:
     # This environment tests is for mayavi
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="2.7"
-    # This environment tests the newest supported anaconda env
+    # This environment tests the Python 3 versions
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.4"
-
+    - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="3.5"
 before_install:
     - if [ "$DISTRIB" == "conda" ]; then
          wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
@@ -54,7 +55,7 @@ install:
         fi;
       fi;
     - pip install -r requirements.txt
-    - if [ "$DISTRIB" == "ubuntu 14" ]; then pip install seaborn; fi;
+    - if [ "$DISTRIB" == "ubuntu 14" ]; then pip install seaborn sphinx==1.4.9; fi;
 
     - python setup.py install
 
@@ -66,7 +67,7 @@ before_script:
   - sleep 3 # give xvfb some time to start
 
 script:
-    - if [ "$DISTRIB" == "ubuntu" ]; then python setup.py nosetests; fi
+    - if [ "$DISTRIB" == "ubuntu 14" ]; then python setup.py nosetests; fi
     - if [ "$DISTRIB" == "conda" ]; then nosetests; fi
     - cd doc
     - make html-noplot
