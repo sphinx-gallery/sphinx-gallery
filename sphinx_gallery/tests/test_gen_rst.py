@@ -121,8 +121,8 @@ def test_extract_intro():
 def test_md5sums():
     """Test md5sum check functions work on know file content"""
 
-    with tempfile.NamedTemporaryFile('w', delete=False) as f:
-        f.write('Local test\n')
+    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
+        f.write(b'Local test\n')
     try:
         file_md5 = sg.get_md5sum(f.name)
         # verify correct md5sum
