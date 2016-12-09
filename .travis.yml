@@ -45,7 +45,7 @@ install:
     # force no mkl because mayavi requires old version of numpy
     # which then crashes with pandas and seaborn
     - if [ "$DISTRIB" == "conda" ]; then
-        conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy
+        conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy scipy
         setuptools matplotlib pillow sphinx nose coverage seaborn;
         source activate testenv;
         if [ "$PYTHON_VERSION" == "2.7" ]; then

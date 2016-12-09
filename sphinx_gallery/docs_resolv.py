@@ -4,6 +4,7 @@
 ###############################################################################
 # Documentation link resolver objects
 from __future__ import print_function
+from distutils.version import LooseVersion
 import gzip
 import os
 import posixpath
@@ -232,8 +233,15 @@ class SphinxDocLinkResolver(object):
                 fname_idx = value[cobj['name']][0]
 
         if fname_idx is not None:
-            fname = os.path.splitext(self._searchindex['filenames'][fname_idx])[0] + '.html'
-
+            fname = self._searchindex['filenames'][fname_idx]
+            try:
+                import sphinx
+            except Exception:
+                fname = os.path.splitext(fname)[0]
+            else:
+                if LooseVersion(sphinx.__version__) >= LooseVersion('1.5'):
+                    fname = os.path.splitext(fname)[0]
+            fname = fname + '.html'
             if self._is_windows:
                 fname = fname.replace('/', '\\')
                 link = os.path.join(self.doc_url, fname)
