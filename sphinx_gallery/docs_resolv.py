@@ -11,6 +11,7 @@ import posixpath
 import re
 import shelve
 import sys
+import sphinx
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -234,13 +235,8 @@ class SphinxDocLinkResolver(object):
 
         if fname_idx is not None:
             fname = self._searchindex['filenames'][fname_idx]
-            try:
-                import sphinx
-            except Exception:
+            if LooseVersion(sphinx.__version__) >= LooseVersion('1.5'):
                 fname = os.path.splitext(fname)[0]
-            else:
-                if LooseVersion(sphinx.__version__) >= LooseVersion('1.5'):
-                    fname = os.path.splitext(fname)[0]
             fname = fname + '.html'
             if self._is_windows:
                 fname = fname.replace('/', '\\')
