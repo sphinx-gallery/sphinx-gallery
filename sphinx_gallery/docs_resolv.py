@@ -254,7 +254,7 @@ class SphinxDocLinkResolver(object):
                     else:
                         html = get_data(link, self.gallery_dir)
                         self._page_cache[link] = html
-                except Exception:
+                except (HTTPError, URLError, IOError):
                     pass
                 else:
                     break
