@@ -4,14 +4,12 @@
 ###############################################################################
 # Documentation link resolver objects
 from __future__ import print_function
-from distutils.version import LooseVersion
 import gzip
 import os
 import posixpath
 import re
 import shelve
 import sys
-import sphinx
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -256,12 +254,12 @@ class SphinxDocLinkResolver(object):
                     else:
                         html = get_data(link, self.gallery_dir)
                         self._page_cache[link] = html
-                except Exception as e:
+                except Exception:
                     pass
                 else:
                     break
             else:
-                raise e
+                raise
 
             # test if cobj appears in page
             comb_names = [cobj['module_short'] + '.' + cobj['name']]
