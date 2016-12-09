@@ -1,0 +1,29 @@
+
+# CI on Windows via appveyor
+# This file was based on Olivier Grisel's python-appveyor-demo
+
+environment:
+
+  global:
+    PYTHON: "C:\\conda"
+    MINICONDA_VERSION: "latest"
+    CONDA_DEPENDENCIES: "numpy scipy matplotlib mayavi sphinx nose pillow"
+
+  matrix:
+    - PYTHON_VERSION: "2.7"
+      PYTHON_ARCH: "64"
+
+platform:
+    -x64
+
+install:
+    - "git clone git://github.com/astropy/ci-helpers.git"
+    - "powershell ci-helpers/appveyor/install-miniconda.ps1"
+    - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+    - "activate test"
+
+build: false  # Not a C# project, build stuff at the test step instead.
+
+test_script:
+  # Run the project tests
+  - "nosetests.exe"
