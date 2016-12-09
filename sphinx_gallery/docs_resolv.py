@@ -383,8 +383,12 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                         link = doc_resolvers[this_module].resolve(cobj,
                                                                   full_fname)
                     except (HTTPError, URLError) as e:
-                        print("The following error has occurred:\n")
-                        print(repr(e))
+                        if isinstance(e, HTTPError):
+                            extra = e.code
+                        else:
+                            extra = e.reason
+                        print("\t\tError resolving %s.%s: %r (%s)"
+                              % (cobj['module'], cobj['name'], e, extra))
                         continue
 
                     if link is not None:
