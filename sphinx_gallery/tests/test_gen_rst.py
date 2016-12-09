@@ -13,6 +13,7 @@ import tempfile
 import re
 import os
 import shutil
+import warnings
 import zipfile
 
 import nose
@@ -128,15 +129,15 @@ def test_md5sums():
         assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
         # False because is a new file
         assert_false(sg.md5sum_is_current(f.name))
+        # Write md5sum to file to check is current
+        with open(f.name + '.md5', 'w') as file_checksum:
+            file_checksum.write(file_md5)
+        try:
+            assert_true(sg.md5sum_is_current(f.name))
+        finally:
+            os.remove(f.name + '.md5')
     finally:
         os.remove(f.name)
-    # Write md5sum to file to check is current
-    with open(f.name + '.md5', 'w') as file_checksum:
-        file_checksum.write(file_md5)
-    try:
-        assert_true(sg.md5sum_is_current(f.name))
-    finally:
-        os.remove(f.name + '.md5')
 
 
 def build_test_configuration(**kwargs):
@@ -162,8 +163,11 @@ def test_fail_example():
                      mode='w', encoding='utf-8') as f:
         f.write('\n'.join(failing_code))
 
-    sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
-                         gallery_conf['examples_dir'], gallery_conf)
+    with warnings.catch_warnings(record=True) as w:
+        sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
+                             gallery_conf['examples_dir'], gallery_conf)
+    assert_equal(len(w), 1)
+    assert_true('not defined' in str(w[0].message))
 
     # read rst file and check if it contains traceback output
 
