@@ -235,6 +235,8 @@ class SphinxDocLinkResolver(object):
 
         if fname_idx is not None:
             fname = self._searchindex['filenames'][fname_idx]
+            # In 1.5+ Sphinx seems to have changed from .rst.html to only
+            # .html extension in converted files
             if LooseVersion(sphinx.__version__) >= LooseVersion('1.5'):
                 fname = os.path.splitext(fname)[0]
             fname = fname + '.html'
