@@ -67,6 +67,16 @@ def clean_gallery_out(build_dir):
                 os.remove(os.path.join(build_image_dir, filename))
 
 
+def build_paths(gallery_conf, path_name, srcdir):
+
+    if not isinstance(gallery_conf[path_name], list):
+        gallery_conf[path_name] = [gallery_conf[path_name]]
+
+    gallery_conf[path_name] = [os.path.join(srcdir, work_dir)
+                               for work_dir in gallery_conf[path_name]]
+    return gallery_conf[path_name]
+
+
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText
 
@@ -90,28 +100,19 @@ def generate_gallery_rst(app):
 
     clean_gallery_out(app.builder.outdir)
 
-    examples_dirs = gallery_conf['examples_dirs']
-    gallery_dirs = gallery_conf['gallery_dirs']
-
-    if not isinstance(examples_dirs, list):
-        examples_dirs = [examples_dirs]
-    if not isinstance(gallery_dirs, list):
-        gallery_dirs = [gallery_dirs]
-
-    mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
-                                       app.builder.srcdir)
+    examples_dirs = build_paths(
+        gallery_conf, 'examples_dirs', app.builder.srcdir)
+    gallery_dirs = build_paths(
+        gallery_conf, 'gallery_dirs', app.builder.srcdir)
+    mod_examples_dir = os.path.join(
+        app.builder.srcdir, gallery_conf['mod_example_dir'])
+    gallery_conf['mod_example_dir'] = mod_examples_dir
+    gallery_conf['src_dir'] = app.builder.srcdir
     seen_backrefs = set()
 
     computation_times = []
 
-    # cd to the appropriate directory regardless of sphinx configuration
-    working_dir = os.getcwd()
-    os.chdir(app.builder.srcdir)
     for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
-        examples_dir = os.path.relpath(examples_dir,
-                                       app.builder.srcdir)
-        gallery_dir = os.path.relpath(gallery_dir,
-                                      app.builder.srcdir)
 
         for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
             if not os.path.exists(workdir):
@@ -148,9 +149,6 @@ def generate_gallery_rst(app):
         fhindex.write(SPHX_GLR_SIG)
         fhindex.flush()
 
-    # Back to initial directory
-    os.chdir(working_dir)
-
     print("Computation time summary:")
     for time_elapsed, fname in sorted(computation_times)[::-1]:
         if time_elapsed is not None:
@@ -165,10 +163,9 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
     This avoids inclusion errors/warnings if there are no gallery
     examples for a class / module that is being parsed by autodoc"""
 
-    examples_path = os.path.join(app.srcdir,
-                                 app.config.sphinx_gallery_conf[
-                                     "mod_example_dir"],
-                                 "%s.examples" % name)
+    examples_path = os.path.join(app.config.sphinx_gallery_conf[
+        "mod_example_dir"],
+        "%s.examples" % name)
 
     if not os.path.exists(examples_path):
         # touch file
@@ -189,7 +186,9 @@ def sumarize_failing_examples(app, exception):
 
     gallery_conf = app.config.sphinx_gallery_conf
     failing_examples = set(gallery_conf['failing_examples'])
-    expected_failing_examples = set(gallery_conf['expected_failing_examples'])
+    expected_failing_examples = set(build_paths(
+        gallery_conf, 'expected_failing_examples', app.builder.srcdir))
+    print(failing_examples)
 
     examples_expected_to_fail = failing_examples.intersection(
         expected_failing_examples)
