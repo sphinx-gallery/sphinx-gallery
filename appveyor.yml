@@ -1,0 +1,36 @@
+environment:
+  # There is no need to run the build for all the Python version /
+  # architectures combo as the generated nilearn wheel is the same on all
+  # platforms (universal wheel).
+  # We run the tests on 2 different target platforms for testing purpose only.
+  # We use miniconda versions of Python provided by appveyor windows images
+  matrix:
+    - PYTHON: "C:\\Miniconda-x64"
+      PYTHON_VERSION: "2.7.x"
+      PYTHON_ARCH: "64"
+
+    - PYTHON: "C:\\Miniconda3-x64"
+      PYTHON_VERSION: "3.5.x"
+      PYTHON_ARCH: "64"
+
+install:
+  # Prepend miniconda installed Python to the PATH of this build
+  # Add Library/bin directory to fix issue
+  # https://github.com/conda/conda/issues/1753
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PYTHON%\\Library\\bin;%PATH%"
+
+  # Check that we have the expected version and architecture for Python
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+
+  # Installed prebuilt dependencies from conda
+  - conda install pip numpy scipy nose matplotlib setuptools pillow sphinx coverage seaborn -y -q
+
+  # Install sphinx-gallery
+  - "python setup.py install"
+
+# Not a .NET project, we build in the install step instead
+build: false
+
+test_script:
+  - nosetests
