@@ -7,7 +7,7 @@ environment:
   global:
     PYTHON: "C:\\conda"
     MINICONDA_VERSION: "latest"
-    CONDA_DEPENDENCIES: "numpy scipy matplotlib mayavi sphinx pillow nose coverage"
+    CONDA_DEPENDENCIES: "numpy seaborn matplotlib mayavi sphinx pillow nose coverage"
 
   matrix:
     - PYTHON_VERSION: "2.7"
@@ -26,4 +26,13 @@ build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
   # Run the project tests
-  - "nosetests.exe"
+  - nosetests.exe
+  # Build the docs
+  - python setup.py develop
+  - cd doc
+  # The Makefile doesn't work directly on Windows PowerShell because of
+  # slashes (but will work e.g. in Msys-git), so for now do these manually
+  # make html-noplot
+  - sphinx-build -D plot_gallery=0 -b html -d _build\doctrees . _build\html
+  # make html
+  - sphinx-build -b html -d _build\doctrees . _build\html
