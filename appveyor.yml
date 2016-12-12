@@ -23,7 +23,7 @@ install:
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - "activate test"
-    # mayavi only compatible with Python 2.7
+    # mayavi only available for Python 2.7 through conda
     - 'IF "%PYTHON_VERSION%"=="2.7" ( conda install mayavi )'
 
 build: false  # Not a C# project, build stuff at the test step instead.
