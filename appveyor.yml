@@ -12,6 +12,8 @@ environment:
   matrix:
     - PYTHON_VERSION: "2.7"
       PYTHON_ARCH: "64"
+    - PYTHON_VERSION: "3.5"
+      PYTHON_ARCH: "64"
 
 platform:
     -x64
