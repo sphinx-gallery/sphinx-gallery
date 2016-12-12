@@ -1,0 +1,38 @@
+
+# CI on Windows via appveyor
+# This file was based on Olivier Grisel's python-appveyor-demo
+
+environment:
+
+  global:
+    PYTHON: "C:\\conda"
+    MINICONDA_VERSION: "latest"
+    CONDA_DEPENDENCIES: "numpy seaborn matplotlib mayavi sphinx pillow nose coverage"
+
+  matrix:
+    - PYTHON_VERSION: "2.7"
+      PYTHON_ARCH: "64"
+
+platform:
+    -x64
+
+install:
+    - "git clone git://github.com/astropy/ci-helpers.git"
+    - "powershell ci-helpers/appveyor/install-miniconda.ps1"
+    - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+    - "activate test"
+
+build: false  # Not a C# project, build stuff at the test step instead.
+
+test_script:
+  # Run the project tests
+  - nosetests.exe
+  # Build the docs
+  - python setup.py develop
+  - cd doc
+  # The Makefile doesn't work directly on Windows PowerShell because of
+  # slashes (but will work e.g. in Msys-git), so for now do these manually
+  # make html-noplot
+  - sphinx-build -D plot_gallery=0 -b html -d _build\doctrees . _build\html
+  # make html
+  - sphinx-build -b html -d _build\doctrees . _build\html

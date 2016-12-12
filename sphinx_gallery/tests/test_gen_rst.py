@@ -13,6 +13,7 @@ import tempfile
 import re
 import os
 import shutil
+import warnings
 import zipfile
 
 import nose
@@ -73,14 +74,16 @@ def test_bug_cases_of_notebook_syntax():
 def test_direct_comment_after_docstring():
     # For more details see
     # https://github.com/sphinx-gallery/sphinx-gallery/pull/49
-    with tempfile.NamedTemporaryFile('w') as f:
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write('\n'.join(['"Docstring"',
                            '# and now comes the module code',
                            '# with a second line of comment',
                            'x, y = 1, 2',
                            '']))
-        f.flush()
+    try:
         result = sg.split_code_and_text_blocks(f.name)
+    finally:
+        os.remove(f.name)
 
     expected_result = [
         ('text', 'Docstring'),
@@ -102,10 +105,12 @@ def test_codestr2rst():
 
 
 def test_extract_intro():
-    with tempfile.NamedTemporaryFile('wb') as f:
+    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
         f.write('\n'.join(CONTENT).encode('utf-8'))
-        f.flush()
+    try:
         result = sg.extract_intro(f.name)
+    finally:
+        os.remove(f.name)
     assert_false('Docstring' in result)
     assert_equal(
         result,
@@ -116,9 +121,9 @@ def test_extract_intro():
 def test_md5sums():
     """Test md5sum check functions work on know file content"""
 
-    with tempfile.NamedTemporaryFile('w') as f:
-        f.write('Local test\n')
-        f.flush()
+    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
+        f.write(b'Local test\n')
+    try:
         file_md5 = sg.get_md5sum(f.name)
         # verify correct md5sum
         assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
@@ -127,8 +132,12 @@ def test_md5sums():
         # Write md5sum to file to check is current
         with open(f.name + '.md5', 'w') as file_checksum:
             file_checksum.write(file_md5)
-        assert_true(sg.md5sum_is_current(f.name))
-    os.remove(f.name + '.md5')
+        try:
+            assert_true(sg.md5sum_is_current(f.name))
+        finally:
+            os.remove(f.name + '.md5')
+    finally:
+        os.remove(f.name)
 
 
 def build_test_configuration(**kwargs):
@@ -154,8 +163,11 @@ def test_fail_example():
                      mode='w', encoding='utf-8') as f:
         f.write('\n'.join(failing_code))
 
-    sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
-                         gallery_conf['examples_dir'], gallery_conf)
+    with warnings.catch_warnings(record=True) as w:
+        sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
+                             gallery_conf['examples_dir'], gallery_conf)
+    assert_equal(len(w), 1)
+    assert_true('not defined' in str(w[0].message))
 
     # read rst file and check if it contains traceback output
 
@@ -207,12 +219,14 @@ def test_thumbnail_number():
                      '# sphinx_gallery_thumbnail_number=2',
                      '#sphinx_gallery_thumbnail_number = 2',
                      '    # sphinx_gallery_thumbnail_number=2']:
-        with tempfile.NamedTemporaryFile('w') as f:
+        with tempfile.NamedTemporaryFile('w', delete=False) as f:
             f.write('\n'.join(['"Docstring"',
                                test_str]))
-            f.flush()
+        try:
             _, content = sg.get_docstring_and_rest(f.name)
-            thumbnail_number = sg.extract_thumbnail_number(content)
+        finally:
+            os.remove(f.name)
+        thumbnail_number = sg.extract_thumbnail_number(content)
         assert_equal(thumbnail_number, 2)
 
 

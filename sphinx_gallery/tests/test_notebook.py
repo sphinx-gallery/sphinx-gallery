@@ -90,10 +90,13 @@ def test_jupyter_notebook():
     blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
     example_nb = jupyter_notebook(blocks)
 
-    with tempfile.NamedTemporaryFile('w') as nb_file:
-        save_notebook(example_nb, nb_file.name)
-        with open(nb_file.name, "r") as fname:
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+        save_notebook(example_nb, f.name)
+    try:
+        with open(f.name, "r") as fname:
             assert_equal(json.load(fname), example_nb)
+    finally:
+        os.remove(f.name)
 
 ###############################################################################
 # Notebook shell utility
