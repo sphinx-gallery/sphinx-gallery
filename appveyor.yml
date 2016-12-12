@@ -7,10 +7,12 @@ environment:
   global:
     PYTHON: "C:\\conda"
     MINICONDA_VERSION: "latest"
-    CONDA_DEPENDENCIES: "numpy seaborn matplotlib mayavi sphinx pillow nose coverage"
+    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow nose coverage"
 
   matrix:
     - PYTHON_VERSION: "2.7"
+      PYTHON_ARCH: "64"
+    - PYTHON_VERSION: "3.5"
       PYTHON_ARCH: "64"
 
 platform:
@@ -21,6 +23,8 @@ install:
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - "activate test"
+    # mayavi only compatible with Python 2.7
+    - 'IF "%PYTHON_VERSION%"=="2.7" ( conda install mayavi )'
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
