@@ -4,6 +4,26 @@ Change Log
 git master
 ----------
 
+v0.1.7
+------
+
+Bug Fixes
+'''''''''
+
+* Released Sphinx 1.5 has new naming convention for auto generated
+  files and breaks Sphinx-Gallery documentation scanner. Fixed in
+  `#178 <https://github.com/sphinx-gallery/sphinx-gallery/pull/178>`_,
+  work for linking to documentation generated with Sphinx<1.5 and for
+  new docs post 1.5
+* Code links tooltip are now left aligned with code
+
+New features
+''''''''''''
+
+* Development support of Sphinx-Gallery on Windows `#179
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/179>`_ & `#182
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/182>`_
+
 v0.1.6
 ----------
 
