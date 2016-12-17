@@ -364,7 +364,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     orig_pattern = '<span class="n">%s</span>'
     period = '<span class="o">.</span>'
 
-    # This could
+    # This could be turned into a generator if necessary, but should be okay
     flat = [[dirpath, filename]
             for dirpath, _, filenames in os.walk(html_gallery_dir)
             for filename in filenames]
