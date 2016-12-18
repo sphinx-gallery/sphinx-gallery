@@ -381,7 +381,10 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         print(80 * '_')
         return "", []  # because string is an expected return type
 
-    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
+    # suppress "not included in TOCTREE" sphinx warnings
+    fhindex = ":orphan:\n\n"
+    with open(os.path.join(src_dir, 'README.txt')) as fid:
+        fhindex += fid.read()
     # Add empty lines to avoid bug in issue #165
     fhindex += "\n\n"
 
@@ -564,7 +567,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed = 0
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
-    print('Executing file %s' % src_file)
+    if block_vars['execute_script']:
+        print('Executing file %s' % src_file)
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
             code_output, rtime = execute_code_block(bcontent,
@@ -610,6 +614,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 
-    print("{0} ran in : {1:.2g} seconds\n".format(src_file, time_elapsed))
+    if block_vars['execute_script']:
+        print("{0} ran in : {1:.2g} seconds\n".format(src_file, time_elapsed))
 
     return amount_of_code, time_elapsed

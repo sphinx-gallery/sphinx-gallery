@@ -73,6 +73,7 @@ def generate_gallery_rst(app):
     Start the sphinx-gallery configuration and recursively scan the examples
     directories in order to populate the examples gallery
     """
+    print('Generating gallery')
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)
     except TypeError:
@@ -126,7 +127,8 @@ def generate_gallery_rst(app):
         if this_fhindex == "":
             raise FileNotFoundError("Main example directory {0} does not "
                                     "have a README.txt file. Please write "
-                                    "one to introduce your gallery.".format(examples_dir))
+                                    "one to introduce your gallery."
+                                    .format(examples_dir))
 
         computation_times += this_computation_times
 
@@ -151,12 +153,13 @@ def generate_gallery_rst(app):
     # Back to initial directory
     os.chdir(working_dir)
 
-    print("Computation time summary:")
-    for time_elapsed, fname in sorted(computation_times)[::-1]:
-        if time_elapsed is not None:
-            print("\t- %s : %.2g sec" % (fname, time_elapsed))
-        else:
-            print("\t- %s : not run" % fname)
+    if gallery_conf['plot_gallery']:
+        print("Computation time summary:")
+        for time_elapsed, fname in sorted(computation_times)[::-1]:
+            if time_elapsed is not None:
+                print("\t- %s : %.2g sec" % (fname, time_elapsed))
+            else:
+                print("\t- %s : not run" % fname)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
