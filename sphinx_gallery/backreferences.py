@@ -97,7 +97,10 @@ def identify_names(code):
     e.HelloWorld HelloWorld d d
     """
     finder = NameFinder()
-    finder.visit(ast.parse(code))
+    try:
+        finder.visit(ast.parse(code))
+    except SyntaxError:
+        return {}
 
     example_code_obj = {}
     for name, full_name in finder.get_mapping():
