@@ -4,8 +4,6 @@ machine:
     PATH: "/home/ubuntu/miniconda/envs/circleenv/bin:/home/ubuntu/miniconda/bin:$PATH"
 
 dependencies:
-  cache_directories:
-    - "~/miniconda"
   pre:
     # Disable pyenv (no cleaner way provided by CircleCI as it prepends pyenv version to PATH)
     - rm -rf ~/.pyenv
