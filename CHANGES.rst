@@ -4,6 +4,13 @@ Change Log
 git master
 ----------
 
+Bug Fixes
+'''''''''
+
+* Sphinx-Gallery can now build by directly calling sphinx-build from
+  any path, no explicit need to run the make file from the sources
+  directory.
+
 v0.1.7
 ------
 

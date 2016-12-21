@@ -147,6 +147,7 @@ def build_test_configuration(**kwargs):
     gallery_conf.update(examples_dir=tempfile.mkdtemp(),
                         gallery_dir=tempfile.mkdtemp())
     gallery_conf.update(kwargs)
+    gallery_conf['src_dir'] = gallery_conf['gallery_dir']
 
     return gallery_conf
 
@@ -237,12 +238,11 @@ def test_save_figures():
     except ImportError:
         raise nose.SkipTest('Mayavi not installed')
     mlab.options.offscreen = True
-    examples_dir = tempfile.mkdtemp()
 
-    gallery_conf = {'find_mayavi_figures': True}
+    gallery_conf = build_test_configuration(find_mayavi_figures=True)
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fname_template = os.path.join(examples_dir, 'image{0}.png')
+    fname_template = os.path.join(gallery_conf['examples_dir'], 'image{0}.png')
     fig_list, _ = sg.save_figures(fname_template, 0, gallery_conf)
     assert_equal(len(fig_list), 2)
     assert fig_list[0].endswith('image1.png')
@@ -255,7 +255,7 @@ def test_save_figures():
     assert fig_list[0].endswith('image3.png')
     assert fig_list[1].endswith('image4.png')
 
-    shutil.rmtree(examples_dir)
+    shutil.rmtree(gallery_conf['examples_dir'])
 
 
 def test_zip_notebooks():
@@ -269,6 +269,36 @@ def test_zip_notebooks():
     if check:
         raise OSError("Bad file in zipfile: {0}".format(check))
 
+
+def test_figuresrt():
+    """Testing rst of images"""
+    figure_list = ['sphx_glr_plot_1.png']
+    image_rst, fig_num = sg.figure_rst(figure_list, '.')
+    single_image = """
+.. image:: /sphx_glr_plot_1.png
+    :align: center
+"""
+    assert_equal(image_rst, single_image)
+    assert_equal(fig_num, 1)
+
+    image_rst, fig_num = sg.figure_rst(figure_list + ['second.png'], '.')
+
+    image_list_rst = """
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /sphx_glr_plot_1.png
+            :scale: 47
+
+    *
+
+      .. image:: /second.png
+            :scale: 47
+"""
+    assert_equal(image_rst, image_list_rst)
+    assert_equal(fig_num, 2)
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice
