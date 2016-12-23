@@ -242,20 +242,21 @@ def test_save_figures():
     gallery_conf = build_test_configuration(find_mayavi_figures=True)
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fname_template = os.path.join(gallery_conf['examples_dir'], 'image{0}.png')
-    fig_list, _ = sg.save_figures(fname_template, 0, gallery_conf)
-    assert_equal(len(fig_list), 2)
-    assert fig_list[0].endswith('image1.png')
-    assert fig_list[1].endswith('image2.png')
+    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
+    image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
+    assert_equal(fig_num, 2)
+    assert re.search('/image1.png', image_rst)
+    assert re.search('/image2.png', image_rst)
 
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fig_list, _ = sg.save_figures(fname_template, 2, gallery_conf)
-    assert_equal(len(fig_list), 2)
-    assert fig_list[0].endswith('image3.png')
-    assert fig_list[1].endswith('image4.png')
+    image_rst, fig_num = sg.save_figures(fname_template, 2, gallery_conf)
+    assert_equal(fig_num, 2)
+    assert not re.search('image2.png', image_rst)
+    assert re.search('/image4.png', image_rst)
+    assert re.search('/image3.png', image_rst)
 
-    shutil.rmtree(gallery_conf['examples_dir'])
+    shutil.rmtree(gallery_conf['gallery_dir'])
 
 
 def test_zip_notebooks():
