@@ -83,7 +83,7 @@ from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (get_docstring_and_rest,
                                split_code_and_text_blocks)
 
-from .notebook import jupyter_notebook, text2string, save_notebook
+from .notebook import jupyter_notebook, save_notebook
 
 try:
     basestring
@@ -589,7 +589,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                 example_rst += codestr2rst(bcontent) + '\n'
 
         else:
-            example_rst += text2string(bcontent) + '\n'
+            example_rst += bcontent + '\n\n'
 
     clean_modules()
 
