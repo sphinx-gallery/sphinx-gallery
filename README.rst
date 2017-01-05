@@ -38,6 +38,18 @@ You can do a direct install via pip by using::
 
     $ pip install sphinx-gallery
 
+Sphinx-Gallery will not manage its dependencies when installing, thus
+you are required to install them manually. Our minimal dependencies
+are:
+
+* Sphinx
+* Matplotlib
+* Pillow
+
+Sphinx-Gallery has also support for packages like:
+
+* Seaborn
+* Mayavi
 
 Install as developer
 --------------------
@@ -46,11 +58,7 @@ You can get the latest development source from our `Github repository
 <https://github.com/sphinx-gallery/sphinx-gallery>`_. You need
 ``setuptools`` installed in your system to install Sphinx-Gallery.
 
-You will also need have installed:
-
-* Sphinx
-* matplotlib
-* pillow
+You will also need have installed the dependencies listed above and `nosetests`
 
 To install everything do::
 
