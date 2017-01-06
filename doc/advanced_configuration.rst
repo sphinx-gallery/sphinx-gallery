@@ -208,7 +208,7 @@ file is to be constructed, finally we write the modules we wish to
 document, in this case all modules of Sphinx-Gallery.
 
 The template file ``module.rst`` for the ``autosummary`` directive has
-to be saved in the path ``_templases/module.rst``. We present our
+to be saved in the path ``_templates/module.rst``. We present our
 configuration in the following block. The most relevant part is the
 loop defined between lines **12-22** that parses all the functions of
 the module. There we have included the snippet introduced in the
