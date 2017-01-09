@@ -50,13 +50,13 @@ except ImportError:
 
 from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
-from .py_source_parser import get_docstring_and_rest, split_code_and_text_blocks
+from .source_parser import get_docstring_and_rest, split_code_and_text_blocks
 from .notebook import jupyter_notebook, save_notebook
 from .write_rst import rst_notebook
 from .save_images import scale_image
 from .execute_blocks import execute_script_blocks
 
-
+# TODO lua/else
 def extract_thumbnail_number(text):
     """ Pull out the thumbnail image number specified in the docstring. """
 
@@ -75,10 +75,10 @@ def extract_thumbnail_number(text):
     return thumbnail_number
 
 
-def extract_intro(filename):
+def extract_intro(filename, lang='python'):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
-    docstring, _ = get_docstring_and_rest(filename)
+    docstring, _ = get_docstring_and_rest(filename, lang)
 
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
@@ -220,7 +220,7 @@ def gallery_rst(src_dir, entries_text):
     return fhindex
 
 
-def prepare_execution_env(fname, target_dir, src_dir, gallery_conf):
+def prepare_execution_env(fname, target_dir, src_dir, gallery_conf, lang='python'):
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
@@ -232,13 +232,12 @@ def prepare_execution_env(fname, target_dir, src_dir, gallery_conf):
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     filename_pattern = gallery_conf.get('filename_pattern')
     execute_script = re.search(filename_pattern, src_file) and gallery_conf[
-        'plot_gallery']
-
+        'plot_gallery'] and lang == 'python'
     return {'execute_script': execute_script, 'fig_count': 0,
             'image_path': image_path_template, 'src_file': src_file}
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf, lang='python'):
     """Generate the rst file for a given example.
 
     Returns
@@ -252,7 +251,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
-    script_blocks = split_code_and_text_blocks(src_file)
+    script_blocks = split_code_and_text_blocks(src_file, lang)
     amount_of_code = sum([len(bcontent)
                           for blabel, bcontent in script_blocks
                           if blabel == 'code'])
@@ -261,7 +260,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         return amount_of_code, 0
 
     block_vars = prepare_execution_env(
-        fname, target_dir, src_dir, gallery_conf)
+        fname, target_dir, src_dir, gallery_conf, lang)
     if block_vars['execute_script']:
         print('Executing file %s' % src_file)
     executed_blocks, time_elapsed = execute_script_blocks(
@@ -275,11 +274,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     save_thumbnail(block_vars["image_path"], src_file, gallery_conf)
     write_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
-    with codecs.open(example_file[:-3] + '.rst', mode='w', encoding='utf-8') as f:
-        f.write(rst_notebook(executed_blocks, write_fname, time_elapsed))
+    rst_fname = os.path.splitext(example_file)[0] + '.rst'
+    with codecs.open(rst_fname, mode='w', encoding='utf-8') as f:
+        f.write(rst_notebook(executed_blocks, write_fname, time_elapsed, lang))
 
-    save_notebook(jupyter_notebook(script_blocks),
-                  example_file.replace('.py', '.ipynb'))
+    if lang == 'python':
+        save_notebook(jupyter_notebook(script_blocks),
+                      example_file.replace('.py', '.ipynb'))
 
     if block_vars['execute_script']:
         print("{0} ran in : {1:.2g} seconds\n".format(src_file, time_elapsed))

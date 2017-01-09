@@ -72,7 +72,7 @@ def codestr2rst(codestr, lang='python'):
     return code_directive + indented_block
 
 
-def rst_notebook_cells(executed_blocks):
+def rst_notebook_cells(executed_blocks, lang='python'):
     """Writes the rst notebook cells
 
     Parameters
@@ -94,14 +94,14 @@ def rst_notebook_cells(executed_blocks):
             code_output = u"\n{0}\n\n{1}\n\n".format(figures_rst, stdout)
 
             if is_example_notebook_like:
-                example_rst += codestr2rst(block.content) + '\n'
+                example_rst += codestr2rst(block.content, lang) + '\n'
                 example_rst += code_output
             else:
                 example_rst += code_output
                 if 'sphx-glr-script-out' in code_output:
                     # Add some vertical space after output
                     example_rst += "\n\n|\n\n"
-                example_rst += codestr2rst(block.content) + '\n'
+                example_rst += codestr2rst(block.content, lang) + '\n'
 
         else:
             example_rst += text2string(block.content) + '\n'
@@ -131,13 +131,13 @@ def figure_rst(figure_list):
     return images_rst
 
 
-def rst_notebook(executed_blocks, write_fname, time_elapsed):
+def rst_notebook(executed_blocks, write_fname, time_elapsed, lang='python'):
     """Saves the notebook to a write_file"""
 
     ref_fname = write_fname.replace(os.path.sep, '_')
 
     example_rst = u"""\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
-    example_rst += rst_notebook_cells(executed_blocks)
+    example_rst += rst_notebook_cells(executed_blocks, lang)
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_rst += "**Total running time of the script:**" \
@@ -146,7 +146,11 @@ def rst_notebook(executed_blocks, write_fname, time_elapsed):
 
     filename = os.path.splitext(write_fname)[0]
     fname = os.path.basename(filename)
-    example_rst += CODE_DOWNLOAD.format(fname + ".py",
+    if lang == 'python':
+        lang_extension = '.py'
+    else:
+        lang_extension = '.lua'
+    example_rst += CODE_DOWNLOAD.format(fname + lang_extension,
                                         fname + ".ipynb")
     example_rst += SPHX_GLR_SIG
 
