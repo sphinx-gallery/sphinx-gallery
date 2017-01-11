@@ -39,7 +39,7 @@ DEFAULT_GALLERY_CONF = {
     'doc_module': (),
     'reference_url': {},
     # build options
-    'plot_gallery': True,
+    'plot_gallery': 'True',  # can be unicode, this avoids sphinx warning
     'download_all_examples': True,
     'abort_on_example_error': False,
     'failing_examples': {},
