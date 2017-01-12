@@ -4,6 +4,11 @@ Change Log
 git master
 ----------
 
+New features
+''''''''''''
+
+* Drop styling in codelinks tooltip. Replaced for title attribute which is managed by the browser.
+
 v0.1.7
 ------
 
