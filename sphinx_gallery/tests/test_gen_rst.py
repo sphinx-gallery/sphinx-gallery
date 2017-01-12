@@ -20,8 +20,11 @@ import nose
 from nose.tools import assert_equal, assert_false, assert_true
 
 import sphinx_gallery.gen_rst as sg
+from sphinx_gallery.save_images import save_figures
 from sphinx_gallery import gen_gallery
 from sphinx_gallery import downloads
+from sphinx_gallery.save_images import save_figures
+
 import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
 
 CONTENT = [
@@ -94,16 +97,6 @@ def test_direct_comment_after_docstring():
     assert_equal(result, expected_result)
 
 
-def test_codestr2rst():
-    """Test the correct translation of a code block into rst"""
-    output = sg.codestr2rst('print("hello world")')
-    reference = """
-.. code-block:: python
-
-    print("hello world")"""
-    assert_equal(reference, output)
-
-
 def test_extract_intro():
     with tempfile.NamedTemporaryFile('wb', delete=False) as f:
         f.write('\n'.join(CONTENT).encode('utf-8'))
@@ -147,6 +140,7 @@ def build_test_configuration(**kwargs):
     gallery_conf.update(examples_dir=tempfile.mkdtemp(),
                         gallery_dir=tempfile.mkdtemp())
     gallery_conf.update(kwargs)
+    gallery_conf['src_dir'] = gallery_conf['gallery_dir']
 
     return gallery_conf
 
@@ -237,25 +231,27 @@ def test_save_figures():
     except ImportError:
         raise nose.SkipTest('Mayavi not installed')
     mlab.options.offscreen = True
-    examples_dir = tempfile.mkdtemp()
 
-    gallery_conf = {'find_mayavi_figures': True}
+    gallery_conf = build_test_configuration(find_mayavi_figures=True)
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fname_template = os.path.join(examples_dir, 'image{0}.png')
-    fig_list, _ = sg.save_figures(fname_template, 0, gallery_conf)
+    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
+
+    fig_list = save_figures(fname_template, 0, gallery_conf)
     assert_equal(len(fig_list), 2)
-    assert fig_list[0].endswith('image1.png')
-    assert fig_list[1].endswith('image2.png')
+
+    for i, image_path in enumerate(fig_list):
+        assert_equal('image{}.png'.format(i + 1), image_path)
 
     mlab.test_plot3d()
     plt.plot(1, 1)
-    fig_list, _ = sg.save_figures(fname_template, 2, gallery_conf)
+    n = 5
+    fig_list = save_figures(fname_template, n, gallery_conf)
     assert_equal(len(fig_list), 2)
-    assert fig_list[0].endswith('image3.png')
-    assert fig_list[1].endswith('image4.png')
+    for i, image_path in enumerate(fig_list):
+        assert_equal('image{}.png'.format(i + 1 + n), image_path)
 
-    shutil.rmtree(examples_dir)
+    shutil.rmtree(gallery_conf['gallery_dir'])
 
 
 def test_zip_notebooks():
@@ -268,6 +264,16 @@ def test_zip_notebooks():
     check = zipf.testzip()
     if check:
         raise OSError("Bad file in zipfile: {0}".format(check))
+
+
+def test_prepare_execution_env():
+
+    # TODO
+    gallery_conf = build_test_configuration(examples_dir='examples')
+    block_vars = sg.prepare_execution_env('fast_test.py',
+                                          gallery_conf['gallery_dir'],
+                                          gallery_conf['examples_dir'],
+                                          gallery_conf)
 
 
 # TODO: test that broken thumbnail does appear when needed
