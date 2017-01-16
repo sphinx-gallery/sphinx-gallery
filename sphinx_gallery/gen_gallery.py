@@ -16,7 +16,7 @@ import copy
 import re
 import os
 from . import glr_path_static
-from .gen_rst import generate_dir_rst
+from .dir_rst import generate_dir_rst
 from .write_rst import SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles

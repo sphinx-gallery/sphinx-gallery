@@ -39,7 +39,7 @@ def get_docstring_and_rest(filename):
         content = fid.read()
     # change from Windows format to UNIX for uniformity
     content = content.replace(b'\r\n', b'\n')
-    content = content.decode('utf-8').strip()
+    content = content.decode('utf-8')
     match = re.search(LUA_BLOCK_COMMENT_REGEX, content)
     if match is not None:
         match_start_pos, match_end_pos = match.span()
@@ -49,7 +49,7 @@ def get_docstring_and_rest(filename):
 
         docstring = match.group('docstring')
         rest = content[match_end_pos:]
-        return docstring.strip(), rest.strip()
+        return docstring.strip(), rest.lstrip()
     else:
         raise ValueError(('Could not find docstring in file "{0}". '
                           'A docstring is required by sphinx-gallery')
