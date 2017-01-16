@@ -15,51 +15,11 @@ Files that generate images should start with 'plot'
 import os
 from .backreferences import write_backreferences, _thumbnail_div
 from .gen_rst import extract_intro, generate_file_rst
-
-# TODO
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
-    """Generate the gallery reStructuredText for an example directory."""
-    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print(80 * '_')
-        print('Example directory %s does not have a README.txt file' %
-              src_dir)
-        print('Skipping this directory')
-        print(80 * '_')
-        return "", []  # because string is an expected return type
-
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
-    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
-                      if fname.endswith('.py')]
-    entries_text = []
-    computation_times = []
-    build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    for fname in sorted_listdir:
-        amount_of_code, time_elapsed = \
-            generate_file_rst(fname, target_dir, src_dir, gallery_conf)
-        computation_times.append((time_elapsed, fname))
-        new_fname = os.path.join(src_dir, fname)
-        intro = extract_intro(new_fname)
-        write_backreferences(seen_backrefs, gallery_conf,
-                             target_dir, fname, intro)
-        this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
-
-.. toctree::
-   :hidden:
-
-   /%s/%s\n""" % (build_target_dir, fname[:-3])
-        entries_text.append((amount_of_code, this_entry))
-
-    # sort to have the smallest entries in the beginning
-    entries_text.sort()
-
-    fhindex = gallery_rst(src_dir, entries_text)
-
-    return fhindex, computation_times
+from .source_parser import get_lang, supported_extensions
 
 
-def gallery_rst(src_dir, entries_text):
-    """Generates the rst text of a gallery given the entries
+def _gallery_rst(src_dir, entries_text):
+    """Generate the rst text of a gallery given the entries.
 
     Parameters
     ----------
@@ -71,7 +31,6 @@ def gallery_rst(src_dir, entries_text):
     Returns:
     str : Content of the gallery
     """
-
     with open(os.path.join(src_dir, 'README.txt')) as fid:
         fhindex = fid.read()
     # Add empty lines to avoid bug in issue #165
@@ -85,3 +44,56 @@ def gallery_rst(src_dir, entries_text):
     <div style='clear:both'></div>\n\n"""
 
     return fhindex
+
+
+# TODO
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
+    """Generate the gallery reStructuredText for an example directory."""
+    # Skip directory if there's no README.txt
+    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
+        print(80 * '_')
+        print('Example directory %s does not have a README.txt file' %
+              src_dir)
+        print('Skipping this directory')
+        print(80 * '_')
+        return "", []  # because string is an expected return type
+
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
+                      if fname.endswith(supported_extensions)]
+    entries_text = []
+    computation_times = []
+    build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
+
+    # Iterate over all supported files
+    for fname in sorted_listdir:
+        lang = get_lang(fname)
+        print(fname, lang)
+        amount_of_code, time_elapsed = \
+            generate_file_rst(fname, target_dir, src_dir, gallery_conf, lang)
+        computation_times.append((time_elapsed, fname))
+        full_fname = os.path.join(src_dir, fname)
+        intro = extract_intro(full_fname, lang)
+
+        # Create backreferences only for python examples
+        if lang == 'python':
+            write_backreferences(seen_backrefs, gallery_conf,
+                                 target_dir, fname, intro)
+
+        # Create the thumbnail for current entry
+        this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
+
+.. toctree::
+   :hidden:
+
+   /%s/%s\n""" % (build_target_dir, fname[:-3])
+
+        entries_text.append((amount_of_code, this_entry))
+
+    # sort to have the smallest entries in the beginning
+    entries_text.sort()
+
+    fhindex = _gallery_rst(src_dir, entries_text)
+
+    return fhindex, computation_times
