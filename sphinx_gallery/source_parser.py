@@ -1,6 +1,26 @@
 """Parser for source files."""
+import os
 from . import py_source_parser
 from . import lua_source_parser
+
+
+languages = {
+    'python': ['.py'],
+    'lua': ['.lua'],
+    'C++': ['.cpp', '.cxx', '.hpp'],
+    'C': ['.c', '.h'],
+    'javascript': ['.js']
+}
+
+
+def get_lang(filename):
+    """Get language of the file from filename."""
+    filename, file_extension = os.path.splitext(filename)
+    for lang, lang_extensions in languages.items():
+        if file_extension in lang_extensions:
+            return lang
+
+    raise ValueError('Unsupported language for file {}'.format(filename))
 
 
 def get_docstring_and_rest(filename, lang='python'):
