@@ -10,16 +10,16 @@ Parser for rst example documents
 from __future__ import absolute_import, division, print_function
 import os
 
-from .downloads import CODE_DOWNLOAD
+from .downloads import CODE_DOWNLOAD, CODE_DOWNLOAD_NO_NOTEBOOK
 from .notebook import text2string
-
+from .source_parser import supported_languages
 
 try:
     # textwrap indent only exists in python 3
     from textwrap import indent
 except ImportError:
     def indent(text, prefix, predicate=None):
-        """Adds 'prefix' to the beginning of selected lines in 'text'.
+        """Add 'prefix' to the beginning of selected lines in 'text'.
 
         If 'predicate' is provided, 'prefix' will only be added to the lines
         where 'predicate(line)' is True. If 'predicate' is not provided,
@@ -66,14 +66,14 @@ CODE_OUTPUT = u""".. rst-class:: sphx-glr-script-out
 
 
 def codestr2rst(codestr, lang='python'):
-    """Return reStructuredText code block from code string"""
+    """Return reStructuredText code block from code string."""
     code_directive = "\n.. code-block:: {0}\n\n".format(lang)
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
 
 def rst_notebook_cells(executed_blocks, lang='python'):
-    """Writes the rst notebook cells
+    """Write the rst notebook cells.
 
     Parameters
     ----------
@@ -109,7 +109,7 @@ def rst_notebook_cells(executed_blocks, lang='python'):
 
 
 def figure_rst(figure_list):
-    """Given a list of paths to figures generate the corresponding rst
+    """Given a list of paths to figures generate the corresponding rst.
 
     Depending on whether we have one or more figures, we use a
     single rst call to 'image' or a horizontal list.
@@ -118,7 +118,6 @@ def figure_rst(figure_list):
     ----------
     figure_list : list of figures relative paths to Sphinx doc sources
     """
-
     images_rst = ""
     if len(figure_list) == 1:
         figure_name = figure_list[0]
@@ -132,8 +131,7 @@ def figure_rst(figure_list):
 
 
 def rst_notebook(executed_blocks, write_fname, time_elapsed, lang='python'):
-    """Saves the notebook to a write_file"""
-
+    """Save the notebook to a write_file."""
     ref_fname = write_fname.replace(os.path.sep, '_')
 
     example_rst = u"""\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
@@ -146,12 +144,15 @@ def rst_notebook(executed_blocks, write_fname, time_elapsed, lang='python'):
 
     filename = os.path.splitext(write_fname)[0]
     fname = os.path.basename(filename)
+    lang_extension = supported_languages[lang][0]
+
     if lang == 'python':
-        lang_extension = '.py'
+        example_rst += CODE_DOWNLOAD.format(fname + ".py",
+                                            fname + ".ipynb")
     else:
-        lang_extension = '.lua'
-    example_rst += CODE_DOWNLOAD.format(fname + lang_extension,
-                                        fname + ".ipynb")
+        example_rst += CODE_DOWNLOAD_NO_NOTEBOOK.format(fname + lang_extension,
+                                                        lang=lang.capitalize())
+
     example_rst += SPHX_GLR_SIG
 
     return example_rst

@@ -4,7 +4,7 @@ from . import py_source_parser
 from . import lua_source_parser
 
 
-languages = {
+supported_languages = {
     'python': ['.py'],
     'lua': ['.lua'],
     'C++': ['.cpp', '.cxx', '.hpp'],
@@ -12,14 +12,15 @@ languages = {
     'javascript': ['.js']
 }
 
-supported_extensions = tuple((x for lang, lang_extensions in languages.items()
+supported_extensions = tuple((x for lang, lang_extensions in
+                              supported_languages.items()
                               for x in lang_extensions))
 
 
 def get_lang(filename):
     """Get language of the file from filename."""
     filename, file_extension = os.path.splitext(filename)
-    for lang, lang_extensions in languages.items():
+    for lang, lang_extensions in supported_languages.items():
         if file_extension in lang_extensions:
             return lang
 

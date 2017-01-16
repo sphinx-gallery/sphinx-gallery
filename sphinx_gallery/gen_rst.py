@@ -95,7 +95,18 @@ def _md5sum_is_current(src_file):
     return False
 
 
-def _save_thumbnail(image_path_template, src_file, gallery_conf):
+def _get_thumbnail_name(src_file, lang='python'):
+    if lang == 'python':
+        base_image_name = os.path.splitext(os.path.basename(src_file))[0]
+    else:
+        basename, ext = os.path.splitext(os.path.basename(src_file))
+        base_image_name = basename + '_' + ext[1:]
+
+    return 'sphx_glr_%s_thumb.png' % base_image_name
+
+
+def _save_thumbnail(image_path_template, src_file, gallery_conf,
+                    lang='python'):
     """Save the thumbnail image."""
     # read specification of the figure to display as thumbnail from main text
     _, content = get_docstring_and_rest(src_file)
@@ -107,9 +118,8 @@ def _save_thumbnail(image_path_template, src_file, gallery_conf):
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
 
-    base_image_name = os.path.splitext(os.path.basename(src_file))[0]
-    thumb_file = os.path.join(thumb_dir,
-                              'sphx_glr_%s_thumb.png' % base_image_name)
+    base_image_name = _get_thumbnail_name(src_file, lang)
+    thumb_file = os.path.join(thumb_dir, base_image_name)
 
     if src_file in gallery_conf['failing_examples']:
         broken_img = os.path.join(glr_path_static(), 'broken_example.png')
@@ -135,7 +145,11 @@ def _prepare_execution_env(fname, target_dir, src_dir, gallery_conf,
         os.makedirs(image_dir)
 
     # Create image template to be formated
-    base_image_name = os.path.splitext(fname)[0]
+    if lang == 'python':
+        base_image_name = os.path.splitext(fname)[0]
+    else:
+        base_image_name = '_'.join(os.path.splitext(fname))
+
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path_template = os.path.join(image_dir, image_fname)
 
@@ -212,11 +226,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, lang='python'):
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(_get_md5sum(example_file))
 
-    _save_thumbnail(block_vars["image_path"], src_file, gallery_conf)
+    _save_thumbnail(block_vars["image_path"], src_file, gallery_conf, lang)
 
     # Generate RST and save it
     write_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
-    rst_fname = os.path.splitext(example_file)[0] + '.rst'
+    if lang == 'python':
+        rst_fname = os.path.splitext(example_file)[0] + '.rst'
+    else:
+        rst_fname = example_file + '.rst'
 
     with codecs.open(rst_fname, mode='w', encoding='utf-8') as f:
         f.write(rst_notebook(executed_blocks, write_fname, time_elapsed, lang))

@@ -46,7 +46,6 @@ def _gallery_rst(src_dir, entries_text):
     return fhindex
 
 
-# TODO
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory."""
     # Skip directory if there's no README.txt
@@ -69,7 +68,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     # Iterate over all supported files
     for fname in sorted_listdir:
         lang = get_lang(fname)
-        print(fname, lang)
         amount_of_code, time_elapsed = \
             generate_file_rst(fname, target_dir, src_dir, gallery_conf, lang)
         computation_times.append((time_elapsed, fname))
@@ -82,12 +80,12 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
                                  target_dir, fname, intro)
 
         # Create the thumbnail for current entry
-        this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
+        this_entry = _thumbnail_div(build_target_dir, fname, intro, lang=lang) + """
 
 .. toctree::
    :hidden:
 
-   /%s/%s\n""" % (build_target_dir, fname[:-3])
+   /%s/%s\n""" % (build_target_dir, fname[:-3] if lang == 'python' else fname)
 
         entries_text.append((amount_of_code, this_entry))
 

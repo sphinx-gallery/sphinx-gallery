@@ -23,6 +23,15 @@ CODE_DOWNLOAD = """
 
      :download:`Download Jupyter notebook: {1} <{1}>`\n"""
 
+
+CODE_DOWNLOAD_NO_NOTEBOOK = """
+\n.. container:: sphx-glr-footer
+
+\n  .. container:: sphx-glr-download
+
+     :download:`Download {lang} source code: {0} <{0}>`\n"""
+
+
 CODE_ZIP_DOWNLOAD = """
 \n.. container:: sphx-glr-footer
 

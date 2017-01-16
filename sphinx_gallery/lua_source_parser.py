@@ -49,7 +49,7 @@ def get_docstring_and_rest(filename):
 
         docstring = match.group('docstring')
         rest = content[match_end_pos:]
-        return docstring.strip(), rest.lstrip()
+        return docstring.lstrip(), rest.lstrip()
     else:
         raise ValueError(('Could not find docstring in file "{0}". '
                           'A docstring is required by sphinx-gallery')
