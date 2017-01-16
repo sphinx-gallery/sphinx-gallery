@@ -12,6 +12,9 @@ languages = {
     'javascript': ['.js']
 }
 
+supported_extensions = tuple((x for lang, lang_extensions in languages.items()
+                              for x in lang_extensions))
+
 
 def get_lang(filename):
     """Get language of the file from filename."""
