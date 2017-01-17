@@ -84,9 +84,9 @@ def generate_gallery_rst(app):
     gallery_conf.update(plot_gallery=plot_gallery)
     gallery_conf.update(
         abort_on_example_error=app.builder.config.abort_on_example_error)
+    gallery_conf['src_dir'] = app.builder.srcdir
 
     # this assures I can call the config in other places
-    gallery_conf['src_dir'] = app.builder.srcdir
     app.config.sphinx_gallery_conf = gallery_conf
     app.config.html_static_path.append(glr_path_static())
 
