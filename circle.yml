@@ -22,8 +22,12 @@ dependencies:
 
 test:
   override:
-    - cd doc; make html theme=rtd
+    - python setup.py build_sphinx
+    - SPHX_GLR_THEME=rtd sphinx-build doc rtd_html
+    - SPHX_GLR_THEME=alabaster sphinx-build doc alabaster_html
 
 general:
   artifacts:
     - "doc/_build/html"
+    - "rtd_html"
+    - "alabaster_html"

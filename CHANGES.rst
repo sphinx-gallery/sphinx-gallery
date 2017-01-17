@@ -9,6 +9,14 @@ New features
 
 * Drop styling in codelinks tooltip. Replaced for title attribute which is managed by the browser.
 
+Bug Fixes
+'''''''''
+
+* Sphinx-Gallery can now build by directly calling sphinx-build from
+  any path, no explicit need to run the Makefile from the sources
+  directory. See `#190 <https://github.com/sphinx-gallery/sphinx-gallery/pull/190>`_ 
+  for more details.
+
 v0.1.7
 ------
 

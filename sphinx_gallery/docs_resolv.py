@@ -333,16 +333,17 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
 
+    src_gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
     for this_module, url in gallery_conf['reference_url'].items():
         try:
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                     app.builder.outdir,
-                    gallery_dir,
+                    src_gallery_dir,
                     relative=True)
             else:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(url,
-                                                                   gallery_dir)
+                                                                   src_gallery_dir)
 
         except HTTPError as e:
             print("The following HTTP Error has occurred:\n")
@@ -373,7 +374,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1:]
-        pickle_fname = os.path.join(gallery_dir, subpath,
+        pickle_fname = os.path.join(src_gallery_dir, subpath,
                                     fname[:-5] + '_codeobj.pickle')
 
         if os.path.exists(pickle_fname):

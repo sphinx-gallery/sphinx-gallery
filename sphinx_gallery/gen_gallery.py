@@ -84,6 +84,7 @@ def generate_gallery_rst(app):
     gallery_conf.update(plot_gallery=plot_gallery)
     gallery_conf.update(
         abort_on_example_error=app.builder.config.abort_on_example_error)
+    gallery_conf['src_dir'] = app.builder.srcdir
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
@@ -99,20 +100,15 @@ def generate_gallery_rst(app):
     if not isinstance(gallery_dirs, list):
         gallery_dirs = [gallery_dirs]
 
-    mod_examples_dir = os.path.relpath(gallery_conf['mod_example_dir'],
-                                       app.builder.srcdir)
+    mod_examples_dir = os.path.join(
+        app.builder.srcdir, gallery_conf['mod_example_dir'])
     seen_backrefs = set()
 
     computation_times = []
 
-    # cd to the appropriate directory regardless of sphinx configuration
-    working_dir = os.getcwd()
-    os.chdir(app.builder.srcdir)
     for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
-        examples_dir = os.path.relpath(examples_dir,
-                                       app.builder.srcdir)
-        gallery_dir = os.path.relpath(gallery_dir,
-                                      app.builder.srcdir)
+        examples_dir = os.path.join(app.builder.srcdir, examples_dir)
+        gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
 
         for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
             if not os.path.exists(workdir):
@@ -150,9 +146,6 @@ def generate_gallery_rst(app):
 
         fhindex.write(SPHX_GLR_SIG)
         fhindex.flush()
-
-    # Back to initial directory
-    os.chdir(working_dir)
 
     if gallery_conf['plot_gallery']:
         print("Computation time summary:")
@@ -192,16 +185,16 @@ def sumarize_failing_examples(app, exception):
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    failing_examples = set([os.path.normpath(path) for path in
-                            gallery_conf['failing_examples']])
-    expected_failing_examples = set([os.path.normpath(path) for path in
+    failing_examples = set(gallery_conf['failing_examples'].keys())
+    expected_failing_examples = set([os.path.normpath(os.path.join(app.srcdir, path))
+                                     for path in
                                      gallery_conf['expected_failing_examples']])
 
     examples_expected_to_fail = failing_examples.intersection(
         expected_failing_examples)
     expected_fail_msg = []
     if examples_expected_to_fail:
-        expected_fail_msg.append("Examples failing as expected:")
+        expected_fail_msg.append("\n\nExamples failing as expected:")
         for fail_example in examples_expected_to_fail:
             expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
                                      gallery_conf['failing_examples'][fail_example] + '\n')
