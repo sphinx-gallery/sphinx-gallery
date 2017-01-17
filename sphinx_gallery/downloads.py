@@ -12,6 +12,8 @@ from __future__ import absolute_import, division, print_function
 import os
 import zipfile
 
+from .source_parser import supported_extensions
+
 CODE_DOWNLOAD = """
 \n.. container:: sphx-glr-footer
 
@@ -44,8 +46,8 @@ CODE_ZIP_DOWNLOAD = """
     :download:`Download all examples in Jupyter notebooks: {2} </{3}>`\n"""
 
 
-def python_zip(file_list, gallery_path, extension='.py'):
-    """Stores all files in file_list into an zip file
+def ceate_zip(file_list, gallery_path, suffix='source'):
+    """Store all files in file_list into an zip file.
 
     Parameters
     ----------
@@ -53,51 +55,52 @@ def python_zip(file_list, gallery_path, extension='.py'):
         Holds all the file names to be included in zip file
     gallery_path : string
         path to where the zipfile is stored
-    extension : str
-        '.py' or '.ipynb' In order to deal with downloads of python
-        sources and jupyter notebooks the file extension from files in
-        file_list will be removed and replace with the value of this
-        variable while generating the zip file
+    sufffix : str
+        In order to save with downloads of various sources/notebooks seperately
+        you provide a suffix for the zip file saved.
     Returns
     -------
     zipname : string
-        zip file name, written as `target_dir_{python,jupyter}.zip`
+        zip file name, written as `target_dir_{suffix}.zip`
         depending on the extension
     """
     zipname = gallery_path.replace(os.path.sep, '_')
-    zipname += '_python' if extension == '.py' else '_jupyter'
+    zipname += '_{}'.format(suffix)
     zipname = os.path.join(gallery_path, zipname + '.zip')
 
     zipf = zipfile.ZipFile(zipname, mode='w')
     for fname in file_list:
-        file_src = os.path.splitext(fname)[0] + extension
-        zipf.write(file_src)
+        zipf.write(fname)
+
     zipf.close()
 
     return zipname
 
 
-def list_downloadable_sources(target_dir):
-    """Returns a list of python source files is target_dir
+def list_downloadable_sources(target_dir, extension=supported_extensions):
+    """Return a list of all supported source files in target_dir.
 
     Parameters
     ----------
     target_dir : string
-        path to the directory where python source file are
+        path to the directory where source files are
+    extension: string or tuple of strings
+        An extension or tuple of extensions to be matched.
     Returns
     -------
     list
-        list of paths to all Python source files in `target_dir`
+        list of paths to all matched source files in `target_dir`
     """
     return [os.path.join(target_dir, fname)
             for fname in os.listdir(target_dir)
-            if fname.endswith('.py')]
+            if fname.endswith(extension)]
 
 
 def generate_zipfiles(gallery_dir):
-    """
-    Collects all Python source files and Jupyter notebooks in
-    gallery_dir and makes zipfiles of them
+    """Create zip file by scaniing gallery_dir.
+
+    Collect all Python source files and Jupyter notebooks in
+    gallery_dir and makes zipfiles of them.
 
     Parameters
     ----------
@@ -109,18 +112,20 @@ def generate_zipfiles(gallery_dir):
     download_rst: string
         RestructuredText to include download buttons to the generated files
     """
-
-    listdir = list_downloadable_sources(gallery_dir)
+    all_srces = list_downloadable_sources(gallery_dir, supported_extensions)
+    jptr_ntbks = list_downloadable_sources(gallery_dir, '.ipynb')
     for directory in sorted(os.listdir(gallery_dir)):
-        if os.path.isdir(os.path.join(gallery_dir, directory)):
-            target_dir = os.path.join(gallery_dir, directory)
-            listdir.extend(list_downloadable_sources(target_dir))
+        target_dir = os.path.join(gallery_dir, directory)
+        if os.path.isdir(target_dir):
+            all_srces.extend(list_downloadable_sources(target_dir,
+                                                       supported_extensions))
+            jptr_ntbks.extend(list_downloadable_sources(target_dir, '.ipynb'))
 
-    py_zipfile = python_zip(listdir, gallery_dir)
-    jy_zipfile = python_zip(listdir, gallery_dir, ".ipynb")
+    src_zipfile = ceate_zip(all_srces, gallery_dir, 'source')
+    ntbk_zipfile = ceate_zip(jptr_ntbks, gallery_dir, 'jupyter')
 
-    dw_rst = CODE_ZIP_DOWNLOAD.format(os.path.basename(py_zipfile),
-                                      py_zipfile,
-                                      os.path.basename(jy_zipfile),
-                                      jy_zipfile)
+    dw_rst = CODE_ZIP_DOWNLOAD.format(os.path.basename(src_zipfile),
+                                      src_zipfile,
+                                      os.path.basename(ntbk_zipfile),
+                                      ntbk_zipfile)
     return dw_rst
