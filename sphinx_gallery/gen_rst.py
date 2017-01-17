@@ -381,10 +381,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         print(80 * '_')
         return "", []  # because string is an expected return type
 
-    # suppress "not included in TOCTREE" sphinx warnings
-    fhindex = ":orphan:\n\n"
     with open(os.path.join(src_dir, 'README.txt')) as fid:
-        fhindex += fid.read()
+        fhindex = fid.read()
     # Add empty lines to avoid bug in issue #165
     fhindex += "\n\n"
 

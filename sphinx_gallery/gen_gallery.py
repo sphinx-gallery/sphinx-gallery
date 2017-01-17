@@ -117,8 +117,6 @@ def generate_gallery_rst(app):
         for workdir in [examples_dir, gallery_dir, mod_examples_dir]:
             if not os.path.exists(workdir):
                 os.makedirs(workdir)
-        # we create an index.rst with all examples
-        fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
         this_fhindex, this_computation_times = \
@@ -132,7 +130,10 @@ def generate_gallery_rst(app):
 
         computation_times += this_computation_times
 
-        fhindex.write(this_fhindex)
+        # we create an index.rst with all examples
+        fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
+        # :orphan: to suppress "not included in TOCTREE" sphinx warnings
+        fhindex.write(":orphan:\n\n" + this_fhindex)
         for directory in sorted(os.listdir(examples_dir)):
             if os.path.isdir(os.path.join(examples_dir, directory)):
                 src_dir = os.path.join(examples_dir, directory)
