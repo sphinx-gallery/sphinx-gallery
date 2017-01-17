@@ -39,7 +39,7 @@ CODE_ZIP_DOWNLOAD = """
 
 \n  .. container:: sphx-glr-download
 
-    :download:`Download all examples in Python source code: {0} </{1}>`\n
+    :download:`Download all examples in source code: {0} </{1}>`\n
 
 \n  .. container:: sphx-glr-download
 
@@ -64,13 +64,13 @@ def ceate_zip(file_list, gallery_path, suffix='source'):
         zip file name, written as `target_dir_{suffix}.zip`
         depending on the extension
     """
-    zipname = gallery_path.replace(os.path.sep, '_')
+    zipname = os.path.basename(gallery_path)
     zipname += '_{}'.format(suffix)
     zipname = os.path.join(gallery_path, zipname + '.zip')
 
     zipf = zipfile.ZipFile(zipname, mode='w')
     for fname in file_list:
-        zipf.write(fname)
+        zipf.write(fname, os.path.relpath(fname, gallery_path))
 
     zipf.close()
 
@@ -106,7 +106,6 @@ def generate_zipfiles(gallery_dir):
     ----------
     gallery_dir : string
         path of the gallery to collect downloadable sources
-
     Return
     ------
     download_rst: string
