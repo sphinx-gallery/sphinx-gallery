@@ -184,33 +184,32 @@ def sumarize_failing_examples(app, exception):
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    failing_examples = gallery_conf['failing_examples']
-
+    failing_examples = set(gallery_conf['failing_examples'].keys())
     expected_failing_examples = set([os.path.normpath(os.path.join(app.srcdir, path))
                                      for path in
                                      gallery_conf['expected_failing_examples']])
 
-    examples_expected_to_fail = set(failing_examples.keys()).intersection(
+    examples_expected_to_fail = failing_examples.intersection(
         expected_failing_examples)
     expected_fail_msg = []
     if examples_expected_to_fail:
         expected_fail_msg.append("\n\nExamples failing as expected:")
         for fail_example in examples_expected_to_fail:
             expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
-                                     failing_examples[fail_example] + '\n')
+                                     gallery_conf['failing_examples'][fail_example] + '\n')
         print("\n".join(expected_fail_msg))
 
-    examples_not_expected_to_fail = set(failing_examples.keys()).difference(
+    examples_not_expected_to_fail = failing_examples.difference(
         expected_failing_examples)
     fail_msgs = []
     if examples_not_expected_to_fail:
         fail_msgs.append("Unexpected failing examples:")
         for fail_example in examples_not_expected_to_fail:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
-                             failing_examples[fail_example] + '\n')
+                             gallery_conf['failing_examples'][fail_example] + '\n')
 
     examples_not_expected_to_pass = expected_failing_examples.difference(
-        failing_examples.keys())
+        failing_examples)
     if examples_not_expected_to_pass:
         fail_msgs.append("Examples expected to fail, but not failling:\n" +
                          "Please remove these examples from\n" +
