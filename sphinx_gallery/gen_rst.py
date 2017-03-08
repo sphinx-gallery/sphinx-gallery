@@ -546,7 +546,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
-    shutil.copyfile(src_file, example_file)
+    try:
+        shutil.copyfile(src_file, example_file)
+    except shutil.SameFileError:
+        pass
     script_blocks = split_code_and_text_blocks(src_file)
     amount_of_code = sum([len(bcontent)
                           for blabel, bcontent in script_blocks
