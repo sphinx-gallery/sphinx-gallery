@@ -17,6 +17,7 @@ Files that generate images should start with 'plot'
 from __future__ import division, print_function, absolute_import
 from time import time
 import codecs
+import glob
 import hashlib
 import os
 import re
@@ -229,18 +230,19 @@ def md5sum_is_current(src_file):
     return False
 
 
-def save_figures(image_path, fig_count, gallery_conf):
+def save_figures(image_path, execution_path, fig_count, gallery_conf):
     """Save all open matplotlib figures of the example code-block
 
     Parameters
     ----------
     image_path : str
         Path where plots are saved (format string which accepts figure number)
+    execution_path : str
+        Path where the example script was executed.
     fig_count : int
         Previous figure number count. Figure number add from this number
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
-
     Returns
     -------
     images_rst : str
@@ -280,6 +282,14 @@ def save_figures(image_path, fig_count, gallery_conf):
             scale_image(current_fig, current_fig, 850, 999)
             figure_list.append(current_fig)
         mlab.close(all=True)
+
+    if gallery_conf.get('find_saved_figures', False):
+        png_paths = glob.glob(os.sep.join([execution_path, '*.png']))
+        cur_count = len(figure_list)
+        for fig_num, path in enumerate(png_paths, start=1):
+            current_fig = image_path.format(fig_count + fig_num + cur_count)
+            shutil.move(path, current_fig)
+            figure_list.append(current_fig)
 
     return figure_rst(figure_list, gallery_conf['src_dir'])
 
@@ -482,8 +492,11 @@ def execute_code_block(code_block, example_globals,
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
-        images_rst, fig_num = save_figures(block_vars['image_path'],
-                                           block_vars['fig_count'], gallery_conf)
+        images_rst, fig_num = save_figures(
+            block_vars['image_path'],
+            os.path.dirname(src_file),
+            block_vars['fig_count'],
+            gallery_conf)
 
     except Exception:
         formatted_exception = traceback.format_exc()
