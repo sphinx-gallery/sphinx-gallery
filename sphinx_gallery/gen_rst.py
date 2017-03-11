@@ -162,11 +162,13 @@ HLIST_IMAGE_TEMPLATE = """
 
       .. image:: /%s
             :scale: 47
+            :class: sphx-glr-li-img
 """
 
 SINGLE_IMAGE = """
 .. image:: /%s
     :align: center
+    :class: sphx-glr-img
 """
 
 
