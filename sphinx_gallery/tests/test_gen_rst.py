@@ -292,6 +292,7 @@ def test_figure_rst():
     single_image = """
 .. image:: /sphx_glr_plot_1.png
     :align: center
+    :class: sphx-glr-img
 """
     assert image_rst == single_image
     assert fig_num == 1
@@ -306,11 +307,13 @@ def test_figure_rst():
 
       .. image:: /sphx_glr_plot_1.png
             :scale: 47
+            :class: sphx-glr-li-img
 
     *
 
       .. image:: /second.png
             :scale: 47
+            :class: sphx-glr-li-img
 """
     assert image_rst == image_list_rst
     assert fig_num == 2
