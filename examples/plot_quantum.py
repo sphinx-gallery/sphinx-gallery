@@ -54,7 +54,7 @@ found. Introducing a new variable :math:`\xi = \epsilon - \mu`, and
 # Code source: Óscar Nájera
 # License: BSD 3 clause
 
-import matplotlib.pylab as plt
+import matplotlib.pyplot as plt
 import numpy as np
 mu = np.linspace(0, 3, 800)
 for b in [10, 20, 30]:

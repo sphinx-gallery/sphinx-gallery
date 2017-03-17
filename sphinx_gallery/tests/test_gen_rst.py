@@ -22,7 +22,8 @@ from nose.tools import assert_equal, assert_false, assert_true
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import gen_gallery
 from sphinx_gallery import downloads
-import matplotlib.pylab as plt  # Import gen_rst first to enable 'Agg' backend.
+# Need to import gen_rst before matplotlib.pyplot to set backend to 'Agg'
+import matplotlib.pyplot as plt
 
 CONTENT = [
     '"""'
