@@ -414,9 +414,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
 
             # ensure greediness
             names = sorted(str_repl, key=len, reverse=True)
-            expr = re.compile(r'(?<!\.)\b' +  # don't follow . or word
-                              '|'.join(re.escape(name)
-                                       for name in names))
+            regex_str = '|'.join(re.escape(name) for name in names)
+            regex = re.compile(regex_str)
 
             def substitute_link(match):
                 return str_repl[match.group()]
@@ -427,7 +426,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                 with open(full_fname, 'wb') as fid:
                     for line in lines_in:
                         line = line.decode('utf-8')
-                        line = expr.sub(substitute_link, line)
+                        line = regex.sub(substitute_link, line)
                         fid.write(line.encode('utf-8'))
 
 
