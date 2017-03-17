@@ -293,7 +293,7 @@ class SphinxDocLinkResolver(object):
         cobj : dict
             Dict with information about the "code object" for which we are
             resolving a link.
-            cobi['name'] : function or class name (str)
+            cobj['name'] : function or class name (str)
             cobj['module_short'] : shortened module name (str)
             cobj['module'] : module name (str)
         this_url: str
