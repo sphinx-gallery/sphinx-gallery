@@ -85,17 +85,29 @@ def parse_config(app):
     backreferences_warning = """\n\n=========
 Sphinx Gallery now requires you to set the configuration variable
 'backreferences_dir' in your config to activate the
-backreferences. Read how to update in the online documentation
+backreferences. That is mini galleries clustered by the functions used
+in the example script. Have a look at it in sphinx-gallery
 
-http://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
-
+http://sphinx-gallery.readthedocs.io/en/stable/index.html#examples-using-numpy-linspace
+\n\n
+"""
     if gallery_conf['backreferences_dir'] is None:
-        warnings.warn(backreferences_warning)
+        no_care_msg = """If you don't care about this features set
+            in your conf.py\n 'backreferences_dir':
+                False\n\n"""
+
+        warnings.warn(backreferences_warning + no_care_msg)
         gallery_conf['backreferences_dir'] = os.path.join(
             'modules', 'generated')
-        warnings.warn("\n using old default 'backreferences_dir':'{}'".format(
+        warnings.warn("\n using old default 'backreferences_dir':'{}'. This will be disabled in future releases\n\n\n".format(
             gallery_conf['backreferences_dir']))
     if gallery_conf.get("mod_example_dir", False):
+        update_msg = """For a quick fix try replacing 'mod_example_dir'
+by 'backreferences_dir' in your conf.py file. If that does not solve the
+present issue read carefully how to update in the online documentation
+
+http:
+    //sphinx - gallery.readthedocs.io / en / latest / advanced_configuration.html  # references-to-examples"""
         raise ValueError("Old configuration for backreferences detected \n"
                          "using the configuration variable `mod_example_dir`\n"
                          + backreferences_warning)
@@ -117,7 +129,7 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     if not isinstance(gallery_dirs, list):
         gallery_dirs = [gallery_dirs]
 
-    if gallery_conf['backreferences_dir'] is not None:
+    if bool(gallery_conf['backreferences_dir']):
         backreferences_dir = os.path.join(
             srcdir, gallery_conf['backreferences_dir'])
         if not os.path.exists(backreferences_dir):
@@ -170,9 +182,8 @@ def generate_gallery_rst(app):
             if os.path.isdir(os.path.join(examples_dir, directory)):
                 src_dir = os.path.join(examples_dir, directory)
                 target_dir = os.path.join(gallery_dir, directory)
-                this_fhindex, this_computation_times = \
-                    generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                     seen_backrefs)
+                this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
+                                                                        seen_backrefs)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
 
@@ -198,7 +209,7 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
     This avoids inclusion errors/warnings if there are no gallery
     examples for a class / module that is being parsed by autodoc"""
 
-    if app.config.sphinx_gallery_conf['backreferences_dir'] is None:
+    if not bool(app.config.sphinx_gallery_conf['backreferences_dir']):
         return
 
     examples_path = os.path.join(app.srcdir,
