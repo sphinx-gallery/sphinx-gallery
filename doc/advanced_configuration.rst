@@ -181,7 +181,7 @@ it with the standard sphinx extensions `autodoc
     extensions = [
         ...
         'sphinx.ext.autodoc',
-	'sphinx.ext.autosummary',
+        'sphinx.ext.autosummary',
         'sphinx_gallery.gen_gallery',
         ]
 
@@ -340,7 +340,7 @@ build. Change your `conf.py` accordingly:
 
     sphinx_gallery_conf = {
         ...
-	'expected_failing_examples': ['../examples/plot_raise.py']
+        'expected_failing_examples': ['../examples/plot_raise.py']
     }
 
 Here you list the examples you allow to fail during the build process,
