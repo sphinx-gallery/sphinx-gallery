@@ -293,7 +293,11 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'https://docs.python.org/{.major}'.format(sys.version_info): None}
+    'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
+    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('http://matplotlib.org/', None),
+}
 
 examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']

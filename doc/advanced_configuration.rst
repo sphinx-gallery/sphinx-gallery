@@ -119,7 +119,7 @@ References to examples (backreferences)
 
 Sphinx-Gallery enables you, when documenting your modules, to
 reference to the examples that use a particular function. For example
-if we are documenting the ``numpy.exp`` function its possible to embed
+if we are documenting the :data:`numpy.exp` function its possible to embed
 a small gallery of examples that is specific to this function and
 looks like this:
 
