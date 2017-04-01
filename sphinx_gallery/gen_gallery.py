@@ -14,7 +14,7 @@ from __future__ import division, print_function, absolute_import
 import copy
 import re
 import os
-import warnings
+
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
@@ -113,8 +113,10 @@ If you don't care about this features set in your conf.py
 
         gallery_conf['backreferences_dir'] = os.path.join(
             'modules', 'generated')
-        app.warn("using old default 'backreferences_dir':'{}'. This will be disabled in future releases\n".format(
-            gallery_conf['backreferences_dir']), prefix="DeprecationWarning: ")
+        app.warn("using old default 'backreferences_dir':'{}'.\n"
+                 " This will be disabled in future releases\n".format(
+                     gallery_conf['backreferences_dir']),
+                 prefix="DeprecationWarning: ")
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
