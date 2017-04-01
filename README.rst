@@ -9,6 +9,10 @@ Getting Started to Sphinx-Gallery
     :target: http://sphinx-gallery.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image::     https://ci.appveyor.com/api/projects/status/github/sphinx-gallery/sphinx-gallery?branch=master&svg=true
+    :target: https://ci.appveyor.com/project/Titan-C/sphinx-gallery/history
+
+
 
 A Sphinx extension that builds an HTML version of any Python
 script and puts it into an examples gallery.
