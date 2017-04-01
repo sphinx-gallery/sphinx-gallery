@@ -305,16 +305,18 @@ def figure_rst(figure_list, sources_dir):
         number of figures saved
     """
 
-    figure_list = [os.path.relpath(figure_path, sources_dir)
-                   for figure_path in figure_list]
+    figure_paths = [os.path.relpath(figure_path, sources_dir)
+                    for figure_path in figure_list]
+    figure_paths = [figure_name.replace(os.sep, '/').lstrip('/')
+                    for figure_name in figure_list]
     images_rst = ""
-    if len(figure_list) == 1:
-        figure_name = figure_list[0]
-        images_rst = SINGLE_IMAGE % figure_name.lstrip('/')
-    elif len(figure_list) > 1:
+    if len(figure_paths) == 1:
+        figure_name = figure_paths[0]
+        images_rst = SINGLE_IMAGE % figure_name
+    elif len(figure_paths) > 1:
         images_rst = HLIST_HEADER
-        for figure_name in figure_list:
-            images_rst += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+        for figure_name in figure_paths:
+            images_rst += HLIST_IMAGE_TEMPLATE % figure_name
 
     return images_rst, len(figure_list)
 
@@ -429,7 +431,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 .. toctree::
    :hidden:
 
-   /%s/%s\n""" % (build_target_dir, fname[:-3])
+   /%s\n""" % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')
         entries_text.append((amount_of_code, this_entry))
 
     # sort to have the smallest entries in the beginning
