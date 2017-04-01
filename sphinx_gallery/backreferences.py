@@ -5,7 +5,7 @@
 Backreferences Generator
 ========================
 
-Parses example files code in order to keep track of used functions
+Parses example file code in order to keep track of used functions
 """
 
 from __future__ import print_function

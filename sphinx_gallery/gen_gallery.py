@@ -82,35 +82,39 @@ def parse_config(app):
         abort_on_example_error=app.builder.config.abort_on_example_error)
     gallery_conf['src_dir'] = app.builder.srcdir
 
-    backreferences_warning = """\n\n=========
-Sphinx Gallery now requires you to set the configuration variable
+    backreferences_warning = """\n========
+Sphinx-Gallery now requires you to set the configuration variable
 'backreferences_dir' in your config to activate the
 backreferences. That is mini galleries clustered by the functions used
-in the example script. Have a look at it in sphinx-gallery
+in the example scripts. Have a look at it in sphinx-gallery
 
 http://sphinx-gallery.readthedocs.io/en/stable/index.html#examples-using-numpy-linspace
-\n\n
 """
-    if gallery_conf['backreferences_dir'] is None:
-        no_care_msg = """If you don't care about this features set
-            in your conf.py\n 'backreferences_dir':
-                False\n\n"""
 
-        warnings.warn(backreferences_warning + no_care_msg)
-        gallery_conf['backreferences_dir'] = os.path.join(
-            'modules', 'generated')
-        warnings.warn("\n using old default 'backreferences_dir':'{}'. This will be disabled in future releases\n\n\n".format(
-            gallery_conf['backreferences_dir']))
     if gallery_conf.get("mod_example_dir", False):
-        update_msg = """For a quick fix try replacing 'mod_example_dir'
+        update_msg = """\nFor a quick fix try replacing 'mod_example_dir'
 by 'backreferences_dir' in your conf.py file. If that does not solve the
 present issue read carefully how to update in the online documentation
 
-http:
-    //sphinx - gallery.readthedocs.io / en / latest / advanced_configuration.html  # references-to-examples"""
-        raise ValueError("Old configuration for backreferences detected \n"
-                         "using the configuration variable `mod_example_dir`\n"
-                         + backreferences_warning)
+http://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
+
+        gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
+        app.warn("Old configuration for backreferences detected \n"
+                 "using the configuration variable `mod_example_dir`\n"
+                 + backreferences_warning
+                 + update_msg, prefix="DeprecationWarning: ")
+
+    elif gallery_conf['backreferences_dir'] is None:
+        no_care_msg = """
+If you don't care about this features set in your conf.py
+'backreferences_dir': False\n"""
+
+        app.warn(backreferences_warning + no_care_msg)
+
+        gallery_conf['backreferences_dir'] = os.path.join(
+            'modules', 'generated')
+        app.warn("using old default 'backreferences_dir':'{}'. This will be disabled in future releases\n".format(
+            gallery_conf['backreferences_dir']), prefix="DeprecationWarning: ")
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
