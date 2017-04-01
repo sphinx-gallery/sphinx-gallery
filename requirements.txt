@@ -2,4 +2,4 @@ setuptools
 matplotlib
 pillow
 sphinx
-nose
+pytest

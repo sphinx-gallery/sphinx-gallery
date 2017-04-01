@@ -9,7 +9,6 @@ import os
 import sphinx_gallery.docs_resolv as sg
 import tempfile
 import sys
-from nose.tools import assert_equal
 
 
 def test_shelve():
@@ -25,12 +24,12 @@ def test_shelve():
     finally:
         os.remove(f.name)
     # tests recovered data matches
-    assert_equal(file_data, test_string)
+    assert file_data == test_string
 
     # test if cached data is available after temporary file has vanished
-    assert_equal(sg.get_data(f.name, tmp_cache), test_string)
+    assert sg.get_data(f.name, tmp_cache) == test_string
 
     # shelve keys need to be str in python 2, deal with unicode input
     if sys.version_info[0] == 2:
         unicode_name = unicode(f.name)
-        assert_equal(sg.get_data(unicode_name, tmp_cache), test_string)
+        assert sg.get_data(unicode_name, tmp_cache) == test_string

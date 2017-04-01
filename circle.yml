@@ -14,7 +14,7 @@ dependencies:
     - conda update --yes --quiet conda
     - conda create -n circleenv --yes pip python=2.7
     - sed -i "s/ENABLE_USER_SITE = .*/ENABLE_USER_SITE = False/g" /home/ubuntu/miniconda/envs/circleenv/lib/python2.7/site.py
-    - conda install -n circleenv --yes numpy scipy seaborn mayavi setuptools matplotlib pillow sphinx nose sphinx_rtd_theme
+    - conda install -n circleenv --yes numpy scipy seaborn mayavi setuptools matplotlib pillow sphinx pytest pytest-cov sphinx_rtd_theme
     - pip install -r requirements.txt
 
   override:

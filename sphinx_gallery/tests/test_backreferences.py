@@ -7,7 +7,6 @@ Testing the rst files generator
 from __future__ import division, absolute_import, print_function
 import os
 import sphinx_gallery.backreferences as sg
-from nose.tools import assert_equal
 
 
 def test_thumbnail_div():
@@ -31,7 +30,7 @@ def test_thumbnail_div():
     </div>
 """.format(os.sep)
 
-    assert_equal(html_div, reference)
+    assert html_div == reference
 
 
 def test_backref_thumbnail_div():
@@ -60,7 +59,7 @@ def test_backref_thumbnail_div():
     * :ref:`sphx_glr_fake_dir_test_file.py`
 """.format(os.sep)
 
-    assert_equal(html_div, reference)
+    assert html_div == reference
 
 
 def test_identify_names():
@@ -88,6 +87,6 @@ identify_names
             {'name': 'identify_names',
              'module': 'sphinx_gallery.back_references',
              'module_short': 'sphinx_gallery.back_references'}
-        }
+    }
 
-    assert_equal(expected, res)
+    assert expected == res

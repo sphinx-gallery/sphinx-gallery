@@ -301,8 +301,3 @@ def setup(app):
 
     app.connect('build-finished', sumarize_failing_examples)
     app.connect('build-finished', embed_code_links)
-
-
-def setup_module():
-    # HACK: Stop nosetests running setup() above
-    pass
