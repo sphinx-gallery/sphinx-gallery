@@ -12,6 +12,8 @@ gallery of examples from any set of Python scripts.
 It is extracted from the scikit-learn project and aims to be an
 independent general purpose extension.
 
+The code of the project is on Github: `Sphinx-Gallery <https://github.com/sphinx-gallery/sphinx-gallery>`_
+
 Why Sphinx-Gallery?
 -------------------
 
@@ -73,6 +75,7 @@ Contents:
    tutorials/index
    auto_mayavi_examples/index
    changes
+   Fork sphinx-gallery on Github <https://github.com/sphinx-gallery/sphinx-gallery>
 
 
 Indices and tables
