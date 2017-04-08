@@ -312,3 +312,21 @@ the example script.
 
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
+
+
+Pandoc for converting rst to markdown for notebook downloads
+============================================================
+
+Sphinx uses restructured text while Jupyter notebooks uses markdown for
+markup of the text. Therefore, restructured text need to be translated to
+markdown when notebook downloads are created. You can use pandoc to do this
+translation. For this, install pypandoc using the following commands:
+
+.. code-block:: sh
+
+    pip install pypandoc
+    python -c "import pypandoc;pypandoc.download_pandoc()"
+
+Then, sphinx gallery will automatically use pandoc for converting rst to md. In
+case, pypandoc is not installed, it falls back to a regex based parser which
+might make a few mistakes in conversion depending upon complexity of text.
