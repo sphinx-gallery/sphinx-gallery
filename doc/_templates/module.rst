@@ -1,3 +1,6 @@
+.. Please when editing this file make sure to keep it matching the
+   docs in ../advanced_configuration.rst:reference_to_examples
+
 {{ fullname }}
 {{ underline }}
 
@@ -10,13 +13,15 @@
    ---------
 
    {% for item in functions %}
+
    .. autofunction:: {{ item }}
 
-   .. include:: {{fullname}}.{{item}}.examples
+   .. include:: backreferences/{{fullname}}.{{item}}.examples
 
    .. raw:: html
 
 	       <div style='clear:both'></div>
+
    {%- endfor %}
    {% endif %}
    {% endblock %}
@@ -27,9 +32,10 @@
    Classes
    -------
 
-   .. autosummary::
    {% for item in classes %}
-      {{ item }}
+   .. autoclass:: {{ item }}
+      :members:
+
    {%- endfor %}
    {% endif %}
    {% endblock %}

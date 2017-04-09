@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
-###############################################################################
-# Documentation link resolver objects
+"""
+Link resolver objects
+=====================
+"""
 from __future__ import print_function
 import gzip
 import os

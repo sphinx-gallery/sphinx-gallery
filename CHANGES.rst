@@ -4,6 +4,13 @@ Change Log
 git master
 ----------
 
+Incompatible Changes
+''''''''''''''''''''
+* Sphinx Gallery's example back-references are deactivated by
+  default. Now it is users responsibility to turn them on and set the
+  directory where to store the files. See discussion in `#126
+  <https://github.com/sphinx-gallery/sphinx-gallery/issues/126>`_.
+
 v0.1.8
 ------
 

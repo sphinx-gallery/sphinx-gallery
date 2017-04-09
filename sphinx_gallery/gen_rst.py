@@ -2,7 +2,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
-==================
 RST file generator
 ==================
 
@@ -422,8 +421,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         computation_times.append((time_elapsed, fname))
         new_fname = os.path.join(src_dir, fname)
         intro = extract_intro(new_fname)
-        write_backreferences(seen_backrefs, gallery_conf,
-                             target_dir, fname, intro)
         this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
 
 .. toctree::
@@ -431,6 +428,10 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
    /%s/%s\n""" % (build_target_dir, fname[:-3])
         entries_text.append((amount_of_code, this_entry))
+
+        if gallery_conf['backreferences_dir']:
+            write_backreferences(seen_backrefs, gallery_conf,
+                                 target_dir, fname, intro)
 
     # sort to have the smallest entries in the beginning
     entries_text.sort()

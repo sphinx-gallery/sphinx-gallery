@@ -114,48 +114,57 @@ dictionary within your Sphinx ``conf.py`` file :
 
 .. _references_to_examples:
 
-Establishing local references to examples
-=========================================
+References to examples (backreferences)
+=======================================
 
-Sphinx-Gallery also enables you, when documenting your modules, to
-reference to the examples that use that particular class or
-function. For example if we are documenting the numpy.linspace
-function its possible to embed a small gallery of examples using it
-like this:
+Sphinx-Gallery enables you, when documenting your modules, to
+reference to the examples that use a particular function. For example
+if we are documenting the :data:`numpy.exp` function its possible to embed
+a small gallery of examples that is specific to this function and
+looks like this:
 
-.. include:: modules/generated/numpy.linspace.examples
+.. include:: gen_modules/backreferences/numpy.exp.examples
 .. raw:: html
 
         <div style='clear:both'></div>
 
 
 
-For such behavior to be available you have to extend in your
-Sphinx-Gallery configuration directory with:
+For such behavior to be available, you have to activate it in your
+Sphinx-Gallery configuration ``conf.py`` file with:
 
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        # path to store the module using example template
-        'mod_example_dir'     : 'modules/generated',
+        # directory where function granular galleries are stored
+        'backreferences_dir'  : 'gen_modules/backreferences',
 
-        # Your documented modules. In this case sphinx_gallery and numpy
-        # in a tuple of strings.
+        # Modules for which function level galleries are created.  In
+        # this case sphinx_gallery and numpy in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
-The path you specify in ``mod_example_dir`` will get populated with
-ReStructuredText files describing the examples thumbnails with links
-to them but only for the specific module. Keep in mind is relative to
-the `conf.py` file.
+The path you specify in ``backreferences_dir``, here we choose
+``gen_modules/backreferences`` will get populated with
+ReStructuredText files, each of which contains a reduced version of the
+gallery specific to every function used across all the examples
+galleries and belonging to the modules listed in ``doc_module``. Keep
+in mind that the path set in ``backreferences_dir`` is **relative** to the
+``conf.py`` file.
 
+Then within your sphinx documentation ``.rst`` files you write these
+lines to include this reduced version of the Gallery, which has
+examples in use of a specific function, in this case ``numpy.exp``::
 
-Then within your sphinx documentation files you
-include these lines to include these links::
-
-    .. include:: modules/generated/numpy.linspace.examples
+    .. include:: gen_modules/backreferences/numpy.exp.examples
     .. raw:: html
 
         <div style='clear:both'></div>
+
+The ``include`` directive takes a path **relative** to the ``rst``
+file it is called from. In the case of this documentation file (which
+is in the same directory as ``conf.py``) we directly use the path
+declared in ``backreferences_dir`` followed by the function whose
+examples we want to show and the file has the ``.examples`` extension.
 
 Auto documenting your API with links to examples
 ------------------------------------------------
@@ -163,7 +172,7 @@ Auto documenting your API with links to examples
 The previous feature can be automated for all your modules combining
 it with the standard sphinx extensions `autodoc
 <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
-<http://sphinx-doc.org/ext/autosummary.html>`_. First enable it in your
+<http://sphinx-doc.org/ext/autosummary.html>`_. First enable them in your
 ``conf.py`` extensions list.
 
 .. code-block:: python
@@ -172,21 +181,49 @@ it with the standard sphinx extensions `autodoc
     extensions = [
         ...
         'sphinx.ext.autodoc',
-	'sphinx.ext.autosummary',
+        'sphinx.ext.autosummary',
+        'sphinx_gallery.gen_gallery',
         ]
 
     # generate autosummary even if no references
     autosummary_generate = True
 
-To document all your modules and their functions you can put to your
-autosummary template for modules. For example for this documentation
-we use:
-
-.. literalinclude:: _templates/module.rst
-
-Then when documenting your API you call autosummary like:
+`autodoc <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
+<http://sphinx-doc.org/ext/autosummary.html>`_ are very powerful
+extensions please read about them. In this example we'll explain how
+the :ref:`sphx_glr_api_reference` is automatically generated. The
+documentation is done at the module level. We first start with the
+``reference.rst`` file
 
 .. literalinclude:: reference.rst
+    :language: rst
+
+The important directives are ``currentmodule`` where we specify which
+module we are documenting, for our purpose is ``sphinx_gallery``. The
+``autosummary`` directive is responsible for generating the ``rst``
+files documenting each module.  ``autosummary`` takes the option
+*toctree* which is where the ``rst`` files are saved and *template*
+which is the file that describes how the module ``rst`` documentation
+file is to be constructed, finally we write the modules we wish to
+document, in this case all modules of Sphinx-Gallery.
+
+The template file ``module.rst`` for the ``autosummary`` directive has
+to be saved in the path ``_templates/module.rst``. We present our
+configuration in the following block. The most relevant part is the
+loop defined between lines **12-22** that parses all the functions of
+the module. There we have included the snippet introduced in the
+previous section. Keep in mind that the include directive is
+**relative** to the file location, and module documentation files are
+saved in the directory we specified in the *toctree* option of the
+``autosummary`` directive used before in the ``reference.rst`` file.
+The files we are including are from the ``backreferences_dir``
+configuration option setup for Sphinx-Gallery.
+
+.. literalinclude:: _templates/module.rst
+    :language: rst
+    :lines: 3-
+    :emphasize-lines: 12-22
+    :linenos:
 
 
 Using a custom default thumbnail image
@@ -267,7 +304,7 @@ easily.
 There are some additional options at your hand to deal with broken examples.
 
 Abort build on first fail
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sphinx-Gallery provides the early fail option. In
 this mode the gallery build process breaks as soon as an exception
@@ -290,7 +327,7 @@ always given to the `-D` flag of the ``sphinx-build`` command.
 
 
 Don't fail the build on exit
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow
@@ -303,7 +340,7 @@ build. Change your `conf.py` accordingly:
 
     sphinx_gallery_conf = {
         ...
-	'expected_failing_examples': ['../examples/plot_raise.py']
+        'expected_failing_examples': ['../examples/plot_raise.py']
     }
 
 Here you list the examples you allow to fail during the build process,

@@ -53,7 +53,7 @@ doc/_build/
 doc/auto_examples
 doc/auto_mayavi_examples
 doc/tutorials/
-doc/modules/generated
+doc/gen_modules/
 
 # PyBuilder
 target/

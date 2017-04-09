@@ -2,11 +2,10 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
-========================
 Backreferences Generator
 ========================
 
-Reviews generated example files in order to keep track of used modules
+Parses example file code in order to keep track of used functions
 """
 
 from __future__ import print_function
@@ -175,12 +174,15 @@ def write_backreferences(seen_backrefs, gallery_conf,
                          target_dir, fname, snippet):
     """Writes down back reference files, which include a thumbnail list
     of examples using a certain module"""
+    if gallery_conf['backreferences_dir'] is None:
+        return
+
     example_file = os.path.join(target_dir, fname)
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     backrefs = scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
-                                    gallery_conf['mod_example_dir'],
+                                    gallery_conf['backreferences_dir'],
                                     '%s.examples' % backref)
         seen = backref in seen_backrefs
         with open(include_path, 'a' if seen else 'w') as ex_file:

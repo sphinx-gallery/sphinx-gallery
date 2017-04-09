@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-=============================
 Choosing the thumbnail figure
 =============================
 
@@ -15,6 +14,7 @@ comment somewhere below the docstring in the example file.
 
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 def main():
     x = np.linspace(-1, 2, 100)
