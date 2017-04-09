@@ -138,7 +138,7 @@ def test_md5sums():
         os.remove(f.name)
 
 
-@pytest.fixture()
+@pytest.fixture
 def gallery_conf():
     """Sets up a test sphinx-gallery configuration"""
 
