@@ -138,22 +138,22 @@ def test_md5sums():
         os.remove(f.name)
 
 
-def build_test_configuration(**kwargs):
+@pytest.fixture()
+def gallery_conf():
     """Sets up a test sphinx-gallery configuration"""
 
     gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
     gallery_conf.update(examples_dir=tempfile.mkdtemp(),
                         gallery_dir=tempfile.mkdtemp())
-    gallery_conf.update(kwargs)
     gallery_conf['src_dir'] = gallery_conf['gallery_dir']
 
     return gallery_conf
 
 
-def test_fail_example(log_collector):
+def test_fail_example(gallery_conf, log_collector):
     """Test that failing examples are only executed until failing block"""
 
-    gallery_conf = build_test_configuration(filename_pattern='raise.py')
+    gallery_conf.update(filename_pattern='raise.py')
 
     failing_code = CONTENT + ['#' * 79,
                               'First_test_fail', '#' * 79, 'second_fail']
@@ -193,11 +193,10 @@ def test_gen_dir_rst(fakesphinxapp):
     assert u"Óscar here" in out[0]
 
 
-def test_pattern_matching(log_collector):
+def test_pattern_matching(gallery_conf, log_collector):
     """Test if only examples matching pattern are executed"""
 
-    gallery_conf = build_test_configuration(
-        filename_pattern=re.escape(os.sep) + 'plot_0')
+    gallery_conf.update(filename_pattern=re.escape(os.sep) + 'plot_0')
 
     code_output = ('\n Out::\n'
                    '\n'
@@ -243,7 +242,7 @@ def test_thumbnail_number():
         assert thumbnail_number == 2
 
 
-def test_save_figures():
+def test_save_figures(gallery_conf):
     """Test file naming when saving figures. Requires mayavi."""
     try:
         from mayavi import mlab
@@ -251,7 +250,8 @@ def test_save_figures():
         raise pytest.skip('Mayavi not installed')
     mlab.options.offscreen = True
 
-    gallery_conf = build_test_configuration(find_mayavi_figures=True)
+    gallery_conf.update(find_mayavi_figures=True)
+
     mlab.test_plot3d()
     plt.plot(1, 1)
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
@@ -271,9 +271,9 @@ def test_save_figures():
     shutil.rmtree(gallery_conf['gallery_dir'])
 
 
-def test_zip_notebooks():
+def test_zip_notebooks(gallery_conf):
     """Test generated zipfiles are not corrupt"""
-    gallery_conf = build_test_configuration(examples_dir='examples')
+    gallery_conf.update(examples_dir='examples')
     examples = downloads.list_downloadable_sources(
         gallery_conf['examples_dir'])
     zipfilepath = downloads.python_zip(examples, gallery_conf['gallery_dir'])
