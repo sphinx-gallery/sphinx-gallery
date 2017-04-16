@@ -9,13 +9,13 @@ from __future__ import division, absolute_import, print_function
 
 import os
 import tempfile
-from io import StringIO
+
 
 import pytest
-
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 
+from sphinx_gallery.gen_rst import MixedEncodingStringIO
 
 _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
 
@@ -31,7 +31,7 @@ def test_config(tmpdir):
     """Testing warning messages on configuration correctly shown"""
 
     app = Sphinx(_fixturedir, _fixturedir, tmpdir,
-                 tmpdir, "html", warning=StringIO())
+                 tmpdir, "html", warning=MixedEncodingStringIO())
     cfg = app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
