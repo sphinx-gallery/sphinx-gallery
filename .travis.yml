@@ -54,6 +54,7 @@ install:
           conda install --yes mayavi;
         fi;
         if [ "$PYPANDOC" == "True"]; then
+            pip install pypandoc;
             python -c "import pypandoc;pypandoc.download_pandoc()";
         fi;
       fi;
