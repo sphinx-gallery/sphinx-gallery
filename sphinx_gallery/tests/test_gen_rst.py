@@ -244,14 +244,14 @@ def test_save_figures():
     mlab.test_plot3d()
     plt.plot(1, 1)
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
+    image_rst, fig_num = sg.save_figures(fname_template, '', 0, gallery_conf)
     assert_equal(fig_num, 2)
     assert '/image1.png' in image_rst
     assert '/image2.png' in image_rst
 
     mlab.test_plot3d()
     plt.plot(1, 1)
-    image_rst, fig_num = sg.save_figures(fname_template, 2, gallery_conf)
+    image_rst, fig_num = sg.save_figures(fname_template, '', 2, gallery_conf)
     assert_equal(fig_num, 2)
     assert '/image2.png' not in image_rst
     assert '/image3.png' in image_rst
