@@ -110,8 +110,11 @@ def generate_zipfiles(gallery_dir):
     py_zipfile = python_zip(listdir, gallery_dir)
     jy_zipfile = python_zip(listdir, gallery_dir, ".ipynb")
 
+    def rst_path(filepath):
+        return filepath.replace(os.sep, '/')
+
     dw_rst = CODE_ZIP_DOWNLOAD.format(os.path.basename(py_zipfile),
-                                      py_zipfile,
+                                      rst_path(py_zipfile),
                                       os.path.basename(jy_zipfile),
-                                      jy_zipfile)
+                                      rst_path(jy_zipfile))
     return dw_rst

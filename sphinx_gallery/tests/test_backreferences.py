@@ -22,14 +22,14 @@ def test_thumbnail_div():
 
 .. only:: html
 
-    .. figure:: /fake_dir{0}images{0}thumb{0}sphx_glr_test_file_thumb.png
+    .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
 
         :ref:`sphx_glr_fake_dir_test_file.py`
 
 .. raw:: html
 
     </div>
-""".format(os.sep)
+"""
 
     assert_equal(html_div, reference)
 
@@ -47,7 +47,7 @@ def test_backref_thumbnail_div():
 
 .. only:: html
 
-    .. figure:: /fake_dir{0}images{0}thumb{0}sphx_glr_test_file_thumb.png
+    .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
 
         :ref:`sphx_glr_fake_dir_test_file.py`
 
@@ -58,7 +58,7 @@ def test_backref_thumbnail_div():
 .. only:: not html
 
     * :ref:`sphx_glr_fake_dir_test_file.py`
-""".format(os.sep)
+"""
 
     assert_equal(html_div, reference)
 
@@ -88,6 +88,6 @@ identify_names
             {'name': 'identify_names',
              'module': 'sphinx_gallery.back_references',
              'module_short': 'sphinx_gallery.back_references'}
-        }
+    }
 
     assert_equal(expected, res)
