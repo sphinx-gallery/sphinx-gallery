@@ -300,9 +300,8 @@ def figure_rst(figure_list, sources_dir):
     """
 
     figure_paths = [os.path.relpath(figure_path, sources_dir)
+                    .replace(os.sep, '/').lstrip('/')
                     for figure_path in figure_list]
-    figure_paths = [figure_name.replace(os.sep, '/').lstrip('/')
-                    for figure_name in figure_list]
     images_rst = ""
     if len(figure_paths) == 1:
         figure_name = figure_paths[0]

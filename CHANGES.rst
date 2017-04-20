@@ -4,6 +4,14 @@ Change Log
 git master
 ----------
 
+v0.1.10
+-------
+
+Bug Fixed
+'''''''''
+
+* Fix image path handling bug introduced in #218
+
 v0.1.9
 ------
 

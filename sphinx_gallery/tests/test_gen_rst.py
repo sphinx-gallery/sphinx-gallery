@@ -298,6 +298,13 @@ def test_figure_rst():
     assert image_rst == image_list_rst
     assert fig_num == 2
 
+    # test issue #229
+    local_img = [os.path.join(os.getcwd(), 'third.png')]
+    image_rst, fig_num = sg.figure_rst(local_img, '.')
+
+    single_image = sg.SINGLE_IMAGE % "third.png"
+    assert image_rst == single_image
+    assert fig_num == 1
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice
 # TODO: test that examples are executed after a no-plot and produce
