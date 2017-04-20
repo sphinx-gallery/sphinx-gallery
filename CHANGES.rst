@@ -11,6 +11,12 @@ Incompatible Changes
   directory where to store the files. See discussion in `#126
   <https://github.com/sphinx-gallery/sphinx-gallery/issues/126>`_.
 
+Developer changes
+'''''''''''''''''
+
+* Move testing to py.test
+
+
 v0.1.8
 ------
 

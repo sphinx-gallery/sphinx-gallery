@@ -46,7 +46,7 @@ install:
     # which then crashes with pandas and seaborn
     - if [ "$DISTRIB" == "conda" ]; then
         conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy
-        setuptools matplotlib pillow sphinx nose coverage seaborn;
+        setuptools matplotlib pillow sphinx pytest pytest-cov coverage seaborn;
         source activate testenv;
         if [ "$PYTHON_VERSION" == "2.7" ]; then
           conda install --yes mayavi;
@@ -65,8 +65,7 @@ before_script:
   - sleep 3 # give xvfb some time to start
 
 script:
-    - if [ "$DISTRIB" == "ubuntu 14" ]; then python setup.py nosetests; fi
-    - if [ "$DISTRIB" == "conda" ]; then nosetests; fi
+    - python setup.py test
     - cd doc
     - make html-noplot
     - make html

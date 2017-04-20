@@ -15,9 +15,7 @@ import os
 import shutil
 import warnings
 import zipfile
-
-import nose
-from nose.tools import assert_equal, assert_false, assert_true
+import pytest
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import gen_gallery
@@ -57,8 +55,8 @@ def test_split_code_and_text_blocks():
 
     blocks = sg.split_code_and_text_blocks('examples/just_code.py')
 
-    assert_equal(blocks[0][0], 'text')
-    assert_equal(blocks[1][0], 'code')
+    assert blocks[0][0] == 'text'
+    assert blocks[1][0] == 'code'
 
 
 def test_bug_cases_of_notebook_syntax():
@@ -69,7 +67,7 @@ def test_bug_cases_of_notebook_syntax():
         ref_blocks = ast.literal_eval(reference.read())
         blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
 
-        assert_equal(blocks, ref_blocks)
+        assert blocks == ref_blocks
 
 
 def test_direct_comment_after_docstring():
@@ -92,7 +90,7 @@ def test_direct_comment_after_docstring():
                             '# with a second line of comment',
                             'x, y = 1, 2',
                             '']))]
-    assert_equal(result, expected_result)
+    assert result == expected_result
 
 
 def test_codestr2rst():
@@ -102,7 +100,7 @@ def test_codestr2rst():
 .. code-block:: python
 
     print("hello world")"""
-    assert_equal(reference, output)
+    assert reference == output
 
 
 def test_extract_intro():
@@ -112,11 +110,9 @@ def test_extract_intro():
         result = sg.extract_intro(f.name)
     finally:
         os.remove(f.name)
-    assert_false('Docstring' in result)
-    assert_equal(
-        result,
-        'This is the description of the example which goes on and on, Óscar')
-    assert_false('second paragraph' in result)
+    assert 'Docstring' not in result
+    assert result == 'This is the description of the example which goes on and on, Óscar'
+    assert 'second paragraph' not in result
 
 
 def test_md5sums():
@@ -127,14 +123,14 @@ def test_md5sums():
     try:
         file_md5 = sg.get_md5sum(f.name)
         # verify correct md5sum
-        assert_equal('ea8a570e9f3afc0a7c3f2a17a48b8047', file_md5)
+        assert 'ea8a570e9f3afc0a7c3f2a17a48b8047' == file_md5
         # False because is a new file
-        assert_false(sg.md5sum_is_current(f.name))
+        assert not sg.md5sum_is_current(f.name)
         # Write md5sum to file to check is current
         with open(f.name + '.md5', 'w') as file_checksum:
             file_checksum.write(file_md5)
         try:
-            assert_true(sg.md5sum_is_current(f.name))
+            assert sg.md5sum_is_current(f.name)
         finally:
             os.remove(f.name + '.md5')
     finally:
@@ -168,8 +164,8 @@ def test_fail_example():
     with warnings.catch_warnings(record=True) as w:
         sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
                              gallery_conf['examples_dir'], gallery_conf)
-    assert_equal(len(w), 1)
-    assert_true('not defined' in str(w[0].message))
+    assert len(w) == 1
+    assert 'not defined' in str(w[0].message)
 
     # read rst file and check if it contains traceback output
 
@@ -210,9 +206,9 @@ def test_pattern_matching():
             rst = f.read()
         if re.search(gallery_conf['filename_pattern'],
                      os.path.join(gallery_conf['gallery_dir'], rst_fname)):
-            assert_true(code_output in rst)
+            assert code_output in rst
         else:
-            assert_false(code_output in rst)
+            assert code_output not in rst
 
 
 def test_thumbnail_number():
@@ -229,7 +225,7 @@ def test_thumbnail_number():
         finally:
             os.remove(f.name)
         thumbnail_number = sg.extract_thumbnail_number(content)
-        assert_equal(thumbnail_number, 2)
+        assert thumbnail_number == 2
 
 
 def test_save_figures():
@@ -237,7 +233,7 @@ def test_save_figures():
     try:
         from mayavi import mlab
     except ImportError:
-        raise nose.SkipTest('Mayavi not installed')
+        raise pytest.skip('Mayavi not installed')
     mlab.options.offscreen = True
 
     gallery_conf = build_test_configuration(find_mayavi_figures=True)
@@ -245,14 +241,14 @@ def test_save_figures():
     plt.plot(1, 1)
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
     image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
-    assert_equal(fig_num, 2)
+    assert fig_num == 2
     assert '/image1.png' in image_rst
     assert '/image2.png' in image_rst
 
     mlab.test_plot3d()
     plt.plot(1, 1)
     image_rst, fig_num = sg.save_figures(fname_template, 2, gallery_conf)
-    assert_equal(fig_num, 2)
+    assert fig_num == 2
     assert '/image2.png' not in image_rst
     assert '/image3.png' in image_rst
     assert '/image4.png' in image_rst
@@ -280,8 +276,8 @@ def test_figure_rst():
 .. image:: /sphx_glr_plot_1.png
     :align: center
 """
-    assert_equal(image_rst, single_image)
-    assert_equal(fig_num, 1)
+    assert image_rst == single_image
+    assert fig_num == 1
 
     image_rst, fig_num = sg.figure_rst(figure_list + ['second.png'], '.')
 
@@ -299,8 +295,8 @@ def test_figure_rst():
       .. image:: /second.png
             :scale: 47
 """
-    assert_equal(image_rst, image_list_rst)
-    assert_equal(fig_num, 2)
+    assert image_rst == image_list_rst
+    assert fig_num == 2
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice

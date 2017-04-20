@@ -9,14 +9,7 @@ from __future__ import division, absolute_import, print_function
 import json
 import tempfile
 import os
-
-from nose.tools import assert_equal
-from nose.tools import assert_raises
-try:
-    from nose.tools import assert_raises_regex
-except ImportError:
-    from nose.tools import assert_raises_regexp as assert_raises_regex
-
+import pytest
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery.notebook import (rst2md, jupyter_notebook, save_notebook,
@@ -32,7 +25,7 @@ def test_latex_conversion():
     """Latex parsing from rst into Jupyter Markdown"""
     double_inline_rst = r":math:`T<0` and :math:`U>0`"
     double_inline_jmd = r"$T<0$ and $U>0$"
-    assert_equal(double_inline_jmd, rst2md(double_inline_rst))
+    assert double_inline_jmd == rst2md(double_inline_rst)
 
     align_eq = r"""
 .. math::
@@ -42,7 +35,7 @@ def test_latex_conversion():
     align_eq_jmd = r"""
 \begin{align}\mathcal{H} &= 0 \\
    \mathcal{G} &= D\end{align}"""
-    assert_equal(align_eq_jmd, rst2md(align_eq))
+    assert align_eq_jmd == rst2md(align_eq)
 
 
 def test_convert():
@@ -82,7 +75,7 @@ For more details on interpolation see the page `channel_interpolation`.
 
 ![me](foobar)
 """  # noqa
-    assert_equal(rst2md(rst), markdown)
+    assert rst2md(rst) == markdown
 
 
 def test_jupyter_notebook():
@@ -94,7 +87,7 @@ def test_jupyter_notebook():
         save_notebook(example_nb, f.name)
     try:
         with open(f.name, "r") as fname:
-            assert_equal(json.load(fname), example_nb)
+            assert json.load(fname) == example_nb
     finally:
         os.remove(f.name)
 
@@ -104,17 +97,15 @@ def test_jupyter_notebook():
 
 def test_with_empty_args():
     """ User passes no args, should fail with SystemExit """
-    assert_raises(SystemExit,
-                  python_to_jupyter_cli,
-                  [])
+    with pytest.raises(SystemExit):
+        python_to_jupyter_cli()
 
 
 def test_missing_file():
     """ User passes non existing file, should fail with FileNotFoundError """
-    assert_raises_regex(FileNotFoundError,
-                        'No such file or directory.+nofile\.py',
-                        python_to_jupyter_cli,
-                        ['nofile.py'])
+    with pytest.raises(FileNotFoundError) as excinfo:
+        python_to_jupyter_cli(['nofile.py'])
+    excinfo.match(r'No such file or directory.+nofile\.py')
 
 
 def test_file_is_generated():
