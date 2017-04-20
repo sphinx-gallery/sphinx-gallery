@@ -4,17 +4,30 @@ Change Log
 git master
 ----------
 
+v0.1.9
+------
+
 Incompatible Changes
 ''''''''''''''''''''
+
 * Sphinx Gallery's example back-references are deactivated by
   default. Now it is users responsibility to turn them on and set the
   directory where to store the files. See discussion in `#126
-  <https://github.com/sphinx-gallery/sphinx-gallery/issues/126>`_.
+  <https://github.com/sphinx-gallery/sphinx-gallery/issues/126>`_ and
+  pull request `#151
+  <https://github.com/sphinx-gallery/sphinx-gallery/issues/151>`_.
+
+Bug Fixed
+'''''''''
+
+* Fix download zip files path in windows builds. See `#218 <https://github.com/sphinx-gallery/sphinx-gallery/pull/218>`_
+* Fix embedded missing link. See `#214 <https://github.com/sphinx-gallery/sphinx-gallery/pull/214>`_
 
 Developer changes
 '''''''''''''''''
 
 * Move testing to py.test
+* Include link to github repository in documentation
 
 
 v0.1.8
