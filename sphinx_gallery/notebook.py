@@ -100,8 +100,9 @@ def sphx_glr_rst2md(text):
     return text
 
 def rst2md(text):
-    """Converts the RST text from the examples docstrigs and comments
-    into markdown text for the Jupyter notebooks"""
+    """Delegates the conversion to pypandoc if found in the system,
+    otherwise uses our custom converter.
+    """
 
     try:
         # Use pandoc if available
