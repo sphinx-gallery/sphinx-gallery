@@ -98,7 +98,7 @@ def test_jupyter_notebook():
 def test_with_empty_args():
     """ User passes no args, should fail with SystemExit """
     with pytest.raises(SystemExit):
-        python_to_jupyter_cli()
+        python_to_jupyter_cli([])
 
 
 def test_missing_file():
