@@ -53,7 +53,7 @@ install:
         if [ "$PYTHON_VERSION" == "2.7" ]; then
           conda install --yes mayavi;
         fi;
-        if [ "$PYPANDOC" == "True"]; then
+        if [ "$PYPANDOC" == "True" ]; then
             pip install pypandoc;
             python -c "import pypandoc;pypandoc.download_pandoc()";
         fi;
