@@ -5,8 +5,8 @@ Getting Started to Sphinx-Gallery
 .. image:: https://travis-ci.org/sphinx-gallery/sphinx-gallery.svg?branch=master
     :target: https://travis-ci.org/sphinx-gallery/sphinx-gallery
 
-.. image:: http://readthedocs.org/projects/sphinx-gallery/badge/?version=latest
-    :target: http://sphinx-gallery.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/sphinx-gallery/badge/?version=latest
+    :target: https://sphinx-gallery.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. image::     https://ci.appveyor.com/api/projects/status/github/sphinx-gallery/sphinx-gallery?branch=master&svg=true
@@ -23,7 +23,7 @@ independent general purpose extension.
 Who uses Sphinx-Gallery
 =======================
 
-* `Sphinx-Gallery <http://sphinx-gallery.readthedocs.io/en/latest/auto_examples/index.html>`_
+* `Sphinx-Gallery <https://sphinx-gallery.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
 * `Nilearn <http://nilearn.github.io/auto_examples/index.html>`_
 * `MNE-python <http://www.martinos.org/mne/stable/auto_examples/index.html>`_
