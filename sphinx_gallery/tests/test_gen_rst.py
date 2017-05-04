@@ -20,6 +20,8 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import gen_gallery
 from sphinx_gallery import downloads
+from sphinx_gallery.sorting import ExplicitOrderKey
+
 # Need to import gen_rst before matplotlib.pyplot to set backend to 'Agg'
 import matplotlib.pyplot as plt
 
@@ -305,6 +307,21 @@ def test_figure_rst():
     single_image = sg.SINGLE_IMAGE % "third.png"
     assert image_rst == single_image
     assert fig_num == 1
+
+
+def test_folder_ordering():
+    all_folders = ['e', 'f', 'd', 'c', '01b', 'a']
+    explicit_folders = ['f', 'd']
+    remaining_folders = [ii for ii in all_folders
+                         if ii not in explicit_folders]
+    key = ExplicitOrderKey(explicit_folders)
+    sorted_folders = sorted(all_folders, key=key)
+    test_list = explicit_folders + sorted(remaining_folders)
+    assert all(ii == jj for ii, jj in zip(sorted_folders,
+                                          test_list))
+    with pytest.raises(ValueError):
+        ExplicitOrderKey('nope')
+
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice
 # TODO: test that examples are executed after a no-plot and produce
