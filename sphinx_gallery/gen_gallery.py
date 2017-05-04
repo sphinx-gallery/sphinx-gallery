@@ -29,6 +29,7 @@ except NameError:
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'examples_dirs': os.path.join('..', 'examples'),
+    'examples_dirs_order': None,
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
     'doc_module': (),
@@ -180,11 +181,22 @@ def generate_gallery_rst(app):
 
         computation_times += this_computation_times
 
+        key = None
+        if gallery_conf['examples_dirs_order'] is not None:
+            base_examples_dir = os.path.basename(examples_dir)
+            ordering = gallery_conf['examples_dirs_order']
+            if not isinstance(ordering, dict):
+                raise ValueError('If not None, examples_dirs_order'
+                                 ' must be a dictionary of folder:'
+                                 ' ordering pairs')
+            if base_examples_dir in ordering.keys():
+                key = ExplicitOrderKey(ordering[base_examples_dir])
+
         # we create an index.rst with all examples
         fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
         # :orphan: to suppress "not included in TOCTREE" sphinx warnings
         fhindex.write(":orphan:\n\n" + this_fhindex)
-        for directory in sorted(os.listdir(examples_dir)):
+        for directory in sorted(os.listdir(examples_dir), key=key):
             if os.path.isdir(os.path.join(examples_dir, directory)):
                 src_dir = os.path.join(examples_dir, directory)
                 target_dir = os.path.join(gallery_dir, directory)
@@ -301,3 +313,22 @@ def setup(app):
 
     app.connect('build-finished', sumarize_failing_examples)
     app.connect('build-finished', embed_code_links)
+
+
+class ExplicitOrderKey(object):
+    """Explicitly order a list of strings."""
+    def __init__(self, ordered_list):
+        if not isinstance(ordered_list, list):
+            raise ValueError('ordered_list must be a list')
+        self.ordered_list = ordered_list
+        self.unordered_items = []
+
+    def __call__(self, item):
+        if item in self.ordered_list:
+            # Return that item's explicit position
+            return self.ordered_list.index(item)
+        else:
+            # Keep a running list of non-explicitly ordered things
+            # Add any non-specified strings to the end of the sort
+            self.unordered_items.append(item)
+            return len(self.unordered_items) + len(self.ordered_list)
