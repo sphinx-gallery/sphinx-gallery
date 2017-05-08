@@ -135,13 +135,35 @@ If you don't care about this features set in your conf.py
 
 def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     """Creates necessary folders for sphinx_gallery files """
-    examples_dirs = gallery_conf['examples_dirs']
+    list_examples_dirs = gallery_conf['examples_dirs']
     gallery_dirs = gallery_conf['gallery_dirs']
 
-    if not isinstance(examples_dirs, list):
-        examples_dirs = [examples_dirs]
+    if not isinstance(list_examples_dirs, list):
+        list_examples_dirs = [list_examples_dirs]
+
+    def gallery_contents(src_dir, folder, sortkey):
+        gallery_dir = os.path.join(srcdir, folder)
+        examples_folders = [item
+                            for item in os.listdir(gallery_dir)
+                            if os.path.isdir(os.path.join(gallery_dir, item))]
+        return gallery_dir, sorted(examples_folders, key=sortkey)
+
+    examples_dirs = []
+    for examples_dir in list_examples_dirs:
+        if isinstance(examples_dir, str):
+            examples_dirs.append(gallery_contents(srcdir, examples_dir, None))
+        if isinstance(examples_dir, tuple):
+            examples_dirs.append(gallery_contents(
+                srcdir, examples_dir[0], examples_dir[1]))
+
     if not isinstance(gallery_dirs, list):
         gallery_dirs = [gallery_dirs]
+    gallery_dirs = [os.path.join(srcdir, gallery_dir)
+                    for gallery_dir in gallery_dirs]
+
+    for outdir in gallery_dirs:
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
 
     if bool(gallery_conf['backreferences_dir']):
         backreferences_dir = os.path.join(
@@ -149,7 +171,7 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
         if not os.path.exists(backreferences_dir):
             os.makedirs(backreferences_dir)
 
-    return examples_dirs, gallery_dirs
+    return zip(examples_dirs, gallery_dirs)
 
 
 def generate_gallery_rst(app):
@@ -166,16 +188,11 @@ def generate_gallery_rst(app):
     seen_backrefs = set()
 
     computation_times = []
-    examples_dirs, gallery_dirs = _prepare_sphx_glr_dirs(gallery_conf,
-                                                         app.builder.srcdir)
+    workdirs = _prepare_sphx_glr_dirs(gallery_conf,
+                                      app.builder.srcdir)
 
-    for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
-        examples_dir = os.path.join(app.builder.srcdir, examples_dir)
-        gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
+    for (examples_dir, subsections), gallery_dir in workdirs:
 
-        for workdir in [examples_dir, gallery_dir]:
-            if not os.path.exists(workdir):
-                os.makedirs(workdir)
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
         this_fhindex, this_computation_times = generate_dir_rst(
@@ -193,14 +210,13 @@ def generate_gallery_rst(app):
                          encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             fhindex.write((u":orphan:\n\n" + this_fhindex))
-            for directory in sorted(os.listdir(examples_dir)):
-                if os.path.isdir(os.path.join(examples_dir, directory)):
-                    src_dir = os.path.join(examples_dir, directory)
-                    target_dir = os.path.join(gallery_dir, directory)
-                    this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                                                            seen_backrefs)
-                    fhindex.write(this_fhindex)
-                    computation_times += this_computation_times
+            for directory in subsections:
+                src_dir = os.path.join(examples_dir, directory)
+                target_dir = os.path.join(gallery_dir, directory)
+                this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
+                                                                        seen_backrefs)
+                fhindex.write(this_fhindex)
+                computation_times += this_computation_times
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(gallery_dir)
@@ -303,7 +319,8 @@ def setup(app):
     app.add_stylesheet('gallery.css')
 
     # Sphinx < 1.6 calls it `_extensions`, >= 1.6 is `extensions`.
-    extensions_attr = '_extensions' if hasattr(app, '_extensions') else 'extensions'
+    extensions_attr = '_extensions' if hasattr(
+        app, '_extensions') else 'extensions'
     if 'sphinx.ext.autodoc' in getattr(app, extensions_attr):
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
 

@@ -300,7 +300,9 @@ intersphinx_mapping = {
     'matplotlib': ('http://matplotlib.org/', None),
 }
 
-examples_dirs = ['../examples', '../tutorials']
+from sphinx_gallery.sorting import ExplicitOrderStrict
+examples_dirs = [('../examples', ExplicitOrderStrict(["sin_func", "no_output"])),
+                 '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
 try:
