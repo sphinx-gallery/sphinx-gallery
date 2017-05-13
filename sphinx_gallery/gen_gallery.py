@@ -14,6 +14,7 @@ from __future__ import division, print_function, absolute_import
 import copy
 import re
 import os
+import os.path as op
 
 from . import glr_path_static
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
@@ -29,8 +30,8 @@ except NameError:
 
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
-    'examples_dirs': os.path.join('..', 'examples'),
-    'examples_dirs_order': None,
+    'examples_dirs': op.join('..', 'examples'),
+    'gallery_folder_order': [],
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
     'doc_module': (),
@@ -61,12 +62,12 @@ def clean_gallery_out(build_dir):
     #  work (though it should probably not cause a crash).
     # Tested successfully on Sphinx 1.0.7
 
-    build_image_dir = os.path.join(build_dir, '_images')
-    if os.path.exists(build_image_dir):
+    build_image_dir = op.join(build_dir, '_images')
+    if op.exists(build_image_dir):
         filelist = os.listdir(build_image_dir)
         for filename in filelist:
             if filename.startswith('sphx_glr') and filename.endswith('png'):
-                os.remove(os.path.join(build_image_dir, filename))
+                os.remove(op.join(build_image_dir, filename))
 
 
 def parse_config(app):
@@ -113,7 +114,7 @@ If you don't care about this features set in your conf.py
 
         app.warn(backreferences_warning + no_care_msg)
 
-        gallery_conf['backreferences_dir'] = os.path.join(
+        gallery_conf['backreferences_dir'] = op.join(
             'modules', 'generated')
         app.warn("using old default 'backreferences_dir':'{}'.\n"
                  " This will be disabled in future releases\n".format(
@@ -138,12 +139,22 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
         gallery_dirs = [gallery_dirs]
 
     if bool(gallery_conf['backreferences_dir']):
-        backreferences_dir = os.path.join(
+        backreferences_dir = op.join(
             srcdir, gallery_conf['backreferences_dir'])
-        if not os.path.exists(backreferences_dir):
+        if not op.exists(backreferences_dir):
             os.makedirs(backreferences_dir)
 
-    return examples_dirs, gallery_dirs
+    # Generate sorting key
+    key = None
+    dirs_order = gallery_conf['gallery_folder_order']
+    if not isinstance(dirs_order, list):
+        raise ValueError('gallery_folder_order must be a list of'
+                         'paths to example folders, found type'
+                         '{}.'.format(type(dirs_order)))
+    if len(dirs_order) > 0:
+        key = ExplicitOrderKey(dirs_order)
+
+    return examples_dirs, gallery_dirs, key
 
 
 def generate_gallery_rst(app):
@@ -160,15 +171,16 @@ def generate_gallery_rst(app):
     seen_backrefs = set()
 
     computation_times = []
-    examples_dirs, gallery_dirs = _prepare_sphx_glr_dirs(gallery_conf,
-                                                         app.builder.srcdir)
+    examples_dirs, gallery_dirs, key = _prepare_sphx_glr_dirs(
+        gallery_conf, app.builder.srcdir)
 
     for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
-        examples_dir = os.path.join(app.builder.srcdir, examples_dir)
-        gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
+        examples_relative_dir = examples_dir
+        examples_dir = op.join(app.builder.srcdir, examples_dir)
+        gallery_dir = op.join(app.builder.srcdir, gallery_dir)
 
         for workdir in [examples_dir, gallery_dir]:
-            if not os.path.exists(workdir):
+            if not op.exists(workdir):
                 os.makedirs(workdir)
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
@@ -182,29 +194,24 @@ def generate_gallery_rst(app):
 
         computation_times += this_computation_times
 
-        key = None
-        if gallery_conf['examples_dirs_order'] is not None:
-            base_examples_dir = os.path.basename(examples_dir)
-            ordering = gallery_conf['examples_dirs_order']
-            if not isinstance(ordering, dict):
-                raise ValueError('If not None, examples_dirs_order'
-                                 ' must be a dictionary of folder:'
-                                 ' ordering pairs')
-            if base_examples_dir in ordering.keys():
-                key = ExplicitOrderKey(ordering[base_examples_dir])
-
         # we create an index.rst with all examples
-        fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
+        fhindex = open(op.join(gallery_dir, 'index.rst'), 'w')
         # :orphan: to suppress "not included in TOCTREE" sphinx warnings
         fhindex.write(":orphan:\n\n" + this_fhindex)
-        for directory in sorted(os.listdir(examples_dir), key=key):
-            if os.path.isdir(os.path.join(examples_dir, directory)):
-                src_dir = os.path.join(examples_dir, directory)
-                target_dir = os.path.join(gallery_dir, directory)
-                this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                                                        seen_backrefs)
-                fhindex.write(this_fhindex)
-                computation_times += this_computation_times
+
+        examples_folders = [op.join(examples_relative_dir, idir)
+                            for idir in os.listdir(examples_dir)
+                            if op.isdir(op.join(examples_relative_dir, idir))]
+        for path_directory in sorted(examples_folders, key=key):
+            directory = path_directory.split(examples_relative_dir)
+            directory = directory[-1].strip('/')
+            src_dir = op.join(examples_dir, directory)
+
+            target_dir = op.join(gallery_dir, directory)
+            this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
+                                                                    seen_backrefs)
+            fhindex.write(this_fhindex)
+            computation_times += this_computation_times
 
         if gallery_conf['download_all_examples']:
             download_fhindex = generate_zipfiles(gallery_dir)
@@ -231,12 +238,12 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
     if not bool(app.config.sphinx_gallery_conf['backreferences_dir']):
         return
 
-    examples_path = os.path.join(app.srcdir,
+    examples_path = op.join(app.srcdir,
                                  app.config.sphinx_gallery_conf[
                                      "backreferences_dir"],
                                  "%s.examples" % name)
 
-    if not os.path.exists(examples_path):
+    if not op.exists(examples_path):
         # touch file
         open(examples_path, 'w').close()
 
@@ -255,7 +262,7 @@ def sumarize_failing_examples(app, exception):
 
     gallery_conf = app.config.sphinx_gallery_conf
     failing_examples = set(gallery_conf['failing_examples'].keys())
-    expected_failing_examples = set([os.path.normpath(os.path.join(app.srcdir, path))
+    expected_failing_examples = set([op.normpath(op.join(app.srcdir, path))
                                      for path in
                                      gallery_conf['expected_failing_examples']])
 
