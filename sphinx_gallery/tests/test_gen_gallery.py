@@ -33,6 +33,8 @@ def test_default_config(tmpdir):
     srcdir = os.path.join(tmpdir, "config_test")
 
     shutil.copytree(_fixturedir, srcdir)
+    shutil.copytree(os.path.join(_fixturedir, "src"),
+                    os.path.join(tmpdir, "examples"))
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
         conffile.write("""
 import os
@@ -51,8 +53,6 @@ project = u'Sphinx-Gallery <Tests>'""")
     with pytest.raises(ExtensionError) as excinfo:
         app.add_config_value('sphinx_gallery_conf', 'x', True)
     assert 'already present' in str(excinfo.value)
-
-    assert cfg.sphinx_gallery_conf == DEFAULT_GALLERY_CONF
 
 
 def test_config_old_backreferences_conf(tmpdir):
