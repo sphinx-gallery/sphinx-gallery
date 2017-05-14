@@ -312,7 +312,7 @@ def save_figures(image_path, fig_count, gallery_conf):
             figure_list.append(current_fig)
         mlab.close(all=True)
 
-    return figure_rst(figure_list, gallery_conf['src_dir'])
+    return figure_rst(figure_list, gallery_conf['src_dir']), len(figure_list)
 
 
 def figure_rst(figure_list, sources_dir):
@@ -348,7 +348,7 @@ def figure_rst(figure_list, sources_dir):
         for figure_name in figure_paths:
             images_rst += HLIST_IMAGE_TEMPLATE % figure_name
 
-    return images_rst, len(figure_list)
+    return images_rst
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
@@ -518,14 +518,13 @@ def handle_exception(exc_info, src_file, block_vars, gallery_conf):
     return except_rst
 
 
-def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
+def execute_code_block(compiler, src_file, block, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
-    time_elapsed = 0
-
+    blabel, bcontent, lineno = block
     # If example is not suitable to run, skip executing its blocks
-    if not block_vars['execute_script']:
-        return '', time_elapsed
+    if not block_vars['execute_script'] or blabel == 'text':
+        return ''
 
     plt.close('all')
     cwd = os.getcwd()
@@ -542,14 +541,12 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
 
     try:
         dont_inherit = 1
-        code_ast = compile(code_block, src_file, 'exec',
+        code_ast = compile(bcontent, src_file, 'exec',
                            ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
-        t_start = time()
         # don't use unicode_literals at the top of this file or you get
         # nasty errors here on Py2.7
         exec(compiler(code_ast, src_file, 'exec'), example_globals)
-        time_elapsed = time() - t_start
     except Exception:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -584,7 +581,7 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
         os.chdir(cwd)
         sys.stdout = orig_stdout
 
-    return code_output, time_elapsed
+    return code_output
 
 
 def clean_modules():
@@ -619,7 +616,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    intro, title = extract_intro_and_title(fname, script_blocks[0][1])
+    intro, _ = extract_intro_and_title(fname, script_blocks[0][1])
 
     if md5sum_is_current(example_file):
         return intro, 0
@@ -650,10 +647,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     }
     compiler = codeop.Compile()
 
-    # A simple example has two blocks: one for the
-    # example introduction/explanation and one for the code
-    is_example_notebook_like = len(script_blocks) > 2
-    time_elapsed = 0
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
 
@@ -665,38 +658,21 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         sys.argv[0] = src_file
         sys.argv[1:] = []
 
-    example_rst = ""
-    for blabel, bcontent, lineno in script_blocks:
-        if blabel == 'code':
-            code_output, rtime = execute_code_block(compiler, src_file,
-                                                    bcontent, lineno,
-                                                    example_globals,
-                                                    block_vars, gallery_conf)
-
-            time_elapsed += rtime
-
-            if not file_conf.get('line_numbers',
-                                 gallery_conf.get('line_numbers', False)):
-                lineno = None
-
-            if is_example_notebook_like:
-                example_rst += codestr2rst(bcontent, lineno=lineno) + '\n'
-                example_rst += code_output
-            else:
-                example_rst += code_output
-                if 'sphx-glr-script-out' in code_output:
-                    # Add some vertical space after output
-                    example_rst += "\n\n|\n\n"
-                example_rst += codestr2rst(bcontent, lineno=lineno) + '\n'
-
-        else:
-            example_rst += bcontent + '\n\n'
+    t_start = time()
+    output_blocks = [execute_code_block(compiler, src_file, block,
+                                        example_globals,
+                                        block_vars, gallery_conf)
+                     for block in script_blocks]
+    time_elapsed = time() - t_start
 
     sys.argv = argv_orig
     clean_modules()
 
+    example_rst = rst_notebook_cell(script_blocks, output_blocks,
+                                    file_conf, gallery_conf)
     save_rst_notebook(example_rst, example_file.replace('.py', '.rst'),
                       time_elapsed, gallery_conf)
+
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
     example_nb = jupyter_notebook(script_blocks)
@@ -713,16 +689,58 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     return intro, time_elapsed
 
 
-def save_rst_notebook(example_rst, write_file, time_elapsed, gallery_conf):
-    """Saves the rst notebook to write_file
+def rst_notebook_cell(script_blocks, output_blocks, file_conf, gallery_conf):
+    """Generates the rst string containing the script prose, code and output
 
     Parameters
     ----------
-    executed_blocks : str
-        Rst containing the executed file content
+    executed_blocks : list
+
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary
+
+    Returns
+    -------
+    out : str
+        RST notebook
+    """
+
+    # A simple example has two blocks: one for the
+    # example introduction/explanation and one for the code
+    is_example_notebook_like = len(script_blocks) > 2
+    example_rst = u""  # there can be unicode content
+    for (blabel, bcontent, lineno), code_output in zip(script_blocks, output_blocks):
+        if blabel == 'code':
+
+            if not file_conf.get('line_numbers',
+                                 gallery_conf.get('line_numbers', False)):
+                lineno = None
+
+            code_rst = codestr2rst(bcontent, lineno=lineno) + '\n'
+            if is_example_notebook_like:
+                example_rst += code_rst
+                example_rst += code_output
+            else:
+                example_rst += code_output
+                if 'sphx-glr-script-out' in code_output:
+                    # Add some vertical space after output
+                    example_rst += "\n\n|\n\n"
+                example_rst += code_rst
+        else:
+            example_rst += bcontent + '\n'
+    return example_rst
+
+
+def save_rst_notebook(example_rst, write_file, time_elapsed, gallery_conf):
+    """Saves the rst notebook to write_file including necessary header & footer
+
+    Parameters
+    ----------
+    example_rst : str
+        rST containing the executed file content
 
     write_fname : str
-        Filename with full path where to save the rst file
+        Filename with full path where to save the rST file
 
     time_elapsed : float
         Time elapsed in seconds while executing file

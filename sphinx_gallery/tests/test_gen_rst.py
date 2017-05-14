@@ -323,15 +323,14 @@ def test_zip_notebooks(gallery_conf):
 def test_figure_rst():
     """Testing rst of images"""
     figure_list = ['sphx_glr_plot_1.png']
-    image_rst, fig_num = sg.figure_rst(figure_list, '.')
+    image_rst = sg.figure_rst(figure_list, '.')
     single_image = """
 .. image:: /sphx_glr_plot_1.png
     :class: sphx-glr-single-img
 """
     assert image_rst == single_image
-    assert fig_num == 1
 
-    image_rst, fig_num = sg.figure_rst(figure_list + ['second.png'], '.')
+    image_rst = sg.figure_rst(figure_list + ['second.png'], '.')
 
     image_list_rst = """
 .. rst-class:: sphx-glr-horizontal
@@ -348,15 +347,13 @@ def test_figure_rst():
             :class: sphx-glr-multi-img
 """
     assert image_rst == image_list_rst
-    assert fig_num == 2
 
     # test issue #229
     local_img = [os.path.join(os.getcwd(), 'third.png')]
-    image_rst, fig_num = sg.figure_rst(local_img, '.')
+    image_rst = sg.figure_rst(local_img, '.')
 
     single_image = sg.SINGLE_IMAGE % "third.png"
     assert image_rst == single_image
-    assert fig_num == 1
 
 
 class TestLoggingTee:
