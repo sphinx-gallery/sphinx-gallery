@@ -615,7 +615,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed : float
         seconds required to run the script
     """
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
@@ -632,10 +631,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path_template = os.path.join(image_dir, image_fname)
-
-    ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
-    ref_fname = ref_fname.replace(os.path.sep, '_')
-    example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
     filename_pattern = gallery_conf.get('filename_pattern')
     execute_script = re.search(filename_pattern, src_file) and gallery_conf[
@@ -670,6 +665,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         sys.argv[0] = src_file
         sys.argv[1:] = []
 
+    example_rst = ""
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
             code_output, rtime = execute_code_block(compiler, src_file,
@@ -699,35 +695,63 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     sys.argv = argv_orig
     clean_modules()
 
-    # Writes md5 checksum if example has build correctly
-    # not failed and was initially meant to run(no-plot shall not cache md5sum)
+    save_rst_notebook(example_rst, example_file.replace('.py', '.rst'),
+                      time_elapsed, gallery_conf)
+    save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
+
+    example_nb = jupyter_notebook(script_blocks)
+    save_notebook(example_nb, replace_py_ipynb(example_file))
+
     if block_vars['execute_script']:
+        logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
+        # Writes md5 checksum if example has build correctly
+        # not failed and was initially meant to run(no-plot shall not cache
+        # md5sum)
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(example_file))
 
-    save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
-
-    time_m, time_s = divmod(time_elapsed, 60)
-    example_nb = jupyter_notebook(script_blocks)
-    save_notebook(example_nb, replace_py_ipynb(example_file))
-    with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
-                     mode='w', encoding='utf-8') as f:
-        if time_elapsed >= gallery_conf["min_reported_time"]:
-            example_rst += ("**Total running time of the script:**"
-                            " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
-                                time_m, time_s))
-        # Generate a binder URL if specified
-        binder_badge_rst = ''
-        if len(binder_conf) > 0:
-            binder_badge_rst += gen_binder_rst(fname, binder_conf)
-
-        example_rst += CODE_DOWNLOAD.format(fname,
-                                            replace_py_ipynb(fname),
-                                            binder_badge_rst)
-        example_rst += SPHX_GLR_SIG
-        f.write(example_rst)
-
-    if block_vars['execute_script']:
-        logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
-
     return intro, time_elapsed
+
+
+def save_rst_notebook(example_rst, write_file, time_elapsed, gallery_conf):
+    """Saves the rst notebook to write_file
+
+    Parameters
+    ----------
+    executed_blocks : str
+        Rst containing the executed file content
+
+    write_fname : str
+        Filename with full path where to save the rst file
+
+    time_elapsed : float
+        Time elapsed in seconds while executing file
+
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary
+    """
+
+    ref_fname = os.path.relpath(write_file, gallery_conf['src_dir'])
+    ref_fname = ref_fname.replace(os.path.sep, "_").replace('.rst', '.py')
+
+    # there can be unicode content
+    example_rst = u"\n\n.. _sphx_glr_{0}:\n\n{1}".format(
+        ref_fname, example_rst)
+
+    if time_elapsed >= gallery_conf["min_reported_time"]:
+        time_m, time_s = divmod(time_elapsed, 60)
+        example_rst += "**Total running time of the script:**"
+        " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(time_m, time_s)
+
+    fname = os.path.basename(write_file)
+    # Generate a binder URL if specified
+    binder_conf = check_binder_conf(gallery_conf.get('binder'))
+    if len(binder_conf) > 0:
+        example_rst += gen_binder_rst(fname, binder_conf)
+
+    example_rst += CODE_DOWNLOAD.format(re.sub('\.rst$', '.py', fname),
+                                        re.sub('\.rst$', '.ipynb', fname))
+    example_rst += SPHX_GLR_SIG
+
+    with codecs.open(write_file, 'w', encoding="utf-8") as f:
+        f.write(example_rst)

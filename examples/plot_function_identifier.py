@@ -13,7 +13,6 @@ functions are called in the script and to which module do they belong.
 import matplotlib.pyplot as plt
 import sphinx_gallery.backreferences as spback
 
-
 filename = spback.__file__.replace('.pyc', '.py')
 names = spback.identify_names(filename)
 figheight = len(names) + .5
