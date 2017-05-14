@@ -579,6 +579,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         # Examples may contain if __name__ == '__main__' guards
         # for in example scikit-learn if the example uses multiprocessing
         '__name__': '__main__',
+        # Don't ever support __file__: Issues #166 #212
     }
 
     # A simple example has two blocks: one for the

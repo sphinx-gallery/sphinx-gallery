@@ -4,6 +4,13 @@ Change Log
 git master
 ----------
 
+
+Documentation
+'''''''''''''''
+
+* Frequently Asked Questions added to Documentation. Why `__file__` is
+  not defined?
+
 v0.1.10
 -------
 
@@ -36,7 +43,6 @@ Developer changes
 
 * Move testing to py.test
 * Include link to github repository in documentation
-
 
 v0.1.8
 ------

@@ -68,6 +68,7 @@ Contents:
 
    getting_started
    advanced_configuration
+   faq
    syntax
    utils
    reference
