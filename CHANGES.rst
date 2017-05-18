@@ -16,7 +16,8 @@ Documentation
 Bug Fixed
 '''''''''
 
-* Changed attribute name of Sphinx `app` object in #242
+* Changed attribute name of Sphinx `app` object in `#242
+  <https://github.com/sphinx-gallery/sphinx-gallery/issues/242>`_
 
 v0.1.10
 -------
