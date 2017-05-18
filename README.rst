@@ -33,7 +33,7 @@ Who uses Sphinx-Gallery
 * `pyRiemann <http://pythonhosted.org/pyriemann/auto_examples/index.html>`_
 * `scikit-image <http://scikit-image.org/docs/dev/auto_examples/>`_
 * `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
-
+* `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
 
 Getting the package
 ===================
