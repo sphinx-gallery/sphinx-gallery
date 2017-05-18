@@ -4,12 +4,19 @@ Change Log
 git master
 ----------
 
+v0.1.11
+-------
 
 Documentation
 '''''''''''''''
 
 * Frequently Asked Questions added to Documentation. Why `__file__` is
   not defined?
+
+Bug Fixed
+'''''''''
+
+* Changed attribute name of Sphinx `app` object in #242
 
 v0.1.10
 -------
