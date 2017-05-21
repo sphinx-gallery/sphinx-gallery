@@ -296,6 +296,7 @@ def save_figures(image_path, fig_count, gallery_conf):
         current_fig = image_path.format(fig_count + fig_num)
         fig.savefig(current_fig, **kwargs)
         figure_list.append(current_fig)
+    plt.close('all')
 
     if gallery_conf.get('find_mayavi_figures', False):
         from mayavi import mlab
@@ -524,7 +525,6 @@ def execute_code_block(compiler, src_file, block, example_globals,
     if not block_vars['execute_script'] or blabel == 'text':
         return ''
 
-    plt.close('all')
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
