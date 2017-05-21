@@ -310,17 +310,27 @@ def test_figure_rst():
 
 
 def test_folder_ordering():
-    all_folders = ['e', 'f', 'd', 'c', '01b', 'a']
-    explicit_folders = ['f', 'd']
-    remaining_folders = [ii for ii in all_folders
-                         if ii not in explicit_folders]
-    key = ExplicitOrderKey(explicit_folders)
+    key_dict = {'test1': ['b', 'a', 'c'],
+                'test2': ['a', 'b']}
+    all_folders = ['a', 'b', 'c']
+    sort_test = ['b', 'a', 'c']
+    key = ExplicitOrderKey(key_dict)
+    key.activate_key('test1')
     sorted_folders = sorted(all_folders, key=key)
-    test_list = explicit_folders + sorted(remaining_folders)
-    assert all(ii == jj for ii, jj in zip(sorted_folders,
-                                          test_list))
+    assert all(ii == jj for ii, jj in zip(sorted_folders, sort_test))
     with pytest.raises(ValueError):
-        ExplicitOrderKey('nope')
+        # Incorrect input
+        ExplicitOrderKey(['nope'])
+    with pytest.raises(ValueError):
+        # Values must be lists
+        ExplicitOrderKey({'a': 'test'})
+    with pytest.raises(ValueError):
+        # Missing key
+        key.activate_key('blah')
+    with pytest.raises(ValueError):
+        # Missing folder
+        key.activate_key('test2')
+        sorted(all_folders, key=key)
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice
