@@ -332,8 +332,6 @@ def figure_rst(figure_list, sources_dir):
     -------
     images_rst : str
         rst code to embed the images in the document
-    fig_num : int
-        number of figures saved
     """
 
     figure_paths = [os.path.relpath(figure_path, sources_dir)

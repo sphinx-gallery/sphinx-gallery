@@ -279,7 +279,25 @@ def test_thumbnail_number(test_str):
     assert file_conf == {'thumbnail_number': 2}
 
 
-def test_save_figures(gallery_conf):
+def test_save_matplotlib_figures(gallery_conf):
+    """Test matplotlib figure save"""
+    plt.plot(1, 1)
+    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
+    image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
+    assert fig_num == 1
+    assert '/image1.png' in image_rst
+
+    # Test capturing 2 images with shifted start number
+    plt.plot(1, 1)
+    plt.figure()
+    plt.plot(1, 1)
+    image_rst, fig_num = sg.save_figures(fname_template, 3, gallery_conf)
+    assert fig_num == 2
+    assert '/image4.png' in image_rst
+    assert '/image5.png' in image_rst
+
+
+def test_save_mayavi_figures(gallery_conf):
     """Test file naming when saving figures. Requires mayavi."""
     try:
         from mayavi import mlab
