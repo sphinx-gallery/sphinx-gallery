@@ -54,7 +54,7 @@ CONTENT = [
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split"""
 
-    blocks = sg.split_code_and_text_blocks('examples/just_code.py')
+    blocks = sg.split_code_and_text_blocks('examples/no_output/just_code.py')
 
     assert blocks[0][0] == 'text'
     assert blocks[1][0] == 'code'
