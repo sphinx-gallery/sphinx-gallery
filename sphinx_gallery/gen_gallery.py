@@ -15,6 +15,7 @@ import codecs
 import copy
 import re
 import os
+import shutil as sh
 
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
@@ -49,6 +50,11 @@ DEFAULT_GALLERY_CONF = {
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
+    'binder_url': None,
+    'binder_org': None,
+    'binder_repo': None,
+    'binder_branch': 'gh-pages',
+    'binder_reqs': '../requirements.txt',
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -257,6 +263,9 @@ def generate_gallery_rst(app):
                     logger.info("\t- %s: %.2g sec", fname, time_elapsed)
             else:
                 logger.info("\t- %s: not run", fname)
+
+    if gallery_conf['binder_url'] is not None:
+        sh.copy(gallery_conf['binder_reqs'], os.path.join('_build', 'html'))
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):

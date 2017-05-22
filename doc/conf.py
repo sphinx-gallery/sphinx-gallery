@@ -339,6 +339,11 @@ sphinx_gallery_conf = {
                                        '../tutorials/seaborn']),
     'within_subsection_order': NumberOfCodeLinesSortKey,
     'find_mayavi_figures': find_mayavi_figures,
-    'expected_failing_examples': ['../examples/no_output/plot_raise.py',
-                                  '../examples/no_output/plot_syntaxerror.py']
+    'expected_failing_examples': ['../examples/plot_raise.py',
+                                  '../examples/plot_syntaxerror.py'],
+    'binder_org': 'choldgraf',
+    'binder_repo': 'sphinx-gallery',
+    'binder_url': 'http://beta.mybinder.org',
+    'binder_branch': 'gh-pages',
+    'binder_reqs': '../requirements.txt',
 }
