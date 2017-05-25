@@ -553,21 +553,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_file = os.path.join(target_dir, fname)
     binder_fpath = '_downloads/{}'.format(fname.replace('.py', '.ipynb'))
     binder_url = gallery_conf['binder_url']
-    # ### ONCE API IS STABILIZED ###
-    # if binder_url is not None:
-    #     binder_url = '/'.join([binder_url, 'gh',
-    #                            gallery_conf['binder_org'],
-    #                            gallery_conf['binder_repo'],
-    #                            gallery_conf['binder_branch'],
-    #                            binder_fpath])
+
     if binder_url is not None:
-        binder_url = '/'.join([
-            binder_url,
-            ('?url={}/{}'.format(gallery_conf['binder_org'],
-                                 gallery_conf['binder_repo']) +
-             '&ref={}&filepath={}&submit=true'.format(
-                gallery_conf['binder_branch'],
-                binder_fpath))])
+        binder_url = '/'.join([binder_url, 'v2', 'gh',
+                               gallery_conf['binder_org'],
+                               gallery_conf['binder_repo'],
+                               gallery_conf['binder_branch']])
+        binder_url += '?filepath={}'.format(binder_fpath)
     shutil.copyfile(src_file, example_file)
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
     intro, title = extract_intro_and_title(fname, script_blocks[0][1])
@@ -668,7 +660,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                             " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
                                 time_m, time_s))
         if binder_url is not None:
-            example_rst += ".. image:: http://mybinder.org/badge.svg\n      :target: {}\n\n".format(binder_url)
+            example_rst += ".. image:: http://mybinder.org/badge.svg\n      :target: {}\n      :width: 150 px\n\n".format(binder_url)
         example_rst += CODE_DOWNLOAD.format(fname,
                                             fname.replace('.py', '.ipynb'))
         example_rst += SPHX_GLR_SIG
