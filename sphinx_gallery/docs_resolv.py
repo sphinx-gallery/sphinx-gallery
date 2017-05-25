@@ -6,6 +6,7 @@ Link resolver objects
 =====================
 """
 from __future__ import print_function
+import codecs
 import gzip
 import os
 import posixpath
@@ -45,14 +46,14 @@ def _get_data(url):
             encoding = resp.headers.get('content-encoding', 'plain')
         data = resp.read()
         if encoding == 'plain':
-            pass
+            data = data.decode('utf-8')
         elif encoding == 'gzip':
             data = StringIO(data)
-            data = gzip.GzipFile(fileobj=data).read()
+            data = gzip.GzipFile(fileobj=data).read().decode('utf-8')
         else:
             raise RuntimeError('unknown encoding')
     else:
-        with open(url, 'r') as fid:
+        with codecs.open(url, mode='r', encoding='utf-8') as fid:
             data = fid.read()
 
     return data
@@ -253,9 +254,6 @@ class SphinxDocLinkResolver(object):
                     else:
                         link = posixpath.join(self.doc_url, fname)
 
-                    if hasattr(link, 'decode'):
-                        link = link.decode('utf-8', 'replace')
-
                     if link in self._page_cache:
                         html = self._page_cache[link]
                     else:
@@ -274,14 +272,8 @@ class SphinxDocLinkResolver(object):
                 for mod in self.extra_modules_test:
                     comb_names.append(mod + '.' + cobj['name'])
             url = False
-            if hasattr(html, 'decode'):
-                # Decode bytes under Python 3
-                html = html.decode('utf-8', 'replace')
 
             for comb_name in comb_names:
-                if hasattr(comb_name, 'decode'):
-                    # Decode bytes under Python 3
-                    comb_name = comb_name.decode('utf-8', 'replace')
                 if comb_name in html:
                     url = link + u'#' + comb_name
             link = url
