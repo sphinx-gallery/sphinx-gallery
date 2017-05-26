@@ -341,9 +341,10 @@ sphinx_gallery_conf = {
     'find_mayavi_figures': find_mayavi_figures,
     'expected_failing_examples': ['../examples/plot_raise.py',
                                   '../examples/plot_syntaxerror.py'],
-    'binder_org': 'choldgraf',
-    'binder_repo': 'sphinx-gallery',
-    'binder_url': 'http://beta.mybinder.org',
-    'binder_branch': 'gh-pages',
-    'binder_reqs': '../requirements.txt',
+    'binder': {'org': 'choldgraf',
+               'repo': 'sphinx-gallery',
+               'url': 'https://beta.mybinder.org',
+               'branch': 'gh-pages',
+               'dependencies': '../requirements.txt',
+               }
 }

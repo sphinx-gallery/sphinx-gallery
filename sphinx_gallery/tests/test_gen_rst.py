@@ -321,6 +321,33 @@ def test_figure_rst():
     assert fig_num == 1
 
 
+def test_binder():
+    """Testing binder URL generation and checks."""
+    file_path = 'myfile.py'
+    conf1 = {'url': 'http://test1.com', 'org': 'test2',
+             'repo': 'test3', 'branch': 'test4',
+             'dependencies': '../requirements.txt'}
+    url = sg.gen_binder_url(file_path, conf1)
+    assert url == 'http://test1.com/v2/gh/test2/test3/test4?filepath=_downloads/myfile.ipynb'
+
+    # Assert correct URL
+    with pytest.raises(ValueError):
+        conf2 = copy.deepcopy(conf1)
+        conf2['url'] = 'test1.com'
+        url = sg.gen_binder_url(file_path, conf2)
+
+    # Assert missing params
+    with pytest.raises(ValueError):
+        conf3 = copy.deepcopy(conf1)
+        conf3.pop('org')
+        url = sg.gen_binder_url(file_path, conf2)
+
+    # Assert correct URL
+    with pytest.raises(ValueError):
+        conf3 = copy.deepcopy(conf1)
+        conf3['dependencies'] = 'requirements_not.txt'
+        url = sg.gen_binder_url(file_path, conf3)
+
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice
 # TODO: test that examples are executed after a no-plot and produce

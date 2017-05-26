@@ -55,6 +55,7 @@ DEFAULT_GALLERY_CONF = {
     'binder_repo': None,
     'binder_branch': 'gh-pages',
     'binder_reqs': '../requirements.txt',
+    'binder': False,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -264,8 +265,10 @@ def generate_gallery_rst(app):
             else:
                 logger.info("\t- %s: not run", fname)
 
-    if gallery_conf['binder_url'] is not None:
-        sh.copy(gallery_conf['binder_reqs'], os.path.join('_build', 'html'))
+    # Copy the requirements file for binder
+    if isinstance(gallery_conf['binder'], dict):
+        sh.copy(gallery_conf['binder']['dependencies'],
+                os.path.join('_build', 'html'))
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):

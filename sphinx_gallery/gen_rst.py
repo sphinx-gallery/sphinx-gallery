@@ -551,15 +551,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
-    binder_fpath = '_downloads/{}'.format(fname.replace('.py', '.ipynb'))
-    binder_url = gallery_conf['binder_url']
-
-    if binder_url is not None:
-        binder_url = '/'.join([binder_url, 'v2', 'gh',
-                               gallery_conf['binder_org'],
-                               gallery_conf['binder_repo'],
-                               gallery_conf['binder_branch']])
-        binder_url += '?filepath={}'.format(binder_fpath)
+    binder_url = gen_binder_url(fname, gallery_conf['binder'])
     shutil.copyfile(src_file, example_file)
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
     intro, title = extract_intro_and_title(fname, script_blocks[0][1])
@@ -573,7 +565,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
-    build_image_dir = os.path.relpath(image_dir, gallery_conf['src_dir'])
     image_path_template = os.path.join(image_dir, image_fname)
 
     ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
@@ -660,7 +651,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                             " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
                                 time_m, time_s))
         if binder_url is not None:
-            example_rst += ".. image:: http://mybinder.org/badge.svg\n      :target: {}\n      :width: 150 px\n\n".format(binder_url)
+            example_rst += gen_binder_rst(binder_url)
         example_rst += CODE_DOWNLOAD.format(fname,
                                             fname.replace('.py', '.ipynb'))
         example_rst += SPHX_GLR_SIG
@@ -670,3 +661,43 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
 
     return intro, time_elapsed
+
+def gen_binder_url(fname, binder_conf):
+    if not isinstance(binder_conf, dict):
+        return None
+    req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
+
+    # Ensure all fields are populated
+    missing_values = [val for val in req_values
+                      if not isinstance(binder_conf.get(val, None), str)]
+    if len(missing_values) > 0:
+        raise ValueError('binder_conf is missing values for: {}'.format(
+            missing_values))
+
+    # Ensure we have a requirements file
+    allowed_reqs_files = ['requirements.txt', 'environment.yml']
+    path_reqs = binder_conf['dependencies']
+    if not any(path_reqs.endswith(ii) for ii in allowed_reqs_files):
+        raise ValueError('Requirements file must be one of {}'.format(
+            allowed_reqs_files))
+
+    if not any(binder_conf['url'].startswith(ii)
+               for ii in ['http://', 'https://']):
+        raise ValueError('did not supply a valid url, '
+                         'gave url: {}'.format(binder_conf['url']))
+
+    # Build the URL
+    binder_fpath = '_downloads/{}'.format(fname.replace('.py', '.ipynb'))
+    binder_url = binder_conf['url']
+    binder_url = '/'.join([binder_conf['url'],
+                           'v2', 'gh',
+                           binder_conf['org'],
+                           binder_conf['repo'],
+                           binder_conf['branch']])
+    binder_url += '?filepath={}'.format(binder_fpath)
+    return binder_url
+
+
+def gen_binder_rst(binder_url):
+    s = ".. image:: http://mybinder.org/badge.svg\n      :target: {}\n      :width: 150 px\n\n".format(binder_url)
+    return s
