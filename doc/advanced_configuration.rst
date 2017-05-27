@@ -397,11 +397,35 @@ The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
 :ref:`sphx_glr_auto_examples_plot_choose_thumbnail.py` for an example
 of this functionality.
 
+Generate Binder links for gallery notebooks
+===========================================
 
-.. _without_execution:
+Sphinx-Gallery automatically generates Jupyter notebooks for any
+examples built with the gallery. If you host your documentation on
+a GitHub repository, it is possible to auto-generate a Binder link
+for each notebook. Clicking this link will take users to a live
+version of the Jupyter notebook where they may run the code interactively.
 
-Building without executing examples
-===================================
+In order to enable Binder links with Sphinx-Gallery, you must specify
+a few pieces of information in ``conf.py``. These are given as a nested
+dictionary following the pattern below::
+
+    sphinx_gallery_conf = {
+      ...
+      'binder': {
+         'org': '<github_org>',
+         'repo': '<github_repo>',
+         'url': '<binder_url>',  # URL serving binders (e.g. mybinder.org)
+         'branch': '<repo_branch>',  # Can also be a tag or commit hash
+         'dependencies': '<path_to_dependencies>'  # Either `requirements.txt` or `environment.yml`
+         }
+    }
+
+See the Sphinx-Gallery configuration with Binder for an example that uses
+the `public Binder servers <http://beta.mybinder.org>`_.
+
+Build without executing the examples
+====================================
 
 Sphinx-Gallery can parse all your examples and build the gallery
 without executing any of the scripts. This is just for speed

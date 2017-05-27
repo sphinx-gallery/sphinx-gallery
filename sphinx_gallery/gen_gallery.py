@@ -267,8 +267,9 @@ def generate_gallery_rst(app):
 
     # Copy the requirements file for binder
     if isinstance(gallery_conf['binder'], dict):
-        sh.copy(gallery_conf['binder']['dependencies'],
-                os.path.join('_build', 'html'))
+        path_reqs = gallery_conf['binder']['dependencies']
+        sh.copy(os.path.join(app.builder.srcdir, path_reqs),
+                app.builder.outdir)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
