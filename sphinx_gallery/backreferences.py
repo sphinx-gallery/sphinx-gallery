@@ -18,6 +18,14 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
+# Try Python 3 first, otherwise load from Python 2
+try:
+    from html import escape
+except ImportError:
+    from functools import partial
+    from xml.sax.saxutils import escape
+
+    escape = partial(escape, entities={'"': '&quot;'})
 
 
 class NameFinder(ast.NodeVisitor):
@@ -169,7 +177,8 @@ def _thumbnail_div(full_dir, fname, snippet, is_backref=False):
     ref_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
-    return template.format(snippet=snippet, thumbnail=thumb, ref_name=ref_name)
+    return template.format(snippet=escape(snippet),
+                           thumbnail=thumb, ref_name=ref_name)
 
 
 def write_backreferences(seen_backrefs, gallery_conf,
