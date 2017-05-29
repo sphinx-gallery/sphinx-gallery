@@ -12,12 +12,12 @@ import sphinx_gallery.backreferences as sg
 def test_thumbnail_div():
     """Test if the thumbnail div generates the correct string"""
 
-    html_div = sg._thumbnail_div('fake_dir', 'test_file.py', 'test formating')
+    html_div = sg._thumbnail_div('fake_dir', 'test_file.py', '<"test">')
 
     reference = r"""
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="test formating">
+    <div class="sphx-glr-thumbcontainer" tooltip="&lt;&quot;test&quot;&gt;">
 
 .. only:: html
 
