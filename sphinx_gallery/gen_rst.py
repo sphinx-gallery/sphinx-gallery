@@ -551,7 +551,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
-    binder_url = gen_binder_url(fname, gallery_conf['binder'])
     shutil.copyfile(src_file, example_file)
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
     intro, title = extract_intro_and_title(fname, script_blocks[0][1])
@@ -650,6 +649,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             example_rst += ("**Total running time of the script:**"
                             " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
                                 time_m, time_s))
+        # Generate a binder URL if specified
+        binder_url = gen_binder_url(fname, gallery_conf['binder'])
         if binder_url is not None:
             example_rst += gen_binder_rst(binder_url)
         example_rst += CODE_DOWNLOAD.format(fname,
@@ -669,7 +670,8 @@ def gen_binder_url(fname, binder_conf):
 
     # Ensure all fields are populated
     missing_values = [val for val in req_values
-                      if not isinstance(binder_conf.get(val, None), str)]
+                      if not isinstance(binder_conf.get(val, None),
+                                        (str, unicode))]
     if len(missing_values) > 0:
         raise ValueError('binder_conf is missing values for: {}'.format(
             missing_values))
