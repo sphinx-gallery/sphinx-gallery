@@ -56,10 +56,11 @@ def directive_fun(match, directive):
                     match.group(1).strip()))
 
 
-def rst2md(text):
-    """Converts the RST text from the examples docstrigs and comments
-    into markdown text for the Jupyter notebooks"""
+def sphx_glr_rst2md(text):
+    """Regex based rst to markdown converter.
 
+    Sphinx gallery fall backs to this function if pypandoc is not found.
+    """
     top_heading = re.compile(r'^=+$\s^([\w\s-]+)^=+$', flags=re.M)
     text = re.sub(top_heading, r'# \1', text)
 
@@ -96,6 +97,19 @@ def rst2md(text):
             match.group(1).strip(), (match.group(2) or '').strip()), text)
 
     return text
+
+def rst2md(text):
+    """Delegates the conversion to pypandoc if found in the system,
+    otherwise uses our custom converter.
+    """
+
+    try:
+        # Use pandoc if available
+        import pypandoc as pdoc
+        return pdoc.convert_text(text, to='md', format='rst')
+    except (ImportError, OSError):
+        # Fall back to regex based parsing
+        return sphx_glr_rst2md(text)
 
 
 def jupyter_notebook(script_blocks):

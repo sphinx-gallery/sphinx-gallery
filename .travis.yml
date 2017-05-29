@@ -32,6 +32,8 @@ matrix:
       env: DISTRIB="conda" PYTHON_VERSION="3.4"
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.5"
+    - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="3.5" PYPANDOC="True"
 before_install:
     - if [ "$DISTRIB" == "conda" ]; then
          wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
@@ -50,6 +52,10 @@ install:
         source activate testenv;
         if [ "$PYTHON_VERSION" == "2.7" ]; then
           conda install --yes mayavi;
+        fi;
+        if [ "$PYPANDOC" == "True" ]; then
+            pip install pypandoc;
+            python -c "import pypandoc;pypandoc.download_pandoc()";
         fi;
       fi;
     - pip install -r requirements.txt
