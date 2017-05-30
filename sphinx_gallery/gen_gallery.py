@@ -16,6 +16,7 @@ import re
 import os
 
 from . import glr_path_static
+from . import sphinx_compatibility
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
@@ -288,6 +289,8 @@ def get_default_config_value(key):
 
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
+    sphinx_compatibility._app = app
+
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
