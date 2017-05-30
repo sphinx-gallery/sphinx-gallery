@@ -22,6 +22,18 @@ class FakeSphinxApp:
         self.calls['status_iterator'].append(Params(args, kwargs))
         yield
 
+    def warn(self, *args, **kwargs):
+        self.calls['warn'].append(Params(args, kwargs))
+
+    def info(self, *args, **kwargs):
+        self.calls['info'].append(Params(args, kwargs))
+
+    def verbose(self, *args, **kwargs):
+        self.calls['verbose'].append(Params(args, kwargs))
+
+    def debug(self, *args, **kwargs):
+        self.calls['debug'].append(Params(args, kwargs))
+
 
 @pytest.fixture
 def fakesphinxapp():
