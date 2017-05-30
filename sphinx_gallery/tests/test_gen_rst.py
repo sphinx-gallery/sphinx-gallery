@@ -149,7 +149,7 @@ def build_test_configuration(**kwargs):
     return gallery_conf
 
 
-def test_fail_example():
+def test_fail_example(log_collector):
     """Test that failing examples are only executed until failing block"""
 
     gallery_conf = build_test_configuration(filename_pattern='raise.py')
@@ -161,11 +161,10 @@ def test_fail_example():
                      mode='w', encoding='utf-8') as f:
         f.write('\n'.join(failing_code))
 
-    with warnings.catch_warnings(record=True) as w:
-        sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
-                             gallery_conf['examples_dir'], gallery_conf)
-    assert len(w) == 1
-    assert 'not defined' in str(w[0].message)
+    sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
+                         gallery_conf['examples_dir'], gallery_conf)
+    assert len(log_collector.calls['warning']) == 1
+    assert 'not defined' in log_collector.calls['warning'][0].args[2]
 
     # read rst file and check if it contains traceback output
 
@@ -178,7 +177,7 @@ def test_fail_example():
             raise ValueError('Did not stop executing script after error')
 
 
-def test_pattern_matching():
+def test_pattern_matching(log_collector):
     """Test if only examples matching pattern are executed"""
 
     gallery_conf = build_test_configuration(

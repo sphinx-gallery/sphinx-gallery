@@ -157,7 +157,7 @@ def generate_gallery_rst(app):
     Start the sphinx-gallery configuration and recursively scan the examples
     directories in order to populate the examples gallery
     """
-    print('Generating gallery')
+    logger.info('Generating gallery...', color='white')
     gallery_conf = parse_config(app)
 
     clean_gallery_out(app.builder.outdir)
@@ -208,12 +208,12 @@ def generate_gallery_rst(app):
         fhindex.flush()
 
     if gallery_conf['plot_gallery']:
-        print("Computation time summary:")
+        logger.info("Computation time summary:", color='white')
         for time_elapsed, fname in sorted(computation_times)[::-1]:
             if time_elapsed is not None:
-                print("\t- %s : %.2g sec" % (fname, time_elapsed))
+                logger.info("\t- %s : %.2g sec", fname, time_elapsed)
             else:
-                print("\t- %s : not run" % fname)
+                logger.info("\t- %s : not run", fname)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
@@ -255,13 +255,11 @@ def sumarize_failing_examples(app, exception):
 
     examples_expected_to_fail = failing_examples.intersection(
         expected_failing_examples)
-    expected_fail_msg = []
     if examples_expected_to_fail:
-        expected_fail_msg.append("\n\nExamples failing as expected:")
+        logger.info("Examples failing as expected:", color='brown')
         for fail_example in examples_expected_to_fail:
-            expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
-                                     gallery_conf['failing_examples'][fail_example] + '\n')
-        print("\n".join(expected_fail_msg))
+            logger.info('%s failed leaving traceback:', fail_example)
+            logger.info(gallery_conf['failing_examples'][fail_example])
 
     examples_not_expected_to_fail = failing_examples.difference(
         expected_failing_examples)

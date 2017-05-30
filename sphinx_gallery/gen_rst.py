@@ -23,7 +23,6 @@ import shutil
 import subprocess
 import sys
 import traceback
-import warnings
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -72,6 +71,7 @@ if matplotlib_backend != 'agg':
 import matplotlib.pyplot as plt
 
 from . import glr_path_static
+from . import sphinx_compatibility
 from .backreferences import write_backreferences, _thumbnail_div
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (get_docstring_and_rest,
@@ -84,6 +84,8 @@ try:
 except NameError:
     basestring = str
     unicode = str
+
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 ###############################################################################
@@ -355,8 +357,8 @@ def scale_image(in_fname, out_fname, max_width, max_height):
         try:
             subprocess.call(["optipng", "-quiet", "-o", "9", out_fname])
         except Exception:
-            warnings.warn('Install optipng to reduce the size of the \
-                          generated images')
+            logger.warning(
+                'Install optipng to reduce the size of the generated images')
 
 
 def save_thumbnail(image_path_template, src_file, gallery_conf):
@@ -392,11 +394,8 @@ def save_thumbnail(image_path_template, src_file, gallery_conf):
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print(80 * '_')
-        print('Example directory %s does not have a README.txt file' %
-              src_dir)
-        print('Skipping this directory')
-        print(80 * '_')
+        logger.warning('Skipping example directory without a README.txt file',
+                       location=src_dir)
         return "", []  # because string is an expected return type
 
     with open(os.path.join(src_dir, 'README.txt')) as fid:
@@ -485,10 +484,8 @@ def execute_code_block(code_block, example_globals,
     except Exception:
         formatted_exception = traceback.format_exc()
 
-        fail_example_warning = 80 * '_' + '\n' + \
-            '%s failed to execute correctly:' % src_file + \
-            formatted_exception + 80 * '_' + '\n'
-        warnings.warn(fail_example_warning)
+        logger.warning('%s failed to execute correctly:%s', src_file,
+                       formatted_exception)
 
         fig_num = 0
         images_rst = codestr2rst(formatted_exception, lang='pytb')
@@ -589,7 +586,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
     if block_vars['execute_script']:
-        print('Executing file %s' % src_file)
+        logger.debug('Executing file %s\r', src_file)
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
             code_output, rtime = execute_code_block(bcontent,
@@ -636,6 +633,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         f.write(example_rst)
 
     if block_vars['execute_script']:
-        print("{0} ran in : {1:.2g} seconds\n".format(src_file, time_elapsed))
+        logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
 
     return amount_of_code, time_elapsed
