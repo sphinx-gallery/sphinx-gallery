@@ -410,9 +410,13 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     entries_text = []
     computation_times = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    for fname in sorted_listdir:
-        amount_of_code, time_elapsed = \
-            generate_file_rst(fname, target_dir, src_dir, gallery_conf)
+    iterator = sphinx_compatibility.status_iterator(
+        sorted_listdir,
+        'Generating gallery for %s ' % src_dir,
+        length=len(sorted_listdir))
+    for fname in iterator:
+        amount_of_code, time_elapsed = generate_file_rst(fname, target_dir,
+                                                         src_dir, gallery_conf)
         computation_times.append((time_elapsed, fname))
         new_fname = os.path.join(src_dir, fname)
         intro = extract_intro(new_fname)
@@ -585,8 +589,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed = 0
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
-    if block_vars['execute_script']:
-        logger.debug('Executing file %s\r', src_file)
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
             code_output, rtime = execute_code_block(bcontent,
