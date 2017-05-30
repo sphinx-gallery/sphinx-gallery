@@ -42,6 +42,8 @@ DEFAULT_GALLERY_CONF = {
     'expected_failing_examples': set(),
 }
 
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
+
 
 def clean_gallery_out(build_dir):
     """Deletes images under the sphx_glr namespace in the build directory"""
@@ -100,24 +102,28 @@ present issue read carefully how to update in the online documentation
 https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
 
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
-        app.warn("Old configuration for backreferences detected \n"
-                 "using the configuration variable `mod_example_dir`\n"
-                 + backreferences_warning
-                 + update_msg, prefix="DeprecationWarning: ")
+        logger.warning(
+            "Old configuration for backreferences detected \n"
+            "using the configuration variable `mod_example_dir`\n"
+            "%s%s",
+            backreferences_warning,
+            update_msg,
+            type=DeprecationWarning)
 
     elif gallery_conf['backreferences_dir'] is None:
         no_care_msg = """
 If you don't care about this features set in your conf.py
 'backreferences_dir': False\n"""
 
-        app.warn(backreferences_warning + no_care_msg)
+        logger.warning(backreferences_warning + no_care_msg)
 
         gallery_conf['backreferences_dir'] = os.path.join(
             'modules', 'generated')
-        app.warn("using old default 'backreferences_dir':'{}'.\n"
-                 " This will be disabled in future releases\n".format(
-                     gallery_conf['backreferences_dir']),
-                 prefix="DeprecationWarning: ")
+        logger.warning(
+            "Using old default 'backreferences_dir':'%s'.\n"
+            "This will be disabled in future releases\n",
+            gallery_conf['backreferences_dir'],
+            type=DeprecationWarning)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
