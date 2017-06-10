@@ -21,3 +21,4 @@ every module.
    notebook
    downloads
    docs_resolv
+   sorting

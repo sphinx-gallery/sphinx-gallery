@@ -11,15 +11,22 @@ Sorting key functions for subgallery folders
 
 from __future__ import division, absolute_import, print_function
 import os
-from types import GeneratorType
+import types
 
 
 class ExplicitOrderStrict(list):
+    """Sorting key for all galleries sub sections
+
+    Parameters
+    ----------
+    ordered_list : list, tuple, types.GeneratorType
+        Hold the paths of each gallery subfolder"""
+
     def __init__(self, ordered_list):
-        if not isinstance(ordered_list, (list, tuple, set, GeneratorType)):
-            raise ValueError("ExplicitOrderStrict sorting key takes a list "
-                             "tuple, set or Generator of strings, which hold"
-                             "the path of all gallery subfolders")
+        if not isinstance(ordered_list, (list, tuple, types.GeneratorType)):
+            raise ValueError("ExplicitOrderStrict sorting key takes a list, "
+                             "tuple or Generator, which hold"
+                             "the paths of each gallery subfolder")
 
         list.__init__(self, (os.path.normpath(path) for path in ordered_list))
 
