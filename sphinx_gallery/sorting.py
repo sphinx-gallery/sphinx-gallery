@@ -3,7 +3,7 @@ r"""
 Sorters for Sphinx-Gallery subsections
 ======================================
 
-Sorting key functions for subgallery folders
+Sorting key functions for gallery subsection folders
 """
 # Created: Sun May 21 20:38:59 2017
 # Author: Óscar Nájera

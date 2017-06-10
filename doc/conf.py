@@ -327,9 +327,9 @@ sphinx_gallery_conf = {
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
-    'subgalleryorder': ExplicitOrderStrict(['../examples/sin_func',
-                                            '../examples/no_output',
-                                            '../tutorials/seaborn']),
+    'subsection_order': ExplicitOrderStrict(['../examples/sin_func',
+                                             '../examples/no_output',
+                                             '../tutorials/seaborn']),
     'find_mayavi_figures': find_mayavi_figures,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py']

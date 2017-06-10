@@ -31,6 +31,7 @@ except NameError:
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'examples_dirs': os.path.join('..', 'examples'),
+    'subsection_order': None,
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
     'doc_module': (),
@@ -133,35 +134,35 @@ If you don't care about this features set in your conf.py
     return gallery_conf
 
 
-def get_subgalleries(srcdir, examples_dir, sortkey):
+def get_subsections(srcdir, examples_dir, sortkey):
     """Returns the list of subsections of a gallery
 
-Parameters
-----------
-srcdir : str
-    absolute path to directory containing conf.py
+    Parameters
+    ----------
+    srcdir : str
+        absolute path to directory containing conf.py
 
-examples_dir : str
-    path to the examples directory relative to conf.py
+    examples_dir : str
+        path to the examples directory relative to conf.py
 
-sortkey : sortkey
+    sortkey : sortkey
 
 
-
-Returns
--------
-out : list
+    Returns
+    -------
+    out : list
+        sorted list of gallery subsection folder names
 
     """
-    elements = [item for item in os.listdir(examples_dir)
-                if os.path.exists(os.path.join(examples_dir, item, 'README.txt'))]
-    base_examples_dir = os.path.relpath(examples_dir, srcdir)
-    elements_with_path = [os.path.join(base_examples_dir, item)
-                          for item in elements]
-    sorted_elements = sorted(elements_with_path, key=sortkey)
+    subfolders = [subfolder for subfolder in os.listdir(examples_dir)
+                  if os.path.exists(os.path.join(examples_dir, subfolder, 'README.txt'))]
+    base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
+    subfolders_with_path = [os.path.join(base_examples_dir_path, item)
+                            for item in subfolders]
+    sorted_subfolders = sorted(subfolders_with_path, key=sortkey)
 
-    return [elements[i] for i in [elements_with_path.index(item)
-                                  for item in sorted_elements]]
+    return [subfolders[i] for i in [subfolders_with_path.index(item)
+                                    for item in sorted_subfolders]]
 
 
 def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
@@ -230,9 +231,9 @@ def generate_gallery_rst(app):
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             fhindex.write(":orphan:\n\n" + this_fhindex)
 
-            for directory in get_subgalleries(app.builder.srcdir, examples_dir, gallery_conf['subgalleryorder']):
-                src_dir = os.path.join(examples_dir, directory)
-                target_dir = os.path.join(gallery_dir, directory)
+            for subsection in get_subsections(app.builder.srcdir, examples_dir, gallery_conf['subsection_order']):
+                src_dir = os.path.join(examples_dir, subsection)
+                target_dir = os.path.join(gallery_dir, subsection)
                 this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
                                                                         seen_backrefs)
                 fhindex.write(this_fhindex)

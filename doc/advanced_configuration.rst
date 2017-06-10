@@ -82,33 +82,32 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
 Sorting the subsections inside a gallery
 ========================================
 
-Gallery subsections are sorted by default alphabetically by their
-containing folder name, and as such you can always organize them by
-changing you folder names. An alternative option that Sphinx-Gallery offers
-is to use a sortkey to organize those folders. We provide an explicit order
-sortkey where you have to define the order of all subfolders in your
-galleries.
+Gallery subsections are sorted by default alphabetically by their folder
+name, and as such you can always organize them by changing you folder
+names. An alternative option that Sphinx-Gallery offers is to use a sortkey
+to organize those subsections. We provide an explicit order sortkey where
+you have to define the order of all subfolders in your galleries.
 
 .. code-block:: python
 
     from sphinx_gallery.sorting import ExplicitOrderStrict
     sphinx_gallery_conf = {
         'examples_dirs': ['../examples','../tutorials'],
-        'subgalleryorder': ExplicitOrderStrict(['../examples/sin_func',
+        'subsection_order': ExplicitOrderStrict(['../examples/sin_func',
                                                 '../examples/no_output',
                                                 '../tutorials/seaborn']),
     }
 
-Here we build 2 main galleries `examples` and `tutorials`, each of them has
-sub galleries. To specify their order explicitly in the html gallery we
+Here we build 2 main galleries `examples` and `tutorials`, each of them
+with subsections. To specify their order explicitly in the gallery we
 import :class:`sphinx_gallery.sorting.ExplicitOrderStrict` and initialize
-it with the list of all subfolders in the order you prefer them to
-appear. You can use Linux paths, and if you documentation is build in a
-Windows system, paths will be transformed to work, the converse does not
-hold.
+it with the list of all subfolders with their paths relative to `conf.py`
+in the order you prefer them to appear. You can use Linux paths, and if you
+documentation is build in a Windows system, paths will be transformed to
+work accordingly, the converse does not hold.
 
 If you so desire you can implement your own sorting key. It will be
-provided the relative path to `conf.py` of each sub gallery folder.
+provided the relative paths to `conf.py` of each sub gallery folder.
 
 
 .. _link_to_documentation:
