@@ -338,12 +338,12 @@ def test_folder_ordering():
     excinfo.match('If you use an explicit folder ordering')
 
 
-def test_gallery_subfolders()
-# stable sorting non-subsection
-# sorted_folders = sorted(all_folders, key=key)
-# assert sorted_folders == ['e', 'c', '01b', 'a', 'f', 'd']
+def test_gallery_subfolders():
+    # stable sorting non-subsection
+    # sorted_folders = sorted(all_folders, key=key)
+    # assert sorted_folders == ['e', 'c', '01b', 'a', 'f', 'd']
 
-# Enforce sub-section folders to be on the list
+    # Enforce sub-section folders to be on the list
     cwd = os.getcwd()
     test_dir = tempfile.mkdtemp()
     os.chdir(test_dir)

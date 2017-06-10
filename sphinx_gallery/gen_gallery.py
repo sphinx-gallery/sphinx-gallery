@@ -153,10 +153,10 @@ Returns
 out : list
 
     """
-    target_dir = os.path.join(srcdir, examples_dir)
-    elements = [item for item in os.listdir(target_dir)
-                if os.path.exists(os.path.join(target_dir, item, 'README.txt'))]
-    elements_with_path = [os.path.join(examples_dir, item)
+    elements = [item for item in os.listdir(examples_dir)
+                if os.path.exists(os.path.join(examples_dir, item, 'README.txt'))]
+    base_examples_dir = os.path.relpath(examples_dir, srcdir)
+    elements_with_path = [os.path.join(base_examples_dir, item)
                           for item in elements]
     sorted_elements = sorted(elements_with_path, key=sortkey)
 
@@ -207,8 +207,8 @@ def generate_gallery_rst(app):
 
     for examples_dir, gallery_dir in workdirs:
 
-        examples_dir = os.path.join(app.build.srcdir, examples_dir)
-        gallery_dir = os.path.join(app.build.srcdir, gallery_dir)
+        examples_dir = os.path.join(app.builder.srcdir, examples_dir)
+        gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
 
         if not os.path.exists(os.path.join(examples_dir, 'README.txt')):
             raise FileNotFoundError("Main example directory {0} does not "
@@ -230,7 +230,7 @@ def generate_gallery_rst(app):
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             fhindex.write(":orphan:\n\n" + this_fhindex)
 
-            for directory in get_subgalleries(app.build.srcdir, examples_dir, gallery_conf['subgalleryorder']):
+            for directory in get_subgalleries(app.builder.srcdir, examples_dir, gallery_conf['subgalleryorder']):
                 src_dir = os.path.join(examples_dir, directory)
                 target_dir = os.path.join(gallery_dir, directory)
                 this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,

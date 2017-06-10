@@ -21,7 +21,7 @@ class ExplicitOrderStrict(list):
                              "tuple, set or Generator of strings, which hold"
                              "the path of all gallery subfolders")
 
-        list.__init__(self, ordered_list)
+        list.__init__(self, (os.path.normpath(path) for path in ordered_list))
 
     def __call__(self, item):
         if item in self:
