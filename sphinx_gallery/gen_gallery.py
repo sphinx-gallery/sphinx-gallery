@@ -133,6 +133,30 @@ If you don't care about this features set in your conf.py
     return gallery_conf
 
 
+def get_subgalleries(srcdir, examples_dir):
+    """Returns the list of subsections of a gallery
+
+Parameters
+----------
+srcdir : str
+    absolute path to directory containing conf.py
+
+examples_dir : str
+    path to the examples directory relative to conf.py
+
+
+Returns
+-------
+out : list
+
+    """
+    target_dir = os.path.join(srcdir, examples_dir)
+    elements = [os.path.join(target_dir, item)
+                for item in os.listdir(target_dir)]
+    return [item for item in elements
+            if os.path.exists(os.path.join(item, 'README.txt'))]
+
+
 def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     """Creates necessary folders for sphinx_gallery files """
     list_examples_dirs = gallery_conf['examples_dirs']

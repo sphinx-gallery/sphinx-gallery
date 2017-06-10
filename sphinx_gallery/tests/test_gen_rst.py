@@ -182,13 +182,11 @@ def test_gen_dir_rst(fakesphinxapp):
     """Test gen_dir_rst."""
     gallery_conf = build_test_configuration()
     print(os.listdir(gallery_conf['examples_dir']))
-    args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
-            gallery_conf, [])
-    out = generate_dir_rst(*args)
-    assert out[0] == ""
     fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
     with open(fname_readme, 'wb') as fid:
         fid.write(u"Testing\n=======\n\nÓscar here.".encode('utf-8'))
+    args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
+            gallery_conf, [])
     out = generate_dir_rst(*args)
     assert u"Óscar here" in out[0]
 
