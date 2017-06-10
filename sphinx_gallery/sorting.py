@@ -14,7 +14,7 @@ import os
 import types
 
 
-class ExplicitOrderStrict(list):
+class ExplicitOrderStrict(object):
     """Sorting key for all galleries sub sections
 
     Parameters
@@ -28,11 +28,12 @@ class ExplicitOrderStrict(list):
                              "tuple or Generator, which hold"
                              "the paths of each gallery subfolder")
 
-        list.__init__(self, (os.path.normpath(path) for path in ordered_list))
+        self.ordered_list = list(os.path.normpath(path)
+                                 for path in ordered_list)
 
     def __call__(self, item):
-        if item in self:
-            return self.index(item)
+        if item in self.ordered_list:
+            return self.ordered_list.index(item)
         else:
             raise ValueError('If you use an explicit folder ordering, you '
                              'must specify all folders. Explicit order not '

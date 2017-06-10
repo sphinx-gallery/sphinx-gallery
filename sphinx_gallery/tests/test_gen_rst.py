@@ -320,38 +320,6 @@ def test_figure_rst():
     assert fig_num == 1
 
 
-def test_folder_ordering():
-    from sphinx_gallery.sorting import ExplicitOrderStrict
-    with pytest.raises(ValueError) as excinfo:
-        ExplicitOrderStrict('nope')
-    excinfo.match("ExplicitOrderStrict sorting key takes a list ")
-
-    all_folders = ['e', 'f', 'd', 'c', '01b', 'a']
-    explicit_folders = ['f', 'd']
-    key = ExplicitOrderStrict(explicit_folders)
-    sorted_folders = sorted(["d", "f"], key=key)
-    assert sorted_folders == explicit_folders
-
-    # Test missing folder
-    with pytest.raises(ValueError) as excinfo:
-        sorted_folders = sorted(all_folders, key=key)
-    excinfo.match('If you use an explicit folder ordering')
-
-
-def test_gallery_subfolders():
-    # stable sorting non-subsection
-    # sorted_folders = sorted(all_folders, key=key)
-    # assert sorted_folders == ['e', 'c', '01b', 'a', 'f', 'd']
-
-    # Enforce sub-section folders to be on the list
-    cwd = os.getcwd()
-    test_dir = tempfile.mkdtemp()
-    os.chdir(test_dir)
-    os.makedirs("c")
-    # touch file
-    open(os.path.join("c", "README.txt"), 'w').close()
-    os.chdir(cwd)
-
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice
 # TODO: test that examples are executed after a no-plot and produce
