@@ -11,22 +11,21 @@ Sorting key functions for subgallery folders
 
 from __future__ import division, absolute_import, print_function
 import os
+from types import GeneratorType
 
 
-class ExplicitOrderStrict(object):
+class ExplicitOrderStrict(list):
     def __init__(self, ordered_list):
-        if not isinstance(ordered_list, list):
-            raise ValueError("Requires a list")
+        if not isinstance(ordered_list, (list, tuple, set, GeneratorType)):
+            raise ValueError("ExplicitOrderStrict sorting key takes a list "
+                             "tuple, set or Generator of strings, which hold"
+                             "the path of all gallery subfolders")
 
-        self.ordered_list = ordered_list
+        list.__init__(self, ordered_list)
 
     def __call__(self, item):
-        if item in self.ordered_list:
-            return self.ordered_list.index(item)
-        elif not os.path.exists(os.path.join(item, 'README.txt')):
-            # Some folders are not a gallery subsection and are thus
-            # Skipped anyway.
-            return -1
+        if item in self:
+            return self.index(item)
         else:
             raise ValueError('If you use an explicit folder ordering, you '
                              'must specify all folders. Explicit order not '

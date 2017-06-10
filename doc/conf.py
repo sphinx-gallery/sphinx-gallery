@@ -301,8 +301,7 @@ intersphinx_mapping = {
 }
 
 from sphinx_gallery.sorting import ExplicitOrderStrict
-examples_dirs = [('../examples', ExplicitOrderStrict(["sin_func", "no_output"])),
-                 '../tutorials']
+examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
 try:
@@ -328,6 +327,8 @@ sphinx_gallery_conf = {
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
+    'subgalleryorder': ExplicitOrderStrict(['../examples/sin_func',
+                                            '../examples/no_output']),
     'find_mayavi_figures': find_mayavi_figures,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py']

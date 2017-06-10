@@ -324,7 +324,7 @@ def test_folder_ordering():
     from sphinx_gallery.sorting import ExplicitOrderStrict
     with pytest.raises(ValueError) as excinfo:
         ExplicitOrderStrict('nope')
-    excinfo.match("Requires a list")
+    excinfo.match("ExplicitOrderStrict sorting key takes a list ")
 
     all_folders = ['e', 'f', 'd', 'c', '01b', 'a']
     explicit_folders = ['f', 'd']
@@ -332,20 +332,24 @@ def test_folder_ordering():
     sorted_folders = sorted(["d", "f"], key=key)
     assert sorted_folders == explicit_folders
 
-    # stable sorting non-subsection
-    sorted_folders = sorted(all_folders, key=key)
-    assert sorted_folders == ['e', 'c', '01b', 'a', 'f', 'd']
+    # Test missing folder
+    with pytest.raises(ValueError) as excinfo:
+        sorted_folders = sorted(all_folders, key=key)
+    excinfo.match('If you use an explicit folder ordering')
 
-    # Enforce sub-section folders to be on the list
+
+def test_gallery_subfolders()
+# stable sorting non-subsection
+# sorted_folders = sorted(all_folders, key=key)
+# assert sorted_folders == ['e', 'c', '01b', 'a', 'f', 'd']
+
+# Enforce sub-section folders to be on the list
     cwd = os.getcwd()
     test_dir = tempfile.mkdtemp()
     os.chdir(test_dir)
     os.makedirs("c")
     # touch file
     open(os.path.join("c", "README.txt"), 'w').close()
-    with pytest.raises(ValueError) as excinfo:
-        sorted_folders = sorted(all_folders, key=key)
-    excinfo.match('If you use an explicit folder ordering')
     os.chdir(cwd)
 
 # TODO: test that broken thumbnail does appear when needed

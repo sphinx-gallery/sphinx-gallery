@@ -133,7 +133,7 @@ If you don't care about this features set in your conf.py
     return gallery_conf
 
 
-def get_subgalleries(srcdir, examples_dir):
+def get_subgalleries(srcdir, examples_dir, sortkey):
     """Returns the list of subsections of a gallery
 
 Parameters
@@ -144,6 +144,9 @@ srcdir : str
 examples_dir : str
     path to the examples directory relative to conf.py
 
+sortkey : sortkey
+
+
 
 Returns
 -------
@@ -151,39 +154,26 @@ out : list
 
     """
     target_dir = os.path.join(srcdir, examples_dir)
-    elements = [os.path.join(target_dir, item)
-                for item in os.listdir(target_dir)]
-    return [item for item in elements
-            if os.path.exists(os.path.join(item, 'README.txt'))]
+    elements = [item for item in os.listdir(target_dir)
+                if os.path.exists(os.path.join(target_dir, item, 'README.txt'))]
+    elements_with_path = [os.path.join(examples_dir, item)
+                          for item in elements]
+    sorted_elements = sorted(elements_with_path, key=sortkey)
+
+    return [elements[i] for i in [elements_with_path.index(item)
+                                  for item in sorted_elements]]
 
 
 def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     """Creates necessary folders for sphinx_gallery files """
-    list_examples_dirs = gallery_conf['examples_dirs']
+    examples_dirs = gallery_conf['examples_dirs']
     gallery_dirs = gallery_conf['gallery_dirs']
 
-    if not isinstance(list_examples_dirs, list):
-        list_examples_dirs = [list_examples_dirs]
-
-    def gallery_contents(src_dir, folder, sortkey):
-        gallery_dir = os.path.join(srcdir, folder)
-        examples_folders = [item
-                            for item in os.listdir(gallery_dir)
-                            if os.path.isdir(os.path.join(gallery_dir, item))]
-        return gallery_dir, sorted(examples_folders, key=sortkey)
-
-    examples_dirs = []
-    for examples_dir in list_examples_dirs:
-        if isinstance(examples_dir, str):
-            examples_dirs.append(gallery_contents(srcdir, examples_dir, None))
-        if isinstance(examples_dir, tuple):
-            examples_dirs.append(gallery_contents(
-                srcdir, examples_dir[0], examples_dir[1]))
+    if not isinstance(examples_dirs, list):
+        examples_dirs = [examples_dirs]
 
     if not isinstance(gallery_dirs, list):
         gallery_dirs = [gallery_dirs]
-    gallery_dirs = [os.path.join(srcdir, gallery_dir)
-                    for gallery_dir in gallery_dirs]
 
     for outdir in gallery_dirs:
         if not os.path.exists(outdir):
@@ -215,17 +205,22 @@ def generate_gallery_rst(app):
     workdirs = _prepare_sphx_glr_dirs(gallery_conf,
                                       app.builder.srcdir)
 
-    for (examples_dir, subsections), gallery_dir in workdirs:
+    for examples_dir, gallery_dir in workdirs:
 
-        # Here we don't use an os.walk, but we recurse only twice: flat is
-        # better than nested.
-        this_fhindex, this_computation_times = generate_dir_rst(
-            examples_dir, gallery_dir, gallery_conf, seen_backrefs)
-        if this_fhindex == "":
+        examples_dir = os.path.join(app.build.srcdir, examples_dir)
+        gallery_dir = os.path.join(app.build.srcdir, gallery_dir)
+
+        if not os.path.exists(os.path.join(examples_dir, 'README.txt')):
             raise FileNotFoundError("Main example directory {0} does not "
                                     "have a README.txt file. Please write "
                                     "one to introduce your gallery."
                                     .format(examples_dir))
+
+        # Here we don't use an os.walk, but we recurse only twice: flat is
+        # better than nested.
+
+        this_fhindex, this_computation_times = generate_dir_rst(
+            examples_dir, gallery_dir, gallery_conf, seen_backrefs)
 
         computation_times += this_computation_times
 
@@ -233,8 +228,9 @@ def generate_gallery_rst(app):
         with codecs.open(os.path.join(gallery_dir, 'index.rst'), 'w',
                          encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
-            fhindex.write((u":orphan:\n\n" + this_fhindex))
-            for directory in subsections:
+            fhindex.write(":orphan:\n\n" + this_fhindex)
+
+            for directory in get_subgalleries(app.build.srcdir, examples_dir, gallery_conf['subgalleryorder']):
                 src_dir = os.path.join(examples_dir, directory)
                 target_dir = os.path.join(gallery_dir, directory)
                 this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
