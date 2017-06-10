@@ -91,26 +91,6 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 ###############################################################################
 
 
-class Tee(object):
-    """A tee object to redirect streams to multiple outputs"""
-
-    def __init__(self, file1, file2):
-        self.file1 = file1
-        self.file2 = file2
-
-    def write(self, data):
-        self.file1.write(data)
-        self.file2.write(data)
-
-    def flush(self):
-        self.file1.flush()
-        self.file2.flush()
-
-    # When called from a local terminal seaborn needs it in Python3
-    def isatty(self):
-        self.file1.isatty()
-
-
 class MixedEncodingStringIO(StringIO):
     """Helper when both ASCII and unicode strings will be written"""
 
@@ -445,7 +425,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex, computation_times
 
 
-def execute_code_block(code_block, example_globals,
+def execute_code_block(src_file, code_block, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
@@ -465,9 +445,7 @@ def execute_code_block(code_block, example_globals,
         # First cd in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
-        my_buffer = MixedEncodingStringIO()
-        my_stdout = Tee(sys.stdout, my_buffer)
-        sys.stdout = my_stdout
+        sys.stdout = my_stdout = MixedEncodingStringIO()
 
         t_start = time()
         # don't use unicode_literals at the top of this file or you get
@@ -477,10 +455,11 @@ def execute_code_block(code_block, example_globals,
 
         sys.stdout = orig_stdout
 
-        my_stdout = my_buffer.getvalue().strip().expandtabs()
-        # raise RuntimeError
+        my_stdout = my_stdout.getvalue().strip().expandtabs()
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
+            logger.verbose('Output from %s', src_file, color='brown')
+            logger.verbose(my_stdout)
         os.chdir(cwd)
         images_rst, fig_num = save_figures(block_vars['image_path'],
                                            block_vars['fig_count'], gallery_conf)
@@ -591,10 +570,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                   'image_path': image_path_template, 'src_file': src_file}
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
-            code_output, rtime = execute_code_block(bcontent,
+            code_output, rtime = execute_code_block(src_file, bcontent,
                                                     example_globals,
-                                                    block_vars,
-                                                    gallery_conf)
+                                                    block_vars, gallery_conf)
 
             time_elapsed += rtime
 
