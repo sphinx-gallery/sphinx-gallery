@@ -1,5 +1,6 @@
 """
 Using ``sys.argv`` in examples
+==============================
 
 Note that your example will be run by sphinx-gallery without arguments.
 """

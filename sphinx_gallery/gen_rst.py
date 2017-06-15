@@ -568,7 +568,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     argv_orig = sys.argv[:]
     if block_vars['execute_script']:
-        print('Executing file %s' % src_file)
+        # We want to run the example without arguments. See
+        # https://github.com/sphinx-gallery/sphinx-gallery/pull/252
+        # for more details.
         sys.argv[0] = src_file
         sys.argv[1:] = []
 
