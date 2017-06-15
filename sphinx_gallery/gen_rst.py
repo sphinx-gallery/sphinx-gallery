@@ -565,6 +565,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed = 0
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
+
+    argv_orig = sys.argv[:]
+    if block_vars['execute_script']:
+        print('Executing file %s' % src_file)
+        sys.argv[0] = src_file
+        sys.argv[1:] = []
+
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
             code_output, rtime = execute_code_block(src_file, bcontent,
@@ -586,6 +593,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         else:
             example_rst += bcontent + '\n\n'
 
+    sys.argv = argv_orig
     clean_modules()
 
     # Writes md5 checksum if example has build correctly
