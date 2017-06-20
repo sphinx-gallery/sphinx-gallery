@@ -15,6 +15,11 @@ import sys
 
 from sphinx.util.console import fuchsia
 
+try:
+    from sphinx.util import status_iterator
+except ImportError:
+    status_iterator = None
+
 # Try Python 2 first, otherwise load from Python 3
 try:
     import cPickle as pickle
@@ -370,9 +375,14 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     flat = [[dirpath, filename]
             for dirpath, _, filenames in os.walk(html_gallery_dir)
             for filename in filenames]
-    iterator = app.status_iterator(
-        flat, os.path.basename(html_gallery_dir), colorfunc=fuchsia,
-        length=len(flat), stringify_func=lambda x: os.path.basename(x[1]))
+    if status_iterator is None:
+        iterator = app.status_iterator(
+            flat, os.path.basename(html_gallery_dir), colorfunc=fuchsia,
+            length=len(flat), stringify_func=lambda x: os.path.basename(x[1]))
+    else:
+        iterator = status_iterator(
+            flat, os.path.basename(html_gallery_dir), colorfunc=fuchsia,
+            length=len(flat), stringify_func=lambda x: os.path.basename(x[1]))
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1:]
