@@ -11,7 +11,8 @@ Parses example file code in order to keep track of used functions
 from __future__ import print_function
 import ast
 import os
-
+import platform
+import sys
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -130,7 +131,15 @@ def identify_names(code):
 
 def scan_used_functions(example_file, gallery_conf):
     """save variables so we can later add links to the documentation"""
-    example_code_obj = identify_names(open(example_file).read())
+
+    # https://github.com/sphinx-gallery/sphinx-gallery/issues/253
+    if (platform.system().lower().startswith('win') and
+            sys.version_info[0] >= 3):
+        open_kwargs = {'encoding': 'utf8'}
+    else:
+        open_kwargs = {}
+
+    example_code_obj = identify_names(open(example_file, **open_kwargs).read())
     if example_code_obj:
         codeobj_fname = example_file[:-3] + '_codeobj.pickle'
         with open(codeobj_fname, 'wb') as fid:
