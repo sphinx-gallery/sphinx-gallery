@@ -381,7 +381,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             length=len(flat), stringify_func=lambda x: os.path.basename(x[1]))
     else:
         iterator = status_iterator(
-            flat, os.path.basename(html_gallery_dir), colorfunc=fuchsia,
+            flat, os.path.basename(html_gallery_dir), color=fuchsia,
             length=len(flat), stringify_func=lambda x: os.path.basename(x[1]))
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
