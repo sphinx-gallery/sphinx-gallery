@@ -204,7 +204,7 @@ def generate_gallery_rst(app):
                 download_fhindex = generate_zipfiles(gallery_dir)
                 fhindex.write(download_fhindex.encode('utf-8'))
 
-            fhindex.write(SPHX_GLR_SIG)
+            fhindex.write(SPHX_GLR_SIG.encode('utf-8'))
 
     if gallery_conf['plot_gallery']:
         logger.info("Computation time summary:", color='white')
