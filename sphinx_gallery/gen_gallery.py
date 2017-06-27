@@ -16,6 +16,7 @@ import re
 import os
 
 from . import glr_path_static
+from . import sphinx_compatibility
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
@@ -40,6 +41,8 @@ DEFAULT_GALLERY_CONF = {
     'failing_examples': {},
     'expected_failing_examples': set(),
 }
+
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def clean_gallery_out(build_dir):
@@ -99,24 +102,28 @@ present issue read carefully how to update in the online documentation
 https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
 
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
-        app.warn("Old configuration for backreferences detected \n"
-                 "using the configuration variable `mod_example_dir`\n"
-                 + backreferences_warning
-                 + update_msg, prefix="DeprecationWarning: ")
+        logger.warning(
+            "Old configuration for backreferences detected \n"
+            "using the configuration variable `mod_example_dir`\n"
+            "%s%s",
+            backreferences_warning,
+            update_msg,
+            type=DeprecationWarning)
 
     elif gallery_conf['backreferences_dir'] is None:
         no_care_msg = """
 If you don't care about this features set in your conf.py
 'backreferences_dir': False\n"""
 
-        app.warn(backreferences_warning + no_care_msg)
+        logger.warning(backreferences_warning + no_care_msg)
 
         gallery_conf['backreferences_dir'] = os.path.join(
             'modules', 'generated')
-        app.warn("using old default 'backreferences_dir':'{}'.\n"
-                 " This will be disabled in future releases\n".format(
-                     gallery_conf['backreferences_dir']),
-                 prefix="DeprecationWarning: ")
+        logger.warning(
+            "Using old default 'backreferences_dir':'%s'.\n"
+            "This will be disabled in future releases\n",
+            gallery_conf['backreferences_dir'],
+            type=DeprecationWarning)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
@@ -150,7 +157,7 @@ def generate_gallery_rst(app):
     Start the sphinx-gallery configuration and recursively scan the examples
     directories in order to populate the examples gallery
     """
-    print('Generating gallery')
+    logger.info('Generating gallery...', color='white')
     gallery_conf = parse_config(app)
 
     clean_gallery_out(app.builder.outdir)
@@ -201,12 +208,12 @@ def generate_gallery_rst(app):
         fhindex.flush()
 
     if gallery_conf['plot_gallery']:
-        print("Computation time summary:")
+        logger.info("Computation time summary:", color='white')
         for time_elapsed, fname in sorted(computation_times)[::-1]:
             if time_elapsed is not None:
-                print("\t- %s : %.2g sec" % (fname, time_elapsed))
+                logger.info("\t- %s : %.2g sec", fname, time_elapsed)
             else:
-                print("\t- %s : not run" % fname)
+                logger.info("\t- %s : not run", fname)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
@@ -248,13 +255,11 @@ def sumarize_failing_examples(app, exception):
 
     examples_expected_to_fail = failing_examples.intersection(
         expected_failing_examples)
-    expected_fail_msg = []
     if examples_expected_to_fail:
-        expected_fail_msg.append("\n\nExamples failing as expected:")
+        logger.info("Examples failing as expected:", color='brown')
         for fail_example in examples_expected_to_fail:
-            expected_fail_msg.append(fail_example + ' failed leaving traceback:\n' +
-                                     gallery_conf['failing_examples'][fail_example] + '\n')
-        print("\n".join(expected_fail_msg))
+            logger.info('%s failed leaving traceback:', fail_example)
+            logger.info(gallery_conf['failing_examples'][fail_example])
 
     examples_not_expected_to_fail = failing_examples.difference(
         expected_failing_examples)
@@ -288,6 +293,8 @@ def get_default_config_value(key):
 
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
+    sphinx_compatibility._app = app
+
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')

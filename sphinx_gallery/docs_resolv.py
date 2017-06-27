@@ -13,8 +13,6 @@ import re
 import shelve
 import sys
 
-from sphinx.util.console import fuchsia
-
 # Try Python 2 first, otherwise load from Python 3
 try:
     import cPickle as pickle
@@ -28,6 +26,11 @@ except ImportError:
     from urllib.error import HTTPError, URLError
 
 from io import StringIO
+
+from . import sphinx_compatibility
+
+
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def _get_data(url):
@@ -348,15 +351,14 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                                                    src_gallery_dir)
 
         except HTTPError as e:
-            print("The following HTTP Error has occurred:\n")
-            print(e.code)
+            logger.warning("The following HTTP Error has occurred: %d", e.code)
         except URLError as e:
-            print("\n...\n"
-                  "Warning: Embedding the documentation hyperlinks requires "
-                  "Internet access.\nPlease check your network connection.\n"
-                  "Unable to continue embedding `{0}` links due to a URL "
-                  "Error:\n".format(this_module))
-            print(e.args)
+            logger.warning(
+                "Embedding the documentation hyperlinks requires Internet "
+                "access.\nPlease check your network connection.\nUnable to "
+                "continue embedding `%s` links due to a URL Error:\n%s",
+                this_module,
+                str(e.args))
 
     html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
                                                     gallery_dir))
@@ -370,8 +372,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     flat = [[dirpath, filename]
             for dirpath, _, filenames in os.walk(html_gallery_dir)
             for filename in filenames]
-    iterator = app.status_iterator(
-        flat, os.path.basename(html_gallery_dir), colorfunc=fuchsia,
+    iterator = sphinx_compatibility.status_iterator(
+        flat, gallery_dir, color='fuchsia',
         length=len(flat), stringify_func=lambda x: os.path.basename(x[1]))
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
@@ -400,8 +402,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                         extra = e.code
                     else:
                         extra = e.reason
-                    print("\n\t\tError resolving %s.%s: %r (%s)"
-                          % (cobj['module'], cobj['name'], e, extra))
+                    logger.warning("Error resolving %s.%s: %r (%s)",
+                                   cobj['module'], cobj['name'], e, extra)
                     continue
 
                 if link is not None:
@@ -451,7 +453,8 @@ def embed_code_links(app, exception):
     if app.builder.name not in ['html', 'readthedocs']:
         return
 
-    print('Embedding documentation hyperlinks in examples..')
+    logger.info('Embedding documentation hyperlinks in examples ...',
+                color='white')
 
     gallery_conf = app.config.sphinx_gallery_conf
 

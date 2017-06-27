@@ -23,7 +23,6 @@ import shutil
 import subprocess
 import sys
 import traceback
-import warnings
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -72,6 +71,7 @@ if matplotlib_backend != 'agg':
 import matplotlib.pyplot as plt
 
 from . import glr_path_static
+from . import sphinx_compatibility
 from .backreferences import write_backreferences, _thumbnail_div
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (get_docstring_and_rest,
@@ -85,28 +85,10 @@ except NameError:
     basestring = str
     unicode = str
 
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
+
 
 ###############################################################################
-
-
-class Tee(object):
-    """A tee object to redirect streams to multiple outputs"""
-
-    def __init__(self, file1, file2):
-        self.file1 = file1
-        self.file2 = file2
-
-    def write(self, data):
-        self.file1.write(data)
-        self.file2.write(data)
-
-    def flush(self):
-        self.file1.flush()
-        self.file2.flush()
-
-    # When called from a local terminal seaborn needs it in Python3
-    def isatty(self):
-        self.file1.isatty()
 
 
 class MixedEncodingStringIO(StringIO):
@@ -355,8 +337,8 @@ def scale_image(in_fname, out_fname, max_width, max_height):
         try:
             subprocess.call(["optipng", "-quiet", "-o", "9", out_fname])
         except Exception:
-            warnings.warn('Install optipng to reduce the size of the \
-                          generated images')
+            logger.warning(
+                'Install optipng to reduce the size of the generated images')
 
 
 def save_thumbnail(image_path_template, src_file, gallery_conf):
@@ -392,11 +374,8 @@ def save_thumbnail(image_path_template, src_file, gallery_conf):
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
     if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print(80 * '_')
-        print('Example directory %s does not have a README.txt file' %
-              src_dir)
-        print('Skipping this directory')
-        print(80 * '_')
+        logger.warning('Skipping example directory without a README.txt file',
+                       location=src_dir)
         return "", []  # because string is an expected return type
 
     with open(os.path.join(src_dir, 'README.txt')) as fid:
@@ -411,9 +390,13 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     entries_text = []
     computation_times = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    for fname in sorted_listdir:
-        amount_of_code, time_elapsed = \
-            generate_file_rst(fname, target_dir, src_dir, gallery_conf)
+    iterator = sphinx_compatibility.status_iterator(
+        sorted_listdir,
+        'Generating gallery for %s ' % build_target_dir,
+        length=len(sorted_listdir))
+    for fname in iterator:
+        amount_of_code, time_elapsed = generate_file_rst(fname, target_dir,
+                                                         src_dir, gallery_conf)
         computation_times.append((time_elapsed, fname))
         new_fname = os.path.join(src_dir, fname)
         intro = extract_intro(new_fname)
@@ -442,7 +425,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex, computation_times
 
 
-def execute_code_block(code_block, example_globals,
+def execute_code_block(src_file, code_block, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
@@ -462,9 +445,7 @@ def execute_code_block(code_block, example_globals,
         # First cd in the original example dir, so that any file
         # created by the example get created in this directory
         os.chdir(os.path.dirname(src_file))
-        my_buffer = MixedEncodingStringIO()
-        my_stdout = Tee(sys.stdout, my_buffer)
-        sys.stdout = my_stdout
+        sys.stdout = my_stdout = MixedEncodingStringIO()
 
         t_start = time()
         # don't use unicode_literals at the top of this file or you get
@@ -474,10 +455,11 @@ def execute_code_block(code_block, example_globals,
 
         sys.stdout = orig_stdout
 
-        my_stdout = my_buffer.getvalue().strip().expandtabs()
-        # raise RuntimeError
+        my_stdout = my_stdout.getvalue().strip().expandtabs()
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
+            logger.verbose('Output from %s', src_file, color='brown')
+            logger.verbose(my_stdout)
         os.chdir(cwd)
         images_rst, fig_num = save_figures(block_vars['image_path'],
                                            block_vars['fig_count'], gallery_conf)
@@ -485,10 +467,8 @@ def execute_code_block(code_block, example_globals,
     except Exception:
         formatted_exception = traceback.format_exc()
 
-        fail_example_warning = 80 * '_' + '\n' + \
-            '%s failed to execute correctly:' % src_file + \
-            formatted_exception + 80 * '_' + '\n'
-        warnings.warn(fail_example_warning)
+        logger.warning('%s failed to execute correctly:%s', src_file,
+                       formatted_exception)
 
         fig_num = 0
         images_rst = codestr2rst(formatted_exception, lang='pytb')
@@ -588,14 +568,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed = 0
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
-    if block_vars['execute_script']:
-        print('Executing file %s' % src_file)
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
-            code_output, rtime = execute_code_block(bcontent,
+            code_output, rtime = execute_code_block(src_file, bcontent,
                                                     example_globals,
-                                                    block_vars,
-                                                    gallery_conf)
+                                                    block_vars, gallery_conf)
 
             time_elapsed += rtime
 
@@ -636,6 +613,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         f.write(example_rst)
 
     if block_vars['execute_script']:
-        print("{0} ran in : {1:.2g} seconds\n".format(src_file, time_elapsed))
+        logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
 
     return amount_of_code, time_elapsed
