@@ -9,17 +9,18 @@ from __future__ import (division, absolute_import, print_function,
 import ast
 import codecs
 import copy
+import logging
 import tempfile
 import re
 import os
 import shutil
-import warnings
 import zipfile
 import pytest
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import gen_gallery, downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst
+from sphinx_gallery import sphinx_compatibility
 # Need to import gen_rst before matplotlib.pyplot to set backend to 'Agg'
 import matplotlib.pyplot as plt
 
@@ -177,19 +178,34 @@ def test_fail_example(log_collector):
             raise ValueError('Did not stop executing script after error')
 
 
+class _FakeApp(object):
+    def __init__(self):
+        for key in ('info', 'warn', 'error', 'critical'):
+            setattr(self, key, lambda msg, **kwargs: logging.info(msg))
+
+    def status_iterator(self, iterable, *args, **kwargs):
+        for it in iterable:
+            yield it
+
+
 def test_gen_dir_rst():
     """Test gen_dir_rst."""
-    gallery_conf = build_test_configuration()
-    print(os.listdir(gallery_conf['examples_dir']))
-    args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
-            gallery_conf, [])
-    out = generate_dir_rst(*args)
-    assert out[0] == ""
-    fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
-    with open(fname_readme, 'wb') as fid:
-        fid.write(u"Testing\n=======\n\nÓscar here.".encode('utf-8'))
-    out = generate_dir_rst(*args)
-    assert u"Óscar here" in out[0]
+    _app = sphinx_compatibility._app
+    try:
+        sphinx_compatibility._app = _FakeApp()
+        gallery_conf = build_test_configuration()
+        print(os.listdir(gallery_conf['examples_dir']))
+        args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
+                gallery_conf, [])
+        out = generate_dir_rst(*args)
+        assert out[0] == ""
+        fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
+        with open(fname_readme, 'wb') as fid:
+            fid.write(u"Testing\n=======\n\nÓscar here.".encode('utf-8'))
+        out = generate_dir_rst(*args)
+        assert u"Óscar here" in out[0]
+    finally:
+        sphinx_compatibility._app = _app
 
 
 def test_pattern_matching(log_collector):
