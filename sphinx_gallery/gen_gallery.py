@@ -20,6 +20,7 @@ from . import sphinx_compatibility
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
+from .sorting import ExplicitOrderKey
 
 try:
     FileNotFoundError
@@ -30,6 +31,7 @@ except NameError:
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'examples_dirs': os.path.join('..', 'examples'),
+    'gallery_folder_order': None,
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
     'doc_module': (),
@@ -148,7 +150,17 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
         if not os.path.exists(backreferences_dir):
             os.makedirs(backreferences_dir)
 
-    return examples_dirs, gallery_dirs
+    # Generate sorting key
+    key = None
+    dirs_order = gallery_conf['gallery_folder_order']
+    if not isinstance(dirs_order, dict):
+        raise ValueError('gallery_folder_order must be a dict of '
+                         'example_folder: list_of_folder_order pairs. '
+                         'Found type {}.'.format(type(dirs_order)))
+    if len(dirs_order.keys()) > 0:
+        key = ExplicitOrderKey(dirs_order)
+
+    return examples_dirs, gallery_dirs, key
 
 
 def generate_gallery_rst(app):
@@ -165,11 +177,11 @@ def generate_gallery_rst(app):
     seen_backrefs = set()
 
     computation_times = []
-    examples_dirs, gallery_dirs = _prepare_sphx_glr_dirs(gallery_conf,
-                                                         app.builder.srcdir)
+    examples_dirs, gallery_dirs, key = _prepare_sphx_glr_dirs(
+        gallery_conf, app.builder.srcdir)
 
-    for examples_dir, gallery_dir in zip(examples_dirs, gallery_dirs):
-        examples_dir = os.path.join(app.builder.srcdir, examples_dir)
+    for examples_dir_rel, gallery_dir in zip(examples_dirs, gallery_dirs):
+        examples_dir = os.path.join(app.builder.srcdir, examples_dir_rel)
         gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
 
         for workdir in [examples_dir, gallery_dir]:
@@ -191,7 +203,14 @@ def generate_gallery_rst(app):
         fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
         # :orphan: to suppress "not included in TOCTREE" sphinx warnings
         fhindex.write(":orphan:\n\n" + this_fhindex)
-        for directory in sorted(os.listdir(examples_dir)):
+        # Choose the root examples folder in which we search before iterating.
+        if isinstance(key, ExplicitOrderKey):
+            activate = None
+            if examples_dir_rel in key.dict_ordered.keys():
+                activate = examples_dir_rel
+            key.activate_key(activate)
+
+        for directory in sorted(os.listdir(examples_dir), key=key):
             if os.path.isdir(os.path.join(examples_dir, directory)):
                 src_dir = os.path.join(examples_dir, directory)
                 target_dir = os.path.join(gallery_dir, directory)
