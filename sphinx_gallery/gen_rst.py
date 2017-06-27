@@ -378,8 +378,9 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
                        location=src_dir)
         return "", []  # because string is an expected return type
 
-    with open(os.path.join(src_dir, 'README.txt'), 'rb') as fid:
-        fhindex = fid.read().decode('utf-8')
+    with codecs.open(os.path.join(src_dir, 'README.txt'), 'r',
+                     encoding='utf-8') as fid:
+        fhindex = fid.read()
     # Add empty lines to avoid bug in issue #165
     fhindex += "\n\n"
 
