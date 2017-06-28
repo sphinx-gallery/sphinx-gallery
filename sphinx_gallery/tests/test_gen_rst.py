@@ -178,34 +178,19 @@ def test_fail_example(log_collector):
             raise ValueError('Did not stop executing script after error')
 
 
-class _FakeApp(object):
-    def __init__(self):
-        for key in ('info', 'warn', 'error', 'critical'):
-            setattr(self, key, lambda msg, **kwargs: logging.info(msg))
-
-    def status_iterator(self, iterable, *args, **kwargs):
-        for it in iterable:
-            yield it
-
-
-def test_gen_dir_rst():
+def test_gen_dir_rst(fakesphinxapp):
     """Test gen_dir_rst."""
-    _app = sphinx_compatibility._app
-    try:
-        sphinx_compatibility._app = _FakeApp()
-        gallery_conf = build_test_configuration()
-        print(os.listdir(gallery_conf['examples_dir']))
-        args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
-                gallery_conf, [])
-        out = generate_dir_rst(*args)
-        assert out[0] == ""
-        fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
-        with open(fname_readme, 'wb') as fid:
-            fid.write(u"Testing\n=======\n\nÓscar here.".encode('utf-8'))
-        out = generate_dir_rst(*args)
-        assert u"Óscar here" in out[0]
-    finally:
-        sphinx_compatibility._app = _app
+    gallery_conf = build_test_configuration()
+    print(os.listdir(gallery_conf['examples_dir']))
+    args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
+            gallery_conf, [])
+    out = generate_dir_rst(*args)
+    assert out[0] == ""
+    fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
+    with open(fname_readme, 'wb') as fid:
+        fid.write(u"Testing\n=======\n\nÓscar here.".encode('utf-8'))
+    out = generate_dir_rst(*args)
+    assert u"Óscar here" in out[0]
 
 
 def test_pattern_matching(log_collector):

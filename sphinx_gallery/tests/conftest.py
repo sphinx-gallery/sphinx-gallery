@@ -24,7 +24,8 @@ class FakeSphinxApp:
 
     def status_iterator(self, *args, **kwargs):
         self.calls['status_iterator'].append(Params(args, kwargs))
-        yield
+        for it in args[0]:
+            yield it
 
     def warning(self, *args, **kwargs):
         self.calls['warning'].append(Params(args, kwargs))
