@@ -5,8 +5,7 @@ r"""
 Test Sphinx-Gallery
 """
 
-from __future__ import division, absolute_import, print_function
-
+from __future__ import division, absolute_import, print_function, unicode_literals
 import os
 import tempfile
 import shutil
@@ -15,6 +14,7 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
 from sphinx_gallery.gen_gallery import DEFAULT_GALLERY_CONF
+from sphinx_gallery import sphinx_compatibility
 
 
 @pytest.fixture
@@ -46,6 +46,8 @@ project = u'Sphinx-Gallery <Tests>'""")
     app = Sphinx(srcdir, srcdir, os.path.join(srcdir, "_build"),
                  os.path.join(srcdir, "_build", "toctree"),
                  "html", warning=MixedEncodingStringIO())
+
+    sphinx_compatibility._app = app
 
     cfg = app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
@@ -82,13 +84,15 @@ sphinx_gallery_conf = {
     app = Sphinx(srcdir, srcdir, os.path.join(srcdir, "_build"),
                  os.path.join(srcdir, "_build", "toctree"),
                  "html", warning=MixedEncodingStringIO())
+    sphinx_compatibility._app = app
+
     cfg = app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
         'modules', 'gen')
     build_warn = app._warning.getvalue()
 
-    assert "DeprecationWarning:" in build_warn
+    assert "WARNING:" in build_warn
     assert "Old configuration" in build_warn
     assert "mod_example_dir" in build_warn
     assert "Gallery now requires" in build_warn
@@ -131,7 +135,7 @@ sphinx_gallery_conf = {
 
     assert "Gallery now requires" in build_warn
     assert "'backreferences_dir': False" in build_warn
-    assert "DeprecationWarning:" in build_warn
+    assert "WARNING:" in build_warn
     assert "mod_example_dir" not in build_warn
 
 
@@ -160,6 +164,7 @@ sphinx_gallery_conf = {
                  os.path.join(srcdir, "_build", "toctree"),
                  "html", warning=MixedEncodingStringIO())
 
+    sphinx_compatibility._app = app
     cfg = app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
