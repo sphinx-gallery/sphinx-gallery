@@ -11,7 +11,7 @@ Parses example file code in order to keep track of used functions
 from __future__ import print_function
 import ast
 import os
-
+import codecs
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -130,7 +130,8 @@ def identify_names(code):
 
 def scan_used_functions(example_file, gallery_conf):
     """save variables so we can later add links to the documentation"""
-    example_code_obj = identify_names(open(example_file).read())
+    example_code_obj = identify_names(
+        codecs.open(example_file, encoding='utf-8').read())
     if example_code_obj:
         codeobj_fname = example_file[:-3] + '_codeobj.pickle'
         with open(codeobj_fname, 'wb') as fid:
