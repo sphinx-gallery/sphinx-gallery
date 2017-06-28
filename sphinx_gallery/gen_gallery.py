@@ -11,6 +11,7 @@ when building the documentation.
 
 
 from __future__ import division, print_function, absolute_import
+import codecs
 import copy
 import re
 import os
@@ -188,24 +189,24 @@ def generate_gallery_rst(app):
         computation_times += this_computation_times
 
         # we create an index.rst with all examples
-        fhindex = open(os.path.join(gallery_dir, 'index.rst'), 'w')
-        # :orphan: to suppress "not included in TOCTREE" sphinx warnings
-        fhindex.write(":orphan:\n\n" + this_fhindex)
-        for directory in sorted(os.listdir(examples_dir)):
-            if os.path.isdir(os.path.join(examples_dir, directory)):
-                src_dir = os.path.join(examples_dir, directory)
-                target_dir = os.path.join(gallery_dir, directory)
-                this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                                                        seen_backrefs)
-                fhindex.write(this_fhindex)
-                computation_times += this_computation_times
+        with codecs.open(os.path.join(gallery_dir, 'index.rst'), 'w',
+                         encoding='utf-8') as fhindex:
+            # :orphan: to suppress "not included in TOCTREE" sphinx warnings
+            fhindex.write((u":orphan:\n\n" + this_fhindex))
+            for directory in sorted(os.listdir(examples_dir)):
+                if os.path.isdir(os.path.join(examples_dir, directory)):
+                    src_dir = os.path.join(examples_dir, directory)
+                    target_dir = os.path.join(gallery_dir, directory)
+                    this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
+                                                                            seen_backrefs)
+                    fhindex.write(this_fhindex)
+                    computation_times += this_computation_times
 
-        if gallery_conf['download_all_examples']:
-            download_fhindex = generate_zipfiles(gallery_dir)
-            fhindex.write(download_fhindex)
+            if gallery_conf['download_all_examples']:
+                download_fhindex = generate_zipfiles(gallery_dir)
+                fhindex.write(download_fhindex)
 
-        fhindex.write(SPHX_GLR_SIG)
-        fhindex.flush()
+            fhindex.write(SPHX_GLR_SIG)
 
     if gallery_conf['plot_gallery']:
         logger.info("Computation time summary:", color='white')
