@@ -422,16 +422,37 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     return fhindex, computation_times
 
 
+def handle_exception(exc_info, src_file, block_vars, gallery_conf):
+    etype, exc, tb = exc_info
+    stack = traceback.extract_tb(tb)
+    stack = stack[1:]
+    formatted_exception = 'Traceback (most recent call last):\n' + ''.join(
+        traceback.format_list(stack) +
+        traceback.format_exception_only(etype, exc))
+
+    logger.warning('%s failed to execute correctly: %s', src_file,
+                   formatted_exception)
+
+    except_rst = codestr2rst(formatted_exception, lang='pytb')
+
+    # Breaks build on first example error
+    if gallery_conf['abort_on_example_error']:
+        raise
+    # Stores failing file
+    gallery_conf['failing_examples'][src_file] = formatted_exception
+    block_vars['execute_script'] = False
+
+    return except_rst
+
+
 def execute_code_block(src_file, code_block, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
-    fig_num = 0
-    stdout = ''
 
     # If example is not suitable to run, skip executing its blocks
     if not block_vars['execute_script']:
-        return stdout, time_elapsed
+        return '', time_elapsed
 
     plt.close('all')
     cwd = os.getcwd()
@@ -454,19 +475,9 @@ def execute_code_block(src_file, code_block, example_globals,
 
     except Exception:
         sys.stdout = orig_stdout
-        formatted_exception = traceback.format_exc()
-
-        logger.warning('%s failed to execute correctly:%s', src_file,
-                       formatted_exception)
-
-        images_rst = codestr2rst(formatted_exception, lang='pytb')
-
-        # Breaks build on first example error
-        if gallery_conf['abort_on_example_error']:
-            raise
-        # Stores failing file
-        gallery_conf['failing_examples'][src_file] = formatted_exception
-        block_vars['execute_script'] = False
+        except_rst = handle_exception(sys.exc_info(), src_file, block_vars,
+                                      gallery_conf)
+        code_output = u"\n{0}\n\n\n\n".format(except_rst)
 
     else:
         sys.stdout = orig_stdout
@@ -477,16 +488,18 @@ def execute_code_block(src_file, code_block, example_globals,
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
             logger.verbose('Output from %s', src_file, color='brown')
             logger.verbose(my_stdout)
+        else:
+            stdout = ''
         images_rst, fig_num = save_figures(block_vars['image_path'],
                                            block_vars['fig_count'],
                                            gallery_conf)
 
+        block_vars['fig_count'] += fig_num
+        code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
+
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
-
-    code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
-    block_vars['fig_count'] += fig_num
 
     return code_output, time_elapsed
 
