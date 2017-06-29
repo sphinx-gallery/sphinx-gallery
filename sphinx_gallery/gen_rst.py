@@ -15,6 +15,7 @@ Files that generate images should start with 'plot'
 # tricky errors come up with exec(code_blocks, ...) calls
 from __future__ import division, print_function, absolute_import
 from time import time
+import ast
 import codecs
 import hashlib
 import os
@@ -467,10 +468,12 @@ def execute_code_block(src_file, code_block, lineno, example_globals,
     sys.stdout = my_stdout
 
     try:
+        code_ast = ast.parse(code_block, src_file)
+        ast.increment_lineno(code_ast, lineno - 1)
         t_start = time()
         # don't use unicode_literals at the top of this file or you get
         # nasty errors here on Py2.7
-        exec(code_block, example_globals)
+        exec(compile(code_ast, src_file, 'exec'), example_globals)
         time_elapsed = time() - t_start
 
     except Exception:
