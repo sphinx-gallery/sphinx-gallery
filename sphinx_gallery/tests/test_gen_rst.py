@@ -86,11 +86,11 @@ def test_direct_comment_after_docstring():
         os.remove(f.name)
 
     expected_result = [
-        ('text', 'Docstring'),
+        ('text', 'Docstring', 1),
         ('code', '\n'.join(['# and now comes the module code',
                             '# with a second line of comment',
                             'x, y = 1, 2',
-                            '']))]
+                            '']), 2)]
     assert result == expected_result
 
 
@@ -232,7 +232,7 @@ def test_thumbnail_number():
             f.write('\n'.join(['"Docstring"',
                                test_str]))
         try:
-            _, content = sg.get_docstring_and_rest(f.name)
+            _, content, _ = sg.get_docstring_and_rest(f.name)
         finally:
             os.remove(f.name)
         thumbnail_number = sg.extract_thumbnail_number(content)
