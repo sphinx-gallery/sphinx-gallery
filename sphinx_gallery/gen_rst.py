@@ -426,7 +426,12 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 def handle_exception(exc_info, src_file, block_vars, gallery_conf):
     etype, exc, tb = exc_info
     stack = traceback.extract_tb(tb)
-    stack = stack[1:]
+    # Remove our code from traceback:
+    if isinstance(exc, SyntaxError):
+        # Remove one extra level through ast.parse.
+        stack = stack[2:]
+    else:
+        stack = stack[1:]
     formatted_exception = 'Traceback (most recent call last):\n' + ''.join(
         traceback.format_list(stack) +
         traceback.format_exception_only(etype, exc))
