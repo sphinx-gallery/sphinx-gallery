@@ -42,7 +42,7 @@ def get_docstring_and_rest(filename):
     try:
         node = ast.parse(content)
     except SyntaxError:
-        return SYNTAX_ERROR_DOCSTRING, content.decode('utf-8')
+        return SYNTAX_ERROR_DOCSTRING, content.decode('utf-8'), 1
 
     if not isinstance(node, ast.Module):
         raise TypeError("This function only supports modules. "
@@ -53,10 +53,11 @@ def get_docstring_and_rest(filename):
         docstring = docstring_node.value.s
         if hasattr(docstring, 'decode'):  # python2.7
             docstring = docstring.decode('utf-8')
+        lineno = docstring_node.lineno  # The last line of the string.
         # This get the content of the file after the docstring last line
         # Note: 'maxsplit' argument is not a keyword argument in python2
-        rest = content.decode('utf-8').split('\n', docstring_node.lineno)[-1]
-        return docstring, rest
+        rest = content.decode('utf-8').split('\n', lineno)[-1]
+        return docstring, rest, lineno + 1
     else:
         raise ValueError(('Could not find docstring in file "{0}". '
                           'A docstring is required by sphinx-gallery')
@@ -72,8 +73,8 @@ def split_code_and_text_blocks(source_file):
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
     """
-    docstring, rest_of_content = get_docstring_and_rest(source_file)
-    blocks = [('text', docstring)]
+    docstring, rest_of_content, lineno = get_docstring_and_rest(source_file)
+    blocks = [('text', docstring, 1)]
 
     pattern = re.compile(
         r'(?P<header_line>^#{20,}.*)\s(?P<text_content>(?:^#.*\s)*)',
@@ -84,17 +85,20 @@ def split_code_and_text_blocks(source_file):
     for match in re.finditer(pattern, rest_of_content):
         code_block_content = rest_of_content[pos_so_far:match.start()]
         if code_block_content.strip():
-            blocks.append(('code', code_block_content))
+            blocks.append(('code', code_block_content, lineno))
+        lineno += code_block_content.count('\n')
 
+        lineno += 1  # Ignored header line of hashes.
         text_content = match.group('text_content')
         text_block_content = dedent(re.sub(sub_pat, '', text_content)).lstrip()
         if text_block_content.strip():
-            blocks.append(('text', text_block_content))
+            blocks.append(('text', text_block_content, lineno))
+        lineno += text_content.count('\n')
 
         pos_so_far = match.end()
 
     remaining_content = rest_of_content[pos_so_far:]
     if remaining_content.strip():
-        blocks.append(('code', remaining_content))
+        blocks.append(('code', remaining_content, lineno))
 
     return blocks

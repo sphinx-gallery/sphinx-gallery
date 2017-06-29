@@ -163,7 +163,7 @@ def extract_thumbnail_number(text):
 def extract_intro(filename):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
-    docstring, _ = get_docstring_and_rest(filename)
+    docstring, _, _ = get_docstring_and_rest(filename)
 
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
@@ -344,7 +344,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 def save_thumbnail(image_path_template, src_file, gallery_conf):
     """Save the thumbnail image"""
     # read specification of the figure to display as thumbnail from main text
-    _, content = get_docstring_and_rest(src_file)
+    _, content, _ = get_docstring_and_rest(src_file)
     thumbnail_number = extract_thumbnail_number(content)
     thumbnail_image_path = image_path_template.format(thumbnail_number)
 
@@ -445,7 +445,7 @@ def handle_exception(exc_info, src_file, block_vars, gallery_conf):
     return except_rst
 
 
-def execute_code_block(src_file, code_block, example_globals,
+def execute_code_block(src_file, code_block, lineno, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
@@ -538,7 +538,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     shutil.copyfile(src_file, example_file)
     script_blocks = split_code_and_text_blocks(src_file)
     amount_of_code = sum([len(bcontent)
-                          for blabel, bcontent in script_blocks
+                          for blabel, bcontent, lineno in script_blocks
                           if blabel == 'code'])
 
     if md5sum_is_current(example_file):
@@ -589,9 +589,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         sys.argv[0] = src_file
         sys.argv[1:] = []
 
-    for blabel, bcontent in script_blocks:
+    for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
-            code_output, rtime = execute_code_block(src_file, bcontent,
+            code_output, rtime = execute_code_block(src_file, bcontent, lineno,
                                                     example_globals,
                                                     block_vars, gallery_conf)
 

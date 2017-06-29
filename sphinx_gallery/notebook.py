@@ -157,7 +157,7 @@ def fill_notebook(work_notebook, script_blocks):
     script_blocks : list of tuples
     """
 
-    for blabel, bcontent in script_blocks:
+    for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
