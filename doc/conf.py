@@ -294,9 +294,9 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
-    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('http://matplotlib.org/', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('https://matplotlib.org/', None),
 }
 
 examples_dirs = ['../examples', '../tutorials']
@@ -321,8 +321,8 @@ sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery', 'numpy'),
     'reference_url': {
         'sphinx_gallery': None,
-        'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
+        'matplotlib': 'https://matplotlib.org',
+        'numpy': 'https://docs.scipy.org/doc/numpy-1.9.1'},
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'find_mayavi_figures': find_mayavi_figures,

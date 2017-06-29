@@ -22,8 +22,10 @@ except ImportError:
 try:
     import urllib2 as urllib_request
     from urllib2 import HTTPError, URLError
+    import urlparse as urllib_parse
 except ImportError:
     import urllib.request as urllib_request
+    import urllib.parse as urllib_parse
     from urllib.error import HTTPError, URLError
 
 from io import StringIO
@@ -35,8 +37,8 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def _get_data(url):
-    """Helper function to get data over http or from a local file"""
-    if url.startswith('http://'):
+    """Helper function to get data over http(s) or from a local file"""
+    if urllib_parse.urlparse(url).scheme in ('http', 'https'):
         resp = urllib_request.urlopen(url)
         encoding = resp.headers.get('content-encoding', 'plain')
         data = resp.read()

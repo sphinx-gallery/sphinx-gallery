@@ -107,8 +107,8 @@ dictionary within your Sphinx ``conf.py`` file :
                 'sphinx_gallery': None,
 
                 # External python modules use their documentation websites
-                'matplotlib': 'http://matplotlib.org',
-                'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'}
+                'matplotlib': 'https://matplotlib.org',
+                'numpy': 'https://docs.scipy.org/doc/numpy-1.9.1'}
         }
 
 
