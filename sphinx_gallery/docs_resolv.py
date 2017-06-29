@@ -198,16 +198,17 @@ class SphinxDocLinkResolver(object):
 
         self.extra_modules_test = extra_modules_test
         self._page_cache = {}
-        if doc_url.startswith('http://'):
+        if doc_url.startswith(('http://', 'https://')):
             if relative:
                 raise ValueError('Relative links are only supported for local '
-                                 'URLs (doc_url cannot start with "http://)"')
+                                 'URLs (doc_url cannot be absolute)')
             searchindex_url = doc_url + '/' + searchindex
         else:
             searchindex_url = os.path.join(doc_url, searchindex)
 
         # detect if we are using relative links on a Windows system
-        if os.name.lower() == 'nt' and not doc_url.startswith('http://'):
+        if (os.name.lower() == 'nt' and
+                not doc_url.startswith(('http://', 'https://'))):
             if not relative:
                 raise ValueError('You have to use relative=True for the local'
                                  ' package on a Windows system.')
