@@ -426,6 +426,7 @@ def execute_code_block(src_file, code_block, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
+    fig_num = 0
     stdout = ''
 
     # If example is not suitable to run, skip executing its blocks
@@ -438,46 +439,47 @@ def execute_code_block(src_file, code_block, example_globals,
     orig_stdout = sys.stdout
     src_file = block_vars['src_file']
 
-    try:
-        # First cd in the original example dir, so that any file
-        # created by the example get created in this directory
-        os.chdir(os.path.dirname(src_file))
-        sys.stdout = my_stdout = MixedEncodingStringIO()
+    # First cd in the original example dir, so that any file
+    # created by the example get created in this directory
+    my_stdout = MixedEncodingStringIO()
+    os.chdir(os.path.dirname(src_file))
+    sys.stdout = my_stdout
 
+    try:
         t_start = time()
         # don't use unicode_literals at the top of this file or you get
         # nasty errors here on Py2.7
         exec(code_block, example_globals)
         time_elapsed = time() - t_start
 
+    except Exception:
         sys.stdout = orig_stdout
+        formatted_exception = traceback.format_exc()
+
+        logger.warning('%s failed to execute correctly:%s', src_file,
+                       formatted_exception)
+
+        images_rst = codestr2rst(formatted_exception, lang='pytb')
+
+        # Breaks build on first example error
+        if gallery_conf['abort_on_example_error']:
+            raise
+        # Stores failing file
+        gallery_conf['failing_examples'][src_file] = formatted_exception
+        block_vars['execute_script'] = False
+
+    else:
+        sys.stdout = orig_stdout
+        os.chdir(cwd)
 
         my_stdout = my_stdout.getvalue().strip().expandtabs()
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
             logger.verbose('Output from %s', src_file, color='brown')
             logger.verbose(my_stdout)
-        os.chdir(cwd)
         images_rst, fig_num = save_figures(block_vars['image_path'],
-                                           block_vars['fig_count'], gallery_conf)
-
-    except Exception:
-        formatted_exception = traceback.format_exc()
-
-        logger.warning('%s failed to execute correctly:%s', src_file,
-                       formatted_exception)
-
-        fig_num = 0
-        images_rst = codestr2rst(formatted_exception, lang='pytb')
-
-        # Breaks build on first example error
-        # XXX This check can break during testing e.g. if you uncomment the
-        # `raise RuntimeError` by the `my_stdout` call, maybe use `.get()`?
-        if gallery_conf['abort_on_example_error']:
-            raise
-        # Stores failing file
-        gallery_conf['failing_examples'][src_file] = formatted_exception
-        block_vars['execute_script'] = False
+                                           block_vars['fig_count'],
+                                           gallery_conf)
 
     finally:
         os.chdir(cwd)
