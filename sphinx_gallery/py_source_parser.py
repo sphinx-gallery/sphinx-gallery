@@ -78,19 +78,20 @@ def split_code_and_text_blocks(source_file):
     pattern = re.compile(
         r'(?P<header_line>^#{20,}.*)\s(?P<text_content>(?:^#.*\s)*)',
         flags=re.M)
+    sub_pat = re.compile('^#', flags=re.M)
 
     pos_so_far = 0
     for match in re.finditer(pattern, rest_of_content):
-        match_start_pos, match_end_pos = match.span()
-        code_block_content = rest_of_content[pos_so_far:match_start_pos]
-        text_content = match.group('text_content')
-        sub_pat = re.compile('^#', flags=re.M)
-        text_block_content = dedent(re.sub(sub_pat, '', text_content)).lstrip()
+        code_block_content = rest_of_content[pos_so_far:match.start()]
         if code_block_content.strip():
             blocks.append(('code', code_block_content))
+
+        text_content = match.group('text_content')
+        text_block_content = dedent(re.sub(sub_pat, '', text_content)).lstrip()
         if text_block_content.strip():
             blocks.append(('text', text_block_content))
-        pos_so_far = match_end_pos
+
+        pos_so_far = match.end()
 
     remaining_content = rest_of_content[pos_so_far:]
     if remaining_content.strip():
