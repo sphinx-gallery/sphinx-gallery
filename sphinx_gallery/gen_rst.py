@@ -161,10 +161,8 @@ def extract_thumbnail_number(text):
     return thumbnail_number
 
 
-def extract_intro(filename):
+def extract_intro(filename, docstring):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
-
-    docstring, _, _ = get_docstring_and_rest(filename)
 
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
@@ -393,11 +391,13 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         'Generating gallery for %s ' % build_target_dir,
         length=len(sorted_listdir))
     for fname in iterator:
-        amount_of_code, time_elapsed = generate_file_rst(fname, target_dir,
-                                                         src_dir, gallery_conf)
+        intro, amount_of_code, time_elapsed = generate_file_rst(
+            fname,
+            target_dir,
+            src_dir,
+            gallery_conf)
         computation_times.append((time_elapsed, fname))
         new_fname = os.path.join(src_dir, fname)
-        intro = extract_intro(new_fname)
         this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
 
 .. toctree::
@@ -535,6 +535,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     Returns
     -------
+    intro: str
+        The introduction of the example
     amount_of_code : int
         character count of the corresponding python script in file
     time_elapsed : float
@@ -548,9 +550,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     amount_of_code = sum([len(bcontent)
                           for blabel, bcontent, lineno in script_blocks
                           if blabel == 'code'])
+    intro = extract_intro(fname, script_blocks[0][1])
 
     if md5sum_is_current(example_file):
-        return amount_of_code, 0
+        return intro, amount_of_code, 0
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
@@ -645,4 +648,4 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     if block_vars['execute_script']:
         logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
 
-    return amount_of_code, time_elapsed
+    return intro, amount_of_code, time_elapsed

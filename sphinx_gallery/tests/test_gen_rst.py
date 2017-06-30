@@ -105,12 +105,7 @@ def test_codestr2rst():
 
 
 def test_extract_intro():
-    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
-        f.write('\n'.join(CONTENT).encode('utf-8'))
-    try:
-        result = sg.extract_intro(f.name)
-    finally:
-        os.remove(f.name)
+    result = sg.extract_intro('<string>', '\n'.join(CONTENT[1:9]))
     assert 'Docstring' not in result
     assert result == 'This is the description of the example which goes on and on, Óscar'  # noqa
     assert 'second paragraph' not in result
