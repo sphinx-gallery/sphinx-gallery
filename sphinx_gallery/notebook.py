@@ -187,7 +187,7 @@ def python_to_jupyter_cli(args=None, namespace=None):
     args = parser.parse_args(args, namespace)
 
     for src_file in args.python_src_file:
-        blocks = split_code_and_text_blocks(src_file)
+        file_conf, blocks = split_code_and_text_blocks(src_file)
         print('Converting {0}'.format(src_file))
         example_nb = jupyter_notebook(blocks)
         save_notebook(example_nb, src_file.replace('.py', '.ipynb'))

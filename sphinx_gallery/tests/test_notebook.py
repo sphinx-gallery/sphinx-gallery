@@ -80,7 +80,7 @@ For more details on interpolation see the page `channel_interpolation`.
 
 def test_jupyter_notebook():
     """Test that written ipython notebook file corresponds to python object"""
-    blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+    file_conf, blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
     example_nb = jupyter_notebook(blocks)
 
     with tempfile.NamedTemporaryFile('w', delete=False) as f:

@@ -75,8 +75,7 @@ from . import glr_path_static
 from . import sphinx_compatibility
 from .backreferences import write_backreferences, _thumbnail_div
 from .downloads import CODE_DOWNLOAD
-from .py_source_parser import (get_docstring_and_rest,
-                               split_code_and_text_blocks)
+from .py_source_parser import split_code_and_text_blocks
 
 from .notebook import jupyter_notebook, save_notebook
 
@@ -141,24 +140,6 @@ def codestr2rst(codestr, lang='python'):
     code_directive = "\n.. code-block:: {0}\n\n".format(lang)
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
-
-
-def extract_thumbnail_number(text):
-    """ Pull out the thumbnail image number specified in the docstring. """
-
-    # check whether the user has specified a specific thumbnail image
-    pattr = re.compile(
-        r"^\s*#\s*sphinx_gallery_thumbnail_number\s*=\s*([0-9]+)\s*$",
-        flags=re.MULTILINE)
-    match = pattr.search(text)
-
-    if match is None:
-        # by default, use the first figure created
-        thumbnail_number = 1
-    else:
-        thumbnail_number = int(match.groups()[0])
-
-    return thumbnail_number
 
 
 def extract_intro(filename, docstring):
@@ -340,11 +321,13 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                 'Install optipng to reduce the size of the generated images')
 
 
-def save_thumbnail(image_path_template, src_file, gallery_conf):
+def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
     """Save the thumbnail image"""
     # read specification of the figure to display as thumbnail from main text
-    _, content, _ = get_docstring_and_rest(src_file)
-    thumbnail_number = extract_thumbnail_number(content)
+    thumbnail_number = file_conf.get('thumbnail_number', 1)
+    if not isinstance(thumbnail_number, int):
+        raise TypeError(
+            'sphinx_gallery_thumbnail_number setting is not a number.')
     thumbnail_image_path = image_path_template.format(thumbnail_number)
 
     thumb_dir = os.path.join(os.path.dirname(thumbnail_image_path), 'thumb')
@@ -546,7 +529,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
-    script_blocks = split_code_and_text_blocks(src_file)
+    file_conf, script_blocks = split_code_and_text_blocks(src_file)
     amount_of_code = sum([len(bcontent)
                           for blabel, bcontent, lineno in script_blocks
                           if blabel == 'code'])
@@ -630,7 +613,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(example_file))
 
-    save_thumbnail(image_path_template, src_file, gallery_conf)
+    save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb = jupyter_notebook(script_blocks)
