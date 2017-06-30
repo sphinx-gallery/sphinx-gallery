@@ -318,6 +318,29 @@ configuration file to have it as a default. The highest precedence is
 always given to the `-D` flag of the ``sphinx-build`` command.
 
 
+Adding line numbers to example listings
+=======================================
+
+Line numbers can be displayed in listings by adding the global ``line_numbers``
+setting:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        'line_numbers': True
+    }
+
+or by adding a comment to the example script, which overrides any global
+setting:
+
+.. code-block:: python
+
+    # sphinx_gallery_line_numbers = True
+
+Note that for Sphinx < 1.3, the line numbers will not be consistent with the
+original file.
+
+
 Dealing with failing Gallery example scripts
 ============================================
 
