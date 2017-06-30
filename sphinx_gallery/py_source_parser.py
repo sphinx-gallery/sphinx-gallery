@@ -64,17 +64,45 @@ def get_docstring_and_rest(filename):
                          .format(filename))
 
 
+def extract_file_config(content):
+    """
+    Pull out the file-specific config specified in the docstring.
+    """
+
+    prop_pat = re.compile(
+        r"^\s*#\s*sphinx_gallery_([A-Za-z0-9_]+)\s*=\s*(.+)\s*$",
+        re.MULTILINE)
+    file_conf = {}
+    for match in re.finditer(prop_pat, content):
+        name = match.group(1)
+        value = match.group(2)
+        try:
+            value = ast.literal_eval(value)
+        except (SyntaxError, ValueError):
+            logger.warning(
+                'Sphinx-gallery option %s was passed invalid value %s',
+                name, value)
+        else:
+            file_conf[name] = value
+    return file_conf
+
+
 def split_code_and_text_blocks(source_file):
     """Return list with source file separated into code and text blocks.
 
     Returns
     -------
+    file_conf : dict
+        File-specific settings given in comments as:
+        # sphinx_gallery_<name> = <value>
     blocks : list of (label, content)
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
     """
     docstring, rest_of_content, lineno = get_docstring_and_rest(source_file)
     blocks = [('text', docstring, 1)]
+
+    file_conf = extract_file_config(rest_of_content)
 
     pattern = re.compile(
         r'(?P<header_line>^#{20,}.*)\s(?P<text_content>(?:^#.*\s)*)',
@@ -101,4 +129,4 @@ def split_code_and_text_blocks(source_file):
     if remaining_content.strip():
         blocks.append(('code', remaining_content, lineno))
 
-    return blocks
+    return file_conf, blocks

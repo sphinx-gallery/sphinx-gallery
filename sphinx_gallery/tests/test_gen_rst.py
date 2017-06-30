@@ -54,8 +54,10 @@ CONTENT = [
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split"""
 
-    blocks = sg.split_code_and_text_blocks('examples/no_output/just_code.py')
+    file_conf, blocks = sg.split_code_and_text_blocks(
+        'examples/no_output/just_code.py')
 
+    assert file_conf == {}
     assert blocks[0][0] == 'text'
     assert blocks[1][0] == 'code'
 
@@ -66,8 +68,10 @@ def test_bug_cases_of_notebook_syntax():
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
-        blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+        file_conf, blocks = sg.split_code_and_text_blocks(
+            'tutorials/plot_parse.py')
 
+        assert file_conf == {}
         assert blocks == ref_blocks
 
 
@@ -81,10 +85,11 @@ def test_direct_comment_after_docstring():
                            'x, y = 1, 2',
                            '']))
     try:
-        result = sg.split_code_and_text_blocks(f.name)
+        file_conf, result = sg.split_code_and_text_blocks(f.name)
     finally:
         os.remove(f.name)
 
+    assert file_conf == {}
     expected_result = [
         ('text', 'Docstring', 1),
         ('code', '\n'.join(['# and now comes the module code',
@@ -217,21 +222,21 @@ def test_pattern_matching(gallery_conf, log_collector):
             assert code_output not in rst
 
 
-def test_thumbnail_number():
+@pytest.mark.parametrize('test_str', [
+    '# sphinx_gallery_thumbnail_number= 2',
+    '# sphinx_gallery_thumbnail_number=2',
+    '#sphinx_gallery_thumbnail_number = 2',
+    '    # sphinx_gallery_thumbnail_number=2'])
+def test_thumbnail_number(test_str):
     # which plot to show as the thumbnail image
-    for test_str in ['# sphinx_gallery_thumbnail_number= 2',
-                     '# sphinx_gallery_thumbnail_number=2',
-                     '#sphinx_gallery_thumbnail_number = 2',
-                     '    # sphinx_gallery_thumbnail_number=2']:
-        with tempfile.NamedTemporaryFile('w', delete=False) as f:
-            f.write('\n'.join(['"Docstring"',
-                               test_str]))
-        try:
-            _, content, _ = sg.get_docstring_and_rest(f.name)
-        finally:
-            os.remove(f.name)
-        thumbnail_number = sg.extract_thumbnail_number(content)
-        assert thumbnail_number == 2
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+        f.write('\n'.join(['"Docstring"',
+                           test_str]))
+    try:
+        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
+    finally:
+        os.remove(f.name)
+    assert file_conf == {'thumbnail_number': 2}
 
 
 def test_save_figures(gallery_conf):
