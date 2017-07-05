@@ -246,7 +246,7 @@ class SphinxDocLinkResolver(object):
             # built with < 1.5 or >= 1.5 regardless of what we're currently
             # building with, so let's just check both :(
             fnames = [fname + '.html', os.path.splitext(fname)[0] + '.html']
-            for fname in fnames:
+            for i, fname in enumerate(fnames):
                 try:
                     if self._is_windows:
                         fname = fname.replace('/', '\\')
@@ -260,11 +260,10 @@ class SphinxDocLinkResolver(object):
                         html = get_data(link, self.gallery_dir)
                         self._page_cache[link] = html
                 except (HTTPError, URLError, IOError):
-                    pass
+                    if i == len(fnames) - 1:
+                        raise
                 else:
                     break
-            else:
-                raise
 
             # test if cobj appears in page
             comb_names = [cobj['module_short'] + '.' + cobj['name']]
