@@ -71,6 +71,11 @@ To install everything do::
     $ pip install -r requirements.txt
     $ python setup.py develop
 
+In addition, you will need the following dependencies to build the
+documentation:
+
+* Scipy
+* Seaborn
 
 .. _set_up_your_project:
 
