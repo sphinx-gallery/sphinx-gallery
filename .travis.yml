@@ -69,4 +69,4 @@ script:
     - pytest sphinx_gallery
     - cd doc
     - make html-noplot
-    - make html
+    - make html -j 2
