@@ -36,6 +36,5 @@ deployment:
   staging:
     branch:
       - master
-      - push_doc
     commands:
         - ./docs_deploy.sh rtd_html
