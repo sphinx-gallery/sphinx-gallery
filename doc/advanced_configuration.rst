@@ -103,9 +103,9 @@ with subsections. To specify their order explicitly in the gallery we
 import :class:`sphinx_gallery.sorting.ExplicitOrder` and initialize it with
 the list of all subfolders with their paths relative to `conf.py` in the
 order you prefer them to appear. Keep in mind that we use a single sort key
-for all the galleries that are build, thus we include the prefix of each
+for all the galleries that are built, thus we include the prefix of each
 gallery in the corresponding subsection folders. One does not define a
-sortkey per gallery. You can use Linux paths, and if you documentation is
+sortkey per gallery. You can use Linux paths, and if your documentation is
 built in a Windows system, paths will be transformed to work accordingly,
 the converse does not hold.
 
