@@ -73,7 +73,6 @@ def clean_gallery_out(build_dir):
 
 def parse_config(app):
     """Process the Sphinx Gallery configuration"""
-    # TODO: Test this behavior.
     try:
         plot_gallery = eval(app.builder.config.plot_gallery)
     except TypeError:
