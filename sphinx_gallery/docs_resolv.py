@@ -17,13 +17,15 @@ import sys
 # Try Python 2 first, otherwise load from Python 3
 try:
     import cPickle as pickle
-    import urllib2 as urllib
-    from urllib2 import HTTPError, URLError
 except ImportError:
     import pickle
-    import urllib.request
-    import urllib.error
-    import urllib.parse
+try:
+    import urllib2 as urllib_request
+    from urllib2 import HTTPError, URLError
+    import urlparse as urllib_parse
+except ImportError:
+    import urllib.request as urllib_request
+    import urllib.parse as urllib_parse
     from urllib.error import HTTPError, URLError
 
 from io import StringIO
@@ -35,15 +37,10 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def _get_data(url):
-    """Helper function to get data over http or from a local file"""
-    if url.startswith('http://'):
-        # Try Python 2, use Python 3 on exception
-        try:
-            resp = urllib.urlopen(url)
-            encoding = resp.headers.dict.get('content-encoding', 'plain')
-        except AttributeError:
-            resp = urllib.request.urlopen(url)
-            encoding = resp.headers.get('content-encoding', 'plain')
+    """Helper function to get data over http(s) or from a local file"""
+    if urllib_parse.urlparse(url).scheme in ('http', 'https'):
+        resp = urllib_request.urlopen(url)
+        encoding = resp.headers.get('content-encoding', 'plain')
         data = resp.read()
         if encoding == 'plain':
             data = data.decode('utf-8')
@@ -201,16 +198,17 @@ class SphinxDocLinkResolver(object):
 
         self.extra_modules_test = extra_modules_test
         self._page_cache = {}
-        if doc_url.startswith('http://'):
+        if doc_url.startswith(('http://', 'https://')):
             if relative:
                 raise ValueError('Relative links are only supported for local '
-                                 'URLs (doc_url cannot start with "http://)"')
+                                 'URLs (doc_url cannot be absolute)')
             searchindex_url = doc_url + '/' + searchindex
         else:
             searchindex_url = os.path.join(doc_url, searchindex)
 
         # detect if we are using relative links on a Windows system
-        if os.name.lower() == 'nt' and not doc_url.startswith('http://'):
+        if (os.name.lower() == 'nt' and
+                not doc_url.startswith(('http://', 'https://'))):
             if not relative:
                 raise ValueError('You have to use relative=True for the local'
                                  ' package on a Windows system.')

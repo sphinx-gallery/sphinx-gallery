@@ -55,7 +55,7 @@ def clean_gallery_out(build_dir):
     #  the docs, the number of images in the directory grows.
     #
     # This question has been asked on the sphinx development list, but there
-    #  was no response: http://osdir.com/ml/sphinx-dev/2011-02/msg00123.html
+    #  was no response: https://git.net/ml/sphinx-dev/2011-02/msg00123.html
     #
     # The following is a hack that prevents this behavior by clearing the
     #  image build directory from gallery images each time the docs are built.
