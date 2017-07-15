@@ -178,9 +178,8 @@ def test_fail_example(gallery_conf, log_collector):
             raise ValueError('Did not stop executing script after error')
 
 
-def test_gen_dir_rst(fakesphinxapp):
+def test_gen_dir_rst(gallery_conf, fakesphinxapp):
     """Test gen_dir_rst."""
-    gallery_conf = build_test_configuration()
     print(os.listdir(gallery_conf['examples_dir']))
     args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
             gallery_conf, [])

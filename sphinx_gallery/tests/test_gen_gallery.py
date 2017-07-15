@@ -18,58 +18,65 @@ from sphinx_gallery import sphinx_compatibility
 
 
 @pytest.fixture
-def tmpdir():
-    tempdir = tempfile.mkdtemp()
-    print('test tempdir in:', tempdir)
-    return tempdir
+def conf_file(request):
+    env = request.node.get_marker('conf_file')
+    kwargs = env.kwargs if env else {}
+    result = {
+        'content': "",
+    }
+    result.update(kwargs)
+
+    return result
 
 
-def test_default_config(tmpdir):
-    """Test the default Sphinx-Gallery configuration is loaded
+@pytest.fixture
+def tempdir():
+    """
+    temporary directory that wrapped with `path` class.
+    this fixture is for compat with old test implementation.
+    """
+    return tempfile.mkdtemp()
 
-    if only the extension is added to Sphinx"""
 
+@pytest.fixture
+def config_app(tempdir, conf_file):
     _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
-    srcdir = os.path.join(tmpdir, "config_test")
-
+    srcdir = os.path.join(tempdir, "config_test")
     shutil.copytree(_fixturedir, srcdir)
     shutil.copytree(os.path.join(_fixturedir, "src"),
-                    os.path.join(tmpdir, "examples"))
+                    os.path.join(tempdir, "examples"))
+
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
-        conffile.write("""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'""")
+        conffile.write(conf_file['content'])
 
     app = Sphinx(srcdir, srcdir, os.path.join(srcdir, "_build"),
                  os.path.join(srcdir, "_build", "toctree"),
                  "html", warning=MixedEncodingStringIO())
 
     sphinx_compatibility._app = app
+    return app
 
-    cfg = app.config
+
+@pytest.mark.conf_file(content="""
+import os
+import sphinx_gallery
+extensions = ['sphinx_gallery.gen_gallery']
+# General information about the project.
+project = u'Sphinx-Gallery <Tests>'""")
+def test_default_config(config_app):
+    """Test the default Sphinx-Gallery configuration is loaded
+
+    if only the extension is added to Sphinx"""
+
+    cfg = config_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     # no duplicate values allowed The config is present already
     with pytest.raises(ExtensionError) as excinfo:
-        app.add_config_value('sphinx_gallery_conf', 'x', True)
+        config_app.add_config_value('sphinx_gallery_conf', 'x', True)
     assert 'already present' in str(excinfo.value)
 
 
-def test_config_old_backreferences_conf(tmpdir):
-    """Testing Deprecation warning message against old backreference config
-
-    In this case the user is required to update the mod_example_dir config
-    variable Sphinx-Gallery should notify the user and also silently update
-    the old config to the new one. """
-
-    _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
-    srcdir = os.path.join(tmpdir, "config_test")
-
-    shutil.copytree(_fixturedir, srcdir)
-    with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
-        conffile.write("""
+@pytest.mark.conf_file(content="""
 import os
 import sphinx_gallery
 extensions = ['sphinx_gallery.gen_gallery']
@@ -81,16 +88,18 @@ sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
 }""")
-    app = Sphinx(srcdir, srcdir, os.path.join(srcdir, "_build"),
-                 os.path.join(srcdir, "_build", "toctree"),
-                 "html", warning=MixedEncodingStringIO())
-    sphinx_compatibility._app = app
+def test_config_old_backreferences_conf(config_app):
+    """Testing Deprecation warning message against old backreference config
 
-    cfg = app.config
+    In this case the user is required to update the mod_example_dir config
+    variable Sphinx-Gallery should notify the user and also silently update
+    the old config to the new one. """
+
+    cfg = config_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
         'modules', 'gen')
-    build_warn = app._warning.getvalue()
+    build_warn = config_app._warning.getvalue()
 
     assert "WARNING:" in build_warn
     assert "Old configuration" in build_warn
@@ -100,21 +109,8 @@ sphinx_gallery_conf = {
     assert "'backreferences_dir': False" not in build_warn
 
 
-def test_config_unset_backreferences(tmpdir):
-    """Testing Deprecation warning message against unset backreference config
-
-    In this case the user is notified to update the set the
-    backreferences_dir config variable if such feature is to be enabled or
-    otherwise to deactivate the feature. Sphinx-Gallery should notify the
-    user and also silently setup the old default config value into the new
-    config style. """
-
-    _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
-    srcdir = os.path.join(tmpdir, "config_test")
-
-    shutil.copytree(_fixturedir, srcdir)
-    with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
-        conffile.write("""
+@pytest.mark.conf_file(content="""
+import os
 import sphinx_gallery
 extensions = ['sphinx_gallery.gen_gallery']
 # General information about the project.
@@ -124,14 +120,20 @@ sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
 }""")
-    app = Sphinx(srcdir, srcdir, os.path.join(srcdir, "_build"),
-                 os.path.join(srcdir, "_build", "toctree"),
-                 "html", warning=MixedEncodingStringIO())
-    cfg = app.config
+def test_config_unset_backreferences(config_app):
+    """Testing Deprecation warning message against unset backreference config
+
+    In this case the user is notified to update the set the
+    backreferences_dir config variable if such feature is to be enabled or
+    otherwise to deactivate the feature. Sphinx-Gallery should notify the
+    user and also silently setup the old default config value into the new
+    config style. """
+
+    cfg = config_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
         'modules', 'generated')
-    build_warn = app._warning.getvalue()
+    build_warn = config_app._warning.getvalue()
 
     assert "Gallery now requires" in build_warn
     assert "'backreferences_dir': False" in build_warn
@@ -139,15 +141,7 @@ sphinx_gallery_conf = {
     assert "mod_example_dir" not in build_warn
 
 
-def test_config_backreferences(tmpdir):
-    """Test no warning is issued under the new configuration"""
-
-    _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
-    srcdir = os.path.join(tmpdir, "config_test")
-
-    shutil.copytree(_fixturedir, srcdir)
-    with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
-        conffile.write("""
+@pytest.mark.conf_file(content="""
 import os
 import sphinx_gallery
 extensions = ['sphinx_gallery.gen_gallery']
@@ -159,15 +153,12 @@ sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
 }""")
+def test_config_backreferences(config_app):
+    """Test no warning is issued under the new configuration"""
 
-    app = Sphinx(srcdir, srcdir, os.path.join(srcdir, "_build"),
-                 os.path.join(srcdir, "_build", "toctree"),
-                 "html", warning=MixedEncodingStringIO())
-
-    sphinx_compatibility._app = app
-    cfg = app.config
+    cfg = config_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
         'gen_modules', 'backreferences')
-    build_warn = app._warning.getvalue()
+    build_warn = config_app._warning.getvalue()
     assert build_warn == ""
