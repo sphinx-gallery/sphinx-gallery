@@ -157,6 +157,7 @@ def setup(app):
 # pixels large.
 #html_favicon = None
 
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -299,6 +300,7 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/', None),
 }
 
+from sphinx_gallery.sorting import ExplicitOrder
 examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
@@ -325,6 +327,10 @@ sphinx_gallery_conf = {
         'numpy': 'https://docs.scipy.org/doc/numpy-1.9.1'},
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
+    'subsection_order': ExplicitOrder(['../examples/sin_func',
+                                       '../examples/no_output',
+                                       '../tutorials/seaborn']),
     'find_mayavi_figures': find_mayavi_figures,
-    'expected_failing_examples': ['../examples/plot_raise.py', '../examples/plot_syntaxerror.py']
+    'expected_failing_examples': ['../examples/no_output/plot_raise.py',
+                                  '../examples/no_output/plot_syntaxerror.py']
 }

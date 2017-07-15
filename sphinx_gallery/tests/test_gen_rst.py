@@ -54,7 +54,7 @@ CONTENT = [
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split"""
 
-    blocks = sg.split_code_and_text_blocks('examples/just_code.py')
+    blocks = sg.split_code_and_text_blocks('examples/no_output/just_code.py')
 
     assert blocks[0][0] == 'text'
     assert blocks[1][0] == 'code'
@@ -181,13 +181,11 @@ def test_fail_example(gallery_conf, log_collector):
 def test_gen_dir_rst(gallery_conf, fakesphinxapp):
     """Test gen_dir_rst."""
     print(os.listdir(gallery_conf['examples_dir']))
-    args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
-            gallery_conf, [])
-    out = generate_dir_rst(*args)
-    assert out[0] == ""
     fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
     with open(fname_readme, 'wb') as fid:
         fid.write(u"Testing\n=======\n\nÓscar here.".encode('utf-8'))
+    args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
+            gallery_conf, [])
     out = generate_dir_rst(*args)
     assert u"Óscar here" in out[0]
 
@@ -319,6 +317,8 @@ def test_figure_rst():
     single_image = sg.SINGLE_IMAGE % "third.png"
     assert image_rst == single_image
     assert fig_num == 1
+
+
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice
 # TODO: test that examples are executed after a no-plot and produce

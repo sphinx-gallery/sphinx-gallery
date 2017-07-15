@@ -373,10 +373,6 @@ def save_thumbnail(image_path_template, src_file, gallery_conf):
 
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
-    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        logger.warning('Skipping example directory without a README.txt file',
-                       location=src_dir)
-        return "", []  # because string is an expected return type
 
     with codecs.open(os.path.join(src_dir, 'README.txt'), 'r',
                      encoding='utf-8') as fid:

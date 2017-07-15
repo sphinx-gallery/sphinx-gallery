@@ -137,18 +137,18 @@ The structure of the examples folder
 There are some extra instructions on how to present your examples to Sphinx-Gallery.
 
 * A mandatory ``README.txt`` file with rst syntax to introduce your gallery
-* ``plot_examples.py`` files. Python scripts that have to be executed
+* ``plot_examples.py`` files: Python scripts that have to be executed
   and output a plot that will be presented in your gallery
-* ``examples.py`` files. Python scripts that will not be executed but will be presented
-  in the gallery
+* ``examples.py`` files: Python scripts that will not be executed but will
+  be presented in the gallery
 
 All the Python scripts in the examples folder need to have a docstring. Written
 in rst syntax as it is used in the generated file for the example gallery.
 
 You can have sub-folders in your ``examples`` directory, those will be
-recursively scanned by the gallery extension and presented in the
-gallery, as long as they also have a ``README.txt`` file. Sub-folders
-have to respect the same structure examples folder.
+processed by the gallery extension and presented in the gallery, as long as
+they also have a ``README.txt`` file. Sub-folders have to respect the same
+structure examples folder.
 
 If these instructions are not clear enough, this package uses itself, to generated
 its own example gallery. So check the directory structure and the contents of the
