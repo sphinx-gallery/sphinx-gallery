@@ -24,6 +24,8 @@ cd sphinx-gallery.github.io/
 # copy over or recompile the new site
 git rm -rf .
 cp -a "../${siteSource}/." .
+# github nojekyll
+touch .nojekyll
 
 # stage any changes and new files
 git add -A

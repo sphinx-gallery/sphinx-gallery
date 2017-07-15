@@ -38,5 +38,4 @@ deployment:
       - master
       - push_doc
     commands:
-        - touch rtd_html/.nojekyll
         - ./docs_deploy.sh rtd_html
