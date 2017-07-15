@@ -300,7 +300,7 @@ intersphinx_mapping = {
     'matplotlib': ('http://matplotlib.org/', None),
 }
 
-from sphinx_gallery.sorting import ExplicitOrderStrict
+from sphinx_gallery.sorting import ExplicitOrder
 examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
@@ -327,9 +327,9 @@ sphinx_gallery_conf = {
         'numpy': 'http://docs.scipy.org/doc/numpy-1.9.1'},
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
-    'subsection_order': ExplicitOrderStrict(['../examples/sin_func',
-                                             '../examples/no_output',
-                                             '../tutorials/seaborn']),
+    'subsection_order': ExplicitOrder(['../examples/sin_func',
+                                       '../examples/no_output',
+                                       '../tutorials/seaborn']),
     'find_mayavi_figures': find_mayavi_figures,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py']

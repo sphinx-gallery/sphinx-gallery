@@ -11,20 +11,20 @@ from __future__ import division, absolute_import, print_function
 import pytest
 
 
-def test_ExplicitOrderStrict_sorting_key():
-    """Test ExplicitOrderStrict"""
-    from sphinx_gallery.sorting import ExplicitOrderStrict
+def test_ExplicitOrder_sorting_key():
+    """Test ExplicitOrder"""
+    from sphinx_gallery.sorting import ExplicitOrder
 
     all_folders = ['e', 'f', 'd', 'c', '01b', 'a']
     explicit_folders = ['f', 'd']
-    key = ExplicitOrderStrict(explicit_folders)
+    key = ExplicitOrder(explicit_folders)
     sorted_folders = sorted(["d", "f"], key=key)
     assert sorted_folders == explicit_folders
 
     # Test fails on wrong input
     with pytest.raises(ValueError) as excinfo:
-        ExplicitOrderStrict('nope')
-    excinfo.match("ExplicitOrderStrict sorting key takes a list")
+        ExplicitOrder('nope')
+    excinfo.match("ExplicitOrder sorting key takes a list")
 
     # Test missing folder
     with pytest.raises(ValueError) as excinfo:

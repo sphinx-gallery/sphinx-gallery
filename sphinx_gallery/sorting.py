@@ -14,17 +14,25 @@ import os
 import types
 
 
-class ExplicitOrderStrict(object):
-    """Sorting key for all galleries sub sections
+class ExplicitOrder(object):
+    """Sorting key for all galleries subsections
+
+    This requires all folders to be listed otherwise an exception is raised
 
     Parameters
     ----------
     ordered_list : list, tuple, types.GeneratorType
-        Hold the paths of each gallery subfolder"""
+        Hold the paths of each galleries' subsections
+
+    Raises
+    ------
+    ValueError
+        Wrong input type or Subgallery path missing
+    """
 
     def __init__(self, ordered_list):
         if not isinstance(ordered_list, (list, tuple, types.GeneratorType)):
-            raise ValueError("ExplicitOrderStrict sorting key takes a list, "
+            raise ValueError("ExplicitOrder sorting key takes a list, "
                              "tuple or Generator, which hold"
                              "the paths of each gallery subfolder")
 
