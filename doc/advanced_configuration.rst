@@ -94,17 +94,20 @@ the order of all subfolders in your galleries.
     sphinx_gallery_conf = {
         'examples_dirs': ['../examples','../tutorials'],
         'subsection_order': ExplicitOrder(['../examples/sin_func',
-                                                 '../examples/no_output',
-                                                 '../tutorials/seaborn']),
+                                           '../examples/no_output',
+                                           '../tutorials/seaborn']),
     }
 
 Here we build 2 main galleries `examples` and `tutorials`, each of them
 with subsections. To specify their order explicitly in the gallery we
-import :class:`sphinx_gallery.sorting.ExplicitOrder` and initialize
-it with the list of all subfolders with their paths relative to `conf.py`
-in the order you prefer them to appear. You can use Linux paths, and if you
-documentation is built in a Windows system, paths will be transformed to
-work accordingly, the converse does not hold.
+import :class:`sphinx_gallery.sorting.ExplicitOrder` and initialize it with
+the list of all subfolders with their paths relative to `conf.py` in the
+order you prefer them to appear. Keep in mind that we use a single sort key
+for all the galleries that are build, thus we include the prefix of each
+gallery in the corresponding subsection folders. One does not define a
+sortkey per gallery. You can use Linux paths, and if you documentation is
+built in a Windows system, paths will be transformed to work accordingly,
+the converse does not hold.
 
 If you so desire you can implement your own sorting key. It will be
 provided the relative paths to `conf.py` of each sub gallery folder.

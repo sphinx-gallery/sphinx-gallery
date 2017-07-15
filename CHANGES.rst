@@ -4,6 +4,15 @@ Change Log
 git master
 ----------
 
+New features
+''''''''''''
+
+* Implement a explicit order sortkey to specify the subsection's order
+  within a gallery. Refer to discussion in
+  `#37 <https://github.com/sphinx-gallery/sphinx-gallery/issues/37>`_,
+  `#233 <https://github.com/sphinx-gallery/sphinx-gallery/pull/233>`_ and
+  `#234 <https://github.com/sphinx-gallery/sphinx-gallery/pull/234>`_
+
 v0.1.11
 -------
 
