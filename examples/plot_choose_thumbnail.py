@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Choosing the thumbnail figure
+ñChoosing the thumbnail figure
 =============================
 
 An example to demonstrate how to choose which figure is displayed as the
@@ -34,6 +34,7 @@ def main():
     plt.ylabel('$-\exp(-x)$')
 
     plt.show()
+
 
 if __name__ == '__main__':
     main()

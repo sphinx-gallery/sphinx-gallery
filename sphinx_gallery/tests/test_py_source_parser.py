@@ -14,7 +14,7 @@ import sphinx_gallery.py_source_parser as sg
 
 def test_get_docstring_and_rest():
 
-    docstring, rest = sg.get_docstring_and_rest(
+    docstring, rest, lineno = sg.get_docstring_and_rest(
         'sphinx_gallery/tests/unicode.sample')
     assert u'Únicode' in docstring
     assert u'heiß' in rest

@@ -64,6 +64,7 @@ def test_backref_thumbnail_div():
 
 def test_identify_names():
     code_str = """
+# ß
 import os
 os
 
@@ -90,3 +91,43 @@ identify_names
     }
 
     assert expected == res
+
+
+def test_identify_names_2():
+    import codecs
+    res = sg.identify_names(codecs.open(
+        'examples/plot_choose_thumbnail.py', 'r', 'utf-8').read())
+    expected = {
+        'os.path.join':
+            {'name': 'join', 'module': 'os.path', 'module_short': 'os.path'},
+        'br.identify_names':
+            {'name': 'identify_names',
+             'module': 'sphinx_gallery.back_references',
+             'module_short': 'sphinx_gallery.back_references'},
+        'identify_names':
+            {'name': 'identify_names',
+             'module': 'sphinx_gallery.back_references',
+             'module_short': 'sphinx_gallery.back_references'}
+    }
+
+    assert expected == res
+
+# sg.scan_used_functions('sphinx_gallery/tests/unicode.sample',
+# {'doc_module': 'numpy'})
+
+# names = sg.identify_names('import ß\nß.help# ós\na=3\nimport os\nos.path')
+# print(names)
+# print(type(names))
+# names = sg.identify_names(u'import a\na.help# ós\na=3\nimport os\nos.path')
+# print(names)
+# print(type(names))
+#
+# print(sg.scan_used_functions(
+    #'../../examples/plot_choose_thumbnail.py', {'doc_module': u'numpy'}))
+# print('\nline\n')
+# import codecs
+# names = sg.identify_names(
+    # codecs.open('../../examples/plot_choose_thumbnail.py', 'r', 'utf-8').read())
+#
+# print(names)
+# print(type(names))
