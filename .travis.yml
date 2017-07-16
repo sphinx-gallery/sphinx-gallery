@@ -33,12 +33,23 @@ matrix:
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6"
     - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="2.7" LOCALE=C
+    - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
+    - os: linux
       dist: trusty
       python: 'nightly'
   allow_failures:
     - python: "nightly"
-
 before_install:
+
+    # Make sure that things work even if the locale is set to C (which effectively means ASCII).
+    # Some of the input rst files have unicode characters and we need to deal with this gracefully.
+    - if [[ $LOCALE == C ]]; then
+        export LC_CTYPE=C;
+        export LC_ALL=C;
+        export LANG=C;
+      fi
     - if [ "$DISTRIB" == "conda" ]; then
          wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
          chmod +x miniconda.sh;
