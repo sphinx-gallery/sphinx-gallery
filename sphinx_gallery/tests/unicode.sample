@@ -1,0 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+Únicode in header
+=================
+
+Uñicode in description
+"""
+
+# Code source: Óscar Nájera
+# License: BSD 3 clause
+a = 'heiß'  # Unicode string
