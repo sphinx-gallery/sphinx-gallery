@@ -9,6 +9,7 @@ Parser for python source files
 from __future__ import division, absolute_import, print_function
 import ast
 import re
+import codecs
 from textwrap import dedent
 
 SYNTAX_ERROR_DOCSTRING = """
@@ -34,7 +35,8 @@ def get_docstring_and_rest(filename):
     # can't use codecs.open(filename, 'r', 'utf-8') here b/c ast doesn't
     # seem to work with unicode strings in Python2.7
     # "SyntaxError: encoding declaration in Unicode string"
-    with open(filename, 'rb') as fid:
+    # with open(filename, 'rb') as fid:
+    with codecs.open(filename, 'r', 'utf-8') as fid:
         content = fid.read()
     # change from Windows format to UNIX for uniformity
     content = content.replace(b'\r\n', b'\n')
