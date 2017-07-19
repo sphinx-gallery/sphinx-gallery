@@ -125,7 +125,7 @@ code snippets within the gallery appear like this
 .. raw:: html
 
     <div class="highlight-python"><div class="highlight"><pre>
-    <span class="n">y</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy-1.9.1/reference/generated/numpy.sin.html#numpy.sin"><span class="n">np</span><span class="o">.</span><span class="n">sin</span></a><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.sin.html#numpy.sin"><span class="n">np</span><span class="o">.</span><span class="n">sin</span></a><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     </pre></div>
     </div>
 
@@ -144,7 +144,7 @@ dictionary within your Sphinx ``conf.py`` file :
 
                 # External python modules use their documentation websites
                 'matplotlib': 'https://matplotlib.org',
-                'numpy': 'https://docs.scipy.org/doc/numpy-1.9.1'}
+                'numpy': 'https://docs.scipy.org/doc/numpy'}
         }
 
 
