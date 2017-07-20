@@ -324,7 +324,7 @@ sphinx_gallery_conf = {
     'reference_url': {
         'sphinx_gallery': None,
         'matplotlib': 'https://matplotlib.org',
-        'numpy': 'https://docs.scipy.org/doc/numpy-1.9.1'},
+        'numpy': 'https://docs.scipy.org/doc/numpy'},
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'subsection_order': ExplicitOrder(['../examples/sin_func',
