@@ -13,6 +13,13 @@ New features
   `#233 <https://github.com/sphinx-gallery/sphinx-gallery/pull/233>`_ and
   `#234 <https://github.com/sphinx-gallery/sphinx-gallery/pull/234>`_
 
+Bug Fixes
+'''''''''
+
+* Reset ``sys.argv`` before running each example. See
+  `#252 <https://github.com/sphinx-gallery/sphinx-gallery/pull/252>`_
+  for more details.
+
 v0.1.11
 -------
 
