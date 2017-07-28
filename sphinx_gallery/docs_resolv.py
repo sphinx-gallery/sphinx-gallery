@@ -131,33 +131,27 @@ class SphinxDocLinkResolver(object):
     ----------
     doc_url : str
         The base URL of the project website.
-    searchindex : str
-        Filename of searchindex, relative to doc_url.
-    extra_modules_test : list of str
-        List of extra module names to test.
     relative : bool
         Return relative links (only useful for links to documentation of this
         package).
     """
 
-    def __init__(self, doc_url, gallery_dir, searchindex='searchindex.js',
-                 extra_modules_test=None, relative=False):
+    def __init__(self, doc_url, gallery_dir, relative=False):
         self.doc_url = doc_url
         self.gallery_dir = gallery_dir
         self.relative = relative
         self._link_cache = {}
 
-        self.extra_modules_test = extra_modules_test
         self._page_cache = {}
         if doc_url.startswith(('http://', 'https://')):
             if relative:
                 raise ValueError('Relative links are only supported for local '
                                  'URLs (doc_url cannot be absolute)')
             index_url = doc_url + '/'
-            searchindex_url = doc_url + '/' + searchindex
+            searchindex_url = doc_url + '/searchindex.js'
         else:
             index_url = os.path.join(doc_url, 'index.html')
-            searchindex_url = os.path.join(doc_url, searchindex)
+            searchindex_url = os.path.join(doc_url, 'searchindex.js')
 
         # detect if we are using relative links on a Windows system
         if (os.name.lower() == 'nt' and
@@ -211,15 +205,9 @@ class SphinxDocLinkResolver(object):
                 self._page_cache[link] = html
 
             # test if cobj appears in page
-            comb_names = [cobj['module_short'] + '.' + cobj['name']]
-            if self.extra_modules_test is not None:
-                for mod in self.extra_modules_test:
-                    comb_names.append(mod + '.' + cobj['name'])
             url = False
-
-            for comb_name in comb_names:
-                if comb_name in html:
-                    url = link + u'#' + comb_name
+            if full_name in html:
+                url = link + u'#' + full_name
             link = url
         else:
             link = False
