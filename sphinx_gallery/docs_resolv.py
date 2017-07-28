@@ -142,7 +142,6 @@ class SphinxDocLinkResolver(object):
         self.relative = relative
         self._link_cache = {}
 
-        self._page_cache = {}
         if doc_url.startswith(('http://', 'https://')):
             if relative:
                 raise ValueError('Relative links are only supported for local '
@@ -174,19 +173,17 @@ class SphinxDocLinkResolver(object):
     def _get_link(self, cobj):
         """Get a valid link, False if not found"""
 
-        fname_idx = None
-        full_name = cobj['module_short'] + '.' + cobj['name']
-        if full_name in self._searchindex['objects']:
-            value = self._searchindex['objects'][full_name]
-            if isinstance(value, dict):
-                value = value[next(iter(value.keys()))]
-            fname_idx = value[0]
-        elif cobj['module_short'] in self._searchindex['objects']:
+        fullname = cobj['module_short'] + '.' + cobj['name']
+        try:
             value = self._searchindex['objects'][cobj['module_short']]
-            if cobj['name'] in value.keys():
-                fname_idx = value[cobj['name']][0]
+            match = value[cobj['name']]
+        except KeyError:
+            link = False
+        else:
+            fname_idx = match[0]
+            objname_idx = str(match[1])
+            anchor = match[3]
 
-        if fname_idx is not None:
             fname = self._searchindex['filenames'][fname_idx]
             # In 1.5+ Sphinx seems to have changed from .rst.html to only
             # .html extension in converted files. Find this from the options.
@@ -198,19 +195,13 @@ class SphinxDocLinkResolver(object):
             else:
                 link = posixpath.join(self.doc_url, fname)
 
-            if link in self._page_cache:
-                html = self._page_cache[link]
-            else:
-                html = get_data(link, self.gallery_dir)
-                self._page_cache[link] = html
+            if anchor == '':
+                anchor = fullname
+            elif anchor == '-':
+                anchor = (self._searchindex['objnames'][objname_idx][1] + '-' +
+                          fullname)
 
-            # test if cobj appears in page
-            url = False
-            if full_name in html:
-                url = link + u'#' + full_name
-            link = url
-        else:
-            link = False
+            link = link + '#' + anchor
 
         return link
 
