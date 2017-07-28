@@ -195,28 +195,20 @@ class SphinxDocLinkResolver(object):
         if fname_idx is not None:
             fname = self._searchindex['filenames'][fname_idx]
             # In 1.5+ Sphinx seems to have changed from .rst.html to only
-            # .html extension in converted files. But URLs could be
-            # built with < 1.5 or >= 1.5 regardless of what we're currently
-            # building with, so let's just check both :(
-            fnames = [fname + '.html', os.path.splitext(fname)[0] + '.html']
-            for i, fname in enumerate(fnames):
-                try:
-                    if self._is_windows:
-                        fname = fname.replace('/', '\\')
-                        link = os.path.join(self.doc_url, fname)
-                    else:
-                        link = posixpath.join(self.doc_url, fname)
+            # .html extension in converted files. Find this from the options.
+            ext = self._docopts.get('FILE_SUFFIX', '.rst.html')
+            fname = os.path.splitext(fname)[0] + ext
+            if self._is_windows:
+                fname = fname.replace('/', '\\')
+                link = os.path.join(self.doc_url, fname)
+            else:
+                link = posixpath.join(self.doc_url, fname)
 
-                    if link in self._page_cache:
-                        html = self._page_cache[link]
-                    else:
-                        html = get_data(link, self.gallery_dir)
-                        self._page_cache[link] = html
-                except (HTTPError, URLError, IOError):
-                    if i == len(fnames) - 1:
-                        raise
-                else:
-                    break
+            if link in self._page_cache:
+                html = self._page_cache[link]
+            else:
+                html = get_data(link, self.gallery_dir)
+                self._page_cache[link] = html
 
             # test if cobj appears in page
             comb_names = [cobj['module_short'] + '.' + cobj['name']]
