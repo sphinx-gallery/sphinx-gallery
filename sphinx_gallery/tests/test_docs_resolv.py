@@ -6,9 +6,12 @@ Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
 import os
-import sphinx_gallery.docs_resolv as sg
 import tempfile
 import sys
+
+import pytest
+
+import sphinx_gallery.docs_resolv as sg
 
 
 def test_shelve():
@@ -33,3 +36,35 @@ def test_shelve():
     if sys.version_info[0] == 2:
         unicode_name = unicode(f.name)
         assert sg.get_data(unicode_name, tmp_cache) == test_string
+
+
+def test_parse_sphinx_docopts():
+    data = '''
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    '''
+    assert sg.parse_sphinx_docopts(data) == {
+        'URL_ROOT': './',
+        'VERSION': '2.0.2',
+        'COLLAPSE_INDEX': False,
+        'FILE_SUFFIX': '.html',
+        'HAS_SOURCE': True,
+        'SOURCELINK_SUFFIX': '.txt'
+    }
+
+    with pytest.raises(ValueError):
+        sg.parse_sphinx_docopts('empty input')
+
+    with pytest.raises(ValueError):
+        sg.parse_sphinx_docopts('DOCUMENTATION_OPTIONS = ')
+
+    with pytest.raises(ValueError):
+        sg.parse_sphinx_docopts('DOCUMENTATION_OPTIONS = {')
