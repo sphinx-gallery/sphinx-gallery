@@ -30,6 +30,8 @@ except ImportError:
 
 from io import StringIO
 
+from sphinx.search import js_index
+
 from . import sphinx_compatibility
 
 
@@ -73,104 +75,6 @@ def get_data(url, gallery_dir):
     search_index.close()
 
     return data
-
-
-def _select_block(str_in, start_tag, end_tag):
-    """Select first block delimited by start_tag and end_tag"""
-    start_pos = str_in.find(start_tag)
-    if start_pos < 0:
-        raise ValueError('start_tag not found')
-    depth = 0
-    for pos in range(start_pos, len(str_in)):
-        if str_in[pos] == start_tag:
-            depth += 1
-        elif str_in[pos] == end_tag:
-            depth -= 1
-
-        if depth == 0:
-            break
-    sel = str_in[start_pos + 1:pos]
-    return sel
-
-
-def _parse_dict_recursive(dict_str):
-    """Parse a dictionary from the search index"""
-    dict_out = dict()
-    pos_last = 0
-    pos = dict_str.find(':')
-    while pos >= 0:
-        key = dict_str[pos_last:pos]
-        if dict_str[pos + 1] == '[':
-            # value is a list
-            pos_tmp = dict_str.find(']', pos + 1)
-            if pos_tmp < 0:
-                raise RuntimeError('error when parsing dict')
-            value = dict_str[pos + 2: pos_tmp].split(',')
-            # try to convert elements to int
-            for i in range(len(value)):
-                try:
-                    value[i] = int(value[i])
-                except ValueError:
-                    pass
-        elif dict_str[pos + 1] == '{':
-            # value is another dictionary
-            subdict_str = _select_block(dict_str[pos:], '{', '}')
-            value = _parse_dict_recursive(subdict_str)
-            pos_tmp = pos + len(subdict_str)
-        else:
-            raise ValueError('error when parsing dict: unknown elem')
-
-        key = key.strip('"')
-        if len(key) > 0:
-            dict_out[key] = value
-
-        pos_last = dict_str.find(',', pos_tmp)
-        if pos_last < 0:
-            break
-        pos_last += 1
-        pos = dict_str.find(':', pos_last)
-
-    return dict_out
-
-
-def parse_sphinx_searchindex(searchindex):
-    """Parse a Sphinx search index
-
-    Parameters
-    ----------
-    searchindex : str
-        The Sphinx search index (contents of searchindex.js)
-
-    Returns
-    -------
-    filenames : list of str
-        The file names parsed from the search index.
-    objects : dict
-        The objects parsed from the search index.
-    """
-    # Make sure searchindex uses UTF-8 encoding
-    if hasattr(searchindex, 'decode'):
-        searchindex = searchindex.decode('UTF-8')
-
-    # parse objects
-    query = 'objects:'
-    pos = searchindex.find(query)
-    if pos < 0:
-        raise ValueError('"objects:" not found in search index')
-
-    sel = _select_block(searchindex[pos:], '{', '}')
-    objects = _parse_dict_recursive(sel)
-
-    # parse filenames
-    query = 'filenames:'
-    pos = searchindex.find(query)
-    if pos < 0:
-        raise ValueError('"filenames:" not found in search index')
-    filenames = searchindex[pos + len(query) + 1:]
-    filenames = filenames[:filenames.find(']')]
-    filenames = [f.strip('"') for f in filenames.split(',')]
-
-    return filenames, objects
 
 
 class SphinxDocLinkResolver(object):
@@ -218,9 +122,7 @@ class SphinxDocLinkResolver(object):
 
         # download and initialize the search index
         sindex = get_data(searchindex_url, gallery_dir)
-        filenames, objects = parse_sphinx_searchindex(sindex)
-
-        self._searchindex = dict(filenames=filenames, objects=objects)
+        self._searchindex = js_index.loads(sindex)
 
     def _get_link(self, cobj):
         """Get a valid link, False if not found"""
