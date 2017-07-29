@@ -31,3 +31,10 @@ general:
     - "doc/_build/html"
     - "rtd_html"
     - "alabaster_html"
+
+deployment:
+  staging:
+    branch:
+      - master
+    commands:
+        - ./docs_deploy.sh rtd_html
