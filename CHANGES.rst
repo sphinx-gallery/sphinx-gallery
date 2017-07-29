@@ -4,6 +4,9 @@ Change Log
 git master
 ----------
 
+v0.1.12
+-------
+
 New features
 ''''''''''''
 
@@ -12,6 +15,10 @@ New features
   `#37 <https://github.com/sphinx-gallery/sphinx-gallery/issues/37>`_,
   `#233 <https://github.com/sphinx-gallery/sphinx-gallery/pull/233>`_ and
   `#234 <https://github.com/sphinx-gallery/sphinx-gallery/pull/234>`_
+* Cleanup console output during build
+  `#250 <https://github.com/sphinx-gallery/sphinx-gallery/pull/250>`_
+* New  configuration Test
+  `#225 <https://github.com/sphinx-gallery/sphinx-gallery/pull/225>`_
 
 Bug Fixes
 '''''''''
@@ -19,6 +26,20 @@ Bug Fixes
 * Reset ``sys.argv`` before running each example. See
   `#252 <https://github.com/sphinx-gallery/sphinx-gallery/pull/252>`_
   for more details.
+* Correctly re-raise errors in doc resolver. See
+  `#264 <https://github.com/sphinx-gallery/sphinx-gallery/pull/264>`_.
+* Allow and use https links where possible
+  `#258 <https://github.com/sphinx-gallery/sphinx-gallery/pull/258>`_.
+* Escape tooltips for any HTML special characters.
+  `#249 <https://github.com/sphinx-gallery/sphinx-gallery/pull/249>`_
+
+Documentation
+'''''''''''''''
+
+* Update link to numpy to point to latest
+  `#271 <https://github.com/sphinx-gallery/sphinx-gallery/pull/271>`_
+* Added documentation dependencies.
+  `#267 <https://github.com/sphinx-gallery/sphinx-gallery/pull/267>`_
 
 v0.1.11
 -------
