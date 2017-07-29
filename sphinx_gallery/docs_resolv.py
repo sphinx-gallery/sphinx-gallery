@@ -266,7 +266,9 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                                                    src_gallery_dir)
 
         except HTTPError as e:
-            logger.warning("The following HTTP Error has occurred: %d", e.code)
+            logger.warning(
+                'The following HTTP Error has occurred fetching %s: %d %s',
+                e.url, e.code, e.msg)
         except URLError as e:
             logger.warning(
                 "Embedding the documentation hyperlinks requires Internet "
