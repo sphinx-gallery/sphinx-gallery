@@ -336,11 +336,13 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                     src_gallery_dir,
                     relative=True)
             else:
-                doc_resolvers[this_module] = SphinxDocLinkResolver(url,
-                                                                   src_gallery_dir)
+                doc_resolvers[this_module] = SphinxDocLinkResolver(
+                    url, src_gallery_dir)
 
         except HTTPError as e:
-            logger.warning("The following HTTP Error has occurred: %d", e.code)
+            logger.warning(
+                "HTTP error %d has occured while trying to resolve %s",
+                e.code, e.filename)
         except URLError as e:
             logger.warning(
                 "Embedding the documentation hyperlinks requires Internet "
