@@ -1,6 +1,5 @@
 .. include:: ../README.rst
 
-
 Know your Gallery files
 =======================
 
@@ -21,16 +20,3 @@ its reference
 ``:ref:`sphx_glr_auto_examples_plot_gallery_version.py```. The image
 it generated has the name ``sphx_glr_plot_gallery_version_thumb.png``
 and its thumbnail is ``sphx_glr_plot_gallery_version_thumb.png``
-
-Disable joint download of all gallery scripts
----------------------------------------------
-
-By default Sphinx-Gallery prepares zip files of all python scripts and
-all Jupyter notebooks for each gallery section and makes them
-available for download at the end of each section. To disable this
-behavior add to the configuration dictionary in your ``conf.py`` file
-
-.. code-block:: python
-
-    sphinx_gallery_conf = {
-	'download_section_examples'  : False}

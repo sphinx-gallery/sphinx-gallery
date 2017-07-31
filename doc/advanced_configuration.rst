@@ -1,28 +1,48 @@
-======================
-Advanced Configuration
-======================
+=============
+Configuration
+=============
 
-Here are the personal configurations that you can modify within Sphinx-Gallery.
+Most sphinx-gallery configuration options are set in the Sphinx ``conf.py``
+file:
+
+- `examples_dirs and gallery_dirs <multiple_galleries_config>`_
+- `filename_pattern <build_pattern>`_
+- `subsection_order <sub_gallery_order>`_
+- `reference_url` <link_to_documentation>`_
+- `backreferences_dir and doc_module <references_to_examples> `_
+- `default_thumb_file <custom_default_thumb>`_
+- `line_numbers <adding_line_numbers>`_
+- `disable_joint_download <download_section_examples>`_
+
+Some options can also be set or overridden on a file-by-file basis:
+
+- adding_line_numbers_
+- without_execution_
+- choosing_thumbnail_
+
+And some options can be set during the build execution step:
+
+- without_execution_
+- dealing_with_failures_
 
 .. _multiple_galleries_config:
 
-Manage Multiple galleries
-=========================
+Managing multiple galleries
+===========================
 
 Sphinx-Gallery only supports up to sub-folder level in its gallery directories.
 This might be a limitation for you. Or you might want to have separate
 galleries for different purposes, an examples gallery and a tutorials gallery.
 For this you use in your Sphinx ``conf.py`` file a list of directories in
-the sphinx configuration dictionary:
-
-.. code-block:: python
+the sphinx configuration dictionary::
 
     sphinx_gallery_conf = {
-        'examples_dirs'   : ['../examples', '../tutorials'],
-        'gallery_dirs'    : ['auto_examples', 'tutorials'],
+        'examples_dirs': ['../examples', '../tutorials'],
+        'gallery_dirs': ['auto_examples', 'tutorials'],
     }
 
 Keep in mind that both lists have to be of the same length.
+
 
 .. _build_pattern:
 
@@ -36,7 +56,7 @@ in your Sphinx ``conf.py``. For example:
 .. code-block:: python
 
     sphinx_gallery_conf = {
-        'filename_pattern'  : '/plot_compute_'
+        'filename_pattern': '/plot_compute_',
     }
 
 will build all examples starting with ``plot_compute_``. The key ``filename_pattern`` accepts
@@ -46,36 +66,31 @@ they want to be agnostic to the operating system.
 
 This option is also useful if you want to build only a subset of the examples. For example, you may
 want to build only one example so that you can link it in the documentation. In that case,
-you would do:
-
-.. code-block:: python
+you would do::
 
     sphinx_gallery_conf = {
-        'filename_pattern' : 'plot_awesome_example.py'
+        'filename_pattern': 'plot_awesome_example.py',
     }
 
 Here, one should escape the dot ``'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
 one is targeting a specific file, it is most certainly going to match the dot in the filename.
 
-Similarly, to build only examples in a specific directory, you can do:
-
-.. code-block:: python
+Similarly, to build only examples in a specific directory, you can do::
 
     sphinx_gallery_conf = {
-        'filename_pattern' : '/directory/plot_'
+        'filename_pattern': '/directory/plot_',
     }
 
 Alternatively, you can skip some examples. For example, to skip building examples
-starting with ``plot_long_examples_``, you would do:
-
-.. code-block:: python
+starting with ``plot_long_examples_``, you would do::
 
     sphinx_gallery_conf = {
-        'filename_pattern' : '/plot_(?!long_examples)'
+        'filename_pattern': '/plot_(?!long_examples)',
     }
 
 As the patterns are parsed as `regular expressions`_, users are advised to consult the
 `regular expressions`_ module for more details.
+
 
 .. _sub_gallery_order:
 
@@ -86,9 +101,7 @@ Gallery subsections are sorted by default alphabetically by their folder
 name, and as such you can always organize them by changing your folder
 names. An alternative option is to use a sortkey to organize those
 subsections. We provide an explicit order sortkey where you have to define
-the order of all subfolders in your galleries.
-
-.. code-block:: python
+the order of all subfolders in your galleries::
 
     from sphinx_gallery.sorting import ExplicitOrder
     sphinx_gallery_conf = {
@@ -133,18 +146,16 @@ Have a look at this in full action
 in our example :ref:`sphx_glr_auto_examples_plot_gallery_version.py`.
 
 To make this work in your documentation you need to include to the configuration
-dictionary within your Sphinx ``conf.py`` file :
-
-.. code-block:: python
+dictionary within your Sphinx ``conf.py`` file::
 
     sphinx_gallery_conf = {
-        'reference_url':  {
+        'reference_url': {
                  # The module you locally document uses a None
                 'sphinx_gallery': None,
 
                 # External python modules use their documentation websites
                 'matplotlib': 'https://matplotlib.org',
-                'numpy': 'https://docs.scipy.org/doc/numpy'}
+                'numpy': 'https://docs.scipy.org/doc/numpy'},
         }
 
 
@@ -165,11 +176,8 @@ looks like this:
         <div style='clear:both'></div>
 
 
-
 For such behavior to be available, you have to activate it in your
-Sphinx-Gallery configuration ``conf.py`` file with:
-
-.. code-block:: python
+Sphinx-Gallery configuration ``conf.py`` file with::
 
     sphinx_gallery_conf = {
         # directory where function granular galleries are stored
@@ -202,16 +210,14 @@ is in the same directory as ``conf.py``) we directly use the path
 declared in ``backreferences_dir`` followed by the function whose
 examples we want to show and the file has the ``.examples`` extension.
 
-Auto documenting your API with links to examples
+Auto-documenting your API with links to examples
 ------------------------------------------------
 
 The previous feature can be automated for all your modules combining
 it with the standard sphinx extensions `autodoc
 <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
 <http://sphinx-doc.org/ext/autosummary.html>`_. First enable them in your
-``conf.py`` extensions list.
-
-.. code-block:: python
+``conf.py`` extensions list::
 
     import sphinx_gallery
     extensions = [
@@ -262,19 +268,58 @@ configuration option setup for Sphinx-Gallery.
     :linenos:
 
 
+.. _custom_default_thumb:
+
 Using a custom default thumbnail image
 ======================================
 
 In case you want to use your own image for the thumbnail of examples that do
 not generate any plot, you can specify it by editing your Sphinx ``conf.py``
 file. You need to add to the configuration dictionary a key called
-`default_thumb_file`. For example:
-
-.. code-block:: python
+`default_thumb_file`. For example::
 
     sphinx_gallery_conf = {
-        'default_thumb_file'     : 'path/to/thumb/file.png'}}
+        'default_thumb_file': 'path/to/thumb/file.png',
+    }
 
+
+.. _adding_line_numbers:
+
+Adding line numbers to example listings
+=======================================
+
+Line numbers can be displayed in listings by adding the global ``line_numbers``
+setting::
+
+    sphinx_gallery_conf = {
+        'line_numbers': True,
+    }
+
+or by adding a comment to the example script, which overrides any global
+setting::
+
+    # sphinx_gallery_line_numbers = True
+
+Note that for Sphinx < 1.3, the line numbers will not be consistent with the
+original file.
+
+
+.. _disable_joint_download:
+
+Disable joint download of all gallery scripts
+=============================================
+
+By default Sphinx-Gallery prepares zip files of all python scripts and
+all Jupyter notebooks for each gallery section and makes them
+available for download at the end of each section. To disable this
+behavior add to the configuration dictionary in your ``conf.py`` file::
+
+    sphinx_gallery_conf = {
+        'download_section_examples': False,
+    }
+
+
+.. _choosing_thumbnail:
 
 Choosing the thumbnail image from multiple figures
 ==================================================
@@ -284,9 +329,7 @@ the first figure created in each as the thumbnail image displayed in the
 gallery. To change the thumbnail image to a figure generated later in
 an example script, add a comment to the example script to specify the
 number of the figure you would like to use as the thumbnail. For example,
-to use the 2nd figure created as the thumbnail:
-
-.. code-block:: python
+to use the 2nd figure created as the thumbnail::
 
     # sphinx_gallery_thumbnail_number = 2
 
@@ -294,8 +337,11 @@ The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
 :ref:`sphx_glr_auto_examples_plot_choose_thumbnail.py` for an example
 of this functionality.
 
-Build the Gallery without executing the examples
-================================================
+
+.. _without_execution:
+
+Building the Gallery without executing the examples
+===================================================
 
 Sphinx-Gallery can parse all your examples and build the gallery
 without executing any of the scripts. This is just for speed
@@ -318,28 +364,7 @@ configuration file to have it as a default. The highest precedence is
 always given to the `-D` flag of the ``sphinx-build`` command.
 
 
-Adding line numbers to example listings
-=======================================
-
-Line numbers can be displayed in listings by adding the global ``line_numbers``
-setting:
-
-.. code-block:: python
-
-    sphinx_gallery_conf = {
-        'line_numbers': True
-    }
-
-or by adding a comment to the example script, which overrides any global
-setting:
-
-.. code-block:: python
-
-    # sphinx_gallery_line_numbers = True
-
-Note that for Sphinx < 1.3, the line numbers will not be consistent with the
-original file.
-
+.. _dealing_with_failures:
 
 Dealing with failing Gallery example scripts
 ============================================

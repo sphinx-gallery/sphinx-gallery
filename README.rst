@@ -1,6 +1,6 @@
-=================================
-Getting Started to Sphinx-Gallery
-=================================
+===================================
+Getting Started with Sphinx-Gallery
+===================================
 
 .. image:: https://travis-ci.org/sphinx-gallery/sphinx-gallery.svg?branch=master
     :target: https://travis-ci.org/sphinx-gallery/sphinx-gallery
