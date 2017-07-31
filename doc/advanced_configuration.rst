@@ -2,28 +2,31 @@
 Configuration
 =============
 
+List of config options
+======================
+
 Most sphinx-gallery configuration options are set in the Sphinx ``conf.py``
 file:
 
-- `examples_dirs and gallery_dirs <multiple_galleries_config>`_
-- `filename_pattern <build_pattern>`_
-- `subsection_order <sub_gallery_order>`_
-- `reference_url` <link_to_documentation>`_
-- `backreferences_dir and doc_module <references_to_examples> `_
-- `default_thumb_file <custom_default_thumb>`_
-- `line_numbers <adding_line_numbers>`_
-- `disable_joint_download <download_section_examples>`_
+- :ref:`examples_dirs and gallery_dirs <multiple_galleries_config>`
+- :ref:`filename_pattern <build_pattern>`
+- :ref:`subsection_order <sub_gallery_order>`
+- :ref:`reference_url <link_to_documentation>`
+- :ref:`backreferences_dir and doc_module <references_to_examples>`
+- :ref:`default_thumb_file <custom_default_thumb>`
+- :ref:`line_numbers <adding_line_numbers>`
+- :ref:`disable_joint_download <download_section_examples>`
 
 Some options can also be set or overridden on a file-by-file basis:
 
-- adding_line_numbers_
-- without_execution_
-- choosing_thumbnail_
+- :ref:`adding_line_numbers`
+- :ref:`without_execution`
+- :ref:`choosing_thumbnail`
 
 And some options can be set during the build execution step:
 
-- without_execution_
-- dealing_with_failures_
+- :ref:`without_execution`
+- :ref:`dealing_with_failures`
 
 .. _multiple_galleries_config:
 
@@ -51,9 +54,7 @@ Building examples matching a pattern
 
 By default, Sphinx-Gallery execute only examples beginning with ``plot``. However,
 if this naming convention does not suit your project, you can modify this pattern
-in your Sphinx ``conf.py``. For example:
-
-.. code-block:: python
+in your Sphinx ``conf.py``. For example::
 
     sphinx_gallery_conf = {
         'filename_pattern': '/plot_compute_',
@@ -94,8 +95,7 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
 
 .. _sub_gallery_order:
 
-Sorting the subsections inside a gallery
-========================================
+Sorting gallery subsections
 
 Gallery subsections are sorted by default alphabetically by their folder
 name, and as such you can always organize them by changing your folder
@@ -161,8 +161,8 @@ dictionary within your Sphinx ``conf.py`` file::
 
 .. _references_to_examples:
 
-References to examples (backreferences)
-=======================================
+Adding references to examples
+=============================
 
 Sphinx-Gallery enables you, when documenting your modules, to
 reference to the examples that use a particular function. For example
@@ -270,8 +270,8 @@ configuration option setup for Sphinx-Gallery.
 
 .. _custom_default_thumb:
 
-Using a custom default thumbnail image
-======================================
+Using a custom default thumbnail
+================================
 
 In case you want to use your own image for the thumbnail of examples that do
 not generate any plot, you can specify it by editing your Sphinx ``conf.py``
@@ -285,8 +285,8 @@ file. You need to add to the configuration dictionary a key called
 
 .. _adding_line_numbers:
 
-Adding line numbers to example listings
-=======================================
+Adding line numbers to examples
+===============================
 
 Line numbers can be displayed in listings by adding the global ``line_numbers``
 setting::
@@ -306,8 +306,8 @@ original file.
 
 .. _disable_joint_download:
 
-Disable joint download of all gallery scripts
-=============================================
+Disabling joint download of scripts
+===================================
 
 By default Sphinx-Gallery prepares zip files of all python scripts and
 all Jupyter notebooks for each gallery section and makes them
@@ -321,8 +321,8 @@ behavior add to the configuration dictionary in your ``conf.py`` file::
 
 .. _choosing_thumbnail:
 
-Choosing the thumbnail image from multiple figures
-==================================================
+Choosing the thumbnail image
+============================
 
 For examples that generate multiple figures, the default behavior will use
 the first figure created in each as the thumbnail image displayed in the
@@ -340,8 +340,8 @@ of this functionality.
 
 .. _without_execution:
 
-Building the Gallery without executing the examples
-===================================================
+Building without executing examples
+===================================
 
 Sphinx-Gallery can parse all your examples and build the gallery
 without executing any of the scripts. This is just for speed
@@ -417,10 +417,7 @@ It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow
 certain examples to fail and still exit with a 0 exit code. For this
 you need to list all the examples you want to allow to fail during
-build. Change your `conf.py` accordingly:
-
-
-.. code-block:: python
+build. Change your `conf.py` accordingly::
 
     sphinx_gallery_conf = {
         ...

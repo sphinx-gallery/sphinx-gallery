@@ -34,11 +34,14 @@ Who uses Sphinx-Gallery
 * `scikit-image <http://scikit-image.org/docs/dev/auto_examples/>`_
 * `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
 * `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
+* `PySurfer <https://pysurfer.github.io/>`_
 
 Getting the package
 ===================
 
-You can do a direct install via pip by using::
+You can do a direct install via pip by using:
+
+.. code-block:: bash
 
     $ pip install sphinx-gallery
 
@@ -64,7 +67,9 @@ You can get the latest development source from our `Github repository
 
 You will also need to install the dependencies listed above and `pytest`
 
-To install everything do::
+To install everything do:
+
+.. code-block:: bash
 
     $ git clone https://github.com/sphinx-gallery/sphinx-gallery
     $ cd sphinx-gallery
@@ -103,9 +108,7 @@ structure you get from executing ``sphinx-quickstart``.
 
 
 To get Sphinx-Gallery into your project we have to extend the Sphinx
-``doc/conf.py`` file with:
-
-.. code-block:: python
+``doc/conf.py`` file with::
 
     extensions = [
         ...
@@ -117,9 +120,7 @@ This is to load Sphinx-Gallery as one of your extensions, the ellipsis
 
 Now to declare your project structure, we add a configuration
 dictionary for Sphinx-Gallery. The examples directory ``../examples``
-is declared with a relative path from the ``conf.py`` file location.
-
-.. code-block:: python
+is declared with a relative path from the ``conf.py`` file location::
 
     sphinx_gallery_conf = {
 	# path to your examples scripts
@@ -157,7 +158,9 @@ files.
 Building the documentation locally
 ----------------------------------
 
-In your sphinx documentation directory, ``doc`` execute::
+In your sphinx documentation directory, ``doc`` execute:
+
+.. code-block:: bash
 
     $ make html
 
@@ -165,7 +168,9 @@ This will start the build of your complete documentation including the examples
 gallery. Once documentation is build, our extension will have generated an ``auto_examples``
 directory and populated it with rst files containing the gallery and each example.
 Sphinx gives this files its regular processing and you can enjoy your
-generated gallery under the same path. That means you will find the gallery in the path::
+generated gallery under the same path. That means you will find the gallery in the path:
+
+.. code-block:: bash
 
     _build/html/auto_examples/index.html
 
@@ -181,7 +186,9 @@ Extending your Makefile
 -----------------------
 Once your gallery is working you might need remove completely all generated files by
 sphinx-gallery to have a clean build, or you might want to build the gallery without
-running the examples files. For this you need to extend your ``Makefile`` with::
+running the examples files. For this you need to extend your ``Makefile`` with:
+
+.. code-block:: bash
 
     clean:
             rm -rf $(BUILDDIR)/*
