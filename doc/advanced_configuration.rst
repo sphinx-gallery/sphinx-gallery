@@ -12,7 +12,7 @@ file:
 - ``filename_pattern`` (:ref:`build_pattern`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``reference_url`` (:ref:`link_to_documentation`)
-- ``backreferences_dir` and ``doc_module`` (:ref:`references_to_examples`)
+- ``backreferences_dir`` and ``doc_module`` (:ref:`references_to_examples`)
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``line_numbers`` (:ref:`adding_line_numbers`)
 - ``download_section_examples`` (:ref:`disable_joint_download`)
@@ -103,6 +103,7 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
 .. _sub_gallery_order:
 
 Sorting gallery subsections
+===========================
 
 Gallery subsections are sorted by default alphabetically by their folder
 name, and as such you can always organize them by changing your folder
@@ -401,7 +402,7 @@ There are some additional options at your hand to deal with broken examples.
 .. _abort_on_first:
 
 Abort build on first fail
-^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------
 
 Sphinx-Gallery provides the early fail option. In
 this mode the gallery build process breaks as soon as an exception
@@ -432,7 +433,7 @@ the ``sphinx-build`` command.
 .. _dont_fail_exit:
 
 Don't fail the build on exit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 
 It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow
@@ -456,7 +457,8 @@ Setting gallery thumbnail size
 ==============================
 
 The gallery uses various CSS classes in the gallery. For example, to use
-images that are at most 250x250px, you can do something like:
+images that are at most 250x250px, you can modify the default CSS
+with something like:
 
 .. code-block:: css
 
