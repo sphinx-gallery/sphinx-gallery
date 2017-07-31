@@ -219,7 +219,7 @@ declared in ``backreferences_dir`` followed by the function whose
 examples we want to show and the file has the ``.examples`` extension.
 
 Auto-documenting your API with links to examples
-------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The previous feature can be automated for all your modules combining
 it with the standard sphinx extensions `autodoc
@@ -402,7 +402,7 @@ There are some additional options at your hand to deal with broken examples.
 .. _abort_on_first:
 
 Abort build on first fail
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sphinx-Gallery provides the early fail option. In
 this mode the gallery build process breaks as soon as an exception
@@ -433,7 +433,7 @@ the ``sphinx-build`` command.
 .. _dont_fail_exit:
 
 Don't fail the build on exit
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow
