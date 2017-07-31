@@ -32,6 +32,7 @@ DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'examples_dirs': os.path.join('..', 'examples'),
     'subsection_order': None,
+    'within_subsection_order': None,
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
     'doc_module': (),
