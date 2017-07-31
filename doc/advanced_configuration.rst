@@ -8,25 +8,32 @@ List of config options
 Most sphinx-gallery configuration options are set in the Sphinx ``conf.py``
 file:
 
-- :ref:`examples_dirs and gallery_dirs <multiple_galleries_config>`
-- :ref:`filename_pattern <build_pattern>`
-- :ref:`subsection_order <sub_gallery_order>`
-- :ref:`reference_url <link_to_documentation>`
-- :ref:`backreferences_dir and doc_module <references_to_examples>`
-- :ref:`default_thumb_file <custom_default_thumb>`
-- :ref:`line_numbers <adding_line_numbers>`
-- :ref:`disable_joint_download <download_section_examples>`
+- ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
+- ``filename_pattern`` (:ref:`build_pattern`)
+- ``subsection_order`` (:ref:`sub_gallery_order`)
+- ``reference_url`` (:ref:`link_to_documentation`)
+- ``backreferences_dir` and ``doc_module`` (:ref:`references_to_examples`)
+- ``default_thumb_file`` (:ref:`custom_default_thumb`)
+- ``line_numbers`` (:ref:`adding_line_numbers`)
+- ``download_section_examples`` (:ref:`disable_joint_download`)
+- ``plot_gallery`` (:ref:`without_execution`)
+- ``abort_on_example_error`` (:ref:`abort_on_first`)
+- ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
-- :ref:`adding_line_numbers`
-- :ref:`without_execution`
-- :ref:`choosing_thumbnail`
+- ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
+- ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
 
-And some options can be set during the build execution step:
+Some options can be set during the build execution step, e.g. using a Makefile:
 
-- :ref:`without_execution`
-- :ref:`dealing_with_failures`
+- ``make html-noplot`` (:ref:`without_execution`)
+- ``make html_abort_on_example_error`` (:ref:`abort_on_first`)
+
+And some things can be tweaked directly in CSS:
+
+- ``.sphx-glr-thumbcontainer`` (:ref:`setting_thumbnail_size`)
+
 
 .. _multiple_galleries_config:
 
@@ -359,12 +366,16 @@ Remember that for ``Makefile`` white space is significant and the indentation ar
 and not spaces.
 
 Alternatively, you can add the ``plot_gallery`` option to the
-``sphinx_gallery_conf`` dictionary inside your ``conf.py``
-configuration file to have it as a default. The highest precedence is
-always given to the `-D` flag of the ``sphinx-build`` command.
+``sphinx_gallery_conf`` dictionary inside your ``conf.py`` to have it as
+a default::
 
+    sphinx_gallery_conf = {
+        'plot_gallery': False,
+    }
 
-.. _dealing_with_failures:
+The highest precedence is always given to the `-D` flag of the
+``sphinx-build`` command.
+
 
 Dealing with failing Gallery example scripts
 ============================================
@@ -387,6 +398,8 @@ easily.
 
 There are some additional options at your hand to deal with broken examples.
 
+.. _abort_on_first:
+
 Abort build on first fail
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -406,9 +419,17 @@ and not spaces.
 
 Alternatively, you can add the ``abort_on_example_error`` option to
 the ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
-configuration file to have it as a default. The highest precedence is
-always given to the `-D` flag of the ``sphinx-build`` command.
+configuration file to have it as a default::
 
+    sphinx_gallery_conf = {
+        'abort_on_example_error': True,
+    }
+
+
+The highest precedence is always given to the `-D` flag of
+the ``sphinx-build`` command.
+
+.. _dont_fail_exit:
 
 Don't fail the build on exit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -427,6 +448,31 @@ build. Change your `conf.py` accordingly::
 Here you list the examples you allow to fail during the build process,
 keep in mind to specify the full relative path from your `conf.py` to
 the example script.
+
+
+.. _setting_thumbnail_size:
+
+Setting gallery thumbnail size
+==============================
+
+The gallery uses various CSS classes in the gallery. For example, to use
+images that are at most 250x250px, you can do something like:
+
+.. code-block:: css
+
+    .sphx-glr-thumbcontainer {
+        min-height: 300px;
+    }
+    .sphx-glr-thumbcontainer .figure {
+        width: 250px;
+    }
+    .sphx-glr-thumbcontainer img {
+        max-height: 250px;
+        width: 250px;
+    }
+    .sphx-glr-thumbcontainer a.internal {
+        padding: 210px
+    }
 
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
