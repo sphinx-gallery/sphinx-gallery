@@ -2,6 +2,13 @@
 Configuration
 =============
 
+Configuration and customization of sphinx-gallery is done primarily with a
+dictionary specified in your ``conf.py`` file. A list of the possible
+keys are listed :ref:`below <list_of_options>` and explained in
+greater detail in subsequent sections.
+
+.. _list_of_options:
+
 List of config options
 ======================
 
