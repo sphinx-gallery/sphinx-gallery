@@ -521,7 +521,7 @@ def clean_modules():
             del sys.modules[module]
 
     # Reset Matplotlib to default
-    plt.rcdefaults()
+    matplotlib.rc_file_defaults()
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
