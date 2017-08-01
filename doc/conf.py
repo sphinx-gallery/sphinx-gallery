@@ -298,6 +298,7 @@ intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'matplotlib': ('https://matplotlib.org/', None),
+    'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
 }
 
 from sphinx_gallery.sorting import ExplicitOrder
