@@ -84,6 +84,11 @@ release = sphinx_gallery.__version__ + '-git'
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build']
 
+# See warnings about bad links
+nitpicky = True
+# we intentionally link outside images
+suppress_warnings = ['image.nonlocal_uri']
+
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
 #default_role = None
