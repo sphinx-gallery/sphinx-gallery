@@ -200,7 +200,7 @@ sphinx_gallery_conf = {
     'within_subsection_order': FileSizeSortKey,
 }""")
 def test_example_sorting_filesize(config_app):
-    """Test sorting of examples by default key (number of code lines)."""
+    """Test sorting of examples by filesize."""
     _check_order(config_app, 'filesize')
 
 
@@ -214,5 +214,19 @@ sphinx_gallery_conf = {
     'within_subsection_order': FileNameSortKey,
 }""")
 def test_example_sorting_filename(config_app):
-    """Test sorting of examples by default key (number of code lines)."""
+    """Test sorting of examples by filename."""
     _check_order(config_app, 'filename')
+
+
+@pytest.mark.conf_file(content="""
+import sphinx_gallery
+from sphinx_gallery.sorting import ExampleTitleSortKey
+extensions = ['sphinx_gallery.gen_gallery']
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'within_subsection_order': ExampleTitleSortKey,
+}""")
+def test_example_sorting_title(config_app):
+    """Test sorting of examples by title."""
+    _check_order(config_app, 'title')

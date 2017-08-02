@@ -100,3 +100,19 @@ class FileNameSortKey(_SortKey):
 
     def __call__(self, filename):
         return filename
+
+
+class ExampleTitleSortKey(_SortKey):
+    """Sort examples in src_dir by example title.
+
+    Parameters
+    ----------
+    src_dir : str
+        The source directory.
+    """
+
+    def __call__(self, filename):
+        src_file = os.path.normpath(os.path.join(self.src_dir, filename))
+        _, script_blocks = split_code_and_text_blocks(src_file)
+        # title should be the second line of the first script_blocks entry
+        return script_blocks[0][1].strip().split('\n')[1]
