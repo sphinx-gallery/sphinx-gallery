@@ -21,6 +21,7 @@ from . import sphinx_compatibility
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
+from .sorting import AmountOfCodeSortKey
 
 try:
     FileNotFoundError
@@ -32,7 +33,7 @@ DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'examples_dirs': os.path.join('..', 'examples'),
     'subsection_order': None,
-    'within_subsection_order': None,
+    'within_subsection_order': AmountOfCodeSortKey,
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
     'doc_module': (),
