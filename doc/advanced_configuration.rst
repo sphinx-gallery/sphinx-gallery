@@ -21,6 +21,7 @@ file:
 - ``reference_url`` (:ref:`link_to_documentation`)
 - ``backreferences_dir`` and ``doc_module`` (:ref:`references_to_examples`)
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
+- ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
 - ``line_numbers`` (:ref:`adding_line_numbers`)
 - ``download_section_examples`` (:ref:`disable_joint_download`)
 - ``plot_gallery`` (:ref:`without_execution`)
@@ -55,6 +56,7 @@ For this you use in your Sphinx ``conf.py`` file a list of directories in
 the sphinx configuration dictionary::
 
     sphinx_gallery_conf = {
+        ...
         'examples_dirs': ['../examples', '../tutorials'],
         'gallery_dirs': ['auto_examples', 'tutorials'],
     }
@@ -72,6 +74,7 @@ if this naming convention does not suit your project, you can modify this patter
 in your Sphinx ``conf.py``. For example::
 
     sphinx_gallery_conf = {
+        ...
         'filename_pattern': '/plot_compute_',
     }
 
@@ -85,6 +88,7 @@ want to build only one example so that you can link it in the documentation. In 
 you would do::
 
     sphinx_gallery_conf = {
+        ...
         'filename_pattern': 'plot_awesome_example.py',
     }
 
@@ -94,6 +98,7 @@ one is targeting a specific file, it is most certainly going to match the dot in
 Similarly, to build only examples in a specific directory, you can do::
 
     sphinx_gallery_conf = {
+        ...
         'filename_pattern': '/directory/plot_',
     }
 
@@ -101,6 +106,7 @@ Alternatively, you can skip some examples. For example, to skip building example
 starting with ``plot_long_examples_``, you would do::
 
     sphinx_gallery_conf = {
+        ...
         'filename_pattern': '/plot_(?!long_examples)',
     }
 
@@ -121,6 +127,7 @@ the order of all subfolders in your galleries::
 
     from sphinx_gallery.sorting import ExplicitOrder
     sphinx_gallery_conf = {
+        ...
         'examples_dirs': ['../examples','../tutorials'],
         'subsection_order': ExplicitOrder(['../examples/sin_func',
                                            '../examples/no_output',
@@ -165,6 +172,7 @@ To make this work in your documentation you need to include to the configuration
 dictionary within your Sphinx ``conf.py`` file::
 
     sphinx_gallery_conf = {
+        ...
         'reference_url': {
                  # The module you locally document uses a None
                 'sphinx_gallery': None,
@@ -196,6 +204,7 @@ For such behavior to be available, you have to activate it in your
 Sphinx-Gallery configuration ``conf.py`` file with::
 
     sphinx_gallery_conf = {
+        ...
         # directory where function granular galleries are stored
         'backreferences_dir'  : 'gen_modules/backreferences',
 
@@ -295,6 +304,7 @@ file. You need to add to the configuration dictionary a key called
 `default_thumb_file`. For example::
 
     sphinx_gallery_conf = {
+        ...
         'default_thumb_file': 'path/to/thumb/file.png',
     }
 
@@ -308,6 +318,7 @@ Line numbers can be displayed in listings by adding the global ``line_numbers``
 setting::
 
     sphinx_gallery_conf = {
+        ...
         'line_numbers': True,
     }
 
@@ -331,6 +342,7 @@ available for download at the end of each section. To disable this
 behavior add to the configuration dictionary in your ``conf.py`` file::
 
     sphinx_gallery_conf = {
+        ...
         'download_section_examples': False,
     }
 
@@ -379,6 +391,7 @@ Alternatively, you can add the ``plot_gallery`` option to the
 a default::
 
     sphinx_gallery_conf = {
+        ...
         'plot_gallery': False,
     }
 
@@ -396,6 +409,7 @@ also supported. To enable this feature, you can do::
 
 
     sphinx_gallery_conf = {
+        ...
         'find_mayavi_figures': True,
     }
 
@@ -445,6 +459,7 @@ the ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
 configuration file to have it as a default::
 
     sphinx_gallery_conf = {
+        ...
         'abort_on_example_error': True,
     }
 
@@ -478,24 +493,36 @@ the example script.
 Setting gallery thumbnail size
 ==============================
 
-The gallery uses various CSS classes in the gallery. For example, to use
-images that are at most 250x250px, you can modify the default CSS
-with something like:
+By default Sphinx-gallery will generate thumbnails at size ``(400, 280)``,
+and add pillarboxes or letterboxes as necessary to scale the image while
+maintaining the original aspect ratio. This size can be controlled with the
+``thumbnail_size`` entry as, e.g.::
+
+    sphinx_gallery_conf = {
+        ...
+        'thumbnail_size': (250, 250),
+    }
+
+The gallery uses various CSS classes to display these thumbnails, which
+default to maximum 160x160px. To change this, e.g. to display the images
+at 250x250px, you can modify the default CSS with something like the following
+in your own site's CSS file:
 
 .. code-block:: css
 
     .sphx-glr-thumbcontainer {
-        min-height: 300px;
+        min-height: 320px !important;
+        margin: 20px !important;
     }
     .sphx-glr-thumbcontainer .figure {
-        width: 250px;
+        width: 250px !important;
     }
     .sphx-glr-thumbcontainer img {
-        max-height: 250px;
-        width: 250px;
+        max-height: 250px !important;
+        width: 250px !important;
     }
     .sphx-glr-thumbcontainer a.internal {
-        padding: 210px
+        padding: 270px 10px 0 !important;
     }
 
 

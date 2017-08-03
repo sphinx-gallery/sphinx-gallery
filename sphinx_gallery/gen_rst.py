@@ -313,8 +313,12 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     width_sc = int(round(scale * width_in))
     height_sc = int(round(scale * height_in))
 
-    # resize the image
-    img.thumbnail((width_sc, height_sc), Image.ANTIALIAS)
+    # resize the image using resize; if using .thumbnail and the image is
+    # already smaller than max_width, max_height, then this won't scale up
+    # at all (maybe could be an option someday...)
+    img = img.resize((width_sc, height_sc), Image.BICUBIC)
+    # img.thumbnail((width_sc, height_sc), Image.BICUBIC)
+    # width_sc, height_sc = img.size  # necessary if using thumbnail
 
     # insert centered
     thumb = Image.new('RGB', (max_width, max_height), (255, 255, 255))
@@ -350,18 +354,16 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
                               'sphx_glr_%s_thumb.png' % base_image_name)
 
     if src_file in gallery_conf['failing_examples']:
-        broken_img = os.path.join(glr_path_static(), 'broken_example.png')
-        scale_image(broken_img, thumb_file, 200, 140)
-
+        img = os.path.join(glr_path_static(), 'broken_example.png')
     elif os.path.exists(thumbnail_image_path):
-        scale_image(thumbnail_image_path, thumb_file, 400, 280)
-
+        img = thumbnail_image_path
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        default_thumb_file = os.path.join(glr_path_static(), 'no_image.png')
-        default_thumb_file = gallery_conf.get("default_thumb_file",
-                                              default_thumb_file)
-        scale_image(default_thumb_file, thumb_file, 200, 140)
+        img = os.path.join(glr_path_static(), 'no_image.png')
+        img = gallery_conf.get("default_thumb_file", img)
+    else:
+        return
+    scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
 
 
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
