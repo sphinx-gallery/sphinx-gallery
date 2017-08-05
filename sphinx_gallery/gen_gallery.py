@@ -42,6 +42,7 @@ DEFAULT_GALLERY_CONF = {
     'abort_on_example_error': False,
     'failing_examples': {},
     'expected_failing_examples': set(),
+    'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -305,7 +306,8 @@ def sumarize_failing_examples(app, exception):
         fail_msgs.append("Unexpected failing examples:")
         for fail_example in examples_not_expected_to_fail:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
-                             gallery_conf['failing_examples'][fail_example] + '\n')
+                             gallery_conf['failing_examples'][fail_example] +
+                             '\n')
 
     examples_not_expected_to_pass = expected_failing_examples.difference(
         failing_examples)
