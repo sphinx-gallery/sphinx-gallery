@@ -1,4 +1,8 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 """
+.. _extra_ref:
+
 ===========================================================
 A test with a really long title to make the filesize larger
 ===========================================================

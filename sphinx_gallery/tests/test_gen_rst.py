@@ -25,7 +25,7 @@ from sphinx_gallery import sphinx_compatibility
 import matplotlib.pyplot as plt
 
 CONTENT = [
-    '"""'
+    '"""',
     'Docstring header',
     '================',
     '',
@@ -109,11 +109,12 @@ def test_codestr2rst():
     assert reference == output
 
 
-def test_extract_intro():
-    result = sg.extract_intro('<string>', '\n'.join(CONTENT[1:9]))
-    assert 'Docstring' not in result
-    assert result == 'This is the description of the example which goes on and on, Óscar'  # noqa
-    assert 'second paragraph' not in result
+def test_extract_intro_title():
+    intro, title = sg.extract_intro_title('<string>', '\n'.join(CONTENT[1:9]))
+    assert title == 'Docstring header'
+    assert 'Docstring' not in intro
+    assert intro == 'This is the description of the example which goes on and on, Óscar'  # noqa
+    assert 'second paragraph' not in intro
 
 
 def test_md5sums():

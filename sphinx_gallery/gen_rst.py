@@ -153,12 +153,15 @@ def codestr2rst(codestr, lang='python', lineno=None):
     return code_directive + indented_block
 
 
-def extract_intro(filename, docstring):
+def extract_intro_title(filename, docstring):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
+    paragraphs = [p for p in paragraphs if not p.startswith('..')]
     if len(paragraphs) > 1:
+        title = paragraphs[0].split('\n')
+        title = ' '.join(t for t in title if t[0] not in ['=', '-', '^', '~'])
         first_paragraph = re.sub('\n', ' ', paragraphs[1])
         first_paragraph = (first_paragraph[:95] + '...'
                            if len(first_paragraph) > 95 else first_paragraph)
@@ -168,7 +171,7 @@ def extract_intro(filename, docstring):
             "and at least a paragraph explaining what the example is about. "
             "Please check the example file:\n {}\n".format(filename))
 
-    return first_paragraph
+    return first_paragraph, title
 
 
 def get_md5sum(src_file):
@@ -537,7 +540,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    intro = extract_intro(fname, script_blocks[0][1])
+    intro, title = extract_intro_title(fname, script_blocks[0][1])
 
     if md5sum_is_current(example_file):
         return intro, 0

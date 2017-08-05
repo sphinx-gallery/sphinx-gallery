@@ -160,7 +160,7 @@ which sorts the files based on the number of code lines::
         'within_subsection_order': NumberOfCodeLinesSortKey,
     }
 
-However, multiple convenience classes are provided for use with
+In addition, multiple convenience classes are provided for use with
 ``within_subsection_order``:
 
 - :class:`sphinx_gallery.sorting.NumberOfCodeLinesSortKey` (default) to sort by
