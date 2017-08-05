@@ -35,6 +35,7 @@ matrix:
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6"
     - os: linux
+      dist: trusty
       python: 'nightly'
   allow_failures:
     - python: "nightly"
