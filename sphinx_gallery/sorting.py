@@ -13,6 +13,7 @@ from __future__ import division, absolute_import, print_function
 import os
 import types
 
+from .gen_rst import extract_intro_title
 from .py_source_parser import split_code_and_text_blocks
 
 
@@ -114,6 +115,5 @@ class ExampleTitleSortKey(_SortKey):
     def __call__(self, filename):
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         _, script_blocks = split_code_and_text_blocks(src_file)
-        # title should be the second line of the first script_blocks entry
-        title = script_blocks[0][1].strip().split('\n')[1]
+        _, title = extract_intro_title(src_file, script_blocks[0][1])
         return title
