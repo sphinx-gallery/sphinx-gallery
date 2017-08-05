@@ -153,23 +153,28 @@ def codestr2rst(codestr, lang='python', lineno=None):
     return code_directive + indented_block
 
 
-def extract_intro_title(filename, docstring):
+def extract_intro_and_title(filename, docstring):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
-    paragraphs = [p for p in paragraphs if not p.startswith('..')]
-    if len(paragraphs) > 1:
-        title = paragraphs[0].split('\n')
-        title = ' '.join(t for t in title if t[0] not in ['=', '-', '^', '~'])
-        first_paragraph = re.sub('\n', ' ', paragraphs[1])
-        first_paragraph = (first_paragraph[:95] + '...'
-                           if len(first_paragraph) > 95 else first_paragraph)
-    else:
+    # remove comments and other syntax like `.. _link:`
+    paragraphs = [p for p in paragraphs if not p.startswith('.. ')]
+    if len(paragraphs) <= 1:
         raise ValueError(
             "Example docstring should have a header for the example title "
             "and at least a paragraph explaining what the example is about. "
             "Please check the example file:\n {}\n".format(filename))
+    # Title is the first paragraph with any ReSTructuredText title chars
+    # removed, i.e. lines that consist of (all the same) 7-bit non-ASCII chars.
+    # This conditional is not perfect but should hopefully be good enough.
+    title = paragraphs[0].strip().split('\n')
+    title = ' '.join(t for t in title if len(t) > 0 and
+                     (ord(t[0]) >= 128 or t[0].isalnum()))
+    # Concatenate all lines of the first paragraph and truncate at 95 chars
+    first_paragraph = re.sub('\n', ' ', paragraphs[1])
+    first_paragraph = (first_paragraph[:95] + '...'
+                       if len(first_paragraph) > 95 else first_paragraph)
 
     return first_paragraph, title
 
@@ -540,7 +545,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    intro, title = extract_intro_title(fname, script_blocks[0][1])
+    intro, title = extract_intro_and_title(fname, script_blocks[0][1])
 
     if md5sum_is_current(example_file):
         return intro, 0

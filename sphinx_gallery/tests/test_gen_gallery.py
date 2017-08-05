@@ -172,7 +172,6 @@ def _check_order(config_app, key):
     regex = '.*:%s=(.):.*' % key
     with codecs.open(index_fname, 'r', 'utf-8') as fid:
         for line in fid:
-            print(line)
             if 'sphx-glr-thumbcontainer' in line:
                 order.append(int(re.match(regex, line).group(1)))
     assert len(order) == 3

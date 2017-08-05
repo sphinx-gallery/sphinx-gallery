@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 
 CONTENT = [
     '"""',
+    '================',
     'Docstring header',
     '================',
     '',
@@ -109,8 +110,9 @@ def test_codestr2rst():
     assert reference == output
 
 
-def test_extract_intro_title():
-    intro, title = sg.extract_intro_title('<string>', '\n'.join(CONTENT[1:9]))
+def test_extract_intro_and_title():
+    intro, title = sg.extract_intro_and_title('<string>',
+                                              '\n'.join(CONTENT[1:10]))
     assert title == 'Docstring header'
     assert 'Docstring' not in intro
     assert intro == 'This is the description of the example which goes on and on, Óscar'  # noqa
