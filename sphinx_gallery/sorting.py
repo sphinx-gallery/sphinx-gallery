@@ -57,8 +57,8 @@ class _SortKey(object):
         self.src_dir = src_dir
 
 
-class AmountOfCodeSortKey(_SortKey):
-    """Sort examples in src_dir by amount of code.
+class NumberOfCodeLinesSortKey(_SortKey):
+    """Sort examples in src_dir by the number of code lines.
 
     Parameters
     ----------
@@ -115,4 +115,5 @@ class ExampleTitleSortKey(_SortKey):
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         _, script_blocks = split_code_and_text_blocks(src_file)
         # title should be the second line of the first script_blocks entry
-        return script_blocks[0][1].strip().split('\n')[1]
+        title = script_blocks[0][1].strip().split('\n')[1]
+        return title

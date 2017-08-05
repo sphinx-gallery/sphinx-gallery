@@ -148,19 +148,23 @@ provided the relative paths to `conf.py` of each sub gallery folder.
 Sorting gallery examples
 ========================
 
-Within a given gallery (sub)section, the example files by default are ordered
-by the amount of code, i.e. :class:`sphinx_gallery.sorting.AmountOfCodeSortKey`
-as::
+Within a given gallery (sub)section, the example files are ordered by
+using the standard :func:`sorted` function with the ``key`` argument by default
+set to
+:class:`NumberOfCodeLinesSortKey(src_dir) <sphinx_gallery.sorting.NumberOfCodeLinesSortKey>`,
+which sorts the files based on the number of code lines::
 
-    from sphinx_gallery.sorting import AmountOfCodeSortKey
+    from sphinx_gallery.sorting import NumberOfCodeLinesSortKey
     sphinx_gallery_conf = {
         ...
-        'within_subsection_order': AmountOfCodeSortKey,
+        'within_subsection_order': NumberOfCodeLinesSortKey,
     }
 
-However, other options exist that can be instantiated for use with
+However, multiple convenience classes are provided for use with
 ``within_subsection_order``:
 
+- :class:`sphinx_gallery.sorting.NumberOfCodeLinesSortKey` (default) to sort by
+  the number of code lines.
 - :class:`sphinx_gallery.sorting.FileSizeSortKey` to sort by file size.
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.

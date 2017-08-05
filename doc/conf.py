@@ -306,7 +306,7 @@ intersphinx_mapping = {
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
 }
 
-from sphinx_gallery.sorting import ExplicitOrder, AmountOfCodeSortKey
+from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
 examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
@@ -336,7 +336,7 @@ sphinx_gallery_conf = {
     'subsection_order': ExplicitOrder(['../examples/sin_func',
                                        '../examples/no_output',
                                        '../tutorials/seaborn']),
-    'within_subsection_order': AmountOfCodeSortKey,
+    'within_subsection_order': NumberOfCodeLinesSortKey,
     'find_mayavi_figures': find_mayavi_figures,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py']
