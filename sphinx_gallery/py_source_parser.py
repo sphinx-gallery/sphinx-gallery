@@ -47,21 +47,46 @@ def get_docstring_and_rest(filename):
     if not isinstance(node, ast.Module):
         raise TypeError("This function only supports modules. "
                         "You provided {0}".format(node.__class__.__name__))
-    if node.body and isinstance(node.body[0], ast.Expr) and \
-       isinstance(node.body[0].value, ast.Str):
-        docstring_node = node.body[0]
-        docstring = docstring_node.value.s
-        if hasattr(docstring, 'decode'):  # python2.7
-            docstring = docstring.decode('utf-8')
-        lineno = docstring_node.lineno  # The last line of the string.
-        # This get the content of the file after the docstring last line
-        # Note: 'maxsplit' argument is not a keyword argument in python2
-        rest = content.decode('utf-8').split('\n', lineno)[-1]
-        return docstring, rest, lineno + 1
-    else:
+    try:
+        # in python 3.7 module knows it's docstring
+        # everything else will raise an attribute error
+        docstring = node.docstring
+
+        import tokenize
+        from io import BytesIO
+        ts = tokenize.tokenize(BytesIO(content).readline)
+        ds_lines = 0
+        # find the first string according to the tokenizer and get
+        # it's end row
+        for tk in ts:
+            if tk.exact_type == 3:
+                ds_lines, _ = tk.end
+                break
+        # grab the rest of the file
+        rest = '\n'.join(content.decode('utf-8').split('\n')[ds_lines:])
+        lineno = ds_lines + 1
+
+    except AttributeError:
+        # this block can be removed when python 3.6 support is dropped
+        if node.body and isinstance(node.body[0], ast.Expr) and \
+           isinstance(node.body[0].value, ast.Str):
+            docstring_node = node.body[0]
+            docstring = docstring_node.value.s
+            if hasattr(docstring, 'decode'):  # python2.7
+                docstring = docstring.decode('utf-8')
+            lineno = docstring_node.lineno  # The last line of the string.
+            # This get the content of the file after the docstring last line
+            # Note: 'maxsplit' argument is not a keyword argument in python2
+            rest = content.decode('utf-8').split('\n', lineno)[-1]
+            lineno += 1
+        else:
+            docstring, rest = '', ''
+
+    if not docstring:
         raise ValueError(('Could not find docstring in file "{0}". '
                           'A docstring is required by sphinx-gallery')
                          .format(filename))
+    return docstring, rest, lineno
 
 
 def extract_file_config(content):
