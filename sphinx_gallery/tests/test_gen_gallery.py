@@ -5,15 +5,17 @@ r"""
 Test Sphinx-Gallery
 """
 
-from __future__ import division, absolute_import, print_function, unicode_literals
+from __future__ import (division, absolute_import, print_function,
+                        unicode_literals)
+import codecs
 import os
-import tempfile
+import re
 import shutil
+import tempfile
 import pytest
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
-from sphinx_gallery.gen_gallery import DEFAULT_GALLERY_CONF
 from sphinx_gallery import sphinx_compatibility
 
 
@@ -162,3 +164,69 @@ def test_config_backreferences(config_app):
         'gen_modules', 'backreferences')
     build_warn = config_app._warning.getvalue()
     assert build_warn == ""
+
+
+def _check_order(config_app, key):
+    index_fname = os.path.join(config_app.outdir, '..', 'ex', 'index.rst')
+    order = list()
+    regex = '.*:%s=(.):.*' % key
+    with codecs.open(index_fname, 'r', 'utf-8') as fid:
+        for line in fid:
+            if 'sphx-glr-thumbcontainer' in line:
+                order.append(int(re.match(regex, line).group(1)))
+    assert len(order) == 3
+    assert order == [1, 2, 3]
+
+
+@pytest.mark.conf_file(content="""
+import sphinx_gallery
+extensions = ['sphinx_gallery.gen_gallery']
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}""")
+def test_example_sorting_default(config_app):
+    """Test sorting of examples by default key (number of code lines)."""
+    _check_order(config_app, 'lines')
+
+
+@pytest.mark.conf_file(content="""
+import sphinx_gallery
+from sphinx_gallery.sorting import FileSizeSortKey
+extensions = ['sphinx_gallery.gen_gallery']
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'within_subsection_order': FileSizeSortKey,
+}""")
+def test_example_sorting_filesize(config_app):
+    """Test sorting of examples by filesize."""
+    _check_order(config_app, 'filesize')
+
+
+@pytest.mark.conf_file(content="""
+import sphinx_gallery
+from sphinx_gallery.sorting import FileNameSortKey
+extensions = ['sphinx_gallery.gen_gallery']
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'within_subsection_order': FileNameSortKey,
+}""")
+def test_example_sorting_filename(config_app):
+    """Test sorting of examples by filename."""
+    _check_order(config_app, 'filename')
+
+
+@pytest.mark.conf_file(content="""
+import sphinx_gallery
+from sphinx_gallery.sorting import ExampleTitleSortKey
+extensions = ['sphinx_gallery.gen_gallery']
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'within_subsection_order': ExampleTitleSortKey,
+}""")
+def test_example_sorting_title(config_app):
+    """Test sorting of examples by title."""
+    _check_order(config_app, 'title')

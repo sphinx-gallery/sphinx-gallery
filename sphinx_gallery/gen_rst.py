@@ -153,22 +153,30 @@ def codestr2rst(codestr, lang='python', lineno=None):
     return code_directive + indented_block
 
 
-def extract_intro(filename, docstring):
+def extract_intro_and_title(filename, docstring):
     """ Extract the first paragraph of module-level docstring. max:95 char"""
 
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
-    if len(paragraphs) > 1:
-        first_paragraph = re.sub('\n', ' ', paragraphs[1])
-        first_paragraph = (first_paragraph[:95] + '...'
-                           if len(first_paragraph) > 95 else first_paragraph)
-    else:
+    # remove comments and other syntax like `.. _link:`
+    paragraphs = [p for p in paragraphs if not p.startswith('.. ')]
+    if len(paragraphs) <= 1:
         raise ValueError(
             "Example docstring should have a header for the example title "
             "and at least a paragraph explaining what the example is about. "
             "Please check the example file:\n {}\n".format(filename))
+    # Title is the first paragraph with any ReSTructuredText title chars
+    # removed, i.e. lines that consist of (all the same) 7-bit non-ASCII chars.
+    # This conditional is not perfect but should hopefully be good enough.
+    title = paragraphs[0].strip().split('\n')
+    title = ' '.join(t for t in title if len(t) > 0 and
+                     (ord(t[0]) >= 128 or t[0].isalnum()))
+    # Concatenate all lines of the first paragraph and truncate at 95 chars
+    first_paragraph = re.sub('\n', ' ', paragraphs[1])
+    first_paragraph = (first_paragraph[:95] + '...'
+                       if len(first_paragraph) > 95 else first_paragraph)
 
-    return first_paragraph
+    return first_paragraph, title
 
 
 def get_md5sum(src_file):
@@ -377,8 +385,10 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
-    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
-                      if fname.endswith('.py')]
+    listdir = [fname for fname in os.listdir(src_dir)
+               if fname.endswith('.py')]
+    sorted_listdir = sorted(
+        listdir, key=gallery_conf['within_subsection_order'](src_dir))
     entries_text = []
     computation_times = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
@@ -387,29 +397,25 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         'Generating gallery for %s ' % build_target_dir,
         length=len(sorted_listdir))
     for fname in iterator:
-        intro, amount_of_code, time_elapsed = generate_file_rst(
+        intro, time_elapsed = generate_file_rst(
             fname,
             target_dir,
             src_dir,
             gallery_conf)
         computation_times.append((time_elapsed, fname))
-        new_fname = os.path.join(src_dir, fname)
         this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
 
 .. toctree::
    :hidden:
 
    /%s\n""" % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')
-        entries_text.append((amount_of_code, this_entry))
+        entries_text.append(this_entry)
 
         if gallery_conf['backreferences_dir']:
             write_backreferences(seen_backrefs, gallery_conf,
                                  target_dir, fname, intro)
 
-    # sort to have the smallest entries in the beginning
-    entries_text.sort()
-
-    for _, entry_text in entries_text:
+    for entry_text in entries_text:
         fhindex += entry_text
 
     # clear at the end of the section
@@ -533,8 +539,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     -------
     intro: str
         The introduction of the example
-    amount_of_code : int
-        character count of the corresponding python script in file
     time_elapsed : float
         seconds required to run the script
     """
@@ -543,13 +547,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    amount_of_code = sum([len(bcontent)
-                          for blabel, bcontent, lineno in script_blocks
-                          if blabel == 'code'])
-    intro = extract_intro(fname, script_blocks[0][1])
+    intro, title = extract_intro_and_title(fname, script_blocks[0][1])
 
     if md5sum_is_current(example_file):
-        return intro, amount_of_code, 0
+        return intro, 0
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
@@ -648,4 +649,4 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     if block_vars['execute_script']:
         logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
 
-    return intro, amount_of_code, time_elapsed
+    return intro, time_elapsed

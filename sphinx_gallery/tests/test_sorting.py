@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 r"""
-Tests for sorting keys on gallery sections
-==========================================
+Tests for sorting keys on gallery (sub)sections
+===============================================
 
 """
 # Author: Óscar Nájera

@@ -18,6 +18,7 @@ file:
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
 - ``filename_pattern`` (:ref:`build_pattern`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
+- ``within_subsection_order`` (:ref:`within_gallery_order`)
 - ``reference_url`` (:ref:`link_to_documentation`)
 - ``backreferences_dir`` and ``doc_module`` (:ref:`references_to_examples`)
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
@@ -147,6 +148,33 @@ the converse does not hold.
 
 If you so desire you can implement your own sorting key. It will be
 provided the relative paths to `conf.py` of each sub gallery folder.
+
+
+.. _within_gallery_order:
+
+Sorting gallery examples
+========================
+
+Within a given gallery (sub)section, the example files are ordered by
+using the standard :func:`sorted` function with the ``key`` argument by default
+set to
+:class:`NumberOfCodeLinesSortKey(src_dir) <sphinx_gallery.sorting.NumberOfCodeLinesSortKey>`,
+which sorts the files based on the number of code lines::
+
+    from sphinx_gallery.sorting import NumberOfCodeLinesSortKey
+    sphinx_gallery_conf = {
+        ...
+        'within_subsection_order': NumberOfCodeLinesSortKey,
+    }
+
+In addition, multiple convenience classes are provided for use with
+``within_subsection_order``:
+
+- :class:`sphinx_gallery.sorting.NumberOfCodeLinesSortKey` (default) to sort by
+  the number of code lines.
+- :class:`sphinx_gallery.sorting.FileSizeSortKey` to sort by file size.
+- :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
+- :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
 
 
 .. _link_to_documentation:
