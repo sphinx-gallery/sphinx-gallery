@@ -197,7 +197,7 @@ def generate_gallery_rst(app):
     Start the sphinx-gallery configuration and recursively scan the examples
     directories in order to populate the examples gallery
     """
-    logger.info('Generating gallery...', color='white')
+    logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
 
     clean_gallery_out(app.builder.outdir)
@@ -248,12 +248,12 @@ def generate_gallery_rst(app):
             fhindex.write(SPHX_GLR_SIG)
 
     if gallery_conf['plot_gallery']:
-        logger.info("Computation time summary:", color='white')
+        logger.info("computation time summary:", color='white')
         for time_elapsed, fname in sorted(computation_times)[::-1]:
             if time_elapsed is not None:
-                logger.info("\t- %s : %.2g sec", fname, time_elapsed)
+                logger.info("\t- %s: %.2g sec", fname, time_elapsed)
             else:
-                logger.info("\t- %s : not run", fname)
+                logger.info("\t- %s: not run", fname)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):

@@ -394,7 +394,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     iterator = sphinx_compatibility.status_iterator(
         sorted_listdir,
-        'Generating gallery for %s ' % build_target_dir,
+        'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
     for fname in iterator:
         intro, time_elapsed = generate_file_rst(
