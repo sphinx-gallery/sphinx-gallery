@@ -4,6 +4,12 @@ Change Log
 git master
 ----------
 
+New features
+''''''''''''
+
+* Added ``min_reported_time`` configurable.  For examples that run faster than
+  that threshold (in seconds), the execution time is not reported.
+
 v0.1.12
 -------
 

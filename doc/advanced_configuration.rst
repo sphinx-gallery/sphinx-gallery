@@ -29,6 +29,7 @@ file:
 - ``find_mayavi_figures`` (:ref:`find_mayavi`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
+- ``min_reported_time`` (:ref:`min_reported_time`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -552,6 +553,20 @@ in your own site's CSS file:
     .sphx-glr-thumbcontainer a.internal {
         padding: 270px 10px 0 !important;
     }
+
+
+.. _min_reported_time:
+
+Minimal reported time
+=====================
+
+By default, Sphinx-gallery logs and embeds in the html output the time it took
+to run each script.  If the majority of your examples runs quickly, you may not
+need this information.
+
+The ``min_reported_time`` configuration can be set to a number of seconds.  The
+duration of scripts that ran faster than that amount will not be logged nor
+embedded in the html output.
 
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
