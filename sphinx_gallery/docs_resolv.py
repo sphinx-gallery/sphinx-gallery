@@ -290,8 +290,9 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             for dirpath, _, filenames in os.walk(html_gallery_dir)
             for filename in filenames]
     iterator = sphinx_compatibility.status_iterator(
-        flat, '%s ' % gallery_dir, color='fuchsia',
-        length=len(flat), stringify_func=lambda x: os.path.basename(x[1]))
+        flat, 'embedding documentation hyperlinks for %s... ' % gallery_dir,
+        color='fuchsia', length=len(flat),
+        stringify_func=lambda x: os.path.basename(x[1]))
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1:]
@@ -370,8 +371,7 @@ def embed_code_links(app, exception):
     if app.builder.name not in ['html', 'readthedocs']:
         return
 
-    logger.info('embedding documentation hyperlinks in examples...',
-                color='white')
+    logger.info('embedding documentation hyperlinks...', color='white')
 
     gallery_conf = app.config.sphinx_gallery_conf
 
