@@ -638,9 +638,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     save_notebook(example_nb, example_file.replace('.py', '.ipynb'))
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:
-        example_rst += "**Total running time of the script:**" \
-                       " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
-                           time_m, time_s)
+        if time_elapsed >= gallery_conf["min_reported_time"]:
+            example_rst += ("**Total running time of the script:**"
+                            " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
+                                time_m, time_s))
         example_rst += CODE_DOWNLOAD.format(fname,
                                             fname.replace('.py', '.ipynb'))
         example_rst += SPHX_GLR_SIG

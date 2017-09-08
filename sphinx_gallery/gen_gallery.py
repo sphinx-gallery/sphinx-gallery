@@ -45,6 +45,7 @@ DEFAULT_GALLERY_CONF = {
     'failing_examples': {},
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
+    'min_reported_time': 0,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -249,9 +250,10 @@ def generate_gallery_rst(app):
 
     if gallery_conf['plot_gallery']:
         logger.info("computation time summary:", color='white')
-        for time_elapsed, fname in sorted(computation_times)[::-1]:
+        for time_elapsed, fname in sorted(computation_times, reverse=True):
             if time_elapsed is not None:
-                logger.info("\t- %s: %.2g sec", fname, time_elapsed)
+                if time_elapsed >= gallery_conf['min_reported_time']:
+                    logger.info("\t- %s: %.2g sec", fname, time_elapsed)
             else:
                 logger.info("\t- %s: not run", fname)
 
