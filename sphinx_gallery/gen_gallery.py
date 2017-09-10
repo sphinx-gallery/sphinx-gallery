@@ -16,8 +16,7 @@ import copy
 import re
 import os
 
-from . import glr_path_static
-from . import sphinx_compatibility
+from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
@@ -358,7 +357,8 @@ def setup(app):
 
     app.connect('build-finished', sumarize_failing_examples)
     app.connect('build-finished', embed_code_links)
-    metadata = {'parallel_read_safe': True}
+    metadata = {'parallel_read_safe': True,
+                'version': _sg_version}
     return metadata
 
 
