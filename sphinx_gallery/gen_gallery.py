@@ -38,8 +38,12 @@ DEFAULT_GALLERY_CONF = {
     'backreferences_dir': None,
     'doc_module': (),
     'reference_url': {},
-    # build options
-    'plot_gallery': True,
+    # Build options
+    # -------------
+    # We use a string for 'plot_gallery' rather than simply the Python boolean
+    # `True` as it avoids a warning about unicode when controlling this value
+    # via the command line switches of sphinx-build
+    'plot_gallery': 'True',
     'download_all_examples': True,
     'abort_on_example_error': False,
     'failing_examples': {},
