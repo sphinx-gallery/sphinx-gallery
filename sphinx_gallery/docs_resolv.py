@@ -28,7 +28,7 @@ except ImportError:
     import urllib.parse as urllib_parse
     from urllib.error import HTTPError, URLError
 
-from io import StringIO
+from io import BytesIO
 
 from sphinx.search import js_index
 
@@ -47,7 +47,7 @@ def _get_data(url):
         if encoding == 'plain':
             data = data.decode('utf-8')
         elif encoding == 'gzip':
-            data = StringIO(data)
+            data = BytesIO(data)
             data = gzip.GzipFile(fileobj=data).read().decode('utf-8')
         else:
             raise RuntimeError('unknown encoding')
@@ -258,12 +258,10 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         try:
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
-                    app.builder.outdir,
-                    src_gallery_dir,
-                    relative=True)
+                    app.builder.outdir, src_gallery_dir, relative=True)
             else:
-                doc_resolvers[this_module] = SphinxDocLinkResolver(url,
-                                                                   src_gallery_dir)
+                doc_resolvers[this_module] = SphinxDocLinkResolver(
+                    url, src_gallery_dir)
 
         except HTTPError as e:
             logger.warning(
