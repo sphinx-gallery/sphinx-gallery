@@ -11,9 +11,7 @@ virtualenv:
 matrix:
   include:
     - os: linux
-      dist: trusty
-      sudo: required
-      env: DISTRIB="ubuntu 14" PYTHON_VERSION="2.7"
+      env: DISTRIB="ubuntu" PYTHON_VERSION="2.7"
       addons:
         apt:
           packages:
@@ -60,9 +58,17 @@ install:
           conda install --yes mayavi;
         fi;
       fi;
-    - pip install -r requirements.txt
-    - if [ "$DISTRIB" == "ubuntu 14" ]; then pip install seaborn sphinx==1.4.9 pytest pytest-cov; fi;
-
+    - |
+      if [ "$DISTRIB" == "ubuntu" ]; then
+        # Use a separate virtual environment that the one provided by
+        # Travis because it contains numpy and we want to use numpy
+        # from apt-get
+        deactivate
+        virtualenv --system-site-packages testvenv
+        source testvenv/bin/activate
+        pip install -r requirements.txt
+        pip install seaborn sphinx==1.4.9 pytest pytest-cov
+      fi
     - python setup.py install
 
 # To test the mayavi environment follow the instructions at
