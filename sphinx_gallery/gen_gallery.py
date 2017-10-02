@@ -147,12 +147,10 @@ def get_subsections(srcdir, examples_dir, sortkey):
     ----------
     srcdir : str
         absolute path to directory containing conf.py
-
     examples_dir : str
         path to the examples directory relative to conf.py
-
-    sortkey : sortkey
-
+    sortkey : callable
+        The sort key to use.
 
     Returns
     -------

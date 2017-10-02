@@ -9,6 +9,12 @@ every module.
 
 .. currentmodule:: sphinx_gallery
 
+.. automodule:: sphinx_gallery
+   :no-members:
+   :no-inherited-members:
+
+:py:mod:`sphinx_gallery`:
+
 .. autosummary::
    :toctree: gen_modules/
    :template: module.rst

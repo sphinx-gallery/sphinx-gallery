@@ -330,9 +330,6 @@ sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery', 'numpy'),
     'reference_url': {
         'sphinx_gallery': None,
-        'matplotlib': 'https://matplotlib.org',
-        'numpy': 'https://docs.scipy.org/doc/numpy',
-        'sklearn': 'http://scikit-learn.org/stable',
         },
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
