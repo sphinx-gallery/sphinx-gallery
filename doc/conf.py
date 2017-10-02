@@ -305,6 +305,7 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/', None),
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
     'sklearn': ('http://scikit-learn.org/stable', None),
+    'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
 }
 
 from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
