@@ -9,7 +9,6 @@ from __future__ import (division, absolute_import, print_function,
 import ast
 import codecs
 import copy
-import logging
 import tempfile
 import re
 import os
@@ -20,7 +19,8 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import gen_gallery, downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst
-from sphinx_gallery import sphinx_compatibility
+from sphinx_gallery.utils import _TempDir
+
 # Need to import gen_rst before matplotlib.pyplot to set backend to 'Agg'
 import matplotlib.pyplot as plt
 
@@ -146,8 +146,7 @@ def gallery_conf():
     """Sets up a test sphinx-gallery configuration"""
 
     gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
-    gallery_conf.update(examples_dir=tempfile.mkdtemp(),
-                        gallery_dir=tempfile.mkdtemp())
+    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=_TempDir())
     gallery_conf['src_dir'] = gallery_conf['gallery_dir']
 
     return gallery_conf

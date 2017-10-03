@@ -56,6 +56,11 @@ doc/auto_mayavi_examples
 doc/tutorials/
 doc/gen_modules/
 
+# Test builds
+sphinx_gallery/tests/tinybuild/gen_modules/
+sphinx_gallery/tests/tinybuild/auto_examples/
+sphinx_gallery/tests/tinybuild/_build/
+
 # PyBuilder
 target/
 
