@@ -6,6 +6,7 @@ machine:
 dependencies:
   pre:
     # Disable pyenv (no cleaner way provided by CircleCI as it prepends pyenv version to PATH)
+    - sudo apt-get install texlive texlive-latex-extra latexmk
     - rm -rf ~/.pyenv
     - rm -rf ~/virtualenvs
     - wget -q https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O ~/miniconda.sh
@@ -26,6 +27,7 @@ test:
     - SPHX_GLR_THEME=rtd sphinx-build doc rtd_html
     - SPHX_GLR_THEME=alabaster sphinx-build doc alabaster_html
     - sphinx-build sphinx_gallery/tests/tinybuild/ tiny_html
+    - cd sphinx_gallery/tests/tinybuild/ && make latexpdf && cp _build/latex/Python.pdf $CIRCLE_ARTIFACTS
 
 general:
   artifacts:
@@ -33,6 +35,7 @@ general:
     - "rtd_html"
     - "alabaster_html"
     - "tiny_html"
+    - "sphinx_gallery/"
 
 deployment:
   staging:

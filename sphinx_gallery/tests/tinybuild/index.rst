@@ -1,5 +1,5 @@
-Sphinx-Gallery API Reference
-============================
+Tiny test build
+===============
 
 The complete Sphinx-Gallery project is automatically documented for
 every module. Examples `here <auto_examples/index.html>`_.
@@ -25,3 +25,11 @@ every module. Examples `here <auto_examples/index.html>`_.
    downloads
    docs_resolv
    sorting
+
+Examples
+--------
+
+.. toctree::
+   :maxdepth: 2
+
+   auto_examples/index.rst

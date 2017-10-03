@@ -8,5 +8,11 @@ clean:
 html:
 	sphinx-build -b html -d _build/doctrees . _build/html
 
+latexpdf:
+	sphinx-build -b latex -d _build/doctrees . _build/latex
+	@echo "Running LaTeX files through pdflatex..."
+	$(MAKE) -C _build/latex all-pdf
+	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
+
 show:
 	@python -c "import webbrowser; webbrowser.open_new_tab('file://$(PWD)/_build/html/index.html')"
