@@ -28,7 +28,7 @@ class _TempDir(str):
     # adapted from MNE-Python
 
     def __new__(self):  # noqa: D105
-        new = str.__new__(self, tempfile.mkdtemp(prefix='tmp_mne_tempdir_'))
+        new = str.__new__(self, tempfile.mkdtemp(prefix='tmp_sg_tempdir_'))
         return new
 
     def __init__(self):  # noqa: D102
