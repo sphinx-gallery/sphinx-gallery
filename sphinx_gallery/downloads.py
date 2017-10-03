@@ -13,7 +13,9 @@ import os
 import zipfile
 
 CODE_DOWNLOAD = """
-\n.. container:: sphx-glr-footer
+\n.. only :: html
+
+ .. container:: sphx-glr-footer
 
 \n  .. container:: sphx-glr-download
 
@@ -24,7 +26,9 @@ CODE_DOWNLOAD = """
      :download:`Download Jupyter notebook: {1} <{1}>`\n"""
 
 CODE_ZIP_DOWNLOAD = """
-\n.. container:: sphx-glr-footer
+\n.. only :: html
+
+ .. container:: sphx-glr-footer
 
 \n  .. container:: sphx-glr-download
 
