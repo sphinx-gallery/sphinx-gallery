@@ -203,14 +203,17 @@ dictionary within your Sphinx ``conf.py`` file::
     sphinx_gallery_conf = {
         ...
         'reference_url': {
-                 # The module you locally document uses a None
-                'sphinx_gallery': None,
-
-                # External python modules use their documentation websites
-                'matplotlib': 'https://matplotlib.org',
-                'numpy': 'https://docs.scipy.org/doc/numpy'},
+             # The module you locally document uses None
+            'sphinx_gallery': None,
         }
+    }
 
+To link to external modules, if you use the Sphinx extension
+:mod:`sphinx.ext.intersphinx`, no additional changes are necessary,
+as the ``intersphinx`` inventory will automatically be used.
+If you do not use ``intersphinx``, then you should add entries that
+point to the directory containing ``searchindex.js``, such as
+``'matplotlib': 'https://matplotlib.org'``.
 
 .. _references_to_examples:
 

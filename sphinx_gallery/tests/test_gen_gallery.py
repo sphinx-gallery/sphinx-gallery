@@ -11,12 +11,12 @@ import codecs
 import os
 import re
 import shutil
-import tempfile
 import pytest
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
 from sphinx_gallery import sphinx_compatibility
+from sphinx_gallery.utils import _TempDir
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def tempdir():
     temporary directory that wrapped with `path` class.
     this fixture is for compat with old test implementation.
     """
-    return tempfile.mkdtemp()
+    return _TempDir()
 
 
 @pytest.fixture

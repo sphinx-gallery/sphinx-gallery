@@ -12,6 +12,7 @@ import sys
 import pytest
 
 import sphinx_gallery.docs_resolv as sg
+from sphinx_gallery.utils import _TempDir
 
 
 def test_embed_code_links_get_data():
@@ -24,7 +25,7 @@ def test_shelve():
     """Test if shelve can be caches information
     retrieved after file is deleted"""
     test_string = 'test information'
-    tmp_cache = tempfile.mkdtemp()
+    tmp_cache = _TempDir()
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write(test_string)
     try:

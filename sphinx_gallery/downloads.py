@@ -46,7 +46,7 @@ def python_zip(file_list, gallery_path, extension='.py'):
     ----------
     file_list : list of strings
         Holds all the file names to be included in zip file
-    gallery_path : string
+    gallery_path : str
         path to where the zipfile is stored
     extension : str
         '.py' or '.ipynb' In order to deal with downloads of python
@@ -55,7 +55,7 @@ def python_zip(file_list, gallery_path, extension='.py'):
         variable while generating the zip file
     Returns
     -------
-    zipname : string
+    zipname : str
         zip file name, written as `target_dir_{python,jupyter}.zip`
         depending on the extension
     """
@@ -77,7 +77,7 @@ def list_downloadable_sources(target_dir):
 
     Parameters
     ----------
-    target_dir : string
+    target_dir : str
         path to the directory where python source file are
     Returns
     -------
@@ -96,12 +96,12 @@ def generate_zipfiles(gallery_dir):
 
     Parameters
     ----------
-    gallery_dir : string
+    gallery_dir : str
         path of the gallery to collect downloadable sources
 
     Return
     ------
-    download_rst: string
+    download_rst: str
         RestructuredText to include download buttons to the generated files
     """
 

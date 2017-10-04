@@ -291,6 +291,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         flat, 'embedding documentation hyperlinks for %s... ' % gallery_dir,
         color='fuchsia', length=len(flat),
         stringify_func=lambda x: os.path.basename(x[1]))
+    intersphinx_inv = getattr(app.env, 'intersphinx_named_inventory', dict())
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1:]
@@ -307,20 +308,29 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             for name, cobj in example_code_obj.items():
                 this_module = cobj['module'].split('.')[0]
 
-                if this_module not in doc_resolvers:
-                    continue
+                # Try doc resolvers first
+                link = None
+                if this_module in doc_resolvers:
+                    try:
+                        link = doc_resolvers[this_module].resolve(cobj,
+                                                                  full_fname)
+                    except (HTTPError, URLError) as e:
+                        if isinstance(e, HTTPError):
+                            extra = e.code
+                        else:
+                            extra = e.reason
+                        logger.warning("Error resolving %s.%s: %r (%s)",
+                                       cobj['module'], cobj['name'], e, extra)
+                        link = None
 
-                try:
-                    link = doc_resolvers[this_module].resolve(cobj,
-                                                              full_fname)
-                except (HTTPError, URLError) as e:
-                    if isinstance(e, HTTPError):
-                        extra = e.code
-                    else:
-                        extra = e.reason
-                    logger.warning("Error resolving %s.%s: %r (%s)",
-                                   cobj['module'], cobj['name'], e, extra)
-                    continue
+                # next try intersphinx
+                if link is None and this_module in intersphinx_inv:
+                    inv = app.env.intersphinx_named_inventory[this_module]
+                    want = '%s.%s' % (cobj['module'], cobj['name'])
+                    for value in inv.values():
+                        if want in value:
+                            link = value[want][2]
+                            break
 
                 if link is not None:
                     parts = name.split('.')
@@ -330,6 +340,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                         cobj['module'], cobj['name'])
                     str_repl[name_html] = link_pattern % (
                         link, full_function_name, name_html)
+
             # do the replacement in the html file
 
             # ensure greediness
