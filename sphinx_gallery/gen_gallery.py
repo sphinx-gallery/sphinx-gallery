@@ -50,12 +50,7 @@ DEFAULT_GALLERY_CONF = {
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
-    'binder_url': None,
-    'binder_org': None,
-    'binder_repo': None,
-    'binder_branch': 'gh-pages',
-    'binder_reqs': '../requirements.txt',
-    'binder': False,
+    'binder': {}
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')

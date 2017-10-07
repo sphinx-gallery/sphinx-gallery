@@ -397,6 +397,8 @@ The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
 :ref:`sphx_glr_auto_examples_plot_choose_thumbnail.py` for an example
 of this functionality.
 
+.. _binder_links:
+
 Generate Binder links for gallery notebooks
 ===========================================
 
@@ -424,8 +426,10 @@ dictionary following the pattern below::
 See the Sphinx-Gallery configuration with Binder for an example that uses
 the `public Binder servers <http://beta.mybinder.org>`_.
 
-Build without executing the examples
-====================================
+.. _without_execution:
+
+Building without executing examples
+===================================
 
 Sphinx-Gallery can parse all your examples and build the gallery
 without executing any of the scripts. This is just for speed
