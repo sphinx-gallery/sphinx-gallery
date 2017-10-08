@@ -35,6 +35,7 @@ Who uses Sphinx-Gallery
 * `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
 * `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
 * `PySurfer <https://pysurfer.github.io/>`_
+* `Matplotlib <https://matplotlib.org/index.html>`_ `Examples <https://matplotlib.org/gallery/index.html>`_ and `Tutorials  <https://matplotlib.org/tutorials/index.html>`__
 
 Getting the package
 ===================
