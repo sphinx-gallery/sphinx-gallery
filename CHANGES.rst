@@ -4,11 +4,32 @@ Change Log
 git master
 ----------
 
+v0.1.12
+-------
+
 New features
 ''''''''''''
 
 * Added ``min_reported_time`` configurable.  For examples that run faster than
   that threshold (in seconds), the execution time is not reported.
+* Add thumbnail_size option `#283 <https://github.com/sphinx-gallery/sphinx-gallery/pull/283>`_
+* Use intersphinx for all function reference resolution `#296 <https://github.com/sphinx-gallery/sphinx-gallery/pull/296>`_
+* Sphinx only directive for downloads `#298 <https://github.com/sphinx-gallery/sphinx-gallery/pull/298>`_
+* Allow sorting subsection files `#281 <https://github.com/sphinx-gallery/sphinx-gallery/pull/281>`_
+
+Bug Fixes
+'''''''''
+
+* Crasher in doc_resolv, in js_index.loads `#287 <https://github.com/sphinx-gallery/sphinx-gallery/issues/287>`_
+* Fix gzip/BytesIO error `#293 <https://github.com/sphinx-gallery/sphinx-gallery/pull/293>`_
+* Deactivate virtualenv provided by Travis `#294 <https://github.com/sphinx-gallery/sphinx-gallery/pull/294>`_
+
+Developer changes
+'''''''''''''''''
+
+* Push the docs from Circle CI into github `#268 <https://github.com/sphinx-gallery/sphinx-gallery/pull/268>`_
+* Report version to sphinx. `#292 <https://github.com/sphinx-gallery/sphinx-gallery/pull/292>`_
+* Minor changes to log format. `#285 <https://github.com/sphinx-gallery/sphinx-gallery/pull/285>`_ and `#291 <https://github.com/sphinx-gallery/sphinx-gallery/pull/291>`_
 
 v0.1.12
 -------
