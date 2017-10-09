@@ -16,6 +16,9 @@ New features
 * Use intersphinx for all function reference resolution `#296 <https://github.com/sphinx-gallery/sphinx-gallery/pull/296>`_
 * Sphinx only directive for downloads `#298 <https://github.com/sphinx-gallery/sphinx-gallery/pull/298>`_
 * Allow sorting subsection files `#281 <https://github.com/sphinx-gallery/sphinx-gallery/pull/281>`_
+* We recommend using a string for ``plot_gallery`` rather than Python booleans, e.g. ``'True'`` instead
+  of ``True``, as it avoids a warning about unicode when controlling this value via the command line
+  switches of ``sphinx-build``
 
 Bug Fixes
 '''''''''
