@@ -4,7 +4,7 @@ Change Log
 git master
 ----------
 
-v0.1.12
+v0.1.13
 -------
 
 New features
