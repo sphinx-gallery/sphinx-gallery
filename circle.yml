@@ -6,6 +6,7 @@ machine:
 dependencies:
   pre:
     # Disable pyenv (no cleaner way provided by CircleCI as it prepends pyenv version to PATH)
+    - sudo apt-get update
     - sudo apt-get install texlive texlive-latex-extra latexmk
     - rm -rf ~/.pyenv
     - rm -rf ~/virtualenvs
