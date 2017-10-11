@@ -16,6 +16,8 @@ import copy
 import re
 import os
 import shutil as sh
+from warnings import warn
+from glob import glob
 
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
@@ -211,6 +213,9 @@ def generate_gallery_rst(app):
     computation_times = []
     workdirs = _prepare_sphx_glr_dirs(gallery_conf,
                                       app.builder.srcdir)
+    workdirs = list(workdirs)
+    examples_dirs = [ex_dir for ex_dir, _ in workdirs]
+    check_duplicate_files(examples_dirs)
 
     for examples_dir, gallery_dir in workdirs:
 
@@ -335,6 +340,26 @@ def sumarize_failing_examples(app, exception):
         raise ValueError("Here is a summary of the problems encountered when "
                          "running the examples\n\n" + "\n".join(fail_msgs) +
                          "\n" + "-" * 79)
+
+
+def check_duplicate_files(examples_dirs):
+    """Check for duplicate filenames across gallery directories."""
+    files = []
+    for example_dir in examples_dirs:
+        files += glob(os.path.join(example_dir, '**', '*.py'), recursive=True)
+
+    # Check whether we'll have duplicates
+    used_names = set()
+    dup_names = list()
+    for this_file in files:
+        this_fname = os.path.basename(this_file)
+        if this_fname in used_names:
+            dup_names.append(this_file)
+        else:
+            used_names.union(set(this_fname))
+    if len(dup_names) > 0:
+        warn(('Duplicate file name(s) found. Having duplicate file names will '
+              'break some links.\n%s' % (sorted(dup_names),))
 
 
 def get_default_config_value(key):
