@@ -663,8 +663,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     return intro, time_elapsed
 
+
 def gen_binder_url(fname, binder_conf):
-    if not isinstance(binder_conf, dict):
+    if not isinstance(binder_conf, dict) or len(binder_conf) == 0:
         return None
     req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
 

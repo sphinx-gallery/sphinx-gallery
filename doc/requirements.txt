@@ -1,0 +1,4 @@
+# Requirements for the docs
+matplotlib
+pillow
+seaborn

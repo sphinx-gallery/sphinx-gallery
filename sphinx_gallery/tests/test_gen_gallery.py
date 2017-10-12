@@ -16,6 +16,7 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
 from sphinx_gallery import sphinx_compatibility
+from sphinx_gallery.gen_gallery import check_duplicate_filenames
 from sphinx_gallery.utils import _TempDir
 
 
@@ -164,6 +165,16 @@ def test_config_backreferences(config_app):
         'gen_modules', 'backreferences')
     build_warn = config_app._warning.getvalue()
     assert build_warn == ""
+
+
+def test_duplicate_files_warn(config_app):
+    """Test for a warning when two files with the same filename exist."""
+    files = ['./a/file1.py', './a/file2.py', './b/file1.py']
+    with pytest.warns(UserWarning):
+        check_duplicate_filenames(files)
+    with pytest.warns(None) as record:
+        check_duplicate_filenames(['a/file1.py', 'b/file2.py', 'a/file3.py'])
+    assert len(record) == 0
 
 
 def _check_order(config_app, key):

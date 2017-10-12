@@ -213,9 +213,17 @@ def generate_gallery_rst(app):
     computation_times = []
     workdirs = _prepare_sphx_glr_dirs(gallery_conf,
                                       app.builder.srcdir)
+
+    # Check for duplicate filenames
     workdirs = list(workdirs)
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
-    check_duplicate_files(examples_dirs)
+    files = []
+    for example_dir in examples_dirs:
+        for root, dirnames, filenames in os.walk('example_dir'):
+            for filename in filenames:
+                if filename.endswith('.py'):
+                    files.append(os.path.join(root, filename))
+    check_duplicate_filenames(files)
 
     for examples_dir, gallery_dir in workdirs:
 
@@ -266,8 +274,9 @@ def generate_gallery_rst(app):
                 logger.info("\t- %s: not run", fname)
 
     # Copy the requirements file for binder
-    if isinstance(gallery_conf['binder'], dict):
-        path_reqs = gallery_conf['binder']['dependencies']
+    binder_conf = gallery_conf.get('binder', None)
+    if isinstance(binder_conf, dict) and len(binder_conf) > 0:
+        path_reqs = binder_conf.get('dependencies', None)
         sh.copy(os.path.join(app.builder.srcdir, path_reqs),
                 app.builder.outdir)
 
@@ -342,12 +351,8 @@ def sumarize_failing_examples(app, exception):
                          "\n" + "-" * 79)
 
 
-def check_duplicate_files(examples_dirs):
+def check_duplicate_filenames(files):
     """Check for duplicate filenames across gallery directories."""
-    files = []
-    for example_dir in examples_dirs:
-        files += glob(os.path.join(example_dir, '**', '*.py'), recursive=True)
-
     # Check whether we'll have duplicates
     used_names = set()
     dup_names = list()
@@ -355,11 +360,11 @@ def check_duplicate_files(examples_dirs):
         this_fname = os.path.basename(this_file)
         if this_fname in used_names:
             dup_names.append(this_file)
-        else:
-            used_names.union(set(this_fname))
+        used_names = used_names.union([this_fname])
+
     if len(dup_names) > 0:
-        warn(('Duplicate file name(s) found. Having duplicate file names will '
-              'break some links.\n%s' % (sorted(dup_names),))
+        warn('Duplicate file name(s) found. Having duplicate file names will '
+             'break some links. List of files: %s' % (sorted(dup_names),))
 
 
 def get_default_config_value(key):

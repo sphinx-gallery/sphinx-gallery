@@ -403,10 +403,18 @@ Generate Binder links for gallery notebooks
 ===========================================
 
 Sphinx-Gallery automatically generates Jupyter notebooks for any
-examples built with the gallery. If you host your documentation on
-a GitHub repository, it is possible to auto-generate a Binder link
-for each notebook. Clicking this link will take users to a live
-version of the Jupyter notebook where they may run the code interactively.
+examples built with the gallery. `Binder <http://mybinder.org>`_ makes it
+possible to create interactive GitHub repositories connect to cloud resources.
+If you host your documentation on a GitHub repository, it is possible to
+auto-generate a Binder link for each notebook. Clicking this link will
+take users to a live version of the Jupyter notebook where they may
+run the code interactively. For more information see the `Binder documentation
+<http://docs.mybinder.org>`_.
+
+.. warning::
+
+   Binder is still beta technology, so there may be instability in the
+   experience of users who click Binder links.
 
 In order to enable Binder links with Sphinx-Gallery, you must specify
 a few pieces of information in ``conf.py``. These are given as a nested
