@@ -15,15 +15,14 @@ import codecs
 import copy
 import re
 import os
-import shutil as sh
-from warnings import warn
-from glob import glob
+from copy import deepcopy
 
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
+from .binder import copy_binder_reqs, check_binder_conf
 
 try:
     FileNotFoundError
@@ -214,15 +213,8 @@ def generate_gallery_rst(app):
     workdirs = _prepare_sphx_glr_dirs(gallery_conf,
                                       app.builder.srcdir)
 
-    # Check for duplicate filenames
-    workdirs = list(workdirs)
-    examples_dirs = [ex_dir for ex_dir, _ in workdirs]
-    files = []
-    for example_dir in examples_dirs:
-        for root, dirnames, filenames in os.walk('example_dir'):
-            for filename in filenames:
-                if filename.endswith('.py'):
-                    files.append(os.path.join(root, filename))
+    # Check for duplicate filenames to make sure linking works as expected
+    files = collect_gallery_files(workdirs)
     check_duplicate_filenames(files)
 
     for examples_dir, gallery_dir in workdirs:
@@ -273,12 +265,11 @@ def generate_gallery_rst(app):
             else:
                 logger.info("\t- %s: not run", fname)
 
-    # Copy the requirements file for binder
-    binder_conf = gallery_conf.get('binder', None)
-    if isinstance(binder_conf, dict) and len(binder_conf) > 0:
-        path_reqs = binder_conf.get('dependencies', None)
-        sh.copy(os.path.join(app.builder.srcdir, path_reqs),
-                app.builder.outdir)
+    # Copy the requirements files for binder
+    binder_conf = check_binder_conf(gallery_conf.get('binder', None))
+    if len(binder_conf) > 0:
+        logger.info("copying binder requirements...")
+        copy_binder_reqs(app)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
@@ -351,11 +342,25 @@ def sumarize_failing_examples(app, exception):
                          "\n" + "-" * 79)
 
 
+def collect_gallery_files(workdirs):
+    """Collect a flat list of the filename for all sphinx-gallery .py files."""
+    workdirs = deepcopy(workdirs)
+    examples_dirs = [ex_dir for ex_dir, _ in workdirs]
+    files = []
+    for example_dir in examples_dirs:
+        for root, dirnames, filenames in os.walk('example_dir'):
+            for filename in filenames:
+                if filename.endswith('.py'):
+                    files.append(os.path.join(root, filename))
+    return files
+
+
 def check_duplicate_filenames(files):
     """Check for duplicate filenames across gallery directories."""
     # Check whether we'll have duplicates
     used_names = set()
     dup_names = list()
+
     for this_file in files:
         this_fname = os.path.basename(this_file)
         if this_fname in used_names:
@@ -363,8 +368,9 @@ def check_duplicate_filenames(files):
         used_names = used_names.union([this_fname])
 
     if len(dup_names) > 0:
-        warn('Duplicate file name(s) found. Having duplicate file names will '
-             'break some links. List of files: %s' % (sorted(dup_names),))
+        logger.warning(
+            u'Duplicate file name(s) found. Having duplicate file names will '
+            'break some links. List of files: %s' % (sorted(dup_names),))
 
 
 def get_default_config_value(key):

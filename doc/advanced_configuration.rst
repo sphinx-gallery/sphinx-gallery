@@ -427,12 +427,12 @@ dictionary following the pattern below::
          'repo': '<github_repo>',
          'url': '<binder_url>',  # URL serving binders (e.g. mybinder.org)
          'branch': '<repo_branch>',  # Can also be a tag or commit hash
-         'dependencies': '<path_to_dependencies>'  # Either `requirements.txt` or `environment.yml`
+         'dependencies': '<list_of_paths_to_dependency_files>'  # Dependency files Binder will use to build the environment. See docs.mybinder.org for details.
          }
     }
 
-See the Sphinx-Gallery configuration with Binder for an example that uses
-the `public Binder servers <http://beta.mybinder.org>`_.
+See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
+for an example that uses the `public Binder server <http://beta.mybinder.org>`_.
 
 .. _without_execution:
 

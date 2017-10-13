@@ -9,9 +9,11 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
 import os
+import sys
 import re
 import shutil
 import pytest
+from testfixtures import LogCapture
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
@@ -170,11 +172,16 @@ def test_config_backreferences(config_app):
 def test_duplicate_files_warn(config_app):
     """Test for a warning when two files with the same filename exist."""
     files = ['./a/file1.py', './a/file2.py', './b/file1.py']
-    with pytest.warns(UserWarning):
+    msg = ("Duplicate file name(s) found. Having duplicate file names will "
+           "break some links. List of files: %s")
+    m = "['./b/file1.py']" if sys.version_info[0] >= 3 else "[u'./b/file1.py']"
+    with LogCapture() as log:
         check_duplicate_filenames(files)
-    with pytest.warns(None) as record:
+        log.check(('sphinx-gallery', 'WARNING', msg % m))
+
+    with LogCapture() as log:
         check_duplicate_filenames(['a/file1.py', 'b/file2.py', 'a/file3.py'])
-    assert len(record) == 0
+        log.check()
 
 
 def _check_order(config_app, key):
