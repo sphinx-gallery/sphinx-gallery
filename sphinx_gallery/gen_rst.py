@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 import traceback
+import codeop
 from distutils.version import LooseVersion
 
 
@@ -456,7 +457,7 @@ def handle_exception(exc_info, src_file, block_vars, gallery_conf):
     return except_rst
 
 
-def execute_code_block(src_file, code_block, lineno, example_globals,
+def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
     time_elapsed = 0
@@ -478,14 +479,13 @@ def execute_code_block(src_file, code_block, lineno, example_globals,
     sys.stdout = my_stdout
 
     try:
-        code_ast = ast.parse(code_block, src_file)
+        code_ast = compile(code_block, src_file, 'exec', ast.PyCF_ONLY_AST | compiler.flags)
         ast.increment_lineno(code_ast, lineno - 1)
         t_start = time()
         # don't use unicode_literals at the top of this file or you get
         # nasty errors here on Py2.7
-        exec(compile(code_ast, src_file, 'exec'), example_globals)
+        exec(compiler(code_ast, src_file, 'exec'), example_globals)
         time_elapsed = time() - t_start
-
     except Exception:
         sys.stdout = orig_stdout
         except_rst = handle_exception(sys.exc_info(), src_file, block_vars,
@@ -584,6 +584,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         '__name__': '__main__',
         # Don't ever support __file__: Issues #166 #212
     }
+    compiler = codeop.Compile()
 
     # A simple example has two blocks: one for the
     # example introduction/explanation and one for the code
@@ -602,7 +603,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
-            code_output, rtime = execute_code_block(src_file, bcontent, lineno,
+            code_output, rtime = execute_code_block(compiler, src_file,
+                                                    bcontent, lineno,
                                                     example_globals,
                                                     block_vars, gallery_conf)
 
