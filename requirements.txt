@@ -1,5 +1,5 @@
 setuptools
-matplotlib
+matplotlib==2.0
 pillow
 sphinx
 pytest
