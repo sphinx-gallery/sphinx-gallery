@@ -474,12 +474,15 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
+
     my_stdout = MixedEncodingStringIO()
     os.chdir(os.path.dirname(src_file))
     sys.stdout = my_stdout
 
     try:
-        code_ast = compile(code_block, src_file, 'exec', ast.PyCF_ONLY_AST | compiler.flags)
+        dont_inherit = 1
+        code_ast = compile(code_block, src_file, 'exec',
+                           ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
         t_start = time()
         # don't use unicode_literals at the top of this file or you get
