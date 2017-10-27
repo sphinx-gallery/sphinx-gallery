@@ -1,4 +1,5 @@
 import sphinx_gallery  # noqa
+from sphinx_gallery.sorting import FileNameSortKey
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -26,5 +27,7 @@ sphinx_gallery_conf = {
     'examples_dirs': ['examples'],
     'gallery_dirs': ['auto_examples'],
     'backreferences_dir': 'gen_modules/backreferences',
+    'within_section_order': FileNameSortKey,
+    'expected_failing_examples': ['examples/plot_future_imports_broken.py'],
 }
 nitpicky = True
