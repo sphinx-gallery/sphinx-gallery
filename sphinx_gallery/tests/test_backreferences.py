@@ -5,7 +5,6 @@
 Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
-import os
 import sphinx_gallery.backreferences as sg
 
 
@@ -93,27 +92,7 @@ identify_names
     assert expected == res
 
 
-def test_identify_names_2():
-    import codecs
-    res = sg.identify_names(codecs.open(
-        'examples/plot_choose_thumbnail.py', 'r', 'utf-8').read())
-    expected = {
-        'os.path.join':
-            {'name': 'join', 'module': 'os.path', 'module_short': 'os.path'},
-        'br.identify_names':
-            {'name': 'identify_names',
-             'module': 'sphinx_gallery.back_references',
-             'module_short': 'sphinx_gallery.back_references'},
-        'identify_names':
-            {'name': 'identify_names',
-             'module': 'sphinx_gallery.back_references',
-             'module_short': 'sphinx_gallery.back_references'}
-    }
-
-    assert expected == res
-
-# sg.scan_used_functions('sphinx_gallery/tests/unicode.sample',
-# {'doc_module': 'numpy'})
+# sg.scan_used_functions('sphinx_gallery/tests/unicode.sample', {'doc_module': 'numpy'})
 
 # names = sg.identify_names('import ß\nß.help# ós\na=3\nimport os\nos.path')
 # print(names)
@@ -123,11 +102,11 @@ def test_identify_names_2():
 # print(type(names))
 #
 # print(sg.scan_used_functions(
-    #'../../examples/plot_choose_thumbnail.py', {'doc_module': u'numpy'}))
+#'../../examples/plot_choose_thumbnail.py', {'doc_module': u'numpy'}))
 # print('\nline\n')
 # import codecs
 # names = sg.identify_names(
-    # codecs.open('../../examples/plot_choose_thumbnail.py', 'r', 'utf-8').read())
+# codecs.open('../../examples/plot_choose_thumbnail.py', 'r', 'utf-8').read())
 #
 # print(names)
 # print(type(names))
