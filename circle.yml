@@ -7,7 +7,7 @@ dependencies:
   pre:
     # Disable pyenv (no cleaner way provided by CircleCI as it prepends pyenv version to PATH)
     - sudo apt-get update
-    - sudo apt-get install texlive texlive-latex-extra latexmk
+    - sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk
     - rm -rf ~/.pyenv
     - rm -rf ~/virtualenvs
     - wget -q https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O ~/miniconda.sh
