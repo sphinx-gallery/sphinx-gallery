@@ -15,7 +15,7 @@ import sphinx_gallery.backreferences as spback
 
 
 filename = spback.__file__.replace('.pyc', '.py')
-file_code = open(filename, 'r').read()
+file_code = open(filename, 'rb').read()
 names = spback.identify_names(file_code)
 figheight = len(names) + .5
 
