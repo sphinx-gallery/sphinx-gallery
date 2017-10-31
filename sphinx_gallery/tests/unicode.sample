@@ -8,4 +8,8 @@ Uñicode in description
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
+
+import os
+path = os.path.join('a','b')
+
 a = 'heiß'  # Unicode string
