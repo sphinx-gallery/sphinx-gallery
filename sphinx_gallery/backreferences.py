@@ -142,8 +142,7 @@ def identify_names(code):
 def scan_used_functions(example_file, gallery_conf):
     """save variables so we can later add links to the documentation"""
     import codecs
-    example_code_obj = identify_names(
-        codecs.open(example_file, 'r', 'utf-8').read())
+    example_code_obj = identify_names(open(example_file, 'r'))
     if example_code_obj:
         codeobj_fname = example_file[:-3] + '_codeobj.pickle'
         with open(codeobj_fname, 'wb') as fid:
