@@ -9,7 +9,6 @@ Parser for python source files
 from __future__ import division, absolute_import, print_function
 import ast
 import re
-import codecs
 from textwrap import dedent
 
 SYNTAX_ERROR_DOCSTRING = """
@@ -78,7 +77,7 @@ def get_docstring_and_rest(filename):
             lineno = docstring_node.lineno  # The last line of the string.
             # This get the content of the file after the docstring last line
             # Note: 'maxsplit' argument is not a keyword argument in python2
-            rest = (content.split(b'\n', lineno)[-1]).decode('utf-8')
+            rest = content.decode('utf-8').split('\n', lineno)[-1]
             lineno += 1
         else:
             docstring, rest = '', ''
