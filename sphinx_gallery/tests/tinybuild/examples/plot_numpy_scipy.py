@@ -16,3 +16,6 @@ import matplotlib.pyplot as plt
 t = np.arange(1001) / 1000.
 win = firwin(1001, 0.05)
 plt.plot(t, win)
+assert plt.rcParams['figure.dpi'] == 100.
+plt.rcParams['figure.dpi'] = 80.
+assert plt.rcParams['figure.dpi'] == 80.

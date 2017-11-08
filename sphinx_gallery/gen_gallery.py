@@ -18,11 +18,12 @@ import os
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
+from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG,
+                      _scraper_dict, _reset_dict, basestring)
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .binder import copy_binder_files, check_binder_conf
+from .binder import copy_binder_files
 
 try:
     FileNotFoundError
@@ -53,6 +54,8 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
+    'image_scrapers': ('matplotlib',),
+    'reset_modules': ('matplotlib', 'seaborn'),
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -89,13 +92,31 @@ def parse_config(app):
         plot_gallery = eval(app.builder.config.plot_gallery)
     except TypeError:
         plot_gallery = bool(app.builder.config.plot_gallery)
+    src_dir = app.builder.srcdir
+    abort_on_example_error = app.builder.config.abort_on_example_error
+    gallery_conf = _complete_gallery_conf(
+        app.config.sphinx_gallery_conf, src_dir, plot_gallery,
+        abort_on_example_error)
+    # this assures I can call the config in other places
+    app.config.sphinx_gallery_conf = gallery_conf
+    app.config.html_static_path.append(glr_path_static())
+    return gallery_conf
 
+
+def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
+                           abort_on_example_error):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
-    gallery_conf.update(app.config.sphinx_gallery_conf)
+    gallery_conf.update(sphinx_gallery_conf)
+    if sphinx_gallery_conf.get('find_mayavi_figures', False):
+        logger.warning(
+            "Deprecated image scraping variable `find_mayavi_figures`\n"
+            "detected, use `image_scrapers` instead as:\n\n"
+            "   image_scrapers=('matplotlib', 'mayavi')",
+            type=DeprecationWarning)
+        gallery_conf['image_scrapers'] += ('mayavi',)
     gallery_conf.update(plot_gallery=plot_gallery)
-    gallery_conf.update(
-        abort_on_example_error=app.builder.config.abort_on_example_error)
-    gallery_conf['src_dir'] = app.builder.srcdir
+    gallery_conf.update(abort_on_example_error=abort_on_example_error)
+    gallery_conf['src_dir'] = src_dir
 
     if gallery_conf.get("mod_example_dir", False):
         backreferences_warning = """\n========
@@ -105,15 +126,43 @@ def parse_config(app):
         version of Sphinx-Gallery. For more details, see the backreferences
         documentation:
 
-        https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
+        https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""  # noqa: E501
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
         logger.warning(
             backreferences_warning,
             type=DeprecationWarning)
 
-    # this assures I can call the config in other places
-    app.config.sphinx_gallery_conf = gallery_conf
-    app.config.html_static_path.append(glr_path_static())
+    # deal with scrapers
+    scrapers = gallery_conf['image_scrapers']
+    if not isinstance(scrapers, (tuple, list)):
+        scrapers = [scrapers]
+    scrapers = list(scrapers)
+    for si, scraper in enumerate(scrapers):
+        if isinstance(scraper, basestring):
+            if scraper not in _scraper_dict:
+                raise ValueError('Unknown image scraper named %r' % (scraper,))
+            scrapers[si] = _scraper_dict[scraper]
+        elif not callable(scraper):
+            raise ValueError('Scraper %r was not callable' % (scraper,))
+    gallery_conf['image_scrapers'] = tuple(scrapers)
+    del scrapers
+
+    # deal with resetters
+    resetters = gallery_conf['reset_modules']
+    if not isinstance(resetters, (tuple, list)):
+        resetters = [resetters]
+    resetters = list(resetters)
+    for ri, resetter in enumerate(resetters):
+        if isinstance(resetter, basestring):
+            if resetter not in _reset_dict:
+                raise ValueError('Unknown module resetter named %r'
+                                 % (resetter,))
+            resetters[ri] = _reset_dict[resetter]
+        elif not callable(resetter):
+            raise ValueError('Module resetter %r was not callable'
+                             % (resetter,))
+    gallery_conf['reset_modules'] = tuple(resetters)
+    del resetters
 
     return gallery_conf
 
@@ -137,7 +186,8 @@ def get_subsections(srcdir, examples_dir, sortkey):
 
     """
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)
-                  if os.path.exists(os.path.join(examples_dir, subfolder, 'README.txt'))]
+                  if os.path.exists(os.path.join(
+                      examples_dir, subfolder, 'README.txt'))]
     base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
     subfolders_with_path = [os.path.join(base_examples_dir_path, item)
                             for item in subfolders]
@@ -214,11 +264,14 @@ def generate_gallery_rst(app):
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             fhindex.write(":orphan:\n\n" + this_fhindex)
 
-            for subsection in get_subsections(app.builder.srcdir, examples_dir, gallery_conf['subsection_order']):
+            for subsection in get_subsections(
+                    app.builder.srcdir, examples_dir,
+                    gallery_conf['subsection_order']):
                 src_dir = os.path.join(examples_dir, subsection)
                 target_dir = os.path.join(gallery_dir, subsection)
-                this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                                                        seen_backrefs)
+                this_fhindex, this_computation_times = \
+                    generate_dir_rst(src_dir, target_dir, gallery_conf,
+                                     seen_backrefs)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
 
@@ -258,9 +311,9 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
 
 
 def summarize_failing_examples(app, exception):
-    """Collects the list of falling examples during build and prints them with the traceback
+    """Collects the list of falling examples and prints them with a traceback.
 
-    Raises ValueError if there where failing examples
+    Raises ValueError if there where failing examples.
     """
     if exception is not None:
         return
@@ -271,9 +324,9 @@ def summarize_failing_examples(app, exception):
 
     gallery_conf = app.config.sphinx_gallery_conf
     failing_examples = set(gallery_conf['failing_examples'].keys())
-    expected_failing_examples = set([os.path.normpath(os.path.join(app.srcdir, path))
-                                     for path in
-                                     gallery_conf['expected_failing_examples']])
+    expected_failing_examples = set(
+        os.path.normpath(os.path.join(app.srcdir, path))
+        for path in gallery_conf['expected_failing_examples'])
 
     examples_expected_to_fail = failing_examples.intersection(
         expected_failing_examples)
@@ -297,9 +350,9 @@ def summarize_failing_examples(app, exception):
         failing_examples)
     # filter from examples actually run
     filename_pattern = gallery_conf.get('filename_pattern')
-    examples_not_expected_to_pass = [src_file
-                                     for src_file in examples_not_expected_to_pass
-                                     if re.search(filename_pattern, src_file)]
+    examples_not_expected_to_pass = [
+        src_file for src_file in examples_not_expected_to_pass
+        if re.search(filename_pattern, src_file)]
     if examples_not_expected_to_pass:
         fail_msgs.append(red("Examples expected to fail, but not failing:\n") +
                          "Please remove these examples from\n" +

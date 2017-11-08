@@ -8,19 +8,20 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import ast
 import codecs
-import copy
 import io
 import tempfile
 import re
 import os
-import shutil
 import zipfile
 
 import pytest
 
+import numpy as np
+from PIL import Image
+
 import sphinx_gallery.gen_rst as sg
-from sphinx_gallery import gen_gallery, downloads
-from sphinx_gallery.gen_gallery import generate_dir_rst
+from sphinx_gallery import downloads
+from sphinx_gallery.gen_gallery import generate_dir_rst, _complete_gallery_conf
 from sphinx_gallery.utils import _TempDir
 
 # Need to import gen_rst before matplotlib.pyplot to set backend to 'Agg'
@@ -180,13 +181,10 @@ def test_md5sums():
 
 
 @pytest.fixture
-def gallery_conf():
+def gallery_conf(tmpdir):
     """Sets up a test sphinx-gallery configuration"""
-
-    gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
-    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=_TempDir())
-    gallery_conf['src_dir'] = gallery_conf['gallery_dir']
-
+    gallery_conf = _complete_gallery_conf({}, tmpdir, True, False)
+    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=tmpdir)
     return gallery_conf
 
 
@@ -283,16 +281,19 @@ def test_save_matplotlib_figures(gallery_conf):
     """Test matplotlib figure save"""
     plt.plot(1, 1)
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
-    assert fig_num == 1
+    image_path_iterator = sg.ImagePathIterator(fname_template)
+    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    assert len(image_path_iterator) == 1
     assert '/image1.png' in image_rst
 
     # Test capturing 2 images with shifted start number
+    image_path_iterator.next()
+    image_path_iterator.next()
     plt.plot(1, 1)
     plt.figure()
     plt.plot(1, 1)
-    image_rst, fig_num = sg.save_figures(fname_template, 3, gallery_conf)
-    assert fig_num == 2
+    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    assert len(image_path_iterator) == 5
     assert '/image4.png' in image_rst
     assert '/image5.png' in image_rst
 
@@ -305,25 +306,65 @@ def test_save_mayavi_figures(gallery_conf):
         raise pytest.skip('Mayavi not installed')
     mlab.options.offscreen = True
 
-    gallery_conf.update(find_mayavi_figures=True)
-
-    mlab.test_plot3d()
-    plt.plot(1, 1)
+    gallery_conf.update(
+        image_scrapers=(sg.matplotlib_scraper, sg.mayavi_scraper))
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
-    assert fig_num == 2
+    image_path_iterator = sg.ImagePathIterator(fname_template)
+
+    plt.axes([-0.1, -0.1, 1.2, 1.2])
+    plt.pcolor([[0]], cmap='Greens')
+    mlab.test_plot3d()
+    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    assert len(plt.get_fignums()) == 0
+    assert len(image_path_iterator) == 2
+    assert '/image0.png' not in image_rst
     assert '/image1.png' in image_rst
     assert '/image2.png' in image_rst
+    assert '/image3.png' not in image_rst
+    assert not os.path.isfile(fname_template.format(0))
+    assert os.path.isfile(fname_template.format(1))
+    assert os.path.isfile(fname_template.format(2))
+    assert not os.path.isfile(fname_template.format(0))
+    with Image.open(fname_template.format(1)) as img:
+        pixels = np.asarray(img.convert("RGB"))
+    assert (pixels == [247, 252, 245]).all()  # plt first
 
+    # Test next-value handling, plus image_scrapers modification
+    gallery_conf.update(image_scrapers=(sg.matplotlib_scraper,))
     mlab.test_plot3d()
-    plt.plot(1, 1)
-    image_rst, fig_num = sg.save_figures(fname_template, 2, gallery_conf)
-    assert fig_num == 2
+    plt.axes([-0.1, -0.1, 1.2, 1.2])
+    plt.pcolor([[0]], cmap='Reds')
+    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    assert len(plt.get_fignums()) == 0
+    assert len(image_path_iterator) == 3
+    assert '/image1.png' not in image_rst
     assert '/image2.png' not in image_rst
     assert '/image3.png' in image_rst
-    assert '/image4.png' in image_rst
+    assert '/image4.png' not in image_rst
+    assert not os.path.isfile(fname_template.format(0))
+    for ii in range(3):
+        assert os.path.isfile(fname_template.format(ii + 1))
+    assert not os.path.isfile(fname_template.format(4))
+    with Image.open(fname_template.format(3)) as img:
+        pixels = np.asarray(img.convert("RGB"))
+    assert (pixels == [255, 245, 240]).all()
 
-    shutil.rmtree(gallery_conf['gallery_dir'])
+    # custom finders
+    gallery_conf.update(image_scrapers=[lambda x, y: ''])
+    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    assert len(image_path_iterator) == 3
+
+    # degenerate
+    gallery_conf.update(image_scrapers=['foo'])
+    with pytest.raises(ValueError, match='Unknown image scraper'):
+        _complete_gallery_conf(
+            gallery_conf, gallery_conf['gallery_dir'], True, False)
+    gallery_conf.update(image_scrapers=[lambda x, y: x.next()])
+    with pytest.raises(RuntimeError, match='did not produce expected image'):
+        sg.save_figures(image_path_iterator, gallery_conf)
+    gallery_conf.update(image_scrapers=[lambda x, y: 1.])
+    with pytest.raises(TypeError, match='was not a string'):
+        sg.save_figures(image_path_iterator, gallery_conf)
 
 
 def test_zip_notebooks(gallery_conf):
