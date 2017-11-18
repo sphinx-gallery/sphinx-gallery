@@ -94,7 +94,7 @@ identify_names
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write(code_str)
     try:
-        res, _ = sg.identify_names(f.name)
+        res = sg.identify_names(f.name)
     finally:
         os.remove(f.name)
 
@@ -116,7 +116,7 @@ e.HelloWorld().f.g
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write(code_str)
     try:
-        res, _ = sg.identify_names(f.name)
+        res = sg.identify_names(f.name)
     finally:
         os.remove(f.name)
 

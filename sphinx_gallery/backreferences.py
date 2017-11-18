@@ -103,12 +103,9 @@ def get_short_module_name(module_name, obj_name):
 
 
 def identify_names(filename):
-    """Builds a codeobj summary by identifying and resolving used names
-
-    """
-    try:
-        node, content = parse_file_source(filename)
-    except SyntaxError:
+    """Builds a codeobj summary by identifying and resolving used names"""
+    node, _ = parse_file_source(filename)
+    if node is SyntaxError:
         return {}
 
     finder = NameFinder()

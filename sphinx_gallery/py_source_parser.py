@@ -20,7 +20,7 @@ Example script with invalid Python syntax
 
 
 def parse_file_source(filename):
-    """Parser source file into AST node
+    """Parse source file into AST node
 
     Parameters
     ----------
@@ -30,18 +30,14 @@ def parse_file_source(filename):
 
     Returns
     -------
-    out : AST node
-
-
-    Raises
-    ------
-        SyntaxError
+    node : AST node
+    content : utf-8 encoded string
     """
 
     # can't use codecs.open(filename, 'r', 'utf-8') here b/c ast doesn't
     # work with unicode strings in Python2.7 "SyntaxError: encoding
     # declaration in Unicode string" In python 2.7 the string can't be
-    # encoded and have information about its encoding. that is particularly
+    # encoded and have information about its encoding. That is particularly
     # problematic since source files include in their header information
     # about the file encoding.
     # Minimal example to fail: ast.parse(u'# -*- coding: utf-8 -*-')
@@ -51,7 +47,11 @@ def parse_file_source(filename):
     # change from Windows format to UNIX for uniformity
     content = content.replace(b'\r\n', b'\n')
 
-    return ast.parse(content), content
+    try:
+        node = ast.parse(content)
+        return node, content.decode('utf-8')
+    except SyntaxError:
+        return SyntaxError, content.decode('utf-8')
 
 
 def get_docstring_and_rest(filename):
@@ -66,10 +66,10 @@ def get_docstring_and_rest(filename):
     rest: str
         `filename` content without the docstring
     """
-    try:
-        node, content = parse_file_source(filename)
-    except SyntaxError:
-        return SYNTAX_ERROR_DOCSTRING, content.decode('utf-8'), 1
+    node, content = parse_file_source(filename)
+
+    if node is SyntaxError:
+        return SYNTAX_ERROR_DOCSTRING, content, 1
 
     if not isinstance(node, ast.Module):
         raise TypeError("This function only supports modules. "
@@ -90,7 +90,7 @@ def get_docstring_and_rest(filename):
                 ds_lines, _ = tk.end
                 break
         # grab the rest of the file
-        rest = '\n'.join(content.decode('utf-8').split('\n')[ds_lines:])
+        rest = '\n'.join(content.split('\n')[ds_lines:])
         lineno = ds_lines + 1
 
     except AttributeError:
@@ -104,7 +104,7 @@ def get_docstring_and_rest(filename):
             lineno = docstring_node.lineno  # The last line of the string.
             # This get the content of the file after the docstring last line
             # Note: 'maxsplit' argument is not a keyword argument in python2
-            rest = content.decode('utf-8').split('\n', lineno)[-1]
+            rest = content.split('\n', lineno)[-1]
             lineno += 1
         else:
             docstring, rest = '', ''
