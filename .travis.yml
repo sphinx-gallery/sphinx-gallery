@@ -67,7 +67,7 @@ install:
         virtualenv --system-site-packages testvenv
         source testvenv/bin/activate
         pip install -r requirements.txt
-        pip install seaborn sphinx==1.4.9 pytest pytest-cov
+        pip install seaborn sphinx>=1.5 pytest pytest-cov
       fi
     - pip install --upgrade --no-deps testfixtures
     - python setup.py install
