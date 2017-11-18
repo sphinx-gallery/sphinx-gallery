@@ -64,19 +64,6 @@ def test_backref_thumbnail_div():
 
 
 def test_identify_names():
-    code_str = """
-# ß
-import os
-os
-
-os.path.join
-
-import sphinx_gallery.back_references as br
-br.identify_names
-
-from sphinx_gallery.back_references import identify_names
-identify_names
-"""
 
     expected = {
         'os.path.join':
@@ -91,13 +78,7 @@ identify_names
              'module_short': 'sphinx_gallery.back_references'}
     }
 
-    with tempfile.NamedTemporaryFile('w', delete=False) as f:
-        f.write(code_str)
-    try:
-        res = sg.identify_names(f.name)
-    finally:
-        os.remove(f.name)
-
+    res = sg.identify_names('sphinx_gallery/tests/unicode.sample')
     assert expected == res
 
 
@@ -112,6 +93,9 @@ e.HelloWorld().f.g
 """
     expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
                 'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd', 'module_short': 'd'}}
+
+    import locale
+    print(locale.getlocale())
 
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write(code_str)
