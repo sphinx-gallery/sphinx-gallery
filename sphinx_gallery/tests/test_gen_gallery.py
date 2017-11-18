@@ -169,6 +169,8 @@ def test_config_backreferences(config_app):
     assert build_warn == ""
 
 
+@pytest.mark.skipif(sys.version_info[:2] == (3, 4),
+                    reason="Won't work on Python 3.4")
 def test_duplicate_files_warn(config_app):
     """Test for a warning when two files with the same filename exist."""
     files = ['./a/file1.py', './a/file2.py', './b/file1.py']

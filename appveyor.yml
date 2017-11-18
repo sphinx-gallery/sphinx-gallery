@@ -25,6 +25,7 @@ install:
     - "activate test"
     # mayavi only available for Python 2.7 through conda
     - 'IF "%PYTHON_VERSION%"=="2.7" ( conda install mayavi )'
+    - "pip install --upgrade --no-deps testfixtures"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
