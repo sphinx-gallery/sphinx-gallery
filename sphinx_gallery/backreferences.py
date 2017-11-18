@@ -27,6 +27,8 @@ except ImportError:
 
     escape = partial(escape, entities={'"': '&quot;'})
 
+from .py_source_parser import parse_file_source
+
 
 class NameFinder(ast.NodeVisitor):
     """Finds the longest form of variable names and their imports in code
@@ -100,25 +102,17 @@ def get_short_module_name(module_name, obj_name):
     return short_name
 
 
-def identify_names(code):
+def identify_names(filename):
     """Builds a codeobj summary by identifying and resolving used names
 
-    >>> code = '''
-    ... from a.b import c
-    ... import d as e
-    ... print(c)
-    ... e.HelloWorld().f.g
-    ... '''
-    >>> for name, o in sorted(identify_names(code).items()):
-    ...     print(name, o['name'], o['module'], o['module_short'])
-    c c a.b a.b
-    e.HelloWorld HelloWorld d d
     """
-    finder = NameFinder()
     try:
-        finder.visit(ast.parse(code))
+        node, content = parse_file_source(filename)
     except SyntaxError:
         return {}
+
+    finder = NameFinder()
+    finder.visit(node)
 
     example_code_obj = {}
     for name, full_name in finder.get_mapping():
@@ -141,8 +135,7 @@ def identify_names(code):
 
 def scan_used_functions(example_file, gallery_conf):
     """save variables so we can later add links to the documentation"""
-    import codecs
-    example_code_obj = identify_names(open(example_file, 'rb').read())
+    example_code_obj = identify_names(example_file)
     if example_code_obj:
         codeobj_fname = example_file[:-3] + '_codeobj.pickle'
         with open(codeobj_fname, 'wb') as fid:

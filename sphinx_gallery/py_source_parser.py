@@ -19,6 +19,41 @@ Example script with invalid Python syntax
 """
 
 
+def parse_file_source(filename):
+    """Parser source file into AST node
+
+    Parameters
+    ----------
+    filename : str
+        File path
+
+
+    Returns
+    -------
+    out : AST node
+
+
+    Raises
+    ------
+        SyntaxError
+    """
+
+    # can't use codecs.open(filename, 'r', 'utf-8') here b/c ast doesn't
+    # work with unicode strings in Python2.7 "SyntaxError: encoding
+    # declaration in Unicode string" In python 2.7 the string can't be
+    # encoded and have information about its encoding. that is particularly
+    # problematic since source files include in their header information
+    # about the file encoding.
+    # Minimal example to fail: ast.parse(u'# -*- coding: utf-8 -*-')
+
+    with open(filename, 'rb') as fid:
+        content = fid.read()
+    # change from Windows format to UNIX for uniformity
+    content = content.replace(b'\r\n', b'\n')
+
+    return ast.parse(content), content
+
+
 def get_docstring_and_rest(filename):
     """Separate `filename` content between docstring and the rest
 
@@ -31,16 +66,8 @@ def get_docstring_and_rest(filename):
     rest: str
         `filename` content without the docstring
     """
-    # can't use codecs.open(filename, 'r', 'utf-8') here b/c ast doesn't
-    # seem to work with unicode strings in Python2.7
-    # "SyntaxError: encoding declaration in Unicode string"
-    with open(filename, 'rb') as fid:
-        content = fid.read()
-    # change from Windows format to UNIX for uniformity
-    content = content.replace(b'\r\n', b'\n')
-
     try:
-        node = ast.parse(content)
+        node, content = parse_file_source(filename)
     except SyntaxError:
         return SYNTAX_ERROR_DOCSTRING, content.decode('utf-8'), 1
 

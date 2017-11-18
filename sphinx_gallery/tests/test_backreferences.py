@@ -5,6 +5,8 @@
 Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
+import os
+import tempfile
 import sphinx_gallery.backreferences as sg
 
 
@@ -75,7 +77,7 @@ br.identify_names
 from sphinx_gallery.back_references import identify_names
 identify_names
 """
-    res = sg.identify_names(code_str)
+
     expected = {
         'os.path.join':
             {'name': 'join', 'module': 'os.path', 'module_short': 'os.path'},
@@ -89,24 +91,52 @@ identify_names
              'module_short': 'sphinx_gallery.back_references'}
     }
 
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+        f.write(code_str)
+    try:
+        res, _ = sg.identify_names(f.name)
+    finally:
+        os.remove(f.name)
+
     assert expected == res
 
 
-# sg.scan_used_functions('sphinx_gallery/tests/unicode.sample', {'doc_module': 'numpy'})
+def test_identify_names2():
+    code_str = """
+# -*- coding: utf-8 -*-
+# ß
+from a.b import c
+import d as e
+print(c)
+e.HelloWorld().f.g
+"""
+    expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
+                'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd', 'module_short': 'd'}}
 
-# names = sg.identify_names('import ß\nß.help# ós\na=3\nimport os\nos.path')
-# print(names)
-# print(type(names))
-# names = sg.identify_names(u'import a\na.help# ós\na=3\nimport os\nos.path')
-# print(names)
-# print(type(names))
-#
-# print(sg.scan_used_functions(
-#'../../examples/plot_choose_thumbnail.py', {'doc_module': u'numpy'}))
-# print('\nline\n')
-# import codecs
-# names = sg.identify_names(
-# codecs.open('../../examples/plot_choose_thumbnail.py', 'r', 'utf-8').read())
-#
-# print(names)
-# print(type(names))
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+        f.write(code_str)
+    try:
+        res, _ = sg.identify_names(f.name)
+    finally:
+        os.remove(f.name)
+
+    assert expected == res
+
+    # sg.scan_used_functions('sphinx_gallery/tests/unicode.sample', {'doc_module': 'numpy'})
+
+    # names = sg.identify_names('import ß\nß.help# ós\na=3\nimport os\nos.path')
+    # print(names)
+    # print(type(names))
+    # names = sg.identify_names(u'import a\na.help# ós\na=3\nimport os\nos.path')
+    # print(names)
+    # print(type(names))
+    #
+    # print(sg.scan_used_functions(
+    #'../../examples/plot_choose_thumbnail.py', {'doc_module': u'numpy'}))
+    # print('\nline\n')
+    # import codecs
+    # names = sg.identify_names(
+    # codecs.open('../../examples/plot_choose_thumbnail.py', 'r', 'utf-8').read())
+    #
+    # print(names)
+    # print(type(names))
