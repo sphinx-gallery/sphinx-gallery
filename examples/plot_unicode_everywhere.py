@@ -14,6 +14,9 @@ from __future__ import unicode_literals
 import numpy as np
 import matplotlib.pyplot as plt
 
+plt.rcParams['font.size'] = 20
+plt.rcParams["font.family"] = "monospace"
+
 plt.figure()
 x = np.random.randn(100) * 2 + 1
 y = np.random.randn(100) * 6 + 3
@@ -27,3 +30,7 @@ plt.ylabel('⇒')
 plt.title('♲' * 10)
 print('Std out capture 😎')
 plt.show()
+
+###########################################################################
+# Debug fonts
+print(plt.rcParams)
