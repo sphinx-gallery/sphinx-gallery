@@ -83,9 +83,9 @@ def test_identify_names():
 
 
 def test_identify_names2():
-    code_str = """
+    code_str = b"""
 # -*- coding: utf-8 -*-
-# ß
+# \xc3\x9f
 from a.b import c
 import d as e
 print(c)
