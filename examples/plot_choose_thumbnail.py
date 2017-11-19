@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ñChoosing the thumbnail figure
+Choosing the thumbnail figure
 =============================
 
 An example to demonstrate how to choose which figure is displayed as the
