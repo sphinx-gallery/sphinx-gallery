@@ -13,9 +13,6 @@ build and test environments that parse the example files. """
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.matplotlib.rcParams.update({'axes.labelsize': 42,
-                                'mathtext.fontset': 'dejavuserif',
-                                'axes.titlesize': 22})
 plt.figure()
 x = np.random.randn(100) * 2 + 1
 y = np.random.randn(100) * 6 + 3
