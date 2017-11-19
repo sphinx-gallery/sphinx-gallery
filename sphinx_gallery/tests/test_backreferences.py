@@ -97,7 +97,7 @@ e.HelloWorld().f.g
     import locale
     print(locale.getlocale())
 
-    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
         f.write(code_str)
     try:
         res = sg.identify_names(f.name)
@@ -105,22 +105,3 @@ e.HelloWorld().f.g
         os.remove(f.name)
 
     assert expected == res
-
-    # sg.scan_used_functions('sphinx_gallery/tests/unicode.sample', {'doc_module': 'numpy'})
-
-    # names = sg.identify_names('import ß\nß.help# ós\na=3\nimport os\nos.path')
-    # print(names)
-    # print(type(names))
-    # names = sg.identify_names(u'import a\na.help# ós\na=3\nimport os\nos.path')
-    # print(names)
-    # print(type(names))
-    #
-    # print(sg.scan_used_functions(
-    #'../../examples/plot_choose_thumbnail.py', {'doc_module': u'numpy'}))
-    # print('\nline\n')
-    # import codecs
-    # names = sg.identify_names(
-    # codecs.open('../../examples/plot_choose_thumbnail.py', 'r', 'utf-8').read())
-    #
-    # print(names)
-    # print(type(names))
