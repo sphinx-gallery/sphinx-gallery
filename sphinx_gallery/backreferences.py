@@ -7,8 +7,8 @@ Backreferences Generator
 
 Parses example file code in order to keep track of used functions
 """
-
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
+import codecs
 import ast
 import os
 
@@ -198,7 +198,8 @@ def write_backreferences(seen_backrefs, gallery_conf,
                                     gallery_conf['backreferences_dir'],
                                     '%s.examples' % backref)
         seen = backref in seen_backrefs
-        with open(include_path, 'a' if seen else 'w') as ex_file:
+        with codecs.open(include_path, 'a' if seen else 'w',
+                         encoding='utf-8') as ex_file:
             if not seen:
                 heading = '\n\nExamples using ``%s``' % backref
                 ex_file.write(heading + '\n')

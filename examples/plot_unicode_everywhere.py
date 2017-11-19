@@ -5,6 +5,7 @@ Using Unicode everywhere 🤗
 
 This examples includes unicode characters, mostly emoji 🎉 to stress test the
 build and test environments that parse the example files. """
+from __future__ import unicode_literals
 
 # 🎉 👍
 # Code source: Óscar Nájera
@@ -23,6 +24,6 @@ y = np.random.randn(60) * 3 - 2
 plt.scatter(x, y, s, alpha=0.5, c='g', marker=r'$\clubsuit$')
 plt.xlabel('⇒')
 plt.ylabel('⇒')
-
 plt.title('♲' * 10)
+print('Std out capture 😎')
 plt.show()

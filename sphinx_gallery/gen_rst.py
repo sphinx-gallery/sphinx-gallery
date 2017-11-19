@@ -493,6 +493,12 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
         sys.stdout = orig_stdout
         except_rst = handle_exception(sys.exc_info(), src_file, block_vars,
                                       gallery_conf)
+        # python2.7: Code was read in bytes needs decoding to utf-8
+        # unless future unicode_literals is imported in source which
+        # make ast output unicode strings
+        if hasattr(except_rst, 'decode') and not isinstance(except_rst, unicode):
+            except_rst = except_rst.decode('utf-8')
+
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
 
     else:

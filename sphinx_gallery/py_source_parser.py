@@ -99,7 +99,10 @@ def get_docstring_and_rest(filename):
            isinstance(node.body[0].value, ast.Str):
             docstring_node = node.body[0]
             docstring = docstring_node.value.s
-            if hasattr(docstring, 'decode'):  # python2.7
+            # python2.7: Code was read in bytes needs decoding to utf-8
+            # unless future unicode_literals is imported in source which
+            # make ast output unicode strings
+            if hasattr(docstring, 'decode') and not isinstance(docstring, unicode):
                 docstring = docstring.decode('utf-8')
             lineno = docstring_node.lineno  # The last line of the string.
             # This get the content of the file after the docstring last line
