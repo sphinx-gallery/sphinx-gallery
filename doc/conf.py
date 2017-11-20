@@ -343,7 +343,7 @@ sphinx_gallery_conf = {
                                   '../examples/no_output/plot_syntaxerror.py'],
     'binder': {'org': 'choldgraf',
                'repo': 'sphinx-gallery',
-               'url': 'https://beta.mybinder.org',
+               'url': 'https://mybinder.org',
                'branch': 'gh-pages',
                'dependencies': './requirements.txt',
                }

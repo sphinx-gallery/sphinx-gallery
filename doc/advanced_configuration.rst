@@ -30,7 +30,7 @@ file:
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
-
+- ``binder`` (:ref:`binder_links`)
 Some options can also be set or overridden on a file-by-file basis:
 
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
@@ -427,12 +427,20 @@ dictionary following the pattern below::
          'repo': '<github_repo>',
          'url': '<binder_url>',  # URL serving binders (e.g. mybinder.org)
          'branch': '<repo_branch>',  # Can also be a tag or commit hash
-         'dependencies': '<list_of_paths_to_dependency_files>'  # Dependency files Binder will use to build the environment. See docs.mybinder.org for details.
+         'dependencies': '<list_of_paths_to_dependency_files>'
          }
     }
 
+.. note::
+
+   ``dependencies`` should point to a list of Binder configuration files that
+   define the environment needed to run the examples. For example, a
+   ``requirements.txt`` or ``environment.yml`` file. These will be copied to
+   your documentation branch, and used by Binder to create your environment.
+   For more information on what files you can use, see docs.mybinder.org.
+
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
-for an example that uses the `public Binder server <http://beta.mybinder.org>`_.
+for an example that uses the `public Binder server <http://mybinder.org>`_.
 
 .. _without_execution:
 

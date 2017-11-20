@@ -68,7 +68,7 @@ install:
         source testvenv/bin/activate
         pip install -U requests[security]  # ensure SSL certificate works
         pip install -r requirements.txt
-        pip install seaborn sphinx>=1.5 pytest pytest-cov
+        pip install seaborn sphinx==1.5.5 pytest pytest-cov
       fi
     - pip install --upgrade --no-deps testfixtures
     - python setup.py install

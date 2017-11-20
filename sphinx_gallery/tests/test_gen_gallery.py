@@ -175,11 +175,11 @@ def test_duplicate_files_warn(config_app):
     """Test for a warning when two files with the same filename exist."""
     files = ['./a/file1.py', './a/file2.py', './b/file1.py']
     msg = ("Duplicate file name(s) found. Having duplicate file names will "
-           "break some links. List of files: %s")
+           "break some links. List of files: {}")
     m = "['./b/file1.py']" if sys.version_info[0] >= 3 else "[u'./b/file1.py']"
     with LogCapture() as log:
         check_duplicate_filenames(files)
-        log.check(('sphinx-gallery', 'WARNING', msg % m))
+        log.check(('sphinx-gallery', 'WARNING', msg.format(m)))
 
     with LogCapture() as log:
         check_duplicate_filenames(['a/file1.py', 'b/file2.py', 'a/file3.py'])
