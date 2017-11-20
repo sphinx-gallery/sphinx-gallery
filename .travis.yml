@@ -60,12 +60,13 @@ install:
       fi;
     - |
       if [ "$DISTRIB" == "ubuntu" ]; then
-        # Use a separate virtual environment that the one provided by
+        # Use a separate virtual environment than the one provided by
         # Travis because it contains numpy and we want to use numpy
         # from apt-get
         deactivate
         virtualenv --system-site-packages testvenv
         source testvenv/bin/activate
+        pip install -U requests[security]  # ensure SSL certificate works
         pip install -r requirements.txt
         pip install seaborn sphinx>=1.5 pytest pytest-cov
       fi
