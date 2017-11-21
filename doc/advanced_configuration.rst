@@ -31,6 +31,7 @@ file:
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
 - ``binder`` (:ref:`binder_links`)
+
 Some options can also be set or overridden on a file-by-file basis:
 
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)

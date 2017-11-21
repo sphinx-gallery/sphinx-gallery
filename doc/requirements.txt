@@ -4,3 +4,4 @@ matplotlib
 pillow
 seaborn
 scipy
+sphinx-gallery
