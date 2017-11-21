@@ -13,7 +13,6 @@ import sys
 import re
 import shutil
 import pytest
-from testfixtures import LogCapture
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
@@ -169,21 +168,22 @@ def test_config_backreferences(config_app):
     assert build_warn == ""
 
 
-@pytest.mark.skipif(sys.version_info[:2] == (3, 4),
-                    reason="Won't work on Python 3.4")
-def test_duplicate_files_warn(config_app):
+def test_duplicate_files_warn(capsys, config_app):
     """Test for a warning when two files with the same filename exist."""
-    files = ['./a/file1.py', './a/file2.py', './b/file1.py']
-    msg = ("Duplicate file name(s) found. Having duplicate file names will "
-           "break some links. List of files: {}")
+    files = ['./a/file1.py', './a/file2.py', 'a/file3.py', './b/file1.py']
+    msg = ("Duplicate file name(s) found. Having duplicate file names "
+           "will break some links. List of files: {}")
     m = "['./b/file1.py']" if sys.version_info[0] >= 3 else "[u'./b/file1.py']"
-    with LogCapture() as log:
-        check_duplicate_filenames(files)
-        log.check(('sphinx-gallery', 'WARNING', msg.format(m)))
 
-    with LogCapture() as log:
-        check_duplicate_filenames(['a/file1.py', 'b/file2.py', 'a/file3.py'])
-        log.check()
+    # No warning because no overlapping names
+    check_duplicate_filenames(files[:-1])
+    warnings = config_app._warning.getvalue()
+    assert warnings == ''
+
+    # Warning because last file is named the same
+    check_duplicate_filenames(files)
+    warnings = config_app._warning.getvalue()
+    assert msg.format(m) in warnings
 
 
 def _check_order(config_app, key):

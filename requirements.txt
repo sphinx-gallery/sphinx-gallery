@@ -3,4 +3,3 @@ matplotlib
 pillow
 sphinx
 pytest
-testfixtures
