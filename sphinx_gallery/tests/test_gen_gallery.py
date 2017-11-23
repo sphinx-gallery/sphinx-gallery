@@ -168,7 +168,7 @@ def test_config_backreferences(config_app):
     assert build_warn == ""
 
 
-def test_duplicate_files_warn(capsys, config_app):
+def test_duplicate_files_warn(config_app):
     """Test for a warning when two files with the same filename exist."""
     files = ['./a/file1.py', './a/file2.py', 'a/file3.py', './b/file1.py']
     msg = ("Duplicate file name(s) found. Having duplicate file names "

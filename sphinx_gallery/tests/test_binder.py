@@ -27,26 +27,30 @@ def test_binder():
     assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=_downloads/myfile.ipynb'
 
     # URL must have http
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
         conf2 = deepcopy(conf1)
         conf2['url'] = 'test1.com'
         url = check_binder_conf(conf2)
+
+    excinfo.match(r'did not supply a valid url')
 
     # Assert missing params
     for key in conf1.keys():
         conf3 = deepcopy(conf1)
         conf3.pop(key)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as excinfo:
             url = check_binder_conf(conf3)
+        excinfo.match(r"binder_conf is missing values for")
 
     # Dependencies file
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
         conf3 = deepcopy(conf1)
         conf3['dependencies'] = 'requirements_not.txt'
         url = check_binder_conf(conf3)
+    excinfo.match(r"Must provide requirements path to at least one of")
 
     # Check returns the correct object
     conf4 = check_binder_conf({})
     conf5 = check_binder_conf(None)
     for iconf in [conf4, conf5]:
-        assert isinstance(iconf, dict) and len(iconf) == 0
+        assert iconf == {}
