@@ -43,11 +43,19 @@ def test_binder():
         excinfo.match(r"binder_conf is missing values for")
 
     # Dependencies file
+    dependency_file_tests = ['requirements_not.txt', 'doc-requirements.txt']
+    for ifile in dependency_file_tests:
+        with pytest.raises(ValueError) as excinfo:
+            conf3 = deepcopy(conf1)
+            conf3['dependencies'] = ifile
+            url = check_binder_conf(conf3)
+        excinfo.match(r"Did not find one of `requirements.txt` or `environment.yml`")
+
     with pytest.raises(ValueError) as excinfo:
-        conf3 = deepcopy(conf1)
-        conf3['dependencies'] = 'requirements_not.txt'
-        url = check_binder_conf(conf3)
-    excinfo.match(r"Must provide requirements path to at least one of")
+        conf6 = deepcopy(conf1)
+        conf6['dependencies'] = {'test': 'test'}
+        url = check_binder_conf(conf6)
+    excinfo.match(r"`dependencies` value should be a list of strings")
 
     # Check returns the correct object
     conf4 = check_binder_conf({})

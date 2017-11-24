@@ -8,6 +8,7 @@ except NameError:
     basestring = str
     unicode = str
 
+
 def gen_binder_url(fname, binder_conf):
     """Generate a Binder URL according to the configuration in conf.py.
 
@@ -64,10 +65,8 @@ def gen_binder_rst(fname, binder_conf):
 
 def copy_binder_reqs(app):
     """Copy Binder requirements files to a "binder" folder in the docs."""
-    binder_conf = app.config.sphinx_gallery_conf.get('binder')
-    path_reqs = binder_conf.get('dependencies', None)
-    if not isinstance(path_reqs, (list, tuple)):
-        path_reqs = [path_reqs]
+    binder_conf = app.config.sphinx_gallery_conf['binder']
+    path_reqs = binder_conf.get('dependencies')
 
     binder_folder = os.path.join(app.builder.outdir, 'binder')
     if not os.path.isdir(binder_folder):
@@ -75,7 +74,6 @@ def copy_binder_reqs(app):
     for path in path_reqs:
         sh.copy(os.path.join(app.builder.srcdir, path),
                 binder_folder)
-
 
 def check_binder_conf(binder_conf):
     """Check to make sure that the Binder configuration is correct."""
@@ -90,7 +88,7 @@ def check_binder_conf(binder_conf):
     req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
     missing_values = []
     for val in req_values:
-        if not isinstance(binder_conf.get(val, None), (str, unicode)):
+        if binder_conf.get(val) is None:
             missing_values.append(val)
 
     if len(missing_values) > 0:
@@ -107,11 +105,17 @@ def check_binder_conf(binder_conf):
     # Need at least one of these two files
     required_reqs_files = ['requirements.txt', 'environment.yml']
     path_reqs = binder_conf['dependencies']
-    if not isinstance(path_reqs, list):
+    if isinstance(path_reqs, basestring):
         path_reqs = [path_reqs]
+        binder_conf['dependencies'] = path_reqs
+    elif not isinstance(path_reqs, (list, tuple)):
+        raise ValueError("`dependencies` value should be a list of strings. "
+                         "Got type {}.".format(type(path_reqs)))
 
-    if not any(ireq.endswith(ii)
-               for ii in required_reqs_files for ireq in path_reqs):
-        raise ValueError('Must provide requirements path to at least one of '
-                         '{}'.format(required_reqs_files))
+    path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
+    if not any(ii in path_reqs_filenames for ii in required_reqs_files):
+        raise ValueError('Did not find one of `requirements.txt` or `environment.yml` '
+                         'in the "dependencies" section of the binder configuration '
+                         'for sphinx-gallery. A path to at least one of these files must exist '
+                         'in your Binder dependencies.')
     return binder_conf

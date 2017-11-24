@@ -342,7 +342,7 @@ sphinx_gallery_conf = {
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py'],
     'binder': {'org': 'sphinx-gallery',
-               'repo': 'sphinx-gallery',
+               'repo': 'sphinx-gallery.github.io',
                'url': 'https://mybinder.org',
                'branch': 'gh-pages',
                'dependencies': './requirements.txt',

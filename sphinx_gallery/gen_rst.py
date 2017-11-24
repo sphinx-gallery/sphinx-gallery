@@ -549,7 +549,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed : float
         seconds required to run the script
     """
-    binder_conf = check_binder_conf(gallery_conf.get('binder', None))
+    binder_conf = check_binder_conf(gallery_conf.get('binder'))
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)

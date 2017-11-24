@@ -212,9 +212,11 @@ def generate_gallery_rst(app):
     computation_times = []
     workdirs = _prepare_sphx_glr_dirs(gallery_conf,
                                       app.builder.srcdir)
+    workdirs = list(workdirs)  # So we can iterate twice
 
     # Check for duplicate filenames to make sure linking works as expected
-    files = collect_gallery_files(workdirs)
+    examples_dirs = [ex_dir for ex_dir, _ in workdirs]
+    files = collect_gallery_files(examples_dirs)
     check_duplicate_filenames(files)
 
     for examples_dir, gallery_dir in workdirs:
@@ -266,7 +268,7 @@ def generate_gallery_rst(app):
                 logger.info("\t- %s: not run", fname)
 
     # Copy the requirements files for binder
-    binder_conf = check_binder_conf(gallery_conf.get('binder', None))
+    binder_conf = check_binder_conf(gallery_conf.get('binder'))
     if len(binder_conf) > 0:
         logger.info("copying binder requirements...")
         copy_binder_reqs(app)
@@ -342,13 +344,11 @@ def sumarize_failing_examples(app, exception):
                          "\n" + "-" * 79)
 
 
-def collect_gallery_files(workdirs):
+def collect_gallery_files(examples_dirs):
     """Collect a flat list of the filename for all sphinx-gallery .py files."""
-    workdirs = deepcopy(workdirs)
-    examples_dirs = [ex_dir for ex_dir, _ in workdirs]
     files = []
     for example_dir in examples_dirs:
-        for root, dirnames, filenames in os.walk('example_dir'):
+        for root, dirnames, filenames in os.walk(example_dir):
             for filename in filenames:
                 if filename.endswith('.py'):
                     files.append(os.path.join(root, filename))
@@ -365,12 +365,13 @@ def check_duplicate_filenames(files):
         this_fname = os.path.basename(this_file)
         if this_fname in used_names:
             dup_names.append(this_file)
-        used_names = used_names.union([this_fname])
+        else:
+            used_names.add(this_fname)
 
     if len(dup_names) > 0:
         logger.warning(
-            u'Duplicate file name(s) found. Having duplicate file names will '
-            'break some links. List of files: %s' % (sorted(dup_names),))
+            'Duplicate file name(s) found. Having duplicate file names will '
+            'break some links. List of files: {}'.format(sorted(dup_names),))
 
 
 def get_default_config_value(key):

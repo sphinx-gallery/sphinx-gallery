@@ -17,7 +17,8 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
 from sphinx_gallery import sphinx_compatibility
-from sphinx_gallery.gen_gallery import check_duplicate_filenames
+from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
+                                        collect_gallery_files)
 from sphinx_gallery.utils import _TempDir
 
 
@@ -250,3 +251,13 @@ sphinx_gallery_conf = {
 def test_example_sorting_title(config_app):
     """Test sorting of examples by title."""
     _check_order(config_app, 'title')
+
+
+def test_collect_gallery_files(config_app):
+    """Test that example files are collected properly."""
+    examples_dirs = ['tinybuild/examples']
+    collected_files = set(collect_gallery_files(examples_dirs))
+    examples_files = set(['plot_future_imports_broken.py', 'plot_future_imports.py',
+                          'plot_numpy_scipy.py', 'plot_second_future_imports.py'])
+
+    assert all(ii == jj for ii, jj in zip(collected_files, examples_files))
