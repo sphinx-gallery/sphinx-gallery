@@ -138,6 +138,13 @@ if not on_rtd and html_theme == 'rtd':
 def setup(app):
     app.add_stylesheet('theme_override.css')
 
+    import bokeh
+    bv = bokeh.__version__
+    app.add_stylesheet(
+        'http://cdn.pydata.org/bokeh/release/bokeh-{0}.min.css'.format(bv))
+    app.add_javascript(
+        'http://cdn.pydata.org/bokeh/release/bokeh-{0}.min.js'.format(bv))
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -323,7 +330,7 @@ try:
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
 except Exception:  # can raise all sorts of errors
-    image_scrapers = ('matplotlib',)
+    image_scrapers = ('matplotlib', 'bokeh')
 
 
 sphinx_gallery_conf = {
@@ -331,7 +338,7 @@ sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery', 'numpy'),
     'reference_url': {
         'sphinx_gallery': None,
-        },
+    },
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'image_scrapers': image_scrapers,

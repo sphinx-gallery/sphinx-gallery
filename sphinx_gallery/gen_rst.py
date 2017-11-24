@@ -336,9 +336,41 @@ def mayavi_scraper(image_path_iterator, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
+def bokeh_scraper(image_path, offset, sources_dir):
+    """Scrape bokeh objects"""
+
+    from bokeh.embed import autoload_static
+    html = '/home/oscar/dev/sphinx-gallery/examples/te.html'
+
+    if os.path.isfile(html):
+        with open(html) as embed:
+            rst = ".. raw:: html\n{0}".format(indent(embed.read(), u' ' * 4))
+
+    else:
+        return '', 0
+
+    js = html.replace('html', 'js')
+
+    store = os.path.dirname(os.path.dirname(image_path))
+    if os.path.isfile(js):
+        shutil.copyfile(js, os.path.join(store, 'te.js'))
+
+    html = '/home/oscar/dev/sphinx-gallery/examples/all.html'
+
+    import ipdb
+    ipdb.set_trace()
+    if os.path.isfile(html):
+        with open(html) as embed:
+            rst = "\n\n\n\n.. raw:: html\n{0}".format(
+                indent(embed.read(), u' ' * 4))
+
+    return rst, 1
+
+
 _scraper_dict = dict(
     matplotlib=matplotlib_scraper,
     mayavi=mayavi_scraper,
+    bokeh=bokeh_scraper,
 )
 
 
