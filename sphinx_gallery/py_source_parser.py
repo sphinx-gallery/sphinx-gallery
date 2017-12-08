@@ -55,16 +55,16 @@ def parse_source_file(filename):
 
 
 def get_docstring_and_rest(filename):
-    """Separate `filename` content between docstring and the rest
+    """Separate ``filename`` content between docstring and the rest
 
     Strongly inspired from ast.get_docstring.
 
     Returns
     -------
     docstring: str
-        docstring of `filename`
+        docstring of ``filename``
     rest: str
-        `filename` content without the docstring
+        ``filename`` content without the docstring
     """
     node, content = parse_source_file(filename)
 
@@ -149,7 +149,7 @@ def split_code_and_text_blocks(source_file):
     -------
     file_conf : dict
         File-specific settings given in comments as:
-        # sphinx_gallery_<name> = <value>
+        ``# sphinx_gallery_<name> = <value>``
     blocks : list of (label, content)
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.
