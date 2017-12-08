@@ -27,7 +27,7 @@ except ImportError:
 
     escape = partial(escape, entities={'"': '&quot;'})
 
-from .py_source_parser import parse_file_source
+from .py_source_parser import parse_source_file
 
 
 class NameFinder(ast.NodeVisitor):
@@ -104,7 +104,7 @@ def get_short_module_name(module_name, obj_name):
 
 def identify_names(filename):
     """Builds a codeobj summary by identifying and resolving used names"""
-    node, _ = parse_file_source(filename)
+    node, _ = parse_source_file(filename)
     if node is SyntaxError:
         return {}
 

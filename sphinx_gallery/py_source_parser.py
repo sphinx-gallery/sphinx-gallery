@@ -19,7 +19,7 @@ Example script with invalid Python syntax
 """
 
 
-def parse_file_source(filename):
+def parse_source_file(filename):
     """Parse source file into AST node
 
     Parameters
@@ -66,7 +66,7 @@ def get_docstring_and_rest(filename):
     rest: str
         `filename` content without the docstring
     """
-    node, content = parse_file_source(filename)
+    node, content = parse_source_file(filename)
 
     if node is SyntaxError:
         return SYNTAX_ERROR_DOCSTRING, content, 1
