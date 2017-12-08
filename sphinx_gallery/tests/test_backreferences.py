@@ -82,7 +82,7 @@ def test_identify_names():
     assert expected == res
 
 
-def test_identify_names2():
+def test_identify_names2(tmpdir):
     code_str = b"""
 # -*- coding: utf-8 -*-
 # \xc3\x9f
@@ -94,14 +94,9 @@ e.HelloWorld().f.g
     expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
                 'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd', 'module_short': 'd'}}
 
-    import locale
-    print(locale.getlocale())
+    fname = tmpdir.join("indentify_names.py")
+    fname.write(code_str)
 
-    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
-        f.write(code_str)
-    try:
-        res = sg.identify_names(f.name)
-    finally:
-        os.remove(f.name)
+    res = sg.identify_names(fname)
 
     assert expected == res
