@@ -51,7 +51,7 @@ def parse_source_file(filename):
         node = ast.parse(content)
         return node, content.decode('utf-8')
     except SyntaxError:
-        return SyntaxError, content.decode('utf-8')
+        return None, content.decode('utf-8')
 
 
 def get_docstring_and_rest(filename):
@@ -68,7 +68,7 @@ def get_docstring_and_rest(filename):
     """
     node, content = parse_source_file(filename)
 
-    if node is SyntaxError:
+    if node is None:
         return SYNTAX_ERROR_DOCSTRING, content, 1
 
     if not isinstance(node, ast.Module):
