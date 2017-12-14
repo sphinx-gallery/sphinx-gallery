@@ -68,4 +68,4 @@ identify_names
 
     fname = tmpdir.join("unicode_sample.py")
     fname.write(code_str, 'wb')
-    return fname
+    return fname.strpath

@@ -97,6 +97,6 @@ e.HelloWorld().f.g
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')
 
-    res = sg.identify_names(fname)
+    res = sg.identify_names(fname.strpath)
 
     assert expected == res
