@@ -10,11 +10,11 @@ Test source parser
 
 from __future__ import division, absolute_import, print_function
 import sphinx_gallery.py_source_parser as sg
+from sphinx_gallery.utils import unicode_sample
 
 
-def test_get_docstring_and_rest():
+def test_get_docstring_and_rest(unicode_sample):
 
-    docstring, rest, lineno = sg.get_docstring_and_rest(
-        'sphinx_gallery/tests/unicode.sample')
+    docstring, rest, lineno = sg.get_docstring_and_rest(unicode_sample)
     assert u'Únicode' in docstring
     assert u'heiß' in rest

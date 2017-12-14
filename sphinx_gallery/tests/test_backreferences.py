@@ -5,9 +5,9 @@
 Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
-import os
-import tempfile
+
 import sphinx_gallery.backreferences as sg
+from sphinx_gallery.utils import unicode_sample
 
 
 def test_thumbnail_div():
@@ -63,7 +63,7 @@ def test_backref_thumbnail_div():
     assert html_div == reference
 
 
-def test_identify_names():
+def test_identify_names(unicode_sample):
 
     expected = {
         'os.path.join':
@@ -78,7 +78,7 @@ def test_identify_names():
              'module_short': 'sphinx_gallery.back_references'}
     }
 
-    res = sg.identify_names('sphinx_gallery/tests/unicode.sample')
+    res = sg.identify_names(unicode_sample)
     assert expected == res
 
 
