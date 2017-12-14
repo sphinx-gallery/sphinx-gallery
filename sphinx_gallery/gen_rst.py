@@ -336,35 +336,25 @@ def mayavi_scraper(image_path_iterator, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
-def bokeh_scraper(image_path, offset, sources_dir):
+def bokeh_scraper(image_path, offset, sources_dir, example_global, block):
     """Scrape bokeh objects"""
+    from bokeh.embed import components
 
-    from bokeh.embed import autoload_static
-    html = '/home/oscar/dev/sphinx-gallery/examples/te.html'
+    prop_pat = re.compile(
+        r"^\s*#\s*sphx_glr_capture_bokeh\s*=\s*(.+)\s*$",
+        re.MULTILINE)
 
-    if os.path.isfile(html):
-        with open(html) as embed:
-            rst = ".. raw:: html\n{0}".format(indent(embed.read(), u' ' * 4))
+    rst = ''
+    for match in re.finditer(prop_pat, block[1]):
+        figure_name = match.group(1)
+        bokeh_fig = example_global.get(figure_name, None)
 
-    else:
-        return '', 0
+        script, div = components(bokeh_fig)
+        rst = "\n\n\n\n.. raw:: html\n{0}\n{1}".format(
+            indent(script, u' ' * 4),
+            indent(div, u' ' * 4))
 
-    js = html.replace('html', 'js')
-
-    store = os.path.dirname(os.path.dirname(image_path))
-    if os.path.isfile(js):
-        shutil.copyfile(js, os.path.join(store, 'te.js'))
-
-    html = '/home/oscar/dev/sphinx-gallery/examples/all.html'
-
-    import ipdb
-    ipdb.set_trace()
-    if os.path.isfile(html):
-        with open(html) as embed:
-            rst = "\n\n\n\n.. raw:: html\n{0}".format(
-                indent(embed.read(), u' ' * 4))
-
-    return rst, 1
+    return rst, 0
 
 
 _scraper_dict = dict(
