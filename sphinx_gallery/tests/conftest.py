@@ -68,3 +68,35 @@ def log_collector():
         sphinx_gallery.docs_resolv.logger = orig_dr_logger
         sphinx_gallery.gen_gallery.logger = orig_gg_logger
         sphinx_gallery.gen_rst.logger = orig_gr_logger
+
+
+@pytest.fixture
+def unicode_sample(tmpdir):
+    """Return temporary python source file with Unicode in various places"""
+    code_str = b"""# -*- coding: utf-8 -*-
+'''
+\xc3\x9anicode in header
+=================
+
+U\xc3\xb1icode in description
+'''
+
+# Code source: \xc3\x93scar N\xc3\xa1jera
+# License: BSD 3 clause
+
+import os
+path = os.path.join('a','b')
+
+a = 'hei\xc3\x9f'  # Unicode string
+
+import sphinx_gallery.back_references as br
+br.identify_names
+
+from sphinx_gallery.back_references import identify_names
+identify_names
+
+"""
+
+    fname = tmpdir.join("unicode_sample.py")
+    fname.write(code_str, 'wb')
+    return fname.strpath

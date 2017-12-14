@@ -12,7 +12,6 @@ from __future__ import division, absolute_import, print_function
 
 import tempfile
 from shutil import rmtree
-import pytest
 
 
 class _TempDir(str):
@@ -37,35 +36,3 @@ class _TempDir(str):
 
     def __del__(self):  # noqa: D105
         rmtree(self._path, ignore_errors=True)
-
-
-@pytest.fixture
-def unicode_sample(tmpdir):
-    """Return temporary python source file with Unicode in various places"""
-    code_str = b"""# -*- coding: utf-8 -*-
-'''
-\xc3\x9anicode in header
-=================
-
-U\xc3\xb1icode in description
-'''
-
-# Code source: \xc3\x93scar N\xc3\xa1jera
-# License: BSD 3 clause
-
-import os
-path = os.path.join('a','b')
-
-a = 'hei\xc3\x9f'  # Unicode string
-
-import sphinx_gallery.back_references as br
-br.identify_names
-
-from sphinx_gallery.back_references import identify_names
-identify_names
-
-"""
-
-    fname = tmpdir.join("unicode_sample.py")
-    fname.write(code_str, 'wb')
-    return fname.strpath

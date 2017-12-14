@@ -10,7 +10,6 @@ Test source parser
 
 from __future__ import division, absolute_import, print_function
 import sphinx_gallery.py_source_parser as sg
-from sphinx_gallery.utils import unicode_sample
 
 
 def test_get_docstring_and_rest(unicode_sample):
