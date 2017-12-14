@@ -95,7 +95,7 @@ e.HelloWorld().f.g
                 'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd', 'module_short': 'd'}}
 
     fname = tmpdir.join("indentify_names.py")
-    fname.write(code_str)
+    fname.write(code_str, 'wb')
 
     res = sg.identify_names(fname)
 
