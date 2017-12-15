@@ -400,8 +400,8 @@ of this functionality.
 
 .. _binder_links:
 
-Generate Binder links for gallery notebooks
-===========================================
+Generate Binder links for gallery notebooks (experimental)
+==========================================================
 
 Sphinx-Gallery automatically generates Jupyter notebooks for any
 examples built with the gallery. `Binder <http://mybinder.org>`_ makes it
@@ -432,13 +432,16 @@ dictionary following the pattern below::
          }
     }
 
-.. note::
+.. important::
 
-   ``dependencies`` should point to a list of Binder configuration files that
+   ``dependencies`` should be a list of paths to Binder configuration files that
    define the environment needed to run the examples. For example, a
-   ``requirements.txt`` or ``environment.yml`` file. These will be copied to
+   ``requirements.txt`` file. These will be copied to
    your documentation branch, and used by Binder to create your environment.
-   For more information on what files you can use, see docs.mybinder.org.
+   For more information on what files you can use, see `preparing your
+   repository <https://mybinder.readthedocs.io/en/latest/using.html#preparing-a-repository-for-binder>`_
+   in the `Binder documentation <docs.mybinder.org>`_ for more information on
+   what build files are supported.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the `public Binder server <http://mybinder.org>`_.
