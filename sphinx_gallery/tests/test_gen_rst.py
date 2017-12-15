@@ -9,6 +9,8 @@ from __future__ import (division, absolute_import, print_function,
 import ast
 import codecs
 import copy
+import io
+import logging
 import tempfile
 import re
 import os
@@ -319,6 +321,48 @@ def test_figure_rst():
     single_image = sg.SINGLE_IMAGE % "third.png"
     assert image_rst == single_image
     assert fig_num == 1
+
+
+class TestLoggingTee:
+    def setup(self):
+        self.output = io.StringIO()
+        self.source_name = 'source file name'
+        self.tee = sg.LoggingTee(self.output, self.source_name)
+
+    def test_full_line(self, log_collector):
+        # A full line is output immediately.
+        self.tee.write('Output\n')
+        self.tee.flush()
+        assert self.output.getvalue() == 'Output\n'
+        assert len(log_collector.calls['verbose']) == 2
+        assert self.source_name in log_collector.calls['verbose'][0].args
+        assert 'Output' in log_collector.calls['verbose'][1].args
+
+    def test_incomplete_line_with_flush(self, log_collector):
+        # An incomplete line ...
+        self.tee.write('Output')
+        assert self.output.getvalue() == 'Output'
+        assert len(log_collector.calls['verbose']) == 1
+        assert self.source_name in log_collector.calls['verbose'][0].args
+
+        # ... should appear when flushed.
+        self.tee.flush()
+        assert len(log_collector.calls['verbose']) == 2
+        assert 'Output' in log_collector.calls['verbose'][1].args
+
+    def test_incomplete_line_with_more_output(self, log_collector):
+        # An incomplete line ...
+        self.tee.write('Output')
+        assert self.output.getvalue() == 'Output'
+        assert len(log_collector.calls['verbose']) == 1
+        assert self.source_name in log_collector.calls['verbose'][0].args
+
+        # ... should appear when more data is written.
+        self.tee.write('\nMore output\n')
+        assert self.output.getvalue() == 'Output\nMore output\n'
+        assert len(log_collector.calls['verbose']) == 3
+        assert 'Output' in log_collector.calls['verbose'][1].args
+        assert 'More output' in log_collector.calls['verbose'][2].args
 
 
 # TODO: test that broken thumbnail does appear when needed
