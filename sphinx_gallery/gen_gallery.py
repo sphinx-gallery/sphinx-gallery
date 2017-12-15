@@ -344,7 +344,7 @@ def sumarize_failing_examples(app, exception):
 
 
 def collect_gallery_files(examples_dirs):
-    """Collect a flat list of the filename for all sphinx-gallery .py files."""
+    """Collect python files from the gallery example directories."""
     files = []
     for example_dir in examples_dirs:
         for root, dirnames, filenames in os.walk(example_dir):
