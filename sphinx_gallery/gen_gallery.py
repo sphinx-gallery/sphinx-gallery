@@ -193,7 +193,7 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
         if not os.path.exists(backreferences_dir):
             os.makedirs(backreferences_dir)
 
-    return zip(examples_dirs, gallery_dirs)
+    return list(zip(examples_dirs, gallery_dirs))
 
 
 def generate_gallery_rst(app):
@@ -212,7 +212,6 @@ def generate_gallery_rst(app):
     computation_times = []
     workdirs = _prepare_sphx_glr_dirs(gallery_conf,
                                       app.builder.srcdir)
-    workdirs = list(workdirs)  # So we can iterate twice
 
     # Check for duplicate filenames to make sure linking works as expected
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]

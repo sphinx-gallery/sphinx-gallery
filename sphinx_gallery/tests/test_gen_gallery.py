@@ -253,11 +253,34 @@ def test_example_sorting_title(config_app):
     _check_order(config_app, 'title')
 
 
-def test_collect_gallery_files(config_app):
+def test_collect_gallery_files(config_app, tmpdir):
     """Test that example files are collected properly."""
-    examples_dirs = ['tinybuild/examples']
-    collected_files = set(collect_gallery_files(examples_dirs))
-    examples_files = set(['plot_future_imports_broken.py', 'plot_future_imports.py',
-                          'plot_numpy_scipy.py', 'plot_second_future_imports.py'])
+    rel_filepaths = ['examples/file1.py',
+                     'examples/test.rst',
+                     'examples/README.txt',
+                     'examples/folder1/file1.py',
+                     'examples/folder1/file2.py',
+                     'examples/folder2/file1.py',
+                     'tutorials/folder1/subfolder/file1.py',
+                     'tutorials/folder2/subfolder/subsubfolder/file1.py']
 
-    assert all(ii == jj for ii, jj in zip(collected_files, examples_files))
+    abs_paths = [tmpdir.join(rp) for rp in rel_filepaths]
+    for ap in abs_paths:
+        ap.ensure()
+
+    examples_path = tmpdir.join('examples')
+    dirs = [examples_path.strpath]
+    collected_files = set(collect_gallery_files(dirs))
+    expected_files = set(
+        [ap.strpath for ap in abs_paths
+         if re.search(r'examples.*\.py$', ap.strpath)])
+
+    assert collected_files == expected_files
+
+    tutorials_path = tmpdir.join('tutorials')
+    dirs = [examples_path.strpath, tutorials_path.strpath]
+    collected_files = set(collect_gallery_files(dirs))
+    expected_files = set(
+        [ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)])
+
+    assert collected_files == expected_files

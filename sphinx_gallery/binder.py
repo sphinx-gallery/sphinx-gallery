@@ -1,6 +1,5 @@
 import shutil as sh
 import os
-from copy import deepcopy
 
 try:
     basestring
@@ -22,7 +21,8 @@ def gen_binder_url(fname, binder_conf):
     Returns
     -------
     binder_url : str
-        A URL that can be used to direct the user to the live Binder environment.
+        A URL that can be used to direct the user to the live Binder
+        environment.
     """
     # Build the URL
     binder_fpath = '_downloads/{}'.format(fname.replace('.py', '.ipynb'))
@@ -46,11 +46,16 @@ def gen_binder_rst(fname, binder_conf):
     binder_conf: dict | None
         If a dictionary it must have the following keys:
 
-        'url': The URL of the BinderHub instance that's running a Binder service.
-        'org': The GitHub organization to which the documentation will be pushed.
-        'repo': The GitHub repository to which the documentation will be pushed.
-        'branch': The Git branch on which the documentation exists (e.g., gh-pages).
-        'dependencies': A list of paths to dependency files that match the Binder spec.
+        'url': The URL of the BinderHub instance that's running a Binder
+            service.
+        'org': The GitHub organization to which the documentation will be
+            pushed.
+        'repo': The GitHub repository to which the documentation will be
+            pushed.
+        'branch': The Git branch on which the documentation exists (e.g.,
+            gh-pages).
+        'dependencies': A list of paths to dependency files that match the
+            Binderspec.
 
     Returns
     -------
@@ -58,7 +63,9 @@ def gen_binder_rst(fname, binder_conf):
         The reStructuredText for the Binder badge that links to this file.
     """
     binder_url = gen_binder_url(fname, binder_conf)
-    rst = ".. figure:: http://mybinder.org/badge.svg\n      :target: {}\n".format(binder_url)
+    rst = (".. figure:: http://mybinder.org/badge.svg\n"
+           "      :target: {}\n").format(
+        binder_url)
     rst += "      :width: 150 px\n      :figclass: binder-badge\n\n"
     return rst
 
@@ -74,6 +81,7 @@ def copy_binder_reqs(app):
     for path in path_reqs:
         sh.copy(os.path.join(app.builder.srcdir, path),
                 binder_folder)
+
 
 def check_binder_conf(binder_conf):
     """Check to make sure that the Binder configuration is correct."""
@@ -114,8 +122,9 @@ def check_binder_conf(binder_conf):
 
     path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
     if not any(ii in path_reqs_filenames for ii in required_reqs_files):
-        raise ValueError('Did not find one of `requirements.txt` or `environment.yml` '
-                         'in the "dependencies" section of the binder configuration '
-                         'for sphinx-gallery. A path to at least one of these files must exist '
-                         'in your Binder dependencies.')
+        raise ValueError(
+            'Did not find one of `requirements.txt` or `environment.yml` '
+            'in the "dependencies" section of the binder configuration '
+            'for sphinx-gallery. A path to at least one of these files '
+            'must exist in your Binder dependencies.')
     return binder_conf
