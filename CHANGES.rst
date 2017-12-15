@@ -10,6 +10,9 @@ Bug Fixes
 * Fix __future__ imports across cells. See `#308
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/308>` for more details.
 
+* Fix encoding related issues when locale is not UTF-8. See `#311
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/311>` for more
+  details.
 
 v0.1.13
 -------
