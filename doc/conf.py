@@ -344,7 +344,7 @@ sphinx_gallery_conf = {
     'binder': {'org': 'sphinx-gallery',
                'repo': 'sphinx-gallery.github.io',
                'url': 'https://mybinder.org',
-               'branch': 'gh-pages',
+               'branch': 'master',
                'dependencies': './binder/requirements.txt'
                }
 }
