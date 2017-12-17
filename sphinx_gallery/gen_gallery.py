@@ -102,7 +102,7 @@ Sphinx-Gallery now requires you to set the configuration variable
 backreferences. That is mini galleries clustered by the functions used
 in the example scripts. Have a look at it in sphinx-gallery
 
-https://sphinx-gallery.readthedocs.io/en/stable/index.html#examples-using-numpy-linspace
+https://sphinx-gallery.github.io/index.html#examples-using-numpy-sin
 """
 
     if gallery_conf.get("mod_example_dir", False):
@@ -110,7 +110,7 @@ https://sphinx-gallery.readthedocs.io/en/stable/index.html#examples-using-numpy-
 by 'backreferences_dir' in your conf.py file. If that does not solve the
 present issue read carefully how to update in the online documentation
 
-https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
+https://sphinx-gallery.github.io/advanced_configuration.html#references-to-examples"""
 
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
         logger.warning(

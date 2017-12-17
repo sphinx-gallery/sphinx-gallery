@@ -21,6 +21,7 @@ Developer changes
 '''''''''''''''''
 
 * Dropped support for Sphinx <= 1.4.
+* Change documentation links to use Github Pages hosted docs.
 
 v0.1.13
 -------
