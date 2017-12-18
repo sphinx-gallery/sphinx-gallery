@@ -30,6 +30,7 @@ file:
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
+- ``binder`` (:ref:`binder_links`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -397,6 +398,53 @@ The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
 :ref:`sphx_glr_auto_examples_plot_choose_thumbnail.py` for an example
 of this functionality.
 
+.. _binder_links:
+
+Generate Binder links for gallery notebooks (experimental)
+==========================================================
+
+Sphinx-Gallery automatically generates Jupyter notebooks for any
+examples built with the gallery. `Binder <http://mybinder.org>`_ makes it
+possible to create interactive GitHub repositories connect to cloud resources.
+If you host your documentation on a GitHub repository, it is possible to
+auto-generate a Binder link for each notebook. Clicking this link will
+take users to a live version of the Jupyter notebook where they may
+run the code interactively. For more information see the `Binder documentation
+<http://docs.mybinder.org>`_.
+
+.. warning::
+
+   Binder is still beta technology, so there may be instability in the
+   experience of users who click Binder links.
+
+In order to enable Binder links with Sphinx-Gallery, you must specify
+a few pieces of information in ``conf.py``. These are given as a nested
+dictionary following the pattern below::
+
+    sphinx_gallery_conf = {
+      ...
+      'binder': {
+         'org': '<github_org>',
+         'repo': '<github_repo>',
+         'url': '<binder_url>',  # URL serving binders (e.g. mybinder.org)
+         'branch': '<repo_branch>',  # Can also be a tag or commit hash
+         'dependencies': '<list_of_paths_to_dependency_files>'
+         }
+    }
+
+.. important::
+
+   ``dependencies`` should be a list of paths to Binder configuration files that
+   define the environment needed to run the examples. For example, a
+   ``requirements.txt`` file. These will be copied to
+   your documentation branch, and used by Binder to create your environment.
+   For more information on what files you can use, see `preparing your
+   repository <https://mybinder.readthedocs.io/en/latest/using.html#preparing-a-repository-for-binder>`_
+   in the `Binder documentation <docs.mybinder.org>`_ for more information on
+   what build files are supported.
+
+See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
+for an example that uses the `public Binder server <http://mybinder.org>`_.
 
 .. _without_execution:
 

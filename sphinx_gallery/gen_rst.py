@@ -81,6 +81,7 @@ from .downloads import CODE_DOWNLOAD
 from .py_source_parser import split_code_and_text_blocks
 
 from .notebook import jupyter_notebook, save_notebook
+from .binder import check_binder_conf, copy_binder_reqs, gen_binder_rst
 
 try:
     basestring
@@ -554,7 +555,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed : float
         seconds required to run the script
     """
-
+    binder_conf = check_binder_conf(gallery_conf.get('binder'))
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
@@ -570,7 +571,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
-    build_image_dir = os.path.relpath(image_dir, gallery_conf['src_dir'])
     image_path_template = os.path.join(image_dir, image_fname)
 
     ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
@@ -656,6 +656,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             example_rst += ("**Total running time of the script:**"
                             " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
                                 time_m, time_s))
+        # Generate a binder URL if specified
+        if len(binder_conf) > 0:
+            example_rst += gen_binder_rst(fname, binder_conf)
+
         example_rst += CODE_DOWNLOAD.format(fname,
                                             fname.replace('.py', '.ipynb'))
         example_rst += SPHX_GLR_SIG

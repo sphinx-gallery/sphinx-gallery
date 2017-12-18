@@ -9,6 +9,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
 import os
+import sys
 import re
 import shutil
 import pytest
@@ -16,6 +17,8 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
 from sphinx_gallery import sphinx_compatibility
+from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
+                                        collect_gallery_files)
 from sphinx_gallery.utils import _TempDir
 
 
@@ -166,6 +169,24 @@ def test_config_backreferences(config_app):
     assert build_warn == ""
 
 
+def test_duplicate_files_warn(config_app):
+    """Test for a warning when two files with the same filename exist."""
+    files = ['./a/file1.py', './a/file2.py', 'a/file3.py', './b/file1.py']
+    msg = ("Duplicate file name(s) found. Having duplicate file names "
+           "will break some links. List of files: {}")
+    m = "['./b/file1.py']" if sys.version_info[0] >= 3 else "[u'./b/file1.py']"
+
+    # No warning because no overlapping names
+    check_duplicate_filenames(files[:-1])
+    warnings = config_app._warning.getvalue()
+    assert warnings == ''
+
+    # Warning because last file is named the same
+    check_duplicate_filenames(files)
+    warnings = config_app._warning.getvalue()
+    assert msg.format(m) in warnings
+
+
 def _check_order(config_app, key):
     index_fname = os.path.join(config_app.outdir, '..', 'ex', 'index.rst')
     order = list()
@@ -230,3 +251,36 @@ sphinx_gallery_conf = {
 def test_example_sorting_title(config_app):
     """Test sorting of examples by title."""
     _check_order(config_app, 'title')
+
+
+def test_collect_gallery_files(config_app, tmpdir):
+    """Test that example files are collected properly."""
+    rel_filepaths = ['examples/file1.py',
+                     'examples/test.rst',
+                     'examples/README.txt',
+                     'examples/folder1/file1.py',
+                     'examples/folder1/file2.py',
+                     'examples/folder2/file1.py',
+                     'tutorials/folder1/subfolder/file1.py',
+                     'tutorials/folder2/subfolder/subsubfolder/file1.py']
+
+    abs_paths = [tmpdir.join(rp) for rp in rel_filepaths]
+    for ap in abs_paths:
+        ap.ensure()
+
+    examples_path = tmpdir.join('examples')
+    dirs = [examples_path.strpath]
+    collected_files = set(collect_gallery_files(dirs))
+    expected_files = set(
+        [ap.strpath for ap in abs_paths
+         if re.search(r'examples.*\.py$', ap.strpath)])
+
+    assert collected_files == expected_files
+
+    tutorials_path = tmpdir.join('tutorials')
+    dirs = [examples_path.strpath, tutorials_path.strpath]
+    collected_files = set(collect_gallery_files(dirs))
+    expected_files = set(
+        [ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)])
+
+    assert collected_files == expected_files

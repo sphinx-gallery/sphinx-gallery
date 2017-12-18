@@ -4,15 +4,26 @@ Change Log
 git master
 ----------
 
+New features
+''''''''''''
+
+* Added experimental support to auto-generate Binder links for examples via ``binder``
+  config. Note that this API may change in the future. `#244
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/244>`_
+
 Bug Fixes
 '''''''''
 
 * Fix __future__ imports across cells. See `#308
-  <https://github.com/sphinx-gallery/sphinx-gallery/pull/308>` for more details.
-
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/308>`_ for more details.
 * Fix encoding related issues when locale is not UTF-8. See `#311
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/311>` for more
   details.
+
+Developer changes
+'''''''''''''''''
+
+* Dropped support for Sphinx <= 1.4.
 
 v0.1.13
 -------

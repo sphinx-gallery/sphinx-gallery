@@ -28,3 +28,4 @@ every module.
    downloads
    docs_resolv
    sorting
+   binder
