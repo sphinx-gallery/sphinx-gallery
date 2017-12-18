@@ -19,21 +19,29 @@ Example script with invalid Python syntax
 """
 
 
-def get_docstring_and_rest(filename):
-    """Separate `filename` content between docstring and the rest
+def parse_source_file(filename):
+    """Parse source file into AST node
 
-    Strongly inspired from ast.get_docstring.
+    Parameters
+    ----------
+    filename : str
+        File path
+
 
     Returns
     -------
-    docstring: str
-        docstring of `filename`
-    rest: str
-        `filename` content without the docstring
+    node : AST node
+    content : utf-8 encoded string
     """
+
     # can't use codecs.open(filename, 'r', 'utf-8') here b/c ast doesn't
-    # seem to work with unicode strings in Python2.7
-    # "SyntaxError: encoding declaration in Unicode string"
+    # work with unicode strings in Python2.7 "SyntaxError: encoding
+    # declaration in Unicode string" In python 2.7 the string can't be
+    # encoded and have information about its encoding. That is particularly
+    # problematic since source files include in their header information
+    # about the file encoding.
+    # Minimal example to fail: ast.parse(u'# -*- coding: utf-8 -*-')
+
     with open(filename, 'rb') as fid:
         content = fid.read()
     # change from Windows format to UNIX for uniformity
@@ -41,8 +49,27 @@ def get_docstring_and_rest(filename):
 
     try:
         node = ast.parse(content)
+        return node, content.decode('utf-8')
     except SyntaxError:
-        return SYNTAX_ERROR_DOCSTRING, content.decode('utf-8'), 1
+        return None, content.decode('utf-8')
+
+
+def get_docstring_and_rest(filename):
+    """Separate ``filename`` content between docstring and the rest
+
+    Strongly inspired from ast.get_docstring.
+
+    Returns
+    -------
+    docstring: str
+        docstring of ``filename``
+    rest: str
+        ``filename`` content without the docstring
+    """
+    node, content = parse_source_file(filename)
+
+    if node is None:
+        return SYNTAX_ERROR_DOCSTRING, content, 1
 
     if not isinstance(node, ast.Module):
         raise TypeError("This function only supports modules. "
@@ -63,7 +90,7 @@ def get_docstring_and_rest(filename):
                 ds_lines, _ = tk.end
                 break
         # grab the rest of the file
-        rest = '\n'.join(content.decode('utf-8').split('\n')[ds_lines:])
+        rest = '\n'.join(content.split('\n')[ds_lines:])
         lineno = ds_lines + 1
 
     except AttributeError:
@@ -72,12 +99,15 @@ def get_docstring_and_rest(filename):
            isinstance(node.body[0].value, ast.Str):
             docstring_node = node.body[0]
             docstring = docstring_node.value.s
-            if hasattr(docstring, 'decode'):  # python2.7
+            # python2.7: Code was read in bytes needs decoding to utf-8
+            # unless future unicode_literals is imported in source which
+            # make ast output unicode strings
+            if hasattr(docstring, 'decode') and not isinstance(docstring, unicode):
                 docstring = docstring.decode('utf-8')
             lineno = docstring_node.lineno  # The last line of the string.
             # This get the content of the file after the docstring last line
             # Note: 'maxsplit' argument is not a keyword argument in python2
-            rest = content.decode('utf-8').split('\n', lineno)[-1]
+            rest = content.split('\n', lineno)[-1]
             lineno += 1
         else:
             docstring, rest = '', ''
@@ -119,7 +149,7 @@ def split_code_and_text_blocks(source_file):
     -------
     file_conf : dict
         File-specific settings given in comments as:
-        # sphinx_gallery_<name> = <value>
+        ``# sphinx_gallery_<name> = <value>``
     blocks : list of (label, content)
         List where each element is a tuple with the label ('text' or 'code'),
         and content string of block.

@@ -15,8 +15,7 @@ import sphinx_gallery.backreferences as spback
 
 
 filename = spback.__file__.replace('.pyc', '.py')
-file_code = open(filename, 'r').read()
-names = spback.identify_names(file_code)
+names = spback.identify_names(filename)
 figheight = len(names) + .5
 
 fontsize = 22

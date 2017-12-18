@@ -5,7 +5,7 @@
 Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
-import os
+
 import sphinx_gallery.backreferences as sg
 
 
@@ -62,20 +62,8 @@ def test_backref_thumbnail_div():
     assert html_div == reference
 
 
-def test_identify_names():
-    code_str = """
-import os
-os
+def test_identify_names(unicode_sample):
 
-os.path.join
-
-import sphinx_gallery.back_references as br
-br.identify_names
-
-from sphinx_gallery.back_references import identify_names
-identify_names
-"""
-    res = sg.identify_names(code_str)
     expected = {
         'os.path.join':
             {'name': 'join', 'module': 'os.path', 'module_short': 'os.path'},
@@ -88,5 +76,26 @@ identify_names
              'module': 'sphinx_gallery.back_references',
              'module_short': 'sphinx_gallery.back_references'}
     }
+
+    res = sg.identify_names(unicode_sample)
+    assert expected == res
+
+
+def test_identify_names2(tmpdir):
+    code_str = b"""
+# -*- coding: utf-8 -*-
+# \xc3\x9f
+from a.b import c
+import d as e
+print(c)
+e.HelloWorld().f.g
+"""
+    expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
+                'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd', 'module_short': 'd'}}
+
+    fname = tmpdir.join("indentify_names.py")
+    fname.write(code_str, 'wb')
+
+    res = sg.identify_names(fname.strpath)
 
     assert expected == res

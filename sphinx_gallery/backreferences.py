@@ -7,8 +7,8 @@ Backreferences Generator
 
 Parses example file code in order to keep track of used functions
 """
-
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
+import codecs
 import ast
 import os
 
@@ -26,6 +26,8 @@ except ImportError:
     from xml.sax.saxutils import escape
 
     escape = partial(escape, entities={'"': '&quot;'})
+
+from .py_source_parser import parse_source_file
 
 
 class NameFinder(ast.NodeVisitor):
@@ -100,25 +102,14 @@ def get_short_module_name(module_name, obj_name):
     return short_name
 
 
-def identify_names(code):
-    """Builds a codeobj summary by identifying and resolving used names
-
-    >>> code = '''
-    ... from a.b import c
-    ... import d as e
-    ... print(c)
-    ... e.HelloWorld().f.g
-    ... '''
-    >>> for name, o in sorted(identify_names(code).items()):
-    ...     print(name, o['name'], o['module'], o['module_short'])
-    c c a.b a.b
-    e.HelloWorld HelloWorld d d
-    """
-    finder = NameFinder()
-    try:
-        finder.visit(ast.parse(code))
-    except SyntaxError:
+def identify_names(filename):
+    """Builds a codeobj summary by identifying and resolving used names"""
+    node, _ = parse_source_file(filename)
+    if node is None:
         return {}
+
+    finder = NameFinder()
+    finder.visit(node)
 
     example_code_obj = {}
     for name, full_name in finder.get_mapping():
@@ -141,7 +132,7 @@ def identify_names(code):
 
 def scan_used_functions(example_file, gallery_conf):
     """save variables so we can later add links to the documentation"""
-    example_code_obj = identify_names(open(example_file).read())
+    example_code_obj = identify_names(example_file)
     if example_code_obj:
         codeobj_fname = example_file[:-3] + '_codeobj.pickle'
         with open(codeobj_fname, 'wb') as fid:
@@ -207,7 +198,8 @@ def write_backreferences(seen_backrefs, gallery_conf,
                                     gallery_conf['backreferences_dir'],
                                     '%s.examples' % backref)
         seen = backref in seen_backrefs
-        with open(include_path, 'a' if seen else 'w') as ex_file:
+        with codecs.open(include_path, 'a' if seen else 'w',
+                         encoding='utf-8') as ex_file:
             if not seen:
                 heading = '\n\nExamples using ``%s``' % backref
                 ex_file.write(heading + '\n')
