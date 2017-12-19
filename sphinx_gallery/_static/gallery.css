@@ -108,6 +108,12 @@ div.sphx-glr-footer {
     text-align: center;
 }
 
+div.binder-badge {
+  display: inline-block;
+  margin: 1em auto 1ex 2ex;
+  vertical-align: middle;
+}
+
 div.sphx-glr-download {
   display: inline-block;
   margin: 1em auto 1ex 2ex;
