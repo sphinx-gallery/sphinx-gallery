@@ -328,7 +328,8 @@ class TestLoggingTee:
     def setup(self):
         self.output_file = io.StringIO()
         self.src_filename = 'source file name'
-        self.tee = sg.LoggingTee(self.output_file, sg.logger, self.src_filename)
+        self.tee = sg.LoggingTee(self.output_file, sg.logger,
+                                 self.src_filename)
 
     def test_full_line(self, log_collector):
         # A full line is output immediately.
@@ -376,13 +377,11 @@ class TestLoggingTee:
         assert 'second line' in verbose_calls[2].args
         assert self.tee.logger_buffer == 'third line'
 
-    def test_isatty(self, capsys):
-        with capsys.disabled():
-            tee = sg.LoggingTee(sys.stdout, sg.logger, self.src_filename)
-            assert tee.isatty()
+    def test_isatty(self, monkeypatch):
+        assert not self.tee.isatty()
 
-        tee.output_file = io.StringIO()
-        assert not tee.isatty()
+        monkeypatch.setattr(self.tee.output_file, 'isatty', lambda: True)
+        assert self.tee.isatty()
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice

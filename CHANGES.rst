@@ -20,6 +20,11 @@ Bug Fixes
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/311>`_ for more
   details.
 
+* In verbose mode, example output is printed to the console during execution of
+  the example, rather than only at the end. See `#301
+  <https://github.com/sphinx-gallery/sphinx-gallery/issues/301>`_ for a use
+  case where it matters.
+
 Developer changes
 '''''''''''''''''
 
