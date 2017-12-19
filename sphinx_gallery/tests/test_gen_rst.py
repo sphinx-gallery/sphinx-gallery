@@ -10,12 +10,13 @@ import ast
 import codecs
 import copy
 import io
-import logging
 import tempfile
 import re
 import os
 import shutil
 import zipfile
+import sys
+
 import pytest
 
 import sphinx_gallery.gen_rst as sg
@@ -325,25 +326,25 @@ def test_figure_rst():
 
 class TestLoggingTee:
     def setup(self):
-        self.output = io.StringIO()
-        self.source_name = 'source file name'
-        self.tee = sg.LoggingTee(self.output, sg.logger, self.source_name)
+        self.output_file = io.StringIO()
+        self.src_filename = 'source file name'
+        self.tee = sg.LoggingTee(self.output_file, sg.logger, self.src_filename)
 
     def test_full_line(self, log_collector):
         # A full line is output immediately.
         self.tee.write('Output\n')
         self.tee.flush()
-        assert self.output.getvalue() == 'Output\n'
+        assert self.output_file.getvalue() == 'Output\n'
         assert len(log_collector.calls['verbose']) == 2
-        assert self.source_name in log_collector.calls['verbose'][0].args
+        assert self.src_filename in log_collector.calls['verbose'][0].args
         assert 'Output' in log_collector.calls['verbose'][1].args
 
     def test_incomplete_line_with_flush(self, log_collector):
         # An incomplete line ...
         self.tee.write('Output')
-        assert self.output.getvalue() == 'Output'
+        assert self.output_file.getvalue() == 'Output'
         assert len(log_collector.calls['verbose']) == 1
-        assert self.source_name in log_collector.calls['verbose'][0].args
+        assert self.src_filename in log_collector.calls['verbose'][0].args
 
         # ... should appear when flushed.
         self.tee.flush()
@@ -353,17 +354,35 @@ class TestLoggingTee:
     def test_incomplete_line_with_more_output(self, log_collector):
         # An incomplete line ...
         self.tee.write('Output')
-        assert self.output.getvalue() == 'Output'
+        assert self.output_file.getvalue() == 'Output'
         assert len(log_collector.calls['verbose']) == 1
-        assert self.source_name in log_collector.calls['verbose'][0].args
+        assert self.src_filename in log_collector.calls['verbose'][0].args
 
         # ... should appear when more data is written.
         self.tee.write('\nMore output\n')
-        assert self.output.getvalue() == 'Output\nMore output\n'
+        assert self.output_file.getvalue() == 'Output\nMore output\n'
         assert len(log_collector.calls['verbose']) == 3
         assert 'Output' in log_collector.calls['verbose'][1].args
         assert 'More output' in log_collector.calls['verbose'][2].args
 
+    def test_multi_line(self, log_collector):
+        self.tee.write('first line\rsecond line\nthird line')
+        assert (self.output_file.getvalue() ==
+                'first line\rsecond line\nthird line')
+        verbose_calls = log_collector.calls['verbose']
+        assert len(verbose_calls) == 3
+        assert self.src_filename in verbose_calls[0].args
+        assert 'first line' in verbose_calls[1].args
+        assert 'second line' in verbose_calls[2].args
+        assert self.tee.logger_buffer == 'third line'
+
+    def test_isatty(self, capsys):
+        with capsys.disabled():
+            tee = sg.LoggingTee(sys.stdout, sg.logger, self.src_filename)
+            assert tee.isatty()
+
+        tee.output_file = io.StringIO()
+        assert not tee.isatty()
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice

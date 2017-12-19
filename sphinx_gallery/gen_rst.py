@@ -98,38 +98,39 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 class LoggingTee(object):
     """A tee object to redirect streams to the logger"""
 
-    def __init__(self, output_file, logger, src_file):
+    def __init__(self, output_file, logger, src_filename):
         self.output_file = output_file
         self.logger = logger
-        self.src_file = src_file
+        self.src_filename = src_filename
         self.first_write = True
-        self.buf = ''
+        self.logger_buffer = ''
 
     def write(self, data):
         self.output_file.write(data)
 
         if self.first_write:
-            self.logger.verbose('Output from %s', self.src_file, color='brown')
+            self.logger.verbose('Output from %s', self.src_filename,
+                                color='brown')
             self.first_write = False
 
-        data = self.buf + data
+        data = self.logger_buffer + data
         lines = data.splitlines()
         if data and data[-1] not in '\r\n':
             # Wait to write last line if it's incomplete. It will write next
             # time or when the LoggingTee is flushed.
-            self.buf = lines[-1]
+            self.logger_buffer = lines[-1]
             lines = lines[:-1]
         else:
-            self.buf = ''
+            self.logger_buffer = ''
 
         for line in lines:
             self.logger.verbose('%s', line)
 
     def flush(self):
         self.output_file.flush()
-        if self.buf:
-            self.logger.verbose('%s', self.buf)
-            self.buf = ''
+        if self.logger_buffer:
+            self.logger.verbose('%s', self.logger_buffer)
+            self.logger_buffer = ''
 
     # When called from a local terminal seaborn needs it in Python3
     def isatty(self):
