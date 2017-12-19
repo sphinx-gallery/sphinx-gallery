@@ -95,6 +95,48 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 ###############################################################################
 
 
+class LoggingTee(object):
+    """A tee object to redirect streams to the logger"""
+
+    def __init__(self, output_file, logger, src_filename):
+        self.output_file = output_file
+        self.logger = logger
+        self.src_filename = src_filename
+        self.first_write = True
+        self.logger_buffer = ''
+
+    def write(self, data):
+        self.output_file.write(data)
+
+        if self.first_write:
+            self.logger.verbose('Output from %s', self.src_filename,
+                                color='brown')
+            self.first_write = False
+
+        data = self.logger_buffer + data
+        lines = data.splitlines()
+        if data and data[-1] not in '\r\n':
+            # Wait to write last line if it's incomplete. It will write next
+            # time or when the LoggingTee is flushed.
+            self.logger_buffer = lines[-1]
+            lines = lines[:-1]
+        else:
+            self.logger_buffer = ''
+
+        for line in lines:
+            self.logger.verbose('%s', line)
+
+    def flush(self):
+        self.output_file.flush()
+        if self.logger_buffer:
+            self.logger.verbose('%s', self.logger_buffer)
+            self.logger_buffer = ''
+
+    # When called from a local terminal seaborn needs it in Python3
+    def isatty(self):
+        return self.output_file.isatty()
+
+
 class MixedEncodingStringIO(StringIO):
     """Helper when both ASCII and unicode strings will be written"""
 
@@ -478,7 +520,7 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
 
     my_stdout = MixedEncodingStringIO()
     os.chdir(os.path.dirname(src_file))
-    sys.stdout = my_stdout
+    sys.stdout = LoggingTee(my_stdout, logger, src_file)
 
     try:
         dont_inherit = 1
@@ -491,6 +533,7 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
         exec(compiler(code_ast, src_file, 'exec'), example_globals)
         time_elapsed = time() - t_start
     except Exception:
+        sys.stdout.flush()
         sys.stdout = orig_stdout
         except_rst = handle_exception(sys.exc_info(), src_file, block_vars,
                                       gallery_conf)
@@ -503,14 +546,13 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
 
     else:
+        sys.stdout.flush()
         sys.stdout = orig_stdout
         os.chdir(cwd)
 
         my_stdout = my_stdout.getvalue().strip().expandtabs()
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
-            logger.verbose('Output from %s', src_file, color='brown')
-            logger.verbose(my_stdout)
         else:
             stdout = ''
         images_rst, fig_num = save_figures(block_vars['image_path'],
