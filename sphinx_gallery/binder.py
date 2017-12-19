@@ -17,6 +17,7 @@ change in the future.
 
 import shutil as sh
 import os
+from .utils import replace_py_ipynb
 
 try:
     basestring
@@ -42,7 +43,7 @@ def gen_binder_url(fname, binder_conf):
         environment.
     """
     # Build the URL
-    binder_fpath = '_downloads/{}'.format(fname.replace('.py', '.ipynb'))
+    binder_fpath = '_downloads/{}'.format(replace_py_ipynb(fname))
     binder_url = binder_conf['url']
     binder_url = '/'.join([binder_conf['url'],
                            'v2', 'gh',
