@@ -98,17 +98,18 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 class LoggingTee(object):
     """A tee object to redirect streams to the logger"""
 
-    def __init__(self, file1, src_file):
-        self.file1 = file1
+    def __init__(self, output_file, logger, src_file):
+        self.output_file = output_file
+        self.logger = logger
         self.src_file = src_file
         self.first_write = True
         self.buf = ''
 
     def write(self, data):
-        self.file1.write(data)
+        self.output_file.write(data)
 
         if self.first_write:
-            logger.verbose('Output from %s', self.src_file, color='brown')
+            self.logger.verbose('Output from %s', self.src_file, color='brown')
             self.first_write = False
 
         data = self.buf + data
@@ -122,17 +123,17 @@ class LoggingTee(object):
             self.buf = ''
 
         for line in lines:
-            logger.verbose('%s', line)
+            self.logger.verbose('%s', line)
 
     def flush(self):
-        self.file1.flush()
+        self.output_file.flush()
         if self.buf:
-            logger.verbose('%s', self.buf)
+            self.logger.verbose('%s', self.buf)
             self.buf = ''
 
     # When called from a local terminal seaborn needs it in Python3
     def isatty(self):
-        return self.file1.isatty()
+        return self.output_file.isatty()
 
 
 class MixedEncodingStringIO(StringIO):
@@ -518,7 +519,7 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
 
     my_stdout = MixedEncodingStringIO()
     os.chdir(os.path.dirname(src_file))
-    sys.stdout = LoggingTee(my_stdout, src_file)
+    sys.stdout = LoggingTee(my_stdout, logger, src_file)
 
     try:
         dont_inherit = 1

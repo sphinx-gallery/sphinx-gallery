@@ -327,7 +327,7 @@ class TestLoggingTee:
     def setup(self):
         self.output = io.StringIO()
         self.source_name = 'source file name'
-        self.tee = sg.LoggingTee(self.output, self.source_name)
+        self.tee = sg.LoggingTee(self.output, sg.logger, self.source_name)
 
     def test_full_line(self, log_collector):
         # A full line is output immediately.
