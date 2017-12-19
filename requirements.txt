@@ -2,4 +2,3 @@ setuptools
 matplotlib
 pillow
 sphinx
-pytest
