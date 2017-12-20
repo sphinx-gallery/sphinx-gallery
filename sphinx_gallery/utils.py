@@ -42,7 +42,7 @@ def replace_py_ipynb(fname):
     """Replace .py extension in filename by .ipynb"""
     fname_prefix, extension = fname.rsplit('.', 1)
     if extension != 'py':
-        raise RuntimeError(
+        raise ValueError(
             "Unrecognized file extension, expected '.py', got {!r}".format(
                 fname))
 

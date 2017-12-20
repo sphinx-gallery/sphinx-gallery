@@ -14,6 +14,8 @@ New features
 Bug Fixes
 '''''''''
 
+* Fix name string_replace trips on projects with ".py" in path. See `#322
+  https://github.com/sphinx-gallery/sphinx-gallery/issues/322` for more details.
 * Fix __future__ imports across cells. See `#308
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/308>`_ for more details.
 * Fix encoding related issues when locale is not UTF-8. See `#311
