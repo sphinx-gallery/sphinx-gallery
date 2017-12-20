@@ -68,5 +68,5 @@ target/
 *.swp
 *.swo
 
-### VisualStudioCode ###
+# VisualStudioCode
 .history

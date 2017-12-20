@@ -17,13 +17,14 @@ change in the future.
 
 import shutil as sh
 import os
-from .utils import replace_py_ipynb
 
 try:
     basestring
 except NameError:
     basestring = str
     unicode = str
+
+from .utils import replace_py_ipynb
 
 
 def gen_binder_url(fname, binder_conf):

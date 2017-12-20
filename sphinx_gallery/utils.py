@@ -37,14 +37,14 @@ class _TempDir(str):
     def __del__(self):  # noqa: D105
         rmtree(self._path, ignore_errors=True)
 
-def replace_py_ipynb(fname):
-    fname_prefix, extension = fname.rsplit('.', 1)
-    if extension == 'py':
-        new_extension = 'ipynb'
-    else:
-        raise RuntimeError('Unrecognized file extension; expected ".py", received "%s"' % extension)
-            
-    return '%s.%s' % (fname_prefix, new_extension)
 
-    # return fname.replace('.py', '.ipynb')
-    
+def replace_py_ipynb(fname):
+    """Replace .py extension in filename by .ipynb"""
+    fname_prefix, extension = fname.rsplit('.', 1)
+    if extension != 'py':
+        raise RuntimeError(
+            "Unrecognized file extension, expected '.py', got {!r}".format(
+                fname))
+
+    new_extension = 'ipynb'
+    return '{}.{}'.format(fname_prefix, new_extension)
