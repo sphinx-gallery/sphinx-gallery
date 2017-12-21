@@ -12,6 +12,7 @@ from __future__ import division, absolute_import, print_function
 
 import tempfile
 from shutil import rmtree
+import os
 
 
 class _TempDir(str):
@@ -40,11 +41,12 @@ class _TempDir(str):
 
 def replace_py_ipynb(fname):
     """Replace .py extension in filename by .ipynb"""
-    fname_prefix, extension = fname.rsplit('.', 1)
-    if extension != 'py':
-        raise ValueError(
-            "Unrecognized file extension, expected '.py', got {!r}".format(
-                fname))
 
-    new_extension = 'ipynb'
-    return '{}.{}'.format(fname_prefix, new_extension)
+    fname_prefix, extension = os.path.splitext(fname)
+    allowed_extension='.py'
+    if extension != allowed_extension:
+        raise ValueError(
+            "Unrecognized file extension, expected %s, got %s" % (allowed_extension, extension))
+
+    new_extension = '.ipynb'
+    return '{}{}'.format(fname_prefix, new_extension)
