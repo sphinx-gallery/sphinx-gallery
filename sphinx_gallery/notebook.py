@@ -15,7 +15,9 @@ import argparse
 import json
 import re
 import sys
+
 from .py_source_parser import split_code_and_text_blocks
+from .utils import replace_py_ipynb
 
 
 def jupyter_notebook_skeleton():
@@ -190,4 +192,4 @@ def python_to_jupyter_cli(args=None, namespace=None):
         file_conf, blocks = split_code_and_text_blocks(src_file)
         print('Converting {0}'.format(src_file))
         example_nb = jupyter_notebook(blocks)
-        save_notebook(example_nb, src_file.replace('.py', '.ipynb'))
+        save_notebook(example_nb, replace_py_ipynb(src_file))

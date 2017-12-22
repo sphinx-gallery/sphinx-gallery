@@ -24,6 +24,8 @@ except NameError:
     basestring = str
     unicode = str
 
+from .utils import replace_py_ipynb
+
 
 def gen_binder_url(fname, binder_conf):
     """Generate a Binder URL according to the configuration in conf.py.
@@ -42,7 +44,7 @@ def gen_binder_url(fname, binder_conf):
         environment.
     """
     # Build the URL
-    binder_fpath = '_downloads/{}'.format(fname.replace('.py', '.ipynb'))
+    binder_fpath = '_downloads/{}'.format(replace_py_ipynb(fname))
     binder_url = binder_conf['url']
     binder_url = '/'.join([binder_conf['url'],
                            'v2', 'gh',
