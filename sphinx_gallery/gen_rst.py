@@ -668,7 +668,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     example_rst = rst_notebook_cell(script_blocks, output_blocks,
                                     file_conf, gallery_conf)
-    save_rst_notebook(example_rst, example_file.replace('.py', '.rst'),
+    save_rst_notebook(example_rst, example_file,
                       time_elapsed, gallery_conf)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
@@ -765,8 +765,8 @@ def save_rst_notebook(example_rst, write_file, time_elapsed, gallery_conf):
     if len(binder_conf) > 0:
         example_rst += gen_binder_rst(fname, binder_conf)
 
-    example_rst += CODE_DOWNLOAD.format(re.sub('\.rst$', '.py', fname),
-                                        re.sub('\.rst$', '.ipynb', fname))
+    example_rst += CODE_DOWNLOAD.format(fname,
+                                        replace_py_ipynb(fname))
     example_rst += SPHX_GLR_SIG
 
     with codecs.open(write_file, 'w', encoding="utf-8") as f:
