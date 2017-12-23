@@ -82,7 +82,7 @@ def gen_binder_rst(fname, binder_conf):
         The reStructuredText for the Binder badge that links to this file.
     """
     binder_url = gen_binder_url(fname, binder_conf)
-    rst = (".. figure:: http://mybinder.org/badge.svg\n"
+    rst = (".. figure:: https://mybinder.org/badge.svg\n"
            "      :target: {}\n").format(
         binder_url)
     rst += "      :width: 150 px\n      :figclass: binder-badge\n\n"
