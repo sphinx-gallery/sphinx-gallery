@@ -129,7 +129,7 @@ div.sphx-glr-footer {
 }
 
 /* Special case the RTD theme, capturing "section.wy-nav-content" */
-@media only screen and (min-width: 150ex) {
+@media only screen and (min-width: 160ex) {
     section.wy-nav-content div.sphx-glr-footer-example  {
 	right: unset;
 	left: 140ex;
