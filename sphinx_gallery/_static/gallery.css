@@ -114,10 +114,21 @@ div.sphx-glr-footer {
 	position: fixed;
 	right: 5px;
 	top: 100px;
-	background: #f2f2f2;
-	padding: 1ex;
+	background: rgba(200, 200, 200, 0.3);
+	padding: 0ex 1ex;
 	border: solid 1px #ccc;
 	max-width: 25ex;
+	width: fit-content;
+	width: -moz-min-content;
+    }
+
+    /* Avoid overflow of long file names */
+    div.sphx-glr-footer-example code {
+	max-width: 100%;
+    }
+
+    div.sphx-glr-footer-example a {
+	max-width: 95%;
     }
 }
 
@@ -125,6 +136,7 @@ div.sphx-glr-footer {
 @media only screen and (min-width: 160ex) {
     div.sphx-glr-footer-example  {
 	right: 5%;
+	max-width: 30ex;
     }
 }
 
