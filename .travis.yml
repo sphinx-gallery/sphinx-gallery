@@ -24,7 +24,7 @@ matrix:
             - python-pandas
     # This environment tests is for mayavi
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="2.7"
+      env: DISTRIB="conda" PYTHON_VERSION="2.7" INSTALL_MAYAVI="true"
     # This environment tests the Python 3 versions
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.4"
@@ -36,52 +36,20 @@ matrix:
       env: DISTRIB="conda" PYTHON_VERSION="2.7" LOCALE=C
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
-    - os: linux
-      dist: trusty
-      python: 'nightly'
-  allow_failures:
-    - python: "nightly"
-before_install:
 
-    # Make sure that things work even if the locale is set to C (which effectively means ASCII).
-    # Some of the input rst files have unicode characters and we need to deal with this gracefully.
-    - if [[ $LOCALE == C ]]; then
-        export LC_CTYPE=C;
-        export LC_ALL=C;
-        export LANG=C;
-      fi
-    - if [ "$DISTRIB" == "conda" ]; then
-         wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-         chmod +x miniconda.sh;
-         ./miniconda.sh -b;
-         export PATH=/home/travis/miniconda2/bin:$PATH;
-         conda update --yes conda;
-      fi
+before_install:
+  # Make sure that things work even if the locale is set to C (which
+  # effectively means ASCII). Some of the input rst files have unicode
+  # characters and we need to deal with this gracefully.
+  - |
+    if [[ $LOCALE == C ]]; then
+        export LC_CTYPE=C
+        export LC_ALL=C
+        export LANG=C
+    fi
 
 install:
-    # force no mkl because mayavi requires old version of numpy
-    # which then crashes with pandas and seaborn
-    - if [ "$DISTRIB" == "conda" ]; then
-        conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy
-        setuptools matplotlib pillow sphinx pytest pytest-cov coverage seaborn;
-        source activate testenv;
-        if [ "$PYTHON_VERSION" == "2.7" ]; then
-          conda install --yes mayavi;
-        fi;
-      fi;
-    - |
-      if [ "$DISTRIB" == "ubuntu" ]; then
-        # Use a separate virtual environment than the one provided by
-        # Travis because it contains numpy and we want to use numpy
-        # from apt-get
-        deactivate
-        virtualenv --system-site-packages testvenv
-        source testvenv/bin/activate
-        pip install -U requests[security]  # ensure SSL certificate works
-        pip install -r requirements.txt
-        pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov
-      fi
-    - python setup.py install
+  - source continuous_integration/travis/install.sh
 
 # To test the mayavi environment follow the instructions at
 # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
@@ -91,8 +59,8 @@ before_script:
   - sleep 3 # give xvfb some time to start
 
 script:
-    - python setup.py test
-    - pytest sphinx_gallery
-    - cd doc
-    - make html-noplot
-    - make html -j 2
+  - bash continuous_integration/travis/test_script.sh
+
+after_success:
+  - pip install codecov
+  - codecov

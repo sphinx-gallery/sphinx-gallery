@@ -17,6 +17,7 @@ CODE_DOWNLOAD = """
 
  .. container:: sphx-glr-footer
 
+{2}
 \n  .. container:: sphx-glr-download
 
      :download:`Download Python source code: {0} <{0}>`\n
