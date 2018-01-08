@@ -122,7 +122,7 @@ div.sphx-glr-footer {
 }
 
 /* On very large screen, don't flush it too far */
-@media only screen and (min-width: 140ex) {
+@media only screen and (min-width: 150ex) {
     div.sphx-glr-footer-example  {
 	right: 5%;
     }
