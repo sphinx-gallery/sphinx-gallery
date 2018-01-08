@@ -108,6 +108,19 @@ div.sphx-glr-footer {
     text-align: center;
 }
 
+/* On large screens, float the download and binder buttons on the right */
+@media only screen and (min-width: 130ex) {
+    div.sphx-glr-footer  {
+	position: fixed;
+	right: 5px;
+	top: 100px;
+	background: #f2f2f2;
+	padding: 1ex;
+	border: solid 1px #ccc;
+	max-width: 15%;
+    }
+}
+
 div.binder-badge {
   margin: 1em auto;
   vertical-align: middle;
