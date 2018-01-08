@@ -109,7 +109,7 @@ div.sphx-glr-footer {
 }
 
 /* On large screens, float the download and binder buttons on the right */
-@media only screen and (min-width: 130ex) {
+@media only screen and (min-width: 140ex) {
     div.sphx-glr-footer-example  {
 	position: fixed;
 	right: 5px;
@@ -117,22 +117,22 @@ div.sphx-glr-footer {
 	background: #f2f2f2;
 	padding: 1ex;
 	border: solid 1px #ccc;
-	max-width: 15%;
+	max-width: 25ex;
     }
 }
 
 /* On very large screen, don't flush it too far */
-@media only screen and (min-width: 150ex) {
+@media only screen and (min-width: 160ex) {
     div.sphx-glr-footer-example  {
 	right: 5%;
     }
 }
 
 /* Special case the RTD theme, capturing "section.wy-nav-content" */
-@media only screen and (min-width: 160ex) {
+@media only screen and (min-width: 170ex) {
     section.wy-nav-content-wrap div.sphx-glr-footer-example  {
 	right: unset;
-	left: 140ex;
+	left: 150ex;
     }
 }
 
