@@ -701,11 +701,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                             " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
                                 time_m, time_s))
         # Generate a binder URL if specified
+        binder_badge_rst = ''
         if len(binder_conf) > 0:
-            example_rst += gen_binder_rst(fname, binder_conf)
+            binder_badge_rst += gen_binder_rst(fname, binder_conf)
 
         example_rst += CODE_DOWNLOAD.format(fname,
-                                            replace_py_ipynb(fname))
+                                            replace_py_ipynb(fname),
+                                            binder_badge_rst)
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 
