@@ -11,6 +11,11 @@ New features
   config. Note that this API may change in the future. `#244
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/244>`_
 
+* **CSS** Download and binder buttons are now on the right side for large
+  screens. This might change downstream CSS layouts.
+  "div.sphx-glr-footer-example" can be used to capture these specific
+  case in project-specific CSS.
+
 Bug Fixes
 '''''''''
 
