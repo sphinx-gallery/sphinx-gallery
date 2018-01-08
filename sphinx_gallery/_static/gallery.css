@@ -112,7 +112,7 @@ div.sphx-glr-footer {
 @media only screen and (min-width: 140ex) {
     div.sphx-glr-footer-example  {
 	position: fixed;
-	right: 5px;
+	right: 0px;
 	top: 100px;
 	background: rgba(200, 200, 200, 0.3);
 	padding: 0ex .5ex;
