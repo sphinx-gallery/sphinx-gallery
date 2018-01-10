@@ -601,12 +601,15 @@ def clean_modules():
 
 
 def executable_script(src_file, gallery_conf):
-    """Validate if script has to be run according to configuration
+    """Validate if script has to be run according to gallery configuration
 
     Parameters
     ----------
-    src_file: str
+    src_file : str
         path to python script
+
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
@@ -626,8 +629,9 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     Parameters
     ----------
     script_blocks : list
+        (label, content, line_number)
         List where each element is a tuple with the label ('text' or 'code'),
-        and corresponding content string of block.
+        the corresponding content string of block and the leading line number
     script_vars : dict
         Configuration and run time variables
     gallery_conf : dict
@@ -687,6 +691,17 @@ def execute_script(script_blocks, script_vars, gallery_conf):
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """Generate the rst file for a given example.
 
+    Parameters
+    ----------
+    fname : str
+        Filename of python script
+    target_dir : str
+        Absolute path to directory in documentation where examples are saved
+    src_dir : str
+        Absolute path to directory where source examples are stored
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
+
     Returns
     -------
     intro: str
@@ -742,6 +757,18 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
 
     Parameters
     ----------
+    script_blocks : list
+        (label, content, line_number)
+        List where each element is a tuple with the label ('text' or 'code'),
+        the corresponding content string of block and the leading line number
+    output_blocks : list
+        List of strings where each element is the restructured text
+        representation of the output of each block
+    file_conf : dict
+        File-specific settings given in source file comments as:
+        ``# sphinx_gallery_<name> = <value>``
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
@@ -783,8 +810,8 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
     example_rst : str
         rST containing the executed file content
 
-    write_fname : str
-        Filename with full path where to save the rST file
+    example_file : str
+        Filename with full path of python example file in documentation folder
 
     time_elapsed : float
         Time elapsed in seconds while executing file
@@ -818,6 +845,6 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
                                         binder_badge_rst)
     example_rst += SPHX_GLR_SIG
 
-    wf = re.sub(r'\.py$', '.rst', example_file)
-    with codecs.open(wf, 'w', encoding="utf-8") as f:
+    write_file = re.sub(r'\.py$', '.rst', example_file)
+    with codecs.open(write_file, 'w', encoding="utf-8") as f:
         f.write(example_rst)

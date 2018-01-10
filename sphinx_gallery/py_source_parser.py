@@ -149,11 +149,12 @@ def split_code_and_text_blocks(source_file):
     Returns
     -------
     file_conf : dict
-        File-specific settings given in comments as:
+        File-specific settings given in source file comments as:
         ``# sphinx_gallery_<name> = <value>``
-    blocks : list of (label, content)
+    blocks : list
+        (label, content, line_number)
         List where each element is a tuple with the label ('text' or 'code'),
-        and content string of block.
+        the corresponding content string of block and the leading line number
     """
     docstring, rest_of_content, lineno = get_docstring_and_rest(source_file)
     blocks = [('text', docstring, 1)]
