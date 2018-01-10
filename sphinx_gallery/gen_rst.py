@@ -658,6 +658,12 @@ def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
     sys.argv = argv_orig
     clean_modules()
 
+    # Write md5 checksum if the example was meant to run (no-plot
+    # shall not cache md5sum) and has build correctly
+    if block_vars['execute_script']:
+        with open(src_file + '.md5', 'w') as file_checksum:
+            file_checksum.write(get_md5sum(src_file))
+
     return output_blocks, time_elapsed
 
 
@@ -694,6 +700,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                                                  image_path_template,
                                                  gallery_conf)
 
+    logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
+
     example_rst = rst_blocks(script_blocks, output_blocks,
                              file_conf, gallery_conf)
     save_rst_example(example_rst, example_file,
@@ -703,14 +711,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     example_nb = jupyter_notebook(script_blocks)
     save_notebook(example_nb, replace_py_ipynb(example_file))
-
-    if executable_script(src_file, gallery_conf):
-        logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
-
-        # Write md5 checksum if the example was meant to run (no-plot
-        # shall not cache md5sum) and has build correctly
-        with open(example_file + '.md5', 'w') as file_checksum:
-            file_checksum.write(get_md5sum(example_file))
 
     return intro, time_elapsed
 
