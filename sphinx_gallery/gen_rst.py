@@ -517,7 +517,7 @@ def handle_exception(exc_info, src_file, block_vars, gallery_conf):
     return except_rst
 
 
-def execute_code_block(compiler, src_file, block, example_globals,
+def execute_code_block(compiler, block, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
     blabel, bcontent, lineno = block
@@ -620,7 +620,7 @@ def executable_script(src_file, gallery_conf):
     return execute
 
 
-def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
+def execute_script(script_blocks, block_vars, gallery_conf):
     example_globals = {
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
@@ -635,21 +635,17 @@ def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
         # Don't ever support __file__: Issues #166 #212
     }
 
-    block_vars = {'execute_script': executable_script(src_file, gallery_conf),
-                  'fig_count': 0,
-                  'image_path': image_path_template, 'src_file': src_file}
-
     argv_orig = sys.argv[:]
     if block_vars['execute_script']:
         # We want to run the example without arguments. See
         # https://github.com/sphinx-gallery/sphinx-gallery/pull/252
         # for more details.
-        sys.argv[0] = src_file
+        sys.argv[0] = block_vars['src_file']
         sys.argv[1:] = []
 
     t_start = time()
     compiler = codeop.Compile()
-    output_blocks = [execute_code_block(compiler, src_file, block,
+    output_blocks = [execute_code_block(compiler, block,
                                         example_globals,
                                         block_vars, gallery_conf)
                      for block in script_blocks]
@@ -661,8 +657,8 @@ def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
     # Write md5 checksum if the example was meant to run (no-plot
     # shall not cache md5sum) and has build correctly
     if block_vars['execute_script']:
-        with open(src_file + '.md5', 'w') as file_checksum:
-            file_checksum.write(get_md5sum(src_file))
+        with open(block_vars['target_file'] + '.md5', 'w') as file_checksum:
+            file_checksum.write(get_md5sum(block_vars['target_file']))
 
     return output_blocks, time_elapsed
 
@@ -678,13 +674,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         seconds required to run the script
     """
     src_file = os.path.normpath(os.path.join(src_dir, fname))
-    example_file = os.path.join(target_dir, fname)
-    shutil.copyfile(src_file, example_file)
+    target_file = os.path.join(target_dir, fname)
+    shutil.copyfile(src_file, target_file)
 
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
     intro, _ = extract_intro_and_title(fname, script_blocks[0][1])
 
-    if md5sum_is_current(example_file):
+    if md5sum_is_current(target_file):
         return intro, 0
 
     image_dir = os.path.join(target_dir, 'images')
@@ -695,22 +691,27 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path_template = os.path.join(image_dir, image_fname)
 
+    block_vars = {'execute_script': executable_script(src_file, gallery_conf),
+                  'fig_count': 0,
+                  'image_path': image_path_template,
+                  'src_file': src_file,
+                  'target_file': target_file}
+
     output_blocks, time_elapsed = execute_script(script_blocks,
-                                                 src_file,
-                                                 image_path_template,
+                                                 block_vars,
                                                  gallery_conf)
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
 
     example_rst = rst_blocks(script_blocks, output_blocks,
                              file_conf, gallery_conf)
-    save_rst_example(example_rst, example_file,
+    save_rst_example(example_rst, target_file,
                      time_elapsed, gallery_conf)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
     example_nb = jupyter_notebook(script_blocks)
-    save_notebook(example_nb, replace_py_ipynb(example_file))
+    save_notebook(example_nb, replace_py_ipynb(target_file))
 
     return intro, time_elapsed
 
