@@ -620,7 +620,28 @@ def executable_script(src_file, gallery_conf):
     return execute
 
 
-def execute_script(script_blocks, block_vars, gallery_conf):
+def execute_script(script_blocks, script_vars, gallery_conf):
+    """Execute and capture output from python script already in block structure
+
+    Parameters
+    ----------
+    script_blocks : list
+        List where each element is a tuple with the label ('text' or 'code'),
+        and corresponding content string of block.
+    script_vars : dict
+        Configuration and run time variables
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
+
+    Returns
+    -------
+    output_blocks : list
+        List of strings where each element is the restructured text
+        representation of the output of each block
+    time_elapsed : float
+        Time elapsed during execution
+    """
+
     example_globals = {
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
@@ -636,18 +657,18 @@ def execute_script(script_blocks, block_vars, gallery_conf):
     }
 
     argv_orig = sys.argv[:]
-    if block_vars['execute_script']:
+    if script_vars['execute_script']:
         # We want to run the example without arguments. See
         # https://github.com/sphinx-gallery/sphinx-gallery/pull/252
         # for more details.
-        sys.argv[0] = block_vars['src_file']
+        sys.argv[0] = script_vars['src_file']
         sys.argv[1:] = []
 
     t_start = time()
     compiler = codeop.Compile()
     output_blocks = [execute_code_block(compiler, block,
                                         example_globals,
-                                        block_vars, gallery_conf)
+                                        script_vars, gallery_conf)
                      for block in script_blocks]
     time_elapsed = time() - t_start
 
@@ -656,9 +677,9 @@ def execute_script(script_blocks, block_vars, gallery_conf):
 
     # Write md5 checksum if the example was meant to run (no-plot
     # shall not cache md5sum) and has build correctly
-    if block_vars['execute_script']:
-        with open(block_vars['target_file'] + '.md5', 'w') as file_checksum:
-            file_checksum.write(get_md5sum(block_vars['target_file']))
+    if script_vars['execute_script']:
+        with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
+            file_checksum.write(get_md5sum(script_vars['target_file']))
 
     return output_blocks, time_elapsed
 
@@ -691,14 +712,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path_template = os.path.join(image_dir, image_fname)
 
-    block_vars = {'execute_script': executable_script(src_file, gallery_conf),
-                  'fig_count': 0,
-                  'image_path': image_path_template,
-                  'src_file': src_file,
-                  'target_file': target_file}
+    script_vars = {'execute_script': executable_script(src_file, gallery_conf),
+                   'fig_count': 0,
+                   'image_path': image_path_template,
+                   'src_file': src_file,
+                   'target_file': target_file}
 
     output_blocks, time_elapsed = execute_script(script_blocks,
-                                                 block_vars,
+                                                 script_vars,
                                                  gallery_conf)
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
