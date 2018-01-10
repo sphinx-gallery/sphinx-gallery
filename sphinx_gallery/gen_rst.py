@@ -25,6 +25,7 @@ import subprocess
 import sys
 import traceback
 import codeop
+from io import StringIO
 from distutils.version import LooseVersion
 
 from .utils import replace_py_ipynb
@@ -52,7 +53,6 @@ except ImportError:
                 yield (prefix + line if predicate(line) else line)
         return ''.join(prefixed_lines())
 
-from io import StringIO
 
 # make sure that the Agg backend is set before importing any
 # matplotlib
@@ -678,24 +678,20 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     if block_vars['execute_script']:
         logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
-        # Writes md5 checksum if example has build correctly
-        # not failed and was initially meant to run(no-plot shall not cache
-        # md5sum)
+
+        # Write md5 checksum if the example was meant to run (no-plot
+        # shall not cache md5sum) and has build correctly
         with open(example_file + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(example_file))
 
     return intro, time_elapsed
 
 
-def rst_notebook_cell(script_blocks, output_blocks, file_conf, gallery_conf):
+def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     """Generates the rst string containing the script prose, code and output
 
     Parameters
     ----------
-    executed_blocks : list
-
-    gallery_conf : dict
-        Sphinx-Gallery configuration dictionary
 
     Returns
     -------
@@ -729,7 +725,7 @@ def rst_notebook_cell(script_blocks, output_blocks, file_conf, gallery_conf):
     return example_rst
 
 
-def save_rst_notebook(example_rst, write_file, time_elapsed, gallery_conf):
+def save_rst_example(example_rst, write_file, time_elapsed, gallery_conf):
     """Saves the rst notebook to write_file including necessary header & footer
 
     Parameters
@@ -748,7 +744,7 @@ def save_rst_notebook(example_rst, write_file, time_elapsed, gallery_conf):
     """
 
     ref_fname = os.path.relpath(write_file, gallery_conf['src_dir'])
-    ref_fname = ref_fname.replace(os.path.sep, "_").replace('.rst', '.py')
+    ref_fname = ref_fname.replace(os.path.sep, "_").replace('.py', '.rst')
 
     # there can be unicode content
     example_rst = u"\n\n.. _sphx_glr_{0}:\n\n{1}".format(
@@ -760,13 +756,16 @@ def save_rst_notebook(example_rst, write_file, time_elapsed, gallery_conf):
         " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(time_m, time_s)
 
     fname = os.path.basename(write_file)
+
     # Generate a binder URL if specified
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
+    binder_badge_rst = ''
     if len(binder_conf) > 0:
-        example_rst += gen_binder_rst(fname, binder_conf)
+        binder_badge_rst += gen_binder_rst(fname, binder_conf)
 
     example_rst += CODE_DOWNLOAD.format(fname,
-                                        replace_py_ipynb(fname))
+                                        replace_py_ipynb(fname),
+                                        binder_badge_rst)
     example_rst += SPHX_GLR_SIG
 
     with codecs.open(write_file, 'w', encoding="utf-8") as f:
