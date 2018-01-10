@@ -83,7 +83,7 @@ from .downloads import CODE_DOWNLOAD
 from .py_source_parser import split_code_and_text_blocks
 
 from .notebook import jupyter_notebook, save_notebook
-from .binder import check_binder_conf, copy_binder_reqs, gen_binder_rst
+from .binder import check_binder_conf, gen_binder_rst
 
 try:
     basestring
@@ -600,8 +600,27 @@ def clean_modules():
     plt.rcdefaults()
 
 
-def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
+def executable_script(src_file, gallery_conf):
+    """Validate if script has to be run according to configuration
+
+    Parameters
+    ----------
+    src_file: str
+        path to python script
+
+    Returns
+    -------
+    bool
+        True if script has to be executed
+    """
+
     filename_pattern = gallery_conf.get('filename_pattern')
+    execute = re.search(filename_pattern, src_file) and gallery_conf[
+        'plot_gallery']
+    return execute
+
+
+def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
     example_globals = {
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
@@ -615,12 +634,9 @@ def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
         '__name__': '__main__',
         # Don't ever support __file__: Issues #166 #212
     }
-    compiler = codeop.Compile()
 
-    execute = re.search(filename_pattern, src_file) and gallery_conf[
-        'plot_gallery']
-
-    block_vars = {'execute_script': execute, 'fig_count': 0,
+    block_vars = {'execute_script': executable_script(src_file, gallery_conf),
+                  'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
 
     argv_orig = sys.argv[:]
@@ -632,6 +648,7 @@ def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
         sys.argv[1:] = []
 
     t_start = time()
+    compiler = codeop.Compile()
     output_blocks = [execute_code_block(compiler, src_file, block,
                                         example_globals,
                                         block_vars, gallery_conf)
@@ -640,14 +657,6 @@ def execute_script(script_blocks, src_file, image_path_template, gallery_conf):
 
     sys.argv = argv_orig
     clean_modules()
-
-    if block_vars['execute_script']:
-        logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
-
-        # Write md5 checksum if the example was meant to run (no-plot
-        # shall not cache md5sum) and has build correctly
-        with open(example_file + '.md5', 'w') as file_checksum:
-            file_checksum.write(get_md5sum(example_file))
 
     return output_blocks, time_elapsed
 
@@ -695,6 +704,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_nb = jupyter_notebook(script_blocks)
     save_notebook(example_nb, replace_py_ipynb(example_file))
 
+    if executable_script(src_file, gallery_conf):
+        logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
+
+        # Write md5 checksum if the example was meant to run (no-plot
+        # shall not cache md5sum) and has build correctly
+        with open(example_file + '.md5', 'w') as file_checksum:
+            file_checksum.write(get_md5sum(example_file))
+
     return intro, time_elapsed
 
 
@@ -736,8 +753,8 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     return example_rst
 
 
-def save_rst_example(example_rst, write_file, time_elapsed, gallery_conf):
-    """Saves the rst notebook to write_file including necessary header & footer
+def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
+    """Saves the rst notebook to example_file including necessary header & footer
 
     Parameters
     ----------
@@ -754,8 +771,8 @@ def save_rst_example(example_rst, write_file, time_elapsed, gallery_conf):
         Sphinx-Gallery configuration dictionary
     """
 
-    ref_fname = os.path.relpath(write_file, gallery_conf['src_dir'])
-    ref_fname = ref_fname.replace(os.path.sep, "_").replace('.py', '.rst')
+    ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
+    ref_fname = ref_fname.replace(os.path.sep, "_")
 
     # there can be unicode content
     example_rst = u"\n\n.. _sphx_glr_{0}:\n\n{1}".format(
@@ -766,7 +783,7 @@ def save_rst_example(example_rst, write_file, time_elapsed, gallery_conf):
         example_rst += "**Total running time of the script:**"
         " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(time_m, time_s)
 
-    fname = os.path.basename(write_file)
+    fname = os.path.basename(example_file)
 
     # Generate a binder URL if specified
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
@@ -779,5 +796,6 @@ def save_rst_example(example_rst, write_file, time_elapsed, gallery_conf):
                                         binder_badge_rst)
     example_rst += SPHX_GLR_SIG
 
-    with codecs.open(write_file, 'w', encoding="utf-8") as f:
+    wf = re.sub(r'\.py$', '.rst', example_file)
+    with codecs.open(wf, 'w', encoding="utf-8") as f:
         f.write(example_rst)
