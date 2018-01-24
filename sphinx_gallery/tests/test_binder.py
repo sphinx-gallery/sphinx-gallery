@@ -26,6 +26,13 @@ def test_binder():
     url = gen_binder_url(file_path, conf1)
     assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=_downloads/myfile.ipynb'
 
+    # Assert filepath prefix is added
+    prefix = 'my_prefix/foo'
+    conf1['filepath_prefix'] = prefix
+    url = gen_binder_url(file_path, conf1)
+    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath={}/_downloads/myfile.ipynb'.format(prefix)
+    conf1.pop('filepath_prefix')
+
     # URL must have http
     with pytest.raises(ValueError) as excinfo:
         conf2 = deepcopy(conf1)
@@ -62,3 +69,10 @@ def test_binder():
     conf5 = check_binder_conf(None)
     for iconf in [conf4, conf5]:
         assert iconf == {}
+
+    # Assert extra unkonwn params
+    with pytest.raises(ValueError) as excinfo:
+        conf7 = deepcopy(conf1)
+        conf7['foo'] = 'blah'
+        url = check_binder_conf(conf7)
+    excinfo.match(r"Unknown Binder config key")

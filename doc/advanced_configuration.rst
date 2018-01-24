@@ -429,12 +429,14 @@ dictionary following the pattern below::
          'repo': '<github_repo>',
          'url': '<binder_url>',  # Any URL of a binder server. Must be full URL (e.g. https://mybinder.org).
          'branch': '<branch-for-documentation>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
-         'dependencies': '<list_of_paths_to_dependency_files>'
+         'dependencies': '<list_of_paths_to_dependency_files>',
+         'filepath_prefix': '<prefix>' # Optional, a prefix to append to any filepaths in Binder links.
+                            use this if you move your built documentation to a sub-folder of your repository (e.g., "v2.1")
          }
     }
 
 Note that ``branch:`` should be the branch on which your documentation is hosted.
-If you host your documentation on GitHub, this is usually ``gh-pages``.
+If you host your documentation on GitHub, this is usually ``gh-pages`` or ``master``.
 
 .. important::
 

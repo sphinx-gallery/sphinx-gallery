@@ -44,7 +44,10 @@ def gen_binder_url(fname, binder_conf):
         environment.
     """
     # Build the URL
+    fpath_prefix = binder_conf.get('filepath_prefix')
     binder_fpath = '_downloads/{}'.format(replace_py_ipynb(fname))
+    if fpath_prefix is not None:
+        binder_fpath = '/'.join([fpath_prefix.strip('/'), binder_fpath])
     binder_url = binder_conf['url']
     binder_url = '/'.join([binder_conf['url'],
                            'v2', 'gh',
@@ -116,6 +119,7 @@ def check_binder_conf(binder_conf):
 
     # Ensure all fields are populated
     req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
+    optional_values = ['filepath_prefix']
     missing_values = []
     for val in req_values:
         if binder_conf.get(val) is None:
@@ -124,6 +128,10 @@ def check_binder_conf(binder_conf):
     if len(missing_values) > 0:
         raise ValueError('binder_conf is missing values for: {}'.format(
             missing_values))
+
+    for key in binder_conf.keys():
+        if key not in (req_values + optional_values):
+            raise ValueError("Unknown Binder config key: {}".format(key))
 
     # Ensure we have http in the URL
     if not any(binder_conf['url'].startswith(ii)
