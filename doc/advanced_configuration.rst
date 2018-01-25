@@ -405,7 +405,8 @@ Generate Binder links for gallery notebooks (experimental)
 
 Sphinx-Gallery automatically generates Jupyter notebooks for any
 examples built with the gallery. `Binder <http://mybinder.org>`_ makes it
-possible to create interactive GitHub repositories connect to cloud resources.
+possible to create interactive GitHub repositories that connect to cloud resources.
+
 If you host your documentation on a GitHub repository, it is possible to
 auto-generate a Binder link for each notebook. Clicking this link will
 take users to a live version of the Jupyter notebook where they may
@@ -426,18 +427,24 @@ dictionary following the pattern below::
       'binder': {
          'org': '<github_org>',
          'repo': '<github_repo>',
-         'url': '<binder_url>',  # URL serving binders (e.g. mybinder.org)
-         'branch': '<repo_branch>',  # Can also be a tag or commit hash
-         'dependencies': '<list_of_paths_to_dependency_files>'
+         'url': '<binder_url>',  # Any URL of a binder server. Must be full URL (e.g. https://mybinder.org).
+         'branch': '<branch-for-documentation>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
+         'dependencies': '<list_of_paths_to_dependency_files>',
+         'filepath_prefix': '<prefix>' # Optional, a prefix to append to any filepaths in Binder links.
+                            use this if you move your built documentation to a sub-folder of your repository (e.g., "v2.1")
          }
     }
+
+Note that ``branch:`` should be the branch on which your documentation is hosted.
+If you host your documentation on GitHub, this is usually ``gh-pages`` or ``master``.
 
 .. important::
 
    ``dependencies`` should be a list of paths to Binder configuration files that
    define the environment needed to run the examples. For example, a
    ``requirements.txt`` file. These will be copied to
-   your documentation branch, and used by Binder to create your environment.
+   the documentation branch specified in ``branch:``. When a user clicks your
+   Binder link, these files will be used to create the environment.
    For more information on what files you can use, see `preparing your
    repository <https://mybinder.readthedocs.io/en/latest/using.html#preparing-a-repository-for-binder>`_
    in the `Binder documentation <docs.mybinder.org>`_ for more information on
