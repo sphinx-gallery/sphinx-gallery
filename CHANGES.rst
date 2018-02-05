@@ -50,6 +50,7 @@ Developer changes
 '''''''''''''''''
 
 * Dropped support for Sphinx <= 1.4.
+* Refactor for independent rst file construction
 
 v0.1.13
 -------
