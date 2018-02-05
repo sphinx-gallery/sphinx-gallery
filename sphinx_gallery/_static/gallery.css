@@ -210,11 +210,19 @@ ul.sphx-glr-horizontal img {
 .sphx-glr-single-img {
   margin: auto;
   display: block;
+  max-width: 100%;
+  transition: transform .2s;
 }
 
 .sphx-glr-multi-img {
   max-width: 42%;
   height: auto;
+  transition: transform .2s;
+}
+
+.sphx-glr-single-img:hover, .sphx-glr-multi-img:hover {
+  transform: scale(1.5);
+  z-index: 200;
 }
 
 p.sphx-glr-signature a.reference.external {
