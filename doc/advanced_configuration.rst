@@ -238,20 +238,29 @@ point to the directory containing ``searchindex.js``, such as
 Adding references to examples
 =============================
 
-Sphinx-Gallery enables you, when documenting your modules, to
-reference to the examples that use a particular function. For example
-if we are documenting the :func:`numpy.exp` function its possible to embed
-a small gallery of examples that is specific to this function and
-looks like this:
+When documenting a given function/class, Sphinx-Gallery enables you to link to
+any examples that either:
+
+1. Use the function/instantiate the class in the code.
+2. Refer to that function/class using sphinx markup ``:func:``/``:class:``
+   in a documentation block.
+
+The former is useful for auto-documenting functions that are used and classes
+that are explicitly instantiated. The latter is useful for classes that are
+typically implicitly returned rather than explicitly instantiated (e.g.,
+:class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
+within function calls).
+
+For example, we can embed a small gallery of all examples that use or
+refer to :func:`numpy.exp`, which looks like this:
 
 .. include:: gen_modules/backreferences/numpy.exp.examples
 .. raw:: html
 
         <div style='clear:both'></div>
 
-
-For such behavior to be available, you have to activate it in your
-Sphinx-Gallery configuration ``conf.py`` file with::
+For such behavior to be available, you have to activate it in
+your Sphinx-Gallery configuration ``conf.py`` file with::
 
     sphinx_gallery_conf = {
         ...

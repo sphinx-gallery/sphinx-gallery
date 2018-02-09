@@ -36,6 +36,8 @@
    .. autoclass:: {{ item }}
       :members:
 
+   .. include:: backreferences/{{fullname}}.{{item}}.examples
+
    {%- endfor %}
    {% endif %}
    {% endblock %}

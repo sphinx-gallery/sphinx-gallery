@@ -3,8 +3,14 @@
 Identifying function names in a script
 ======================================
 
-Calls Sphinx-Gallery identify names function to figure out which
-functions are called in the script and to which module do they belong.
+This demonstrates how Sphinx-Gallery identifies names function to figure out
+which functions are called in the script and to which module do they belong.
+
+It uses both the code itself, as well as the docstrings (such as this one),
+as adding a reference to :func:`numpy.sin` and :func:`numpy.exp` will create
+proper backreferences even if they are not explicitly used. This is useful
+in particular when functions return classes -- if you add them to the docstring
+of the example that calls them, they will be shown in the backreferences.
 """
 
 # Code source: Óscar Nájera

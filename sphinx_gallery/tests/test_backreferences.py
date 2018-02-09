@@ -83,6 +83,12 @@ def test_identify_names(unicode_sample):
 
 def test_identify_names2(tmpdir):
     code_str = b"""
+'''
+Title
+-----
+
+This is an example.
+'''
 # -*- coding: utf-8 -*-
 # \xc3\x9f
 from a.b import c
@@ -92,6 +98,23 @@ e.HelloWorld().f.g
 """
     expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
                 'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd', 'module_short': 'd'}}
+
+    fname = tmpdir.join("indentify_names.py")
+    fname.write(code_str, 'wb')
+
+    res = sg.identify_names(fname.strpath)
+
+    assert expected == res
+
+    code_str = """
+'''
+Title
+-----
+
+This example uses :func:`h.i`.
+'''
+""" + code_str.split("'''")[-1]
+    expected['h.i'] = {u'module': u'h', u'module_short': u'h', u'name': u'i'}
 
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')

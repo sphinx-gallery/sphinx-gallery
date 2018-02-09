@@ -68,3 +68,12 @@ def test_embed_links(sphinx_app):
     assert 'numpy.arange.html' in lines
     # assert '#module-matplotlib.pyplot' in lines
     # assert 'pyplot.html' in lines
+
+
+def test_backreferences(sphinx_app):
+    """Test backreferences."""
+    out_dir = sphinx_app.outdir
+    mod_file = op.join(out_dir, 'gen_modules', 'sphinx_gallery.sorting.html')
+    with codecs.open(mod_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'plot_numpy_scipy.html' in lines
