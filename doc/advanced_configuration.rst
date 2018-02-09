@@ -16,7 +16,7 @@ Most sphinx-gallery configuration options are set in the Sphinx ``conf.py``
 file:
 
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
-- ``filename_pattern`` (:ref:`build_pattern`)
+- ``filename_pattern`` and ``ignore_pattern`` (:ref:`build_pattern`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
 - ``reference_url`` (:ref:`link_to_documentation`)
@@ -69,12 +69,22 @@ Keep in mind that both lists have to be of the same length.
 
 .. _build_pattern:
 
-Building examples matching a pattern
-====================================
+Parsing and executing examples based on matching patterns
+=========================================================
 
-By default, Sphinx-Gallery execute only examples beginning with ``plot``. However,
-if this naming convention does not suit your project, you can modify this pattern
-in your Sphinx ``conf.py``. For example::
+By default, Sphinx-Gallery will **parse and add** all files with a ``.py``
+extension to the gallery. To ignore some files and omit them from the gallery
+entirely, you can use a regular expression (the default is shown here)::
+
+    sphinx_gallery_conf = {
+        ...
+        'ignore_pattern': '__init__\.py',
+    }
+
+Of the files that get **parsed and added** to the gallery, by default
+Sphinx-Gallery only **executes** files whose name begins with ``plot``.
+However, if this naming convention does not suit your project, you can modify
+the pattern of filenames to build in your Sphinx ``conf.py``. For example::
 
     sphinx_gallery_conf = {
         ...
@@ -92,11 +102,11 @@ you would do::
 
     sphinx_gallery_conf = {
         ...
-        'filename_pattern': 'plot_awesome_example.py',
+        'filename_pattern': 'plot_awesome_example\.py',
     }
 
 Here, one should escape the dot ``'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
-one is targeting a specific file, it is most certainly going to match the dot in the filename.
+one is targeting a specific file, it would match the dot in the filename even without this escape character.
 
 Similarly, to build only examples in a specific directory, you can do::
 
@@ -105,7 +115,7 @@ Similarly, to build only examples in a specific directory, you can do::
         'filename_pattern': '/directory/plot_',
     }
 
-Alternatively, you can skip some examples. For example, to skip building examples
+Alternatively, you can skip executing some examples. For example, to skip building examples
 starting with ``plot_long_examples_``, you would do::
 
     sphinx_gallery_conf = {
@@ -116,6 +126,13 @@ starting with ``plot_long_examples_``, you would do::
 As the patterns are parsed as `regular expressions`_, users are advised to consult the
 `regular expressions`_ module for more details.
 
+.. note::
+    Remember that Sphinx allows overriding ``conf.py`` values from the command
+    line, so you can for example build a single example directly via something like:
+
+    .. code-block:: console
+
+        $ sphinx-build -D sphinx_gallery_conf.filename_pattern=plot_specific_example\.py ...
 
 .. _sub_gallery_order:
 

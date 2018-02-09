@@ -15,7 +15,6 @@ import codecs
 import copy
 import re
 import os
-from copy import deepcopy
 
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
@@ -32,6 +31,7 @@ except NameError:
 
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
+    'ignore_pattern': '__init__\.py',
     'examples_dirs': os.path.join('..', 'examples'),
     'subsection_order': None,
     'within_subsection_order': NumberOfCodeLinesSortKey,
@@ -51,7 +51,7 @@ DEFAULT_GALLERY_CONF = {
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
-    'binder': {}
+    'binder': {},
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')

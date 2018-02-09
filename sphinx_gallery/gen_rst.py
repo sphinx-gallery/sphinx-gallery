@@ -431,8 +431,13 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
+    # get filenames
     listdir = [fname for fname in os.listdir(src_dir)
                if fname.endswith('.py')]
+    # limit which to look at based on regex
+    listdir = [fname for fname in listdir
+               if re.match(gallery_conf['ignore_pattern'], fname) is None]
+    # sort them
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
     entries_text = []
