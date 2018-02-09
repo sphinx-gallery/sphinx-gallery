@@ -208,11 +208,11 @@ def extract_intro_and_title(filename, docstring):
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
     # remove comments and other syntax like `.. _link:`
-    paragraphs = [p for p in paragraphs if not p.startswith('.. ')]
-    if len(paragraphs) <= 1:
+    paragraphs = [p for p in paragraphs
+                  if not p.startswith('.. ') and len(p) > 0]
+    if len(paragraphs) == 0:
         raise ValueError(
-            "Example docstring should have a header for the example title "
-            "and at least a paragraph explaining what the example is about. "
+            "Example docstring should have a header for the example title. "
             "Please check the example file:\n {}\n".format(filename))
     # Title is the first paragraph with any ReSTructuredText title chars
     # removed, i.e. lines that consist of (all the same) 7-bit non-ASCII chars.
@@ -220,8 +220,13 @@ def extract_intro_and_title(filename, docstring):
     title = paragraphs[0].strip().split('\n')
     title = ' '.join(t for t in title if len(t) > 0 and
                      (ord(t[0]) >= 128 or t[0].isalnum()))
+    if len(title) == 0:
+        raise ValueError('Empty title detected from first paragraph:\n%s'
+                         % (paragraphs[0],))
+    # Use the title if no other paragraphs are provided
+    first_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
     # Concatenate all lines of the first paragraph and truncate at 95 chars
-    first_paragraph = re.sub('\n', ' ', paragraphs[1])
+    first_paragraph = re.sub('\n', ' ', first_paragraph)
     first_paragraph = (first_paragraph[:95] + '...'
                        if len(first_paragraph) > 95 else first_paragraph)
 

@@ -15,7 +15,6 @@ import re
 import os
 import shutil
 import zipfile
-import sys
 
 import pytest
 
@@ -120,6 +119,26 @@ def test_extract_intro_and_title():
     assert 'Docstring' not in intro
     assert intro == 'This is the description of the example which goes on and on, Óscar'  # noqa
     assert 'second paragraph' not in intro
+
+    # SG incorrectly grabbing description when a label is defined (gh-232)
+    intro_label, title_label = sg.extract_intro_and_title(
+        '<string>', '\n'.join(['.. my_label', ''] + CONTENT[1:10]))
+    assert intro_label == intro
+    assert title_label == title
+
+    intro_whitespace, title_whitespace = sg.extract_intro_and_title(
+        '<string>', '\n'.join(CONTENT[1:4] + [''] + CONTENT[5:10]))
+    assert intro_whitespace == intro
+    assert title_whitespace == title
+
+    # Make example title optional (gh-222)
+    intro, title = sg.extract_intro_and_title('<string', 'Title\n-----')
+    assert intro == title == 'Title'
+
+    with pytest.raises(ValueError, match='should have a header'):
+        sg.extract_intro_and_title('<string>', '')  # no title
+    with pytest.raises(ValueError, match='Empty title'):
+        sg.extract_intro_and_title('<string>', '-')  # no real title
 
 
 def test_md5sums():
