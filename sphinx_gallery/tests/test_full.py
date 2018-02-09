@@ -43,6 +43,14 @@ def sphinx_app(tmpdir_factory):
     return app
 
 
+def test_timings(sphinx_app):
+    """Test that a timings page is created."""
+    out_dir = sphinx_app.outdir
+    timings_fname = op.join(out_dir, 'auto_examples',
+                            'sg_execution_times.html')
+    assert op.isfile(timings_fname)
+
+
 def test_run_sphinx(sphinx_app):
     out_dir = sphinx_app.outdir
     out_files = os.listdir(out_dir)

@@ -282,6 +282,7 @@ def generate_gallery_rst(app):
             examples_dir, gallery_dir, gallery_conf, seen_backrefs)
 
         computation_times += this_computation_times
+        write_computation_times(gallery_dir, this_computation_times)
 
         # we create an index.rst with all examples
         with codecs.open(os.path.join(gallery_dir, 'index.rst'), 'w',
@@ -299,6 +300,7 @@ def generate_gallery_rst(app):
                                      seen_backrefs)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
+                write_computation_times(target_dir, this_computation_times)
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(gallery_dir)
@@ -314,6 +316,15 @@ def generate_gallery_rst(app):
                     logger.info("\t- %s: %.2g sec", fname, time_elapsed)
             else:
                 logger.info("\t- %s: not run", fname)
+
+
+def write_computation_times(gallery_dir, computation_times):
+    with codecs.open(os.path.join(gallery_dir, 'sg_execution_times.rst'), 'w',
+                     encoding='utf-8') as fid:
+        fid.write(":orphan:\n\nComputation times\n-----------------\n\n")
+        # sort by time (descending) then alphabetical
+        for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
+            fid.write(u'- {0}: {1} sec\n'.format(ct[1], ct[0]))
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
