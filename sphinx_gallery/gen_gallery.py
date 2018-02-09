@@ -324,7 +324,7 @@ def write_computation_times(gallery_dir, computation_times):
         fid.write(":orphan:\n\nComputation times\n-----------------\n\n")
         # sort by time (descending) then alphabetical
         for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
-            fid.write(u'- {0}: {1} sec\n'.format(ct[1], ct[0]))
+            fid.write(u'- {0}: {1:g} sec\n'.format(ct[1], ct[0]))
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
