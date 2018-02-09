@@ -106,14 +106,14 @@ e.HelloWorld().f.g
 
     assert expected == res
 
-    code_str = """
+    code_str = b"""
 '''
 Title
 -----
 
 This example uses :func:`h.i`.
 '''
-""" + code_str.split("'''")[-1]
+""" + code_str.split(b"'''")[-1]
     expected['h.i'] = {u'module': u'h', u'module_short': u'h', u'name': u'i'}
 
     fname = tmpdir.join("indentify_names.py")
