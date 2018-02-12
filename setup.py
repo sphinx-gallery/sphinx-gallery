@@ -35,8 +35,6 @@ setup(
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',
     install_requires=install_requires,
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'pytest-cov'],
     license='3-clause BSD',
     classifiers=['Intended Audience :: Developers',
                  'Development Status :: 3 - Alpha',

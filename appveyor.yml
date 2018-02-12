@@ -29,10 +29,9 @@ install:
 build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
-  # Run the project tests
-  - python setup.py test
-  # Build the docs
   - python setup.py develop
+  - pytest sphinx_gallery
+  # Build the docs
   - cd doc
   # The Makefile doesn't work directly on Windows PowerShell because of
   # slashes (but will work e.g. in Msys-git), so for now do these manually
