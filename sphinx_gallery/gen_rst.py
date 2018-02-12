@@ -434,9 +434,11 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     # get filenames
     listdir = [fname for fname in os.listdir(src_dir)
                if fname.endswith('.py')]
-    # limit which to look at based on regex
+    # limit which to look at based on regex (similar to filename_pattern)
     listdir = [fname for fname in listdir
-               if re.match(gallery_conf['ignore_pattern'], fname) is None]
+               if re.search(gallery_conf['ignore_pattern'],
+                            os.path.normpath(os.path.join(src_dir, fname)))
+               is None]
     # sort them
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
