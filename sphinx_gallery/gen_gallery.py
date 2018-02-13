@@ -96,21 +96,14 @@ def parse_config(app):
         abort_on_example_error=app.builder.config.abort_on_example_error)
     gallery_conf['src_dir'] = app.builder.srcdir
 
-    backreferences_warning = """\n========
-Sphinx-Gallery now requires you to set the configuration variable
-'backreferences_dir' in your config to activate the
-backreferences. That is mini galleries clustered by the functions used
-in the example scripts. Have a look at it in sphinx-gallery
-
-https://sphinx-gallery.readthedocs.io/en/stable/index.html#examples-using-numpy-linspace
-"""
-
     if gallery_conf.get("mod_example_dir", False):
-        update_msg = """\nFor a quick fix try replacing 'mod_example_dir'
-by 'backreferences_dir' in your conf.py file. If that does not solve the
-present issue read carefully how to update in the online documentation
+        backreferences_warning = """\n========
+        Sphinx-Gallery found the configuration key 'mod_example_dir'. This
+        is deprecated, and you should now use the key 'backreferences_dir'
+        instead. Support for 'mod_example_dir' will be removed in a subsequent version
+        of Sphinx-Gallery. For example, see the backreferences documentation:
 
-https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
+        https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
 
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
         logger.warning(
@@ -118,15 +111,9 @@ https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#refe
             "using the configuration variable `mod_example_dir`\n"
             "%s%s",
             backreferences_warning,
-            update_msg,
             type=DeprecationWarning)
 
     elif gallery_conf['backreferences_dir'] is None:
-        no_care_msg = """
-If you don't care about this features set in your conf.py
-'backreferences_dir': False\n"""
-
-        logger.warning(backreferences_warning + no_care_msg)
 
         gallery_conf['backreferences_dir'] = os.path.join(
             'modules', 'generated')

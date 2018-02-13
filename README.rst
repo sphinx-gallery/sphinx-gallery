@@ -128,8 +128,6 @@ is declared with a relative path from the ``conf.py`` file location::
       'examples_dirs' : '../examples',
       # path where to save gallery generated examples
       'gallery_dirs'  : 'auto_examples',
-      # Directory for back-references:
-      'backreferences_dir'  : 'gen_modules/backreferences',
     }
 
 The ``gallery_dirs`` is the folder where Sphinx-Gallery will store the
