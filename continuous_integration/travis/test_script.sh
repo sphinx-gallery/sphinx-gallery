@@ -6,7 +6,6 @@
 
 set -e
 
-python setup.py test
 pytest sphinx_gallery
 cd doc
 make html-noplot
