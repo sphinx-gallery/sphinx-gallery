@@ -109,41 +109,7 @@ def test_config_old_backreferences_conf(config_app):
     assert "WARNING:" in build_warn
     assert "Old configuration" in build_warn
     assert "mod_example_dir" in build_warn
-    assert "Gallery now requires" in build_warn
-    assert "For a quick fix" in build_warn
-    assert "'backreferences_dir': False" not in build_warn
-
-
-@pytest.mark.conf_file(content="""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'
-
-sphinx_gallery_conf = {
-    'examples_dirs': 'src',
-    'gallery_dirs': 'ex',
-}""")
-def test_config_unset_backreferences(config_app):
-    """Testing Deprecation warning message against unset backreference config
-
-    In this case the user is notified to update the set the
-    backreferences_dir config variable if such feature is to be enabled or
-    otherwise to deactivate the feature. Sphinx-Gallery should notify the
-    user and also silently setup the old default config value into the new
-    config style. """
-
-    cfg = config_app.config
-    assert cfg.project == "Sphinx-Gallery <Tests>"
-    assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
-        'modules', 'generated')
-    build_warn = config_app._warning.getvalue()
-
-    assert "Gallery now requires" in build_warn
-    assert "'backreferences_dir': False" in build_warn
-    assert "WARNING:" in build_warn
-    assert "mod_example_dir" not in build_warn
+    assert "Support for 'mod_example_dir'" in build_warn
 
 
 @pytest.mark.conf_file(content="""

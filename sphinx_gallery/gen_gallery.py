@@ -101,16 +101,17 @@ def parse_config(app):
         Sphinx-Gallery found the configuration key 'mod_example_dir'. This
         is deprecated, and you should now use the key 'backreferences_dir'
         instead. Support for 'mod_example_dir' will be removed in a subsequent version
-        of Sphinx-Gallery. For example, see the backreferences documentation:
+        of Sphinx-Gallery."""
+        update_msg = """For example, see the backreferences documentation:
 
         https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
-
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
         logger.warning(
             "Old configuration for backreferences detected \n"
             "using the configuration variable `mod_example_dir`\n"
             "%s%s",
             backreferences_warning,
+            update_msg,
             type=DeprecationWarning)
 
     elif gallery_conf['backreferences_dir'] is None:
