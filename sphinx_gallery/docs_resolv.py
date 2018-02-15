@@ -148,9 +148,11 @@ class SphinxDocLinkResolver(object):
                                  'URLs (doc_url cannot be absolute)')
             index_url = doc_url + '/'
             searchindex_url = doc_url + '/searchindex.js'
+            docopts_url = doc_url + '_static/documentation_options.js'
         else:
             index_url = os.path.join(doc_url, 'index.html')
             searchindex_url = os.path.join(doc_url, 'searchindex.js')
+            docopts_url = os.path.join(doc_url, '_static', 'documentation_options.js')
 
         # detect if we are using relative links on a Windows system
         if (os.name.lower() == 'nt' and
@@ -162,9 +164,18 @@ class SphinxDocLinkResolver(object):
         else:
             self._is_windows = False
 
-        # Download and find documentation options.
+        # Download and find documentation options. As of Sphinx 1.7, these
+        # options are now kept in a standalone file called
+        # 'documentation_options.js'. Since SphinxDocLinkResolver can be called
+        # not only for the documentation which is being built but also ones that
+        # are being referenced, we need to try and get the index page first and
+        # if that doesn't work, check for the documentation_options.js file.
         index = get_data(index_url, gallery_dir)
-        self._docopts = parse_sphinx_docopts(index)
+        if 'DOCUMENTATION_OPTIONS' in index:
+            self._docopts = parse_sphinx_docopts(index)
+        else:
+            docopts = get_data(docopts_url, gallery_dir)
+            self._docopts = parse_sphinx_docopts(docopts)
 
         # download and initialize the search index
         sindex = get_data(searchindex_url, gallery_dir)
