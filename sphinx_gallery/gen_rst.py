@@ -388,14 +388,6 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     thumb.paste(img, pos_insert)
 
     thumb.save(out_fname)
-    # Use optipng to perform lossless compression on the resized image if
-    # software is installed
-    if os.environ.get('SKLEARN_DOC_OPTIPNG', False):
-        try:
-            subprocess.call(["optipng", "-quiet", "-o", "9", out_fname])
-        except Exception:
-            logger.warning(
-                'Install optipng to reduce the size of the generated images')
 
 
 def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):

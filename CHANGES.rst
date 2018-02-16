@@ -32,6 +32,14 @@ Bug Fixes
   <https://github.com/sphinx-gallery/sphinx-gallery/issues/301>`_ for a use
   case where it matters.
 
+Incompatible Changes
+''''''''''''''''''''
+
+* Removed optipng feature that was triggered when the SKLEARN_DOC_OPTIPNG
+  variable was set. See `#349
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/349>`_ for more
+  details.
+
 Developer changes
 '''''''''''''''''
 
