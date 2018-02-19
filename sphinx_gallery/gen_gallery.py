@@ -100,28 +100,14 @@ def parse_config(app):
         backreferences_warning = """\n========
         Sphinx-Gallery found the configuration key 'mod_example_dir'. This
         is deprecated, and you should now use the key 'backreferences_dir'
-        instead. Support for 'mod_example_dir' will be removed in a subsequent version
-        of Sphinx-Gallery."""
-        update_msg = """For example, see the backreferences documentation:
+        instead. Support for 'mod_example_dir' will be removed in a subsequent
+        version of Sphinx-Gallery. For more details, see the backreferences
+        documentation:
 
         https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
         logger.warning(
-            "Old configuration for backreferences detected \n"
-            "using the configuration variable `mod_example_dir`\n"
-            "%s%s",
             backreferences_warning,
-            update_msg,
-            type=DeprecationWarning)
-
-    elif gallery_conf['backreferences_dir'] is None:
-
-        gallery_conf['backreferences_dir'] = os.path.join(
-            'modules', 'generated')
-        logger.warning(
-            "Using old default 'backreferences_dir':'%s'.\n"
-            "This will be disabled in future releases\n",
-            gallery_conf['backreferences_dir'],
             type=DeprecationWarning)
 
     # this assures I can call the config in other places

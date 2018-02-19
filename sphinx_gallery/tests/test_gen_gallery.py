@@ -89,6 +89,28 @@ extensions = ['sphinx_gallery.gen_gallery']
 project = u'Sphinx-Gallery <Tests>'
 
 sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}""")
+def test_simple_config(config_app):
+    """Testing that no warning is issued with a simple config.
+
+    The simple config only specifies input and output directories."""
+
+    cfg = config_app.config
+    assert cfg.project == "Sphinx-Gallery <Tests>"
+    build_warn = config_app._warning.getvalue()
+    assert build_warn == ''
+
+
+@pytest.mark.conf_file(content="""
+import os
+import sphinx_gallery
+extensions = ['sphinx_gallery.gen_gallery']
+# General information about the project.
+project = u'Sphinx-Gallery <Tests>'
+
+sphinx_gallery_conf = {
     'mod_example_dir' : os.path.join('modules', 'gen'),
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
@@ -107,9 +129,8 @@ def test_config_old_backreferences_conf(config_app):
     build_warn = config_app._warning.getvalue()
 
     assert "WARNING:" in build_warn
-    assert "Old configuration" in build_warn
-    assert "mod_example_dir" in build_warn
-    assert "Support for 'mod_example_dir'" in build_warn
+    assert "deprecated" in build_warn
+    assert "Support for 'mod_example_dir' will be removed" in build_warn
 
 
 @pytest.mark.conf_file(content="""
