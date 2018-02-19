@@ -15,6 +15,11 @@ New features
   "div.sphx-glr-footer-example" can be used to capture these specific
   case in project-specific CSS.
 
+* Added ``ignore_pattern`` configurable to allow not adding some python files
+  into the gallery. See `#346
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/346>`` for more
+  details.
+
 Bug Fixes
 '''''''''
 

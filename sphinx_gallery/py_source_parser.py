@@ -114,7 +114,8 @@ def get_docstring_and_rest(filename):
 
     if not docstring:
         raise ValueError(('Could not find docstring in file "{0}". '
-                          'A docstring is required by sphinx-gallery')
+                          'A docstring is required by sphinx-gallery '
+                          'unless the file is ignored by "ignore_pattern"')
                          .format(filename))
     return docstring, rest, lineno
 
