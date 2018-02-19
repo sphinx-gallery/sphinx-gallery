@@ -10,7 +10,6 @@ New features
 * Added experimental support to auto-generate Binder links for examples via ``binder``
   config. Note that this API may change in the future. `#244
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/244>`_
-
 * **CSS** Download and binder buttons are now on the right side for large
   screens. This might change downstream CSS layouts.
   "div.sphx-glr-footer-example" can be used to capture these specific
@@ -26,11 +25,13 @@ Bug Fixes
 * Fix encoding related issues when locale is not UTF-8. See `#311
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/311>`_ for more
   details.
-
 * In verbose mode, example output is printed to the console during execution of
   the example, rather than only at the end. See `#301
   <https://github.com/sphinx-gallery/sphinx-gallery/issues/301>`_ for a use
   case where it matters.
+* Fix SphinxDocLinkResolver error with sphinx 1.7. See `#352
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/352>`_ for more
+  details.
 
 Incompatible Changes
 ''''''''''''''''''''
