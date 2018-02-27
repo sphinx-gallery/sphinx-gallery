@@ -217,20 +217,22 @@ def extract_intro_and_title(filename, docstring):
     # Title is the first paragraph with any ReSTructuredText title chars
     # removed, i.e. lines that consist of (all the same) 7-bit non-ASCII chars.
     # This conditional is not perfect but should hopefully be good enough.
-    title = paragraphs[0].strip().split('\n')
-    title = ' '.join(t for t in title if len(t) > 0 and
-                     (ord(t[0]) >= 128 or t[0].isalnum()))
-    if len(title) == 0:
-        raise ValueError('Empty title detected from first paragraph:\n%s'
-                         % (paragraphs[0],))
-    # Use the title if no other paragraphs are provided
-    first_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
-    # Concatenate all lines of the first paragraph and truncate at 95 chars
-    first_paragraph = re.sub('\n', ' ', first_paragraph)
-    first_paragraph = (first_paragraph[:95] + '...'
-                       if len(first_paragraph) > 95 else first_paragraph)
+    title_paragraph = paragraphs[0]
+    match = re.search(r'([\w ]+)', title_paragraph)
 
-    return first_paragraph, title
+    if match is None:
+        raise ValueError(
+            'Could not find a title in first paragraph:\n{}'.format(
+                         title_paragraph))
+    title = match.group(1).strip()
+    # Use the title if no other paragraphs are provided
+    intro_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
+    # Concatenate all lines of the first paragraph and truncate at 95 chars
+    intro = re.sub('\n', ' ', intro_paragraph)
+    if len(intro) > 95:
+        intro = intro[:95] + '...'
+
+    return intro, title
 
 
 def get_md5sum(src_file):

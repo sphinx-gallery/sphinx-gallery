@@ -132,12 +132,28 @@ def test_extract_intro_and_title():
     assert title_whitespace == title
 
     # Make example title optional (gh-222)
-    intro, title = sg.extract_intro_and_title('<string', 'Title\n-----')
+    intro, title = sg.extract_intro_and_title('<string>', 'Title\n-----')
     assert intro == title == 'Title'
 
+    # Title beginning with a space (gh-356)
+    intro, title = sg.extract_intro_and_title('filename',
+                                              '^^^^^\n   Title  two  \n^^^^^')
+    assert intro == title == 'Title  two'
+
+    # Long intro paragraph gets shortened
+    intro_paragraph = '\n'.join(['this is one line' for _ in range(10)])
+    intro, _ = sg.extract_intro_and_title(
+        'filename',
+        'Title\n-----\n\n' + intro_paragraph)
+    assert len(intro_paragraph) > 100
+    assert len(intro) < 100
+    assert intro.endswith('...')
+    assert intro_paragraph.replace('\n', ' ')[:95] == intro[:95]
+
+    # Errors
     with pytest.raises(ValueError, match='should have a header'):
         sg.extract_intro_and_title('<string>', '')  # no title
-    with pytest.raises(ValueError, match='Empty title'):
+    with pytest.raises(ValueError, match='Could not find a title'):
         sg.extract_intro_and_title('<string>', '-')  # no real title
 
 
