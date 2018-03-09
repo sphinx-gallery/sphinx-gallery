@@ -21,7 +21,6 @@ import hashlib
 import os
 import re
 import shutil
-import subprocess
 import sys
 import traceback
 import codeop
@@ -80,7 +79,7 @@ from . import glr_path_static
 from . import sphinx_compatibility
 from .backreferences import write_backreferences, _thumbnail_div
 from .downloads import CODE_DOWNLOAD
-from .py_source_parser import split_code_and_text_blocks
+from .py_source_parser import split_code_and_text_blocks, get_docstring_and_rest
 
 from .notebook import jupyter_notebook, save_notebook
 from .binder import check_binder_conf, gen_binder_rst
@@ -713,8 +712,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     target_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, target_file)
 
-    file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    intro, _ = extract_intro_and_title(fname, script_blocks[0][1])
+    intro, _ = extract_intro_and_title(fname,
+                                       get_docstring_and_rest(src_file)[0])
 
     if md5sum_is_current(target_file):
         return intro, 0
@@ -733,6 +732,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                    'src_file': src_file,
                    'target_file': target_file}
 
+    file_conf, script_blocks = split_code_and_text_blocks(src_file)
     output_blocks, time_elapsed = execute_script(script_blocks,
                                                  script_vars,
                                                  gallery_conf)
