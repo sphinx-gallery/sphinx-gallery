@@ -147,54 +147,13 @@ div.sphx-glr-download a:hover {
   background-color: #d5d57e;
 }
 
-/* On large screens, float the download and binder buttons on the right */
-@media only screen and (min-width: 140ex) {
-    div.sphx-glr-footer-example  {
-	position: fixed;
-	right: 0px;
-	top: 100px;
-	background: rgba(200, 200, 200, 0.3);
-	padding: 0ex .5ex;
-	border: solid 1px #ccc;
-	max-width: 24ex;
-	width: fit-content;
-	width: -moz-min-content;
-    }
-
-    /* Avoid overflow of long file names */
-    div.sphx-glr-footer-example code {
-	max-width: 100%;
-	overflow: hidden;
-    }
-
-    div.sphx-glr-footer-example a {
-	max-width: 95%;
-	overflow: hidden;
-	padding: .5ex;
-    }
-
-    div.sphx-glr-footer-example a code span:last-child {
-	font-size: smaller;
-    }
+.sphx-glr-example-title > :target::before {
+  display: block;
+  content: "";
+  margin-top: -50px;
+  height: 50px;
+  visibility: hidden;
 }
-
-/* On very large screen, don't flush it too far */
-@media only screen and (min-width: 190ex) {
-    div.sphx-glr-footer-example  {
-	right: 5%;
-	max-width: 29ex;
-    }
-}
-
-/* Special case the RTD theme, capturing "section.wy-nav-content" */
-@media only screen and (min-width: 190ex) {
-    section.wy-nav-content-wrap div.sphx-glr-footer-example  {
-	right: unset;
-	left: 150ex;
-    }
-}
-
-
 
 ul.sphx-glr-horizontal {
   list-style: none;
