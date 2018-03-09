@@ -222,7 +222,7 @@ def extract_intro_and_title(filename, docstring):
     if match is None:
         raise ValueError(
             'Could not find a title in first paragraph:\n{}'.format(
-                         title_paragraph))
+                title_paragraph))
     title = match.group(1).strip()
     # Use the title if no other paragraphs are provided
     intro_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
@@ -773,7 +773,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     Returns
     -------
     out : str
-        RST notebook
+        rst notebook
     """
 
     # A simple example has two blocks: one for the
@@ -808,7 +808,7 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
     Parameters
     ----------
     example_rst : str
-        rST containing the executed file content
+        rst containing the executed file content
 
     example_file : str
         Filename with full path of python example file in documentation folder

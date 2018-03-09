@@ -50,7 +50,16 @@ Developer changes
 '''''''''''''''''
 
 * Dropped support for Sphinx <= 1.4.
-* Refactor for independent rst file construction
+* Refactor for independent rst file construction. Function
+  ``sphinx_gallery.gen_rst.generate_file_rst`` does not anymore compose the
+  rst file while it is executing each block of the source code. Currently
+  executing the example script ``execute_script`` is an independent
+  function and returns structured in a list the rst representation of the
+  output of each source block. ``generate_file_rst`` calls for execution of
+  the script when needed, then from the rst output it composes an rst
+  document which includes the prose, code & output of the example which is
+  the directly saved to file including the annotations of binder badges,
+  download buttons and timing statistics.
 
 v0.1.13
 -------
