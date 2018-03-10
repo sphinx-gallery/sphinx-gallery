@@ -18,10 +18,15 @@ if [ "$DISTRIB" == "conda" ]; then
     # force no mkl because mayavi requires old version of numpy
     # which then crashes with pandas and seaborn
     conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy\
-        setuptools matplotlib pillow sphinx pytest pytest-cov coverage seaborn
+        setuptools matplotlib pillow pytest pytest-cov coverage seaborn
     source activate testenv
     if [ "$INSTALL_MAYAVI" == "true" ]; then
         conda install --yes mayavi
+    fi
+    if [ "$SPHINX_VERSION" != "dev" ]; then
+        conda install "sphinx=${SPHINX_VERSION-*}" --yes
+    else
+        pip install git+https://github.com/sphinx-doc/sphinx.git
     fi
 elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by

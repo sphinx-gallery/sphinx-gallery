@@ -36,6 +36,12 @@ matrix:
       env: DISTRIB="conda" PYTHON_VERSION="2.7" LOCALE=C
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
+    - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="2.7" SPHINX_VERSION="dev"
+      if: type = cron
+    - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="3.6" SPHINX_VERSION="dev"
+      if: type = cron
 
 before_install:
   # Make sure that things work even if the locale is set to C (which
