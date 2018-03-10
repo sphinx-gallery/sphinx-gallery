@@ -31,6 +31,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
     pip install -U requests[security]  # ensure SSL certificate works
+    pip install "tornado<5"
     pip install -r requirements.txt
     pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov
 else
@@ -39,4 +40,3 @@ else
 fi
 
 python setup.py install
-

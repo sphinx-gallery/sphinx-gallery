@@ -17,7 +17,8 @@ bg_color = 'black'
 fg_color = 'white'
 
 fig = plt.figure(facecolor=bg_color, edgecolor=fg_color)
-axes = plt.axes((0.1, 0.1, 0.8, 0.8), axisbg=bg_color)
+axes = fig.add_subplot(111)
+axes.patch.set_facecolor(bg_color)
 axes.xaxis.set_tick_params(color=fg_color, labelcolor=fg_color)
 axes.yaxis.set_tick_params(color=fg_color, labelcolor=fg_color)
 for spine in axes.spines.values():
