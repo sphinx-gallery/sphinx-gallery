@@ -1,0 +1,36 @@
+#+TITLE:  What to do for a release
+#+AUTHOR: Óscar Nájera
+
+* Update the change log
+Use the =github_changelog_generator= to gather all merged pull request and
+closed issues during the development cycle. We do this because our failing
+discipline of writing in the =CHANGES.rst= all relevant changes, this helps
+our memory.
+#+BEGIN_SRC sh
+github_changelog_generator sphinx-gallery/sphinx-gallery
+#+END_SRC
+
+Read the changes in [[file:CHANGELOG.md]] and propagate the relevant to
+[[file:CHANGES.rst]]
+* Update version
+Update the version in [[file:sphinx_gallery/__init__.py]]
+* Build the docs cleanly
+Make sure to clean all and have a clean build have a look
+* Do Signed release commit
+* Push to your own master branch
+See is verified and check CI is happy
+* Draft release
+copy and edit to github markdown all changes from [[file:CHANGELOG.md]]
+* Build a source distribution
+#+BEGIN_SRC sh :results verbatim
+python setup.py sdist
+#+END_SRC
+* Test upload to PyPI
+#+BEGIN_SRC sh :results verbatim
+twine upload --repository test dist/sphinx-gallery-0.1.13.tar.gz
+#+END_SRC
+
+* Upload to PyPI
+#+BEGIN_SRC sh :results verbatim
+python setup.py sdist upload
+#+END_SRC
