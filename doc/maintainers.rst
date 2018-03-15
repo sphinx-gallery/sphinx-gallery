@@ -25,7 +25,6 @@ Update the version in ``sphinx_gallery/__init__.py``.
 Make sure to clean all and have a clean build. Double-check visually that
 everything looks right.
 
-* Do Signed release commit
 * Push to your own master branch and check CI is happy
 * Draft release
 copy and edit to github markdown all changes from CHANGELOG.md.
