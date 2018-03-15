@@ -40,11 +40,11 @@ copy and edit to github markdown all changes from CHANGELOG.md.
 
 .. code-block:: bash
 
-   twine upload --repository test dist/sphinx-gallery-0.1.13.tar.gz
+   twine upload --repository test dist/sphinx-gallery-<version>.tar.gz
 
 * Upload to PyPI
 
 
 .. code-block:: bash
 
-   python setup.py sdist upload
+   twine upload dist/sphinx-gallery-<version>.tar.gz
