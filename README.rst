@@ -36,6 +36,8 @@ Who uses Sphinx-Gallery
 * `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
 * `PySurfer <https://pysurfer.github.io/>`_
 * `Matplotlib <https://matplotlib.org/index.html>`_ `Examples <https://matplotlib.org/gallery/index.html>`_ and `Tutorials  <https://matplotlib.org/tutorials/index.html>`__
+* `PyTorch tutorials <http://pytorch.org/tutorials>`_
+* `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 
 Getting the package
 ===================
