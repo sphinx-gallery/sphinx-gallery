@@ -195,8 +195,8 @@ running the examples files. For this you need to extend your ``Makefile`` with:
 .. code-block:: bash
 
     clean:
+            python -msphinx_gallery.clean
             rm -rf $(BUILDDIR)/*
-            rm -rf auto_examples/
 
     html-noplot:
             $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

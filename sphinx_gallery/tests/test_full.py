@@ -10,6 +10,8 @@ import codecs
 import os
 import os.path as op
 import shutil
+import subprocess
+import sys
 
 from sphinx.application import Sphinx
 
@@ -62,3 +64,12 @@ def test_embed_links(sphinx_app):
     assert 'numpy.arange.html' in lines
     # assert '#module-matplotlib.pyplot' in lines
     # assert 'pyplot.html' in lines
+
+
+# This test *needs* to be run last.
+def test_clean(sphinx_app):
+    subprocess.check_call(
+        [sys.executable, '-msphinx_gallery.clean'], cwd=sphinx_app.srcdir)
+    assert not op.isdir(op.join(sphinx_app.srcdir, 'auto_examples'))
+    assert not op.isdir(
+        op.join(sphinx_app.srcdir, 'gen_modules', 'backreferences'))
