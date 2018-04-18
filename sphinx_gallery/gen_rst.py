@@ -628,6 +628,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     binder_text = (" or run this example in your browser via Binder"
                    if len(binder_conf) else "")
     example_rst = (".. note::\n"
+                   "    :class: sphx-glr-download-link-note\n\n"
                    "    Click :ref:`here <sphx_glr_download_{0}>` "
                    "to download the full example code{1}\n"
                    ".. rst-class:: sphx-glr-example-title\n\n"
