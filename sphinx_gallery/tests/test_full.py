@@ -19,8 +19,12 @@ import pytest
 
 
 @pytest.fixture(scope='module')
-def sphinx_app(tmpdir_factory):
-    temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
+def temp_dir(tmpdir_factory):
+    return (tmpdir_factory.getbasetemp() / 'root').strpath
+
+
+@pytest.fixture(scope='module')
+def sphinx_app(temp_dir):
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
     def ignore(src, names):
@@ -67,9 +71,11 @@ def test_embed_links(sphinx_app):
 
 
 # This test *needs* to be run last.
-def test_clean(sphinx_app):
+def test_clean(temp_dir, sphinx_app):
+    srcdir = sphinx_app.srcdir
+    builddir = op.join(temp_dir, '_build')
     subprocess.check_call(
-        [sys.executable, '-msphinx_gallery.clean'], cwd=sphinx_app.srcdir)
-    assert not op.isdir(op.join(sphinx_app.srcdir, 'auto_examples'))
-    assert not op.isdir(
-        op.join(sphinx_app.srcdir, 'gen_modules', 'backreferences'))
+        [sys.executable, '-msphinx_gallery.clean', srcdir, builddir])
+    assert os.listdir(builddir) == []
+    assert not op.isdir(op.join(srcdir, 'auto_examples'))
+    assert not op.isdir(op.join(srcdir, 'gen_modules', 'backreferences'))
