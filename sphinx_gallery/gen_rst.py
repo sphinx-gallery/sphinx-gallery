@@ -625,7 +625,17 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
     ref_fname = ref_fname.replace(os.path.sep, '_')
-    example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
+    binder_text = (" or run this example in your browser via Binder"
+                   if len(binder_conf) else "")
+    example_rst = (".. note::\n"
+                   "    :class: sphx-glr-download-link-note\n\n"
+                   "    Click :ref:`here <sphx_glr_download_{0}>` "
+                   "to download the full example code{1}\n"
+                   ".. rst-class:: sphx-glr-example-title\n\n"
+                   ".. _sphx_glr_{0}:\n\n"
+                   ).format(
+                       ref_fname,
+                       binder_text)
 
     filename_pattern = gallery_conf.get('filename_pattern')
     execute_script = re.search(filename_pattern, src_file) and gallery_conf[
@@ -713,7 +723,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
         example_rst += CODE_DOWNLOAD.format(fname,
                                             replace_py_ipynb(fname),
-                                            binder_badge_rst)
+                                            binder_badge_rst,
+                                            ref_fname)
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 
