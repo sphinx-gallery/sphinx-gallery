@@ -157,10 +157,6 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     if not isinstance(gallery_dirs, list):
         gallery_dirs = [gallery_dirs]
 
-    for outdir in gallery_dirs:
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-
     if bool(gallery_conf['backreferences_dir']):
         backreferences_dir = os.path.join(
             srcdir, gallery_conf['backreferences_dir'])
