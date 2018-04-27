@@ -20,16 +20,19 @@ from sphinx_gallery.utils import _TempDir
 def test_binder():
     """Testing binder URL generation and checks."""
     file_path = 'myfile.py'
-    conf1 = {'url': 'http://test1.com', 'org': 'org',
-             'repo': 'repo', 'branch': 'branch',
-             'dependencies': '../requirements.txt'}
-    url = gen_binder_url(file_path, conf1)
+    conf_base = {'url': 'http://test1.com', 'org': 'org',
+                 'repo': 'repo', 'branch': 'branch',
+                 'dependencies': '../requirements.txt'}
+    gallery_conf_base = {'gallery_dirs': ['mydir']}
+
+    url = gen_binder_url(file_path, conf_base, gallery_conf_base)
     assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=_downloads/myfile.ipynb'
 
     # Assert filepath prefix is added
     prefix = 'my_prefix/foo'
+    conf1 = deepcopy(conf_base)
     conf1['filepath_prefix'] = prefix
-    url = gen_binder_url(file_path, conf1)
+    url = gen_binder_url(file_path, conf1, gallery_conf_base)
     assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath={}/_downloads/myfile.ipynb'.format(prefix)
     conf1.pop('filepath_prefix')
 
@@ -76,3 +79,16 @@ def test_binder():
         conf7['foo'] = 'blah'
         url = check_binder_conf(conf7)
     excinfo.match(r"Unknown Binder config key")
+
+    # Assert using lab correctly changes URL
+    conf_lab = deepcopy(conf_base)
+    conf_lab['use_lab'] = True
+    url = gen_binder_url(file_path, conf_lab, gallery_conf_base)
+    assert url == 'http://test1.com/v2/gh/org/repo/branch?urlpath=lab/tree/_downloads/myfile.ipynb'
+
+    # Assert using static folder correctl changes URL
+    conf_static = deepcopy(conf_base)
+    file_path = 'blahblah/mydir/myfolder/myfile.py'
+    conf_static['static_folder'] = '_static'
+    url = gen_binder_url(file_path, conf_static, gallery_conf_base)
+    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=_static/binder/mydir/myfolder/myfile.ipynb'

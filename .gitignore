@@ -55,6 +55,7 @@ doc/auto_examples
 doc/auto_mayavi_examples
 doc/tutorials/
 doc/gen_modules/
+doc/_static/binder
 
 # Test builds
 sphinx_gallery/tests/tinybuild/gen_modules/

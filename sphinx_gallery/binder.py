@@ -24,10 +24,10 @@ except NameError:
     basestring = str
     unicode = str
 
-from .utils import replace_py_ipynb
+from .utils import replace_py_ipynb, _get_gallery_dir_path
 
 
-def gen_binder_url(fname, binder_conf):
+def gen_binder_url(fname, binder_conf, gallery_conf):
     """Generate a Binder URL according to the configuration in conf.py.
 
     Parameters
@@ -45,20 +45,39 @@ def gen_binder_url(fname, binder_conf):
     """
     # Build the URL
     fpath_prefix = binder_conf.get('filepath_prefix')
-    binder_fpath = '_downloads/{}'.format(replace_py_ipynb(fname))
+    link_base = binder_conf.get('static_folder', '_downloads')
+    if link_base != '_downloads':
+        # In this case, we want to keep the relative path to sub-folders
+        # Split so we have the relative path starting after the gallery dir
+        relative_link = _get_gallery_dir_path(fname, gallery_conf)
+        path_link = os.path.join(
+            link_base, 'binder', replace_py_ipynb(relative_link))
+    else:
+        # Assume that we're in the root of _downloads
+        fname = os.path.basename(fname)
+        path_link = '{}/{}'.format(link_base, replace_py_ipynb(fname))
+
+    # In case our website is hosted in a sub-folder
     if fpath_prefix is not None:
-        binder_fpath = '/'.join([fpath_prefix.strip('/'), binder_fpath])
+        path_link = '/'.join([fpath_prefix.strip('/'), path_link])
+
+    # Create the URL
     binder_url = binder_conf['url']
     binder_url = '/'.join([binder_conf['url'],
                            'v2', 'gh',
                            binder_conf['org'],
                            binder_conf['repo'],
                            binder_conf['branch']])
-    binder_url += '?filepath={}'.format(binder_fpath)
+
+    # Choose a filepath structure depending on whether we're using lab
+    if binder_conf.get('use_lab', False) is True:
+        binder_url += '?urlpath=lab/tree/{}'.format(path_link)
+    else:
+        binder_url += '?filepath={}'.format(path_link)
     return binder_url
 
 
-def gen_binder_rst(fname, binder_conf):
+def gen_binder_rst(fname, binder_conf, gallery_conf):
     """Generate the RST + link for the Binder badge.
 
     Parameters
@@ -84,7 +103,7 @@ def gen_binder_rst(fname, binder_conf):
     rst : str
         The reStructuredText for the Binder badge that links to this file.
     """
-    binder_url = gen_binder_url(fname, binder_conf)
+    binder_url = gen_binder_url(fname, binder_conf, gallery_conf)
 
     rst = (
         "\n"
@@ -119,7 +138,7 @@ def check_binder_conf(binder_conf):
 
     # Ensure all fields are populated
     req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
-    optional_values = ['filepath_prefix']
+    optional_values = ['filepath_prefix', 'static_folder', 'use_lab']
     missing_values = []
     for val in req_values:
         if binder_conf.get(val) is None:

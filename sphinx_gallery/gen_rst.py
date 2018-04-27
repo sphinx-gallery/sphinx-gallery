@@ -27,7 +27,8 @@ import traceback
 import codeop
 from distutils.version import LooseVersion
 
-from .utils import replace_py_ipynb
+from .utils import replace_py_ipynb, _get_gallery_dir_path
+
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -709,7 +710,19 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb = jupyter_notebook(script_blocks)
-    save_notebook(example_nb, replace_py_ipynb(example_file))
+    path_ipynb = replace_py_ipynb(example_file)
+    save_notebook(example_nb, path_ipynb)
+
+    # Copy the ipynb file to the static folder, preserving folder structure
+    if binder_conf.get('static_folder'):
+        static_folder = binder_conf.get('static_folder')
+        path_ipynb_relative_gallery = _get_gallery_dir_path(path_ipynb,
+                                                            gallery_conf)
+        path_static_ipynb = os.path.join(static_folder, 'binder',
+                                         path_ipynb_relative_gallery)
+        os.makedirs(os.path.dirname(path_static_ipynb), exist_ok=True)
+        shutil.copyfile(path_ipynb, path_static_ipynb)
+
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:
         if time_elapsed >= gallery_conf["min_reported_time"]:
@@ -719,7 +732,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         # Generate a binder URL if specified
         binder_badge_rst = ''
         if len(binder_conf) > 0:
-            binder_badge_rst += gen_binder_rst(fname, binder_conf)
+            binder_badge_rst += gen_binder_rst(example_file, binder_conf,
+                                               gallery_conf)
 
         example_rst += CODE_DOWNLOAD.format(fname,
                                             replace_py_ipynb(fname),

@@ -341,10 +341,15 @@ sphinx_gallery_conf = {
     'find_mayavi_figures': find_mayavi_figures,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py'],
-    'binder': {'org': 'sphinx-gallery',
-               'repo': 'sphinx-gallery.github.io',
+    'binder': {#'org': 'sphinx-gallery',
+               #'repo': 'sphinx-gallery.github.io',
+               'org': 'choldgraf',
+               'repo': 'sphinx-gallery',
                'url': 'https://mybinder.org',
-               'branch': 'master',
-               'dependencies': './binder/requirements.txt'
+               'branch': 'gh-pages',
+               # 'branch': 'master',
+               'dependencies': './binder/requirements.txt',
+               'static_folder': '_static',
+               'use_lab': True
                }
 }
