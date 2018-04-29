@@ -64,7 +64,14 @@ def python_zip(file_list, gallery_path, extension='.py'):
         zip file name, written as `target_dir_{python,jupyter}.zip`
         depending on the extension
     """
-    zipname = os.path.basename(gallery_path)
+    path_components = os.path.split(gallery_path)
+    if path_components[-1]:
+        zipname = path_components[-1]
+    elif len(path_components) <= 1:
+        zipname = 'gallery'
+    else:
+        # The path entered by the user ends with '/'
+        zipname = path_components[-2]
     zipname += '_python' if extension == '.py' else '_jupyter'
     zipname = os.path.join(gallery_path, zipname + '.zip')
 
