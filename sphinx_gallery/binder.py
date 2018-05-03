@@ -45,13 +45,13 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
     """
     # Build the URL
     fpath_prefix = binder_conf.get('filepath_prefix')
-    link_base = binder_conf.get('static_folder', '_downloads')
+    link_base = binder_conf.get('notebooks_folder', '_downloads')
     if link_base != '_downloads':
         # In this case, we want to keep the relative path to sub-folders
         # Split so we have the relative path starting after the gallery dir
         relative_link = _get_gallery_dir_path(fname, gallery_conf)
         path_link = os.path.join(
-            link_base, 'binder', replace_py_ipynb(relative_link))
+            link_base, replace_py_ipynb(relative_link))
     else:
         # Assume that we're in the root of _downloads
         fname = os.path.basename(fname)
@@ -138,7 +138,7 @@ def check_binder_conf(binder_conf):
 
     # Ensure all fields are populated
     req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
-    optional_values = ['filepath_prefix', 'static_folder', 'use_lab']
+    optional_values = ['filepath_prefix', 'notebooks_folder', 'use_lab']
     missing_values = []
     for val in req_values:
         if binder_conf.get(val) is None:

@@ -89,6 +89,6 @@ def test_binder():
     # Assert using static folder correctl changes URL
     conf_static = deepcopy(conf_base)
     file_path = 'blahblah/mydir/myfolder/myfile.py'
-    conf_static['static_folder'] = '_static'
+    conf_static['notebooks_folder'] = 'ntbk_folder'
     url = gen_binder_url(file_path, conf_static, gallery_conf_base)
-    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=_static/binder/mydir/myfolder/myfile.ipynb'
+    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=ntbk_folder/mydir/myfolder/myfile.ipynb'

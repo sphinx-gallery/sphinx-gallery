@@ -84,7 +84,7 @@ from .downloads import CODE_DOWNLOAD
 from .py_source_parser import split_code_and_text_blocks
 
 from .notebook import jupyter_notebook, save_notebook
-from .binder import check_binder_conf, copy_binder_reqs, gen_binder_rst
+from .binder import check_binder_conf, gen_binder_rst
 
 try:
     basestring
@@ -423,7 +423,7 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
     scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs, app):
     """Generate the gallery reStructuredText for an example directory"""
 
     with codecs.open(os.path.join(src_dir, 'README.txt'), 'r',
@@ -457,7 +457,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
             fname,
             target_dir,
             src_dir,
-            gallery_conf)
+            gallery_conf,
+            app)
         computation_times.append((time_elapsed, fname))
         this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
 
@@ -596,7 +597,7 @@ def clean_modules():
     plt.rcdefaults()
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf, app):
     """Generate the rst file for a given example.
 
     Returns
@@ -714,14 +715,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     save_notebook(example_nb, path_ipynb)
 
     # Copy the ipynb file to the static folder, preserving folder structure
-    if binder_conf.get('static_folder'):
-        static_folder = binder_conf.get('static_folder')
+    if binder_conf.get('notebooks_folder'):
+        notebooks_folder = binder_conf.get('notebooks_folder')
         path_ipynb_relative_gallery = _get_gallery_dir_path(path_ipynb,
                                                             gallery_conf)
-        path_static_ipynb = os.path.join(static_folder, 'binder',
-                                         path_ipynb_relative_gallery)
-        os.makedirs(os.path.dirname(path_static_ipynb), exist_ok=True)
-        shutil.copyfile(path_ipynb, path_static_ipynb)
+        path_notebooks_outdir = os.path.join(app.outdir, notebooks_folder,
+                                             path_ipynb_relative_gallery)
+        os.makedirs(os.path.dirname(path_notebooks_outdir), exist_ok=True)
+        shutil.copyfile(path_ipynb, path_notebooks_outdir)
 
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:

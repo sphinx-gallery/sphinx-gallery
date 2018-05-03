@@ -203,7 +203,7 @@ def generate_gallery_rst(app):
         # better than nested.
 
         this_fhindex, this_computation_times = generate_dir_rst(
-            examples_dir, gallery_dir, gallery_conf, seen_backrefs)
+            examples_dir, gallery_dir, gallery_conf, seen_backrefs, app)
 
         computation_times += this_computation_times
 
@@ -217,7 +217,7 @@ def generate_gallery_rst(app):
                 src_dir = os.path.join(examples_dir, subsection)
                 target_dir = os.path.join(gallery_dir, subsection)
                 this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                                                        seen_backrefs)
+                                                                        seen_backrefs, app)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
 
