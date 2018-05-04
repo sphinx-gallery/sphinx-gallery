@@ -13,6 +13,8 @@ import os
 import zipfile
 
 CODE_DOWNLOAD = """
+.. _sphx_glr_download_{3}:
+
 \n.. only :: html
 
  .. container:: sphx-glr-footer

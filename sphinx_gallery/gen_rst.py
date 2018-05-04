@@ -823,9 +823,17 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
     ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
     ref_fname = ref_fname.replace(os.path.sep, "_")
 
-    # there can be unicode content
-    example_rst = u"\n\n.. _sphx_glr_{0}:\n\n{1}".format(
-        ref_fname, example_rst)
+    binder_conf = check_binder_conf(gallery_conf.get('binder'))
+
+    binder_text = (" or run this example in your browser via Binder"
+                   if len(binder_conf) else "")
+    example_rst = (".. note::\n"
+                   "    :class: sphx-glr-download-link-note\n\n"
+                   "    Click :ref:`here <sphx_glr_download_{0}>` "
+                   "to download the full example code{1}\n"
+                   ".. rst-class:: sphx-glr-example-title\n\n"
+                   ".. _sphx_glr_{0}:\n\n"
+                   ).format(ref_fname, binder_text) + example_rst
 
     if time_elapsed >= gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)
@@ -835,14 +843,14 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
     fname = os.path.basename(example_file)
 
     # Generate a binder URL if specified
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
     binder_badge_rst = ''
     if len(binder_conf) > 0:
         binder_badge_rst += gen_binder_rst(fname, binder_conf)
 
     example_rst += CODE_DOWNLOAD.format(fname,
                                         replace_py_ipynb(fname),
-                                        binder_badge_rst)
+                                        binder_badge_rst,
+                                        ref_fname)
     example_rst += SPHX_GLR_SIG
 
     write_file = re.sub(r'\.py$', '.rst', example_file)

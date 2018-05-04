@@ -157,10 +157,6 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     if not isinstance(gallery_dirs, list):
         gallery_dirs = [gallery_dirs]
 
-    for outdir in gallery_dirs:
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-
     if bool(gallery_conf['backreferences_dir']):
         backreferences_dir = os.path.join(
             srcdir, gallery_conf['backreferences_dir'])
@@ -305,7 +301,7 @@ def sumarize_failing_examples(app, exception):
     examples_not_expected_to_pass = expected_failing_examples.difference(
         failing_examples)
     if examples_not_expected_to_pass:
-        fail_msgs.append("Examples expected to fail, but not failling:\n" +
+        fail_msgs.append("Examples expected to fail, but not failing:\n" +
                          "Please remove these examples from\n" +
                          "sphinx_gallery_conf['expected_failing_examples']\n" +
                          "in your conf.py file"
