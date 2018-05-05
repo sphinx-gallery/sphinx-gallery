@@ -50,12 +50,3 @@ def replace_py_ipynb(fname):
 
     new_extension = '.ipynb'
     return '{}{}'.format(fname_prefix, new_extension)
-
-
-def _get_gallery_dir_path(fname, gallery_conf):
-    """Return the path to a file, starting with the gallery dir name."""
-    for gdir in gallery_conf.get('gallery_dirs'):
-        ix_start = fname.find(gdir.strip('/') + '/')
-        if ix_start != -1:
-            relative_link = fname[ix_start:]
-            return relative_link

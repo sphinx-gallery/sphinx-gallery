@@ -12,28 +12,27 @@ from copy import deepcopy
 
 import pytest
 
-from sphinx_gallery.binder import (gen_binder_rst, gen_binder_url,
-                                   check_binder_conf)
-from sphinx_gallery.utils import _TempDir
+from sphinx_gallery.binder import gen_binder_url, check_binder_conf
 
 
 def test_binder():
     """Testing binder URL generation and checks."""
-    file_path = 'myfile.py'
+    file_path = 'blahblah/mydir/myfile.py'
     conf_base = {'url': 'http://test1.com', 'org': 'org',
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
+    conf_base = check_binder_conf(conf_base)
     gallery_conf_base = {'gallery_dirs': ['mydir']}
 
     url = gen_binder_url(file_path, conf_base, gallery_conf_base)
-    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=_downloads/myfile.ipynb'
+    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb'
 
     # Assert filepath prefix is added
     prefix = 'my_prefix/foo'
     conf1 = deepcopy(conf_base)
     conf1['filepath_prefix'] = prefix
     url = gen_binder_url(file_path, conf1, gallery_conf_base)
-    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath={}/_downloads/myfile.ipynb'.format(prefix)
+    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath={}/notebooks/mydir/myfile.ipynb'.format(prefix)
     conf1.pop('filepath_prefix')
 
     # URL must have http
@@ -46,6 +45,8 @@ def test_binder():
 
     # Assert missing params
     for key in conf1.keys():
+        if key == 'notebooks_folder':
+            continue
         conf3 = deepcopy(conf1)
         conf3.pop(key)
         with pytest.raises(ValueError) as excinfo:
@@ -84,7 +85,7 @@ def test_binder():
     conf_lab = deepcopy(conf_base)
     conf_lab['use_lab'] = True
     url = gen_binder_url(file_path, conf_lab, gallery_conf_base)
-    assert url == 'http://test1.com/v2/gh/org/repo/branch?urlpath=lab/tree/_downloads/myfile.ipynb'
+    assert url == 'http://test1.com/v2/gh/org/repo/branch?urlpath=lab/tree/notebooks/mydir/myfile.ipynb'
 
     # Assert using static folder correctl changes URL
     conf_static = deepcopy(conf_base)

@@ -24,7 +24,11 @@ except NameError:
     basestring = str
     unicode = str
 
-from .utils import replace_py_ipynb, _get_gallery_dir_path
+from .utils import replace_py_ipynb
+from . import sphinx_compatibility
+
+
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def gen_binder_url(fname, binder_conf, gallery_conf):
@@ -45,21 +49,20 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
     """
     # Build the URL
     fpath_prefix = binder_conf.get('filepath_prefix')
-    link_base = binder_conf.get('notebooks_folder', '_downloads')
-    if link_base != '_downloads':
-        # In this case, we want to keep the relative path to sub-folders
-        # Split so we have the relative path starting after the gallery dir
-        relative_link = _get_gallery_dir_path(fname, gallery_conf)
-        path_link = os.path.join(
-            link_base, replace_py_ipynb(relative_link))
-    else:
-        # Assume that we're in the root of _downloads
-        fname = os.path.basename(fname)
-        path_link = '{}/{}'.format(link_base, replace_py_ipynb(fname))
+    link_base = binder_conf.get('notebooks_folder')
+
+    # We want to keep the relative path to sub-folders
+    # Split so we have the relative path starting after the gallery dir
+    relative_link = _get_gallery_dir_path(fname, gallery_conf)
+    path_link = os.path.join(
+        link_base, replace_py_ipynb(relative_link))
 
     # In case our website is hosted in a sub-folder
     if fpath_prefix is not None:
         path_link = '/'.join([fpath_prefix.strip('/'), path_link])
+
+    # Make sure we have the right slashes
+    path_link = path_link.replace(os.path.sep, '/')
 
     # Create the URL
     binder_url = binder_conf['url']
@@ -103,6 +106,7 @@ def gen_binder_rst(fname, binder_conf, gallery_conf):
     rst : str
         The reStructuredText for the Binder badge that links to this file.
     """
+    binder_conf = check_binder_conf(binder_conf)
     binder_url = gen_binder_url(fname, binder_conf, gallery_conf)
 
     rst = (
@@ -114,17 +118,61 @@ def gen_binder_rst(fname, binder_conf, gallery_conf):
     return rst
 
 
-def copy_binder_reqs(app):
+def copy_binder_files(app, exception):
+    """Copy all Binder requirements and notebooks files."""
+    if exception is not None:
+        return
+
+    if app.builder.name not in ['html', 'readthedocs']:
+        return
+
+    gallery_conf = app.config.sphinx_gallery_conf
+    binder_conf = check_binder_conf(gallery_conf.get('binder'))
+
+    # Copy the requirements files for binder
+    if not len(binder_conf) > 0:
+        return
+
+    logger.info('copying binder requirements...', color='white')
+    _copy_binder_reqs(app, gallery_conf, binder_conf)
+    logger.info('copying binder notebooks...', color='white')
+    _copy_binder_notebooks(app, gallery_conf, binder_conf)
+
+
+def _copy_binder_reqs(app, gallery_conf, binder_conf):
     """Copy Binder requirements files to a "binder" folder in the docs."""
-    binder_conf = app.config.sphinx_gallery_conf['binder']
     path_reqs = binder_conf.get('dependencies')
 
-    binder_folder = os.path.join(app.builder.outdir, 'binder')
+    binder_folder = os.path.join(app.outdir, 'binder')
     if not os.path.isdir(binder_folder):
         os.makedirs(binder_folder)
     for path in path_reqs:
-        sh.copy(os.path.join(app.builder.srcdir, path),
-                binder_folder)
+        sh.copy(os.path.join(app.srcdir, path), binder_folder)
+
+
+def _copy_binder_notebooks(app, gallery_conf, binder_conf):
+    """Copy Jupyter notebooks to the output directory.
+
+    Walk through each output gallery directory
+    For each one, check if the file ends in ipynb
+    If it does, copy it to `notebooks_folder` with the same folder structure.
+    """
+    gallery_dirs = gallery_conf.get('gallery_dirs')
+    if not isinstance(gallery_dirs, (list, tuple)):
+        gallery_dirs = [gallery_dirs]
+    # Copy ipynb files to the notebooks folder, preserving folder structure
+    notebooks_folder = binder_conf.get('notebooks_folder')
+    for i_folder in gallery_dirs:
+        i_folder = os.path.join(app.srcdir, i_folder)
+        for i_path, _, i_files in os.walk(i_folder):
+            for i_file in i_files:
+                if len(i_file) > 0 and i_file.endswith('.ipynb'):
+                    path_out_dir = os.path.join(
+                        app.outdir, notebooks_folder, os.path.basename(i_path))
+                    if not os.path.exists(path_out_dir):
+                        os.makedirs(path_out_dir)
+                    sh.copyfile(os.path.join(i_path, i_file),
+                                os.path.join(path_out_dir, i_file))
 
 
 def check_binder_conf(binder_conf):
@@ -168,7 +216,9 @@ def check_binder_conf(binder_conf):
     elif not isinstance(path_reqs, (list, tuple)):
         raise ValueError("`dependencies` value should be a list of strings. "
                          "Got type {}.".format(type(path_reqs)))
-
+    # Default to "notebooks" if it's not given
+    binder_conf['notebooks_folder'] = binder_conf.get('notebooks_folder',
+                                                      'notebooks')
     path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
     if not any(ii in path_reqs_filenames for ii in required_reqs_files):
         raise ValueError(
@@ -177,3 +227,14 @@ def check_binder_conf(binder_conf):
             'for sphinx-gallery. A path to at least one of these files '
             'must exist in your Binder dependencies.')
     return binder_conf
+
+
+def _get_gallery_dir_path(fname, gallery_conf):
+    """Return the path to a file, starting with the gallery dir name."""
+    for gdir in gallery_conf.get('gallery_dirs'):
+        relative_link = os.path.normpath(fname)  # For windows machines
+        ix_start = relative_link.find(gdir.strip(os.sep) + os.sep)
+        ix_start = 0 if ix_start == -1 else ix_start
+        # Take the path starting with the gallery dir
+        relative_link = relative_link[ix_start:]
+        return relative_link
