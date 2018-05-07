@@ -451,7 +451,7 @@ dictionary following the pattern below::
          # Optional keys
          'filepath_prefix': '<prefix>' # A prefix to append to any filepaths in Binder links.
                             use this if you move your built documentation to a sub-folder of your repository (e.g., "v2.1").
-         'notebooks_folder': '<notebooks-folder-name>' # A folder name where jupyter notebooks that Binder links point to will be moved.
+         'notebooks_dir': '<notebooks-directory-name>' # A directory name where jupyter notebooks that Binder links point to will be moved.
                              Defaults to the name "notebooks".
          'use_lab': <bool> # Whether Binder links should start Jupyter Lab instead of the Jupyter Notebook interface.
          }
@@ -461,7 +461,7 @@ Note that ``branch:`` should be the branch on which your documentation is hosted
 If you host your documentation on GitHub, this is usually ``gh-pages`` or ``master``.
 
 A copy of each generated Jupyter Notebook will be copied to the folder
-specified in ``notebooks_folder``. Binder links will point to these notebooks.
+specified in ``notebooks_dir``. Binder links will point to these notebooks.
 
 .. important::
 

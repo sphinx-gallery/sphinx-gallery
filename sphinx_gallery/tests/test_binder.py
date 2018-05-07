@@ -45,7 +45,7 @@ def test_binder():
 
     # Assert missing params
     for key in conf1.keys():
-        if key == 'notebooks_folder':
+        if key == 'notebooks_dir':
             continue
         conf3 = deepcopy(conf1)
         conf3.pop(key)
@@ -90,6 +90,6 @@ def test_binder():
     # Assert using static folder correctl changes URL
     conf_static = deepcopy(conf_base)
     file_path = 'blahblah/mydir/myfolder/myfile.py'
-    conf_static['notebooks_folder'] = 'ntbk_folder'
+    conf_static['notebooks_dir'] = 'ntbk_folder'
     url = gen_binder_url(file_path, conf_static, gallery_conf_base)
     assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=ntbk_folder/mydir/myfolder/myfile.ipynb'

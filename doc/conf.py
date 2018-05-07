@@ -349,7 +349,7 @@ sphinx_gallery_conf = {
                'branch': 'gh-pages',
                # 'branch': 'master',
                'dependencies': './binder/requirements.txt',
-               'notebooks_folder': 'notebooks',
+               'notebooks_dir': 'notebooks',
                'use_lab': True
                }
 }

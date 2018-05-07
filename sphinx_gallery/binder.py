@@ -49,7 +49,7 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
     """
     # Build the URL
     fpath_prefix = binder_conf.get('filepath_prefix')
-    link_base = binder_conf.get('notebooks_folder')
+    link_base = binder_conf.get('notebooks_dir')
 
     # We want to keep the relative path to sub-folders
     # Split so we have the relative path starting after the gallery dir
@@ -155,20 +155,20 @@ def _copy_binder_notebooks(app, gallery_conf, binder_conf):
 
     Walk through each output gallery directory
     For each one, check if the file ends in ipynb
-    If it does, copy it to `notebooks_folder` with the same folder structure.
+    If it does, copy it to `notebooks_dir` with the same folder structure.
     """
     gallery_dirs = gallery_conf.get('gallery_dirs')
     if not isinstance(gallery_dirs, (list, tuple)):
         gallery_dirs = [gallery_dirs]
     # Copy ipynb files to the notebooks folder, preserving folder structure
-    notebooks_folder = binder_conf.get('notebooks_folder')
+    notebooks_dir = binder_conf.get('notebooks_dir')
     for i_folder in gallery_dirs:
-        i_folder = os.path.join(app.srcdir, i_folder)
-        for i_path, _, i_files in os.walk(i_folder):
+        for i_path, _, i_files in os.walk(os.path.join(app.srcdir, i_folder)):
             for i_file in i_files:
                 if len(i_file) > 0 and i_file.endswith('.ipynb'):
+                    path_rel = _get_gallery_dir_path(i_path, gallery_conf)
                     path_out_dir = os.path.join(
-                        app.outdir, notebooks_folder, os.path.basename(i_path))
+                        app.outdir, notebooks_dir, path_rel)
                     if not os.path.exists(path_out_dir):
                         os.makedirs(path_out_dir)
                     sh.copyfile(os.path.join(i_path, i_file),
@@ -186,7 +186,7 @@ def check_binder_conf(binder_conf):
 
     # Ensure all fields are populated
     req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
-    optional_values = ['filepath_prefix', 'notebooks_folder', 'use_lab']
+    optional_values = ['filepath_prefix', 'notebooks_dir', 'use_lab']
     missing_values = []
     for val in req_values:
         if binder_conf.get(val) is None:
@@ -217,7 +217,7 @@ def check_binder_conf(binder_conf):
         raise ValueError("`dependencies` value should be a list of strings. "
                          "Got type {}.".format(type(path_reqs)))
     # Default to "notebooks" if it's not given
-    binder_conf['notebooks_folder'] = binder_conf.get('notebooks_folder',
+    binder_conf['notebooks_dir'] = binder_conf.get('notebooks_dir',
                                                       'notebooks')
     path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
     if not any(ii in path_reqs_filenames for ii in required_reqs_files):
@@ -233,8 +233,9 @@ def _get_gallery_dir_path(fname, gallery_conf):
     """Return the path to a file, starting with the gallery dir name."""
     for gdir in gallery_conf.get('gallery_dirs'):
         relative_link = os.path.normpath(fname)  # For windows machines
-        ix_start = relative_link.find(gdir.strip(os.sep) + os.sep)
-        ix_start = 0 if ix_start == -1 else ix_start
-        # Take the path starting with the gallery dir
-        relative_link = relative_link[ix_start:]
-        return relative_link
+        ix_start = relative_link.find(os.sep + gdir.strip(os.sep))
+        if ix_start > -1:
+            # Take the path starting with the gallery dir
+            relative_link = relative_link[ix_start:].strip(os.sep)
+            return relative_link
+    return relative_link.strip(os.sep)
