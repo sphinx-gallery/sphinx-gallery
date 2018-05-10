@@ -346,6 +346,5 @@ sphinx_gallery_conf = {
                'url': 'https://mybinder.org',
                'branch': 'master',
                'dependencies': './binder/requirements.txt'
-               },
-    'show_memory': True
+               }
 }
