@@ -730,8 +730,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         if time_elapsed >= gallery_conf["min_reported_time"]:
             example_rst += ("**Total running time of the script:**"
                             " ({0: .0f} minutes {1: .3f} seconds)\n\n"
-                            "**Peak memory usage:** {2: .3f}MB\n\n".format(
-                                time_m, time_s, peak_mem))
+                            .format(time_m, time_s))
+        if PROFILE_MEMORY:
+            example_rst += ("**Peak memory usage:** {2: .3f}MB\n\n"
+                            .format(time_m, time_s, peak_mem))
+
         # Generate a binder URL if specified
         binder_badge_rst = ''
         if len(binder_conf) > 0:
