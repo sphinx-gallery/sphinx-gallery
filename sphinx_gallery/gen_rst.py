@@ -505,12 +505,33 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         sys.argv[0] = script_vars['src_file']
         sys.argv[1:] = []
 
+    show_memory = gallery_conf.get('show_memory', False)
+
+    if show_memory:
+        peak_mem = 0
+        memory_measurements = [0]
+        try:
+            from memory_profiler import memory_usage
+        except ImportError:
+            logger.warning("Please install 'memory_profile' to enable peak "
+                           "memory measurements.")
+            show_memory = False
+
     t_start = time()
     compiler = codeop.Compile()
-    output_blocks = [execute_code_block(compiler, block,
-                                        example_globals,
-                                        script_vars, gallery_conf)
-                     for block in script_blocks]
+    memory_measurements = list()
+    if show_memory:
+        output_blocks = list()
+        for block in script_blocks:
+            out = execute_code_block(compiler, block, example_globals,
+                                     script_vars, gallery_conf)
+            memory_measurements += out[0]
+            output_blocks.append(out[1])
+    else:
+        output_blocks = [execute_code_block(compiler, block,
+                                            example_globals,
+                                            script_vars, gallery_conf)
+                         for block in script_blocks]
     time_elapsed = time() - t_start
 
     sys.argv = argv_orig
@@ -570,16 +591,15 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         'target_file': target_file}
 
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    output_blocks, time_elapsed = execute_script(script_blocks,
-                                                 script_vars,
-                                                 gallery_conf)
+    output_blocks, time_elapsed, memory_measurements = execute_script(
+        script_blocks, script_vars, gallery_conf)
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
 
     example_rst = rst_blocks(script_blocks, output_blocks,
                              file_conf, gallery_conf)
-    save_rst_example(example_rst, target_file,
-                     time_elapsed, gallery_conf)
+    save_rst_example(example_rst, target_file, time_elapsed,
+                     memory_measurements, gallery_conf)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
@@ -640,20 +660,20 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     return example_rst
 
 
-def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
+def save_rst_example(example_rst, example_file, time_elapsed,
+                     memory_measurements, gallery_conf):
     """Saves the rst notebook to example_file including necessary header & footer
 
     Parameters
     ----------
     example_rst : str
         rst containing the executed file content
-
     example_file : str
         Filename with full path of python example file in documentation folder
-
     time_elapsed : float
         Time elapsed in seconds while executing file
-
+    memory_measurements : list
+        Memory measurements during the run.
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
@@ -678,6 +698,10 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
         example_rst += ("**Total running time of the script:**"
                         " ({0: .0f} minutes {1: .3f} seconds)\n\n"
                         .format(time_m, time_s))
+    if gallery_conf['memory_usage']:
+        peak_mem = max(memory_measurements)
+        example_rst += ("**Peak memory usage:** {0: .0f} MB\n\n"
+                        .format(peak_mem))
 
     # Generate a binder URL if specified
     binder_badge_rst = ''
