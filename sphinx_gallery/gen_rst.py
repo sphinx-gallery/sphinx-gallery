@@ -29,6 +29,13 @@ from distutils.version import LooseVersion
 
 from .utils import replace_py_ipynb
 
+try:
+    from memory_profiler import memory_usage
+except ImportError:
+    PROFILE_MEMORY = False
+else:
+    PROFILE_MEMORY = True
+
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -659,6 +666,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
     time_elapsed = 0
+    peak_mem = 0
+    memory_measurements = [0]
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
 
@@ -672,10 +681,15 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
-            code_output, rtime = execute_code_block(compiler, src_file,
-                                                    bcontent, lineno,
-                                                    example_globals,
-                                                    block_vars, gallery_conf)
+            args = (compiler, src_file, bcontent, lineno,
+                    example_globals, block_vars, gallery_conf)
+            if PROFILE_MEMORY and block_vars['execute_script']:
+                mem_profile, (code_output, rtime) = memory_usage(
+                        (execute_code_block, args),
+                        retval=True)
+                memory_measurements += mem_profile
+            else:
+                code_output, rtime = execute_code_block(*args)
 
             time_elapsed += rtime
 
@@ -707,6 +721,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
+    peak_mem = max(memory_measurements)
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb = jupyter_notebook(script_blocks)
     save_notebook(example_nb, replace_py_ipynb(example_file))
@@ -714,8 +729,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                      mode='w', encoding='utf-8') as f:
         if time_elapsed >= gallery_conf["min_reported_time"]:
             example_rst += ("**Total running time of the script:**"
-                            " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
-                                time_m, time_s))
+                            " ({0: .0f} minutes {1: .3f} seconds)\n\n"
+                            "**Peak memory usage:** {2: .3f}MB\n\n".format(
+                                time_m, time_s, peak_mem))
         # Generate a binder URL if specified
         binder_badge_rst = ''
         if len(binder_conf) > 0:
