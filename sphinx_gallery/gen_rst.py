@@ -732,8 +732,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                             " ({0: .0f} minutes {1: .3f} seconds)\n\n"
                             .format(time_m, time_s))
         if PROFILE_MEMORY:
-            example_rst += ("**Peak memory usage:** {2: .3f}MB\n\n"
-                            .format(time_m, time_s, peak_mem))
+            example_rst += ("**Peak memory usage:** {0: .3f}MB\n\n"
+                            .format(peak_mem))
 
         # Generate a binder URL if specified
         binder_badge_rst = ''
