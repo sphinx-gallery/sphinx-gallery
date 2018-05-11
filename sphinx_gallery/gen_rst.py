@@ -735,7 +735,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                             .format(time_m, time_s))
         if show_memory:
             peak_mem = max(memory_measurements)
-            example_rst += ("**Peak memory usage:** {0: .3f}MB\n\n"
+            example_rst += ("**Peak memory usage:** {0: .0f} MB\n\n"
                             .format(peak_mem))
 
         # Generate a binder URL if specified
