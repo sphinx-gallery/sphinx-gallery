@@ -385,7 +385,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     # width_sc, height_sc = img.size  # necessary if using thumbnail
 
     # insert centered
-    thumb = Image.new('RGB', (max_width, max_height), (255, 255, 255))
+    thumb = Image.new('RGBA', (max_width, max_height), (255, 255, 255, 255))
     pos_insert = ((max_width - width_sc) // 2, (max_height - height_sc) // 2)
     thumb.paste(img, pos_insert)
 
