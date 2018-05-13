@@ -173,8 +173,8 @@ def _copy_binder_notebooks(app):
     gallery_dirs = gallery_conf.get('gallery_dirs')
     binder_conf = gallery_conf.get('binder')
     notebooks_dir = os.path.join(app.outdir, binder_conf.get('notebooks_dir'))
-    if not os.path.exists(notebooks_dir):
-        os.makedirs(notebooks_dir)
+    shutil.rmtree(notebooks_dir, True)
+    os.makedirs(notebooks_dir)
 
     for i_folder in gallery_dirs:
         shutil.copytree(os.path.join(app.srcdir, i_folder),
