@@ -15,7 +15,7 @@ change in the future.
 
 """
 
-import shutil as sh
+import shutil
 import os
 
 try:
@@ -52,8 +52,7 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
     link_base = binder_conf.get('notebooks_dir')
 
     # We want to keep the relative path to sub-folders
-    # Split so we have the relative path starting after the gallery dir
-    relative_link = _get_gallery_dir_path(fname, gallery_conf)
+    relative_link = os.path.relpath(fname, gallery_conf['src_dir'])
     path_link = os.path.join(
         link_base, replace_py_ipynb(relative_link))
 
@@ -134,12 +133,12 @@ def copy_binder_files(app, exception):
         return
 
     logger.info('copying binder requirements...', color='white')
-    _copy_binder_reqs(app, gallery_conf, binder_conf)
+    _copy_binder_reqs(app, binder_conf)
     logger.info('copying binder notebooks...', color='white')
     _copy_binder_notebooks(app, gallery_conf, binder_conf)
 
 
-def _copy_binder_reqs(app, gallery_conf, binder_conf):
+def _copy_binder_reqs(app, binder_conf):
     """Copy Binder requirements files to a "binder" folder in the docs."""
     path_reqs = binder_conf.get('dependencies')
 
@@ -147,7 +146,7 @@ def _copy_binder_reqs(app, gallery_conf, binder_conf):
     if not os.path.isdir(binder_folder):
         os.makedirs(binder_folder)
     for path in path_reqs:
-        sh.copy(os.path.join(app.srcdir, path), binder_folder)
+        shutil.copy(os.path.join(app.srcdir, path), binder_folder)
 
 
 def _copy_binder_notebooks(app, gallery_conf, binder_conf):
@@ -158,21 +157,19 @@ def _copy_binder_notebooks(app, gallery_conf, binder_conf):
     If it does, copy it to `notebooks_dir` with the same folder structure.
     """
     gallery_dirs = gallery_conf.get('gallery_dirs')
-    if not isinstance(gallery_dirs, (list, tuple)):
-        gallery_dirs = [gallery_dirs]
     # Copy ipynb files to the notebooks folder, preserving folder structure
     notebooks_dir = binder_conf.get('notebooks_dir')
     for i_folder in gallery_dirs:
         for i_path, _, i_files in os.walk(os.path.join(app.srcdir, i_folder)):
             for i_file in i_files:
                 if len(i_file) > 0 and i_file.endswith('.ipynb'):
-                    path_rel = _get_gallery_dir_path(i_path, gallery_conf)
+                    path_rel = os.path.relpath(i_path, gallery_conf['src_dir'])
                     path_out_dir = os.path.join(
                         app.outdir, notebooks_dir, path_rel)
                     if not os.path.exists(path_out_dir):
                         os.makedirs(path_out_dir)
-                    sh.copyfile(os.path.join(i_path, i_file),
-                                os.path.join(path_out_dir, i_file))
+                    shutil.copyfile(os.path.join(i_path, i_file),
+                                    os.path.join(path_out_dir, i_file))
 
 
 def check_binder_conf(binder_conf):
@@ -218,7 +215,7 @@ def check_binder_conf(binder_conf):
                          "Got type {}.".format(type(path_reqs)))
     # Default to "notebooks" if it's not given
     binder_conf['notebooks_dir'] = binder_conf.get('notebooks_dir',
-                                                      'notebooks')
+                                                   'notebooks')
     path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
     if not any(ii in path_reqs_filenames for ii in required_reqs_files):
         raise ValueError(
@@ -227,15 +224,3 @@ def check_binder_conf(binder_conf):
             'for sphinx-gallery. A path to at least one of these files '
             'must exist in your Binder dependencies.')
     return binder_conf
-
-
-def _get_gallery_dir_path(fname, gallery_conf):
-    """Return the path to a file, starting with the gallery dir name."""
-    for gdir in gallery_conf.get('gallery_dirs'):
-        relative_link = os.path.normpath(fname)  # For windows machines
-        ix_start = relative_link.find(os.sep + gdir.strip(os.sep))
-        if ix_start > -1:
-            # Take the path starting with the gallery dir
-            relative_link = relative_link[ix_start:].strip(os.sep)
-            return relative_link
-    return relative_link.strip(os.sep)

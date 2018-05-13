@@ -350,6 +350,6 @@ sphinx_gallery_conf = {
                # 'branch': 'master',
                'dependencies': './binder/requirements.txt',
                'notebooks_dir': 'notebooks',
-               'use_lab': True
+               'use_lab': True,
                }
 }

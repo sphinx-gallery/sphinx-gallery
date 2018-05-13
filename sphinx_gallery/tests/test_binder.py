@@ -22,7 +22,7 @@ def test_binder():
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
     conf_base = check_binder_conf(conf_base)
-    gallery_conf_base = {'gallery_dirs': ['mydir']}
+    gallery_conf_base = {'gallery_dirs': ['mydir'], 'src_dir': 'blahblah'}
 
     url = gen_binder_url(file_path, conf_base, gallery_conf_base)
     assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb'

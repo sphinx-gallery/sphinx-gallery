@@ -283,9 +283,9 @@ extensions = ['sphinx_gallery.gen_gallery']
 project = u'Sphinx-Gallery <Tests>'
 
 sphinx_gallery_conf = {
-    'mod_example_dir' : os.path.join('modules', 'gen'),
+    'backreferences_dir' : os.path.join('modules', 'gen'),
     'examples_dirs': 'src',
-    'gallery_dirs': 'ex',
+    'gallery_dirs': ['ex'],
     'binder': {'url': 'http://test1.com', 'org': 'org',
                'repo': 'repo', 'branch': 'branch',
                'dependencies': 'requirements.txt'}
@@ -301,5 +301,5 @@ def test_binder_copy_files(config_app, tmpdir):
 
     for i_file in ['plot_1', 'plot_2', 'plot_3']:
         assert os.path.exists(os.path.join(
-            config_app.outdir, 'notebooks', gallery_conf['gallery_dirs'],
+            config_app.outdir, 'notebooks', gallery_conf['gallery_dirs'][0],
             i_file+'.ipynb'))

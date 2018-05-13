@@ -710,8 +710,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb = jupyter_notebook(script_blocks)
-    path_ipynb = replace_py_ipynb(example_file)
-    save_notebook(example_nb, path_ipynb)
+    save_notebook(example_nb, replace_py_ipynb(example_file))
 
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:

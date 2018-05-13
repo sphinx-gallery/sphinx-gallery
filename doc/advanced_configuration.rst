@@ -450,9 +450,7 @@ dictionary following the pattern below::
          'dependencies': '<list_of_paths_to_dependency_files>',
          # Optional keys
          'filepath_prefix': '<prefix>' # A prefix to append to any filepaths in Binder links.
-                            use this if you move your built documentation to a sub-folder of your repository (e.g., "v2.1").
-         'notebooks_dir': '<notebooks-directory-name>' # A directory name where jupyter notebooks that Binder links point to will be moved.
-                             Defaults to the name "notebooks".
+         'notebooks_dir': '<notebooks-directory-name>' # Jupyter notebooks for Binder will be moved to this directory (relative to site root).
          'use_lab': <bool> # Whether Binder links should start Jupyter Lab instead of the Jupyter Notebook interface.
          }
     }
