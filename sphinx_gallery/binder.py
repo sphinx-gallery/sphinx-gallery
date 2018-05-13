@@ -134,7 +134,6 @@ def copy_binder_files(app, exception):
 
     logger.info('copying binder requirements...', color='white')
     _copy_binder_reqs(app, binder_conf)
-    logger.info('copying binder notebooks...', color='white')
     _copy_binder_notebooks(app)
 
 
@@ -176,7 +175,10 @@ def _copy_binder_notebooks(app):
     shutil.rmtree(notebooks_dir, True)
     os.makedirs(notebooks_dir)
 
-    for i_folder in gallery_dirs:
+    iterator = sphinx_compatibility.status_iterator(
+        gallery_dirs, 'copying binder notebooks...', length=len(gallery_dirs))
+
+    for i_folder in iterator:
         shutil.copytree(os.path.join(app.srcdir, i_folder),
                         os.path.join(notebooks_dir, i_folder),
                         ignore=ignore_but_ipynb)
