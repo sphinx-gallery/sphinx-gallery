@@ -149,15 +149,20 @@ def _copy_binder_reqs(app, binder_conf):
 
 
 def ignore_but_ipynb(path, contents):
-    """Return all files that are not a Jupyter notebooks or directories
+    """Return files that don't end in ipynb or are directories named "image".
 
-    Given a path and its contents remove entries of either Jupyter
-    notebooks or directories with the exception of the `images` directory"""
-
-    return [entry for entry in contents if not
-            entry.endswith('.ipynb') != os.path.isdir(
-                os.path.join(path, entry))
-            or entry == 'images']
+    Used with the `shutil` "ignore" keyword to filter out non-ipynb files."""
+    contents_return = []
+    for entry in contents:
+        # Remove ipynb files
+        if entry.endswith('.ipynb'):
+            continue
+        # Remove folders not called "images"
+        elif (entry != "images") and os.path.isdir(os.path.join(path, entry)):
+            continue
+        # Keep everything else
+        contents_return.append(entry)
+    return contents_return
 
 
 def _copy_binder_notebooks(app):
