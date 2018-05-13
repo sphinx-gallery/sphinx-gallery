@@ -161,12 +161,10 @@ def ignore_but_ipynb(path, contents):
 
 
 def _copy_binder_notebooks(app):
-    """Copy Jupyter notebooks to the output directory.
+    """Copy Jupyter notebooks to the binder notebooks directory.
 
-    Walk through each output gallery directory
-    For each one, check if the file ends in ipynb
-    If it does, copy it to `notebooks_dir` with the same folder structure.
-    """
+    Copy each output gallery directory structure but only including the
+    Jupyter notebook files."""
 
     gallery_conf = app.config.sphinx_gallery_conf
     gallery_dirs = gallery_conf.get('gallery_dirs')
