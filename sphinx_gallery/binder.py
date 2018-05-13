@@ -135,7 +135,7 @@ def copy_binder_files(app, exception):
     logger.info('copying binder requirements...', color='white')
     _copy_binder_reqs(app, binder_conf)
     logger.info('copying binder notebooks...', color='white')
-    _copy_binder_notebooks(app, gallery_conf, binder_conf)
+    _copy_binder_notebooks(app)
 
 
 def _copy_binder_reqs(app, binder_conf):
@@ -149,27 +149,37 @@ def _copy_binder_reqs(app, binder_conf):
         shutil.copy(os.path.join(app.srcdir, path), binder_folder)
 
 
-def _copy_binder_notebooks(app, gallery_conf, binder_conf):
+def ignore_but_ipynb(path, contents):
+    """Return all files that are not a Jupyter notebooks or directories
+
+    Given a path and its contents remove entries of either Jupyter
+    notebooks or directories with the exception of the `images` directory"""
+
+    return [entry for entry in contents if not
+            entry.endswith('.ipynb') != os.path.isdir(
+                os.path.join(path, entry))
+            or entry == 'images']
+
+
+def _copy_binder_notebooks(app):
     """Copy Jupyter notebooks to the output directory.
 
     Walk through each output gallery directory
     For each one, check if the file ends in ipynb
     If it does, copy it to `notebooks_dir` with the same folder structure.
     """
+
+    gallery_conf = app.config.sphinx_gallery_conf
     gallery_dirs = gallery_conf.get('gallery_dirs')
-    # Copy ipynb files to the notebooks folder, preserving folder structure
-    notebooks_dir = binder_conf.get('notebooks_dir')
+    binder_conf = gallery_conf.get('binder')
+    notebooks_dir = os.path.join(app.outdir, binder_conf.get('notebooks_dir'))
+    if not os.path.exists(notebooks_dir):
+        os.makedirs(notebooks_dir)
+
     for i_folder in gallery_dirs:
-        for i_path, _, i_files in os.walk(os.path.join(app.srcdir, i_folder)):
-            for i_file in i_files:
-                if len(i_file) > 0 and i_file.endswith('.ipynb'):
-                    path_rel = os.path.relpath(i_path, gallery_conf['src_dir'])
-                    path_out_dir = os.path.join(
-                        app.outdir, notebooks_dir, path_rel)
-                    if not os.path.exists(path_out_dir):
-                        os.makedirs(path_out_dir)
-                    shutil.copyfile(os.path.join(i_path, i_file),
-                                    os.path.join(path_out_dir, i_file))
+        shutil.copytree(os.path.join(app.srcdir, i_folder),
+                        os.path.join(notebooks_dir, i_folder),
+                        ignore=ignore_but_ipynb)
 
 
 def check_binder_conf(binder_conf):
