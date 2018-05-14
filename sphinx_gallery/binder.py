@@ -148,20 +148,22 @@ def _copy_binder_reqs(app, binder_conf):
         shutil.copy(os.path.join(app.srcdir, path), binder_folder)
 
 
-def ignore_but_ipynb(path, contents):
-    """Return files that don't end in ipynb or are directories named "image".
+def _remove_ipynb_files(path, contents):
+    """Given a list of files in `contents`, remove all files named `ipynb` or
+    directories named `images` and return the result.
 
     Used with the `shutil` "ignore" keyword to filter out non-ipynb files."""
     contents_return = []
     for entry in contents:
-        # Remove ipynb files
         if entry.endswith('.ipynb'):
-            continue
-        # Remove folders not called "images"
+            # Don't include ipynb files
+            pass
         elif (entry != "images") and os.path.isdir(os.path.join(path, entry)):
-            continue
-        # Keep everything else
-        contents_return.append(entry)
+            # Don't include folders not called "images"
+            pass
+        else:
+            # Keep everything else
+            contents_return.append(entry)
     return contents_return
 
 
@@ -184,7 +186,7 @@ def _copy_binder_notebooks(app):
     for i_folder in iterator:
         shutil.copytree(os.path.join(app.srcdir, i_folder),
                         os.path.join(notebooks_dir, i_folder),
-                        ignore=ignore_but_ipynb)
+                        ignore=_remove_ipynb_files)
 
 
 def check_binder_conf(binder_conf):
