@@ -24,7 +24,7 @@ file:
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
 - ``line_numbers`` (:ref:`adding_line_numbers`)
-- ``download_section_examples`` (:ref:`disable_joint_download`)
+- ``download_all_examples`` (:ref:`disable_all_scripts_download`)
 - ``plot_gallery`` (:ref:`without_execution`)
 - ``find_mayavi_figures`` (:ref:`find_mayavi`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
@@ -381,19 +381,19 @@ Note that for Sphinx < 1.3, the line numbers will not be consistent with the
 original file.
 
 
-.. _disable_joint_download:
+.. _disable_all_scripts_download:
 
-Disabling joint download of scripts
-===================================
+Disabling download button of all scripts
+========================================
 
-By default Sphinx-Gallery prepares zip files of all python scripts and
-all Jupyter notebooks for each gallery section and makes them
-available for download at the end of each section. To disable this
-behavior add to the configuration dictionary in your ``conf.py`` file::
+By default Sphinx-Gallery collects all python scripts and all Jupyter
+notebooks from each gallery into zip files which are made available for
+download at the bottom of each gallery. To disable this behavior add to the
+configuration dictionary in your ``conf.py`` file::
 
     sphinx_gallery_conf = {
         ...
-        'download_section_examples': False,
+        'download_all_examples': False,
     }
 
 
