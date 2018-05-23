@@ -23,8 +23,8 @@ sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery',),
     'reference_url': {
         'sphinx_gallery': None,
-        },
-    'examples_dirs': ['examples'],
+    },
+    'examples_dirs': ['examples/'],
     'gallery_dirs': ['auto_examples'],
     'backreferences_dir': 'gen_modules/backreferences',
     'within_section_order': FileNameSortKey,
