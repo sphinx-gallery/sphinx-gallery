@@ -83,7 +83,7 @@ def test_binder():
 
     # Assert using lab correctly changes URL
     conf_lab = deepcopy(conf_base)
-    conf_lab['use_lab'] = True
+    conf_lab['use_jupyter_lab'] = True
     url = gen_binder_url(file_path, conf_lab, gallery_conf_base)
     assert url == 'http://test1.com/v2/gh/org/repo/branch?urlpath=lab/tree/notebooks/mydir/myfile.ipynb'
 

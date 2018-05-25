@@ -60,7 +60,7 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
     if fpath_prefix is not None:
         path_link = '/'.join([fpath_prefix.strip('/'), path_link])
 
-    # Make sure we have the right slashes
+    # Make sure we have the right slashes (in case we're on Windows)
     path_link = path_link.replace(os.path.sep, '/')
 
     # Create the URL
@@ -72,7 +72,7 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
                            binder_conf['branch']])
 
     # Choose a filepath structure depending on whether we're using lab
-    if binder_conf.get('use_lab', False) is True:
+    if binder_conf.get('use_jupyter_lab', False) is True:
         binder_url += '?urlpath=lab/tree/{}'.format(path_link)
     else:
         binder_url += '?filepath={}'.format(path_link)
@@ -128,7 +128,6 @@ def copy_binder_files(app, exception):
     gallery_conf = app.config.sphinx_gallery_conf
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
 
-    # Copy the requirements files for binder
     if not len(binder_conf) > 0:
         return
 
@@ -200,7 +199,7 @@ def check_binder_conf(binder_conf):
 
     # Ensure all fields are populated
     req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
-    optional_values = ['filepath_prefix', 'notebooks_dir', 'use_lab']
+    optional_values = ['filepath_prefix', 'notebooks_dir', 'use_jupyter_lab']
     missing_values = []
     for val in req_values:
         if binder_conf.get(val) is None:

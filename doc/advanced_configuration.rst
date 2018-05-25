@@ -450,16 +450,18 @@ dictionary following the pattern below::
          'dependencies': '<list_of_paths_to_dependency_files>',
          # Optional keys
          'filepath_prefix': '<prefix>' # A prefix to append to any filepaths in Binder links.
-         'notebooks_dir': '<notebooks-directory-name>' # Jupyter notebooks for Binder will be moved to this directory (relative to site root).
-         'use_lab': <bool> # Whether Binder links should start Jupyter Lab instead of the Jupyter Notebook interface.
+         'notebooks_dir': '<notebooks-directory-name>' # Jupyter notebooks for Binder will be copied to this directory (relative to site root).
+         'use_jupyter_lab': <bool> # Whether Binder links should start Jupyter Lab instead of the Jupyter Notebook interface.
          }
     }
 
 Note that ``branch:`` should be the branch on which your documentation is hosted.
 If you host your documentation on GitHub, this is usually ``gh-pages`` or ``master``.
 
-A copy of each generated Jupyter Notebook will be copied to the folder
-specified in ``notebooks_dir``. Binder links will point to these notebooks.
+Each generated Jupyter Notebook will be copied to the folder
+specified in ``notebooks_dir``. This will be a subfolder of the sphinx output
+directory and included with your site build.
+Binder links will point to these notebooks.
 
 .. important::
 

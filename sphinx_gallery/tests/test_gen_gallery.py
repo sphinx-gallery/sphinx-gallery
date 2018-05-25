@@ -288,6 +288,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['ex'],
     'binder': {'url': 'http://test1.com', 'org': 'org',
                'repo': 'repo', 'branch': 'branch',
+               'notebooks_dir': 'ntbk_folder',
                'dependencies': 'requirements.txt'}
 }""")
 def test_binder_copy_files(config_app, tmpdir):
@@ -301,5 +302,5 @@ def test_binder_copy_files(config_app, tmpdir):
 
     for i_file in ['plot_1', 'plot_2', 'plot_3']:
         assert os.path.exists(os.path.join(
-            config_app.outdir, 'notebooks', gallery_conf['gallery_dirs'][0],
+            config_app.outdir, 'ntbk_folder', gallery_conf['gallery_dirs'][0],
             i_file+'.ipynb'))
