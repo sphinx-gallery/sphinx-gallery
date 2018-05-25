@@ -670,12 +670,29 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         sys.argv[0] = src_file
         sys.argv[1:] = []
 
+    show_memory = gallery_conf.get('show_memory', False)
+
+    if show_memory:
+        peak_mem = 0
+        memory_measurements = [0]
+        try:
+            from memory_profiler import memory_usage
+        except ImportError:
+            logger.warning("Please install 'memory_profile' to enable peak "
+                           "memory measurements.")
+            show_memory = False
+
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
-            code_output, rtime = execute_code_block(compiler, src_file,
-                                                    bcontent, lineno,
-                                                    example_globals,
-                                                    block_vars, gallery_conf)
+            args = (compiler, src_file, bcontent, lineno,
+                    example_globals, block_vars, gallery_conf)
+            if show_memory and block_vars['execute_script']:
+                mem_profile, (code_output, rtime) = memory_usage(
+                        (execute_code_block, args),
+                        retval=True)
+                memory_measurements += mem_profile
+            else:
+                code_output, rtime = execute_code_block(*args)
 
             time_elapsed += rtime
 
@@ -714,8 +731,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                      mode='w', encoding='utf-8') as f:
         if time_elapsed >= gallery_conf["min_reported_time"]:
             example_rst += ("**Total running time of the script:**"
-                            " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
-                                time_m, time_s))
+                            " ({0: .0f} minutes {1: .3f} seconds)\n\n"
+                            .format(time_m, time_s))
+        if show_memory:
+            peak_mem = max(memory_measurements)
+            example_rst += ("**Peak memory usage:** {0: .0f} MB\n\n"
+                            .format(peak_mem))
+
         # Generate a binder URL if specified
         binder_badge_rst = ''
         if len(binder_conf) > 0:

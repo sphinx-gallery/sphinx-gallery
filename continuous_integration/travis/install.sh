@@ -18,7 +18,8 @@ if [ "$DISTRIB" == "conda" ]; then
     # force no mkl because mayavi requires old version of numpy
     # which then crashes with pandas and seaborn
     conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy\
-        setuptools matplotlib pillow pytest pytest-cov coverage seaborn
+        setuptools matplotlib pillow pytest pytest-cov coverage seaborn\
+        memory_profiler
     source activate testenv
     if [ "$INSTALL_MAYAVI" == "true" ]; then
         conda install --yes mayavi
@@ -38,6 +39,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install -U requests[security]  # ensure SSL certificate works
     pip install "tornado<5"
     pip install -r requirements.txt
+    pip uninstall -y memory_profiler  # test show_memory=True without memory_profiler
     pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"

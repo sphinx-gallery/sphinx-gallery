@@ -3,3 +3,4 @@ matplotlib
 pillow
 sphinx
 pytest
+memory_profiler
