@@ -55,6 +55,9 @@ def config_app(tempdir, conf_file):
 import os
 import sphinx_gallery
 extensions = ['sphinx_gallery.gen_gallery']
+exclude_patterns = ['_build']
+source_suffix = '.rst'
+master_doc = 'index'
 # General information about the project.
 project = u'Sphinx-Gallery <Tests>'\n\n
 """
@@ -282,3 +285,19 @@ def test_binder_copy_files(config_app, tmpdir):
         assert os.path.exists(os.path.join(
             config_app.outdir, 'ntbk_folder', gallery_conf['gallery_dirs'][0],
             i_file+'.ipynb'))
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'filename_pattern': 'plot_1.py',
+    'expected_failing_examples' :['src/plot_2.py'],
+}""")
+def test_expected_failing_examples_were_executed(config_app):
+    """Testing that no exception is issued when broken example is not built
+
+    Refer to issue #335
+    """
+    # Build docs there should be no exception raised
+    config_app.build(False, [])
