@@ -117,7 +117,14 @@ def parse_sphinx_docopts(index):
         elif value == 'true':
             value = True
         else:
-            value = int(value)
+            try:
+                value = int(value)
+            except ValueError:
+                # In Sphinx 1.7.5, URL_ROOT is a JavaScript fragment.
+                # Ignoring this entry since URL_ROOT is not used
+                # elsewhere.
+                # https://github.com/sphinx-gallery/sphinx-gallery/issues/382
+                continue
 
         docopts[key] = value
 
