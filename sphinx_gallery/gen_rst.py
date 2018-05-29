@@ -173,7 +173,9 @@ SINGLE_IMAGE = """
 # This one could contain unicode
 CODE_OUTPUT = u""".. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
 {0}\n"""
 
