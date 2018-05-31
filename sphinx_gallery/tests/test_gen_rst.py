@@ -235,7 +235,7 @@ def test_pattern_matching(gallery_conf, log_collector):
 
     gallery_conf.update(filename_pattern=re.escape(os.sep) + 'plot_0')
 
-    code_output = ('\n Out::\n'
+    code_output = ('\n Out:\n\n .. code-block:: none\n'
                    '\n'
                    '    Óscar output\n'
                    '    log:Óscar\n'
