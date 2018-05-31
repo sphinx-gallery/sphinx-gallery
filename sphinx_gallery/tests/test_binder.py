@@ -96,7 +96,7 @@ def test_binder():
                 'branch?urlpath=lab/tree/notebooks/mydir/myfile.ipynb')
     assert url == expected
 
-    # Assert using static folder correctl changes URL
+    # Assert using static folder correctly changes URL
     conf_static = deepcopy(conf_base)
     file_path = 'blahblah/mydir/myfolder/myfile.py'
     conf_static['notebooks_dir'] = 'ntbk_folder'
