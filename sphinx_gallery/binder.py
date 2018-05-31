@@ -71,7 +71,6 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
                            binder_conf['repo'],
                            binder_conf['branch']])
 
-    # Choose a filepath structure depending on whether we're using lab
     if binder_conf.get('use_jupyter_lab', False) is True:
         binder_url += '?urlpath=lab/tree/{}'.format(path_link)
     else:
@@ -176,7 +175,7 @@ def _copy_binder_notebooks(app):
     gallery_dirs = gallery_conf.get('gallery_dirs')
     binder_conf = gallery_conf.get('binder')
     notebooks_dir = os.path.join(app.outdir, binder_conf.get('notebooks_dir'))
-    shutil.rmtree(notebooks_dir, True)
+    shutil.rmtree(notebooks_dir, ignore_errors=True)
     os.makedirs(notebooks_dir)
 
     iterator = sphinx_compatibility.status_iterator(
@@ -229,7 +228,7 @@ def check_binder_conf(binder_conf):
     elif not isinstance(path_reqs, (list, tuple)):
         raise ValueError("`dependencies` value should be a list of strings. "
                          "Got type {}.".format(type(path_reqs)))
-    # Default to "notebooks" if it's not given
+
     binder_conf['notebooks_dir'] = binder_conf.get('notebooks_dir',
                                                    'notebooks')
     path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]

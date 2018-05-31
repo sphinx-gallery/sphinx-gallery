@@ -25,14 +25,20 @@ def test_binder():
     gallery_conf_base = {'gallery_dirs': ['mydir'], 'src_dir': 'blahblah'}
 
     url = gen_binder_url(file_path, conf_base, gallery_conf_base)
-    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb'
+    expected = ('http://test1.com/v2/gh/org/repo/'
+                'branch?filepath=notebooks/mydir/myfile.ipynb')
+    assert url == expected
 
     # Assert filepath prefix is added
     prefix = 'my_prefix/foo'
     conf1 = deepcopy(conf_base)
     conf1['filepath_prefix'] = prefix
     url = gen_binder_url(file_path, conf1, gallery_conf_base)
-    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath={}/notebooks/mydir/myfile.ipynb'.format(prefix)
+    expected = ('http://test1.com/v2/gh/org/repo/'
+                'branch?filepath={}/notebooks/'
+                'mydir/myfile.ipynb').format(prefix)
+
+    assert url == expected
     conf1.pop('filepath_prefix')
 
     # URL must have http
@@ -60,7 +66,8 @@ def test_binder():
             conf3 = deepcopy(conf1)
             conf3['dependencies'] = ifile
             url = check_binder_conf(conf3)
-        excinfo.match(r"Did not find one of `requirements.txt` or `environment.yml`")
+        excinfo.match(r"Did not find one of `requirements.txt` "
+                      "or `environment.yml`")
 
     with pytest.raises(ValueError) as excinfo:
         conf6 = deepcopy(conf1)
@@ -85,11 +92,15 @@ def test_binder():
     conf_lab = deepcopy(conf_base)
     conf_lab['use_jupyter_lab'] = True
     url = gen_binder_url(file_path, conf_lab, gallery_conf_base)
-    assert url == 'http://test1.com/v2/gh/org/repo/branch?urlpath=lab/tree/notebooks/mydir/myfile.ipynb'
+    expected = ('http://test1.com/v2/gh/org/repo/'
+                'branch?urlpath=lab/tree/notebooks/mydir/myfile.ipynb')
+    assert url == expected
 
     # Assert using static folder correctl changes URL
     conf_static = deepcopy(conf_base)
     file_path = 'blahblah/mydir/myfolder/myfile.py'
     conf_static['notebooks_dir'] = 'ntbk_folder'
     url = gen_binder_url(file_path, conf_static, gallery_conf_base)
-    assert url == 'http://test1.com/v2/gh/org/repo/branch?filepath=ntbk_folder/mydir/myfolder/myfile.ipynb'
+    expected = ('http://test1.com/v2/gh/org/repo/'
+                'branch?filepath=ntbk_folder/mydir/myfolder/myfile.ipynb')
+    assert url == expected
