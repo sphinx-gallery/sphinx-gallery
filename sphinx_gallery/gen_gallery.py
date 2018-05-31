@@ -21,7 +21,7 @@ from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .binder import copy_binder_reqs, check_binder_conf
+from .binder import copy_binder_files, check_binder_conf
 
 try:
     FileNotFoundError
@@ -236,12 +236,6 @@ def generate_gallery_rst(app):
             else:
                 logger.info("\t- %s: not run", fname)
 
-    # Copy the requirements files for binder
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
-    if len(binder_conf) > 0:
-        logger.info("copying binder requirements...")
-        copy_binder_reqs(app)
-
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
     """Generate empty back-reference example files
@@ -367,6 +361,7 @@ def setup(app):
 
     app.connect('builder-inited', generate_gallery_rst)
 
+    app.connect('build-finished', copy_binder_files)
     app.connect('build-finished', sumarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     metadata = {'parallel_read_safe': True,

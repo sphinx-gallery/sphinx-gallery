@@ -345,6 +345,8 @@ sphinx_gallery_conf = {
                'repo': 'sphinx-gallery.github.io',
                'url': 'https://mybinder.org',
                'branch': 'master',
-               'dependencies': './binder/requirements.txt'
+               'dependencies': './binder/requirements.txt',
+               'notebooks_dir': 'notebooks',
+               'use_jupyter_lab': True,
                }
 }

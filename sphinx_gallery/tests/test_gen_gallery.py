@@ -276,3 +276,34 @@ def test_collect_gallery_files(config_app, tmpdir):
         [ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)])
 
     assert collected_files == expected_files
+
+
+@pytest.mark.conf_file(content="""
+import os
+import sphinx_gallery
+extensions = ['sphinx_gallery.gen_gallery']
+# General information about the project.
+project = u'Sphinx-Gallery <Tests>'
+
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+    'binder': {'url': 'http://test1.com', 'org': 'org',
+               'repo': 'repo', 'branch': 'branch',
+               'notebooks_dir': 'ntbk_folder',
+               'dependencies': 'requirements.txt'}
+}""")
+def test_binder_copy_files(config_app, tmpdir):
+    """Test that notebooks are copied properly."""
+    from sphinx_gallery.binder import copy_binder_files, check_binder_conf
+    gallery_conf = config_app.config.sphinx_gallery_conf
+    # Create requirements file
+    with open(os.path.join(config_app.srcdir, 'requirements.txt'), 'w') as ff:
+        pass
+    copy_binder_files(config_app, None)
+
+    for i_file in ['plot_1', 'plot_2', 'plot_3']:
+        assert os.path.exists(os.path.join(
+            config_app.outdir, 'ntbk_folder', gallery_conf['gallery_dirs'][0],
+            i_file+'.ipynb'))

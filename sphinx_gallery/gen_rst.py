@@ -30,6 +30,7 @@ from distutils.version import LooseVersion
 from .utils import replace_py_ipynb
 
 
+
 # Try Python 2 first, otherwise load from Python 3
 try:
     # textwrap indent only exists in python 3
@@ -83,7 +84,7 @@ from .downloads import CODE_DOWNLOAD
 from .py_source_parser import split_code_and_text_blocks
 
 from .notebook import jupyter_notebook, save_notebook
-from .binder import check_binder_conf, copy_binder_reqs, gen_binder_rst
+from .binder import check_binder_conf, gen_binder_rst
 
 try:
     basestring
@@ -710,6 +711,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_m, time_s = divmod(time_elapsed, 60)
     example_nb = jupyter_notebook(script_blocks)
     save_notebook(example_nb, replace_py_ipynb(example_file))
+
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:
         if time_elapsed >= gallery_conf["min_reported_time"]:
@@ -719,7 +721,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         # Generate a binder URL if specified
         binder_badge_rst = ''
         if len(binder_conf) > 0:
-            binder_badge_rst += gen_binder_rst(fname, binder_conf)
+            binder_badge_rst += gen_binder_rst(example_file, binder_conf,
+                                               gallery_conf)
 
         example_rst += CODE_DOWNLOAD.format(fname,
                                             replace_py_ipynb(fname),
