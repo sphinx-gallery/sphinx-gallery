@@ -92,7 +92,7 @@ def parse_sphinx_docopts(index):
         The documentation options from the page.
     """
 
-    pos = index.find('DOCUMENTATION_OPTIONS')
+    pos = index.find('var DOCUMENTATION_OPTIONS')
     if pos < 0:
         raise ValueError('Documentation options could not be found in index.')
     pos = index.find('{', pos)
@@ -178,7 +178,7 @@ class SphinxDocLinkResolver(object):
         # are being referenced, we need to try and get the index page first and
         # if that doesn't work, check for the documentation_options.js file.
         index = get_data(index_url, gallery_dir)
-        if 'DOCUMENTATION_OPTIONS' in index:
+        if 'var DOCUMENTATION_OPTIONS' in index:
             self._docopts = parse_sphinx_docopts(index)
         else:
             docopts = get_data(docopts_url, gallery_dir)
