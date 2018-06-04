@@ -38,6 +38,9 @@ Bug Fixes
 * Fix SphinxDocLinkResolver error with sphinx 1.7. See `#352
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/352>`_ for more
   details.
+* Fix unexpected interaction between ``file_pattern`` and
+  ``expected_failing_examples``. See `#379
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/352>`_
 
 Incompatible Changes
 ''''''''''''''''''''
