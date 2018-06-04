@@ -51,8 +51,18 @@ def config_app(tempdir, conf_file):
     shutil.copytree(os.path.join(_fixturedir, "src"),
                     os.path.join(tempdir, "examples"))
 
+    base_config = """
+import os
+import sphinx_gallery
+extensions = ['sphinx_gallery.gen_gallery']
+exclude_patterns = ['_build']
+source_suffix = '.rst'
+master_doc = 'index'
+# General information about the project.
+project = u'Sphinx-Gallery <Tests>'\n\n
+"""
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
-        conffile.write(conf_file['content'])
+        conffile.write(base_config + conf_file['content'])
 
     app = Sphinx(srcdir, srcdir, os.path.join(srcdir, "_build"),
                  os.path.join(srcdir, "_build", "toctree"),
@@ -62,12 +72,6 @@ def config_app(tempdir, conf_file):
     return app
 
 
-@pytest.mark.conf_file(content="""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'""")
 def test_default_config(config_app):
     """Test the default Sphinx-Gallery configuration is loaded
 
@@ -82,12 +86,6 @@ def test_default_config(config_app):
 
 
 @pytest.mark.conf_file(content="""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'
-
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
@@ -107,12 +105,6 @@ def test_no_warning_simple_config(config_app):
 
 
 @pytest.mark.conf_file(content="""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'
-
 sphinx_gallery_conf = {
     'mod_example_dir' : os.path.join('modules', 'gen'),
     'examples_dirs': 'src',
@@ -137,12 +129,6 @@ def test_config_old_backreferences_conf(config_app):
 
 
 @pytest.mark.conf_file(content="""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'
-
 sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('gen_modules', 'backreferences'),
     'examples_dirs': 'src',
@@ -192,8 +178,6 @@ def _check_order(config_app, key):
 
 
 @pytest.mark.conf_file(content="""
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
@@ -204,9 +188,7 @@ def test_example_sorting_default(config_app):
 
 
 @pytest.mark.conf_file(content="""
-import sphinx_gallery
 from sphinx_gallery.sorting import FileSizeSortKey
-extensions = ['sphinx_gallery.gen_gallery']
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
@@ -218,9 +200,7 @@ def test_example_sorting_filesize(config_app):
 
 
 @pytest.mark.conf_file(content="""
-import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
-extensions = ['sphinx_gallery.gen_gallery']
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
@@ -232,9 +212,7 @@ def test_example_sorting_filename(config_app):
 
 
 @pytest.mark.conf_file(content="""
-import sphinx_gallery
 from sphinx_gallery.sorting import ExampleTitleSortKey
-extensions = ['sphinx_gallery.gen_gallery']
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
@@ -307,3 +285,19 @@ def test_binder_copy_files(config_app, tmpdir):
         assert os.path.exists(os.path.join(
             config_app.outdir, 'ntbk_folder', gallery_conf['gallery_dirs'][0],
             i_file+'.ipynb'))
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'filename_pattern': 'plot_1.py',
+    'expected_failing_examples' :['src/plot_2.py'],
+}""")
+def test_expected_failing_examples_were_executed(config_app):
+    """Testing that no exception is issued when broken example is not built
+
+    Refer to issue #335
+    """
+    # Build docs there should be no exception raised
+    config_app.build(False, [])

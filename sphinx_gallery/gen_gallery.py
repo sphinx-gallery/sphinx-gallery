@@ -16,6 +16,7 @@ import copy
 import re
 import os
 
+from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
@@ -286,7 +287,7 @@ def sumarize_failing_examples(app, exception):
         expected_failing_examples)
     fail_msgs = []
     if examples_not_expected_to_fail:
-        fail_msgs.append("Unexpected failing examples:")
+        fail_msgs.append(red("Unexpected failing examples:"))
         for fail_example in examples_not_expected_to_fail:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
                              gallery_conf['failing_examples'][fail_example] +
@@ -294,8 +295,13 @@ def sumarize_failing_examples(app, exception):
 
     examples_not_expected_to_pass = expected_failing_examples.difference(
         failing_examples)
+    # filter from examples actually run
+    filename_pattern = gallery_conf.get('filename_pattern')
+    examples_not_expected_to_pass = [src_file
+                                     for src_file in examples_not_expected_to_pass
+                                     if re.search(filename_pattern, src_file)]
     if examples_not_expected_to_pass:
-        fail_msgs.append("Examples expected to fail, but not failing:\n" +
+        fail_msgs.append(red("Examples expected to fail, but not failing:\n") +
                          "Please remove these examples from\n" +
                          "sphinx_gallery_conf['expected_failing_examples']\n" +
                          "in your conf.py file"
