@@ -64,8 +64,12 @@ class SphinxAppWrapper(object):
         self.kwargs = kwargs
 
     def create_sphinx_app(self):
-        app = Sphinx(self.srcdir, self.confdir, self.outdir,
-                     self.doctreedir, self.buildername, **self.kwargs)
+        # Avoid warnings about re-registration, see:
+        # https://github.com/sphinx-doc/sphinx/issues/5038
+        from sphinx.util.docutils import docutils_namespace
+        with docutils_namespace():
+            app = Sphinx(self.srcdir, self.confdir, self.outdir,
+                         self.doctreedir, self.buildername, **self.kwargs)
         sphinx_compatibility._app = app
         return app
 
@@ -130,8 +134,7 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     cfg = sphinx_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     build_warn = sphinx_app._warning.getvalue()
-    # ignore 1.8.0 dev bug
-    assert build_warn == '' or 'up extension sphinx.domains.math' in build_warn
+    assert build_warn == ''
 
 
 @pytest.mark.conf_file(content="""
@@ -172,8 +175,7 @@ def test_config_backreferences(sphinx_app_wrapper):
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
         'gen_modules', 'backreferences')
     build_warn = sphinx_app._warning.getvalue()
-    # ignore 1.8.0 dev bug
-    assert build_warn == '' or 'up extension sphinx.domains.math' in build_warn
+    assert build_warn == ''
 
 
 def test_duplicate_files_warn(sphinx_app_wrapper):
@@ -188,8 +190,7 @@ def test_duplicate_files_warn(sphinx_app_wrapper):
     # No warning because no overlapping names
     check_duplicate_filenames(files[:-1])
     build_warn = sphinx_app._warning.getvalue()
-    # ignore 1.8.0 dev bug
-    assert build_warn == '' or 'up extension sphinx.domains.math' in build_warn
+    assert build_warn == ''
 
     # Warning because last file is named the same
     check_duplicate_filenames(files)
