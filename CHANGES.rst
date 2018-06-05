@@ -4,6 +4,9 @@ Change Log
 git master
 ----------
 
+v0.2.0
+------
+
 New features
 ''''''''''''
 
@@ -13,14 +16,17 @@ New features
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/371>`_.
 * Added ``ignore_pattern`` configurable to allow not adding some python files
   into the gallery. See `#346
-  <https://github.com/sphinx-gallery/sphinx-gallery/pull/346>`` for more
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/346>`_ for more
   details.
+* Support for custom default thumbnails in 'RGBA' space `#375 <https://github.com/sphinx-gallery/sphinx-gallery/pull/375>`_
+* Allow title only -\> use title as first paragraph `#345 <https://github.com/sphinx-gallery/sphinx-gallery/pull/345>`_
 
 Bug Fixes
 '''''''''
 
 * Fix name string_replace trips on projects with ".py" in path. See `#322
-  https://github.com/sphinx-gallery/sphinx-gallery/issues/322` for more details.
+  <https://github.com/sphinx-gallery/sphinx-gallery/issues/322>`_ and `#331
+  <https://github.com/sphinx-gallery/sphinx-gallery/issues/331>`_ for more details.
 * Fix __future__ imports across cells. See `#308
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/308>`_ for more details.
 * Fix encoding related issues when locale is not UTF-8. See `#311
@@ -35,20 +41,29 @@ Bug Fixes
   details.
 * Fix unexpected interaction between ``file_pattern`` and
   ``expected_failing_examples``. See `#379
-  <https://github.com/sphinx-gallery/sphinx-gallery/pull/352>`_
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/379>`_ and `#335
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/335>`_
+* FIX: Use unstyled pygments for output `#384 <https://github.com/sphinx-gallery/sphinx-gallery/pull/384>`_
+* Fix: Gallery name for paths ending with '/' `#372 <https://github.com/sphinx-gallery/sphinx-gallery/pull/372>`_
+* Fix title detection logic. `#356 <https://github.com/sphinx-gallery/sphinx-gallery/pull/356>`_
+* FIX: Use ``docutils_namespace`` to avoid warning in sphinx 1.8dev `#387 <https://github.com/sphinx-gallery/sphinx-gallery/pull/387>`_
 
 Incompatible Changes
 ''''''''''''''''''''
 
-* Removed optipng feature that was triggered when the SKLEARN_DOC_OPTIPNG
+* Removed optipng feature that was triggered when the ``SKLEARN_DOC_OPTIPNG``
   variable was set. See `#349
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/349>`_ for more
   details.
+* ``Backreferences_dir`` is now mandatory `#307 <https://github.com/sphinx-gallery/sphinx-gallery/pull/307>`_
 
 Developer changes
 '''''''''''''''''
 
 * Dropped support for Sphinx <= 1.4.
+* Add SphinxAppWrapper class in ``test_gen_gallery.py`` `#386 <https://github.com/sphinx-gallery/sphinx-gallery/pull/386>`_
+* Notes on how to do a release `#360 <https://github.com/sphinx-gallery/sphinx-gallery/pull/360>`_
+* Add codecov support `#328 <https://github.com/sphinx-gallery/sphinx-gallery/pull/328>`_
 
 v0.1.13
 -------
