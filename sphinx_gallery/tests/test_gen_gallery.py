@@ -17,6 +17,8 @@ import pytest
 
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
+from sphinx.util.docutils import docutils_namespace
+
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
 from sphinx_gallery import sphinx_compatibility
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
@@ -66,7 +68,6 @@ class SphinxAppWrapper(object):
     def create_sphinx_app(self):
         # Avoid warnings about re-registration, see:
         # https://github.com/sphinx-doc/sphinx/issues/5038
-        from sphinx.util.docutils import docutils_namespace
         with docutils_namespace():
             app = Sphinx(self.srcdir, self.confdir, self.outdir,
                          self.doctreedir, self.buildername, **self.kwargs)
