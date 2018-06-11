@@ -328,6 +328,9 @@ try:
 except Exception:  # can raise all sorts of errors
     image_scrapers = ('matplotlib',)
 
+min_reported_time = 0
+if 'SOURCE_DATE_EPOCH' in os.environ:
+    min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
 
 sphinx_gallery_conf = {
     'backreferences_dir': 'gen_modules/backreferences',
@@ -344,6 +347,7 @@ sphinx_gallery_conf = {
     'within_subsection_order': NumberOfCodeLinesSortKey,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py'],
+    'min_reported_time': min_reported_time,
     'binder': {'org': 'sphinx-gallery',
                'repo': 'sphinx-gallery.github.io',
                'url': 'https://mybinder.org',
