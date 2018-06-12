@@ -1,0 +1,86 @@
+version: 2
+jobs:
+  build_docs:
+    docker:
+      - image: circleci/python:3.6-stretch
+    steps:
+      # Get our data and merge with upstream
+      - run: sudo apt-get update
+      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk
+      - checkout
+      - run: echo $(git log -1 --pretty=%B) | tee gitlog.txt
+      - run: echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
+      - run:
+         command: |
+           if [[ $(cat merge.txt) != "" ]]; then
+             echo "Merging $(cat merge.txt)";
+             git pull --ff-only origin "refs/pull/$(cat merge.txt)/merge";
+           fi
+      # Python env
+      - run: echo "export PATH=~/.local/bin:$PATH" >> $BASH_ENV
+      - run: echo "export DISPLAY=:99" >> $BASH_ENV
+      - run: /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
+
+      - restore_cache:
+          keys:
+            - cache-pip
+      - run: pip install --user numpy scipy matplotlib seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface pyqt5
+      - run: pip install --user mayavi
+      - save_cache:
+          key: cache-pip
+          paths:
+            - ~/.cache/pip
+
+      - run: python -c "from mayavi import mlab; import matplotlib.pyplot as plt; mlab.figure(); plt.figure()"
+      - run: python setup.py develop --user
+
+      - run: python setup.py build_sphinx
+      - store_artifacts:
+          path: doc/_build/html/
+          destination: html
+
+      - run: SPHX_GLR_THEME=rtd sphinx-build doc rtd_html
+      - store_artifacts:
+          path: rtd_html
+          destination: rtd_html
+
+      - run: SPHX_GLR_THEME=alabaster sphinx-build doc alabaster_html
+      - store_artifacts:
+          path: alabaster_html
+          destination: alabaster_html
+
+      - run: sphinx-build sphinx_gallery/tests/tinybuild/ tiny_html
+      - store_artifacts:
+          path: tiny_html
+          destination: tiny_html
+
+      - run: cd sphinx_gallery/tests/tinybuild/ && make latexpdf
+      - store_artifacts:
+          path: sphinx_gallery/tests/tinybuild/_build/latex/
+          destination: latex
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - rtd_html
+
+  deploy_docs:
+    docker:
+      - image: circleci/python:3.6-stretch
+    steps:
+      - attach_workspace:
+          at: rtd_hmtl
+      - run: ./docs_deploy.sh rtd_html
+
+
+workflows:
+  version: 2
+  default:
+    jobs:
+      - build_docs
+      - deploy_docs:
+          requires:
+            - build_docs
+          filters:
+            branches:
+              only: master
