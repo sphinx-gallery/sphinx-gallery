@@ -8,6 +8,7 @@ Test Sphinx-Gallery
 from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
+from functools import partial
 import os
 import sys
 import re
@@ -68,9 +69,8 @@ class SphinxAppWrapper(object):
     def create_sphinx_app(self):
         # Avoid warnings about re-registration, see:
         # https://github.com/sphinx-doc/sphinx/issues/5038
-        with docutils_namespace():
-            app = Sphinx(self.srcdir, self.confdir, self.outdir,
-                         self.doctreedir, self.buildername, **self.kwargs)
+        app = Sphinx(self.srcdir, self.confdir, self.outdir,
+                     self.doctreedir, self.buildername, **self.kwargs)
         sphinx_compatibility._app = app
         return app
 
@@ -81,7 +81,7 @@ class SphinxAppWrapper(object):
 
 
 @pytest.fixture
-def sphinx_app_wrapper(tempdir, conf_file):
+def sphinx_app_wrapper(tempdir, request, conf_file):
     _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
     srcdir = os.path.join(tempdir, "config_test")
     shutil.copytree(_fixturedir, srcdir)
@@ -101,6 +101,9 @@ project = u'Sphinx-Gallery <Tests>'\n\n
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
         conffile.write(base_config + conf_file['content'])
 
+    dn = docutils_namespace()
+    dn.__enter__()
+    request.addfinalizer(partial(dn.__exit__, None, None, None))
     return SphinxAppWrapper(
         srcdir, srcdir, os.path.join(srcdir, "_build"),
         os.path.join(srcdir, "_build", "toctree"),
