@@ -68,6 +68,7 @@ jobs:
     docker:
       - image: circleci/python:3.6-stretch
     steps:
+      - checkout 
       - attach_workspace:
           at: rtd_hmtl
       - run: ./docs_deploy.sh rtd_html
