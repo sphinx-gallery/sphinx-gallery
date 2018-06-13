@@ -68,6 +68,9 @@ jobs:
       - image: circleci/python:3.6-stretch
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "aa:70:d9:6b:35:74:50:d1:f7:73:fb:3d:3c:79:cd:5c"
       - attach_workspace:
           at: rtd_html
       - run: ./docs_deploy.sh rtd_html
