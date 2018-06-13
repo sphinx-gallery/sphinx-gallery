@@ -60,16 +60,16 @@ jobs:
           destination: latex
 
       - persist_to_workspace:
-          root: .
-          paths:
-            - rtd_html
+          root: rtd_html
+          paths: .
 
   deploy_docs:
     docker:
       - image: circleci/python:3.6-stretch
     steps:
+      - checkout
       - attach_workspace:
-          at: rtd_hmtl
+          at: rtd_html
       - run: ./docs_deploy.sh rtd_html
 
 
