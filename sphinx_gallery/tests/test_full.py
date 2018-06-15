@@ -12,6 +12,7 @@ import os.path as op
 import shutil
 
 from sphinx.application import Sphinx
+from sphinx.util.docutils import docutils_namespace
 
 import pytest
 
@@ -31,7 +32,12 @@ def sphinx_app(tmpdir_factory):
     conf_dir = temp_dir
     out_dir = op.join(temp_dir, '_build', 'html')
     toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
-    app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir, buildername='html')
+    # Avoid warnings about re-registration, see:
+    # https://github.com/sphinx-doc/sphinx/issues/5038
+    with docutils_namespace():
+        app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
+                     buildername='html')
+
     app.build(False, [])
     return app
 
