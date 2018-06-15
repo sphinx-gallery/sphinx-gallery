@@ -32,10 +32,13 @@ def sphinx_app(tmpdir_factory):
     conf_dir = temp_dir
     out_dir = op.join(temp_dir, '_build', 'html')
     toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
+    # Avoid warnings about re-registration, see:
+    # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
                      buildername='html')
-        app.build(False, [])
+
+    app.build(False, [])
     return app
 
 

@@ -67,8 +67,11 @@ class SphinxAppWrapper(object):
         self.kwargs = kwargs
 
     def create_sphinx_app(self):
-        app = Sphinx(self.srcdir, self.confdir, self.outdir,
-                     self.doctreedir, self.buildername, **self.kwargs)
+        # Avoid warnings about re-registration, see:
+        # https://github.com/sphinx-doc/sphinx/issues/5038
+        with docutils_namespace():
+            app = Sphinx(self.srcdir, self.confdir, self.outdir,
+                         self.doctreedir, self.buildername, **self.kwargs)
         sphinx_compatibility._app = app
         return app
 
@@ -99,11 +102,6 @@ project = u'Sphinx-Gallery <Tests>'\n\n
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
         conffile.write(base_config + conf_file['content'])
 
-    # Avoid warnings about re-registration, see:
-    # https://github.com/sphinx-doc/sphinx/issues/5038
-    dn = docutils_namespace()
-    dn.__enter__()
-    request.addfinalizer(partial(dn.__exit__, None, None, None))
     return SphinxAppWrapper(
         srcdir, srcdir, os.path.join(srcdir, "_build"),
         os.path.join(srcdir, "_build", "toctree"),
