@@ -8,7 +8,6 @@ Test Sphinx-Gallery
 from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
-from functools import partial
 import os
 import sys
 import re
@@ -82,7 +81,7 @@ class SphinxAppWrapper(object):
 
 
 @pytest.fixture
-def sphinx_app_wrapper(tempdir, request, conf_file):
+def sphinx_app_wrapper(tempdir, conf_file):
     _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
     srcdir = os.path.join(tempdir, "config_test")
     shutil.copytree(_fixturedir, srcdir)
