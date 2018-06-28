@@ -257,7 +257,7 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
-def sumarize_failing_examples(app, exception):
+def summarize_failing_examples(app, exception):
     """Collects the list of falling examples during build and prints them with the traceback
 
     Raises ValueError if there where failing examples
@@ -368,7 +368,7 @@ def setup(app):
     app.connect('builder-inited', generate_gallery_rst)
 
     app.connect('build-finished', copy_binder_files)
-    app.connect('build-finished', sumarize_failing_examples)
+    app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     metadata = {'parallel_read_safe': True,
                 'version': _sg_version}
