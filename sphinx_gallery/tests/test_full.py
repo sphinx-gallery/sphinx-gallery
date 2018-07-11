@@ -37,8 +37,8 @@ def sphinx_app(tmpdir_factory):
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
                      buildername='html')
-
-    app.build(False, [])
+        # need to build with this mode for automodule and backrefs to work
+        app.build(False, [])
     return app
 
 
@@ -66,8 +66,8 @@ def test_embed_links(sphinx_app):
     assert 'scipy.signal.firwin.html' in lines
     assert '#module-numpy' in lines
     assert 'numpy.arange.html' in lines
-    # assert '#module-matplotlib.pyplot' in lines
-    # assert 'pyplot.html' in lines
+    assert '#module-matplotlib.pyplot' in lines
+    assert 'pyplot.html' in lines
 
 
 def test_backreferences(sphinx_app):
@@ -76,4 +76,5 @@ def test_backreferences(sphinx_app):
     mod_file = op.join(out_dir, 'gen_modules', 'sphinx_gallery.sorting.html')
     with codecs.open(mod_file, 'r', 'utf-8') as fid:
         lines = fid.read()
+    assert 'FileNameSortKey' in lines
     assert 'plot_numpy_scipy.html' in lines
