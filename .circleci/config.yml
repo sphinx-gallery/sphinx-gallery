@@ -24,13 +24,15 @@ jobs:
       - restore_cache:
           keys:
             - cache-pip
-      - run: pip install --user numpy scipy matplotlib seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface pyqt5
-      - run: pip install --user mayavi
+      - run: pip install --user numpy scipy matplotlib seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface pyqt5 mayavi
       - save_cache:
           key: cache-pip
           paths:
             - ~/.cache/pip
 
+      # Fix libgcc_s.so.1 pthread_cancel bug:
+      # https://github.com/ContinuumIO/anaconda-issues/issues/9190#issuecomment-386508136
+      - run: sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
       - run: python -c "from mayavi import mlab; import matplotlib.pyplot as plt; mlab.figure(); plt.figure()"
       - run: python setup.py develop --user
 
