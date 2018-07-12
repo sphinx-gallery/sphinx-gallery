@@ -103,6 +103,19 @@ def get_short_module_name(module_name, obj_name):
     return short_name
 
 
+def extract_object_names_from_docs(filename):
+    """Add matches from the text blocks (must be full names!)"""
+    text = split_code_and_text_blocks(filename)[1]
+    text = '\n'.join(t[1] for t in text if t[0] == 'text')
+    regex = re.compile(r':(?:'
+                       'func(?:tion)?|'
+                       'meth(?:od)?|'
+                       'attr(?:ibute)?|'
+                       'class):`(\S*)`')
+
+    return [(x, x) for x in re.findall(regex, text)]
+
+
 def identify_names(filename):
     """Builds a codeobj summary by identifying and resolving used names."""
     node, _ = parse_source_file(filename)
@@ -113,16 +126,7 @@ def identify_names(filename):
     finder = NameFinder()
     finder.visit(node)
     names = list(finder.get_mapping())
-
-    # Add matches from the text blocks (must be full names!)
-    text = split_code_and_text_blocks(filename)[1]
-    text = '\n'.join(t[1] for t in text if t[0] == 'text')
-    regex = re.compile(r':(?:'
-                       'func(?:tion)?|'
-                       'meth(?:od)?|'
-                       'attr(?:ibute)?|'
-                       'class):`(\S*)`')
-    names += [(x, x) for x in re.findall(regex, text)]
+    names += extract_object_names_from_docs(filename)
 
     example_code_obj = {}
     for name, full_name in names:
