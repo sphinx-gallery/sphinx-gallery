@@ -37,7 +37,8 @@ def sphinx_app(tmpdir_factory):
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
                      buildername='html')
-        # need to build with this mode for automodule and backrefs to work
+        # need to build within the context manager
+        # for automodule and backrefs to work
         app.build(False, [])
     return app
 
@@ -76,5 +77,7 @@ def test_backreferences(sphinx_app):
     mod_file = op.join(out_dir, 'gen_modules', 'sphinx_gallery.sorting.html')
     with codecs.open(mod_file, 'r', 'utf-8') as fid:
         lines = fid.read()
-    assert 'FileNameSortKey' in lines
-    assert 'plot_numpy_scipy.html' in lines
+    assert 'ExplicitOrder' in lines  # in API doc
+    assert 'plot_second_future_imports.html' in lines  # backref via code use
+    assert 'FileNameSortKey' in lines  # in API doc
+    assert 'plot_numpy_scipy.html' in lines  # backref via :class: in docstring

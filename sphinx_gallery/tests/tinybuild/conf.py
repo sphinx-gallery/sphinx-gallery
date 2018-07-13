@@ -1,4 +1,4 @@
-import sphinx_gallery  # noqa
+import sphinx_gallery  # noqa, analysis:ignore
 from sphinx_gallery.sorting import FileNameSortKey
 
 extensions = [

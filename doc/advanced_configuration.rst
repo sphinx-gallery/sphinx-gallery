@@ -345,8 +345,6 @@ saved in the directory we specified in the *toctree* option of the
 The files we are including are from the ``backreferences_dir``
 configuration option setup for Sphinx-Gallery.
 
-.. _code_tesiii:
-
 .. literalinclude:: _templates/module.rst
     :language: rst
     :lines: 3-
