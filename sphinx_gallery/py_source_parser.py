@@ -27,7 +27,6 @@ def parse_source_file(filename):
     filename : str
         File path
 
-
     Returns
     -------
     node : AST node
@@ -61,9 +60,9 @@ def get_docstring_and_rest(filename):
 
     Returns
     -------
-    docstring: str
+    docstring : str
         docstring of ``filename``
-    rest: str
+    rest : str
         ``filename`` content without the docstring
     """
     node, content = parse_source_file(filename)
@@ -153,7 +152,7 @@ def split_code_and_text_blocks(source_file):
         ``# sphinx_gallery_<name> = <value>``
     blocks : list of (label, content)
         List where each element is a tuple with the label ('text' or 'code'),
-        and content string of block.
+        the content string of block, and the line number.
     """
     docstring, rest_of_content, lineno = get_docstring_and_rest(source_file)
     blocks = [('text', docstring, 1)]

@@ -37,8 +37,9 @@ def sphinx_app(tmpdir_factory):
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
                      buildername='html')
-
-    app.build(False, [])
+        # need to build within the context manager
+        # for automodule and backrefs to work
+        app.build(False, [])
     return app
 
 
@@ -66,5 +67,23 @@ def test_embed_links(sphinx_app):
     assert 'scipy.signal.firwin.html' in lines
     assert '#module-numpy' in lines
     assert 'numpy.arange.html' in lines
-    # assert '#module-matplotlib.pyplot' in lines
-    # assert 'pyplot.html' in lines
+    assert '#module-matplotlib.pyplot' in lines
+    assert 'pyplot.html' in lines
+
+
+def test_backreferences(sphinx_app):
+    """Test backreferences."""
+    out_dir = sphinx_app.outdir
+    mod_file = op.join(out_dir, 'gen_modules', 'sphinx_gallery.sorting.html')
+    with codecs.open(mod_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'ExplicitOrder' in lines  # in API doc
+    assert 'plot_second_future_imports.html' in lines  # backref via code use
+    assert 'FileNameSortKey' in lines  # in API doc
+    assert 'plot_numpy_scipy.html' in lines  # backref via :class: in docstring
+    mod_file = op.join(out_dir, 'gen_modules',
+                       'sphinx_gallery.backreferences.html')
+    with codecs.open(mod_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'identify_names' in lines  # in API doc
+    assert 'plot_future_imports.html' in lines  # backref via doc block

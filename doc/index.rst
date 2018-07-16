@@ -33,9 +33,9 @@ Here is an example gallery generated from a few Python scripts.
 
         <div style='clear:both'></div>
 
-Here we put only the examples of our gallery that use a specific
-function. This display granularity ready to use within your
-documentation, not just the gigantic galleries with all the examples
+Here we put only the examples of our gallery that refer to a specific
+function. This provides display granularity that can be used within your
+documentation in addition to large galleries with all examples
 together.
 
 Go ahead, click on those thumbnails to go to the examples. Beautifully

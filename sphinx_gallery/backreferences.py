@@ -8,10 +8,11 @@ Backreferences Generator
 Parses example file code in order to keep track of used functions
 """
 from __future__ import print_function, unicode_literals
-import codecs
-import ast
-import os
 
+import ast
+import codecs
+import os
+import re
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -27,7 +28,7 @@ except ImportError:
 
     escape = partial(escape, entities={'"': '&quot;'})
 
-from .py_source_parser import parse_source_file
+from .py_source_parser import parse_source_file, split_code_and_text_blocks
 
 
 class NameFinder(ast.NodeVisitor):
@@ -102,17 +103,36 @@ def get_short_module_name(module_name, obj_name):
     return short_name
 
 
+def extract_object_names_from_docs(filename):
+    """Add matches from the text blocks (must be full names!)"""
+    text = split_code_and_text_blocks(filename)[1]
+    text = '\n'.join(t[1] for t in text if t[0] == 'text')
+    regex = re.compile(r':(?:'
+                       'func(?:tion)?|'
+                       'meth(?:od)?|'
+                       'attr(?:ibute)?|'
+                       'obj(?:ect)?|'
+                       'class):`(\S*)`')
+
+    return [(x, x) for x in re.findall(regex, text)]
+
+
 def identify_names(filename):
-    """Builds a codeobj summary by identifying and resolving used names"""
+    """Builds a codeobj summary by identifying and resolving used names."""
     node, _ = parse_source_file(filename)
     if node is None:
         return {}
 
+    # Get matches from the code (AST)
     finder = NameFinder()
     finder.visit(node)
+    names = list(finder.get_mapping())
+    names += extract_object_names_from_docs(filename)
 
     example_code_obj = {}
-    for name, full_name in finder.get_mapping():
+    for name, full_name in names:
+        if name in example_code_obj:
+            continue  # if someone puts it in the docstring and code
         # name is as written in file (e.g. np.asarray)
         # full_name includes resolved import path (e.g. numpy.asarray)
         splitted = full_name.rsplit('.', 1)

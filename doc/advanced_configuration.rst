@@ -238,20 +238,29 @@ point to the directory containing ``searchindex.js``, such as
 Adding references to examples
 =============================
 
-Sphinx-Gallery enables you, when documenting your modules, to
-reference to the examples that use a particular function. For example
-if we are documenting the :func:`numpy.exp` function its possible to embed
-a small gallery of examples that is specific to this function and
-looks like this:
+When documenting a given function/class, Sphinx-Gallery enables you to link to
+any examples that either:
+
+1. Use the function/instantiate the class in the code.
+2. Refer to that function/class using sphinx markup ``:func:``/``:class:``
+   in a documentation block.
+
+The former is useful for auto-documenting functions that are used and classes
+that are explicitly instantiated. The latter is useful for classes that are
+typically implicitly returned rather than explicitly instantiated (e.g.,
+:class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
+within function calls).
+
+For example, we can embed a small gallery of all examples that use or
+refer to :obj:`numpy.exp`, which looks like this:
 
 .. include:: gen_modules/backreferences/numpy.exp.examples
 .. raw:: html
 
         <div style='clear:both'></div>
 
-
-For such behavior to be available, you have to activate it in your
-Sphinx-Gallery configuration ``conf.py`` file with::
+For such behavior to be available, you have to activate it in
+your Sphinx-Gallery configuration ``conf.py`` file with::
 
     sphinx_gallery_conf = {
         ...
@@ -339,7 +348,7 @@ configuration option setup for Sphinx-Gallery.
 .. literalinclude:: _templates/module.rst
     :language: rst
     :lines: 3-
-    :emphasize-lines: 12-22
+    :emphasize-lines: 12-22, 32-42
     :linenos:
 
 
@@ -421,14 +430,14 @@ Generate Binder links for gallery notebooks (experimental)
 ==========================================================
 
 Sphinx-Gallery automatically generates Jupyter notebooks for any
-examples built with the gallery. `Binder <http://mybinder.org>`_ makes it
+examples built with the gallery. `Binder <https://mybinder.org>`_ makes it
 possible to create interactive GitHub repositories that connect to cloud resources.
 
 If you host your documentation on a GitHub repository, it is possible to
 auto-generate a Binder link for each notebook. Clicking this link will
 take users to a live version of the Jupyter notebook where they may
 run the code interactively. For more information see the `Binder documentation
-<http://docs.mybinder.org>`_.
+<https://docs.mybinder.org>`__.
 
 .. warning::
 
@@ -472,7 +481,7 @@ Binder links will point to these notebooks.
    Binder link, these files will be used to create the environment.
    For more information on what files you can use, see `preparing your
    repository <https://mybinder.readthedocs.io/en/latest/using.html#preparing-a-repository-for-binder>`_
-   in the `Binder documentation <docs.mybinder.org>`_ for more information on
+   in the `Binder documentation <https://docs.mybinder.org>`__ for more information on
    what build files are supported.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
