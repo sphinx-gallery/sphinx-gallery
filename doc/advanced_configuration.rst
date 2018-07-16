@@ -430,14 +430,14 @@ Generate Binder links for gallery notebooks (experimental)
 ==========================================================
 
 Sphinx-Gallery automatically generates Jupyter notebooks for any
-examples built with the gallery. `Binder <http://mybinder.org>`_ makes it
+examples built with the gallery. `Binder <https://mybinder.org>`_ makes it
 possible to create interactive GitHub repositories that connect to cloud resources.
 
 If you host your documentation on a GitHub repository, it is possible to
 auto-generate a Binder link for each notebook. Clicking this link will
 take users to a live version of the Jupyter notebook where they may
 run the code interactively. For more information see the `Binder documentation
-<http://docs.mybinder.org>`__.
+<https://docs.mybinder.org>`__.
 
 .. warning::
 
@@ -481,7 +481,7 @@ Binder links will point to these notebooks.
    Binder link, these files will be used to create the environment.
    For more information on what files you can use, see `preparing your
    repository <https://mybinder.readthedocs.io/en/latest/using.html#preparing-a-repository-for-binder>`_
-   in the `Binder documentation <docs.mybinder.org>`__ for more information on
+   in the `Binder documentation <https://docs.mybinder.org>`__ for more information on
    what build files are supported.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
