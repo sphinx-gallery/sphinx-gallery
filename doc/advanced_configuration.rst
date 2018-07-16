@@ -252,7 +252,7 @@ typically implicitly returned rather than explicitly instantiated (e.g.,
 within function calls).
 
 For example, we can embed a small gallery of all examples that use or
-refer to :func:`numpy.exp`, which looks like this:
+refer to :obj:`numpy.exp`, which looks like this:
 
 .. include:: gen_modules/backreferences/numpy.exp.examples
 .. raw:: html
@@ -437,7 +437,7 @@ If you host your documentation on a GitHub repository, it is possible to
 auto-generate a Binder link for each notebook. Clicking this link will
 take users to a live version of the Jupyter notebook where they may
 run the code interactively. For more information see the `Binder documentation
-<http://docs.mybinder.org>`_.
+<http://docs.mybinder.org>`__.
 
 .. warning::
 
@@ -481,7 +481,7 @@ Binder links will point to these notebooks.
    Binder link, these files will be used to create the environment.
    For more information on what files you can use, see `preparing your
    repository <https://mybinder.readthedocs.io/en/latest/using.html#preparing-a-repository-for-binder>`_
-   in the `Binder documentation <docs.mybinder.org>`_ for more information on
+   in the `Binder documentation <docs.mybinder.org>`__ for more information on
    what build files are supported.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_

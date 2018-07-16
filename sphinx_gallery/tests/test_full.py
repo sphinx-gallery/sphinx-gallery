@@ -81,3 +81,9 @@ def test_backreferences(sphinx_app):
     assert 'plot_second_future_imports.html' in lines  # backref via code use
     assert 'FileNameSortKey' in lines  # in API doc
     assert 'plot_numpy_scipy.html' in lines  # backref via :class: in docstring
+    mod_file = op.join(out_dir, 'gen_modules',
+                       'sphinx_gallery.backreferences.html')
+    with codecs.open(mod_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'identify_names' in lines  # in API doc
+    assert 'plot_future_imports.html' in lines  # backref via doc block

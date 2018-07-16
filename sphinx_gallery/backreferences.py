@@ -111,6 +111,7 @@ def extract_object_names_from_docs(filename):
                        'func(?:tion)?|'
                        'meth(?:od)?|'
                        'attr(?:ibute)?|'
+                       'obj(?:ect)?|'
                        'class):`(\S*)`')
 
     return [(x, x) for x in re.findall(regex, text)]

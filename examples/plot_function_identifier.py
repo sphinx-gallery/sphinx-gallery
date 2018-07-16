@@ -3,20 +3,14 @@
 Identifying function names in a script
 ======================================
 
-This demonstrates how Sphinx-Gallery identifies names function to figure out
+This demonstrates how Sphinx-Gallery identifies function names to figure out
 which functions are called in the script and to which module do they belong.
-
-It uses both the code itself, as well as the docstrings (such as this one),
-as adding a reference to :func:`numpy.sin` and :func:`numpy.exp` will create
-proper backreferences even if they are not explicitly used. This is useful
-in particular when functions return classes -- if you add them to the docstring
-of the example that calls them, they will be shown in the backreferences.
 """
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
 
-import os
+import os  # noqa, analysis:ignore
 import matplotlib.pyplot as plt
 import sphinx_gallery.backreferences as spback
 
@@ -26,6 +20,16 @@ names = spback.identify_names(filename)
 figheight = len(names) + .5
 
 fontsize = 20
+
+###############################################################################
+# Sphinx-Gallery examines both the executed code itself, as well as the
+# documentation blocks (such as this one, or the top-level one),
+# to find backreferences. This means that by writing :obj:`numpy.sin`
+# and :obj:`numpy.exp` here, a backreference will be created even though
+# they are not explicitly used in the code. This is useful in particular when
+# functions return classes -- if you add them to the documented blocks of
+# examples that use them, they will be shown in the backreferences.
+
 fig = plt.figure(figsize=(7.5, 8))
 
 for i, (name, obj) in enumerate(names.items()):

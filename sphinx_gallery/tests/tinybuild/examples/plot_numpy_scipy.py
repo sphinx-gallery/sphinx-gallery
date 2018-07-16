@@ -6,7 +6,7 @@ Link to other packages
 Use :mod:`sphinx_gallery` to link to other packages, like
 :mod:`numpy`, :mod:`scipy.signal`, and :mod:`matplotlib.pyplot`.
 
-FYI this gallery uses :class:`sphinx_gallery.sorting.FileNameSortKey`.
+FYI this gallery uses :obj:`sphinx_gallery.sorting.FileNameSortKey`.
 """
 
 import numpy as np
