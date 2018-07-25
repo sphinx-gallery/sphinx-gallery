@@ -155,8 +155,11 @@ def scan_used_functions(example_file, gallery_conf):
     example_code_obj = identify_names(example_file)
     if example_code_obj:
         codeobj_fname = example_file[:-3] + '_codeobj.pickle'
-        with open(codeobj_fname, 'wb') as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
+        if (not os.path.isfile(codeobj_fname) or
+                os.stat(example_file).st_mtime >
+                os.stat(codeobj_fname).st_mtime):
+            with open(codeobj_fname, 'wb') as fid:
+                pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
 
     backrefs = set('{module_short}.{name}'.format(**entry)
                    for entry in example_code_obj.values()
@@ -217,13 +220,16 @@ def write_backreferences(seen_backrefs, gallery_conf,
         include_path = os.path.join(gallery_conf['src_dir'],
                                     gallery_conf['backreferences_dir'],
                                     '%s.examples' % backref)
-        seen = backref in seen_backrefs
-        with codecs.open(include_path, 'a' if seen else 'w',
-                         encoding='utf-8') as ex_file:
-            if not seen:
-                heading = '\n\nExamples using ``%s``' % backref
-                ex_file.write(heading + '\n')
-                ex_file.write('^' * len(heading) + '\n')
-            ex_file.write(_thumbnail_div(build_target_dir, fname, snippet,
-                                         is_backref=True))
-            seen_backrefs.add(backref)
+        # only update .example file if example_file is newer:
+        if (not os.path.isfile(include_path) or
+                os.stat(example_file).st_mtime > os.stat(include_path).st_mtime):
+            seen = backref in seen_backrefs
+            with codecs.open(include_path, 'a' if seen else 'w',
+                             encoding='utf-8') as ex_file:
+                if not seen:
+                    heading = '\n\nExamples using ``%s``' % backref
+                    ex_file.write(heading + '\n')
+                    ex_file.write('^' * len(heading) + '\n')
+                ex_file.write(_thumbnail_div(build_target_dir, fname, snippet,
+                                             is_backref=True))
+                seen_backrefs.add(backref)

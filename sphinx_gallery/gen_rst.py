@@ -17,6 +17,8 @@ from __future__ import division, print_function, absolute_import
 from time import time
 import ast
 import codecs
+import distutils
+from distutils import file_util
 import hashlib
 import os
 import re
@@ -611,7 +613,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
-    shutil.copyfile(src_file, example_file)
+    distutils.file_util.copy_file(src_file, example_file, update=1)
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
     intro, title = extract_intro_and_title(fname, script_blocks[0][1])
 
