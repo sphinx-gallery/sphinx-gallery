@@ -172,7 +172,9 @@ SINGLE_IMAGE = """
 # This one could contain unicode
 CODE_OUTPUT = u""".. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
 {0}\n"""
 
@@ -845,7 +847,8 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
     # Generate a binder URL if specified
     binder_badge_rst = ''
     if len(binder_conf) > 0:
-        binder_badge_rst += gen_binder_rst(fname, binder_conf)
+        binder_badge_rst += gen_binder_rst(fname, binder_conf,
+                                           gallery_conf)
 
     example_rst += CODE_DOWNLOAD.format(fname,
                                         replace_py_ipynb(fname),

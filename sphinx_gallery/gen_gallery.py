@@ -16,12 +16,13 @@ import copy
 import re
 import os
 
+from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .binder import copy_binder_reqs, check_binder_conf
+from .binder import copy_binder_files, check_binder_conf
 
 try:
     FileNotFoundError
@@ -236,12 +237,6 @@ def generate_gallery_rst(app):
             else:
                 logger.info("\t- %s: not run", fname)
 
-    # Copy the requirements files for binder
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
-    if len(binder_conf) > 0:
-        logger.info("copying binder requirements...")
-        copy_binder_reqs(app)
-
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
     """Generate empty back-reference example files
@@ -262,7 +257,7 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
-def sumarize_failing_examples(app, exception):
+def summarize_failing_examples(app, exception):
     """Collects the list of falling examples during build and prints them with the traceback
 
     Raises ValueError if there where failing examples
@@ -292,7 +287,7 @@ def sumarize_failing_examples(app, exception):
         expected_failing_examples)
     fail_msgs = []
     if examples_not_expected_to_fail:
-        fail_msgs.append("Unexpected failing examples:")
+        fail_msgs.append(red("Unexpected failing examples:"))
         for fail_example in examples_not_expected_to_fail:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
                              gallery_conf['failing_examples'][fail_example] +
@@ -300,8 +295,13 @@ def sumarize_failing_examples(app, exception):
 
     examples_not_expected_to_pass = expected_failing_examples.difference(
         failing_examples)
+    # filter from examples actually run
+    filename_pattern = gallery_conf.get('filename_pattern')
+    examples_not_expected_to_pass = [src_file
+                                     for src_file in examples_not_expected_to_pass
+                                     if re.search(filename_pattern, src_file)]
     if examples_not_expected_to_pass:
-        fail_msgs.append("Examples expected to fail, but not failing:\n" +
+        fail_msgs.append(red("Examples expected to fail, but not failing:\n") +
                          "Please remove these examples from\n" +
                          "sphinx_gallery_conf['expected_failing_examples']\n" +
                          "in your conf.py file"
@@ -367,7 +367,8 @@ def setup(app):
 
     app.connect('builder-inited', generate_gallery_rst)
 
-    app.connect('build-finished', sumarize_failing_examples)
+    app.connect('build-finished', copy_binder_files)
+    app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     metadata = {'parallel_read_safe': True,
                 'version': _sg_version}

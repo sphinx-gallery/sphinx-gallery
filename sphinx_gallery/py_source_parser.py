@@ -27,7 +27,6 @@ def parse_source_file(filename):
     filename : str
         File path
 
-
     Returns
     -------
     node : AST node
@@ -61,9 +60,9 @@ def get_docstring_and_rest(filename):
 
     Returns
     -------
-    docstring: str
+    docstring : str
         docstring of ``filename``
-    rest: str
+    rest : str
         ``filename`` content without the docstring
     """
     node, content = parse_source_file(filename)

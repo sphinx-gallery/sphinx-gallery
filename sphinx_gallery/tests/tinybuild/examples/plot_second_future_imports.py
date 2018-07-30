@@ -8,6 +8,9 @@ plot_future_statements.py.
 """
 
 import sys
+from sphinx_gallery.sorting import ExplicitOrder
+
+ExplicitOrder([])  # must actually be used to become a backref target!
 
 PY2 = sys.version_info[0] == 2
 

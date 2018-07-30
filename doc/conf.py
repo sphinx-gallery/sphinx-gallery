@@ -300,7 +300,7 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'matplotlib': ('https://matplotlib.org/', None),
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
@@ -345,6 +345,8 @@ sphinx_gallery_conf = {
                'repo': 'sphinx-gallery.github.io',
                'url': 'https://mybinder.org',
                'branch': 'master',
-               'dependencies': './binder/requirements.txt'
+               'dependencies': './binder/requirements.txt',
+               'notebooks_dir': 'notebooks',
+               'use_jupyter_lab': True,
                }
 }
