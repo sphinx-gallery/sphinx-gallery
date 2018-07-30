@@ -839,8 +839,8 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
 
     if time_elapsed >= gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)
-        example_rst += "**Total running time of the script:**"
-        " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(time_m, time_s)
+        example_rst += ("**Total running time of the script:**"
+                        " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(time_m, time_s))
 
     fname = os.path.basename(example_file)
 
