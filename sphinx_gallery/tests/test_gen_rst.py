@@ -338,6 +338,28 @@ def test_zip_notebooks(gallery_conf):
         raise OSError("Bad file in zipfile: {0}".format(check))
 
 
+def test_rst_example(gallery_conf):
+    """Test generated rst file includes the correct paths for binder"""
+
+    gallery_conf.update(binder={'org': 'sphinx-gallery',
+                                'repo': 'sphinx-gallery.github.io',
+                                'url': 'https://mybinder.org',
+                                'branch': 'master',
+                                'dependencies': './binder/requirements.txt',
+                                'notebooks_dir': 'notebooks',
+                                'use_jupyter_lab': True,
+                                })
+
+    example_file = os.path.join(gallery_conf['gallery_dir'], "plot.py")
+    sg.save_rst_example("example_rst", example_file, 0, gallery_conf)
+
+    test_file = re.sub(r'\.py$', '.rst', example_file)
+    with codecs.open(test_file) as f:
+        rst = f.read()
+
+        assert "lab/tree/notebooks/plot.ipy" in rst
+
+
 def test_figure_rst():
     """Testing rst of images"""
     figure_list = ['sphx_glr_plot_1.png']
