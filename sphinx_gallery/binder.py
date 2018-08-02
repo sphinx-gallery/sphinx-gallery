@@ -31,12 +31,12 @@ from . import sphinx_compatibility
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
-def gen_binder_url(fname, binder_conf, gallery_conf):
+def gen_binder_url(fpath, binder_conf, gallery_conf):
     """Generate a Binder URL according to the configuration in conf.py.
 
     Parameters
     ----------
-    fname: str
+    fpath: str
         The path to the `.py` file for which a Binder badge will be generated.
     binder_conf: dict | None
         The Binder configuration dictionary. See `gen_binder_rst` for details.
@@ -52,7 +52,7 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
     link_base = binder_conf.get('notebooks_dir')
 
     # We want to keep the relative path to sub-folders
-    relative_link = os.path.relpath(fname, gallery_conf['src_dir'])
+    relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
     path_link = os.path.join(
         link_base, replace_py_ipynb(relative_link))
 
@@ -78,12 +78,12 @@ def gen_binder_url(fname, binder_conf, gallery_conf):
     return binder_url
 
 
-def gen_binder_rst(fname, binder_conf, gallery_conf):
+def gen_binder_rst(fpath, binder_conf, gallery_conf):
     """Generate the RST + link for the Binder badge.
 
     Parameters
     ----------
-    fname: str
+    fpath: str
         The path to the `.py` file for which a Binder badge will be generated.
     binder_conf: dict | None
         If a dictionary it must have the following keys:
@@ -105,7 +105,7 @@ def gen_binder_rst(fname, binder_conf, gallery_conf):
         The reStructuredText for the Binder badge that links to this file.
     """
     binder_conf = check_binder_conf(binder_conf)
-    binder_url = gen_binder_url(fname, binder_conf, gallery_conf)
+    binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
 
     rst = (
         "\n"

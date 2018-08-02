@@ -842,14 +842,13 @@ def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
         example_rst += ("**Total running time of the script:**"
                         " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(time_m, time_s))
 
-    fname = os.path.basename(example_file)
-
     # Generate a binder URL if specified
     binder_badge_rst = ''
     if len(binder_conf) > 0:
-        binder_badge_rst += gen_binder_rst(fname, binder_conf,
+        binder_badge_rst += gen_binder_rst(example_file, binder_conf,
                                            gallery_conf)
 
+    fname = os.path.basename(example_file)
     example_rst += CODE_DOWNLOAD.format(fname,
                                         replace_py_ipynb(fname),
                                         binder_badge_rst,
