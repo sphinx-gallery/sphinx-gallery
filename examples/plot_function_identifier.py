@@ -14,7 +14,6 @@ import os  # noqa, analysis:ignore
 import matplotlib.pyplot as plt
 import sphinx_gallery.backreferences as spback
 
-
 filename = spback.__file__.replace('.pyc', '.py')
 names = spback.identify_names(filename)
 figheight = len(names) + .5

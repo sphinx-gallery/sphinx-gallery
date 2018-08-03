@@ -21,14 +21,13 @@ import hashlib
 import os
 import re
 import shutil
-import subprocess
 import sys
 import traceback
 import codeop
+from io import StringIO
 from distutils.version import LooseVersion
 
 from .utils import replace_py_ipynb
-
 
 
 # Try Python 2 first, otherwise load from Python 3
@@ -53,7 +52,6 @@ except ImportError:
                 yield (prefix + line if predicate(line) else line)
         return ''.join(prefixed_lines())
 
-from io import StringIO
 
 # make sure that the Agg backend is set before importing any
 # matplotlib
@@ -81,7 +79,7 @@ from . import glr_path_static
 from . import sphinx_compatibility
 from .backreferences import write_backreferences, _thumbnail_div
 from .downloads import CODE_DOWNLOAD
-from .py_source_parser import split_code_and_text_blocks
+from .py_source_parser import split_code_and_text_blocks, get_docstring_and_rest
 
 from .notebook import jupyter_notebook, save_notebook
 from .binder import check_binder_conf, gen_binder_rst
@@ -226,7 +224,7 @@ def extract_intro_and_title(filename, docstring):
     if match is None:
         raise ValueError(
             'Could not find a title in first paragraph:\n{}'.format(
-                         title_paragraph))
+                title_paragraph))
     title = match.group(1).strip()
     # Use the title if no other paragraphs are provided
     intro_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
@@ -299,6 +297,7 @@ def save_figures(image_path, fig_count, gallery_conf):
         current_fig = image_path.format(fig_count + fig_num)
         fig.savefig(current_fig, **kwargs)
         figure_list.append(current_fig)
+    plt.close('all')
 
     if gallery_conf.get('find_mayavi_figures', False):
         from mayavi import mlab
@@ -315,7 +314,7 @@ def save_figures(image_path, fig_count, gallery_conf):
             figure_list.append(current_fig)
         mlab.close(all=True)
 
-    return figure_rst(figure_list, gallery_conf['src_dir'])
+    return figure_rst(figure_list, gallery_conf['src_dir']), len(figure_list)
 
 
 def figure_rst(figure_list, sources_dir):
@@ -335,8 +334,6 @@ def figure_rst(figure_list, sources_dir):
     -------
     images_rst : str
         rst code to embed the images in the document
-    fig_num : int
-        number of figures saved
     """
 
     figure_paths = [os.path.relpath(figure_path, sources_dir)
@@ -351,12 +348,12 @@ def figure_rst(figure_list, sources_dir):
         for figure_name in figure_paths:
             images_rst += HLIST_IMAGE_TEMPLATE % figure_name
 
-    return images_rst, len(figure_list)
+    return images_rst
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
     """Scales an image with the same aspect ratio centered in an
-       image with a given max_width and max_height
+       image box with the given max_width and max_height
        if in_fname == out_fname the image can only be scaled down
     """
     # local import to avoid testing dependency on PIL:
@@ -396,7 +393,17 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 
 
 def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
-    """Save the thumbnail image"""
+    """Generate and Save the thumbnail image
+
+    Parameters
+    ----------
+    image_path_template : str
+        holds the template where to save and how to name the image
+    src_file : str
+        path to source python file
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary
+    """
     # read specification of the figure to display as thumbnail from main text
     thumbnail_number = file_conf.get('thumbnail_number', 1)
     if not isinstance(thumbnail_number, int):
@@ -511,16 +518,14 @@ def handle_exception(exc_info, src_file, block_vars, gallery_conf):
     return except_rst
 
 
-def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
+def execute_code_block(compiler, block, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
-    time_elapsed = 0
-
+    blabel, bcontent, lineno = block
     # If example is not suitable to run, skip executing its blocks
-    if not block_vars['execute_script']:
-        return '', time_elapsed
+    if not block_vars['execute_script'] or blabel == 'text':
+        return ''
 
-    plt.close('all')
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
@@ -535,14 +540,12 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
 
     try:
         dont_inherit = 1
-        code_ast = compile(code_block, src_file, 'exec',
+        code_ast = compile(bcontent, src_file, 'exec',
                            ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
-        t_start = time()
         # don't use unicode_literals at the top of this file or you get
         # nasty errors here on Py2.7
         exec(compiler(code_ast, src_file, 'exec'), example_globals)
-        time_elapsed = time() - t_start
     except Exception:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -577,7 +580,7 @@ def execute_code_block(compiler, src_file, code_block, lineno, example_globals,
         os.chdir(cwd)
         sys.stdout = orig_stdout
 
-    return code_output, time_elapsed
+    return code_output
 
 
 def clean_modules():
@@ -598,51 +601,52 @@ def clean_modules():
     plt.rcdefaults()
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
-    """Generate the rst file for a given example.
+def executable_script(src_file, gallery_conf):
+    """Validate if script has to be run according to gallery configuration
+
+    Parameters
+    ----------
+    src_file : str
+        path to python script
+
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
-    intro: str
-        The introduction of the example
-    time_elapsed : float
-        seconds required to run the script
+    bool
+        True if script has to be executed
     """
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
-    src_file = os.path.normpath(os.path.join(src_dir, fname))
-    example_file = os.path.join(target_dir, fname)
-    shutil.copyfile(src_file, example_file)
-    file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    intro, title = extract_intro_and_title(fname, script_blocks[0][1])
-
-    if md5sum_is_current(example_file):
-        return intro, 0
-
-    image_dir = os.path.join(target_dir, 'images')
-    if not os.path.exists(image_dir):
-        os.makedirs(image_dir)
-
-    base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
-    image_path_template = os.path.join(image_dir, image_fname)
-
-    ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
-    ref_fname = ref_fname.replace(os.path.sep, '_')
-    binder_text = (" or run this example in your browser via Binder"
-                   if len(binder_conf) else "")
-    example_rst = (".. note::\n"
-                   "    :class: sphx-glr-download-link-note\n\n"
-                   "    Click :ref:`here <sphx_glr_download_{0}>` "
-                   "to download the full example code{1}\n"
-                   ".. rst-class:: sphx-glr-example-title\n\n"
-                   ".. _sphx_glr_{0}:\n\n"
-                   ).format(
-                       ref_fname,
-                       binder_text)
 
     filename_pattern = gallery_conf.get('filename_pattern')
-    execute_script = re.search(filename_pattern, src_file) and gallery_conf[
+    execute = re.search(filename_pattern, src_file) and gallery_conf[
         'plot_gallery']
+    return execute
+
+
+def execute_script(script_blocks, script_vars, gallery_conf):
+    """Execute and capture output from python script already in block structure
+
+    Parameters
+    ----------
+    script_blocks : list
+        (label, content, line_number)
+        List where each element is a tuple with the label ('text' or 'code'),
+        the corresponding content string of block and the leading line number
+    script_vars : dict
+        Configuration and run time variables
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
+
+    Returns
+    -------
+    output_blocks : list
+        List of strings where each element is the restructured text
+        representation of the output of each block
+    time_elapsed : float
+        Time elapsed during execution
+    """
+
     example_globals = {
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
@@ -656,84 +660,201 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         '__name__': '__main__',
         # Don't ever support __file__: Issues #166 #212
     }
+
+    argv_orig = sys.argv[:]
+    if script_vars['execute_script']:
+        # We want to run the example without arguments. See
+        # https://github.com/sphinx-gallery/sphinx-gallery/pull/252
+        # for more details.
+        sys.argv[0] = script_vars['src_file']
+        sys.argv[1:] = []
+
+    t_start = time()
     compiler = codeop.Compile()
+    output_blocks = [execute_code_block(compiler, block,
+                                        example_globals,
+                                        script_vars, gallery_conf)
+                     for block in script_blocks]
+    time_elapsed = time() - t_start
+
+    sys.argv = argv_orig
+    clean_modules()
+
+    # Write md5 checksum if the example was meant to run (no-plot
+    # shall not cache md5sum) and has build correctly
+    if script_vars['execute_script']:
+        with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
+            file_checksum.write(get_md5sum(script_vars['target_file']))
+
+    return output_blocks, time_elapsed
+
+
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
+    """Generate the rst file for a given example.
+
+    Parameters
+    ----------
+    fname : str
+        Filename of python script
+    target_dir : str
+        Absolute path to directory in documentation where examples are saved
+    src_dir : str
+        Absolute path to directory where source examples are stored
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
+
+    Returns
+    -------
+    intro: str
+        The introduction of the example
+    time_elapsed : float
+        seconds required to run the script
+    """
+    src_file = os.path.normpath(os.path.join(src_dir, fname))
+    target_file = os.path.join(target_dir, fname)
+    shutil.copyfile(src_file, target_file)
+
+    intro, _ = extract_intro_and_title(fname,
+                                       get_docstring_and_rest(src_file)[0])
+
+    if md5sum_is_current(target_file):
+        return intro, 0
+
+    image_dir = os.path.join(target_dir, 'images')
+    if not os.path.exists(image_dir):
+        os.makedirs(image_dir)
+
+    base_image_name = os.path.splitext(fname)[0]
+    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
+    image_path_template = os.path.join(image_dir, image_fname)
+
+    script_vars = {'execute_script': executable_script(src_file, gallery_conf),
+                   'fig_count': 0,
+                   'image_path': image_path_template,
+                   'src_file': src_file,
+                   'target_file': target_file}
+
+    file_conf, script_blocks = split_code_and_text_blocks(src_file)
+    output_blocks, time_elapsed = execute_script(script_blocks,
+                                                 script_vars,
+                                                 gallery_conf)
+
+    logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
+
+    example_rst = rst_blocks(script_blocks, output_blocks,
+                             file_conf, gallery_conf)
+    save_rst_example(example_rst, target_file,
+                     time_elapsed, gallery_conf)
+
+    save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
+
+    example_nb = jupyter_notebook(script_blocks)
+    save_notebook(example_nb, replace_py_ipynb(target_file))
+
+    return intro, time_elapsed
+
+
+def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
+    """Generates the rst string containing the script prose, code and output
+
+    Parameters
+    ----------
+    script_blocks : list
+        (label, content, line_number)
+        List where each element is a tuple with the label ('text' or 'code'),
+        the corresponding content string of block and the leading line number
+    output_blocks : list
+        List of strings where each element is the restructured text
+        representation of the output of each block
+    file_conf : dict
+        File-specific settings given in source file comments as:
+        ``# sphinx_gallery_<name> = <value>``
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
+
+    Returns
+    -------
+    out : str
+        rst notebook
+    """
 
     # A simple example has two blocks: one for the
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
-    time_elapsed = 0
-    block_vars = {'execute_script': execute_script, 'fig_count': 0,
-                  'image_path': image_path_template, 'src_file': src_file}
-
-    argv_orig = sys.argv[:]
-    if block_vars['execute_script']:
-        # We want to run the example without arguments. See
-        # https://github.com/sphinx-gallery/sphinx-gallery/pull/252
-        # for more details.
-        sys.argv[0] = src_file
-        sys.argv[1:] = []
-
-    for blabel, bcontent, lineno in script_blocks:
+    example_rst = u""  # there can be unicode content
+    for (blabel, bcontent, lineno), code_output in zip(script_blocks, output_blocks):
         if blabel == 'code':
-            code_output, rtime = execute_code_block(compiler, src_file,
-                                                    bcontent, lineno,
-                                                    example_globals,
-                                                    block_vars, gallery_conf)
-
-            time_elapsed += rtime
 
             if not file_conf.get('line_numbers',
                                  gallery_conf.get('line_numbers', False)):
                 lineno = None
 
+            code_rst = codestr2rst(bcontent, lineno=lineno) + '\n'
             if is_example_notebook_like:
-                example_rst += codestr2rst(bcontent, lineno=lineno) + '\n'
+                example_rst += code_rst
                 example_rst += code_output
             else:
                 example_rst += code_output
                 if 'sphx-glr-script-out' in code_output:
                     # Add some vertical space after output
                     example_rst += "\n\n|\n\n"
-                example_rst += codestr2rst(bcontent, lineno=lineno) + '\n'
-
+                example_rst += code_rst
         else:
-            example_rst += bcontent + '\n\n'
+            example_rst += bcontent + '\n'
+    return example_rst
 
-    sys.argv = argv_orig
-    clean_modules()
 
-    # Writes md5 checksum if example has build correctly
-    # not failed and was initially meant to run(no-plot shall not cache md5sum)
-    if block_vars['execute_script']:
-        with open(example_file + '.md5', 'w') as file_checksum:
-            file_checksum.write(get_md5sum(example_file))
+def save_rst_example(example_rst, example_file, time_elapsed, gallery_conf):
+    """Saves the rst notebook to example_file including necessary header & footer
 
-    save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
+    Parameters
+    ----------
+    example_rst : str
+        rst containing the executed file content
 
-    time_m, time_s = divmod(time_elapsed, 60)
-    example_nb = jupyter_notebook(script_blocks)
-    save_notebook(example_nb, replace_py_ipynb(example_file))
+    example_file : str
+        Filename with full path of python example file in documentation folder
 
-    with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
-                     mode='w', encoding='utf-8') as f:
-        if time_elapsed >= gallery_conf["min_reported_time"]:
-            example_rst += ("**Total running time of the script:**"
-                            " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
-                                time_m, time_s))
-        # Generate a binder URL if specified
-        binder_badge_rst = ''
-        if len(binder_conf) > 0:
-            binder_badge_rst += gen_binder_rst(example_file, binder_conf,
-                                               gallery_conf)
+    time_elapsed : float
+        Time elapsed in seconds while executing file
 
-        example_rst += CODE_DOWNLOAD.format(fname,
-                                            replace_py_ipynb(fname),
-                                            binder_badge_rst,
-                                            ref_fname)
-        example_rst += SPHX_GLR_SIG
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary
+    """
+
+    ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
+    ref_fname = ref_fname.replace(os.path.sep, "_")
+
+    binder_conf = check_binder_conf(gallery_conf.get('binder'))
+
+    binder_text = (" or run this example in your browser via Binder"
+                   if len(binder_conf) else "")
+    example_rst = (".. note::\n"
+                   "    :class: sphx-glr-download-link-note\n\n"
+                   "    Click :ref:`here <sphx_glr_download_{0}>` "
+                   "to download the full example code{1}\n"
+                   ".. rst-class:: sphx-glr-example-title\n\n"
+                   ".. _sphx_glr_{0}:\n\n"
+                   ).format(ref_fname, binder_text) + example_rst
+
+    if time_elapsed >= gallery_conf["min_reported_time"]:
+        time_m, time_s = divmod(time_elapsed, 60)
+        example_rst += ("**Total running time of the script:**"
+                        " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(time_m, time_s))
+
+    # Generate a binder URL if specified
+    binder_badge_rst = ''
+    if len(binder_conf) > 0:
+        binder_badge_rst += gen_binder_rst(example_file, binder_conf,
+                                           gallery_conf)
+
+    fname = os.path.basename(example_file)
+    example_rst += CODE_DOWNLOAD.format(fname,
+                                        replace_py_ipynb(fname),
+                                        binder_badge_rst,
+                                        ref_fname)
+    example_rst += SPHX_GLR_SIG
+
+    write_file = re.sub(r'\.py$', '.rst', example_file)
+    with codecs.open(write_file, 'w', encoding="utf-8") as f:
         f.write(example_rst)
-
-    if block_vars['execute_script']:
-        logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
-
-    return intro, time_elapsed

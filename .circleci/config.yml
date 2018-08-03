@@ -12,7 +12,7 @@ jobs:
       - run: echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
       - run:
          command: |
-           if [[ $(cat merge.txt) != "" ]]; then
+           if [[ $(cat merge.txt) != "" ]] && [[ $(cat gitlog.txt) != *"[circle nomerge]"*  ]]; then
              echo "Merging $(cat merge.txt)";
              git pull --ff-only origin "refs/pull/$(cat merge.txt)/merge";
            fi
