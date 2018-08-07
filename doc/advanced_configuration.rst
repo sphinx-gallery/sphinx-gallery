@@ -558,8 +558,8 @@ uses :func:`sphinx_gallery.gen_rst.figure_rst` to create standardized RST::
         import mymod
         image_names = list()
         for fig, image_path in zip(mymod.get_figures(), image_path_iterator):
-            image_names.append(image_path.format(offset + ii))
-            fig.save_png(image_names[-1])
+            fig.save_png(image_path)
+            image_names.append(image_path)
         mymod.close('all')
         return figure_rst(image_names, gallery_conf['src_dir'])
 
