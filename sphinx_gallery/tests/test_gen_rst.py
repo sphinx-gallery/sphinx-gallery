@@ -183,8 +183,8 @@ def test_md5sums():
 @pytest.fixture
 def gallery_conf(tmpdir):
     """Sets up a test sphinx-gallery configuration"""
-    gallery_conf = _complete_gallery_conf({}, tmpdir, True, False)
-    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=tmpdir)
+    gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False)
+    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=str(tmpdir))
     return gallery_conf
 
 
