@@ -552,7 +552,7 @@ You can also add your own custom function (or callable class instance)
 to this list. See :func:`sphinx_gallery.gen_rst.matplotlib_scraper` for
 a description of the interface. Here is pseudocode for what this function
 and :func:`sphinx_gallery.gen_rst.mayavi_scraper` do under the hood, which
-uses :func:`sphinx_gallery.gen_rst.figure_rst` to create standardized RST:
+uses :func:`sphinx_gallery.gen_rst.figure_rst` to create standardized RST::
 
     def mod_scraper(image_path_iterator, gallery_conf)
         import mymod

@@ -18,8 +18,8 @@ import os
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG,
-                      _scraper_dict, _reset_dict, basestring)
+from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _scraper_dict,
+                      _reset_dict)
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
@@ -30,6 +30,12 @@ try:
 except NameError:
     # Python2
     FileNotFoundError = IOError
+
+try:
+    basestring
+except NameError:
+    basestring = str
+    unicode = str
 
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
