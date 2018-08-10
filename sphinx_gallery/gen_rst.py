@@ -271,7 +271,7 @@ def _import_matplotlib():
 _import_matplotlib()
 
 
-def matplotlib_scraper(image_path_iterator, gallery_conf):
+def matplotlib_scraper(image_path_iterator, gallery_conf, example_global, block):
     """Scrape Matplotlib images.
 
     Parameters
@@ -307,7 +307,7 @@ def matplotlib_scraper(image_path_iterator, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
-def mayavi_scraper(image_path_iterator, gallery_conf):
+def mayavi_scraper(image_path_iterator, gallery_conf, example_global, block):
     """Scrape Mayavi images.
 
     Parameters
@@ -336,7 +336,7 @@ def mayavi_scraper(image_path_iterator, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
-def bokeh_scraper(image_path, offset, sources_dir, example_global, block):
+def bokeh_scraper(image_path_iterator, gallery_conf, example_global, block):
     """Scrape bokeh objects"""
     from bokeh.embed import components
 
@@ -354,7 +354,7 @@ def bokeh_scraper(image_path, offset, sources_dir, example_global, block):
             indent(script, u' ' * 4),
             indent(div, u' ' * 4))
 
-    return rst, 0
+    return rst
 
 
 _scraper_dict = dict(
@@ -400,7 +400,7 @@ class ImagePathIterator(object):
         return path
 
 
-def save_figures(image_path_iterator, gallery_conf):
+def save_figures(image_path_iterator, gallery_conf, example_global, block):
     """Save all open figures of the example code-block.
 
     Parameters
@@ -420,7 +420,7 @@ def save_figures(image_path_iterator, gallery_conf):
     all_rst = u''
     prev_count = len(image_path_iterator)
     for scraper in gallery_conf['image_scrapers']:
-        rst = scraper(image_path_iterator, gallery_conf)
+        rst = scraper(image_path_iterator, gallery_conf, example_global, block)
         if not isinstance(rst, basestring):
             raise TypeError('rst from scraper %r was not a string, '
                             'got type %s:\n%r'
@@ -681,7 +681,8 @@ def execute_code_block(compiler, block, example_globals,
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
         # still call this even though we won't use the images so that
         # figures are closed
-        save_figures(block_vars['image_path_iterator'], gallery_conf)
+        save_figures(block_vars['image_path_iterator'],
+                     gallery_conf, example_globals, block)
     else:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -692,8 +693,9 @@ def execute_code_block(compiler, block, example_globals,
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         else:
             stdout = ''
-        images_rst = save_figures(
-            block_vars['image_path_iterator'], gallery_conf)
+        images_rst = save_figures(block_vars['image_path_iterator'],
+                                  gallery_conf, example_globals, block)
+
         code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
 
     finally:
