@@ -6,7 +6,7 @@ jobs:
     steps:
       # Get our data and merge with upstream
       - run: sudo apt-get update
-      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk
+      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk npm
       - checkout
       - run: echo $(git log -1 --pretty=%B) | tee gitlog.txt
       - run: echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
@@ -24,7 +24,8 @@ jobs:
       - restore_cache:
           keys:
             - cache-pip
-      - run: pip install --user numpy scipy matplotlib seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface pyqt5 mayavi
+      - run: pip install --user numpy scipy matplotlib seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface pyqt5 mayavi bokeh selenium
+      - run: npm install -g phantomjs-prebuilt
       - save_cache:
           key: cache-pip
           paths:

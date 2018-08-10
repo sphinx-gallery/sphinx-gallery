@@ -339,6 +339,7 @@ def mayavi_scraper(image_path_iterator, gallery_conf, example_global, block):
 def bokeh_scraper(image_path_iterator, gallery_conf, example_global, block):
     """Scrape bokeh objects"""
     from bokeh.embed import components
+    from bokeh.io import export_png
 
     prop_pat = re.compile(
         r"^\s*#\s*sphx_glr_capture_bokeh\s*=\s*(.+)\s*$",
@@ -353,7 +354,7 @@ def bokeh_scraper(image_path_iterator, gallery_conf, example_global, block):
         rst = "\n\n\n\n.. raw:: html\n{0}\n{1}".format(
             indent(script, u' ' * 4),
             indent(div, u' ' * 4))
-
+        export_png(bokeh_fig, filename=next(image_path_iterator))
     return rst
 
 
