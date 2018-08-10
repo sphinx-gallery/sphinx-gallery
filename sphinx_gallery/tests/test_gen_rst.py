@@ -282,7 +282,8 @@ def test_save_matplotlib_figures(gallery_conf):
     plt.plot(1, 1)
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
     image_path_iterator = sg.ImagePathIterator(fname_template)
-    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    image_rst = sg.save_figures(
+        image_path_iterator, gallery_conf, {}, (0, "", 0))
     assert len(image_path_iterator) == 1
     assert '/image1.png' in image_rst
 
@@ -292,7 +293,8 @@ def test_save_matplotlib_figures(gallery_conf):
     plt.plot(1, 1)
     plt.figure()
     plt.plot(1, 1)
-    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    image_rst = sg.save_figures(
+        image_path_iterator, gallery_conf, {}, (0, "", 0))
     assert len(image_path_iterator) == 5
     assert '/image4.png' in image_rst
     assert '/image5.png' in image_rst
@@ -314,7 +316,8 @@ def test_save_mayavi_figures(gallery_conf):
     plt.axes([-0.1, -0.1, 1.2, 1.2])
     plt.pcolor([[0]], cmap='Greens')
     mlab.test_plot3d()
-    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    image_rst = sg.save_figures(
+        image_path_iterator, gallery_conf, {}, (0, "", 0))
     assert len(plt.get_fignums()) == 0
     assert len(image_path_iterator) == 2
     assert '/image0.png' not in image_rst
@@ -334,7 +337,8 @@ def test_save_mayavi_figures(gallery_conf):
     mlab.test_plot3d()
     plt.axes([-0.1, -0.1, 1.2, 1.2])
     plt.pcolor([[0]], cmap='Reds')
-    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    image_rst = sg.save_figures(
+        image_path_iterator, gallery_conf, {}, (0, "", 0))
     assert len(plt.get_fignums()) == 0
     assert len(image_path_iterator) == 3
     assert '/image1.png' not in image_rst
@@ -351,7 +355,8 @@ def test_save_mayavi_figures(gallery_conf):
 
     # custom finders
     gallery_conf.update(image_scrapers=[lambda x, y: ''])
-    image_rst = sg.save_figures(image_path_iterator, gallery_conf)
+    image_rst = sg.save_figures(
+        image_path_iterator, gallery_conf, {}, (0, "", 0))
     assert len(image_path_iterator) == 3
 
     # degenerate
@@ -361,10 +366,10 @@ def test_save_mayavi_figures(gallery_conf):
             gallery_conf, gallery_conf['gallery_dir'], True, False)
     gallery_conf.update(image_scrapers=[lambda x, y: x.next()])
     with pytest.raises(RuntimeError, match='did not produce expected image'):
-        sg.save_figures(image_path_iterator, gallery_conf)
+        sg.save_figures(image_path_iterator, gallery_conf, {}, (0, "", 0))
     gallery_conf.update(image_scrapers=[lambda x, y: 1.])
     with pytest.raises(TypeError, match='was not a string'):
-        sg.save_figures(image_path_iterator, gallery_conf)
+        sg.save_figures(image_path_iterator, gallery_conf, {}, (0, "", 0))
 
 
 def test_zip_notebooks(gallery_conf):
