@@ -548,15 +548,21 @@ figures. To enable this feature, you can do::
           extract Mayavi figures is **deprecated** in version 0.2+,
           and will be removed in a future release.
 
+Custom scrapers
+^^^^^^^^^^^^^^^
+
+.. note:: The API for custom scrapers is currently experimental.
+
 You can also add your own custom function (or callable class instance)
 to this list. See :func:`sphinx_gallery.gen_rst.matplotlib_scraper` for
 a description of the interface. Here is pseudocode for what this function
 and :func:`sphinx_gallery.gen_rst.mayavi_scraper` do under the hood, which
 uses :func:`sphinx_gallery.gen_rst.figure_rst` to create standardized RST::
 
-    def mod_scraper(image_path_iterator, gallery_conf)
+    def mod_scraper(block, block_vars, gallery_conf)
         import mymod
         image_names = list()
+        image_path_iterator = block_vars['image_path_iterator']
         for fig, image_path in zip(mymod.get_figures(), image_path_iterator):
             fig.save_png(image_path)
             image_names.append(image_path)
@@ -576,10 +582,11 @@ current directory could do, e.g.::
         def __init__(self):
             self.seen = set()
 
-        def __call__(self, image_path_iterator, gallery_conf):
+        def __call__(self, block, block_vars, gallery_conf):
             count = 0
             pngs = sorted(glob.glob(os.path.join(os.getcwd(), '*.png'))
             image_names = list()
+            image_path_iterator = block_vars['image_path_iterator']
             for png in my_pngs:
                 if png not in seen:
                     seen |= set(png)

@@ -271,15 +271,17 @@ def _import_matplotlib():
 _import_matplotlib()
 
 
-def matplotlib_scraper(image_path_iterator, gallery_conf):
+def matplotlib_scraper(block, block_vars, gallery_conf):
     """Scrape Matplotlib images.
 
     Parameters
     ----------
-    image_path_iterator : iterable of str
-        Iterator to get destination paths for images.
+    block : tuple
+        A tuple containing the (label, content, line_number) of the block.
+    block_vars : dict
+        Dict of block variables.
     gallery_conf : dict
-        The gallery configuration values.
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
@@ -289,6 +291,7 @@ def matplotlib_scraper(image_path_iterator, gallery_conf):
         :func:`sphinx_gallery.gen_rst.figure_rst`.
     """
     matplotlib, plt = _import_matplotlib()
+    image_path_iterator = block_vars['image_path_iterator']
     image_paths = list()
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         # Set the fig_num figure as the current figure as we can't
@@ -307,15 +310,17 @@ def matplotlib_scraper(image_path_iterator, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
-def mayavi_scraper(image_path_iterator, gallery_conf):
+def mayavi_scraper(block, block_vars, gallery_conf):
     """Scrape Mayavi images.
 
     Parameters
     ----------
-    image_path_iterator : iterable of str
-        Iterator to get destination paths for images.
+    block : tuple
+        A tuple containing the (label, content, line_number) of the block.
+    block_vars : dict
+        Dict of block variables.
     gallery_conf : dict
-        The gallery configuration values.
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
@@ -325,6 +330,7 @@ def mayavi_scraper(image_path_iterator, gallery_conf):
         :func:`sphinx_gallery.gen_rst.figure_rst`.
     """
     from mayavi import mlab
+    image_path_iterator = block_vars['image_path_iterator']
     image_paths = list()
     e = mlab.get_engine()
     for scene, image_path in zip(e.scenes, image_path_iterator):
@@ -378,13 +384,15 @@ class ImagePathIterator(object):
         return path
 
 
-def save_figures(image_path_iterator, gallery_conf):
+def save_figures(block, block_vars, gallery_conf):
     """Save all open figures of the example code-block.
 
     Parameters
     ----------
-    image_path_iterator : iterable of str
-        Iterator to get destination paths for images.
+    block : tuple
+        A tuple containing the (label, content, line_number) of the block.
+    block_vars : dict
+        Dict of block variables.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
 
@@ -395,10 +403,11 @@ def save_figures(image_path_iterator, gallery_conf):
     fig_num : int
         number of figures saved
     """
+    image_path_iterator = block_vars['image_path_iterator']
     all_rst = u''
     prev_count = len(image_path_iterator)
     for scraper in gallery_conf['image_scrapers']:
-        rst = scraper(image_path_iterator, gallery_conf)
+        rst = scraper(block, block_vars, gallery_conf)
         if not isinstance(rst, basestring):
             raise TypeError('rst from scraper %r was not a string, '
                             'got type %s:\n%r'
@@ -659,7 +668,7 @@ def execute_code_block(compiler, block, example_globals,
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
         # still call this even though we won't use the images so that
         # figures are closed
-        save_figures(block_vars['image_path_iterator'], gallery_conf)
+        save_figures(block, block_vars, gallery_conf)
     else:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -670,8 +679,7 @@ def execute_code_block(compiler, block, example_globals,
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         else:
             stdout = ''
-        images_rst = save_figures(
-            block_vars['image_path_iterator'], gallery_conf)
+        images_rst = save_figures(block, block_vars, gallery_conf)
         code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
 
     finally:
