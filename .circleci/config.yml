@@ -27,7 +27,7 @@ jobs:
       - run: pip install --user numpy scipy matplotlib seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface pyqt5 mayavi bokeh selenium
       - run: curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
       - run: sudo apt-get install nodejs build-essential libssl-dev
-      - run: npm install -g phantomjs-prebuilt
+      - run: sudo npm install -g phantomjs-prebuilt
       - save_cache:
           key: cache-pip
           paths:
