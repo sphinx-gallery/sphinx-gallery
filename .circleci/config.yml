@@ -6,7 +6,7 @@ jobs:
     steps:
       # Get our data and merge with upstream
       - run: sudo apt-get update
-      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk npm
+      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk
       - checkout
       - run: echo $(git log -1 --pretty=%B) | tee gitlog.txt
       - run: echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
