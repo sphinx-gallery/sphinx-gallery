@@ -545,7 +545,7 @@ figures. To enable this feature, you can do::
     }
 
 .. note:: The parameter ``find_mayavi_figures`` which can also be used to
-          extract Mayavi figures is **deprecated** in version 1.13+,
+          extract Mayavi figures is **deprecated** in version 0.2+,
           and will be removed in a future release.
 
 You can also add your own custom function (or callable class instance)

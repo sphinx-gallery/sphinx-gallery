@@ -301,8 +301,8 @@ def matplotlib_scraper(image_path_iterator, gallery_conf):
             default_attr = matplotlib.rcParams['figure.' + attr]
             if to_rgba(fig_attr) != to_rgba(default_attr):
                 kwargs[attr] = fig_attr
+        fig.savefig(image_path, **kwargs)
         image_paths.append(image_path)
-        fig.savefig(image_paths[-1], **kwargs)
     plt.close('all')
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
@@ -328,10 +328,10 @@ def mayavi_scraper(image_path_iterator, gallery_conf):
     image_paths = list()
     e = mlab.get_engine()
     for scene, image_path in zip(e.scenes, image_path_iterator):
-        image_paths.append(image_path)
-        mlab.savefig(image_paths[-1], figure=scene)
+        mlab.savefig(image_path, figure=scene)
         # make sure the image is not too large
-        scale_image(image_paths[-1], image_paths[-1], 850, 999)
+        scale_image(image_path, image_path, 850, 999)
+        image_paths.append(image_path)
     mlab.close(all=True)
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
@@ -740,9 +740,16 @@ def executable_script(src_file, gallery_conf):
 def execute_script(script_blocks, script_vars, gallery_conf):
     """Execute and capture output from python script already in block structure
 
-    base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
-    image_path_template = os.path.join(image_dir, image_fname)
+    Parameters
+    ----------
+    script_blocks : list
+        (label, content, line_number)
+        List where each element is a tuple with the label ('text' or 'code'),
+        the corresponding content string of block and the leading line number
+    script_vars : dict
+        Configuration and run time variables
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
 
     Returns
     -------
