@@ -583,11 +583,10 @@ current directory could do, e.g.::
             self.seen = set()
 
         def __call__(self, block, block_vars, gallery_conf):
-            count = 0
             pngs = sorted(glob.glob(os.path.join(os.getcwd(), '*.png'))
             image_names = list()
             image_path_iterator = block_vars['image_path_iterator']
-            for png in my_pngs:
+            for png in pngs:
                 if png not in seen:
                     seen |= set(png)
                     image_names.append(image_path_iterator.next())
