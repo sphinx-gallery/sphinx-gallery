@@ -141,9 +141,9 @@ def setup(app):
     import bokeh
     bv = bokeh.__version__
     app.add_stylesheet(
-        'http://cdn.pydata.org/bokeh/release/bokeh-{0}.min.css'.format(bv))
+        'https://cdn.pydata.org/bokeh/release/bokeh-{0}.min.css'.format(bv))
     app.add_javascript(
-        'http://cdn.pydata.org/bokeh/release/bokeh-{0}.min.js'.format(bv))
+        'https://cdn.pydata.org/bokeh/release/bokeh-{0}.min.js'.format(bv))
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
