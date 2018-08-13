@@ -348,5 +348,8 @@ sphinx_gallery_conf = {
                'dependencies': './binder/requirements.txt',
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
-               }
+               },
+    'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+                            "# It can be customized to whatever you like\n"
+                            "%matplotlib inline")
 }

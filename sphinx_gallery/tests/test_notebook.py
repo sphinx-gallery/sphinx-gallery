@@ -81,7 +81,8 @@ For more details on interpolation see the page `channel_interpolation`.
 def test_jupyter_notebook():
     """Test that written ipython notebook file corresponds to python object"""
     file_conf, blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
-    example_nb = jupyter_notebook(blocks)
+    gallery_conf = {}
+    example_nb = jupyter_notebook(blocks, gallery_conf)
 
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         save_notebook(example_nb, f.name)
@@ -90,6 +91,18 @@ def test_jupyter_notebook():
             assert json.load(fname) == example_nb
     finally:
         os.remove(f.name)
+    assert example_nb.get('cells')[0]['source'][0] == "%matplotlib inline"
+
+    # Test custom first cell text
+    test_text = '# testing\n%matplotlib notebook'
+    gallery_conf['first_notebook_cell'] = test_text
+    example_nb = jupyter_notebook(blocks, gallery_conf)
+    assert example_nb.get('cells')[0]['source'][0] == test_text
+
+    # First cell must be str
+    with pytest.raises(ValueError):
+        gallery_conf['first_notebook_cell'] = 12
+        jupyter_notebook(blocks, gallery_conf)
 
 ###############################################################################
 # Notebook shell utility

@@ -100,17 +100,22 @@ def rst2md(text):
     return text
 
 
-def jupyter_notebook(script_blocks):
+def jupyter_notebook(script_blocks, gallery_conf):
     """Generate a Jupyter notebook file cell-by-cell
 
     Parameters
     ----------
-    script_blocks: list
-        script execution cells
+    script_blocks : list
+        Script execution cells.
+    gallery_conf : dict
+        The sphinx-gallery configuration dictionary.
     """
-
+    first_cell = gallery_conf.get("first_notebook_cell", "%matplotlib inline")
+    if not isinstance(first_cell, str):
+        raise ValueError("The 'first_notebook_cell' parameter must be type str"
+                         "found type %s" % type(first_cell))
     work_notebook = jupyter_notebook_skeleton()
-    add_code_cell(work_notebook, "%matplotlib inline")
+    add_code_cell(work_notebook, first_cell)
     fill_notebook(work_notebook, script_blocks)
 
     return work_notebook
@@ -191,5 +196,6 @@ def python_to_jupyter_cli(args=None, namespace=None):
     for src_file in args.python_src_file:
         file_conf, blocks = split_code_and_text_blocks(src_file)
         print('Converting {0}'.format(src_file))
-        example_nb = jupyter_notebook(blocks)
+        empty_conf = {}  # We use an empty gallery configuration file
+        example_nb = jupyter_notebook(blocks, empty_conf)
         save_notebook(example_nb, replace_py_ipynb(src_file))

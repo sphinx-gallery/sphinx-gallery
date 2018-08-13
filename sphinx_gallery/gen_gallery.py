@@ -62,6 +62,7 @@ DEFAULT_GALLERY_CONF = {
     'binder': {},
     'image_scrapers': ('matplotlib',),
     'reset_modules': ('matplotlib', 'seaborn'),
+    'first_notebook_cell': '%matplotlib inline'
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')

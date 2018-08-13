@@ -579,7 +579,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
-    example_nb = jupyter_notebook(script_blocks)
+    example_nb = jupyter_notebook(script_blocks, gallery_conf)
     save_notebook(example_nb, replace_py_ipynb(target_file))
 
     return intro, time_elapsed
