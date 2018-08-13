@@ -323,7 +323,7 @@ try:
     # Run the mayavi examples and find the mayavi figures if mayavi is
     # installed
     from mayavi import mlab
-    image_scrapers = ('matplotlib', 'mayavi')
+    image_scrapers = ('matplotlib', 'mayavi', 'bokeh')
     examples_dirs.append('../mayavi_examples')
     gallery_dirs.append('auto_mayavi_examples')
     # Do not pop up any mayavi windows while running the
