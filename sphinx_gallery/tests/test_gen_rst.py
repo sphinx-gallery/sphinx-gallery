@@ -8,23 +8,18 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import ast
 import codecs
-import copy
 import io
 import tempfile
 import re
 import os
-import shutil
 import zipfile
 
 import pytest
 
 import sphinx_gallery.gen_rst as sg
-from sphinx_gallery import gen_gallery, downloads
-from sphinx_gallery.gen_gallery import generate_dir_rst
+from sphinx_gallery import downloads
+from sphinx_gallery.gen_gallery import generate_dir_rst, _complete_gallery_conf
 from sphinx_gallery.utils import _TempDir
-
-# Need to import gen_rst before matplotlib.pyplot to set backend to 'Agg'
-import matplotlib.pyplot as plt
 
 CONTENT = [
     '"""',
@@ -180,13 +175,10 @@ def test_md5sums():
 
 
 @pytest.fixture
-def gallery_conf():
+def gallery_conf(tmpdir):
     """Sets up a test sphinx-gallery configuration"""
-
-    gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
-    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=_TempDir())
-    gallery_conf['src_dir'] = gallery_conf['gallery_dir']
-
+    gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False)
+    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=str(tmpdir))
     return gallery_conf
 
 
@@ -279,53 +271,6 @@ def test_thumbnail_number(test_str):
     assert file_conf == {'thumbnail_number': 2}
 
 
-def test_save_matplotlib_figures(gallery_conf):
-    """Test matplotlib figure save"""
-    plt.plot(1, 1)
-    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
-    assert fig_num == 1
-    assert '/image1.png' in image_rst
-
-    # Test capturing 2 images with shifted start number
-    plt.plot(1, 1)
-    plt.figure()
-    plt.plot(1, 1)
-    image_rst, fig_num = sg.save_figures(fname_template, 3, gallery_conf)
-    assert fig_num == 2
-    assert '/image4.png' in image_rst
-    assert '/image5.png' in image_rst
-
-
-def test_save_mayavi_figures(gallery_conf):
-    """Test file naming when saving figures. Requires mayavi."""
-    try:
-        from mayavi import mlab
-    except ImportError:
-        raise pytest.skip('Mayavi not installed')
-    mlab.options.offscreen = True
-
-    gallery_conf.update(find_mayavi_figures=True)
-
-    mlab.test_plot3d()
-    plt.plot(1, 1)
-    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_rst, fig_num = sg.save_figures(fname_template, 0, gallery_conf)
-    assert fig_num == 2
-    assert '/image1.png' in image_rst
-    assert '/image2.png' in image_rst
-
-    mlab.test_plot3d()
-    plt.plot(1, 1)
-    image_rst, fig_num = sg.save_figures(fname_template, 2, gallery_conf)
-    assert fig_num == 2
-    assert '/image2.png' not in image_rst
-    assert '/image3.png' in image_rst
-    assert '/image4.png' in image_rst
-
-    shutil.rmtree(gallery_conf['gallery_dir'])
-
-
 def test_zip_notebooks(gallery_conf):
     """Test generated zipfiles are not corrupt"""
     gallery_conf.update(examples_dir='examples')
@@ -358,42 +303,6 @@ def test_rst_example(gallery_conf):
         rst = f.read()
 
         assert "lab/tree/notebooks/plot.ipy" in rst
-
-
-def test_figure_rst():
-    """Testing rst of images"""
-    figure_list = ['sphx_glr_plot_1.png']
-    image_rst = sg.figure_rst(figure_list, '.')
-    single_image = """
-.. image:: /sphx_glr_plot_1.png
-    :class: sphx-glr-single-img
-"""
-    assert image_rst == single_image
-
-    image_rst = sg.figure_rst(figure_list + ['second.png'], '.')
-
-    image_list_rst = """
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image:: /sphx_glr_plot_1.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /second.png
-            :class: sphx-glr-multi-img
-"""
-    assert image_rst == image_list_rst
-
-    # test issue #229
-    local_img = [os.path.join(os.getcwd(), 'third.png')]
-    image_rst = sg.figure_rst(local_img, '.')
-
-    single_image = sg.SINGLE_IMAGE % "third.png"
-    assert image_rst == single_image
 
 
 class TestLoggingTee:
@@ -454,6 +363,7 @@ class TestLoggingTee:
 
         monkeypatch.setattr(self.tee.output_file, 'isatty', lambda: True)
         assert self.tee.isatty()
+
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are not executed twice

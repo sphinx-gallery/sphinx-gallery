@@ -316,14 +316,14 @@ try:
     # Run the mayavi examples and find the mayavi figures if mayavi is
     # installed
     from mayavi import mlab
-    find_mayavi_figures = True
+    image_scrapers = ('matplotlib', 'mayavi')
     examples_dirs.append('../mayavi_examples')
     gallery_dirs.append('auto_mayavi_examples')
     # Do not pop up any mayavi windows while running the
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
 except Exception:  # can raise all sorts of errors
-    find_mayavi_figures = False
+    image_scrapers = ('matplotlib',)
 
 
 sphinx_gallery_conf = {
@@ -334,11 +334,11 @@ sphinx_gallery_conf = {
         },
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
+    'image_scrapers': image_scrapers,
     'subsection_order': ExplicitOrder(['../examples/sin_func',
                                        '../examples/no_output',
                                        '../tutorials/seaborn']),
     'within_subsection_order': NumberOfCodeLinesSortKey,
-    'find_mayavi_figures': find_mayavi_figures,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py'],
     'binder': {'org': 'sphinx-gallery',
