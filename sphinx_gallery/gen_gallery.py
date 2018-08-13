@@ -18,8 +18,8 @@ import os
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _scraper_dict,
-                      _reset_dict)
+from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
+from .scrapers import _scraper_dict, _reset_dict
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey

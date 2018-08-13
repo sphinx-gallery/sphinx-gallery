@@ -554,10 +554,10 @@ Custom scrapers
 .. note:: The API for custom scrapers is currently experimental.
 
 You can also add your own custom function (or callable class instance)
-to this list. See :func:`sphinx_gallery.gen_rst.matplotlib_scraper` for
+to this list. See :func:`sphinx_gallery.scrapers.matplotlib_scraper` for
 a description of the interface. Here is pseudocode for what this function
-and :func:`sphinx_gallery.gen_rst.mayavi_scraper` do under the hood, which
-uses :func:`sphinx_gallery.gen_rst.figure_rst` to create standardized RST::
+and :func:`sphinx_gallery.scrapers.mayavi_scraper` do under the hood, which
+uses :func:`sphinx_gallery.scrapers.figure_rst` to create standardized RST::
 
     def mod_scraper(block, block_vars, gallery_conf)
         import mymod
