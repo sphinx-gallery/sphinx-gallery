@@ -145,6 +145,7 @@ class ImagePathIterator(object):
     def __init__(self, image_path):
         self.image_path = image_path
         self.paths = list()
+        self._stop = 1000000
 
     def __len__(self):
         """Return the number of image paths used.
@@ -172,11 +173,10 @@ class ImagePathIterator(object):
         :func:`mne.Epochs.next`.
         """
         # we should really never have 1e6, let's prevent some user pain
-        stop = 1000000
-        for ii in range(stop):
+        for ii in range(self._stop):
             yield self.next()
         else:
-            raise RuntimeError('Generated over %s images' % (stop,))
+            raise RuntimeError('Generated over %s images' % (self._stop,))
 
     def next(self):
         return self.__next__()

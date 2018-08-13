@@ -154,7 +154,8 @@ def test_figure_rst():
 
 def test_iterator():
     """Test ImagePathIterator."""
-    ipi = ImagePathIterator('foo{1}')
-    with pytest.raises(RuntimeError, match='1000000 images'):
+    ipi = ImagePathIterator('foo{0}')
+    ipi._stop = 10
+    with pytest.raises(RuntimeError, match='10 images'):
         for ii in ipi:
             pass
