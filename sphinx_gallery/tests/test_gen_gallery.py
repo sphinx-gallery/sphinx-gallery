@@ -360,3 +360,14 @@ def test_examples_not_expected_to_pass(sphinx_app_wrapper):
     with pytest.raises(ValueError) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
     assert "expected to fail, but not failing" in str(excinfo.value)
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'first_notebook_cell': 2,
+}""")
+def test_first_notebook_cell_config(sphinx_app_wrapper):
+    from sphinx_gallery.gen_gallery import parse_config
+    # First cell must be str
+    with pytest.raises(ValueError):
+        parse_config(sphinx_app_wrapper.create_sphinx_app())

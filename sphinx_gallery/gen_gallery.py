@@ -171,6 +171,17 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf['reset_modules'] = tuple(resetters)
     del resetters
 
+    # Ensure the first cell text is a string if we have it
+    first_cell = gallery_conf.get("first_notebook_cell", "%matplotlib inline")
+    if not isinstance(first_cell, str):
+        raise ValueError("The 'first_notebook_cell' parameter must be type str"
+                         "found type %s" % type(first_cell))
+    gallery_conf['first_notebook_cell'] = first_cell
+
+    # this assures I can call the config in other places
+    app.config.sphinx_gallery_conf = gallery_conf
+    app.config.html_static_path.append(glr_path_static())
+
     return gallery_conf
 
 

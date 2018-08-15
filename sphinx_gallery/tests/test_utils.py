@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 r"""
-Test utility functions 
+Test utility functions
 ==================
 
 
@@ -10,10 +10,11 @@ Test utility functions
 
 from __future__ import division, absolute_import, print_function
 import sphinx_gallery.utils as utils
+from sphinx_gallery.tests.test_gen_gallery import sphinx_app_wrapper
 import pytest
 
 def test_replace_py_ipynb():
-    
+
     # Test behavior of function with expected input:
     for file_name in ['some/file/name', '/corner.pycase']:
         assert utils.replace_py_ipynb(file_name+'.py') == file_name+'.ipynb'

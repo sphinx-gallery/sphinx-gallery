@@ -15,6 +15,7 @@ import argparse
 import json
 import re
 import sys
+import copy
 
 from .py_source_parser import split_code_and_text_blocks
 from .utils import replace_py_ipynb
@@ -111,9 +112,6 @@ def jupyter_notebook(script_blocks, gallery_conf):
         The sphinx-gallery configuration dictionary.
     """
     first_cell = gallery_conf.get("first_notebook_cell", "%matplotlib inline")
-    if not isinstance(first_cell, str):
-        raise ValueError("The 'first_notebook_cell' parameter must be type str"
-                         "found type %s" % type(first_cell))
     work_notebook = jupyter_notebook_skeleton()
     add_code_cell(work_notebook, first_cell)
     fill_notebook(work_notebook, script_blocks)
@@ -185,6 +183,7 @@ def python_to_jupyter_cli(args=None, namespace=None):
 
     Takes the same arguments as ArgumentParser.parse_args
     """
+    from . import gen_gallery  # To avoid circular import
     parser = argparse.ArgumentParser(
         description='Sphinx-Gallery Notebook converter')
     parser.add_argument('python_src_file', nargs='+',
@@ -196,6 +195,6 @@ def python_to_jupyter_cli(args=None, namespace=None):
     for src_file in args.python_src_file:
         file_conf, blocks = split_code_and_text_blocks(src_file)
         print('Converting {0}'.format(src_file))
-        empty_conf = {}  # We use an empty gallery configuration file
-        example_nb = jupyter_notebook(blocks, empty_conf)
+        gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
+        example_nb = jupyter_notebook(blocks, gallery_conf)
         save_notebook(example_nb, replace_py_ipynb(src_file))
