@@ -19,7 +19,7 @@ if [ "$DISTRIB" == "conda" ]; then
     # which then crashes with pandas and seaborn
     conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy\
           setuptools matplotlib pillow pytest pytest-cov coverage seaborn bokeh selenium
-    conda install -c conda-forge phantomjs
+    conda install -c conda-forge --yes phantomjs
     source activate testenv
     if [ "$INSTALL_MAYAVI" == "true" ]; then
         conda install --yes mayavi bokeh
