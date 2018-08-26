@@ -348,5 +348,5 @@ sphinx_gallery_conf = {
                'dependencies': './binder/requirements.txt',
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
-               }
+               },
 }

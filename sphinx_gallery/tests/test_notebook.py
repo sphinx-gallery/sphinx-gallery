@@ -14,6 +14,8 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery.notebook import (rst2md, jupyter_notebook, save_notebook,
                                      python_to_jupyter_cli)
+from sphinx_gallery.tests.test_gen_rst import gallery_conf
+
 try:
     FileNotFoundError
 except NameError:
@@ -78,10 +80,10 @@ For more details on interpolation see the page `channel_interpolation`.
     assert rst2md(rst) == markdown
 
 
-def test_jupyter_notebook():
+def test_jupyter_notebook(gallery_conf):
     """Test that written ipython notebook file corresponds to python object"""
     file_conf, blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
-    example_nb = jupyter_notebook(blocks)
+    example_nb = jupyter_notebook(blocks, gallery_conf)
 
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         save_notebook(example_nb, f.name)
@@ -90,6 +92,13 @@ def test_jupyter_notebook():
             assert json.load(fname) == example_nb
     finally:
         os.remove(f.name)
+    assert example_nb.get('cells')[0]['source'][0] == "%matplotlib inline"
+
+    # Test custom first cell text
+    test_text = '# testing\n%matplotlib notebook'
+    gallery_conf['first_notebook_cell'] = test_text
+    example_nb = jupyter_notebook(blocks, gallery_conf)
+    assert example_nb.get('cells')[0]['source'][0] == test_text
 
 ###############################################################################
 # Notebook shell utility

@@ -33,6 +33,7 @@ file:
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
 - ``binder`` (:ref:`binder_links`)
+- ``first_notebook_cell`` (:ref:`first_notebook_cell`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -390,6 +391,36 @@ setting::
 
 Note that for Sphinx < 1.3, the line numbers will not be consistent with the
 original file.
+
+
+.. _first_notebook_cell:
+
+Add your own first notebook cell
+================================
+
+Sphinx-Gallery adds an extra cell to the beginning of every generated notebook.
+This is often for adding code that is required to run properly in the notebook,
+but not in a ``.py`` file. By default, this text is
+
+.. code-block:: python
+
+   %matplotlib inline
+
+You can choose whatever text you like by modifying the ``first_notebook_cell``
+configuration parameter. For example, the gallery of this documentation
+displays a comment along-side each the code shown above.
+
+.. code-block:: python
+
+  # This cell is added by sphinx-gallery
+  # It can be customized to whatever you like
+  %matplotlib inline
+
+Which is achieved by the following configuration::
+
+  'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+                          "# It can be customized to whatever you like\n"
+                          "%matplotlib inline")
 
 
 .. _disable_all_scripts_download:

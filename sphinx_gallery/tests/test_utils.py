@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 r"""
-Test utility functions 
+Test utility functions
 ==================
 
 
@@ -13,7 +13,6 @@ import sphinx_gallery.utils as utils
 import pytest
 
 def test_replace_py_ipynb():
-    
     # Test behavior of function with expected input:
     for file_name in ['some/file/name', '/corner.pycase']:
         assert utils.replace_py_ipynb(file_name+'.py') == file_name+'.ipynb'
