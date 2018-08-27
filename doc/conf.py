@@ -120,7 +120,7 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 
 # The theme is set by the make target
-html_theme = os.environ.get('SPHX_GLR_THEME', 'default')
+html_theme = os.environ.get('SPHX_GLR_THEME', 'rtd')
 
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed
 # from docs.readthedocs.org

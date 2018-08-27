@@ -1,3 +1,5 @@
+.. _configuration:
+
 =============
 Configuration
 =============
@@ -52,8 +54,8 @@ And some things can be tweaked directly in CSS:
 
 .. _multiple_galleries_config:
 
-Managing multiple galleries
-===========================
+Manage multiple galleries
+=========================
 
 Sphinx-Gallery only supports up to sub-folder level in its gallery directories.
 This might be a limitation for you. Or you might want to have separate
@@ -201,8 +203,8 @@ In addition, multiple convenience classes are provided for use with
 
 .. _link_to_documentation:
 
-Linking to documentation
-========================
+Add intersphinx links to your examples
+======================================
 
 Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
 you can link the used functions to their matching online documentation. As such
@@ -238,8 +240,8 @@ point to the directory containing ``searchindex.js``, such as
 
 .. _references_to_examples:
 
-Adding references to examples
-=============================
+Add mini-galleries for API documentation
+========================================
 
 When documenting a given function/class, Sphinx-Gallery enables you to link to
 any examples that either:
@@ -274,9 +276,9 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
         # this case sphinx_gallery and numpy in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
-The path you specify in ``backreferences_dir``, here we choose
-``gen_modules/backreferences`` will get populated with
-ReStructuredText files, each of which contains a reduced version of the
+The path you specify in ``backreferences_dir`` (here we choose
+``gen_modules/backreferences``) will be populated with
+ReStructuredText files. Each will contain a reduced version of the
 gallery specific to every function used across all the examples
 galleries and belonging to the modules listed in ``doc_module``. Keep
 in mind that the path set in ``backreferences_dir`` is **relative** to the
@@ -319,7 +321,7 @@ it with the standard sphinx extensions `autodoc
 
 `autodoc <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
 <http://sphinx-doc.org/ext/autosummary.html>`_ are very powerful
-extensions please read about them. In this example we'll explain how
+extensions, please read about them. In this example we'll explain how
 the :ref:`sphx_glr_api_reference` is automatically generated. The
 documentation is done at the module level. We first start with the
 ``reference.rst`` file
