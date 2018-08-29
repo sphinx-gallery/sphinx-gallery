@@ -15,17 +15,19 @@ if [ "$DISTRIB" == "conda" ]; then
     export PATH=$HOME/miniconda3/bin:$PATH
     conda update --yes conda
 
-    # force no mkl because mayavi requires old version of numpy
-    # which then crashes with pandas and seaborn
-    conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy\
-        setuptools matplotlib pillow pytest pytest-cov coverage seaborn
+    # Force conda to think about other dependencies that can break
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn"
+    if [ "$INSTALL_MAYAVI" == "true" ]; then
+        conda create --yes -n testenv $CONDA_PKGS mayavi
+    else
+        conda create --yes -n testenv $CONDA_PKGS
+    fi
     source activate testenv
     if [ "$SPHINX_VERSION" != "dev" ]; then
         conda install "sphinx=${SPHINX_VERSION-*}" --yes
     else
-        pip install git+https://github.com/sphinx-doc/sphinx.git
+        pip install "https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
-    # Force conda to think about other dependencies that can break
 elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by
     # Travis because it contains numpy and we want to use numpy
@@ -37,10 +39,6 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install "tornado<5"
     pip install -r requirements.txt
     pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov
-    if [ "$INSTALL_MAYAVI" == "true" ]; then
-        pip install vtk
-        pip install mayavi
-    fi
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
