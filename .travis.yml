@@ -4,7 +4,6 @@ addons:
   apt:
     packages:
     - xvfb # For mayavi headless
-    - python-tk  # For old Python
 
 virtualenv:
         system_site_packages: true
