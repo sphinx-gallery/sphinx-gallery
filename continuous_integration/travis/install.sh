@@ -26,10 +26,7 @@ if [ "$DISTRIB" == "conda" ]; then
         pip install git+https://github.com/sphinx-doc/sphinx.git
     fi
     # Force conda to think about other dependencies that can break
-    if [ "$INSTALL_MAYAVI" == "true" ]; then
-        conda install --yes numpy scipy vtk matplotlib mayavi
-    fi
-    elif [ "$DISTRIB" == "ubuntu" ]; then
+elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by
     # Travis because it contains numpy and we want to use numpy
     # from apt-get
@@ -40,11 +37,15 @@ if [ "$DISTRIB" == "conda" ]; then
     pip install "tornado<5"
     pip install -r requirements.txt
     pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov
+    if [ "$INSTALL_MAYAVI" == "true" ]; then
+        pip install vtk
+        pip install mayavi
+    fi
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
 fi
 
-python setup.py install
 # Make sure things are not totally broken
 python -c "import numpy; from scipy import signal, linalg; import matplotlib.pyplot as plt"
+python setup.py install

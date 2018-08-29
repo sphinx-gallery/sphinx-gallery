@@ -11,7 +11,7 @@ virtualenv:
 matrix:
   include:
     - os: linux
-      env: DISTRIB="ubuntu" PYTHON_VERSION="2.7"
+      env: DISTRIB="ubuntu" PYTHON_VERSION="2.7" INSTALL_MAYAVI="true"
       addons:
         apt:
           packages:
@@ -22,9 +22,6 @@ matrix:
             - python-coverage
             - cython
             - python-pandas
-    # This environment tests is for mayavi
-    - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="2.7" INSTALL_MAYAVI="true"
     # This environment tests the Python 3 versions
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.4"
