@@ -57,7 +57,7 @@ build gallery examples. For example::
   #
   # In the built documentation, it will be rendered as rST.
 
-  # This line won't be rendered because there's a space after the last block.
+  # This line won't be rendered because there is a gap after the last block.
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
 Here are the contents of an example Python file from the snippets above.::

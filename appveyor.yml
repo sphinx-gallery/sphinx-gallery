@@ -7,7 +7,7 @@ environment:
   global:
     PYTHON: "C:\\conda"
     MINICONDA_VERSION: "latest"
-    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov"
+    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme"
 
   matrix:
     - PYTHON_VERSION: "2.7"

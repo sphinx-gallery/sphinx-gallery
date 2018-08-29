@@ -18,7 +18,7 @@ if [ "$DISTRIB" == "conda" ]; then
     # force no mkl because mayavi requires old version of numpy
     # which then crashes with pandas and seaborn
     conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy\
-        setuptools matplotlib pillow pytest pytest-cov coverage seaborn
+        setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme
     source activate testenv
     if [ "$INSTALL_MAYAVI" == "true" ]; then
         conda install --yes mayavi
