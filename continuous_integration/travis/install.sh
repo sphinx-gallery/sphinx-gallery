@@ -20,16 +20,16 @@ if [ "$DISTRIB" == "conda" ]; then
     conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy\
         setuptools matplotlib pillow pytest pytest-cov coverage seaborn
     source activate testenv
-    # Force conda to think about other dependencies that can break
-    if [ "$INSTALL_MAYAVI" == "true" ]; then
-        conda install --yes numpy scipy vtk matplotlib mayavi
-    fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
         conda install "sphinx=${SPHINX_VERSION-*}" --yes
     else
         pip install git+https://github.com/sphinx-doc/sphinx.git
     fi
-elif [ "$DISTRIB" == "ubuntu" ]; then
+    # Force conda to think about other dependencies that can break
+    if [ "$INSTALL_MAYAVI" == "true" ]; then
+        conda install --yes numpy scipy vtk matplotlib mayavi
+    fi
+    elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by
     # Travis because it contains numpy and we want to use numpy
     # from apt-get
@@ -46,3 +46,5 @@ else
 fi
 
 python setup.py install
+# Make sure things are not totally broken
+python -c "import numpy; from scipy import signal, linalg; import matplotlib.pyplot as plt"
