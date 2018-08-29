@@ -37,8 +37,9 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     source testvenv/bin/activate
     pip install -U requests[security]  # ensure SSL certificate works
     pip install "tornado<5"
+    pip install "pytest<3.7.3" pytest-cov
     pip install -r requirements.txt
-    pip install seaborn sphinx==1.5.5 "pytest<3.7.3" "six>=1.10.0" pytest-cov
+    pip install seaborn sphinx==1.5.5
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
