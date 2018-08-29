@@ -15,18 +15,18 @@ if [ "$DISTRIB" == "conda" ]; then
     export PATH=$HOME/miniconda3/bin:$PATH
     conda update --yes conda
 
-    # force no mkl because mayavi requires old version of numpy
-    # which then crashes with pandas and seaborn
-    conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy\
-        setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme
-    source activate testenv
+    # Force conda to think about other dependencies that can break
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme"
     if [ "$INSTALL_MAYAVI" == "true" ]; then
-        conda install --yes mayavi
+        conda create --yes -n testenv $CONDA_PKGS mayavi
+    else
+        conda create --yes -n testenv $CONDA_PKGS
     fi
+    source activate testenv
     if [ "$SPHINX_VERSION" != "dev" ]; then
         conda install "sphinx=${SPHINX_VERSION-*}" --yes
     else
-        pip install git+https://github.com/sphinx-doc/sphinx.git
+        pip install "https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
 elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by
@@ -44,4 +44,6 @@ else
     exit 1
 fi
 
+# Make sure things are not totally broken
+python -c "import numpy; from scipy import signal, linalg"
 python setup.py install
