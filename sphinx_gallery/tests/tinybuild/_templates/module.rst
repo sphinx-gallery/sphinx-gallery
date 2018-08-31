@@ -1,5 +1,5 @@
 .. Please when editing this file make sure to keep it matching the
-   docs in ../advanced_configuration.rst:reference_to_examples
+   docs in ../configuration.rst:reference_to_examples
 
 {{ fullname }}
 {{ underline }}

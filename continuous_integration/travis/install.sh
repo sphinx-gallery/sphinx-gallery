@@ -16,7 +16,7 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update --yes conda
 
     # Force conda to think about other dependencies that can break
-    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn"
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme"
     if [ "$INSTALL_MAYAVI" == "true" ]; then
         conda create --yes -n testenv $CONDA_PKGS mayavi
     else
@@ -38,7 +38,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install -U requests[security]  # ensure SSL certificate works
     pip install "tornado<5"
     pip install -r requirements.txt
-    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov
+    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
