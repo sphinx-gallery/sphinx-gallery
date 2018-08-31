@@ -38,14 +38,15 @@ be rendered in-line with the Python code and its outputs, similar to how
 Jupyter Notebooks are structured (in fact, Sphinx-Gallery also **creates** a
 Jupyter Notebook for each example that is built).
 
-You can embed rST in your Python
-examples by including a line of ``#`` symbols that spans 79 columns, like
+You can embed rST in your Python examples by including a line of ``#`` symbols
+that spans >= 20 columns. We recommend using 79 columns, like
 this::
 
   ###############################################################################
 
-Any commented lines that immediately follow will be rendered as rST in the
-build gallery examples. For example::
+Any commented lines (that begin with ``#`` and a space so they are
+PEP8-compliant) that immediately follow will be rendered as rST in the built
+gallery examples. For example::
 
   # This is commented python
   myvariable = 2
@@ -57,7 +58,8 @@ build gallery examples. For example::
   #
   # In the built documentation, it will be rendered as rST.
 
-  # This line won't be rendered because there is a gap after the last block.
+  # These lines won't be rendered as rST because there is a gap after the last
+  # commented rST block. Instead, they'll resolve as regular Python comments.
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
 Here are the contents of an example Python file from the snippets above.::
