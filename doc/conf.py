@@ -130,9 +130,12 @@ if not on_rtd and html_theme == 'rtd':
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+else:
+    # otherwise, readthedocs.org uses their theme by default, so no need to
+    # specify it
+    html_theme = 'default'
+    
 
-# otherwise, readthedocs.org uses their theme by default, so no need to
-# specify it
 
 
 def setup(app):
