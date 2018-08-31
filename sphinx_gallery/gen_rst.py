@@ -284,9 +284,12 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
 
+    fhindex = """\n\n.. _sphx_glr_{0}:\n\n""".format(
+        target_dir.replace(os.path.sep, '_'))
+
     with codecs.open(os.path.join(src_dir, 'README.txt'), 'r',
                      encoding='utf-8') as fid:
-        fhindex = fid.read()
+        fhindex += fid.read()
     # Add empty lines to avoid bug in issue #165
     fhindex += "\n\n"
 
