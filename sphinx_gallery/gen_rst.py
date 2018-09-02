@@ -21,6 +21,7 @@ import gc
 import os
 import re
 import shutil
+import subprocess
 import sys
 import traceback
 import codeop
@@ -282,7 +283,8 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
     scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs,
+                     memory_base=0):
     """Generate the gallery reStructuredText for an example directory"""
 
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
@@ -318,10 +320,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     clean_modules(gallery_conf, src_dir)  # fix gh-316
     for fname in iterator:
         intro, time_elapsed = generate_file_rst(
-            fname,
-            target_dir,
-            src_dir,
-            gallery_conf)
+            fname, target_dir, src_dir, gallery_conf, memory_base)
         clean_modules(gallery_conf, fname)
         computation_times.append((time_elapsed, fname))
         this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
@@ -400,6 +399,19 @@ def _memory_usage(func, gallery_conf):
         out = func()
         mem = 0
     return out, mem
+
+
+def _get_memory_base(gallery_conf):
+    """Get the base amount of memory used by running a Python process."""
+    if not gallery_conf['show_memory']:
+        memory_base = 0
+    else:
+        # There might be a cleaner way to do this at some point
+        from memory_profiler import memory_usage
+        proc = subprocess.Popen([sys.executable, '-c',
+                                 'import time; time.sleep(1.0)'])
+        memory_base = max(memory_usage(proc, interval=1e-3, timeout=0.1))
+    return memory_base
 
 
 def execute_code_block(compiler, block, example_globals,
@@ -512,7 +524,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         representation of the output of each block
     time_elapsed : float
         Time elapsed during execution
-    memory_used : float
+    memory_delta : float
         The additional memory used, in MiB, by executing the script.
     """
 
@@ -550,7 +562,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         output_blocks.append(out[0])
         memory_used = max(memory_used, out[1])
     time_elapsed = time() - t_start
-    memory_used = memory_used - memory_start
+    memory_delta = memory_used - memory_start
 
     sys.argv = argv_orig
 
@@ -560,10 +572,10 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(script_vars['target_file']))
 
-    return output_blocks, time_elapsed, memory_used
+    return output_blocks, time_elapsed, memory_delta
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf, memory_base=0):
     """Generate the rst file for a given example.
 
     Parameters
@@ -576,6 +588,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         Absolute path to directory where source examples are stored
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
+    memory_base : float
+        The base amount of memory used (MiB) by running a Python process.
 
     Returns
     -------
@@ -609,7 +623,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         'target_file': target_file}
 
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    output_blocks, time_elapsed, memory_used = execute_script(
+    output_blocks, time_elapsed, memory_delta = execute_script(
         script_blocks, script_vars, gallery_conf)
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
@@ -617,7 +631,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_rst = rst_blocks(script_blocks, output_blocks,
                              file_conf, gallery_conf)
     save_rst_example(example_rst, target_file, time_elapsed,
-                     memory_used, gallery_conf)
+                     memory_base + memory_delta, gallery_conf)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 

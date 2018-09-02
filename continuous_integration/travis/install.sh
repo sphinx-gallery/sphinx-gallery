@@ -13,19 +13,19 @@ if [ "$DISTRIB" == "conda" ]; then
     chmod +x miniconda.sh
     ./miniconda.sh -b
     export PATH=$HOME/miniconda3/bin:$PATH
-    conda update --yes conda
+    conda update -y conda
 
     # Force conda to think about other dependencies that can break
     export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler"
     if [ "$INSTALL_MAYAVI" == "true" ]; then
-        conda create --yes -n testenv $CONDA_PKGS mayavi
+        conda create -yn testenv $CONDA_PKGS mayavi
     else
-        conda create --yes -n testenv $CONDA_PKGS
+        conda create -yn testenv $CONDA_PKGS
     fi
     source activate testenv
     # The 3.4 on is quite old
     if [ "$PYTHON_VERSION" == "3.4" ]; then
-        conda remove memory_profiler
+        conda remove -y memory_profiler
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
         conda install "sphinx=${SPHINX_VERSION-*}" --yes
@@ -41,7 +41,8 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     source testvenv/bin/activate
     pip install -U requests[security]  # ensure SSL certificate works
     pip install "tornado<5"
-    pip install -r requirements.txt
+    # The pipe just gets rid of the progress bars
+    pip install -r requirements.txt | cat
     pip uninstall -y memory_profiler  # test show_memory=True without memory_profiler
     pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
 else

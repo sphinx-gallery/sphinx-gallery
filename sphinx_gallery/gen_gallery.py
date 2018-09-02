@@ -18,7 +18,7 @@ import os
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
+from .gen_rst import generate_dir_rst, SPHX_GLR_SIG, _get_memory_base
 from .scrapers import _scraper_dict, _reset_dict
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
@@ -262,6 +262,7 @@ def generate_gallery_rst(app):
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
     files = collect_gallery_files(examples_dirs)
     check_duplicate_filenames(files)
+    memory_base = _get_memory_base(gallery_conf)
 
     for examples_dir, gallery_dir in workdirs:
 
@@ -278,7 +279,8 @@ def generate_gallery_rst(app):
         # better than nested.
 
         this_fhindex, this_computation_times = generate_dir_rst(
-            examples_dir, gallery_dir, gallery_conf, seen_backrefs)
+            examples_dir, gallery_dir, gallery_conf, seen_backrefs,
+            memory_base)
 
         computation_times += this_computation_times
 
@@ -295,7 +297,7 @@ def generate_gallery_rst(app):
                 target_dir = os.path.join(gallery_dir, subsection)
                 this_fhindex, this_computation_times = \
                     generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                     seen_backrefs)
+                                     seen_backrefs, memory_base)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
 
