@@ -413,7 +413,7 @@ def execute_code_block(compiler, block, example_globals,
     else:
         def memory_usage(func):
             func()
-            return [-1]
+            return []
 
     try:
         dont_inherit = 1
@@ -440,7 +440,7 @@ def execute_code_block(compiler, block, example_globals,
         # still call this even though we won't use the images so that
         # figures are closed
         save_figures(block, block_vars, gallery_conf)
-        memory_measurements = [-1]
+        memory_measurements = []
     else:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -705,7 +705,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                         " ({0: .0f} minutes {1: .3f} seconds)\n\n"
                         .format(time_m, time_s))
     if gallery_conf['show_memory']:
-        peak_mem = max(memory_measurements)
+        peak_mem = max(memory_measurements) if len(memory_measurements) else 0
         example_rst += ("**Peak memory usage:** {0: .0f} MB\n\n"
                         .format(peak_mem))
 
