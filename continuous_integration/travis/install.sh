@@ -23,6 +23,10 @@ if [ "$DISTRIB" == "conda" ]; then
         conda create --yes -n testenv $CONDA_PKGS
     fi
     source activate testenv
+    # The 3.4 on is quite old
+    if [ "$PYTHON_VERSION" == "3.4" ]; then
+        conda remove memory_profiler
+    fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
         conda install "sphinx=${SPHINX_VERSION-*}" --yes
     else
