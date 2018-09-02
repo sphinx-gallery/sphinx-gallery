@@ -50,7 +50,7 @@ Structure the examples folder
 -----------------------------
 
 In order for Sphinx-Gallery to build a gallery from your examples folder,
-you this folder must have the following things:
+this folder must have the following things:
 
 * **The Gallery Header** (``README.txt``). A file called ``README.txt`` that
   contains rST that will be used as a header for the gallery generated from
