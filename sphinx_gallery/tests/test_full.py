@@ -72,9 +72,9 @@ def test_embed_links(sphinx_app):
     try:
         import memory_profiler  # noqa, analysis:ignore
     except ImportError:
-        assert "Peak memory" not in lines
+        assert "memory usage" not in lines
     else:
-        assert "Peak memory" in lines
+        assert "memory usage" in lines
 
 
 def test_backreferences(sphinx_app):

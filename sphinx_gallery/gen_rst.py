@@ -17,6 +17,7 @@ from time import time
 import ast
 import codecs
 import hashlib
+import gc
 import os
 import re
 import shutil
@@ -380,13 +381,25 @@ class _exec_once(object):
         self.code = code
         self.globals = globals_
         self.run = False
-        self.out = None
 
     def __call__(self):
         if not self.run:
             self.run = True
-            self.out = exec(self.code, self.globals)
-        return self.out
+            exec(self.code, self.globals)
+
+
+def _memory_usage(func, gallery_conf):
+    """Get memory usage of a function call."""
+    if gallery_conf['show_memory']:
+        from memory_profiler import memory_usage
+        assert callable(func)
+        mem, out = memory_usage(func, max_usage=True, retval=True,
+                                multiprocess=True)
+        mem = mem[0]
+    else:
+        out = func()
+        mem = 0
+    return out, mem
 
 
 def execute_code_block(compiler, block, example_globals,
@@ -395,7 +408,7 @@ def execute_code_block(compiler, block, example_globals,
     blabel, bcontent, lineno = block
     # If example is not suitable to run, skip executing its blocks
     if not block_vars['execute_script'] or blabel == 'text':
-        return '', []
+        return '', 0
 
     cwd = os.getcwd()
     # Redirect output to stdout and
@@ -408,13 +421,6 @@ def execute_code_block(compiler, block, example_globals,
     my_stdout = MixedEncodingStringIO()
     os.chdir(os.path.dirname(src_file))
     sys.stdout = LoggingTee(my_stdout, logger, src_file)
-    if gallery_conf['show_memory']:
-        from memory_profiler import memory_usage
-    else:
-        def memory_usage(func):
-            func()
-            return []
-
     try:
         dont_inherit = 1
         code_ast = compile(bcontent, src_file, 'exec',
@@ -422,8 +428,9 @@ def execute_code_block(compiler, block, example_globals,
         ast.increment_lineno(code_ast, lineno - 1)
         # don't use unicode_literals at the top of this file or you get
         # nasty errors here on Py2.7
-        memory_measurements = memory_usage(
-            _exec_once(compiler(code_ast, src_file, 'exec'), example_globals))
+        _, mem = _memory_usage(_exec_once(
+            compiler(code_ast, src_file, 'exec'), example_globals),
+            gallery_conf)
     except Exception:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -440,7 +447,7 @@ def execute_code_block(compiler, block, example_globals,
         # still call this even though we won't use the images so that
         # figures are closed
         save_figures(block, block_vars, gallery_conf)
-        memory_measurements = []
+        mem = 0
     else:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -458,7 +465,7 @@ def execute_code_block(compiler, block, example_globals,
         os.chdir(cwd)
         sys.stdout = orig_stdout
 
-    return code_output, memory_measurements
+    return code_output, mem
 
 
 def executable_script(src_file, gallery_conf):
@@ -505,6 +512,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         representation of the output of each block
     time_elapsed : float
         Time elapsed during execution
+    memory_used : float
+        The additional memory used, in MiB, by executing the script.
     """
 
     example_globals = {
@@ -530,15 +539,18 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         sys.argv[1:] = []
 
     t_start = time()
+    gc.collect()
+    _, memory_start = _memory_usage(lambda: None, gallery_conf)
     compiler = codeop.Compile()
-    memory_measurements = list()
+    memory_used = memory_start
     output_blocks = list()
     for block in script_blocks:
         out = execute_code_block(compiler, block, example_globals,
                                  script_vars, gallery_conf)
         output_blocks.append(out[0])
-        memory_measurements += out[1]
+        memory_used = max(memory_used, out[1])
     time_elapsed = time() - t_start
+    memory_used = memory_used - memory_start
 
     sys.argv = argv_orig
 
@@ -548,7 +560,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(script_vars['target_file']))
 
-    return output_blocks, time_elapsed, memory_measurements
+    return output_blocks, time_elapsed, memory_used
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
@@ -597,7 +609,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         'target_file': target_file}
 
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    output_blocks, time_elapsed, memory_measurements = execute_script(
+    output_blocks, time_elapsed, memory_used = execute_script(
         script_blocks, script_vars, gallery_conf)
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
@@ -605,7 +617,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_rst = rst_blocks(script_blocks, output_blocks,
                              file_conf, gallery_conf)
     save_rst_example(example_rst, target_file, time_elapsed,
-                     memory_measurements, gallery_conf)
+                     memory_used, gallery_conf)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
@@ -667,7 +679,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
 
 
 def save_rst_example(example_rst, example_file, time_elapsed,
-                     memory_measurements, gallery_conf):
+                     memory_used, gallery_conf):
     """Saves the rst notebook to example_file including necessary header & footer
 
     Parameters
@@ -678,8 +690,8 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         Filename with full path of python example file in documentation folder
     time_elapsed : float
         Time elapsed in seconds while executing file
-    memory_measurements : list
-        Memory measurements during the run.
+    memory_used : float
+        Additional memory used during the run.
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
@@ -705,9 +717,8 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                         " ({0: .0f} minutes {1: .3f} seconds)\n\n"
                         .format(time_m, time_s))
     if gallery_conf['show_memory']:
-        peak_mem = max(memory_measurements) if len(memory_measurements) else 0
-        example_rst += ("**Peak memory usage:** {0: .0f} MB\n\n"
-                        .format(peak_mem))
+        example_rst += ("**Estimated memory usage:** {0: .0f} MB\n\n"
+                        .format(memory_used))
 
     # Generate a binder URL if specified
     binder_badge_rst = ''
