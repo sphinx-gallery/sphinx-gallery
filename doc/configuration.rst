@@ -34,6 +34,7 @@ file:
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
+- ``show_memory`` (:ref:`show_memory`)
 - ``binder`` (:ref:`binder_links`)
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
 
@@ -795,8 +796,23 @@ By default, Sphinx-gallery logs and embeds in the html output the time it took
 to run each script.  If the majority of your examples runs quickly, you may not
 need this information.
 
-The ``min_reported_time`` configuration can be set to a number of seconds.  The
+The ``min_reported_time`` parameter can be set to a number of seconds.  The
 duration of scripts that ran faster than that amount will not be logged nor
 embedded in the html output.
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
+
+
+.. _show_memory:
+
+Showing memory consumption
+==========================
+
+Sphinx-Gallery can use ``memory_profiler``, if installed, to report the peak
+memory during the run of an example. After installing ``memory_profiler``,
+you can do::
+
+    sphinx_gallery_conf = {
+        ...
+        'show_memory': True',
+    }

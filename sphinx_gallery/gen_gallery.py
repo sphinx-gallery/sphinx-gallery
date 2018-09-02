@@ -62,7 +62,8 @@ DEFAULT_GALLERY_CONF = {
     'binder': {},
     'image_scrapers': ('matplotlib',),
     'reset_modules': ('matplotlib', 'seaborn'),
-    'first_notebook_cell': '%matplotlib inline'
+    'first_notebook_cell': '%matplotlib inline',
+    'show_memory': False,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -139,6 +140,15 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         logger.warning(
             backreferences_warning,
             type=DeprecationWarning)
+
+    # deal with show_memory
+    if gallery_conf['show_memory']:
+        try:
+            from memory_profiler import memory_usage  # noqa, analysis:ignore
+        except ImportError:
+            logger.warning("Please install 'memory_profile' to enable peak "
+                           "memory measurements.")
+            gallery_conf['show_memory'] = False
 
     # deal with scrapers
     scrapers = gallery_conf['image_scrapers']

@@ -67,9 +67,14 @@ def test_embed_links(sphinx_app):
     assert 'scipy.signal.firwin.html' in lines
     assert '#module-numpy' in lines
     assert 'numpy.arange.html' in lines
-<<<<<<< HEAD
     assert '#module-matplotlib.pyplot' in lines
     assert 'pyplot.html' in lines
+    try:
+        import memory_profiler  # noqa, analysis:ignore
+    except ImportError:
+        assert "Peak memory" not in lines
+    else:
+        assert "Peak memory" in lines
 
 
 def test_backreferences(sphinx_app):
@@ -88,13 +93,3 @@ def test_backreferences(sphinx_app):
         lines = fid.read()
     assert 'identify_names' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
-=======
-    try:
-        import memory_profiler
-    except ImportError:
-        assert "Peak memory" not in lines
-    else:
-        assert "Peak memory" in lines
-    # assert '#module-matplotlib.pyplot' in lines
-    # assert 'pyplot.html' in lines
->>>>>>> Show peak memory if memory_profiler is installed

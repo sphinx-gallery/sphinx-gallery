@@ -373,13 +373,29 @@ def handle_exception(exc_info, src_file, block_vars, gallery_conf):
     return except_rst
 
 
+class _exec_once(object):
+    """Deal with memory_usage calling functions more than once (argh)."""
+
+    def __init__(self, code, globals_):
+        self.code = code
+        self.globals = globals_
+        self.run = False
+        self.out = None
+
+    def __call__(self):
+        if not self.run:
+            self.run = True
+            self.out = exec(self.code, self.globals)
+        return self.out
+
+
 def execute_code_block(compiler, block, example_globals,
                        block_vars, gallery_conf):
     """Executes the code block of the example file"""
     blabel, bcontent, lineno = block
     # If example is not suitable to run, skip executing its blocks
     if not block_vars['execute_script'] or blabel == 'text':
-        return ''
+        return '', []
 
     cwd = os.getcwd()
     # Redirect output to stdout and
@@ -392,6 +408,12 @@ def execute_code_block(compiler, block, example_globals,
     my_stdout = MixedEncodingStringIO()
     os.chdir(os.path.dirname(src_file))
     sys.stdout = LoggingTee(my_stdout, logger, src_file)
+    if gallery_conf['show_memory']:
+        from memory_profiler import memory_usage
+    else:
+        def memory_usage(func):
+            func()
+            return [-1]
 
     try:
         dont_inherit = 1
@@ -400,7 +422,8 @@ def execute_code_block(compiler, block, example_globals,
         ast.increment_lineno(code_ast, lineno - 1)
         # don't use unicode_literals at the top of this file or you get
         # nasty errors here on Py2.7
-        exec(compiler(code_ast, src_file, 'exec'), example_globals)
+        memory_measurements = memory_usage(
+            _exec_once(compiler(code_ast, src_file, 'exec'), example_globals))
     except Exception:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -417,6 +440,7 @@ def execute_code_block(compiler, block, example_globals,
         # still call this even though we won't use the images so that
         # figures are closed
         save_figures(block, block_vars, gallery_conf)
+        memory_measurements = [-1]
     else:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -434,7 +458,7 @@ def execute_code_block(compiler, block, example_globals,
         os.chdir(cwd)
         sys.stdout = orig_stdout
 
-    return code_output
+    return code_output, memory_measurements
 
 
 def executable_script(src_file, gallery_conf):
@@ -505,33 +529,15 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         sys.argv[0] = script_vars['src_file']
         sys.argv[1:] = []
 
-    show_memory = gallery_conf.get('show_memory', False)
-
-    if show_memory:
-        peak_mem = 0
-        memory_measurements = [0]
-        try:
-            from memory_profiler import memory_usage
-        except ImportError:
-            logger.warning("Please install 'memory_profile' to enable peak "
-                           "memory measurements.")
-            show_memory = False
-
     t_start = time()
     compiler = codeop.Compile()
     memory_measurements = list()
-    if show_memory:
-        output_blocks = list()
-        for block in script_blocks:
-            out = execute_code_block(compiler, block, example_globals,
-                                     script_vars, gallery_conf)
-            memory_measurements += out[0]
-            output_blocks.append(out[1])
-    else:
-        output_blocks = [execute_code_block(compiler, block,
-                                            example_globals,
-                                            script_vars, gallery_conf)
-                         for block in script_blocks]
+    output_blocks = list()
+    for block in script_blocks:
+        out = execute_code_block(compiler, block, example_globals,
+                                 script_vars, gallery_conf)
+        output_blocks.append(out[0])
+        memory_measurements += out[1]
     time_elapsed = time() - t_start
 
     sys.argv = argv_orig
@@ -542,7 +548,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(script_vars['target_file']))
 
-    return output_blocks, time_elapsed
+    return output_blocks, time_elapsed, memory_measurements
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
@@ -698,7 +704,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         example_rst += ("**Total running time of the script:**"
                         " ({0: .0f} minutes {1: .3f} seconds)\n\n"
                         .format(time_m, time_s))
-    if gallery_conf['memory_usage']:
+    if gallery_conf['show_memory']:
         peak_mem = max(memory_measurements)
         example_rst += ("**Peak memory usage:** {0: .0f} MB\n\n"
                         .format(peak_mem))
