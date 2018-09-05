@@ -149,6 +149,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             logger.warning("Please install 'memory_profile' to enable peak "
                            "memory measurements.")
             gallery_conf['show_memory'] = False
+    gallery_conf['memory_base'] = _get_memory_base(gallery_conf)
 
     # deal with scrapers
     scrapers = gallery_conf['image_scrapers']
@@ -262,7 +263,6 @@ def generate_gallery_rst(app):
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
     files = collect_gallery_files(examples_dirs)
     check_duplicate_filenames(files)
-    memory_base = _get_memory_base(gallery_conf)
 
     for examples_dir, gallery_dir in workdirs:
 
@@ -279,8 +279,7 @@ def generate_gallery_rst(app):
         # better than nested.
 
         this_fhindex, this_computation_times = generate_dir_rst(
-            examples_dir, gallery_dir, gallery_conf, seen_backrefs,
-            memory_base)
+            examples_dir, gallery_dir, gallery_conf, seen_backrefs)
 
         computation_times += this_computation_times
 
@@ -297,7 +296,7 @@ def generate_gallery_rst(app):
                 target_dir = os.path.join(gallery_dir, subsection)
                 this_fhindex, this_computation_times = \
                     generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                     seen_backrefs, memory_base)
+                                     seen_backrefs)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
 

@@ -43,7 +43,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install "tornado<5"
     # The pipe just gets rid of the progress bars
     pip install -r requirements.txt | cat
-    pip uninstall -y memory_profiler  # test show_memory=True without memory_profiler
+    # test show_memory=True without memory_profiler by not installing it (not in req)
     pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"

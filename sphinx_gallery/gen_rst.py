@@ -283,8 +283,7 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
     scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs,
-                     memory_base=0):
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
 
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
@@ -320,7 +319,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs,
     clean_modules(gallery_conf, src_dir)  # fix gh-316
     for fname in iterator:
         intro, time_elapsed = generate_file_rst(
-            fname, target_dir, src_dir, gallery_conf, memory_base)
+            fname, target_dir, src_dir, gallery_conf)
         clean_modules(gallery_conf, fname)
         computation_times.append((time_elapsed, fname))
         this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
@@ -345,7 +344,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs,
     return fhindex, computation_times
 
 
-def handle_exception(exc_info, src_file, block_vars, gallery_conf):
+def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     etype, exc, tb = exc_info
     stack = traceback.extract_tb(tb)
     # Remove our code from traceback:
@@ -368,7 +367,7 @@ def handle_exception(exc_info, src_file, block_vars, gallery_conf):
         raise
     # Stores failing file
     gallery_conf['failing_examples'][src_file] = formatted_exception
-    block_vars['execute_script'] = False
+    script_vars['execute_script'] = False
 
     return except_rst
 
@@ -415,17 +414,18 @@ def _get_memory_base(gallery_conf):
 
 
 def execute_code_block(compiler, block, example_globals,
-                       block_vars, gallery_conf):
+                       script_vars, gallery_conf):
     """Executes the code block of the example file"""
     blabel, bcontent, lineno = block
     # If example is not suitable to run, skip executing its blocks
-    if not block_vars['execute_script'] or blabel == 'text':
-        return '', 0
+    if not script_vars['execute_script'] or blabel == 'text':
+        script_vars['memory_delta'].append(0)
+        return ''
 
     cwd = os.getcwd()
     # Redirect output to stdout and
     orig_stdout = sys.stdout
-    src_file = block_vars['src_file']
+    src_file = script_vars['src_file']
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
@@ -433,6 +433,7 @@ def execute_code_block(compiler, block, example_globals,
     my_stdout = MixedEncodingStringIO()
     os.chdir(os.path.dirname(src_file))
     sys.stdout = LoggingTee(my_stdout, logger, src_file)
+
     try:
         dont_inherit = 1
         code_ast = compile(bcontent, src_file, 'exec',
@@ -446,7 +447,7 @@ def execute_code_block(compiler, block, example_globals,
     except Exception:
         sys.stdout.flush()
         sys.stdout = orig_stdout
-        except_rst = handle_exception(sys.exc_info(), src_file, block_vars,
+        except_rst = handle_exception(sys.exc_info(), src_file, script_vars,
                                       gallery_conf)
         # python2.7: Code was read in bytes needs decoding to utf-8
         # unless future unicode_literals is imported in source which
@@ -458,7 +459,7 @@ def execute_code_block(compiler, block, example_globals,
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
         # still call this even though we won't use the images so that
         # figures are closed
-        save_figures(block, block_vars, gallery_conf)
+        save_figures(block, script_vars, gallery_conf)
         mem = 0
     else:
         sys.stdout.flush()
@@ -470,14 +471,15 @@ def execute_code_block(compiler, block, example_globals,
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         else:
             stdout = ''
-        images_rst = save_figures(block, block_vars, gallery_conf)
+        images_rst = save_figures(block, script_vars, gallery_conf)
         code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
 
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
+    script_vars['memory_delta'].append(mem)
 
-    return code_output, mem
+    return code_output
 
 
 def executable_script(src_file, gallery_conf):
@@ -524,8 +526,6 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         representation of the output of each block
     time_elapsed : float
         Time elapsed during execution
-    memory_delta : float
-        The additional memory used, in MiB, by executing the script.
     """
 
     example_globals = {
@@ -554,15 +554,15 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     gc.collect()
     _, memory_start = _memory_usage(lambda: None, gallery_conf)
     compiler = codeop.Compile()
-    memory_used = memory_start
-    output_blocks = list()
-    for block in script_blocks:
-        out = execute_code_block(compiler, block, example_globals,
-                                 script_vars, gallery_conf)
-        output_blocks.append(out[0])
-        memory_used = max(memory_used, out[1])
+    # include at least one entry to avoid max() ever failing
+    script_vars['memory_delta'] = [memory_start]
+    output_blocks = [execute_code_block(compiler, block,
+                                        example_globals,
+                                        script_vars, gallery_conf)
+                     for block in script_blocks]
     time_elapsed = time() - t_start
-    memory_delta = memory_used - memory_start
+    script_vars['memory_delta'] = (  # actually turn it into a delta now
+        max(script_vars['memory_delta']) - memory_start)
 
     sys.argv = argv_orig
 
@@ -572,10 +572,10 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(script_vars['target_file']))
 
-    return output_blocks, time_elapsed, memory_delta
+    return output_blocks, time_elapsed
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf, memory_base=0):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """Generate the rst file for a given example.
 
     Parameters
@@ -588,8 +588,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, memory_base=0):
         Absolute path to directory where source examples are stored
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
-    memory_base : float
-        The base amount of memory used (MiB) by running a Python process.
 
     Returns
     -------
@@ -623,15 +621,17 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, memory_base=0):
         'target_file': target_file}
 
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
-    output_blocks, time_elapsed, memory_delta = execute_script(
-        script_blocks, script_vars, gallery_conf)
+    output_blocks, time_elapsed = execute_script(script_blocks,
+                                                 script_vars,
+                                                 gallery_conf)
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
 
     example_rst = rst_blocks(script_blocks, output_blocks,
                              file_conf, gallery_conf)
-    save_rst_example(example_rst, target_file, time_elapsed,
-                     memory_base + memory_delta, gallery_conf)
+    memory_used = gallery_conf['memory_base'] + script_vars['memory_delta']
+    save_rst_example(example_rst, target_file, time_elapsed, memory_used,
+                     gallery_conf)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
