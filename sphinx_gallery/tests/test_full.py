@@ -69,6 +69,12 @@ def test_embed_links(sphinx_app):
     assert 'numpy.arange.html' in lines
     assert '#module-matplotlib.pyplot' in lines
     assert 'pyplot.html' in lines
+    try:
+        import memory_profiler  # noqa, analysis:ignore
+    except ImportError:
+        assert "memory usage" not in lines
+    else:
+        assert "memory usage" in lines
 
 
 def test_backreferences(sphinx_app):

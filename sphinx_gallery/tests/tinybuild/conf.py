@@ -29,5 +29,6 @@ sphinx_gallery_conf = {
     'backreferences_dir': 'gen_modules/backreferences',
     'within_section_order': FileNameSortKey,
     'expected_failing_examples': ['examples/plot_future_imports_broken.py'],
+    'show_memory': True,
 }
 nitpicky = True

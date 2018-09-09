@@ -356,4 +356,5 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
+    'show_memory': True,
 }
