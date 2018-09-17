@@ -94,32 +94,32 @@ It uses an approach similar to what :func:`sphinx_gallery.scrapers.matplotlib_sc
 and :func:`sphinx_gallery.scrapers.mayavi_scraper` do under the hood, which
 use the helper function :func:`sphinx_gallery.scrapers.figure_rst` to
 create the standardized rST. If your package will be used to write an image file
-to disk (e.g., PNG or JPEG), we recommend you use a similar approach.::
+to disk (e.g., PNG or JPEG), we recommend you use a similar approach.
 
 .. code-block:: python
 
-    def my_module_scraper(block, block_vars, gallery_conf)
-        import mymodule
-        # We use a list to collect references to image names
-        image_names = list()
-        # The `image_path_iterator` is created by Sphinx-gallery, it will yield
-        # a path to a file name that adheres to Sphinx-gallery naming convention.
-        image_path_iterator = block_vars['image_path_iterator']
+   def my_module_scraper(block, block_vars, gallery_conf)
+       import mymodule
+       # We use a list to collect references to image names
+       image_names = list()
+       # The `image_path_iterator` is created by Sphinx-gallery, it will yield
+       # a path to a file name that adheres to Sphinx-gallery naming convention.
+       image_path_iterator = block_vars['image_path_iterator']
 
-        # Define a list of our already-created figure objects.
-        list_of_my_figures = mymodule.get_figures()
+       # Define a list of our already-created figure objects.
+       list_of_my_figures = mymodule.get_figures()
 
-        # Iterate through figure objects, save to disk, and keep track of paths.
-        for fig, image_path in zip(list_of_my_figures, image_path_iterator):
-            fig.save_png(image_path)
-            image_names.append(image_path)
+       # Iterate through figure objects, save to disk, and keep track of paths.
+       for fig, image_path in zip(list_of_my_figures, image_path_iterator):
+           fig.save_png(image_path)
+           image_names.append(image_path)
 
-        # Close all references to figures so they aren't used later.
-        mymodule.close('all')
+       # Close all references to figures so they aren't used later.
+       mymodule.close('all')
 
-        # Use the `figure_rst` helper function to generate the rST for this
-        # code block's figures. Alternatively you can define your own rST.
-        return figure_rst(image_names, gallery_conf['src_dir'])
+       # Use the `figure_rst` helper function to generate the rST for this
+       # code block's figures. Alternatively you can define your own rST.
+       return figure_rst(image_names, gallery_conf['src_dir'])
 
 This code would be defined either in your ``conf.py`` file, or as a module that
 you import into your ``conf.py`` file. The configuration needed to use this
@@ -138,7 +138,7 @@ disk*. In this case we won't *generate* any image files, we'll only generate
 the rST needed to embed them in the documentation.
 
 We'll use a callable class in this case, and assume it is defined within your
-package in a module called ``scraper``. Here is the scraper code::
+package in a module called ``scraper``. Here is the scraper code:
 
 .. code-block:: python
 
@@ -206,7 +206,7 @@ file name of the currently-executed Python script). These generally don't need
 to be used in order to perform whatever resetting behavior you want, but must
 be included in the function definition for compatibility reasons.
 
-For example, to reset matplotlib to always use the ``ggplot`` style, you could do::
+For example, to reset matplotlib to always use the ``ggplot`` style, you could do:
 
 
 .. code-block:: python
@@ -216,7 +216,7 @@ For example, to reset matplotlib to always use the ``ggplot`` style, you could d
        style.use('ggplot')
 
 Any custom functions can be defined (or imported) in ``conf.py`` and given to
-the ``reset_modules`` configuration key. For the function defined above::
+the ``reset_modules`` configuration key. For the function defined above:
 
 .. code-block:: python
 
