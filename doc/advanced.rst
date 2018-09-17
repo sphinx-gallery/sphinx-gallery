@@ -152,8 +152,8 @@ package in a module called ``scraper``. Here is the scraper code::
            self.seen = set()
 
        def __call__(self, block, block_vars, gallery_conf):
-           # Find all PNG files in the current directory. This is the
-           # directory in which the `.py` file currently being run exists.
+           # Find all PNG files in the directory of this example.
+           path_current_example = os.path.dirname(block_vars['src_file'])
            pngs = sorted(glob(os.path.join(os.getcwd(), '*.png'))
 
            # Iterate through PNGs, copy them to the sphinx-gallery output directory
