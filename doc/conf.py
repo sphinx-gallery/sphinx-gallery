@@ -134,7 +134,7 @@ else:
     # otherwise, readthedocs.org uses their theme by default, so no need to
     # specify it
     html_theme = 'default'
-    
+
 
 
 
@@ -319,14 +319,14 @@ try:
     # Run the mayavi examples and find the mayavi figures if mayavi is
     # installed
     from mayavi import mlab
-    image_scrapers = ('matplotlib', 'mayavi')
+    image_scrapers = ('matplotlib', 'mayavi', 'image_files')
     examples_dirs.append('../mayavi_examples')
     gallery_dirs.append('auto_mayavi_examples')
     # Do not pop up any mayavi windows while running the
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
 except Exception:  # can raise all sorts of errors
-    image_scrapers = ('matplotlib',)
+    image_scrapers = ('matplotlib', 'image_files')
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
