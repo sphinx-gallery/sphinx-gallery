@@ -11,6 +11,7 @@ Collect images that have been produced by code blocks.
 import os
 import sys
 import shutil
+import time
 from glob import glob
 from .utils import scale_image
 
@@ -131,34 +132,32 @@ def mayavi_scraper(block, block_vars, gallery_conf):
 class ImageFileScraper(object):
     def __init__(self):
         """Scrape image files that are already present in current folder."""
-        self.seen = set()
-        self.known_images = None
+        self.embedded_images = {}
+        self.start_time = time.time()
 
     def __call__(self, block, block_vars, gallery_conf):
         # Find all image files in the current directory.
         path_example = os.path.dirname(block_vars['src_file'])
         image_files = _find_images(path_example)
 
-        if self.known_images is None:
-            # Collect information about when pre-existing images were modified
-            self.known_images = {ifile: os.stat(ifile).st_mtime
-                                 for ifile in image_files}
-
         # Iterate through files, copy them to the SG output directory
         image_names = []
         image_path_iterator = block_vars['image_path_iterator']
-        for path_old in image_files:
+        for path_orig in image_files:
             # If we already know about this image and it hasn't been modified
             # since starting, then skip it
-            mod_time = os.stat(path_old).st_mtime
-            if (path_old in self.known_images and
-               mod_time <= self.known_images[path_old]):
+            mod_time = os.stat(path_orig).st_mtime
+            already_embedded = (path_orig in self.embedded_images and
+                                mod_time <= self.embedded_images[path_orig])
+            existed_before_build = mod_time <= self.start_time
+            if already_embedded or existed_before_build:
                 continue
+
             # Else, we assume the image has just been modified and is displayed
             path_new = next(image_path_iterator)
-            self.known_images[path_old] = mod_time
+            self.embedded_images[path_orig] = mod_time
             image_names.append(path_new)
-            shutil.copyfile(path_old, path_new)
+            shutil.copyfile(path_orig, path_new)
 
         if len(image_names) == 0:
             return ''
