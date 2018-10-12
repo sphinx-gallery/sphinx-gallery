@@ -413,6 +413,21 @@ def _get_memory_base(gallery_conf):
     return memory_base
 
 
+_captured_display_calls = []
+def _capture_display(*args, **kwargs):
+    _captured_display_calls.append((args, kwargs))
+
+import IPython.display
+import contextlib
+@contextlib.contextmanager
+def captured_display():
+    old_display = IPython.display.display
+    try:
+        IPython.display.display = _capture_display
+        yield
+    finally:
+         IPython.display.display = old_display
+
 def execute_code_block(compiler, block, example_globals,
                        script_vars, gallery_conf):
     """Executes the code block of the example file"""
@@ -441,9 +456,10 @@ def execute_code_block(compiler, block, example_globals,
         ast.increment_lineno(code_ast, lineno - 1)
         # don't use unicode_literals at the top of this file or you get
         # nasty errors here on Py2.7
-        _, mem = _memory_usage(_exec_once(
-            compiler(code_ast, src_file, 'exec'), example_globals),
-            gallery_conf)
+        with captured_display():
+            _, mem = _memory_usage(_exec_once(
+                compiler(code_ast, src_file, 'exec'), example_globals),
+                gallery_conf)
     except Exception:
         sys.stdout.flush()
         sys.stdout = orig_stdout
@@ -473,6 +489,23 @@ def execute_code_block(compiler, block, example_globals,
             stdout = ''
         images_rst = save_figures(block, script_vars, gallery_conf)
         code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
+        import ipywidgets.embed
+        # just get the first display call, and the first argument of args (which is expected to be a widget)
+        w = _captured_display_calls[0][0][0]
+        import json
+        html_snippet = ipywidgets.embed.widget_view_template.format(view_spec=json.dumps(w.get_view_spec()))
+        html_snippet = ipywidgets.embed.embed_snippet(views=[w])
+        # print(_captured_display_calls)
+        html = """
+ .. raw:: html
+
+{0}""".format(indent(html_snippet, u' ' * 4))
+        code_output += "\n\n" + html
+
+
+        import pdb
+        pdb.set_trace()
+
 
     finally:
         os.chdir(cwd)
