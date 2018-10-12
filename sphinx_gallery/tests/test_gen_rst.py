@@ -18,7 +18,7 @@ import pytest
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
-from sphinx_gallery.gen_gallery import generate_dir_rst, _complete_gallery_conf
+from sphinx_gallery.gen_gallery import generate_dir_rst
 from sphinx_gallery.utils import _TempDir
 
 CONTENT = [
@@ -173,13 +173,6 @@ def test_md5sums():
     finally:
         os.remove(f.name)
 
-
-@pytest.fixture
-def gallery_conf(tmpdir):
-    """Sets up a test sphinx-gallery configuration"""
-    gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False)
-    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=str(tmpdir))
-    return gallery_conf
 
 
 def test_fail_example(gallery_conf, log_collector):

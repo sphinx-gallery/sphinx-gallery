@@ -40,6 +40,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx_gallery.gen_gallery',
+    'jupyter_sphinx.embed_widgets', # this puts the require js on the page for the widgets
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -338,6 +339,7 @@ sphinx_gallery_conf = {
     'reference_url': {
         'sphinx_gallery': None,
         },
+    'executor': 'notebook',
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'image_scrapers': image_scrapers,

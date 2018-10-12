@@ -16,7 +16,7 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update -y conda
 
     # Force conda to think about other dependencies that can break
-    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler"
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler nbconvert nbformat"
     if [ "$INSTALL_MAYAVI" == "true" ]; then
         conda create -yn testenv $CONDA_PKGS mayavi
     else
