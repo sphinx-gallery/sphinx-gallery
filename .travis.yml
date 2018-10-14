@@ -52,6 +52,7 @@ before_install:
     fi
 
 install:
+  - sudo apt-get install pandoc
   - source continuous_integration/travis/install.sh
 
 # To test the mayavi environment follow the instructions at

@@ -39,6 +39,35 @@ example takes a long time to run), add the following to your ``Makefile``.
             @echo
             @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+
+Use Sphinx-Gallery with Jupyter Notebooks
+=========================================
+
+If you'd like to store your examples in Jupyter Notebook format, Sphinx-Gallery
+provides a helper function to convert ``.ipynb`` format into Python files formatted
+for Sphinx-Gallery. Here's how to use it:
+
+1. Put your Jupyter Notebooks in a folder in your documentation
+2. In your ``conf.py`` file, use the ``convert_ipynb_to_gallery`` function to
+   generate Sphinx-Gallery python. For example, this code snippet uses ``glob`` to
+   convert Jupyter Notebooks in the same folder:
+
+   .. code-block:: python
+      from glob import glob
+      from sphinx_gallery.notebooks import convert_ipynb_to_gallery
+
+      # Collect a list of all ipynb files
+      ipynb_files = glob('path/to/my/notebooks/*.ipynb')
+
+      # Loop through each file and convert to Sphinx-Gallery Python
+      for nb_file in ipynb_files:
+          convert_ipynb_to_gallery(nb_file)
+
+Now, Sphinx-Gallery will process these Python files for your gallery. We recommend
+adding these files to your ``.gitignore`` file in order to avoid duplicating
+content across your files.
+
+
 Know your Gallery files
 =======================
 

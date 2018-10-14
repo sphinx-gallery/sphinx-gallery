@@ -1,0 +1,18 @@
+# Note: pandoc must be installed along with pypandoc. 
+# You can do so with `import pypandoc; pypandoc.download_pandoc()`
+numpy
+scipy
+matplotlib
+seaborn
+sphinx_rtd_theme
+pillow
+sphinx
+pytest
+vtk
+traits
+traitsui
+pyface
+pyqt5
+mayavi
+memory_profiler
+pypandoc

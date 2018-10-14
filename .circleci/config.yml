@@ -24,7 +24,8 @@ jobs:
       - restore_cache:
           keys:
             - cache-pip
-      - run: pip install --user numpy scipy matplotlib seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface pyqt5 mayavi memory_profiler
+      - run: sudo apt-get install pandoc
+      - run: pip install --user -r doc/doc-requirements.txt
       - save_cache:
           key: cache-pip
           paths:
