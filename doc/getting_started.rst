@@ -49,7 +49,7 @@ cover next.
 Structure the examples folder
 -----------------------------
 
-In order for Sphinx-Gallery to build a gallery from your examples folder,
+In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
 * **The Gallery Header** (``README.txt``). A file called ``README.txt`` that
@@ -61,11 +61,15 @@ this folder must have the following things:
 
     Below is a gallery of examples
 
-* **Example Python Scripts** (e.g., ``plot_examples.py``). A collection of
-  Python scripts that will be executed when you build your documentation.
-  For information on how to structure these Python scripts with embedded rST,
-  see :ref:`python_script_syntax`.
-
+* **Example Python Scripts**: A collection of Python scripts that will be
+  processed when you build your HTML documentation.  For information on how
+  to structure these Python scripts with embedded rST, see
+  :ref:`python_script_syntax`. By default files prefixed with ``plot``
+  will be executed and their outputs captured to incorporate them in the
+  HTML version of the script. Files without that prefix will be only parsed
+  and presented in a rich literate programming fashion, without any output.
+  To change the default pattern for execution and capture see
+  :ref:`build_pattern`.
 
 .. note::
 
