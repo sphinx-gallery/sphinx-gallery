@@ -617,7 +617,7 @@ current directory could do, e.g.::
             self.seen = set()
 
         def __call__(self, block, block_vars, gallery_conf):
-            pngs = sorted(glob.glob(os.path.join(os.getcwd(), '*.png'))
+            pngs = sorted(glob.glob(os.path.join(os.getcwd(), '*.png')))
             image_names = list()
             image_path_iterator = block_vars['image_path_iterator']
             for png in pngs:
