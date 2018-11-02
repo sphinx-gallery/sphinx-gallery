@@ -1,7 +1,11 @@
+import json
+import os
+
 import nbformat
 from jupyter_client.kernelspec import get_kernel_spec
 from nbconvert.preprocessors.execute import executenb
-import json
+from nbconvert.exporters.exporter import Exporter
+
 from .gen_rst import indent, CODE_OUTPUT
 
 # the first cell of the notebook will output information on memory usage and the current time
@@ -113,7 +117,23 @@ def execute_script_notebook(script_blocks, script_vars, gallery_conf):
     nb['cells'].append(cell_post)
 
     # this will execute the notebook and populate the cells
-    executenb(nb, allow_errors=True)
+    from nbconvert.preprocessors import ExecutePreprocessor, CSSHTMLHeaderPreprocessor
+    from nbconvert.preprocessors.snapshot import SnapshotPreProcessor
+    nbconvert_snapshot_config = gallery_conf.get('nbconvert', {}).get('snapshot', {})
+
+    src_file = script_vars['src_file']
+    cwd = os.getcwd()
+    os.chdir(os.path.dirname(src_file))
+    try:
+        preprocessors = [ExecutePreprocessor(enabled=True, allow_errors=False), CSSHTMLHeaderPreprocessor(enabled=True), SnapshotPreProcessor(enabled=True, **nbconvert_snapshot_config)]
+        exporter = Exporter(preprocessors=preprocessors, default_preprocessors=[])
+        nb, resources = exporter.from_notebook_node(nb, {})
+    finally:
+        os.chdir(cwd)
+
+    cell_pre  = nb.cells[0]
+    cell_post = nb.cells[-1]
+
 
     memory_start = cell_pre.outputs[0]['data']['application/json']['memory_usage']
     time_start =  cell_pre.outputs[0]['data']['application/json']['time']
