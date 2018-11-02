@@ -65,7 +65,7 @@ def mime_renderer_jupyter_widgets(json_data):
     return mime_renderer_text_html(html_snippet)
 
 def mime_renderer_image_png(json_data):
-    html_snippet = '<img src="data:image/png;base64,%s"/>' % json_data
+    html_snippet = '<img src="data:image/png;base64,%s"/>\n' % json_data
     return mime_renderer_text_html(html_snippet)
 
 def mime_renderer_text_plain(json_data):
@@ -74,9 +74,10 @@ def mime_renderer_text_plain(json_data):
 
 def mime_renderer_text_html(json_data):
     html = """
- .. raw:: html
+.. raw:: html
 
- {0}""".format(indent(json_data, u' ' * 4))
+ {0}
+""".format(indent(json_data, u' ' * 4))
     return html
 
 from base64 import b64decode
