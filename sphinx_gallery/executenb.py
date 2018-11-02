@@ -164,7 +164,7 @@ def execute_script_notebook(script_blocks, script_vars, gallery_conf):
                     path = next(image_path_iterator)
                     print('save to', path)
                     with open(path, 'wb') as f:
-                        image_data = b64decode(output['data'][mime_type])
+                        image_data = b64decode(output['data']['image/png'])
                         f.write(image_data)
                 else:
                     pass  # here we could support other images, and make a screenshot of a widget or HTML/pdf even
@@ -186,6 +186,7 @@ def execute_script_notebook(script_blocks, script_vars, gallery_conf):
         assert len(info_cell.outputs) == 1
         memory_usage.append(info_cell.outputs[0]['data']['application/json']['memory_usage'])
 
+    cell_post.outputs = [output for output in cell_post.outputs if not ('name' in output and output.name == 'stderr')]
     if output_blocks:
         widget_state = cell_post.outputs[0]['data']['application/json']
         if widget_state:
