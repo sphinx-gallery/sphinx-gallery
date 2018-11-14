@@ -28,7 +28,10 @@ from sphinx_gallery.utils import _TempDir
 
 @pytest.fixture
 def conf_file(request):
-    env = request.node.get_marker('conf_file')
+    try:
+        env = request.node.get_closest_marker('conf_file')
+    except AttributeError:  # old pytest
+        env = request.node.get_marker('conf_file')
     kwargs = env.kwargs if env else {}
     result = {
         'content': "",
