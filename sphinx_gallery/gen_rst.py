@@ -162,7 +162,9 @@ CODE_OUTPUT = u""".. rst-class:: sphx-glr-script-out
 TIMING_CONTENT = """
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ({0: .0f} minutes {1: .3f} seconds)\n\n"""
+   **Total running time of the script:** ({0: .0f} minutes {1: .3f} seconds)
+
+"""
 
 SPHX_GLR_SIG = """\n
 .. only:: html

@@ -52,8 +52,8 @@ def test_run_sphinx(sphinx_app):
     assert op.isdir(generated_examples_dir)
 
 
-def test_embed_links(sphinx_app):
-    """Test that links are embedded properly in doc."""
+def test_embed_links_and_styles(sphinx_app):
+    """Test that links and styles are embedded properly in doc."""
     out_dir = sphinx_app.outdir
     examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(examples_dir)
@@ -75,6 +75,9 @@ def test_embed_links(sphinx_app):
         assert "memory usage" not in lines
     else:
         assert "memory usage" in lines
+    # CSS styles
+    assert 'class="sphx-glr-signature"' in lines
+    assert 'class="sphx-glr-timing"' in lines
 
 
 def test_backreferences(sphinx_app):

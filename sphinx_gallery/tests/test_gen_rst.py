@@ -302,7 +302,11 @@ def test_rst_example(gallery_conf):
     with codecs.open(test_file) as f:
         rst = f.read()
 
-        assert "lab/tree/notebooks/plot.ipy" in rst
+    assert "lab/tree/notebooks/plot.ipy" in rst
+
+    # CSS classes
+    assert "rst-class:: sphx-glr-signature" in rst
+    assert "rst-class:: sphx-glr-timing" in rst
 
 
 class TestLoggingTee:
