@@ -14,8 +14,10 @@ from scipy.signal import firwin
 import matplotlib
 import matplotlib.pyplot as plt
 
-t = np.arange(1001) / 1000.
-win = firwin(1001, 0.05)
+from local_module import N  # N = 1000
+
+t = np.arange(N) / float(N)
+win = firwin(N, 0.05)
 plt.plot(t, win)
 orig_dpi = 80. if matplotlib.__version__[0] < '2' else 100.
 assert plt.rcParams['figure.dpi'] == orig_dpi

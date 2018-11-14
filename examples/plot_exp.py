@@ -14,9 +14,13 @@ stacking multiple images.
 import numpy as np
 import matplotlib.pyplot as plt
 
+# You can use modules local to the example being run, here
+# we just use a trivial NumPy wrapper
+from local_module import N  # = 100
+
 
 def main():
-    x = np.linspace(-1, 2, 100)
+    x = np.linspace(-1, 2, N)
     y = np.exp(x)
 
     plt.figure()
