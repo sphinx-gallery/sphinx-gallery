@@ -589,22 +589,6 @@ figures. Enable this feature with the following configuration::
           extract Mayavi figures is **deprecated** in version 0.2+,
           and will be removed in a future release.
 
-Finally, you may also scrape the currently-active directory (the directory for
-the Python script currently being executed) for image files already saved to
-disk (e.g. if your Python example already saves the file to disk). Enable this
-feature with the following configuration::
-
-.. code-block:: python
-
-   sphinx_gallery_conf = {
-       ...
-       'image_scrapers': ('image_files'),
-   }
-
-.. warning:: If you wish use this feature with Matplotlib or Mayavi images, be
-   sure to close the figures after saving them to disk (with ``fig.close()``)
-   to avoid embedding them in the documentation twice.
-
 Custom scrapers
 ^^^^^^^^^^^^^^^
 
