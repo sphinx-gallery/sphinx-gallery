@@ -331,6 +331,19 @@ Computation times
 """
 
 
+def _sec_to_readable(t):
+    """Convert a number of seconds to a more readable representation."""
+    # This will only work for < 1 day execution time
+    # And we reserve 2 digits for minutes because presumably
+    # there aren't many > 99 minute scripts, but occasionally some
+    # > 9 minute ones
+    t = datetime(1, 1, 1) + timedelta(seconds=t)
+    t = '{0:02d}:{1:02d}.{2:03d}'.format(
+        t.hour * 60 + t.minute, t.second,
+        int(round(t.microsecond / 1000.)))
+    return t
+
+
 def write_computation_times(gallery_conf, target_dir, computation_times):
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
@@ -338,19 +351,14 @@ def write_computation_times(gallery_conf, target_dir, computation_times):
     with codecs.open(os.path.join(target_dir, 'sg_execution_times.rst'), 'w',
                      encoding='utf-8') as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
+        total_time = sum(ct[0] for ct in computation_times)
+        fid.write('**{0}** total execution time for **{1}** files:\n\n'
+                  .format(_sec_to_readable(total_time), target_dir_clean))
         # sort by time (descending) then alphabetical
         for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
             example_link = 'sphx_glr_%s_%s' % (target_dir_clean, ct[1])
-            # This will only work for < 1 day execution time
-            # And we reserve 2 digits for minutes because presumably
-            # there aren't many > 99 minute scripts, but occasionally some
-            # > 9 minute ones
-            t = datetime(1, 1, 1) + timedelta(seconds=ct[0])
-            t = '{0:02d}:{1:02d}.{2:03d}'.format(
-                t.hour * 60 + t.minute, t.second,
-                int(round(t.microsecond / 1000.)))
             fid.write(u'- **{0}**: :ref:`{2}` ({1})\n'.format(
-                t, ct[1], example_link))
+                _sec_to_readable(ct[0]), ct[1], example_link))
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
