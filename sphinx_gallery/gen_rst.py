@@ -407,10 +407,11 @@ def _get_memory_base(gallery_conf):
     else:
         # There might be a cleaner way to do this at some point
         from memory_profiler import memory_usage
+        sleep, timeout = (1, 2) if sys.platform == 'win32' else (0.5, 1)
         proc = subprocess.Popen(
             [sys.executable, '-c',
-             'import time, sys; time.sleep(0.5), sys.exit(1)'])
-        memory_base = max(memory_usage(proc, interval=1e-3, timeout=1.))
+             'import time, sys; time.sleep(%s), sys.exit(0)' % sleep])
+        memory_base = max(memory_usage(proc, interval=1e-3, timeout=timeout))
     return memory_base
 
 
