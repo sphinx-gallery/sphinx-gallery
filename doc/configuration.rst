@@ -72,6 +72,9 @@ the sphinx configuration dictionary::
 
 Keep in mind that both lists have to be of the same length.
 
+.. note:: If your examples take a long time to run, consider looking at the
+          :ref:`execution times <sphx_glr_auto_examples_sg_execution_times>`
+          file that is generated for each gallery dir.
 
 .. _build_pattern:
 

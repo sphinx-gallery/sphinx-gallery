@@ -13,6 +13,7 @@ when building the documentation.
 from __future__ import division, print_function, absolute_import
 import codecs
 import copy
+from datetime import timedelta, datetime
 import re
 import os
 
@@ -282,7 +283,8 @@ def generate_gallery_rst(app):
             examples_dir, gallery_dir, gallery_conf, seen_backrefs)
 
         computation_times += this_computation_times
-        write_computation_times(gallery_dir, this_computation_times)
+        write_computation_times(gallery_conf, gallery_dir,
+                                this_computation_times)
 
         # we create an index.rst with all examples
         with codecs.open(os.path.join(gallery_dir, 'index.rst'), 'w',
@@ -300,7 +302,8 @@ def generate_gallery_rst(app):
                                      seen_backrefs)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
-                write_computation_times(target_dir, this_computation_times)
+                write_computation_times(gallery_conf, target_dir,
+                                        this_computation_times)
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(gallery_dir)
@@ -318,13 +321,36 @@ def generate_gallery_rst(app):
                 logger.info("\t- %s: not run", fname)
 
 
-def write_computation_times(gallery_dir, computation_times):
-    with codecs.open(os.path.join(gallery_dir, 'sg_execution_times.rst'), 'w',
+SPHX_GLR_COMP_TIMES = """
+:orphan:
+
+.. _{0}:
+
+Computation times
+=================
+"""
+
+
+def write_computation_times(gallery_conf, target_dir, computation_times):
+    target_dir_clean = os.path.relpath(
+        target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
+    new_ref = 'sphx_glr_%s_sg_execution_times' % target_dir_clean
+    with codecs.open(os.path.join(target_dir, 'sg_execution_times.rst'), 'w',
                      encoding='utf-8') as fid:
-        fid.write(":orphan:\n\nComputation times\n-----------------\n\n")
+        fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
         # sort by time (descending) then alphabetical
         for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
-            fid.write(u'- {0}: {1:g} sec\n'.format(ct[1], ct[0]))
+            example_link = 'sphx_glr_%s_%s' % (target_dir_clean, ct[1])
+            # This will only work for < 1 day execution time
+            # And we reserve 2 digits for minutes because presumably
+            # there aren't many > 99 minute scripts, but occasionally some
+            # > 9 minute ones
+            t = datetime(1, 1, 1) + timedelta(seconds=ct[0])
+            t = '{0:02d}:{1:02d}.{2:03d}'.format(
+                t.hour * 60 + t.minute, t.second,
+                int(round(t.microsecond / 1000.)))
+            fid.write(u'- **{0}**: :ref:`{2}` ({1})\n'.format(
+                t, ct[1], example_link))
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
