@@ -4,7 +4,7 @@ Sphinx Gallery
 
 """
 import os
-__version__ = '0.2.0'
+__version__ = '0.3.dev0'
 
 
 def glr_path_static():
