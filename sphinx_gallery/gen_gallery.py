@@ -39,7 +39,7 @@ except NameError:
 
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
-    'ignore_pattern': '__init__\.py',
+    'ignore_pattern': r'__init__\.py',
     'examples_dirs': os.path.join('..', 'examples'),
     'subsection_order': None,
     'within_subsection_order': NumberOfCodeLinesSortKey,
@@ -435,7 +435,10 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
-    app.add_stylesheet('gallery.css')
+    try:
+        app.add_css_file('gallery.css')
+    except AttributeError:  # Sphinx < 1.8
+        app.add_stylesheet('gallery.css')
 
     # Sphinx < 1.6 calls it `_extensions`, >= 1.6 is `extensions`.
     extensions_attr = '_extensions' if hasattr(
