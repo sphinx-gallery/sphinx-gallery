@@ -14,6 +14,7 @@ Files that generate images should start with 'plot'.
 # tricky errors come up with exec(code_blocks, ...) calls
 from __future__ import division, print_function, absolute_import
 from time import time
+import copy
 import ast
 import codecs
 import hashlib
@@ -440,6 +441,9 @@ def execute_code_block(compiler, block, example_globals,
 
     my_stdout = MixedEncodingStringIO()
     os.chdir(os.path.dirname(src_file))
+
+    sys_path = copy.deepcopy(sys.path)
+    sys.path.append(os.getcwd())
     sys.stdout = LoggingTee(my_stdout, logger, src_file)
 
     try:
@@ -472,6 +476,7 @@ def execute_code_block(compiler, block, example_globals,
     else:
         sys.stdout.flush()
         sys.stdout = orig_stdout
+        sys.path = sys_path
         os.chdir(cwd)
 
         my_stdout = my_stdout.getvalue().strip().expandtabs()
@@ -484,6 +489,7 @@ def execute_code_block(compiler, block, example_globals,
 
     finally:
         os.chdir(cwd)
+        sys.path = sys_path
         sys.stdout = orig_stdout
     script_vars['memory_delta'].append(mem)
 
