@@ -65,7 +65,7 @@ and its thumbnail is ``sphx_glr_plot_gallery_version_thumb.png``
 Writing a custom image scraper
 ==============================
 
-.. note:: The API for custom scrapers is currently experimental.
+.. warning:: The API for custom scrapers is currently experimental.
 
 By default, Sphinx-gallery supports image scrapers for Matplotlib
 (:func:`sphinx_gallery.scrapers.matplotlib_scraper`) and Mayavi
