@@ -134,7 +134,7 @@ else:
     # otherwise, readthedocs.org uses their theme by default, so no need to
     # specify it
     html_theme = 'default'
-    
+
 
 
 
@@ -307,7 +307,7 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'matplotlib': ('https://matplotlib.org/', None),
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
-    'sklearn': ('http://scikit-learn.org/stable', None),
+    'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
 }
 
