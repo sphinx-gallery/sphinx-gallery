@@ -91,7 +91,7 @@ class FileSizeSortKey(_SortKey):
 
 
 class FileNameSortKey(_SortKey):
-    """Sort examples in src_dir by file size.
+    """Sort examples in src_dir by file name.
 
     Parameters
     ----------
