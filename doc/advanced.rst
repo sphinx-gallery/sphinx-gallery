@@ -164,7 +164,7 @@ package in a module called ``scraper``. Here is the scraper code:
                    seen |= set(png)
                    this_image_path = image_path_iterator.next()
                    image_names.append(this_image_path)
-                   shutil.copyfile(png, this_image_path)
+                   shutil.move(png, this_image_path)
            # Use the `figure_rst` helper function to generate rST for image files
            return figure_rst(image_names, gallery_conf['src_dir'])
 
