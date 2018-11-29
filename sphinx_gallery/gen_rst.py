@@ -618,7 +618,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     intro, _ = extract_intro_and_title(fname,
                                        get_docstring_and_rest(src_file)[0])
 
+    executable = executable_script(src_file, gallery_conf)
+
     if md5sum_is_current(target_file):
+        if executable:
+            gallery_conf['stale_examples'].append(target_file)
         return intro, 0
 
     image_dir = os.path.join(target_dir, 'images')
@@ -630,7 +634,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_path_template = os.path.join(image_dir, image_fname)
 
     script_vars = {
-        'execute_script': executable_script(src_file, gallery_conf),
+        'execute_script': executable,
         'image_path_iterator': ImagePathIterator(image_path_template),
         'src_file': src_file,
         'target_file': target_file}

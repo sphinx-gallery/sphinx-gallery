@@ -58,6 +58,7 @@ DEFAULT_GALLERY_CONF = {
     'abort_on_example_error': False,
     'failing_examples': {},
     'passing_examples': [],
+    'stale_examples': [],  # ones that did not need to be run due to md5sum
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
@@ -438,13 +439,18 @@ def summarize_failing_examples(app, exception):
     # standard message
     n_good = len(gallery_conf['passing_examples'])
     n_tot = len(gallery_conf['failing_examples']) + n_good
-    logger.info('\nSuccessfully executed %d out of %d example '
+    n_stale = len(gallery_conf['stale_examples'])
+    logger.info('\nSphinx-gallery successfully executed %d out of %d '
                 'file%s subselected by:\n\n'
                 '    gallery_conf["filename_pattern"] = %r\n'
                 '    gallery_conf["ignore_pattern"]   = %r\n'
+                '\nafter excluding %d file%s that had previously been run '
+                '(based on MD5).\n'
                 % (n_good, n_tot, 's' if n_tot != 1 else '',
                    gallery_conf['filename_pattern'],
-                   gallery_conf['ignore_pattern']),
+                   gallery_conf['ignore_pattern'],
+                   n_stale, 's' if n_stale != 1 else '',
+                   ),
                 color='brown')
 
     if fail_msgs:

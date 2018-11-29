@@ -7,29 +7,15 @@ Test the SG pipeline used with Sphinx
 from __future__ import division, absolute_import, print_function
 
 import codecs
-import contextlib
-from io import StringIO
-import logging
 import os
 import os.path as op
 import shutil
 
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
-from sphinx_gallery import sphinx_compatibility
+from sphinx_gallery.gen_rst import MixedEncodingStringIO
 
 import pytest
-
-
-@contextlib.contextmanager
-def catch_logging():
-    logger = logging.getLogger(
-        sphinx_compatibility.getLogger('sphinx-gallery').name)
-    log = StringIO()
-    h = logging.StreamHandler(log)
-    logger.addHandler(h)
-    yield log
-    logger.removeHandler(h)
 
 
 @pytest.fixture(scope='module')
@@ -51,13 +37,10 @@ def sphinx_app(tmpdir_factory):
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                     buildername='html')
+                     buildername='html', status=MixedEncodingStringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
-        with catch_logging() as log:
-            app.build(False, [])
-    # monkey patch to get the output
-    app.captured = log.getvalue()
+        app.build(False, [])
     return app
 
 
@@ -77,7 +60,9 @@ def test_run_sphinx(sphinx_app):
     assert 'auto_examples' in out_files
     generated_examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(generated_examples_dir)
-    assert 'Successfully executed 3 out of 4 example' in sphinx_app.captured
+    status = sphinx_app._status.getvalue()
+    assert 'executed 3 out of 4' in status
+    assert 'after excluding 0' in status
 
 
 def test_embed_links_and_styles(sphinx_app):
