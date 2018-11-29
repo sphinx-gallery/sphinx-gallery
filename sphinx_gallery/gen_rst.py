@@ -581,10 +581,11 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     sys.argv = argv_orig
 
     # Write md5 checksum if the example was meant to run (no-plot
-    # shall not cache md5sum) and has build correctly
+    # shall not cache md5sum) and has built correctly
     if script_vars['execute_script']:
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(script_vars['target_file']))
+        gallery_conf['passing_examples'].append(script_vars['src_file'])
 
     return output_blocks, time_elapsed
 

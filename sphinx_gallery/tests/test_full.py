@@ -7,14 +7,29 @@ Test the SG pipeline used with Sphinx
 from __future__ import division, absolute_import, print_function
 
 import codecs
+import contextlib
+from io import StringIO
+import logging
 import os
 import os.path as op
 import shutil
 
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
+from sphinx_gallery import sphinx_compatibility
 
 import pytest
+
+
+@contextlib.contextmanager
+def catch_logging():
+    logger = logging.getLogger(
+        sphinx_compatibility.getLogger('sphinx-gallery').name)
+    log = StringIO()
+    h = logging.StreamHandler(log)
+    logger.addHandler(h)
+    yield log
+    logger.removeHandler(h)
 
 
 @pytest.fixture(scope='module')
@@ -39,7 +54,10 @@ def sphinx_app(tmpdir_factory):
                      buildername='html')
         # need to build within the context manager
         # for automodule and backrefs to work
-        app.build(False, [])
+        with catch_logging() as log:
+            app.build(False, [])
+    # monkey patch to get the output
+    app.captured = log.getvalue()
     return app
 
 
@@ -52,12 +70,14 @@ def test_timings(sphinx_app):
 
 
 def test_run_sphinx(sphinx_app):
+    """Test basic outputs."""
     out_dir = sphinx_app.outdir
     out_files = os.listdir(out_dir)
     assert 'index.html' in out_files
     assert 'auto_examples' in out_files
     generated_examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(generated_examples_dir)
+    assert 'Successfully executed 3 out of 4 example' in sphinx_app.captured
 
 
 def test_embed_links_and_styles(sphinx_app):
