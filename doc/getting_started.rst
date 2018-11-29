@@ -49,6 +49,11 @@ cover next.
 Structure the examples folder
 -----------------------------
 
+.. note::
+
+   Sphinx-Gallery will only run files that begin with `plot_` by default. For
+   instructions on how to modify this behavior, see :ref:`build_pattern`.
+
 In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 

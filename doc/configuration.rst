@@ -81,6 +81,11 @@ Keep in mind that both lists have to be of the same length.
 Parsing and executing examples based on matching patterns
 =========================================================
 
+.. note::
+
+   Sphinx-Gallery will only run files that begin with `plot_` by default. See below for
+   instructions on how to modify this behavior.
+
 By default, Sphinx-Gallery will **parse and add** all files with a ``.py``
 extension to the gallery. To ignore some files and omit them from the gallery
 entirely, you can use a regular expression (the default is shown here)::
