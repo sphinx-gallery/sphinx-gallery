@@ -8,6 +8,7 @@ Test Sphinx-Gallery
 from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
+from contextlib import contextmanager
 import os
 import sys
 import re
@@ -71,15 +72,22 @@ class SphinxAppWrapper(object):
     def create_sphinx_app(self):
         # Avoid warnings about re-registration, see:
         # https://github.com/sphinx-doc/sphinx/issues/5038
+        with self.create_sphinx_app_context() as app:
+            pass
+        return app
+
+    @contextmanager
+    def create_sphinx_app_context(self):
         with docutils_namespace():
             app = Sphinx(self.srcdir, self.confdir, self.outdir,
                          self.doctreedir, self.buildername, **self.kwargs)
-        sphinx_compatibility._app = app
-        return app
+            sphinx_compatibility._app = app
+            yield app
 
     def build_sphinx_app(self, *args, **kwargs):
-        app = self.create_sphinx_app()
-        app.build(*args, **kwargs)
+        with self.create_sphinx_app_context() as app:
+            # building should be done in the same docutils_namespace context
+            app.build(*args, **kwargs)
         return app
 
 
