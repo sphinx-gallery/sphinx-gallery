@@ -186,7 +186,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
 
     # Ensure the first cell text is a string if we have it
     first_cell = gallery_conf.get("first_notebook_cell")
-    if not isinstance(first_cell, basestring):
+    if not isinstance(first_cell, (basestring, type(None))):
         raise ValueError("The 'first_notebook_cell' parameter must be type str"
                          "found type %s" % type(first_cell))
     gallery_conf['first_notebook_cell'] = first_cell

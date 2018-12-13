@@ -18,7 +18,7 @@ from sphinx_gallery.binder import gen_binder_url, check_binder_conf
 def test_binder():
     """Testing binder URL generation and checks."""
     file_path = 'blahblah/mydir/myfile.py'
-    conf_base = {'url': 'http://test1.com', 'org': 'org',
+    conf_base = {'binderhub_url': 'http://test1.com', 'org': 'org',
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
     conf_base = check_binder_conf(conf_base)
@@ -44,7 +44,7 @@ def test_binder():
     # URL must have http
     with pytest.raises(ValueError) as excinfo:
         conf2 = deepcopy(conf1)
-        conf2['url'] = 'test1.com'
+        conf2['binderhub_url'] = 'test1.com'
         url = check_binder_conf(conf2)
 
     excinfo.match(r'did not supply a valid url')

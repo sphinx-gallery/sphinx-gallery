@@ -310,7 +310,7 @@ sphinx_gallery_conf = {
     'backreferences_dir' : os.path.join('modules', 'gen'),
     'examples_dirs': 'src',
     'gallery_dirs': ['ex'],
-    'binder': {'url': 'http://test1.com', 'org': 'org',
+    'binder': {'binderhub_url': 'http://test1.com', 'org': 'org',
                'repo': 'repo', 'branch': 'branch',
                'notebooks_dir': 'ntbk_folder',
                'dependencies': 'requirements.txt'}

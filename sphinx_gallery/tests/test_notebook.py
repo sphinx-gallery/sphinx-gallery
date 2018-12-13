@@ -100,6 +100,12 @@ def test_jupyter_notebook(gallery_conf):
     example_nb = jupyter_notebook(blocks, gallery_conf)
     assert example_nb.get('cells')[0]['source'][0] == test_text
 
+    # Test empty first cell text
+    test_text = None
+    gallery_conf['first_notebook_cell'] = test_text
+    example_nb = jupyter_notebook(blocks, gallery_conf)
+    assert example_nb.get('cells')[0]['source'][0].startswith('\nThe Header Docstring')
+
 ###############################################################################
 # Notebook shell utility
 
