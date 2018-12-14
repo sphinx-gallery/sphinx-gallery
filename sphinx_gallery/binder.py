@@ -201,6 +201,13 @@ def check_binder_conf(binder_conf):
         raise ValueError('`binder_conf` must be a dictionary or None.')
     if len(binder_conf) == 0:
         return binder_conf
+    
+    if binder_conf.get('url') and not binder_conf.get('binderhub_url'):
+        logger.warning(
+            'Found old BinderHub URL keyword ("url"). Please update your '
+            'configuration to use the new keyword ("binderhub_url"). "url" will be '
+            'deprecated in sphinx-gallery v0.4')
+        binder_conf['binderhub_url'] = binderhub_conf.get('url')
 
     # Ensure all fields are populated
     req_values = ['binderhub_url', 'org', 'repo', 'branch', 'dependencies']
