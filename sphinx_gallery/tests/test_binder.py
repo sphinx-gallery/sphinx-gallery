@@ -12,7 +12,8 @@ from copy import deepcopy
 
 import pytest
 
-from sphinx_gallery.binder import gen_binder_url, check_binder_conf
+from sphinx_gallery.binder import (gen_binder_url, check_binder_conf,
+                                   _copy_binder_reqs)
 
 
 def test_binder():
@@ -22,7 +23,7 @@ def test_binder():
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
     conf_base = check_binder_conf(conf_base)
-    gallery_conf_base = {'gallery_dirs': ['mydir'], 'src_dir': 'blahblah'}
+    gallery_conf_base = {'gallery_dirs': 'mydir', 'src_dir': 'blahblah'}
 
     url = gen_binder_url(file_path, conf_base, gallery_conf_base)
     expected = ('http://test1.com/v2/gh/org/repo/'
@@ -74,6 +75,18 @@ def test_binder():
         conf6['dependencies'] = {'test': 'test'}
         url = check_binder_conf(conf6)
     excinfo.match(r"`dependencies` value should be a list of strings")
+
+    # Missing requirements file should raise an error
+    with pytest.raises(ValueError) as excinfo:
+        conf7 = deepcopy(conf1)
+        conf7['dependencies'] = ['requirements.txt', 'this_doesntexist.txt']
+        # Hack to test the case when dependencies point to a non-existing file
+        # w/o needing to do a full build
+        def apptmp():
+            pass
+        apptmp.srcdir = '/'
+        url = _copy_binder_reqs(apptmp, conf7)
+    excinfo.match(r"Couldn't find the Binder requirements file")
 
     # Check returns the correct object
     conf4 = check_binder_conf({})

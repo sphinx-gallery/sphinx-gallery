@@ -138,14 +138,17 @@ def copy_binder_files(app, exception):
 def _copy_binder_reqs(app, binder_conf):
     """Copy Binder requirements files to a "binder" folder in the docs."""
     path_reqs = binder_conf.get('dependencies')
-
-    binder_folder = os.path.join(app.outdir, 'binder')
-    if not os.path.isdir(binder_folder):
-        os.makedirs(binder_folder)
     for path in path_reqs:
         if not os.path.exists(os.path.join(app.srcdir, path)):
             raise ValueError(("Couldn't find the Binder requirements file: {}, "
                               "did you specify the path correctly?".format(path)))
+
+    binder_folder = os.path.join(app.outdir, 'binder')
+    if not os.path.isdir(binder_folder):
+        os.makedirs(binder_folder)
+
+    # Copy over the requirements to the output directory
+    for path in path_reqs:
         shutil.copy(os.path.join(app.srcdir, path), binder_folder)
 
 
