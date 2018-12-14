@@ -519,7 +519,7 @@ def executable_script(src_file, gallery_conf):
     return execute
 
 
-def execute_script(script_blocks, script_vars, gallery_conf):
+def execute_script_classic(script_blocks, script_vars, gallery_conf):
     """Execute and capture output from python script already in block structure
 
     Parameters
@@ -588,6 +588,12 @@ def execute_script(script_blocks, script_vars, gallery_conf):
 
     return output_blocks, time_elapsed
 
+_executors = {'classic': execute_script_classic}
+try:
+    from .executenb import execute_script_notebook
+    _executors['notebook'] = execute_script_notebook
+except:
+    pass
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """Generate the rst file for a given example.
@@ -635,6 +641,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         'target_file': target_file}
 
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
+    # executor can be a callable, or 'classic'/'notebook'
+    execute_script = gallery_conf.get('executor', execute_script_classic)
+    if not callable(execute_script):
+        execute_script = _executors[execute_script]
     output_blocks, time_elapsed = execute_script(script_blocks,
                                                  script_vars,
                                                  gallery_conf)

@@ -3,3 +3,5 @@ matplotlib
 pillow
 sphinx
 pytest
+nbconvert
+nbformat

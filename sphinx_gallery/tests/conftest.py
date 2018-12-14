@@ -13,6 +13,8 @@ import sphinx_gallery.docs_resolv
 import sphinx_gallery.gen_gallery
 import sphinx_gallery.gen_rst
 from sphinx_gallery import sphinx_compatibility
+from sphinx_gallery.gen_gallery import _complete_gallery_conf
+from sphinx_gallery.utils import _TempDir
 
 
 Params = collections.namedtuple('Params', 'args kwargs')
@@ -69,6 +71,13 @@ def log_collector():
         sphinx_gallery.gen_gallery.logger = orig_gg_logger
         sphinx_gallery.gen_rst.logger = orig_gr_logger
 
+
+@pytest.fixture
+def gallery_conf(tmpdir):
+    """Sets up a test sphinx-gallery configuration"""
+    gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False)
+    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=str(tmpdir))
+    return gallery_conf
 
 @pytest.fixture
 def unicode_sample(tmpdir):
