@@ -5,9 +5,7 @@
 Testing the binder badge functionality
 """
 from __future__ import division, absolute_import, print_function
-import os
-import tempfile
-import sys
+
 from copy import deepcopy
 
 import pytest
@@ -43,12 +41,10 @@ def test_binder():
     conf1.pop('filepath_prefix')
 
     # URL must have http
-    with pytest.raises(ValueError) as excinfo:
-        conf2 = deepcopy(conf1)
-        conf2['binderhub_url'] = 'test1.com'
+    conf2 = deepcopy(conf1)
+    conf2['binderhub_url'] = 'test1.com'
+    with pytest.raises(ValueError, match='did not supply a valid url'):
         url = check_binder_conf(conf2)
-
-    excinfo.match(r'did not supply a valid url')
 
     # Assert missing params
     for key in conf1.keys():
@@ -56,37 +52,37 @@ def test_binder():
             continue
         conf3 = deepcopy(conf1)
         conf3.pop(key)
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValueError, match='binder_conf is missing values'):
             url = check_binder_conf(conf3)
-        excinfo.match(r"binder_conf is missing values for")
 
     # Dependencies file
     dependency_file_tests = ['requirements_not.txt', 'doc-requirements.txt']
     for ifile in dependency_file_tests:
-        with pytest.raises(ValueError) as excinfo:
-            conf3 = deepcopy(conf1)
-            conf3['dependencies'] = ifile
+        conf3 = deepcopy(conf1)
+        conf3['dependencies'] = ifile
+        with pytest.raises(ValueError,
+                           match=r"Did not find one of `requirements.txt` "
+                           "or `environment.yml`"):
             url = check_binder_conf(conf3)
-        excinfo.match(r"Did not find one of `requirements.txt` "
-                      "or `environment.yml`")
 
-    with pytest.raises(ValueError) as excinfo:
-        conf6 = deepcopy(conf1)
-        conf6['dependencies'] = {'test': 'test'}
+    conf6 = deepcopy(conf1)
+    conf6['dependencies'] = {'test': 'test'}
+    with pytest.raises(ValueError, match='`dependencies` value should be a '
+                       'list of strings'):
         url = check_binder_conf(conf6)
-    excinfo.match(r"`dependencies` value should be a list of strings")
 
     # Missing requirements file should raise an error
-    with pytest.raises(ValueError) as excinfo:
-        conf7 = deepcopy(conf1)
-        conf7['dependencies'] = ['requirements.txt', 'this_doesntexist.txt']
-        # Hack to test the case when dependencies point to a non-existing file
-        # w/o needing to do a full build
-        def apptmp():
-            pass
-        apptmp.srcdir = '/'
+    conf7 = deepcopy(conf1)
+    conf7['dependencies'] = ['requirements.txt', 'this_doesntexist.txt']
+    # Hack to test the case when dependencies point to a non-existing file
+    # w/o needing to do a full build
+
+    def apptmp():
+        pass
+    apptmp.srcdir = '/'
+    with pytest.raises(ValueError, match="Couldn't find the Binder "
+                       "requirements file"):
         url = _copy_binder_reqs(apptmp, conf7)
-    excinfo.match(r"Couldn't find the Binder requirements file")
 
     # Check returns the correct object
     conf4 = check_binder_conf({})
@@ -95,11 +91,10 @@ def test_binder():
         assert iconf == {}
 
     # Assert extra unkonwn params
-    with pytest.raises(ValueError) as excinfo:
-        conf7 = deepcopy(conf1)
-        conf7['foo'] = 'blah'
+    conf7 = deepcopy(conf1)
+    conf7['foo'] = 'blah'
+    with pytest.raises(ValueError, match='Unknown Binder config key'):
         url = check_binder_conf(conf7)
-    excinfo.match(r"Unknown Binder config key")
 
     # Assert using lab correctly changes URL
     conf_lab = deepcopy(conf_base)
