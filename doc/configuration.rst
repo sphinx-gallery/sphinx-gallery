@@ -517,30 +517,30 @@ If a Sphinx-Gallery configuration for Binder is discovered, the following extra 
 
 Below is a more complete explanation of each field.
 
-**org** (type: string)
+org (type: string)
   The GitHub organization where your documentation is stored.
-**repo** (type: string)
+repo (type: string)
   The GitHub repository where your documentation is stored.
-**ref** (type: string)
+ref (type: string)
   A reference to the version of your repository where your documentation exists.
   For example, if your built documentation is stored on a ``gh-pages`` branch, then this field
   should be set to ``gh-pages``.
-**binderhub_url** (type: string)
+binderhub_url (type: string)
   The full URL to a BinderHub deployment where you want your examples to run. One
   public BinderHub deployment is at ``https://mybinder.org``, though if you (and your users) have access to
   another, this can be configured with this field.
-**dependencies** (type: list)
+dependencies (type: list)
   A list of paths (relative to ``conf.py``) to dependency files that Binder uses to infer the environment needed
   to run your examples. For example, a ``requirements.txt`` file. These will be copied into a folder
   called ``binder/`` in your built documentation folder. For a list of all the possible dependency files
   you can use, see `the Binder configuration documentation <https://mybinder.readthedocs.io/en/latest/config_files.html#config-files>`_.
-**filepath_prefix** (type: string | None, default: ``None``)
+filepath_prefix (type: string | None, default: ``None``)
   A prefix to append to the filepath in the Binder links. You should use this if you will store your built
   documentation in a sub-folder of a repository, instead of in the root.
-**notebooks_dir** (type: string, default: ``notebooks``)
+notebooks_dir (type: string, default: ``notebooks``)
   The name of a folder where the built Jupyter notebooks will be copied. This ensures that all the notebooks are
   in one place (though they retain their folder hierarchy) in case you'd like users to browse multiple notebook examples in one session.
-**use_jupyter_lab** (type: bool, default: ``False``)
+use_jupyter_lab (type: bool, default: ``False``)
   Whether the default interface activated by the Binder link will be for
   Jupyter Lab or the classic Jupyter Notebook interface.
 
