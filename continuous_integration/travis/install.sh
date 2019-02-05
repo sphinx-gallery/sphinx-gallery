@@ -42,6 +42,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
+    pip install --upgrade pip setuptools wheel pyopenssl
     pip install -U requests[security]  # ensure SSL certificate works
     pip install "tornado<5"
     # The pipe just gets rid of the progress bars
