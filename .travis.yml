@@ -1,12 +1,10 @@
 language: python
-sudo: false
-addons:
-  apt:
-    packages:
-    - xvfb # For mayavi headless
 
-virtualenv:
-        system_site_packages: true
+dist: xenial
+sudo: false
+
+services:
+  - xvfb # For mayavi headless
 
 matrix:
   include:
@@ -37,8 +35,15 @@ matrix:
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
     - os: linux
+      env: DISTRIB="conda" PYTHON_VERSION="3.7" LOCALE=C
+    - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" SPHINX_VERSION="dev"
       if: type = cron
+    - python: "nightly"
+      env: PYTHON_VERSION="nightly"
+      os: linux
+  allow_failures:
+    - python: "nightly"
 
 before_install:
   # Make sure that things work even if the locale is set to C (which
@@ -53,13 +58,6 @@ before_install:
 
 install:
   - source continuous_integration/travis/install.sh
-
-# To test the mayavi environment follow the instructions at
-# https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
 
 script:
   - bash continuous_integration/travis/test_script.sh
