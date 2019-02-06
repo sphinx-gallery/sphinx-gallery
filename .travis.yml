@@ -69,5 +69,4 @@ script:
   - bash continuous_integration/travis/test_script.sh
 
 after_success:
-  - pip install codecov
-  - codecov
+  - bash continuous_integration/travis/after_success.sh 

@@ -36,6 +36,8 @@ elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
     pip install numpy scipy
     pip install -r requirements.txt | cat
+    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
+
 elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by
     # Travis because it contains numpy and we want to use numpy
