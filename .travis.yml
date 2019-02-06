@@ -42,6 +42,12 @@ matrix:
     - python: "nightly"
       env: PYTHON_VERSION="nightly"
       os: linux
+      addons:
+        apt:
+          packages:
+            libblas-dev
+            liblapack-dev
+            gfortran
   allow_failures:
     - python: "nightly"
 
