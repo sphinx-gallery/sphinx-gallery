@@ -34,6 +34,7 @@ if [ "$DISTRIB" == "conda" ]; then
     fi
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
+    pip install numpy scipy
     pip install -r requirements.txt | cat
 elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by
