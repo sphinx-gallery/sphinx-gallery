@@ -64,8 +64,8 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
     path_link = path_link.replace(os.path.sep, '/')
 
     # Create the URL
-    binder_url = binder_conf['url']
-    binder_url = '/'.join([binder_conf['url'],
+    binder_url = binder_conf['binderhub_url']
+    binder_url = '/'.join([binder_conf['binderhub_url'],
                            'v2', 'gh',
                            binder_conf['org'],
                            binder_conf['repo'],
@@ -88,7 +88,7 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     binder_conf: dict | None
         If a dictionary it must have the following keys:
 
-        'url': The URL of the BinderHub instance that's running a Binder
+        'binderhub_url': The URL of the BinderHub instance that's running a Binder
             service.
         'org': The GitHub organization to which the documentation will be
             pushed.
@@ -110,7 +110,7 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
-        "    .. image:: https://static.mybinder.org/badge.svg\n"
+        "    .. image:: https://mybinder.org/badge_logo.svg\n"
         "      :target: {}\n"
         "      :width: 150 px\n").format(binder_url)
     return rst
@@ -138,10 +138,16 @@ def copy_binder_files(app, exception):
 def _copy_binder_reqs(app, binder_conf):
     """Copy Binder requirements files to a "binder" folder in the docs."""
     path_reqs = binder_conf.get('dependencies')
+    for path in path_reqs:
+        if not os.path.exists(os.path.join(app.srcdir, path)):
+            raise ValueError(("Couldn't find the Binder requirements file: {}, "
+                              "did you specify the path correctly?".format(path)))
 
     binder_folder = os.path.join(app.outdir, 'binder')
     if not os.path.isdir(binder_folder):
         os.makedirs(binder_folder)
+
+    # Copy over the requirements to the output directory
     for path in path_reqs:
         shutil.copy(os.path.join(app.srcdir, path), binder_folder)
 
@@ -178,6 +184,9 @@ def _copy_binder_notebooks(app):
     shutil.rmtree(notebooks_dir, ignore_errors=True)
     os.makedirs(notebooks_dir)
 
+    if not isinstance(gallery_dirs, (list, tuple)):
+        gallery_dirs = [gallery_dirs]
+
     iterator = sphinx_compatibility.status_iterator(
         gallery_dirs, 'copying binder notebooks...', length=len(gallery_dirs))
 
@@ -195,9 +204,16 @@ def check_binder_conf(binder_conf):
         raise ValueError('`binder_conf` must be a dictionary or None.')
     if len(binder_conf) == 0:
         return binder_conf
+    
+    if binder_conf.get('url') and not binder_conf.get('binderhub_url'):
+        logger.warning(
+            'Found old BinderHub URL keyword ("url"). Please update your '
+            'configuration to use the new keyword ("binderhub_url"). "url" will be '
+            'deprecated in sphinx-gallery v0.4')
+        binder_conf['binderhub_url'] = binderhub_conf.get('url')
 
     # Ensure all fields are populated
-    req_values = ['url', 'org', 'repo', 'branch', 'dependencies']
+    req_values = ['binderhub_url', 'org', 'repo', 'branch', 'dependencies']
     optional_values = ['filepath_prefix', 'notebooks_dir', 'use_jupyter_lab']
     missing_values = []
     for val in req_values:
@@ -213,10 +229,10 @@ def check_binder_conf(binder_conf):
             raise ValueError("Unknown Binder config key: {}".format(key))
 
     # Ensure we have http in the URL
-    if not any(binder_conf['url'].startswith(ii)
+    if not any(binder_conf['binderhub_url'].startswith(ii)
                for ii in ['http://', 'https://']):
         raise ValueError('did not supply a valid url, '
-                         'gave url: {}'.format(binder_conf['url']))
+                         'gave binderhub_url: {}'.format(binder_conf['binderhub_url']))
 
     # Ensure we have at least one dependency file
     # Need at least one of these two files

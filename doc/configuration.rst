@@ -428,6 +428,8 @@ Which is achieved by the following configuration::
                           "# It can be customized to whatever you like\n"
                           "%matplotlib inline")
 
+If the value of ``first_notebook_cell`` is set to ``None``, then no extra first
+cell will be added to the notebook.
 
 .. _disable_all_scripts_download:
 
@@ -493,35 +495,59 @@ dictionary following the pattern below::
          # Required keys
          'org': '<github_org>',
          'repo': '<github_repo>',
-         'url': '<binder_url>',  # Any URL of a binder server. Must be full URL (e.g. https://mybinder.org).
-         'branch': '<branch-for-documentation>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
+         'ref': '<ref-for-documentation>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
+         'binderhub_url': '<binder_url>',  # Any URL of a binderhub deployment. Must be full URL (e.g. https://mybinder.org).
          'dependencies': '<list_of_paths_to_dependency_files>',
          # Optional keys
-         'filepath_prefix': '<prefix>' # A prefix to append to any filepaths in Binder links.
-         'notebooks_dir': '<notebooks-directory-name>' # Jupyter notebooks for Binder will be copied to this directory (relative to site root).
+         'filepath_prefix': '<prefix>' # A prefix to prepend to any filepaths in Binder links.
+         'notebooks_dir': '<notebooks-directory-name>' # Jupyter notebooks for Binder will be copied to this directory (relative to built documentation root).
          'use_jupyter_lab': <bool> # Whether Binder links should start Jupyter Lab instead of the Jupyter Notebook interface.
          }
     }
 
-Note that ``branch:`` should be the branch on which your documentation is hosted.
-If you host your documentation on GitHub, this is usually ``gh-pages`` or ``master``.
+If a Sphinx-Gallery configuration for Binder is discovered, the following extra things will happen:
+
+1. The dependency files specified in ``dependencies`` will be copied to a ``binder/`` folder in your built documentation.
+2. The built Jupyter Notebooks from the documentation will be copied to a folder called ``<notebooks_dir/>`` at the root of
+   your built documentation (they will follow the same folder hierarchy within the notebooks directory folder.
+2. The rST output of each Sphinx-Gallery example will now have a ``launch binder`` button in it.
+4. That button will point to a binder link with the following structure::
+
+       <binderhub_url>/v2/gh/<org>/<repo>/<ref>?filepath=<filepath_prefix>/<notebooks_dir>/path/to/notebook.ipynb
+
+Below is a more complete explanation of each field.
+
+org (type: string)
+  The GitHub organization where your documentation is stored.
+repo (type: string)
+  The GitHub repository where your documentation is stored.
+ref (type: string)
+  A reference to the version of your repository where your documentation exists.
+  For example, if your built documentation is stored on a ``gh-pages`` branch, then this field
+  should be set to ``gh-pages``.
+binderhub_url (type: string)
+  The full URL to a BinderHub deployment where you want your examples to run. One
+  public BinderHub deployment is at ``https://mybinder.org``, though if you (and your users) have access to
+  another, this can be configured with this field.
+dependencies (type: list)
+  A list of paths (relative to ``conf.py``) to dependency files that Binder uses to infer the environment needed
+  to run your examples. For example, a ``requirements.txt`` file. These will be copied into a folder
+  called ``binder/`` in your built documentation folder. For a list of all the possible dependency files
+  you can use, see `the Binder configuration documentation <https://mybinder.readthedocs.io/en/latest/config_files.html#config-files>`_.
+filepath_prefix (type: string | None, default: ``None``)
+  A prefix to append to the filepath in the Binder links. You should use this if you will store your built
+  documentation in a sub-folder of a repository, instead of in the root.
+notebooks_dir (type: string, default: ``notebooks``)
+  The name of a folder where the built Jupyter notebooks will be copied. This ensures that all the notebooks are
+  in one place (though they retain their folder hierarchy) in case you'd like users to browse multiple notebook examples in one session.
+use_jupyter_lab (type: bool, default: ``False``)
+  Whether the default interface activated by the Binder link will be for
+  Jupyter Lab or the classic Jupyter Notebook interface.
 
 Each generated Jupyter Notebook will be copied to the folder
 specified in ``notebooks_dir``. This will be a subfolder of the sphinx output
 directory and included with your site build.
 Binder links will point to these notebooks.
-
-.. important::
-
-   ``dependencies`` should be a list of paths to Binder configuration files that
-   define the environment needed to run the examples. For example, a
-   ``requirements.txt`` file. These will be copied to
-   the documentation branch specified in ``branch:``. When a user clicks your
-   Binder link, these files will be used to create the environment.
-   For more information on what files you can use, see `preparing your
-   repository <https://mybinder.readthedocs.io/en/latest/using.html#preparing-a-repository-for-binder>`_
-   in the `Binder documentation <https://docs.mybinder.org>`__ for more information on
-   what build files are supported.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the `public Binder server <http://mybinder.org>`_.

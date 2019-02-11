@@ -18,6 +18,10 @@ Developer changes
   document which includes the prose, code & output of the example which is
   the directly saved to file including the annotations of binder badges,
   download buttons and timing statistics.
+* Binder link config changes. The configuration value for the BinderHub has
+  been changed from ``url`` to ``binderhub_url`` in order to make it more
+  explicit. The old configuration key (``url``) will be deprecated in
+  version v0.4.0)
 
 
 v0.2.0

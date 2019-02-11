@@ -71,3 +71,6 @@ target/
 
 # VisualStudioCode
 .history
+
+# Jupyter notebooks
+.ipynb_checkpoints

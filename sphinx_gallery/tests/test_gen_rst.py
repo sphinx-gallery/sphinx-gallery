@@ -288,7 +288,7 @@ def test_rst_example(gallery_conf):
 
     gallery_conf.update(binder={'org': 'sphinx-gallery',
                                 'repo': 'sphinx-gallery.github.io',
-                                'url': 'https://mybinder.org',
+                                'binderhub_url': 'https://mybinder.org',
                                 'branch': 'master',
                                 'dependencies': './binder/requirements.txt',
                                 'notebooks_dir': 'notebooks',
