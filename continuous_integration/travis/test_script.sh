@@ -8,5 +8,7 @@ set -e
 
 pytest sphinx_gallery
 cd doc
-make html-noplot
-make html -j 2
+if [ "$DISTRIB" != "minimal" ]; then
+    make html-noplot
+    make html -j 2
+fi
