@@ -16,15 +16,6 @@ from sphinx.util.docutils import docutils_namespace
 
 import pytest
 
-try:
-    import scipy  # noqa, analysis:ignore
-except Exception:
-    missing_scipy = True
-else:
-    missing_scipy = False
-requires_scipy = pytest.mark.skipif(missing_scipy, reason='Requires SciPy')
-
-
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory):
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
@@ -51,7 +42,6 @@ def sphinx_app(tmpdir_factory):
     return app
 
 
-@requires_scipy
 def test_timings(sphinx_app):
     """Test that a timings page is created."""
     out_dir = sphinx_app.outdir
@@ -60,7 +50,6 @@ def test_timings(sphinx_app):
     assert op.isfile(timings_fname)
 
 
-@requires_scipy
 def test_run_sphinx(sphinx_app):
     out_dir = sphinx_app.outdir
     out_files = os.listdir(out_dir)
@@ -70,20 +59,19 @@ def test_run_sphinx(sphinx_app):
     assert op.isdir(generated_examples_dir)
 
 
-@requires_scipy
 def test_embed_links_and_styles(sphinx_app):
     """Test that links and styles are embedded properly in doc."""
     out_dir = sphinx_app.outdir
     examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(examples_dir)
     example_files = os.listdir(examples_dir)
-    assert 'plot_numpy_scipy.html' in example_files
-    example_file = op.join(examples_dir, 'plot_numpy_scipy.html')
+    assert 'plot_numpy_matplotlib.html' in example_files
+    example_file = op.join(examples_dir, 'plot_numpy_matplotlib.html')
     with codecs.open(example_file, 'r', 'utf-8') as fid:
         lines = fid.read()
     # ensure we've linked properly
-    assert '#module-scipy.signal' in lines
-    assert 'scipy.signal.firwin.html' in lines
+    assert '#module-matplotlib.colors' in lines
+    assert 'matplotlib.colors.to_rgb' in lines
     assert '#module-numpy' in lines
     assert 'numpy.arange.html' in lines
     assert '#module-matplotlib.pyplot' in lines
@@ -99,7 +87,6 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'class="sphx-glr-timing"' in lines
 
 
-@requires_scipy
 def test_backreferences(sphinx_app):
     """Test backreferences."""
     out_dir = sphinx_app.outdir
@@ -109,7 +96,7 @@ def test_backreferences(sphinx_app):
     assert 'ExplicitOrder' in lines  # in API doc
     assert 'plot_second_future_imports.html' in lines  # backref via code use
     assert 'FileNameSortKey' in lines  # in API doc
-    assert 'plot_numpy_scipy.html' in lines  # backref via :class: in docstring
+    assert 'plot_numpy_matplotlib.html' in lines  # backref via :class: in str
     mod_file = op.join(out_dir, 'gen_modules',
                        'sphinx_gallery.backreferences.html')
     with codecs.open(mod_file, 'r', 'utf-8') as fid:

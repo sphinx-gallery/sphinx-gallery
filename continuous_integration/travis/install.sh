@@ -35,7 +35,7 @@ if [ "$DISTRIB" == "conda" ]; then
     python setup.py install
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
-    pip install . numpy scipy seaborn sphinx==1.5.5 "six>=1.10.0" pytest-cov sphinx_rtd_theme
+    pip install . numpy sphinx==1.5.5 "six>=1.10.0" pytest-cov
 elif [ "$DISTRIB" == "minimal" ]; then
     pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
