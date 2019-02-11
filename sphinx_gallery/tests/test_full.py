@@ -16,6 +16,14 @@ from sphinx.util.docutils import docutils_namespace
 
 import pytest
 
+try:
+    import scipy  # noqa, analysis:ignore
+except Exception:
+    missing_scipy = True
+else:
+    missing_scipy = False
+requires_scipy = pytest.mark.skipif(missing_scipy, reason='Requires SciPy')
+
 
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory):
@@ -43,6 +51,7 @@ def sphinx_app(tmpdir_factory):
     return app
 
 
+@requires_scipy
 def test_timings(sphinx_app):
     """Test that a timings page is created."""
     out_dir = sphinx_app.outdir
@@ -51,6 +60,7 @@ def test_timings(sphinx_app):
     assert op.isfile(timings_fname)
 
 
+@requires_scipy
 def test_run_sphinx(sphinx_app):
     out_dir = sphinx_app.outdir
     out_files = os.listdir(out_dir)
@@ -60,6 +70,7 @@ def test_run_sphinx(sphinx_app):
     assert op.isdir(generated_examples_dir)
 
 
+@requires_scipy
 def test_embed_links_and_styles(sphinx_app):
     """Test that links and styles are embedded properly in doc."""
     out_dir = sphinx_app.outdir
@@ -88,6 +99,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'class="sphx-glr-timing"' in lines
 
 
+@requires_scipy
 def test_backreferences(sphinx_app):
     """Test backreferences."""
     out_dir = sphinx_app.outdir

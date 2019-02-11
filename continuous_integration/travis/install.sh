@@ -32,12 +32,12 @@ if [ "$DISTRIB" == "conda" ]; then
     else
         pip install "https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
+    python setup.py install
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
-    pip install numpy scipy
-    pip install -r requirements.txt | cat
-    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
-
+    pip install . numpy scipy seaborn sphinx==1.5.5 "six>=1.10.0" pytest-cov sphinx_rtd_theme
+elif [ "$DISTRIB" == "minimal" ]; then
+    pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by
     # Travis because it contains numpy and we want to use numpy
@@ -52,11 +52,8 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install -r requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)
     pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
+    python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
 fi
-
-# Make sure things are not totally broken
-python -c "import numpy; from scipy import signal, linalg"
-python setup.py install
