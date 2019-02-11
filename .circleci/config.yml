@@ -24,7 +24,8 @@ jobs:
       - restore_cache:
           keys:
             - cache-pip
-      - run: pip install --user numpy scipy matplotlib seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface pyqt5 mayavi memory_profiler
+      # PyQt5 5.12 causes problems with libxcb
+      - run: pip install --user numpy scipy matplotlib "pyqt5<5.12" seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface mayavi memory_profiler
       - save_cache:
           key: cache-pip
           paths:
