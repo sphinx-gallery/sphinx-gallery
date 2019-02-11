@@ -16,6 +16,7 @@ from sphinx.util.docutils import docutils_namespace
 
 import pytest
 
+
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory):
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
@@ -71,7 +72,7 @@ def test_embed_links_and_styles(sphinx_app):
         lines = fid.read()
     # ensure we've linked properly
     assert '#module-matplotlib.colors' in lines
-    assert 'matplotlib.colors.to_rgb' in lines
+    assert 'matplotlib.colors.is_color_like' in lines
     assert '#module-numpy' in lines
     assert 'numpy.arange.html' in lines
     assert '#module-matplotlib.pyplot' in lines

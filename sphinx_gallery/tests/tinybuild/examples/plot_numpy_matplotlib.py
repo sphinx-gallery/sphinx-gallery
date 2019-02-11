@@ -10,7 +10,7 @@ FYI this gallery uses :obj:`sphinx_gallery.sorting.FileNameSortKey`.
 """
 
 import numpy as np
-from matplotlib.colors import to_rgb
+from matplotlib.colors import is_color_like
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -18,7 +18,8 @@ from local_module import N  # N = 1000
 
 t = np.arange(N) / float(N)
 win = np.hanning(N)
-plt.plot(t, win, color=to_rgb('red'))
+print(is_color_like('r'))
+plt.plot(t, win, color='r')
 orig_dpi = 80. if matplotlib.__version__[0] < '2' else 100.
 assert plt.rcParams['figure.dpi'] == orig_dpi
 plt.rcParams['figure.dpi'] = 70.
