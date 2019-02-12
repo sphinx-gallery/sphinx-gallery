@@ -39,6 +39,8 @@ matrix:
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" SPHINX_VERSION="dev"
       if: type = cron
+    - python: 3.7
+      env: DISTRIB="minimal"
     - python: "nightly"
       env: PYTHON_VERSION="nightly"
       os: linux

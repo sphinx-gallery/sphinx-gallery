@@ -10,7 +10,7 @@ Sphinx-Gallery
     :alt: Documentation Status
 
 .. image::     https://ci.appveyor.com/api/projects/status/github/sphinx-gallery/sphinx-gallery?branch=master&svg=true
-    :target: https://ci.appveyor.com/project/Titan-C/sphinx-gallery/history
+    :target: https://ci.appveyor.com/project/sphinx-gallery/sphinx-gallery/history
 
 
 A Sphinx extension that builds an HTML version of any Python
