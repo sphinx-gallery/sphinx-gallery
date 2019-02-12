@@ -49,6 +49,11 @@ cover next.
 Structure the examples folder
 -----------------------------
 
+.. note::
+
+   Sphinx-Gallery will only run files that begin with ``plot_`` by default. For
+   instructions on how to modify this behavior, see :ref:`build_pattern`.
+
 In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
@@ -64,7 +69,7 @@ this folder must have the following things:
 * **Example Python Scripts**: A collection of Python scripts that will be
   processed when you build your HTML documentation.  For information on how
   to structure these Python scripts with embedded rST, see
-  :ref:`python_script_syntax`. By default files prefixed with ``plot``
+  :ref:`python_script_syntax`. By default files prefixed with ``plot_``
   will be executed and their outputs captured to incorporate them in the
   HTML version of the script. Files without that prefix will be only parsed
   and presented in a rich literate programming fashion, without any output.
@@ -102,10 +107,8 @@ relative to ``conf.py`` (``../examples``) as well as the location of the
 directory to be generated when your gallery is built (``auto_examples``).::
 
     sphinx_gallery_conf = {
-         # path to your examples scripts
-         'examples_dirs': '../examples',
-         # path where to save gallery generated examples
-         'gallery_dirs': 'auto_examples',
+         'examples_dirs': '../examples',   # path to your example scripts
+         'gallery_dirs': 'auto_examples',  # path where to save gallery generated examples
     }
 
 After building your documentation, ``gallery_dirs`` will contain rST files

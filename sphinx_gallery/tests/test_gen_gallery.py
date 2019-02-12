@@ -60,6 +60,7 @@ class SphinxAppWrapper(object):
     sphinx.application.Application.build.
 
     """
+
     def __init__(self, srcdir, confdir, outdir, doctreedir, buildername,
                  **kwargs):
         self.srcdir = srcdir

@@ -57,6 +57,8 @@ DEFAULT_GALLERY_CONF = {
     'download_all_examples': True,
     'abort_on_example_error': False,
     'failing_examples': {},
+    'passing_examples': [],
+    'stale_examples': [],  # ones that did not need to be run due to md5sum
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
@@ -390,6 +392,8 @@ def summarize_failing_examples(app, exception):
 
     # Under no-plot Examples are not run so nothing to summarize
     if not app.config.sphinx_gallery_conf['plot_gallery']:
+        logger.info('Sphinx-gallery gallery_conf["plot_gallery"] was '
+                    'False, so no examples were executed.', color='brown')
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
@@ -403,8 +407,10 @@ def summarize_failing_examples(app, exception):
     if examples_expected_to_fail:
         logger.info("Examples failing as expected:", color='brown')
         for fail_example in examples_expected_to_fail:
-            logger.info('%s failed leaving traceback:', fail_example)
-            logger.info(gallery_conf['failing_examples'][fail_example])
+            logger.info('%s failed leaving traceback:', fail_example,
+                        color='brown')
+            logger.info(gallery_conf['failing_examples'][fail_example],
+                        color='brown')
 
     examples_not_expected_to_fail = failing_examples.difference(
         expected_failing_examples)
@@ -429,6 +435,23 @@ def summarize_failing_examples(app, exception):
                          "sphinx_gallery_conf['expected_failing_examples']\n" +
                          "in your conf.py file"
                          "\n".join(examples_not_expected_to_pass))
+
+    # standard message
+    n_good = len(gallery_conf['passing_examples'])
+    n_tot = len(gallery_conf['failing_examples']) + n_good
+    n_stale = len(gallery_conf['stale_examples'])
+    logger.info('\nSphinx-gallery successfully executed %d out of %d '
+                'file%s subselected by:\n\n'
+                '    gallery_conf["filename_pattern"] = %r\n'
+                '    gallery_conf["ignore_pattern"]   = %r\n'
+                '\nafter excluding %d file%s that had previously been run '
+                '(based on MD5).\n'
+                % (n_good, n_tot, 's' if n_tot != 1 else '',
+                   gallery_conf['filename_pattern'],
+                   gallery_conf['ignore_pattern'],
+                   n_stale, 's' if n_stale != 1 else '',
+                   ),
+                color='brown')
 
     if fail_msgs:
         raise ValueError("Here is a summary of the problems encountered when "

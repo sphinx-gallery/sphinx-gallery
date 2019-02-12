@@ -581,10 +581,11 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     sys.argv = argv_orig
 
     # Write md5 checksum if the example was meant to run (no-plot
-    # shall not cache md5sum) and has build correctly
+    # shall not cache md5sum) and has built correctly
     if script_vars['execute_script']:
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(script_vars['target_file']))
+        gallery_conf['passing_examples'].append(script_vars['src_file'])
 
     return output_blocks, time_elapsed
 
@@ -617,7 +618,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     intro, _ = extract_intro_and_title(fname,
                                        get_docstring_and_rest(src_file)[0])
 
+    executable = executable_script(src_file, gallery_conf)
+
     if md5sum_is_current(target_file):
+        if executable:
+            gallery_conf['stale_examples'].append(target_file)
         return intro, 0
 
     image_dir = os.path.join(target_dir, 'images')
@@ -629,7 +634,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_path_template = os.path.join(image_dir, image_fname)
 
     script_vars = {
-        'execute_script': executable_script(src_file, gallery_conf),
+        'execute_script': executable,
         'image_path_iterator': ImagePathIterator(image_path_template),
         'src_file': src_file,
         'target_file': target_file}

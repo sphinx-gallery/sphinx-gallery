@@ -78,43 +78,47 @@ Keep in mind that both lists have to be of the same length.
 
 .. _build_pattern:
 
-Parsing and executing examples based on matching patterns
-=========================================================
+Parsing and executing examples via matching patterns
+====================================================
 
 By default, Sphinx-Gallery will **parse and add** all files with a ``.py``
-extension to the gallery. To ignore some files and omit them from the gallery
-entirely, you can use a regular expression (the default is shown here)::
+extension to the gallery, but only **execute** files beginning with ``plot_``.
+These behaviors are controlled by the ``ignore_pattern`` and ``filename_pattern``
+entries, which have the default values::
 
     sphinx_gallery_conf = {
         ...
-        'ignore_pattern': '__init__\.py',
+        'filename_pattern': '/plot_',
+        'ignore_pattern': r'__init__\.py',
     }
 
-Of the files that get **parsed and added** to the gallery, by default
-Sphinx-Gallery only **executes** files whose name begins with ``plot``.
-However, if this naming convention does not suit your project, you can modify
-the pattern of filenames to build in your Sphinx ``conf.py``. For example::
+To omit some files from the gallery entirely (i.e., not execute, parse, or
+add them), you can change the ``ignore_pattern`` option.
+To choose which of the parsed and added Python scripts are actualy
+executed, you can modify ``filename_pattern``. For example::
 
     sphinx_gallery_conf = {
         ...
         'filename_pattern': '/plot_compute_',
     }
 
-will build all examples starting with ``plot_compute_``. The key ``filename_pattern`` accepts
-`regular expressions`_ which will be matched with the full path of the example. This is the reason
-the leading ``'/'`` is required. Users are advised to use ``os.sep`` instead of ``'/'`` if
-they want to be agnostic to the operating system.
+will build all examples starting with ``plot_compute_``. The key
+``filename_pattern`` (and ``ignore_pattern``) accepts `regular expressions`_
+which will be matched with the full path of the example. This is the reason
+the leading ``'/'`` is required. Users are advised to use ``re.escape(os.sep)``
+instead of ``'/'`` if they want to be agnostic to the operating system.
 
-This option is also useful if you want to build only a subset of the examples. For example, you may
+The ``filename_pattern`` option is also useful if you want to build only a
+subset of the examples. For example, you may
 want to build only one example so that you can link it in the documentation. In that case,
 you would do::
 
     sphinx_gallery_conf = {
         ...
-        'filename_pattern': 'plot_awesome_example\.py',
+        'filename_pattern': r'plot_awesome_example\.py',
     }
 
-Here, one should escape the dot ``'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
+Here, one should escape the dot ``r'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
 one is targeting a specific file, it would match the dot in the filename even without this escape character.
 
 Similarly, to build only examples in a specific directory, you can do::

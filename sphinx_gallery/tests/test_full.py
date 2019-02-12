@@ -13,6 +13,7 @@ import shutil
 
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
+from sphinx_gallery.gen_rst import MixedEncodingStringIO
 
 import pytest
 
@@ -36,7 +37,7 @@ def sphinx_app(tmpdir_factory):
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                     buildername='html')
+                     buildername='html', status=MixedEncodingStringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
         app.build(False, [])
@@ -52,12 +53,16 @@ def test_timings(sphinx_app):
 
 
 def test_run_sphinx(sphinx_app):
+    """Test basic outputs."""
     out_dir = sphinx_app.outdir
     out_files = os.listdir(out_dir)
     assert 'index.html' in out_files
     assert 'auto_examples' in out_files
     generated_examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(generated_examples_dir)
+    status = sphinx_app._status.getvalue()
+    assert 'executed 3 out of 4' in status
+    assert 'after excluding 0' in status
 
 
 def test_embed_links_and_styles(sphinx_app):
