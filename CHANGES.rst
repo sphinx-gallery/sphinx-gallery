@@ -7,9 +7,10 @@ git master
 New features
 ''''''''''''
 
-* Added the ``rebuild`` option, which by default will only rebuild newly
-  changed files, leading to faster incremental builds. Use ``rebuild =
-  'always'`` to always update files (previous behaviour). TODO link PR.
+* Added the ``rebuild`` option, which allows to only rebuild newly
+  changed examples, leading to faster incremental builds. Use ``rebuild =
+  'mtime'`` to enable this. `#446
+  <https://github.com/sphinx-gallery/sphinx-gallery/pull/446>`_.
 
 Developer changes
 '''''''''''''''''

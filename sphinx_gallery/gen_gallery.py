@@ -67,7 +67,7 @@ DEFAULT_GALLERY_CONF = {
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'show_memory': False,
-    'rebuild': 'changed_only',  # other accepted value is 'always'
+    'rebuild': 'always',  # other accepted value is 'mtime'
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -194,9 +194,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                          "or None, found type %s" % type(first_cell))
     gallery_conf['first_notebook_cell'] = first_cell
 
-    if gallery_conf['rebuild'] not in ('always', 'changed_only'):
+    if gallery_conf['rebuild'] not in ('always', 'mtime'):
         raise ValueError(
-            "The 'rebuild' parameter must be 'always' or 'changed_only', "
+            "The 'rebuild' parameter must be 'always' or 'mtime', "
             "got {}".format(gallery_conf['rebuild'])
         )
 

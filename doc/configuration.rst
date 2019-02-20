@@ -28,7 +28,7 @@ file:
 - ``line_numbers`` (:ref:`adding_line_numbers`)
 - ``download_all_examples`` (:ref:`disable_all_scripts_download`)
 - ``plot_gallery`` (:ref:`without_execution`)
-- ``rebuild`` (:ref:`always_rebuild`)
+- ``rebuild`` (:ref:`rebuild_changed_only`)
 - ``image_scrapers`` (and the deprecated ``find_mayavi_figures``)
   (:ref:`image_scrapers`)
 - ``reset_modules`` (:ref:`reset_modules`)
@@ -589,20 +589,19 @@ a default::
 The highest precedence is always given to the `-D` flag of the
 ``sphinx-build`` command.
 
-.. _always_rebuild:
+.. _rebuild_changed_only:
 
-Always rebuild examples
-=======================
+Only rebuild newly changed examples
+===================================
 
-By default, Sphinx-Gallery will only generate rst files and backreferences
-for newly updated examples. If you want to always generate new rst files, you
-can set the ``rebuild`` parameter to ``'always'``. Note that this will
-likely make your sphinx build significantly slower if you have a lot
-examples and with backreferences::
+By default, Sphinx-Gallery will always generate rst files and backreferences
+for all examples. This can make the re-building process slow for projects with
+a lot of examples. If you want to only generate rst files for newly updated
+examples, you can set the ``rebuild`` parameter to ``'mtime'``::
 
     sphinx_gallery_conf = {
         ...
-        'rebuild': 'always',
+        'rebuild': 'mtime',
     }
 
 .. _image_scrapers:

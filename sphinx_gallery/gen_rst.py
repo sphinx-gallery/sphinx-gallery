@@ -313,7 +313,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
                if re.search(gallery_conf['ignore_pattern'],
                             os.path.normpath(os.path.join(src_dir, fname)))
                is None]
-    if gallery_conf['rebuild'] == 'changed_only':
+    if gallery_conf['rebuild'] == 'mtime':
         listdir = _filter_out_unchanged(listdir, src_dir, target_dir)
     # sort them
     sorted_listdir = sorted(
