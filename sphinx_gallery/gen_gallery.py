@@ -67,6 +67,7 @@ DEFAULT_GALLERY_CONF = {
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'show_memory': False,
+    'rebuild': 'changed_only',  # other accepted value is 'always'
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -192,8 +193,14 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         raise ValueError("The 'first_notebook_cell' parameter must be type str"
                          "or None, found type %s" % type(first_cell))
     gallery_conf['first_notebook_cell'] = first_cell
-    return gallery_conf
 
+    if gallery_conf['rebuild'] not in ('always', 'changed_only'):
+        raise ValueError(
+            "The 'rebuild' parameter must be 'always' or 'changed_only', "
+            "got {}".format(gallery_conf['rebuild'])
+        )
+
+    return gallery_conf
 
 def get_subsections(srcdir, examples_dir, sortkey):
     """Returns the list of subsections of a gallery

@@ -211,6 +211,16 @@ def test_duplicate_files_warn(sphinx_app_wrapper):
     assert msg.format(m) in build_warn
 
 
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'rebuild': 'wrong_value',
+}""")
+def test_config_rebuild(sphinx_app_wrapper):
+    """Test ValueError is raised for invalid rebuild values"""
+    with pytest.raises(ValueError, match="The 'rebuild' parameter must be"):
+        sphinx_app_wrapper.create_sphinx_app()
+
+
 def _check_order(sphinx_app, key):
     index_fname = os.path.join(sphinx_app.outdir, '..', 'ex', 'index.rst')
     order = list()

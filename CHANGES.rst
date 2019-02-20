@@ -4,6 +4,13 @@ Change Log
 git master
 ----------
 
+New features
+''''''''''''
+
+* Added the ``rebuild`` option, which by default will only rebuild newly
+  changed files, leading to faster incremental builds. Use ``rebuild =
+  'always'`` to always update files (previous behaviour). TODO link PR.
+
 Developer changes
 '''''''''''''''''
 

@@ -313,6 +313,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
                if re.search(gallery_conf['ignore_pattern'],
                             os.path.normpath(os.path.join(src_dir, fname)))
                is None]
+    if gallery_conf['rebuild'] == 'changed_only':
+        listdir = _filter_out_unchanged(listdir, src_dir, target_dir)
     # sort them
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
@@ -767,3 +769,15 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     write_file = re.sub(r'\.py$', '.rst', example_file)
     with codecs.open(write_file, 'w', encoding="utf-8") as f:
         f.write(example_rst)
+
+
+def _filter_out_unchanged(listdir, src_dir, target_dir):
+    """filter out files in listdir whose src isn't newer than target"""
+    def src_is_newer(fname):
+        # This checks the files mtime (sphinx also does that).
+        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        target_file = os.path.join(target_dir, fname)
+        return not os.path.exists(target_file) or (
+            os.path.getmtime(src_file) > os.path.getmtime(target_file))
+
+    return [fname for fname in listdir if src_is_newer(fname)]
