@@ -16,13 +16,12 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update -y conda
 
     # Force conda to think about other dependencies that can break
-    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler"
-    if [ "$INSTALL_MAYAVI" == "true" ]; then
-        conda create -yn testenv $CONDA_PKGS mayavi
-    else
-        conda create -yn testenv $CONDA_PKGS
-    fi
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler $CONDA_PKGS"
+    conda create -yn testenv $CONDA_PKGS
     source activate testenv
+    if [[ ! -z "$PIP_PKGS" ]]; then
+        pip install -q $PIP_PKGS
+    fi
     # The 3.4 on is quite old
     if [ "$PYTHON_VERSION" == "3.4" ]; then
         conda remove -y memory_profiler
