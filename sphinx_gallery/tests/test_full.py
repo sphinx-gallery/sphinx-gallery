@@ -109,3 +109,43 @@ def test_backreferences(sphinx_app):
         lines = fid.read()
     assert 'identify_names' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
+
+
+def test_rebuild(tmpdir_factory, sphinx_app):
+    # Make sure that examples that haven't been changed aren't run twice.
+    # (app has already been run once in the fixture)
+
+    status = sphinx_app._status.getvalue()
+    assert "generating gallery for auto_examples..." in status
+    generated_modules = os.listdir(os.path.join(sphinx_app.outdir,
+                                                'gen_modules'))
+    generated_modules = sorted(os.path.join(sphinx_app.outdir,
+                                            'gen_modules', f)
+                               for f in generated_modules)
+    generated_mtimes_first = [os.path.getmtime(generated_module)
+                              for generated_module in generated_modules]
+    not_updated_examples = \
+        sphinx_app.config.sphinx_gallery_conf['not_updated_examples']
+    assert not_updated_examples == set()  # All examples are updated
+
+    # run a second time, files shouldn't be updated
+    temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
+    src_dir = temp_dir
+    conf_dir = temp_dir
+    out_dir = op.join(temp_dir, '_build', 'html')
+    toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
+    # Avoid warnings about re-registration, see:
+    # https://github.com/sphinx-doc/sphinx/issues/5038
+    with docutils_namespace():
+        new_app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
+                        buildername='html', status=MixedEncodingStringIO())
+        new_app.build(False, [])
+    status = new_app._status.getvalue()
+    assert "generating gallery for auto_examples..." not in status
+    generated_mtimes_second = [os.path.getmtime(generated_module)
+                               for generated_module in generated_modules]
+    assert generated_mtimes_first == generated_mtimes_second
+
+    not_updated_examples = \
+        new_app.config.sphinx_gallery_conf['not_updated_examples']
+    assert not_updated_examples  # not empty

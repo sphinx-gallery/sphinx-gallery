@@ -314,7 +314,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
                             os.path.normpath(os.path.join(src_dir, fname)))
                is None]
     if gallery_conf['rebuild'] == 'mtime':
-        listdir = _filter_out_unchanged(listdir, src_dir, target_dir)
+        listdir = _filter_out_unchanged(listdir, src_dir, target_dir,
+                                        gallery_conf)
     # sort them
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
@@ -771,13 +772,22 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         f.write(example_rst)
 
 
-def _filter_out_unchanged(listdir, src_dir, target_dir):
+def _filter_out_unchanged(listdir, src_dir, target_dir, gallery_conf):
     """filter out files in listdir whose src isn't newer than target"""
-    def src_is_newer(fname):
+    def src_is_newer(src_file, target_file):
         # This checks the files mtime (sphinx also does that).
-        src_file = os.path.normpath(os.path.join(src_dir, fname))
-        target_file = os.path.join(target_dir, fname)
         return not os.path.exists(target_file) or (
             os.path.getmtime(src_file) > os.path.getmtime(target_file))
 
-    return [fname for fname in listdir if src_is_newer(fname)]
+    new_listdir = []
+    for fname in listdir:
+        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        target_file = os.path.join(target_dir, fname)
+        if src_is_newer(src_file, target_file):
+            new_listdir.append(fname)
+        else:
+            # We need to remember examples that aren't updated so they don't
+            # count as "should fail but didn't"
+            gallery_conf['not_updated_examples'].add(src_file)
+
+    return new_listdir

@@ -58,6 +58,7 @@ DEFAULT_GALLERY_CONF = {
     'abort_on_example_error': False,
     'failing_examples': {},
     'passing_examples': [],
+    'not_updated_examples': set(),  # set of files that do not need an update
     'stale_examples': [],  # ones that did not need to be run due to md5sum
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
@@ -405,9 +406,14 @@ def summarize_failing_examples(app, exception):
 
     gallery_conf = app.config.sphinx_gallery_conf
     failing_examples = set(gallery_conf['failing_examples'].keys())
+    not_updated_examples = set(
+        os.path.normpath(os.path.join(app.srcdir, path))
+        for path in gallery_conf['not_updated_examples'])
     expected_failing_examples = set(
         os.path.normpath(os.path.join(app.srcdir, path))
         for path in gallery_conf['expected_failing_examples'])
+    expected_failing_examples = \
+        expected_failing_examples - not_updated_examples
 
     examples_expected_to_fail = failing_examples.intersection(
         expected_failing_examples)
