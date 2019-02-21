@@ -137,9 +137,9 @@ def test_rebuild(tmpdir):
 
     status = app._status.getvalue()
     assert "generating gallery for auto_examples..." in status
-    generated_modules = os.listdir(os.path.join(app.outdir,
+    generated_modules = os.listdir(os.path.join(app.srcdir,
                                                 'gen_modules'))
-    generated_modules = sorted(os.path.join(app.outdir,
+    generated_modules = sorted(os.path.join(app.srcdir,
                                             'gen_modules', f)
                                for f in generated_modules)
     generated_mtimes_first = [os.path.getmtime(generated_module)
