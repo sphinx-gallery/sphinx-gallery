@@ -25,11 +25,9 @@ matrix:
       env: DISTRIB="conda" PYTHON_VERSION="2.7" INSTALL_MAYAVI="true"
     # This environment tests the Python 3 versions
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.4"
-    - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.5"
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.6"
+      env: DISTRIB="conda" PYTHON_VERSION="3.6" INSTALL_MAYAVI="true"
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="2.7" LOCALE=C
     - os: linux
@@ -71,4 +69,4 @@ script:
   - bash continuous_integration/travis/test_script.sh
 
 after_success:
-  - bash continuous_integration/travis/after_success.sh 
+  - bash continuous_integration/travis/after_success.sh
