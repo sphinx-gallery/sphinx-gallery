@@ -59,6 +59,7 @@ DEFAULT_GALLERY_CONF = {
     'failing_examples': {},
     'passing_examples': [],
     'not_updated_examples': set(),  # set of files that do not need an update
+    'hmmm': set(),
     'stale_examples': [],  # ones that did not need to be run due to md5sum
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
