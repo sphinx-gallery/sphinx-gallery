@@ -799,4 +799,8 @@ def _filter_out_unchanged(listdir, src_dir, target_dir, gallery_conf):
             # count as "should fail but didn't"
             gallery_conf['not_updated_examples'].add(src_file)
 
+    print('----')
+    print('----')
+    print('----')
+
     return new_listdir

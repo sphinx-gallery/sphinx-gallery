@@ -148,6 +148,11 @@ def test_rebuild(tmpdir):
         app.config.sphinx_gallery_conf['not_updated_examples']
     assert not_updated_examples == set()  # All examples are updated
 
+    print('generated_modules')
+    print(generated_modules)
+    print('first mtimes:')
+    print(generated_mtimes_first)
+
     # run a second time, files shouldn't be updated
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
@@ -159,6 +164,8 @@ def test_rebuild(tmpdir):
     assert "generating gallery for auto_examples..." not in status
     generated_mtimes_second = [os.path.getmtime(generated_module)
                                for generated_module in generated_modules]
+    print('second mtimes:')
+    print(generated_mtimes_second)
     assert generated_mtimes_first == generated_mtimes_second
 
     not_updated_examples = \
