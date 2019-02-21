@@ -779,13 +779,19 @@ def _filter_out_unchanged(listdir, src_dir, target_dir, gallery_conf):
         return not os.path.exists(target_file) or (
             os.path.getmtime(src_file) > os.path.getmtime(target_file))
 
-    raise ValueError(
-        'if this is not raised then theres something wrong with the config'
-        )
     new_listdir = []
     for fname in listdir:
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         target_file = os.path.join(target_dir, fname)
+        print('looking at', fname)
+        print('src file', src_file)
+        print('src mtime:', os.path.getmtime(src_file))
+        print('target file', target_file)
+        print('target file exists:', os.path.exists(target_file))
+        if os.path.exists(target_file):
+            print('target mtime:', os.path.getmtime(target_file))
+        print('src is newer:', src_is_newer(src_file, target_file))
+        print('---')
         if src_is_newer(src_file, target_file):
             new_listdir.append(fname)
         else:
