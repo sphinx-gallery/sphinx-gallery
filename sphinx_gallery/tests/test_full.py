@@ -18,7 +18,7 @@ from sphinx_gallery.gen_rst import MixedEncodingStringIO
 import pytest
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory):
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
@@ -111,33 +111,44 @@ def test_backreferences(sphinx_app):
     assert 'plot_future_imports.html' in lines  # backref via doc block
 
 
-def test_rebuild(tmpdir_factory, sphinx_app):
+def test_rebuild(tmpdir):
     # Make sure that examples that haven't been changed aren't run twice.
-    # (app has already been run once in the fixture)
+    temp_dir = os.path.join(tmpdir.strpath, 'root')
+    src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
-    status = sphinx_app._status.getvalue()
-    assert "generating gallery for auto_examples..." in status
-    generated_modules = os.listdir(os.path.join(sphinx_app.outdir,
-                                                'gen_modules'))
-    generated_modules = sorted(os.path.join(sphinx_app.outdir,
-                                            'gen_modules', f)
-                               for f in generated_modules)
-    generated_mtimes_first = [os.path.getmtime(generated_module)
-                              for generated_module in generated_modules]
-    print('generated modules:')
-    print(generated_modules)
-    print('first run mtimes:')
-    print(generated_mtimes_first)
-    not_updated_examples = \
-        sphinx_app.config.sphinx_gallery_conf['not_updated_examples']
-    assert not_updated_examples == set()  # All examples are updated
+    def ignore(src, names):
+        return ('_build', 'gen_modules', 'auto_examples')
 
-    # run a second time, files shouldn't be updated
-    temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
+    shutil.copytree(src_dir, temp_dir, ignore=ignore)
+    # For testing iteration, you can get similar behavior just doing `make`
+    # inside the tinybuild directory
     src_dir = temp_dir
     conf_dir = temp_dir
     out_dir = op.join(temp_dir, '_build', 'html')
     toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
+    # Avoid warnings about re-registration, see:
+    # https://github.com/sphinx-doc/sphinx/issues/5038
+    with docutils_namespace():
+        app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
+                     buildername='html', status=MixedEncodingStringIO())
+        # need to build within the context manager
+        # for automodule and backrefs to work
+        app.build(False, [])
+
+    status = app._status.getvalue()
+    assert "generating gallery for auto_examples..." in status
+    generated_modules = os.listdir(os.path.join(app.outdir,
+                                                'gen_modules'))
+    generated_modules = sorted(os.path.join(app.outdir,
+                                            'gen_modules', f)
+                               for f in generated_modules)
+    generated_mtimes_first = [os.path.getmtime(generated_module)
+                              for generated_module in generated_modules]
+    not_updated_examples = \
+        app.config.sphinx_gallery_conf['not_updated_examples']
+    assert not_updated_examples == set()  # All examples are updated
+
+    # run a second time, files shouldn't be updated
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
@@ -148,8 +159,6 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     assert "generating gallery for auto_examples..." not in status
     generated_mtimes_second = [os.path.getmtime(generated_module)
                                for generated_module in generated_modules]
-    print('second run mtimes:')
-    print(generated_mtimes_second)
     assert generated_mtimes_first == generated_mtimes_second
 
     not_updated_examples = \
