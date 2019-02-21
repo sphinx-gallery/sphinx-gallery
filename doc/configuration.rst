@@ -122,11 +122,6 @@ you would do::
 Here, one should escape the dot ``r'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
 one is targeting a specific file, it would match the dot in the filename even without this escape character.
 
-.. note::
-    If the ``rebuild`` option is set to 'mtime' and the example you want to
-    run haven't changed, they won't be executed again. See
-    :ref:`rebuild_changed_only`.
-
 Similarly, to build only examples in a specific directory, you can do::
 
     sphinx_gallery_conf = {
@@ -600,10 +595,9 @@ Only rebuild newly changed examples
 ===================================
 
 By default, Sphinx-Gallery will always generate rst files and backreferences
-for all examples, even if they aren't executed. This can make the
-re-building process slow for projects with a lot of examples. If you want to
-only generate rst files for newly updated examples, you can set the
-``rebuild`` parameter to ``'mtime'``::
+for all examples. This can make the re-building process slow for projects with
+a lot of examples. If you want to only generate rst files for newly updated
+examples, you can set the ``rebuild`` parameter to ``'mtime'``::
 
     sphinx_gallery_conf = {
         ...
@@ -756,9 +750,6 @@ build. Change your `conf.py` accordingly::
 Here you list the examples you allow to fail during the build process,
 keep in mind to specify the full relative path from your `conf.py` to
 the example script.
-
-Note that if an example is expected to fail, sphinx-gallery will error if
-the example runs without error.
 
 
 .. _setting_thumbnail_size:
