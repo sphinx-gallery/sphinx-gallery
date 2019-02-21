@@ -139,7 +139,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
                          buildername='html', status=MixedEncodingStringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    assert "generating gallery for auto_examples..." not in status
+    # assert "generating gallery for auto_examples..." not in status
     generated_mtimes_second = [os.path.getmtime(generated_module)
                                for generated_module in generated_modules]
     assert generated_mtimes_first == generated_mtimes_second

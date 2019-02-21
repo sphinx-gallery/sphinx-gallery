@@ -317,8 +317,9 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         listdir = _filter_out_unchanged(listdir, src_dir, target_dir,
                                         gallery_conf)
     # sort them
-    sorted_listdir = sorted(
-        listdir, key=gallery_conf['within_subsection_order'](src_dir))
+    # sorted_listdir = sorted(
+    #     listdir, key=gallery_conf['within_subsection_order'](src_dir))
+    sorted_listdir = listdir
     entries_text = []
     computation_times = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
@@ -327,9 +328,15 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
     clean_modules(gallery_conf, src_dir)  # fix gh-316
-    for fname in iterator:
-        intro, time_elapsed = generate_file_rst(
-            fname, target_dir, src_dir, gallery_conf)
+    for fname, generate in iterator:
+        if generate:
+            intro, time_elapsed = generate_file_rst(
+                fname, target_dir, src_dir, gallery_conf)
+        else:
+            src_file = os.path.normpath(os.path.join(src_dir, fname))
+            intro, _ = extract_intro_and_title(fname,
+                                               get_docstring_and_rest(src_file)[0])
+            time_elapsed = 0
         clean_modules(gallery_conf, fname)
         computation_times.append((time_elapsed, fname))
         this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
@@ -784,8 +791,9 @@ def _filter_out_unchanged(listdir, src_dir, target_dir, gallery_conf):
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         target_file = os.path.join(target_dir, fname)
         if src_is_newer(src_file, target_file):
-            new_listdir.append(fname)
+            new_listdir.append((fname, True))
         else:
+            new_listdir.append((fname, False))
             # We need to remember examples that aren't updated so they don't
             # count as "should fail but didn't"
             gallery_conf['not_updated_examples'].add(src_file)
