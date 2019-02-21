@@ -18,7 +18,7 @@ from sphinx_gallery.gen_rst import MixedEncodingStringIO
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def sphinx_app(tmpdir_factory):
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
@@ -124,6 +124,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
                                for f in generated_modules)
     generated_mtimes_first = [os.path.getmtime(generated_module)
                               for generated_module in generated_modules]
+    print('generated modules:')
+    print(generated_modules)
+    print('first run mtimes:')
+    print(generated_mtimes_first)
     not_updated_examples = \
         sphinx_app.config.sphinx_gallery_conf['not_updated_examples']
     assert not_updated_examples == set()  # All examples are updated
@@ -144,6 +148,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     assert "generating gallery for auto_examples..." not in status
     generated_mtimes_second = [os.path.getmtime(generated_module)
                                for generated_module in generated_modules]
+    print('second run mtimes:')
+    print(generated_mtimes_second)
     assert generated_mtimes_first == generated_mtimes_second
 
     not_updated_examples = \
