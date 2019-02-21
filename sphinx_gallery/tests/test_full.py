@@ -138,7 +138,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
         new_app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                        buildername='html', status=MixedEncodingStringIO())
+                         buildername='html', status=MixedEncodingStringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
     assert "generating gallery for auto_examples..." not in status
