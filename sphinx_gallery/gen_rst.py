@@ -327,8 +327,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
     clean_modules(gallery_conf, src_dir)  # fix gh-316
-
-
     for fname in iterator:
         intro, time_elapsed = generate_file_rst(
             fname, target_dir, src_dir, gallery_conf)
@@ -345,28 +343,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         if gallery_conf['backreferences_dir']:
             write_backreferences(seen_backrefs, gallery_conf,
                                  target_dir, fname, intro)
-
-    for fname, src_dir, target_dir in gallery_conf['hmmm']:
-        # intro, time_elapsed = generate_file_rst(
-        #     fname, target_dir, src_dir, gallery_conf)
-        clean_modules(gallery_conf, fname)
-        # computation_times.append((time_elapsed, fname))
-
-        src_file = os.path.normpath(os.path.join(src_dir, fname))
-        intro, _ = extract_intro_and_title(fname,
-                                           get_docstring_and_rest(src_file)[0])
-        build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-        this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
-
-.. toctree::
-   :hidden:
-
-   /%s\n""" % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')
-        entries_text.append(this_entry)
-
-        # if gallery_conf['backreferences_dir']:
-        #     write_backreferences(seen_backrefs, gallery_conf,
-        #                          target_dir, fname, intro)
 
     for entry_text in entries_text:
         fhindex += entry_text
@@ -813,6 +789,5 @@ def _filter_out_unchanged(listdir, src_dir, target_dir, gallery_conf):
             # We need to remember examples that aren't updated so they don't
             # count as "should fail but didn't"
             gallery_conf['not_updated_examples'].add(src_file)
-            gallery_conf['hmmm'].add((fname, src_dir, target_dir))
 
     return new_listdir
