@@ -160,7 +160,8 @@ def fill_notebook(work_notebook, script_blocks):
 
     Parameters
     ----------
-    script_blocks : list of tuples
+    script_blocks : list
+        Each list element should be a tuple of (label, content, lineno).
     """
 
     for blabel, bcontent, lineno in script_blocks:

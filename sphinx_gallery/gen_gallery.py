@@ -20,6 +20,8 @@ from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
+from .utils import _replace_md5
+from .backreferences import finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       extract_intro_and_title, get_docstring_and_rest)
 from .scrapers import _scraper_dict, _reset_dict
@@ -70,34 +72,10 @@ DEFAULT_GALLERY_CONF = {
     'first_notebook_cell': '%matplotlib inline',
     'show_memory': False,
     'junit': '',
+    'log_level': {'backreference_missing': 'warning'},
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
-
-
-def clean_gallery_out(build_dir):
-    """Deletes images under the sphx_glr namespace in the build directory"""
-    # Sphinx hack: sphinx copies generated images to the build directory
-    #  each time the docs are made.  If the desired image name already
-    #  exists, it appends a digit to prevent overwrites.  The problem is,
-    #  the directory is never cleared.  This means that each time you build
-    #  the docs, the number of images in the directory grows.
-    #
-    # This question has been asked on the sphinx development list, but there
-    #  was no response: https://git.net/ml/sphinx-dev/2011-02/msg00123.html
-    #
-    # The following is a hack that prevents this behavior by clearing the
-    #  image build directory from gallery images each time the docs are built.
-    #  If sphinx changes their layout between versions, this will not
-    #  work (though it should probably not cause a crash).
-    # Tested successfully on Sphinx 1.0.7
-
-    build_image_dir = os.path.join(build_dir, '_images')
-    if os.path.exists(build_image_dir):
-        filelist = os.listdir(build_image_dir)
-        for filename in filelist:
-            if filename.startswith('sphx_glr') and filename.endswith('png'):
-                os.remove(os.path.join(build_image_dir, filename))
 
 
 def parse_config(app):
@@ -199,7 +177,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
 
 
 def get_subsections(srcdir, examples_dir, sortkey):
-    """Returns the list of subsections of a gallery
+    """Return the list of subsections of a gallery
 
     Parameters
     ----------
@@ -257,8 +235,6 @@ def generate_gallery_rst(app):
     logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
 
-    clean_gallery_out(app.builder.outdir)
-
     seen_backrefs = set()
 
     computation_times = []
@@ -292,8 +268,8 @@ def generate_gallery_rst(app):
                                 this_computation_times)
 
         # we create an index.rst with all examples
-        with codecs.open(os.path.join(gallery_dir, 'index.rst'), 'w',
-                         encoding='utf-8') as fhindex:
+        index_rst_new = os.path.join(gallery_dir, 'index.rst.new')
+        with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             fhindex.write(":orphan:\n\n" + this_fhindex)
 
@@ -315,6 +291,8 @@ def generate_gallery_rst(app):
                 fhindex.write(download_fhindex)
 
             fhindex.write(SPHX_GLR_SIG)
+        _replace_md5(index_rst_new)
+    finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf['plot_gallery']:
         logger.info("computation time summary:", color='white')
@@ -354,7 +332,7 @@ def _sec_to_readable(t):
 
 
 def write_computation_times(gallery_conf, target_dir, computation_times):
-    if not gallery_conf['plot_gallery']:
+    if all(time[0] == 0 for time in computation_times):
         return
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
@@ -586,11 +564,11 @@ def setup(app):
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
 
     app.connect('builder-inited', generate_gallery_rst)
-
     app.connect('build-finished', copy_binder_files)
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     metadata = {'parallel_read_safe': True,
+                'parallel_write_safe': False,
                 'version': _sg_version}
     return metadata
 

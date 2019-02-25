@@ -12,6 +12,8 @@ from __future__ import absolute_import, division, print_function
 import os
 import zipfile
 
+from .utils import _replace_md5
+
 CODE_DOWNLOAD = """
 .. _sphx_glr_download_{3}:
 
@@ -49,7 +51,7 @@ def python_zip(file_list, gallery_path, extension='.py'):
 
     Parameters
     ----------
-    file_list : list of strings
+    file_list : list
         Holds all the file names to be included in zip file
     gallery_path : str
         path to where the zipfile is stored
@@ -67,13 +69,12 @@ def python_zip(file_list, gallery_path, extension='.py'):
     zipname = os.path.basename(os.path.normpath(gallery_path))
     zipname += '_python' if extension == '.py' else '_jupyter'
     zipname = os.path.join(gallery_path, zipname + '.zip')
-
-    zipf = zipfile.ZipFile(zipname, mode='w')
-    for fname in file_list:
-        file_src = os.path.splitext(fname)[0] + extension
-        zipf.write(file_src, os.path.relpath(file_src, gallery_path))
-    zipf.close()
-
+    zipname_new = zipname + '.new'
+    with zipfile.ZipFile(zipname_new, mode='w') as zipf:
+        for fname in file_list:
+            file_src = os.path.splitext(fname)[0] + extension
+            zipf.write(file_src, os.path.relpath(file_src, gallery_path))
+    _replace_md5(zipname_new)
     return zipname
 
 

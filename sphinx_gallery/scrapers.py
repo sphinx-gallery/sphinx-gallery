@@ -72,8 +72,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf):
     -------
     rst : str
         The ReSTructuredText that will be rendered to HTML containing
-        the images. This is often produced by
-        :func:`sphinx_gallery.gen_rst.figure_rst`.
+        the images. This is often produced by :func:`figure_rst`.
     """
     matplotlib, plt = _import_matplotlib()
     image_path_iterator = block_vars['image_path_iterator']
@@ -111,8 +110,7 @@ def mayavi_scraper(block, block_vars, gallery_conf):
     -------
     rst : str
         The ReSTructuredText that will be rendered to HTML containing
-        the images. This is often produced by
-        :func:`sphinx_gallery.gen_rst.figure_rst`.
+        the images. This is often produced by :func:`figure_rst`.
     """
     from mayavi import mlab
     image_path_iterator = block_vars['image_path_iterator']
@@ -232,8 +230,8 @@ def figure_rst(figure_list, sources_dir):
 
     Parameters
     ----------
-    figure_list : list of str
-        Strings are the figures' absolute paths
+    figure_list : list
+        List of strings of the figures' absolute paths.
     sources_dir : str
         absolute path of Sphinx documentation sources
 
@@ -315,7 +313,7 @@ def clean_modules(gallery_conf, fname):
     ----------
     gallery_conf : dict
         The gallery configuration.
-    fname : str | None
+    fname : str or None
         The example being run. Will be None when this is called entering
         a directory of examples to be built.
     """

@@ -38,7 +38,7 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
     ----------
     fpath: str
         The path to the `.py` file for which a Binder badge will be generated.
-    binder_conf: dict | None
+    binder_conf: dict or None
         The Binder configuration dictionary. See `gen_binder_rst` for details.
 
     Returns
@@ -85,7 +85,7 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     ----------
     fpath: str
         The path to the `.py` file for which a Binder badge will be generated.
-    binder_conf: dict | None
+    binder_conf: dict or None
         If a dictionary it must have the following keys:
 
         'binderhub_url': The URL of the BinderHub instance that's running a Binder
@@ -204,7 +204,7 @@ def check_binder_conf(binder_conf):
         raise ValueError('`binder_conf` must be a dictionary or None.')
     if len(binder_conf) == 0:
         return binder_conf
-    
+
     if binder_conf.get('url') and not binder_conf.get('binderhub_url'):
         logger.warning(
             'Found old BinderHub URL keyword ("url"). Please update your '

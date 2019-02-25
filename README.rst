@@ -55,7 +55,7 @@ Sphinx-Gallery will not manage its dependencies when installing, thus
 you are required to install them manually. Our minimal dependencies
 are:
 
-* Sphinx
+* Sphinx >= 1.5
 * Matplotlib
 * Pillow
 

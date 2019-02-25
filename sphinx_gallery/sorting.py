@@ -24,7 +24,7 @@ class ExplicitOrder(object):
 
     Parameters
     ----------
-    ordered_list : list, tuple, types.GeneratorType
+    ordered_list : list, tuple, or generator
         Hold the paths of each galleries' subsections.
 
     Raises
@@ -50,12 +50,18 @@ class ExplicitOrder(object):
                              'must specify all folders. Explicit order not '
                              'found for {}'.format(item))
 
+    def __repr__(self):
+        return '<%s : %s>' % (self.__class__.__name__, self.ordered_list)
+
 
 class _SortKey(object):
     """Base class for section order key classes."""
 
     def __init__(self, src_dir):
         self.src_dir = src_dir
+
+    def __repr__(self):
+        return '<%s>' % (self.__class__.__name__,)
 
 
 class NumberOfCodeLinesSortKey(_SortKey):
@@ -87,7 +93,7 @@ class FileSizeSortKey(_SortKey):
 
     def __call__(self, filename):
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
-        return os.stat(src_file).st_size
+        return int(os.stat(src_file).st_size)
 
 
 class FileNameSortKey(_SortKey):

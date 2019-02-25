@@ -10,9 +10,15 @@ import codecs
 from distutils.version import LooseVersion
 import os
 import os.path as op
+import re
 import shutil
 import sys
+import time
 
+import numpy as np
+from numpy.testing import assert_allclose
+
+import sphinx
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
@@ -175,3 +181,232 @@ def test_backreferences(sphinx_app):
         lines = fid.read()
     assert 'identify_names' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
+
+
+def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
+    assert ([op.basename(x) for x in list_orig] ==
+            [op.basename(x) for x in list_new])
+    for orig, new in zip(list_orig, list_new):
+        if op.basename(orig) in different:
+            assert np.abs(op.getmtime(orig) - op.getmtime(new)) > 0.1
+        elif op.basename(orig) not in ignore:
+            assert_allclose(op.getmtime(orig), op.getmtime(new),
+                            atol=1e-3, rtol=1e-20, err_msg=op.basename(orig))
+
+
+def test_rebuild(tmpdir_factory, sphinx_app):
+    # Make sure that examples that haven't been changed aren't run twice.
+
+    #
+    # First run completes in the fixture.
+    #
+    status = sphinx_app._status.getvalue()
+    assert re.match('.*16 added, 0 changed, 0 removed$.*',
+                    status, re.MULTILINE | re.DOTALL)
+    assert re.match('.*targets for 1 source files that are out of date$.*',
+                    status, re.MULTILINE | re.DOTALL)
+    assert re.match('.*executed 3 out of 4.*'
+                    'after excluding 0 files.*based on MD5.*',
+                    status, re.MULTILINE | re.DOTALL)
+    old_src_dir = (tmpdir_factory.getbasetemp() / 'root_old').strpath
+    shutil.copytree(sphinx_app.srcdir, old_src_dir)
+    generated_modules_0 = sorted(
+        op.join(old_src_dir, 'gen_modules', f)
+        for f in os.listdir(op.join(old_src_dir, 'gen_modules'))
+        if op.isfile(op.join(old_src_dir, 'gen_modules', f)))
+    generated_backrefs_0 = sorted(
+        op.join(old_src_dir, 'gen_modules', 'backreferences', f)
+        for f in os.listdir(op.join(old_src_dir, 'gen_modules',
+                                    'backreferences')))
+    generated_rst_0 = sorted(
+        op.join(old_src_dir, 'auto_examples', f)
+        for f in os.listdir(op.join(old_src_dir, 'auto_examples'))
+        if f.endswith('.rst'))
+    generated_pickle_0 = sorted(
+        op.join(old_src_dir, 'auto_examples', f)
+        for f in os.listdir(op.join(old_src_dir, 'auto_examples'))
+        if f.endswith('.pickle'))
+    copied_py_0 = sorted(
+        op.join(old_src_dir, 'auto_examples', f)
+        for f in os.listdir(op.join(old_src_dir, 'auto_examples'))
+        if f.endswith('.py'))
+    copied_ipy_0 = sorted(
+        op.join(old_src_dir, 'auto_examples', f)
+        for f in os.listdir(op.join(old_src_dir, 'auto_examples'))
+        if f.endswith('.ipynb'))
+    assert len(generated_modules_0) > 0
+    assert len(generated_backrefs_0) > 0
+    assert len(generated_rst_0) > 0
+    assert len(generated_pickle_0) > 0
+    assert len(copied_py_0) > 0
+    assert len(copied_ipy_0) > 0
+    assert len(sphinx_app.config.sphinx_gallery_conf['stale_examples']) == 0
+    assert op.isfile(op.join(sphinx_app.outdir, '_images',
+                             'sphx_glr_plot_numpy_matplotlib_001.png'))
+
+    #
+    # run a second time, no files should be updated
+    #
+
+    src_dir = sphinx_app.srcdir
+    del sphinx_app  # don't accidentally use it below
+    conf_dir = src_dir
+    out_dir = op.join(src_dir, '_build', 'html')
+    toctrees_dir = op.join(src_dir, '_build', 'toctrees')
+    time.sleep(0.1)
+    with docutils_namespace():
+        new_app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
+                         buildername='html', status=MixedEncodingStringIO())
+        new_app.build(False, [])
+    status = new_app._status.getvalue()
+    lines = [line for line in status.split('\n') if '0 removed' in line]
+    assert re.match('.*0 added, [3|6] changed, 0 removed$.*',
+                    status, re.MULTILINE | re.DOTALL), lines
+    assert re.match('.*executed 0 out of 1.*'
+                    'after excluding 3 files.*based on MD5.*',
+                    status, re.MULTILINE | re.DOTALL)
+    assert len(new_app.config.sphinx_gallery_conf['stale_examples']) == 3
+    assert op.isfile(op.join(new_app.outdir, '_images',
+                             'sphx_glr_plot_numpy_matplotlib_001.png'))
+
+    generated_modules_1 = sorted(
+        op.join(new_app.srcdir, 'gen_modules', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'gen_modules'))
+        if op.isfile(op.join(new_app.srcdir, 'gen_modules', f)))
+    generated_backrefs_1 = sorted(
+        op.join(new_app.srcdir, 'gen_modules', 'backreferences', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'gen_modules',
+                                    'backreferences')))
+    generated_rst_1 = sorted(
+        op.join(new_app.srcdir, 'auto_examples', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'auto_examples'))
+        if f.endswith('.rst'))
+    generated_pickle_1 = sorted(
+        op.join(new_app.srcdir, 'auto_examples', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'auto_examples'))
+        if f.endswith('.pickle'))
+    copied_py_1 = sorted(
+        op.join(new_app.srcdir, 'auto_examples', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'auto_examples'))
+        if f.endswith('.py'))
+    copied_ipy_1 = sorted(
+        op.join(new_app.srcdir, 'auto_examples', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'auto_examples'))
+        if f.endswith('.ipynb'))
+
+    # mtimes for modules
+    _assert_mtimes(generated_modules_0, generated_modules_1)
+
+    # mtimes for backrefs (gh-394)
+    _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
+
+    # generated RST files
+    different = (
+        # this one should get rewritten as we retried it
+        'plot_future_imports_broken.rst',
+    )
+    ignore = (
+        # this one should almost always be different, but in case we
+        # get extremely unlucky and have identical run times
+        # on the one script above that changes...
+        'sg_execution_times.rst',
+    )
+    _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
+
+    # mtimes for pickles
+    _assert_mtimes(generated_pickle_0, generated_pickle_1)
+
+    # mtimes for .py files (gh-395)
+    _assert_mtimes(copied_py_0, copied_py_1)
+
+    # mtimes for .ipynb files
+    _assert_mtimes(copied_ipy_0, copied_ipy_1)
+
+    #
+    # run a third time, changing one file
+    #
+
+    time.sleep(0.1)
+    fname = op.join(src_dir, 'examples', 'plot_numpy_matplotlib.py')
+    with open(fname, 'r') as fid:
+        lines = fid.readlines()
+    with open(fname, 'w') as fid:
+        for line in lines:
+            if line.startswith('FYI this'):
+                line = 'A ' + line
+            fid.write(line)
+    with docutils_namespace():
+        new_app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
+                         buildername='html', status=MixedEncodingStringIO())
+        new_app.build(False, [])
+    status = new_app._status.getvalue()
+    if LooseVersion(sphinx.__version__) <= LooseVersion('1.6'):
+        n = 16
+    else:
+        n = '[2|3]'
+    lines = [line for line in status.split('\n') if 'source files tha' in line]
+    assert re.match('.*targets for %s source files that are out of date$.*'
+                    % n, status, re.MULTILINE | re.DOTALL), lines
+    assert re.match('.*executed 1 out of 2.*'
+                    'after excluding 2 files.*based on MD5.*',
+                    status, re.MULTILINE | re.DOTALL)
+    assert len(new_app.config.sphinx_gallery_conf['stale_examples']) == 2
+    assert op.isfile(op.join(new_app.outdir, '_images',
+                             'sphx_glr_plot_numpy_matplotlib_001.png'))
+
+    generated_modules_1 = sorted(
+        op.join(new_app.srcdir, 'gen_modules', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'gen_modules'))
+        if op.isfile(op.join(new_app.srcdir, 'gen_modules', f)))
+    generated_backrefs_1 = sorted(
+        op.join(new_app.srcdir, 'gen_modules', 'backreferences', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'gen_modules',
+                                    'backreferences')))
+    generated_rst_1 = sorted(
+        op.join(new_app.srcdir, 'auto_examples', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'auto_examples'))
+        if f.endswith('.rst'))
+    generated_pickle_1 = sorted(
+        op.join(new_app.srcdir, 'auto_examples', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'auto_examples'))
+        if f.endswith('.pickle'))
+    copied_py_1 = sorted(
+        op.join(new_app.srcdir, 'auto_examples', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'auto_examples'))
+        if f.endswith('.py'))
+    copied_ipy_1 = sorted(
+        op.join(new_app.srcdir, 'auto_examples', f)
+        for f in os.listdir(op.join(new_app.srcdir, 'auto_examples'))
+        if f.endswith('.ipynb'))
+
+    # mtimes for modules
+    _assert_mtimes(generated_modules_0, generated_modules_1)
+
+    # mtimes for backrefs (gh-394)
+    _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
+
+    # generated RST files
+    different = (
+        # this one should get rewritten as we retried it
+        'plot_future_imports_broken.rst',
+        'plot_numpy_matplotlib.rst',
+    )
+    ignore = (
+        # this one should almost always be different, but in case we
+        # get extremely unlucky and have identical run times
+        # on the one script above that changes...
+        'sg_execution_times.rst',
+    )
+    _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
+
+    # mtimes for pickles
+    _assert_mtimes(generated_pickle_0, generated_pickle_1,
+                   different=('plot_numpy_matplotlib.codeobj.pickle'))
+
+    # mtimes for .py files (gh-395)
+    _assert_mtimes(copied_py_0, copied_py_1,
+                   different=('plot_numpy_matplotlib.py'))
+
+    # mtimes for .ipynb files
+    _assert_mtimes(copied_ipy_0, copied_ipy_1,
+                   different=('plot_numpy_matplotlib.ipynb'))

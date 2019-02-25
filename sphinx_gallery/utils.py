@@ -10,9 +10,10 @@ Miscellaneous utilities.
 
 from __future__ import division, absolute_import, print_function
 
-import tempfile
-from shutil import rmtree
+import hashlib
 import os
+from shutil import rmtree, move, copyfile
+import tempfile
 
 
 class _TempDir(str):
@@ -90,3 +91,27 @@ def replace_py_ipynb(fname):
             % (allowed_extension, extension))
     new_extension = '.ipynb'
     return '{}{}'.format(fname_prefix, new_extension)
+
+
+def get_md5sum(src_file):
+    """Returns md5sum of file"""
+    with open(src_file, 'rb') as src_data:
+        src_content = src_data.read()
+        return hashlib.md5(src_content).hexdigest()
+
+
+def _replace_md5(fname_new, fname_old=None, method='move'):
+    assert method in ('move', 'copy')
+    if fname_old is None:
+        assert fname_new.endswith('.new')
+        fname_old = fname_new[:-4]
+    if os.path.isfile(fname_old) and (get_md5sum(fname_old) ==
+                                      get_md5sum(fname_new)):
+        if method == 'move':
+            os.remove(fname_new)
+    else:
+        if method == 'move':
+            move(fname_new, fname_old)
+        else:
+            copyfile(fname_new, fname_old)
+    assert os.path.isfile(fname_old)

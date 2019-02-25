@@ -7,12 +7,12 @@ environment:
   global:
     PYTHON: "C:\\conda"
     MINICONDA_VERSION: "latest"
-    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme memory_profiler"
+    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme vtk pyface traits traitsui"
 
   matrix:
     - PYTHON_VERSION: "2.7"
       PYTHON_ARCH: "64"
-    - PYTHON_VERSION: "3.5"
+    - PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "64"
 
 platform:
