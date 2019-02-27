@@ -359,7 +359,7 @@ def write_computation_times(gallery_conf, target_dir, computation_times):
         # sort by time (descending) then alphabetical
         for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
             example_link = 'sphx_glr_%s_%s' % (target_dir_clean, ct[1])
-            fid.write(u'- **{0}**: :ref:`{2}` ({1})\n'.format(
+            fid.write(u'- **{0}**: :ref:`{2}` (``{1}``)\n'.format(
                 _sec_to_readable(ct[0]), ct[1], example_link))
 
 
