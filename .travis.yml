@@ -48,8 +48,6 @@ matrix:
             libblas-dev
             liblapack-dev
             gfortran
-  allow_failures:
-    - python: "nightly"
 
 before_install:
   # Make sure that things work even if the locale is set to C (which
