@@ -448,7 +448,7 @@ in the build output directory, set the configuration key::
 
     sphinx_gallery_conf = {
         ...
-        'junit': 'junit-results.xml',
+        'junit': 'junit.xml',
     }
 
 By default, JUnit XML file generation is disabled (by setting ``'junit': ''``.
@@ -458,7 +458,9 @@ this line to get a summary of your example run times in the CircleCI GUI:
 .. code-block:: yaml
 
     - store_test_results:
-        path: doc/_build/html/junit-results.xml
+        path: doc/_build/html
+    - store_artifacts:
+        path: doc/_build/html
 
 
 .. _disable_all_scripts_download:

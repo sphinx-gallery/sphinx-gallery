@@ -39,10 +39,9 @@ jobs:
 
       - run: python setup.py build_sphinx
       - store_artifacts:
-          path: doc/_build/html/
-          destination: html
+          path: doc/_build/html
       - store_test_results:
-          path: doc/_build/html/junit-results.xml
+          path: doc/_build/html
 
       - run: SPHX_GLR_THEME=rtd sphinx-build doc rtd_html
       - store_artifacts:
