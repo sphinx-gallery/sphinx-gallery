@@ -41,6 +41,8 @@ jobs:
       - store_artifacts:
           path: doc/_build/html/
           destination: html
+      - store_test_results:
+          path: doc/_build/html/junit-results.xml
 
       - run: SPHX_GLR_THEME=rtd sphinx-build doc rtd_html
       - store_artifacts:

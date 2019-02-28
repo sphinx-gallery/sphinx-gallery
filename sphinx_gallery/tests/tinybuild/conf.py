@@ -30,5 +30,6 @@ sphinx_gallery_conf = {
     'within_section_order': FileNameSortKey,
     'expected_failing_examples': ['examples/plot_future_imports_broken.py'],
     'show_memory': True,
+    'junit': 'junit-results.xml',
 }
 nitpicky = True

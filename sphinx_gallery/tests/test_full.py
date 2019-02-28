@@ -9,6 +9,7 @@ from __future__ import division, absolute_import, print_function
 import codecs
 import os
 import os.path as op
+import re
 import shutil
 
 from sphinx.application import Sphinx
@@ -50,6 +51,22 @@ def test_timings(sphinx_app):
     timings_fname = op.join(out_dir, 'auto_examples',
                             'sg_execution_times.html')
     assert op.isfile(timings_fname)
+
+
+def test_junit(sphinx_app):
+    out_dir = sphinx_app.outdir
+    junit_file = op.join(out_dir, 'junit-results.xml')
+    assert op.isfile(junit_file)
+    with open(junit_file, 'rb') as fid:
+        contents = fid.read().decode('utf-8')
+    assert contents.startswith('<?xml')
+    assert 'errors="0" failures="1"' in contents
+    assert re.match('.*<testcase classname="plot_future_imports_broken" '
+                    'file="examples/plot_future_imports_broken.py" line="1" '
+                    'name="Test without __future__ imports" time="0.[0-9]*">'
+                    '<failure message="RuntimeError.*">'
+                    'Traceback.*</failure></testcase>', contents,
+                    re.MULTILINE | re.DOTALL) is not None
 
 
 def test_run_sphinx(sphinx_app):

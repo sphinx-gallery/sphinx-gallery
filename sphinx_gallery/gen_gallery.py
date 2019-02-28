@@ -16,10 +16,12 @@ import copy
 from datetime import timedelta, datetime
 import re
 import os
+from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .gen_rst import generate_dir_rst, SPHX_GLR_SIG, _get_memory_base
+from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
+                      extract_intro_and_title, get_docstring_and_rest)
 from .scrapers import _scraper_dict, _reset_dict
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
@@ -67,6 +69,7 @@ DEFAULT_GALLERY_CONF = {
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'show_memory': False,
+    'junit': '',
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -316,11 +319,15 @@ def generate_gallery_rst(app):
     if gallery_conf['plot_gallery']:
         logger.info("computation time summary:", color='white')
         for time_elapsed, fname in sorted(computation_times, reverse=True):
+            fname = os.path.relpath(fname,
+                                    os.path.normpath(gallery_conf['src_dir']))
             if time_elapsed is not None:
                 if time_elapsed >= gallery_conf['min_reported_time']:
-                    logger.info("\t- %s: %.2g sec", fname, time_elapsed)
+                    logger.info("    - %s: %.2g sec", fname, time_elapsed)
             else:
-                logger.info("\t- %s: not run", fname)
+                logger.info("    - %s: not run", fname)
+        # Also create a junit.xml file, useful e.g. on CircleCI
+        write_junit_xml(gallery_conf, app.builder.outdir, computation_times)
 
 
 SPHX_GLR_COMP_TIMES = """
@@ -361,6 +368,44 @@ def write_computation_times(gallery_conf, target_dir, computation_times):
             example_link = 'sphx_glr_%s_%s' % (target_dir_clean, ct[1])
             fid.write(u'- **{0}**: :ref:`{2}` (``{1}``)\n'.format(
                 _sec_to_readable(ct[0]), ct[1], example_link))
+
+
+def write_junit_xml(gallery_conf, target_dir, computation_times):
+    if not gallery_conf['junit']:
+        return
+    n_tests = 0
+    n_failures = 0
+    elapsed = 0.
+    src_dir = gallery_conf['src_dir']
+    output = ''
+    for ct in computation_times:
+        t, fname = ct
+        _, title = extract_intro_and_title(
+            fname, get_docstring_and_rest(fname)[0])
+        output += (
+            u'<testcase classname={0!s} file={1!s} line="1" '
+            u'name={2!s} time="{3!r}">'
+            .format(quoteattr(os.path.splitext(os.path.basename(fname))[0]),
+                    quoteattr(os.path.relpath(fname, src_dir)),
+                    quoteattr(title), t))
+        traceback = gallery_conf['failing_examples'].get(fname, '')
+        if traceback:
+            n_failures += 1
+            output += (u'<failure message={0!s}>{1!s}</failure>'
+                       .format(quoteattr(traceback.splitlines()[-1].strip()),
+                               escape(traceback)))
+        output += u'</testcase>'
+        n_tests += 1
+        elapsed += ct[0]
+    output += u'</testsuite>'
+    output = (u'<?xml version="1.0" encoding="utf-8"?>'
+              u'<testsuite errors="0" failures="{0}" name="sphinx-gallery" '
+              u'skipped="0" tests="{1}" time="{2}">'
+              .format(n_failures, n_tests, elapsed)) + output
+    # Actually write it
+    fname = os.path.join(target_dir, gallery_conf['junit'])
+    with codecs.open(fname, 'w', encoding='utf-8') as fid:
+        fid.write(output)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):

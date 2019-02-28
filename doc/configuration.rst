@@ -37,6 +37,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``binder`` (:ref:`binder_links`)
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
+- ``junit`` (:ref:`junit_xml`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -434,6 +435,31 @@ Which is achieved by the following configuration::
 
 If the value of ``first_notebook_cell`` is set to ``None``, then no extra first
 cell will be added to the notebook.
+
+
+.. _junit_xml:
+
+Using JUnit XML files
+=====================
+
+Sphinx-Gallery can create a JUnit XML file of your example run times,
+successes, and failures. To create a file named e.g. ``junit-result.xml``
+in the build output directory, set the configuration key::
+
+    sphinx_gallery_conf = {
+        ...
+        'junit': 'junit-results.xml',
+    }
+
+By default, JUnit XML file generation is disabled (by setting ``'junit': ''``.
+JUnit XML files be useful for example on CircleCI builds, where you can add
+this line to get a summary of your example run times in the CircleCI GUI:
+
+.. code-block:: yaml
+
+    - store_test_results:
+        path: doc/_build/html/junit-results.xml
+
 
 .. _disable_all_scripts_download:
 
