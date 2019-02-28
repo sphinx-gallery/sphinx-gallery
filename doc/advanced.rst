@@ -94,9 +94,7 @@ It uses an approach similar to what :func:`sphinx_gallery.scrapers.matplotlib_sc
 and :func:`sphinx_gallery.scrapers.mayavi_scraper` do under the hood, which
 use the helper function :func:`sphinx_gallery.scrapers.figure_rst` to
 create the standardized rST. If your package will be used to write an image file
-to disk (e.g., PNG or JPEG), we recommend you use a similar approach.
-
-.. code-block:: python
+to disk (e.g., PNG or JPEG), we recommend you use a similar approach. ::
 
    def my_module_scraper(block, block_vars, gallery_conf)
        import mymodule
@@ -138,9 +136,7 @@ disk*. In this case we won't *generate* any image files, we'll only generate
 the rST needed to embed them in the documentation.
 
 We'll use a callable class in this case, and assume it is defined within your
-package in a module called ``scraper``. Here is the scraper code:
-
-.. code-block:: python
+package in a module called ``scraper``. Here is the scraper code::
 
    from glob import glob
    import shutil
@@ -169,9 +165,7 @@ package in a module called ``scraper``. Here is the scraper code:
            return figure_rst(image_names, gallery_conf['src_dir'])
 
 
-Then, in our ``conf.py`` file, we include the following code:
-
-.. code-block:: python
+Then, in our ``conf.py`` file, we include the following code::
 
    from mymodule import PNGScraper
    my_scraper_instance = PNGScraper()
@@ -206,19 +200,14 @@ file name of the currently-executed Python script). These generally don't need
 to be used in order to perform whatever resetting behavior you want, but must
 be included in the function definition for compatibility reasons.
 
-For example, to reset matplotlib to always use the ``ggplot`` style, you could do:
-
-
-.. code-block:: python
+For example, to reset matplotlib to always use the ``ggplot`` style, you could do::
 
    def reset_mpl(gallery_conf, fname):
        from matplotlib import style
        style.use('ggplot')
 
 Any custom functions can be defined (or imported) in ``conf.py`` and given to
-the ``reset_modules`` configuration key. For the function defined above:
-
-.. code-block:: python
+the ``reset_modules`` configuration key. For the function defined above::
 
    sphinx_gallery_conf = {
        ...

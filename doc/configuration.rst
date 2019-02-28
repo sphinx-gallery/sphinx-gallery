@@ -413,7 +413,7 @@ Sphinx-Gallery adds an extra cell to the beginning of every generated notebook.
 This is often for adding code that is required to run properly in the notebook,
 but not in a ``.py`` file. By default, this text is
 
-.. code-block:: python
+.. code-block:: ipython
 
    %matplotlib inline
 
@@ -421,7 +421,7 @@ You can choose whatever text you like by modifying the ``first_notebook_cell``
 configuration parameter. For example, the gallery of this documentation
 displays a comment along-side each the code shown above.
 
-.. code-block:: python
+.. code-block:: ipython
 
   # This cell is added by sphinx-gallery
   # It can be customized to whatever you like
@@ -646,8 +646,6 @@ figures. This behavior is equivalent to the default of::
 Built-in support is also provided for finding :mod:`Mayavi <mayavi.mlab>`
 figures. Enable this feature with the following configuration::
 
-.. code-block:: python
-
    sphinx_gallery_conf = {
        ...
        'image_scrapers': ('matplotlib', 'mayavi'),
@@ -837,5 +835,5 @@ you can do::
 
     sphinx_gallery_conf = {
         ...
-        'show_memory': True',
+        'show_memory': True,
     }

@@ -24,7 +24,9 @@ Overview your project files and folders
 This section describes the general files and structure needed for Sphinx-Gallery
 to build your examples.
 
-Let's say your Python project looks like this::
+Let's say your Python project looks like this:
+
+.. code-block:: none
 
     .
     ├── doc

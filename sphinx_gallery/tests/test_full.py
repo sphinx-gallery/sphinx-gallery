@@ -134,6 +134,7 @@ def test_run_sphinx(sphinx_app):
 def test_embed_links_and_styles(sphinx_app):
     """Test that links and styles are embedded properly in doc."""
     out_dir = sphinx_app.outdir
+    src_dir = sphinx_app.srcdir
     examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(examples_dir)
     example_files = os.listdir(examples_dir)
@@ -154,9 +155,17 @@ def test_embed_links_and_styles(sphinx_app):
         assert "memory usage" not in lines
     else:
         assert "memory usage" in lines
+
     # CSS styles
     assert 'class="sphx-glr-signature"' in lines
     assert 'class="sphx-glr-timing"' in lines
+
+    # highlight language
+    fname = op.join(src_dir, 'auto_examples', 'plot_numpy_matplotlib.rst')
+    assert op.isfile(fname)
+    with open(fname, 'rb') as fid:
+        rst = fid.read().decode('utf-8')
+    assert '.. code-block:: python3\n' in rst
 
 
 def test_backreferences(sphinx_app):
