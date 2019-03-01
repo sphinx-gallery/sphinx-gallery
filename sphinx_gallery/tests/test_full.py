@@ -9,7 +9,6 @@ from __future__ import division, absolute_import, print_function
 import codecs
 import os
 import os.path as op
-import re
 import shutil
 
 from sphinx.application import Sphinx
@@ -53,7 +52,7 @@ def test_timings(sphinx_app):
     assert op.isfile(timings_fname)
 
 
-def test_junit(sphinx_app):
+def test_junit(sphinx_app, tmpdir):
     out_dir = sphinx_app.outdir
     junit_file = op.join(out_dir, 'junit-results.xml')
     assert op.isfile(junit_file)
@@ -65,20 +64,28 @@ def test_junit(sphinx_app):
     assert 'expected example failure' in contents
     assert '<failure ' not in contents
     src_dir = sphinx_app.srcdir
-    passing_fname = op.join(src_dir, 'examples', 'plot_numpy_matplotlib.py')
-    failing_fname = op.join(src_dir, 'examples',
+    new_src_dir = op.join(str(tmpdir), 'src')
+    shutil.copytree(src_dir, new_src_dir)
+    del src_dir
+    new_out_dir = op.join(new_src_dir, '_build', 'html')
+    new_toctree_dir = op.join(new_src_dir, '_build', 'toctrees')
+    passing_fname = op.join(new_src_dir, 'examples',
+                            'plot_numpy_matplotlib.py')
+    failing_fname = op.join(new_src_dir, 'examples',
                             'plot_future_imports_broken.py')
     shutil.move(passing_fname, passing_fname + '.temp')
     shutil.move(failing_fname, passing_fname)
     shutil.move(passing_fname + '.temp', failing_fname)
     with docutils_namespace():
-        app = Sphinx(src_dir, sphinx_app.confdir, sphinx_app.outdir,
-                     op.join(sphinx_app.outdir, '..', 'toctrees'),
+        app = Sphinx(new_src_dir, new_src_dir, new_out_dir,
+                     new_toctree_dir,
                      buildername='html', status=MixedEncodingStringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
         with pytest.raises(ValueError, match='Here is a summary of the '):
             app.build(False, [])
+    junit_file = op.join(new_out_dir, 'junit-results.xml')
+    assert op.isfile(junit_file)
     with open(junit_file, 'rb') as fid:
         contents = fid.read().decode('utf-8')
     assert 'errors="0" failures="2"' in contents
