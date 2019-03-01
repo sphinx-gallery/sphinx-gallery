@@ -7,9 +7,11 @@ Test the SG pipeline used with Sphinx
 from __future__ import division, absolute_import, print_function
 
 import codecs
+from distutils.version import LooseVersion
 import os
 import os.path as op
 import shutil
+import sys
 
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
@@ -62,7 +64,7 @@ def test_junit(sphinx_app, tmpdir):
     assert 'errors="0" failures="0"' in contents
     assert 'tests="5"' in contents
     assert 'expected example failure' in contents
-    assert '<failure ' not in contents
+    assert '<failure message' not in contents
     src_dir = sphinx_app.srcdir
     new_src_dir = op.join(str(tmpdir), 'src')
     shutil.copytree(src_dir, new_src_dir)
@@ -90,8 +92,10 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read().decode('utf-8')
     assert 'errors="0" failures="2"' in contents
     assert 'tests="5"' in contents
-    assert '<failure ' in contents
-    assert 'message="RuntimeError: Forcing' in contents
+    if LooseVersion(sys.version) >= LooseVersion('3'):
+        assert '<failure message="RuntimeError: Forcing' in contents
+    else:
+        assert '<failure message="SyntaxError: invalid' in contents
     assert 'Passed even though it was marked to fail' in contents
 
 
