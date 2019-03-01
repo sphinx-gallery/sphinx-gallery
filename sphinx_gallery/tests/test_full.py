@@ -60,13 +60,32 @@ def test_junit(sphinx_app):
     with open(junit_file, 'rb') as fid:
         contents = fid.read().decode('utf-8')
     assert contents.startswith('<?xml')
-    assert 'errors="0" failures="1"' in contents
-    assert re.match('.*<testcase classname="plot_future_imports_broken" '
-                    'file="examples/plot_future_imports_broken.py" line="1" '
-                    'name="Test without __future__ imports" time="0.[0-9]*">'
-                    '<failure message="RuntimeError.*">'
-                    'Traceback.*</failure></testcase>', contents,
-                    re.MULTILINE | re.DOTALL) is not None
+    assert 'errors="0" failures="0"' in contents
+    assert 'tests="5"' in contents
+    assert 'expected example failure' in contents
+    assert '<failure ' not in contents
+    src_dir = sphinx_app.srcdir
+    passing_fname = op.join(src_dir, 'examples', 'plot_numpy_matplotlib.py')
+    failing_fname = op.join(src_dir, 'examples',
+                            'plot_future_imports_broken.py')
+    shutil.move(passing_fname, passing_fname + '.temp')
+    shutil.move(failing_fname, passing_fname)
+    shutil.move(passing_fname + '.temp', failing_fname)
+    with docutils_namespace():
+        app = Sphinx(src_dir, sphinx_app.confdir, sphinx_app.outdir,
+                     op.join(sphinx_app.outdir, '..', 'toctrees'),
+                     buildername='html', status=MixedEncodingStringIO())
+        # need to build within the context manager
+        # for automodule and backrefs to work
+        with pytest.raises(ValueError, match='Here is a summary of the '):
+            app.build(False, [])
+    with open(junit_file, 'rb') as fid:
+        contents = fid.read().decode('utf-8')
+    assert 'errors="0" failures="2"' in contents
+    assert 'tests="5"' in contents
+    assert '<failure ' in contents
+    assert 'message="RuntimeError: Forcing' in contents
+    assert 'Passed even though it was marked to fail' in contents
 
 
 def test_run_sphinx(sphinx_app):
