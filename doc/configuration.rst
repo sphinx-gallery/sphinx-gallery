@@ -449,7 +449,7 @@ to the HTML output directory)::
 
     sphinx_gallery_conf = {
         ...
-        'junit': 'sphinx-gallery/junit.xml',
+        'junit': '../test-results/sphinx-gallery/junit.xml',
     }
 
 By default, JUnit XML file generation is disabled (by setting ``'junit': ''``.
@@ -462,9 +462,9 @@ name):
 .. code-block:: yaml
 
     - store_test_results:
-        path: doc/_build/html
+        path: doc/_build/test-results
     - store_artifacts:
-        path: doc/_build/html
+        path: doc/_build/test-results
 
 
 .. _disable_all_scripts_download:
