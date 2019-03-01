@@ -22,6 +22,9 @@ Developer changes
   been changed from ``url`` to ``binderhub_url`` in order to make it more
   explicit. The old configuration key (``url``) will be deprecated in
   version v0.4.0)
+* Support for generating JUnit XML summary files via the ``'junit'``
+  configuration value, which can be useful for building on CI services such as
+  CircleCI.
 
 
 v0.2.0
