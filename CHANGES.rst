@@ -24,7 +24,9 @@ Developer changes
   version v0.4.0)
 * Support for generating JUnit XML summary files via the ``'junit'``
   configuration value, which can be useful for building on CI services such as
-  CircleCI.
+  CircleCI. See the related `CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
+  and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
+
 
 
 v0.2.0

@@ -447,17 +447,17 @@ successes, and failures. To create a file named e.g. ``junit-result.xml``
 in the ``/build`` output directory, set the configuration key (path is relative
 to the HTML output directory)::
 
-    sphinx_gallery_conf = {
-        ...
-        'junit': '../test-results/sphinx-gallery/junit.xml',
-    }
+     sphinx_gallery_conf = {
+         ...
+         'junit': '../test-results/sphinx-gallery/junit.xml',
+     }
 
-By default, JUnit XML file generation is disabled (by setting ``'junit': ''``.
+By default, JUnit XML file generation is disabled (by setting ``'junit': ''``).
 JUnit XML files be useful for example on CircleCI builds, where you can add
 a line like this to get a summary of your example run times in the CircleCI GUI
-(which will use the results in ``doc/_build/html/sphinx-gallery/junit.xml`` to
-understand the tests came from sphinx-gallery based on the nested subdirectory
-name):
+(which will parse the file path
+``doc/_build/test-results/sphinx-gallery/junit.xml`` and infer the tests
+came from ``sphinx-gallery`` based on the nested subdirectory name):
 
 .. code-block:: yaml
 
@@ -466,6 +466,9 @@ name):
     - store_artifacts:
         path: doc/_build/test-results
 
+For more information on CircleCI integration, peruse the related
+`CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
+and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
 
 .. _disable_all_scripts_download:
 
