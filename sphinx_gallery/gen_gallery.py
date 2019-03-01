@@ -386,6 +386,11 @@ def write_junit_xml(gallery_conf, target_dir, computation_times):
     output = ''
     for ct in computation_times:
         t, fname = ct
+        if not any(fname in x for x in (gallery_conf['passing_examples'],
+                                        failing_unexpectedly,
+                                        failing_as_expected,
+                                        passing_unexpectedly)):
+            continue  # not subselected by our regex
         _, title = extract_intro_and_title(
             fname, get_docstring_and_rest(fname)[0])
         output += (

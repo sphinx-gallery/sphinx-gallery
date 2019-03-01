@@ -80,7 +80,8 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read().decode('utf-8')
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="5"' in contents
+    assert 'tests="4"' in contents
+    assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
     src_dir = sphinx_app.srcdir
@@ -109,7 +110,7 @@ def test_junit(sphinx_app, tmpdir):
     with open(junit_file, 'rb') as fid:
         contents = fid.read().decode('utf-8')
     assert 'errors="0" failures="2"' in contents
-    assert 'tests="5"' in contents
+    assert 'tests="2"' in contents  # this time we only ran the two stale files
     if LooseVersion(sys.version) >= LooseVersion('3'):
         assert '<failure message="RuntimeError: Forcing' in contents
     else:
