@@ -68,7 +68,8 @@ def test_timings(sphinx_app):
     assert 'href="plot_numpy_matplotlib.html' in content
     # printed
     status = sphinx_app._status.getvalue()
-    assert '- examples/plot_numpy_matplotlib.py: ' in status
+    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    assert ('- %s: ' % fname) in status
 
 
 def test_junit(sphinx_app, tmpdir):
