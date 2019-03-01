@@ -73,7 +73,7 @@ def test_timings(sphinx_app):
 
 def test_junit(sphinx_app, tmpdir):
     out_dir = sphinx_app.outdir
-    junit_file = op.join(out_dir, 'junit-results.xml')
+    junit_file = op.join(out_dir, 'sphinx-gallery', 'junit-results.xml')
     assert op.isfile(junit_file)
     with open(junit_file, 'rb') as fid:
         contents = fid.read().decode('utf-8')
@@ -103,7 +103,7 @@ def test_junit(sphinx_app, tmpdir):
         # for automodule and backrefs to work
         with pytest.raises(ValueError, match='Here is a summary of the '):
             app.build(False, [])
-    junit_file = op.join(new_out_dir, 'junit-results.xml')
+    junit_file = op.join(new_out_dir, 'sphinx-gallery', 'junit-results.xml')
     assert op.isfile(junit_file)
     with open(junit_file, 'rb') as fid:
         contents = fid.read().decode('utf-8')

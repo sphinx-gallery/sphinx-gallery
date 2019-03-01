@@ -1,4 +1,4 @@
-import sphinx_gallery  # noqa, analysis:ignore
+import os.path as op
 from sphinx_gallery.sorting import FileNameSortKey
 
 extensions = [
@@ -30,6 +30,6 @@ sphinx_gallery_conf = {
     'within_section_order': FileNameSortKey,
     'expected_failing_examples': ['examples/plot_future_imports_broken.py'],
     'show_memory': True,
-    'junit': 'junit-results.xml',
+    'junit': op.join('sphinx-gallery', 'junit-results.xml'),
 }
 nitpicky = True

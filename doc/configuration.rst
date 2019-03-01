@@ -444,16 +444,20 @@ Using JUnit XML files
 
 Sphinx-Gallery can create a JUnit XML file of your example run times,
 successes, and failures. To create a file named e.g. ``junit-result.xml``
-in the build output directory, set the configuration key::
+in the ``/build`` output directory, set the configuration key (path is relative
+to the HTML output directory)::
 
     sphinx_gallery_conf = {
         ...
-        'junit': 'junit.xml',
+        'junit': 'sphinx-gallery/junit.xml',
     }
 
 By default, JUnit XML file generation is disabled (by setting ``'junit': ''``.
 JUnit XML files be useful for example on CircleCI builds, where you can add
-this line to get a summary of your example run times in the CircleCI GUI:
+a line like this to get a summary of your example run times in the CircleCI GUI
+(which will use the results in ``doc/_build/html/sphinx-gallery/junit.xml`` to
+understand the tests came from sphinx-gallery based on the nested subdirectory
+name):
 
 .. code-block:: yaml
 

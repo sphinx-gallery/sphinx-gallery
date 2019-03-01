@@ -415,7 +415,10 @@ def write_junit_xml(gallery_conf, target_dir, computation_times):
               u'skipped="{1}" tests="{2}" time="{3}">'
               .format(n_failures, n_skips, n_tests, elapsed)) + output
     # Actually write it
-    fname = os.path.join(target_dir, gallery_conf['junit'])
+    fname = os.path.normpath(os.path.join(target_dir, gallery_conf['junit']))
+    junit_dir = os.path.dirname(fname)
+    if not os.path.isdir(junit_dir):
+        os.makedirs(junit_dir)
     with codecs.open(fname, 'w', encoding='utf-8') as fid:
         fid.write(output)
 
