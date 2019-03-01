@@ -49,9 +49,26 @@ def sphinx_app(tmpdir_factory):
 def test_timings(sphinx_app):
     """Test that a timings page is created."""
     out_dir = sphinx_app.outdir
-    timings_fname = op.join(out_dir, 'auto_examples',
-                            'sg_execution_times.html')
-    assert op.isfile(timings_fname)
+    src_dir = sphinx_app.srcdir
+    # local folder
+    timings_rst = op.join(src_dir, 'auto_examples',
+                          'sg_execution_times.rst')
+    assert op.isfile(timings_rst)
+    with open(timings_rst, 'rb') as fid:
+        content = fid.read().decode('utf-8')
+    assert ':ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`' in content
+    parenthetical = '(``%s``)' % ('plot_numpy_matplotlib.py',)
+    assert parenthetical in content
+    # HTML output
+    timings_html = op.join(out_dir, 'auto_examples',
+                           'sg_execution_times.html')
+    assert op.isfile(timings_html)
+    with open(timings_html, 'rb') as fid:
+        content = fid.read().decode('utf-8')
+    assert 'href="plot_numpy_matplotlib.html' in content
+    # printed
+    status = sphinx_app._status.getvalue()
+    assert '- examples/plot_numpy_matplotlib.py: ' in status
 
 
 def test_junit(sphinx_app, tmpdir):

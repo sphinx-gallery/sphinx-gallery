@@ -354,6 +354,8 @@ def _sec_to_readable(t):
 
 
 def write_computation_times(gallery_conf, target_dir, computation_times):
+    if not gallery_conf['plot_gallery']:
+        return
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
     new_ref = 'sphx_glr_%s_sg_execution_times' % target_dir_clean
@@ -365,9 +367,10 @@ def write_computation_times(gallery_conf, target_dir, computation_times):
                   .format(_sec_to_readable(total_time), target_dir_clean))
         # sort by time (descending) then alphabetical
         for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
-            example_link = 'sphx_glr_%s_%s' % (target_dir_clean, ct[1])
+            name = os.path.basename(ct[1])
+            example_link = 'sphx_glr_%s_%s' % (target_dir_clean, name)
             fid.write(u'- **{0}**: :ref:`{2}` (``{1}``)\n'.format(
-                _sec_to_readable(ct[0]), ct[1], example_link))
+                _sec_to_readable(ct[0]), name, example_link))
 
 
 def write_junit_xml(gallery_conf, target_dir, computation_times):
