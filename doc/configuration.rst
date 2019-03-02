@@ -37,6 +37,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``binder`` (:ref:`binder_links`)
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
+- ``junit`` (:ref:`junit_xml`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -434,6 +435,40 @@ Which is achieved by the following configuration::
 
 If the value of ``first_notebook_cell`` is set to ``None``, then no extra first
 cell will be added to the notebook.
+
+
+.. _junit_xml:
+
+Using JUnit XML files
+=====================
+
+Sphinx-Gallery can create a JUnit XML file of your example run times,
+successes, and failures. To create a file named e.g. ``junit-result.xml``
+in the ``/build`` output directory, set the configuration key (path is relative
+to the HTML output directory)::
+
+     sphinx_gallery_conf = {
+         ...
+         'junit': '../test-results/sphinx-gallery/junit.xml',
+     }
+
+By default, JUnit XML file generation is disabled (by setting ``'junit': ''``).
+JUnit XML files are useful for example on CircleCI builds, where you can add
+a line like this to get a summary of your example run times in the CircleCI GUI
+(which will parse the file path
+``doc/_build/test-results/sphinx-gallery/junit.xml`` and infer the tests
+came from ``sphinx-gallery`` based on the nested subdirectory name):
+
+.. code-block:: yaml
+
+    - store_test_results:
+        path: doc/_build/test-results
+    - store_artifacts:
+        path: doc/_build/test-results
+
+For more information on CircleCI integration, peruse the related
+`CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
+and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
 
 .. _disable_all_scripts_download:
 

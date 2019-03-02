@@ -16,10 +16,12 @@ import copy
 from datetime import timedelta, datetime
 import re
 import os
+from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .gen_rst import generate_dir_rst, SPHX_GLR_SIG, _get_memory_base
+from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
+                      extract_intro_and_title, get_docstring_and_rest)
 from .scrapers import _scraper_dict, _reset_dict
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
@@ -67,6 +69,7 @@ DEFAULT_GALLERY_CONF = {
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'show_memory': False,
+    'junit': '',
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -316,11 +319,15 @@ def generate_gallery_rst(app):
     if gallery_conf['plot_gallery']:
         logger.info("computation time summary:", color='white')
         for time_elapsed, fname in sorted(computation_times, reverse=True):
+            fname = os.path.relpath(fname,
+                                    os.path.normpath(gallery_conf['src_dir']))
             if time_elapsed is not None:
                 if time_elapsed >= gallery_conf['min_reported_time']:
-                    logger.info("\t- %s: %.2g sec", fname, time_elapsed)
+                    logger.info("    - %s: %.2g sec", fname, time_elapsed)
             else:
-                logger.info("\t- %s: not run", fname)
+                logger.info("    - %s: not run", fname)
+        # Also create a junit.xml file, useful e.g. on CircleCI
+        write_junit_xml(gallery_conf, app.builder.outdir, computation_times)
 
 
 SPHX_GLR_COMP_TIMES = """
@@ -347,6 +354,8 @@ def _sec_to_readable(t):
 
 
 def write_computation_times(gallery_conf, target_dir, computation_times):
+    if not gallery_conf['plot_gallery']:
+        return
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
     new_ref = 'sphx_glr_%s_sg_execution_times' % target_dir_clean
@@ -358,9 +367,65 @@ def write_computation_times(gallery_conf, target_dir, computation_times):
                   .format(_sec_to_readable(total_time), target_dir_clean))
         # sort by time (descending) then alphabetical
         for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
-            example_link = 'sphx_glr_%s_%s' % (target_dir_clean, ct[1])
+            name = os.path.basename(ct[1])
+            example_link = 'sphx_glr_%s_%s' % (target_dir_clean, name)
             fid.write(u'- **{0}**: :ref:`{2}` (``{1}``)\n'.format(
-                _sec_to_readable(ct[0]), ct[1], example_link))
+                _sec_to_readable(ct[0]), name, example_link))
+
+
+def write_junit_xml(gallery_conf, target_dir, computation_times):
+    if not gallery_conf['junit'] or not gallery_conf['plot_gallery']:
+        return
+    failing_as_expected, failing_unexpectedly, passing_unexpectedly = \
+        _parse_failures(gallery_conf)
+    n_tests = 0
+    n_failures = 0
+    n_skips = 0
+    elapsed = 0.
+    src_dir = gallery_conf['src_dir']
+    output = ''
+    for ct in computation_times:
+        t, fname = ct
+        if not any(fname in x for x in (gallery_conf['passing_examples'],
+                                        failing_unexpectedly,
+                                        failing_as_expected,
+                                        passing_unexpectedly)):
+            continue  # not subselected by our regex
+        _, title = extract_intro_and_title(
+            fname, get_docstring_and_rest(fname)[0])
+        output += (
+            u'<testcase classname={0!s} file={1!s} line="1" '
+            u'name={2!s} time="{3!r}">'
+            .format(quoteattr(os.path.splitext(os.path.basename(fname))[0]),
+                    quoteattr(os.path.relpath(fname, src_dir)),
+                    quoteattr(title), t))
+        if fname in failing_as_expected:
+            output += u'<skipped message="expected example failure"></skipped>'
+            n_skips += 1
+        elif fname in failing_unexpectedly or fname in passing_unexpectedly:
+            if fname in failing_unexpectedly:
+                traceback = gallery_conf['failing_examples'][fname]
+            else:  # fname in passing_unexpectedly
+                traceback = 'Passed even though it was marked to fail'
+            n_failures += 1
+            output += (u'<failure message={0!s}>{1!s}</failure>'
+                       .format(quoteattr(traceback.splitlines()[-1].strip()),
+                               escape(traceback)))
+        output += u'</testcase>'
+        n_tests += 1
+        elapsed += ct[0]
+    output += u'</testsuite>'
+    output = (u'<?xml version="1.0" encoding="utf-8"?>'
+              u'<testsuite errors="0" failures="{0}" name="sphinx-gallery" '
+              u'skipped="{1}" tests="{2}" time="{3}">'
+              .format(n_failures, n_skips, n_tests, elapsed)) + output
+    # Actually write it
+    fname = os.path.normpath(os.path.join(target_dir, gallery_conf['junit']))
+    junit_dir = os.path.dirname(fname)
+    if not os.path.isdir(junit_dir):
+        os.makedirs(junit_dir)
+    with codecs.open(fname, 'w', encoding='utf-8') as fid:
+        fid.write(output)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
@@ -382,6 +447,25 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
+def _parse_failures(gallery_conf):
+    """Split the failures."""
+    failing_examples = set(gallery_conf['failing_examples'].keys())
+    expected_failing_examples = set(
+        os.path.normpath(os.path.join(gallery_conf['src_dir'], path))
+        for path in gallery_conf['expected_failing_examples'])
+    failing_as_expected = failing_examples.intersection(
+        expected_failing_examples)
+    failing_unexpectedly = failing_examples.difference(
+        expected_failing_examples)
+    passing_unexpectedly = expected_failing_examples.difference(
+        failing_examples)
+    # filter from examples actually run
+    passing_unexpectedly = [
+        src_file for src_file in passing_unexpectedly
+        if re.search(gallery_conf.get('filename_pattern'), src_file)]
+    return failing_as_expected, failing_unexpectedly, passing_unexpectedly
+
+
 def summarize_failing_examples(app, exception):
     """Collects the list of falling examples and prints them with a traceback.
 
@@ -397,44 +481,31 @@ def summarize_failing_examples(app, exception):
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    failing_examples = set(gallery_conf['failing_examples'].keys())
-    expected_failing_examples = set(
-        os.path.normpath(os.path.join(app.srcdir, path))
-        for path in gallery_conf['expected_failing_examples'])
+    failing_as_expected, failing_unexpectedly, passing_unexpectedly = \
+        _parse_failures(gallery_conf)
 
-    examples_expected_to_fail = failing_examples.intersection(
-        expected_failing_examples)
-    if examples_expected_to_fail:
+    if failing_as_expected:
         logger.info("Examples failing as expected:", color='brown')
-        for fail_example in examples_expected_to_fail:
+        for fail_example in failing_as_expected:
             logger.info('%s failed leaving traceback:', fail_example,
                         color='brown')
             logger.info(gallery_conf['failing_examples'][fail_example],
                         color='brown')
 
-    examples_not_expected_to_fail = failing_examples.difference(
-        expected_failing_examples)
     fail_msgs = []
-    if examples_not_expected_to_fail:
+    if failing_unexpectedly:
         fail_msgs.append(red("Unexpected failing examples:"))
-        for fail_example in examples_not_expected_to_fail:
+        for fail_example in failing_unexpectedly:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
                              gallery_conf['failing_examples'][fail_example] +
                              '\n')
 
-    examples_not_expected_to_pass = expected_failing_examples.difference(
-        failing_examples)
-    # filter from examples actually run
-    filename_pattern = gallery_conf.get('filename_pattern')
-    examples_not_expected_to_pass = [
-        src_file for src_file in examples_not_expected_to_pass
-        if re.search(filename_pattern, src_file)]
-    if examples_not_expected_to_pass:
+    if passing_unexpectedly:
         fail_msgs.append(red("Examples expected to fail, but not failing:\n") +
                          "Please remove these examples from\n" +
                          "sphinx_gallery_conf['expected_failing_examples']\n" +
                          "in your conf.py file"
-                         "\n".join(examples_not_expected_to_pass))
+                         "\n".join(passing_unexpectedly))
 
     # standard message
     n_good = len(gallery_conf['passing_examples'])

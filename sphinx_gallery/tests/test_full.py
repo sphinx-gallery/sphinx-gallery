@@ -7,9 +7,11 @@ Test the SG pipeline used with Sphinx
 from __future__ import division, absolute_import, print_function
 
 import codecs
+from distutils.version import LooseVersion
 import os
 import os.path as op
 import shutil
+import sys
 
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
@@ -47,9 +49,73 @@ def sphinx_app(tmpdir_factory):
 def test_timings(sphinx_app):
     """Test that a timings page is created."""
     out_dir = sphinx_app.outdir
-    timings_fname = op.join(out_dir, 'auto_examples',
-                            'sg_execution_times.html')
-    assert op.isfile(timings_fname)
+    src_dir = sphinx_app.srcdir
+    # local folder
+    timings_rst = op.join(src_dir, 'auto_examples',
+                          'sg_execution_times.rst')
+    assert op.isfile(timings_rst)
+    with open(timings_rst, 'rb') as fid:
+        content = fid.read().decode('utf-8')
+    assert ':ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`' in content
+    parenthetical = '(``%s``)' % ('plot_numpy_matplotlib.py',)
+    assert parenthetical in content
+    # HTML output
+    timings_html = op.join(out_dir, 'auto_examples',
+                           'sg_execution_times.html')
+    assert op.isfile(timings_html)
+    with open(timings_html, 'rb') as fid:
+        content = fid.read().decode('utf-8')
+    assert 'href="plot_numpy_matplotlib.html' in content
+    # printed
+    status = sphinx_app._status.getvalue()
+    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    assert ('- %s: ' % fname) in status
+
+
+def test_junit(sphinx_app, tmpdir):
+    out_dir = sphinx_app.outdir
+    junit_file = op.join(out_dir, 'sphinx-gallery', 'junit-results.xml')
+    assert op.isfile(junit_file)
+    with open(junit_file, 'rb') as fid:
+        contents = fid.read().decode('utf-8')
+    assert contents.startswith('<?xml')
+    assert 'errors="0" failures="0"' in contents
+    assert 'tests="4"' in contents
+    assert 'local_module' not in contents  # it's not actually run as an ex
+    assert 'expected example failure' in contents
+    assert '<failure message' not in contents
+    src_dir = sphinx_app.srcdir
+    new_src_dir = op.join(str(tmpdir), 'src')
+    shutil.copytree(src_dir, new_src_dir)
+    del src_dir
+    new_out_dir = op.join(new_src_dir, '_build', 'html')
+    new_toctree_dir = op.join(new_src_dir, '_build', 'toctrees')
+    passing_fname = op.join(new_src_dir, 'examples',
+                            'plot_numpy_matplotlib.py')
+    failing_fname = op.join(new_src_dir, 'examples',
+                            'plot_future_imports_broken.py')
+    shutil.move(passing_fname, passing_fname + '.temp')
+    shutil.move(failing_fname, passing_fname)
+    shutil.move(passing_fname + '.temp', failing_fname)
+    with docutils_namespace():
+        app = Sphinx(new_src_dir, new_src_dir, new_out_dir,
+                     new_toctree_dir,
+                     buildername='html', status=MixedEncodingStringIO())
+        # need to build within the context manager
+        # for automodule and backrefs to work
+        with pytest.raises(ValueError, match='Here is a summary of the '):
+            app.build(False, [])
+    junit_file = op.join(new_out_dir, 'sphinx-gallery', 'junit-results.xml')
+    assert op.isfile(junit_file)
+    with open(junit_file, 'rb') as fid:
+        contents = fid.read().decode('utf-8')
+    assert 'errors="0" failures="2"' in contents
+    assert 'tests="2"' in contents  # this time we only ran the two stale files
+    if LooseVersion(sys.version) >= LooseVersion('3'):
+        assert '<failure message="RuntimeError: Forcing' in contents
+    else:
+        assert '<failure message="SyntaxError: invalid' in contents
+    assert 'Passed even though it was marked to fail' in contents
 
 
 def test_run_sphinx(sphinx_app):
