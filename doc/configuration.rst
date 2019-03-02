@@ -453,7 +453,7 @@ to the HTML output directory)::
      }
 
 By default, JUnit XML file generation is disabled (by setting ``'junit': ''``).
-JUnit XML files be useful for example on CircleCI builds, where you can add
+JUnit XML files are useful for example on CircleCI builds, where you can add
 a line like this to get a summary of your example run times in the CircleCI GUI
 (which will parse the file path
 ``doc/_build/test-results/sphinx-gallery/junit.xml`` and infer the tests
