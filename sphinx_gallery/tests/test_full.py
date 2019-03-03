@@ -202,12 +202,12 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     #
     status = sphinx_app._status.getvalue()
     assert re.match('.*16 added, 0 changed, 0 removed$.*',
-                    status, re.MULTILINE | re.DOTALL)
+                    status, re.MULTILINE | re.DOTALL) is not None
     assert re.match('.*targets for 1 source files that are out of date$.*',
-                    status, re.MULTILINE | re.DOTALL)
+                    status, re.MULTILINE | re.DOTALL) is not None
     assert re.match('.*executed 3 out of 4.*'
                     'after excluding 0 files.*based on MD5.*',
-                    status, re.MULTILINE | re.DOTALL)
+                    status, re.MULTILINE | re.DOTALL) is not None
     old_src_dir = (tmpdir_factory.getbasetemp() / 'root_old').strpath
     shutil.copytree(sphinx_app.srcdir, old_src_dir)
     generated_modules_0 = sorted(
@@ -260,11 +260,11 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
-    assert re.match('.*0 added, [3|6] changed, 0 removed$.*',
-                    status, re.MULTILINE | re.DOTALL), lines
+    assert re.match('.*0 added, [2|3|6|7] changed, 0 removed$.*',
+                    status, re.MULTILINE | re.DOTALL) is not None, lines
     assert re.match('.*executed 0 out of 1.*'
                     'after excluding 3 files.*based on MD5.*',
-                    status, re.MULTILINE | re.DOTALL)
+                    status, re.MULTILINE | re.DOTALL) is not None
     assert len(new_app.config.sphinx_gallery_conf['stale_examples']) == 3
     assert op.isfile(op.join(new_app.outdir, '_images',
                              'sphx_glr_plot_numpy_matplotlib_001.png'))
@@ -346,10 +346,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         n = '[2|3]'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
     assert re.match('.*targets for %s source files that are out of date$.*'
-                    % n, status, re.MULTILINE | re.DOTALL), lines
+                    % n, status, re.MULTILINE | re.DOTALL) is not None, lines
     assert re.match('.*executed 1 out of 2.*'
                     'after excluding 2 files.*based on MD5.*',
-                    status, re.MULTILINE | re.DOTALL)
+                    status, re.MULTILINE | re.DOTALL) is not None
     assert len(new_app.config.sphinx_gallery_conf['stale_examples']) == 2
     assert op.isfile(op.join(new_app.outdir, '_images',
                              'sphx_glr_plot_numpy_matplotlib_001.png'))
