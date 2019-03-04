@@ -104,7 +104,7 @@ def _replace_md5(fname_new, fname_old=None, method='move'):
     assert method in ('move', 'copy')
     if fname_old is None:
         assert fname_new.endswith('.new')
-        fname_old = fname_new[:-4]
+        fname_old = os.path.splitext(fname_new)[0]
     if os.path.isfile(fname_old) and (get_md5sum(fname_old) ==
                                       get_md5sum(fname_new)):
         if method == 'move':
