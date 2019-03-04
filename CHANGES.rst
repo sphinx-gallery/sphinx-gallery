@@ -291,7 +291,9 @@ Developer changes
   Sphinx-Gallery docs. Passing to the make target the variable `theme`
   builds the docs with the new theme. All sphinx themes are available
   plus read the docs online theme under the value `rtd` as shown in this
-  usage example.::
+  usage example.
+
+  .. code-block:: console
 
     $ make html theme=rtd
 

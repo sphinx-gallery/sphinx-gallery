@@ -689,7 +689,8 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
                                  gallery_conf.get('line_numbers', False)):
                 lineno = None
 
-            code_rst = codestr2rst(bcontent, lineno=lineno) + '\n'
+            code_rst = codestr2rst(bcontent, lang=gallery_conf['lang'],
+                                   lineno=lineno) + '\n'
             if is_example_notebook_like:
                 example_rst += code_rst
                 example_rst += code_output

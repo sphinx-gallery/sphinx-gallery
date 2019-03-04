@@ -86,9 +86,10 @@ def parse_config(app):
         plot_gallery = bool(app.builder.config.plot_gallery)
     src_dir = app.builder.srcdir
     abort_on_example_error = app.builder.config.abort_on_example_error
+    lang = app.builder.config.highlight_language
     gallery_conf = _complete_gallery_conf(
         app.config.sphinx_gallery_conf, src_dir, plot_gallery,
-        abort_on_example_error)
+        abort_on_example_error, lang)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
@@ -97,7 +98,7 @@ def parse_config(app):
 
 
 def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
-                           abort_on_example_error):
+                           abort_on_example_error, lang='python'):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     gallery_conf.update(sphinx_gallery_conf)
     if sphinx_gallery_conf.get('find_mayavi_figures', False):
@@ -165,6 +166,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             raise ValueError('Module resetter %r was not callable'
                              % (resetter,))
     gallery_conf['reset_modules'] = tuple(resetters)
+
+    lang = lang if lang in ('python', 'python3', 'default') else 'python'
+    gallery_conf['lang'] = lang
     del resetters
 
     # Ensure the first cell text is a string if we have it
