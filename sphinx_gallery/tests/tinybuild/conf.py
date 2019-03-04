@@ -33,3 +33,4 @@ sphinx_gallery_conf = {
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
 }
 nitpicky = True
+highlight_language = 'python3'
