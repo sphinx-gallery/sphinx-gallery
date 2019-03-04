@@ -12,10 +12,10 @@ which functions are called in the script and to which module do they belong.
 
 import os  # noqa, analysis:ignore
 import matplotlib.pyplot as plt
-import sphinx_gallery.backreferences as spback
+from sphinx_gallery.backreferences import identify_names
 
-filename = spback.__file__.replace('.pyc', '.py')
-names = spback.identify_names(filename)
+filename = os.__file__.replace('.pyc', '.py')
+names = identify_names(filename)
 figheight = len(names) + .5
 
 fontsize = 20

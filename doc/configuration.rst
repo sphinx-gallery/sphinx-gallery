@@ -38,6 +38,7 @@ file:
 - ``binder`` (:ref:`binder_links`)
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
 - ``junit`` (:ref:`junit_xml`)
+- ``log_level`` (:ref:`log_level`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -75,7 +76,8 @@ Keep in mind that both lists have to be of the same length.
 
 .. note:: If your examples take a long time to run, consider looking at the
           :ref:`execution times <sphx_glr_auto_examples_sg_execution_times>`
-          file that is generated for each gallery dir.
+          file that is generated for each gallery dir (as long as any examples
+          were actually executed in that directory during the build).
 
 .. _build_pattern:
 
@@ -121,6 +123,13 @@ you would do::
 
 Here, one should escape the dot ``r'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
 one is targeting a specific file, it would match the dot in the filename even without this escape character.
+
+.. note::
+    Sphinx-gallery only re-runs examples that have changed (according to their
+    md5 hash). You can delete the associated MD5 files (e.g.,
+    ``./auto_examples/plot_awesome_example.py.md5``) to force a rebuild if
+    you have not changed the example itself between subsequent ``sphinx``
+    calls.
 
 Similarly, to build only examples in a specific directory, you can do::
 
@@ -182,6 +191,22 @@ the converse does not hold.
 If you so desire you can implement your own sorting key. It will be
 provided the relative paths to `conf.py` of each sub gallery folder.
 
+.. warning:: If you create your own class for ``'subsection_order'``, ensure
+             that the ``__str__`` of your class is stable across runs.
+             Sphinx determines if the build environment has changed
+             (and thus if *all* documents should be rewritten)
+             by examining the config values using
+             ``md5(str(obj).encode()).hexdigest()`` in
+             ``sphinx/builders/html.py``. Default class instances
+             in Python have their memory address in their ``__repr__`` which
+             will in general change for each build. For ``ExplicitOrder``
+             for example, this is fixed via::
+
+                 def __repr__(self):
+                     return '<%s: %s>' % (self.__class__.__name__, self.ordered_list)
+
+             Thus the files are only all rebuilt if the specified ordered list
+             is changed.
 
 .. _within_gallery_order:
 
@@ -429,9 +454,12 @@ displays a comment along-side each the code shown above.
 
 Which is achieved by the following configuration::
 
-  'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
-                          "# It can be customized to whatever you like\n"
-                          "%matplotlib inline")
+    sphinx_gallery_conf = {
+        ...
+        'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+                                "# It can be customized to whatever you like\n"
+                                "%matplotlib inline")
+    }
 
 If the value of ``first_notebook_cell`` is set to ``None``, then no extra first
 cell will be added to the notebook.
@@ -469,6 +497,28 @@ came from ``sphinx-gallery`` based on the nested subdirectory name):
 For more information on CircleCI integration, peruse the related
 `CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
 and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
+
+
+.. _log_level:
+
+Setting log level
+=================
+
+Sphinx-Gallery logs output at several stages. Warnings can be generated for
+code that requires case sensitivity (e.g., ``plt.subplot`` and ``plt.Subplot``)
+when building docs on a filesystem that does not support case sensitive
+naming (e.g., Windows). In this case, by default a ``logger.warning`` is
+emitted, which will lead to a build failure when buidling with ``-W``.
+The log level can be set with::
+
+    sphinx_gallery_conf = {
+        ...
+        'log_level': {'backreference_missing': 'warning'},
+    }
+
+The only valid key currently is ``backreference_missing``.
+The valid values are ``'debug'``, ``'info'``, ``'warning'``, and ``'error'``.
+
 
 .. _disable_all_scripts_download:
 
@@ -549,7 +599,7 @@ If a Sphinx-Gallery configuration for Binder is discovered, the following extra 
 1. The dependency files specified in ``dependencies`` will be copied to a ``binder/`` folder in your built documentation.
 2. The built Jupyter Notebooks from the documentation will be copied to a folder called ``<notebooks_dir/>`` at the root of
    your built documentation (they will follow the same folder hierarchy within the notebooks directory folder.
-2. The rST output of each Sphinx-Gallery example will now have a ``launch binder`` button in it.
+3. The rST output of each Sphinx-Gallery example will now have a ``launch binder`` button in it.
 4. That button will point to a binder link with the following structure::
 
        <binderhub_url>/v2/gh/<org>/<repo>/<ref>?filepath=<filepath_prefix>/<notebooks_dir>/path/to/notebook.ipynb
@@ -768,6 +818,9 @@ build. Change your `conf.py` accordingly::
 Here you list the examples you allow to fail during the build process,
 keep in mind to specify the full relative path from your `conf.py` to
 the example script.
+
+.. note:: If an example is expected to fail, sphinx-gallery will error if
+          the example runs without error.
 
 
 .. _setting_thumbnail_size:

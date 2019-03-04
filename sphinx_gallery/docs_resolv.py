@@ -240,7 +240,7 @@ class SphinxDocLinkResolver(object):
 
         Returns
         -------
-        link : str | None
+        link : str or None
             The link (URL) to the documentation.
         """
         full_name = cobj['module_short'] + '.' + cobj['name']

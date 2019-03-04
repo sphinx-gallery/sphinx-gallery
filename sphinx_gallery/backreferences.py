@@ -11,8 +11,12 @@ from __future__ import print_function, unicode_literals
 
 import ast
 import codecs
+import collections
 import os
 import re
+
+from . import sphinx_compatibility
+from .utils import _replace_md5
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -129,7 +133,7 @@ def identify_names(filename):
     names = list(finder.get_mapping())
     names += extract_object_names_from_docs(filename)
 
-    example_code_obj = {}
+    example_code_obj = collections.OrderedDict()
     for name, full_name in names:
         if name in example_code_obj:
             continue  # if someone puts it in the docstring and code
@@ -154,9 +158,10 @@ def scan_used_functions(example_file, gallery_conf):
     """save variables so we can later add links to the documentation"""
     example_code_obj = identify_names(example_file)
     if example_code_obj:
-        codeobj_fname = example_file[:-3] + '_codeobj.pickle'
+        codeobj_fname = example_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
+        _replace_md5(codeobj_fname)
 
     backrefs = set('{module_short}.{name}'.format(**entry)
                    for entry in example_code_obj.values()
@@ -216,7 +221,7 @@ def write_backreferences(seen_backrefs, gallery_conf,
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
                                     gallery_conf['backreferences_dir'],
-                                    '%s.examples' % backref)
+                                    '%s.examples.new' % backref)
         seen = backref in seen_backrefs
         with codecs.open(include_path, 'a' if seen else 'w',
                          encoding='utf-8') as ex_file:
@@ -227,3 +232,24 @@ def write_backreferences(seen_backrefs, gallery_conf,
             ex_file.write(_thumbnail_div(build_target_dir, fname, snippet,
                                          is_backref=True))
             seen_backrefs.add(backref)
+
+
+def finalize_backreferences(seen_backrefs, gallery_conf):
+    """Replace backref files only if necessary."""
+    logger = sphinx_compatibility.getLogger('sphinx-gallery')
+    if gallery_conf['backreferences_dir'] is None:
+        return
+
+    for backref in seen_backrefs:
+        path = os.path.join(gallery_conf['src_dir'],
+                            gallery_conf['backreferences_dir'],
+                            '%s.examples.new' % backref)
+        if os.path.isfile(path):
+            _replace_md5(path)
+        else:
+            level = gallery_conf['log_level'].get('backreference_missing',
+                                                  'warning')
+            func = getattr(logger, level)
+            func('Could not find backreferences file: %s' % (path,))
+            func('The backreferences are likely to be erroneous '
+                 'due to file system case insensitivity.')

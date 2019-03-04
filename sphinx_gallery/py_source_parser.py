@@ -15,6 +15,10 @@ import sys
 import tokenize
 from textwrap import dedent
 
+from .sphinx_compatibility import getLogger
+
+logger = getLogger('sphinx-gallery')
+
 SYNTAX_ERROR_DOCSTRING = """
 SyntaxError
 ===========

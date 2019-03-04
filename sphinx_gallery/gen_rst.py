@@ -17,11 +17,9 @@ from time import time
 import copy
 import ast
 import codecs
-import hashlib
 import gc
 import os
 import re
-import shutil
 import subprocess
 import sys
 import traceback
@@ -30,7 +28,7 @@ from io import StringIO
 from distutils.version import LooseVersion
 
 from .scrapers import save_figures, ImagePathIterator, clean_modules
-from .utils import replace_py_ipynb, scale_image
+from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -222,16 +220,6 @@ def extract_intro_and_title(filename, docstring):
         intro = intro[:95] + '...'
 
     return intro, title
-
-
-def get_md5sum(src_file):
-    """Returns md5sum of file"""
-
-    with open(src_file, 'rb') as src_data:
-        src_content = src_data.read()
-
-        src_md5 = hashlib.md5(src_content).hexdigest()
-    return src_md5
 
 
 def md5sum_is_current(src_file):
@@ -614,7 +602,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     target_file = os.path.join(target_dir, fname)
-    shutil.copyfile(src_file, target_file)
+    _replace_md5(src_file, target_file, 'copy')
 
     intro, _ = extract_intro_and_title(fname,
                                        get_docstring_and_rest(src_file)[0])
@@ -650,13 +638,17 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_rst = rst_blocks(script_blocks, output_blocks,
                              file_conf, gallery_conf)
     memory_used = gallery_conf['memory_base'] + script_vars['memory_delta']
+    if not executable:
+        time_elapsed = memory_used = 0.  # don't let the output change
     save_rst_example(example_rst, target_file, time_elapsed, memory_used,
                      gallery_conf)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
     example_nb = jupyter_notebook(script_blocks, gallery_conf)
-    save_notebook(example_nb, replace_py_ipynb(target_file))
+    ipy_fname = replace_py_ipynb(target_file) + '.new'
+    save_notebook(example_nb, ipy_fname)
+    _replace_md5(ipy_fname)
 
     return intro, time_elapsed
 
@@ -715,7 +707,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
 
 def save_rst_example(example_rst, example_file, time_elapsed,
                      memory_used, gallery_conf):
-    """Saves the rst notebook to example_file including necessary header & footer
+    """Saves the rst notebook to example_file including header & footer
 
     Parameters
     ----------
@@ -766,6 +758,9 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                                         ref_fname)
     example_rst += SPHX_GLR_SIG
 
-    write_file = re.sub(r'\.py$', '.rst', example_file)
-    with codecs.open(write_file, 'w', encoding="utf-8") as f:
+    write_file_new = re.sub(r'\.py$', '.rst.new', example_file)
+    with codecs.open(write_file_new, 'w', encoding="utf-8") as f:
         f.write(example_rst)
+    # in case it wasn't in our pattern, only replace the file if it's
+    # still stale.
+    _replace_md5(write_file_new)
