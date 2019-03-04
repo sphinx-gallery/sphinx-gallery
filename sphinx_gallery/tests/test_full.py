@@ -301,17 +301,14 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
 
     # generated RST files
-    different = (
-        # this one should get rewritten as we retried it
+    ignore = (
+        # these two should almost always be different, but in case we
+        # get extremely unlucky and have identical run times
+        # on the one script that gets re-run (because it's a fail)...
+        'sg_execution_times.rst',
         'plot_future_imports_broken.rst',
     )
-    ignore = (
-        # this one should almost always be different, but in case we
-        # get extremely unlucky and have identical run times
-        # on the one script above that changes...
-        'sg_execution_times.rst',
-    )
-    _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
+    _assert_mtimes(generated_rst_0, generated_rst_1, ignore=ignore)
 
     # mtimes for pickles
     _assert_mtimes(generated_pickle_0, generated_pickle_1)
