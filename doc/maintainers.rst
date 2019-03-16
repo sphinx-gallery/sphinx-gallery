@@ -45,7 +45,7 @@ Check that we are ready for a release
   Read the changes in the generated CHANGELOG.md and propagate the relevant
   changes to
   `CHANGES.rst <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/CHANGES.rst>`_.
-  You don't have to copy/paste them verbatim, but cover the main points.
+  You can easily convert this document to ``.rst`` by using `Pandoc <https://pandoc.org/>`_.
 
 * Build the docs cleanly
 
