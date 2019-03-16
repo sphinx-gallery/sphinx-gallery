@@ -21,7 +21,9 @@ a new release for Sphinx Gallery.
 
 1. Ensure that you have push access to the
    `Sphinx Gallery pypi repository <https://pypi.org/project/sphinx-gallery/>`_.
-2. Install `the twine package <https://twine.readthedocs.io/en/latest/>`_. This is
+2. Install the `GitHub Changelog Generator <https://github.com/github-changelog-generator/github-changelog-generator#installation>`_.
+   This is a small tool written in Ruby to generate a markdown list of recent changes.
+3. Install `the twine package <https://twine.readthedocs.io/en/latest/>`_. This is
    a package that helps you
    bundle and push new Python package distributions to pip.
 
@@ -38,7 +40,7 @@ Check that we are ready for a release
 
   .. code-block:: bash
 
-     github_changelog_generator sphinx-gallery/sphinx-gallery
+     github_changelog_generator sphinx-gallery/sphinx-gallery --token <<your-github-api-token>>
 
   Read the changes in the generated CHANGELOG.md and propagate the relevant
   changes to
