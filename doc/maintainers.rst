@@ -55,41 +55,52 @@ Check that we are ready for a release
 * Double check that continuous integration is passing on the master branch of
   Sphinx Gallery.
 
-Make the release
-----------------
-
 * Update version
 
   Update the version in ``sphinx_gallery/__init__.py``. It should end in
   ``dev0``. You should remove this text, and the remaining number will become
   the version for this release.
 
-* Draft the release changelog
+* Open a Pull Request that contains the two changes we've made above: **the version bump**
+  and **the CHANGELOG update**. Get somebody else to make sure all looks well, and
+  merge this pull request. Once that is done, move on to the final step!
 
-  copy the generated and edit to github markdown all changes from CHANGELOG.md.
+Make the release
+----------------
 
-* Build a source distribution
+* Create the new release on PyPI
+  * Build a source distribution
 
-  .. code-block:: bash
+    .. code-block:: bash
 
-     python setup.py sdist
+       python setup.py sdist
 
-* Test upload to PyPI
+  * Test upload to PyPI
 
-  .. code-block:: bash
+    .. code-block:: bash
 
-     twine upload --repository test dist/sphinx-gallery-<version>.tar.gz
+       twine upload --repository test dist/sphinx-gallery-<version>.tar.gz
 
-* Upload to PyPI
+  * Upload to PyPI
 
-  .. code-block:: bash
+    .. code-block:: bash
 
-     twine upload dist/sphinx-gallery-<version>.tar.gz
+       twine upload dist/sphinx-gallery-<version>.tar.gz
 
-* Confirm that the new version of Sphinx Gallery
-  `is posted to pypi <https://pypi.org/project/sphinx-gallery/>`_.
+  * Confirm that the new version of Sphinx Gallery
+    `is posted to pypi <https://pypi.org/project/sphinx-gallery/>`_.
 
-* Bump the `Sphinx Gallery version number <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinx_gallery/__init__.py>`_
+* Create a new release on GitHub
+  * Go to the `Draft a new release <https://github.com/sphinx-gallery/sphinx-gallery/releases/new>`_ page.
+
+  * The **tag version** is whatever the version is in ``__init__.py``.
+  * The **release title** is ``<< tag-version >>``.
+  * The **description** should contain the markdown changelog
+    you generated above (in the ``CHANGELOG.md`` file).
+  * Click **Publish release** when you are done.
+
+* Now that the releases are complete, we need to switch the "master" branch back into a developer
+  mode. Bump the `Sphinx Gallery version number <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinx_gallery/__init__.py>`_
   to the next minor (or major) release and append `dev0` to the end.
 
 * Celebrate! You've just released a new version of Sphinx Gallery!
