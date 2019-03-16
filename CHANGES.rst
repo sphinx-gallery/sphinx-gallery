@@ -7,6 +7,13 @@ git master
 Developer changes
 '''''''''''''''''
 
+
+v0.3.0
+------
+
+Developer changes
+'''''''''''''''''
+
 * Dropped support for Sphinx <= 1.4.
 * Refactor for independent rst file construction. Function
   ``sphinx_gallery.gen_rst.generate_file_rst`` does not anymore compose the
@@ -27,7 +34,163 @@ Developer changes
   CircleCI. See the related `CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
   and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
 
+**Fixed bugs:**
 
+-  First gallery plot uses .matplotlibrc rather than the matplotlib
+   defaults
+   `#316 <https://github.com/sphinx-gallery/sphinx-gallery/issues/316>`__
+
+**Closed issues:**
+
+-  SG not respecting highlight_lang in conf.py
+   `#452 <https://github.com/sphinx-gallery/sphinx-gallery/issues/452>`__
+-  sphinx-gallery doesn’t play nice with sphinx’s ability to detect new
+   files…
+   `#449 <https://github.com/sphinx-gallery/sphinx-gallery/issues/449>`__
+-  gallery generation broken on cpython master
+   `#442 <https://github.com/sphinx-gallery/sphinx-gallery/issues/442>`__
+-  Improve binder button instructions
+   `#438 <https://github.com/sphinx-gallery/sphinx-gallery/issues/438>`__
+-  Won’t display stdout
+   `#435 <https://github.com/sphinx-gallery/sphinx-gallery/issues/435>`__
+-  realtive paths in github.io
+   `#434 <https://github.com/sphinx-gallery/sphinx-gallery/issues/434>`__
+-  ‘make html’ does not attempt to run examples
+   `#425 <https://github.com/sphinx-gallery/sphinx-gallery/issues/425>`__
+-  Sprint tomorrow @ euroscipy?
+   `#412 <https://github.com/sphinx-gallery/sphinx-gallery/issues/412>`__
+-  Release v0.3.0
+   `#409 <https://github.com/sphinx-gallery/sphinx-gallery/issues/409>`__
+-  Supported Python and Sphinx versions
+   `#404 <https://github.com/sphinx-gallery/sphinx-gallery/issues/404>`__
+-  How to get the ``.css`` files to copy over on building the docs?
+   `#399 <https://github.com/sphinx-gallery/sphinx-gallery/issues/399>`__
+-  feature request: only rebuild individual examples
+   `#397 <https://github.com/sphinx-gallery/sphinx-gallery/issues/397>`__
+-  Unnecessary regeneration of example pages
+   `#395 <https://github.com/sphinx-gallery/sphinx-gallery/issues/395>`__
+-  Unnecessary regeneration of API docs
+   `#394 <https://github.com/sphinx-gallery/sphinx-gallery/issues/394>`__
+-  matplotlib inline vs notebook
+   `#388 <https://github.com/sphinx-gallery/sphinx-gallery/issues/388>`__
+-  Can this work for files other than .py ?
+   `#378 <https://github.com/sphinx-gallery/sphinx-gallery/issues/378>`__
+-  v0.1.14 release plan
+   `#344 <https://github.com/sphinx-gallery/sphinx-gallery/issues/344>`__
+-  SG misses classes that aren’t imported
+   `#205 <https://github.com/sphinx-gallery/sphinx-gallery/issues/205>`__
+-  Add a page showing the time taken by the examples
+   `#203 <https://github.com/sphinx-gallery/sphinx-gallery/issues/203>`__
+-  Lack of ``install\_requires``
+   `#192 <https://github.com/sphinx-gallery/sphinx-gallery/issues/192>`__
+
+**Merged pull requests:**
+
+-  [MRG+1]: Output JUnit XML file
+   `#454 <https://github.com/sphinx-gallery/sphinx-gallery/pull/454>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  MRG: Use highlight_language
+   `#453 <https://github.com/sphinx-gallery/sphinx-gallery/pull/453>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  BUG: Fix execution time writing
+   `#451 <https://github.com/sphinx-gallery/sphinx-gallery/pull/451>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  MRG: Adjust lineno for 3.8
+   `#450 <https://github.com/sphinx-gallery/sphinx-gallery/pull/450>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  MRG: Only rebuild necessary parts
+   `#448 <https://github.com/sphinx-gallery/sphinx-gallery/pull/448>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Drop 3.4, add mayavi to one
+   `#447 <https://github.com/sphinx-gallery/sphinx-gallery/pull/447>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Modernize requirements
+   `#445 <https://github.com/sphinx-gallery/sphinx-gallery/pull/445>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  Activating travis on pre-release of python
+   `#443 <https://github.com/sphinx-gallery/sphinx-gallery/pull/443>`__
+   (`NelleV <https://github.com/NelleV>`__)
+-  [MRG] updating binder instructions
+   `#439 <https://github.com/sphinx-gallery/sphinx-gallery/pull/439>`__
+   (`choldgraf <https://github.com/choldgraf>`__)
+-  FIX: Fix for latest sphinx-dev
+   `#437 <https://github.com/sphinx-gallery/sphinx-gallery/pull/437>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  adding notes for filename
+   `#436 <https://github.com/sphinx-gallery/sphinx-gallery/pull/436>`__
+   (`choldgraf <https://github.com/choldgraf>`__)
+-  FIX: correct sorting docstring for the FileNameSortKey class
+   `#433 <https://github.com/sphinx-gallery/sphinx-gallery/pull/433>`__
+   (`mrakitin <https://github.com/mrakitin>`__)
+-  MRG: Fix for latest pytest
+   `#432 <https://github.com/sphinx-gallery/sphinx-gallery/pull/432>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  FIX: Bump version
+   `#431 <https://github.com/sphinx-gallery/sphinx-gallery/pull/431>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  MRG: Fix for newer sphinx
+   `#430 <https://github.com/sphinx-gallery/sphinx-gallery/pull/430>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  DOC: Missing perenthisis in PNGScraper
+   `#428 <https://github.com/sphinx-gallery/sphinx-gallery/pull/428>`__
+   (`ksunden <https://github.com/ksunden>`__)
+-  Fix #425
+   `#426 <https://github.com/sphinx-gallery/sphinx-gallery/pull/426>`__
+   (`Titan-C <https://github.com/Titan-C>`__)
+-  Scraper documentation and an image file path scraper
+   `#417 <https://github.com/sphinx-gallery/sphinx-gallery/pull/417>`__
+   (`choldgraf <https://github.com/choldgraf>`__)
+-  MRG: Remove outdated cron job
+   `#416 <https://github.com/sphinx-gallery/sphinx-gallery/pull/416>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Profile memory
+   `#415 <https://github.com/sphinx-gallery/sphinx-gallery/pull/415>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  fix typo
+   `#414 <https://github.com/sphinx-gallery/sphinx-gallery/pull/414>`__
+   (`zasdfgbnm <https://github.com/zasdfgbnm>`__)
+-  FIX: Travis
+   `#410 <https://github.com/sphinx-gallery/sphinx-gallery/pull/410>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  documentation index page and getting_started updates
+   `#403 <https://github.com/sphinx-gallery/sphinx-gallery/pull/403>`__
+   (`choldgraf <https://github.com/choldgraf>`__)
+-  adding ability to customize first cell of notebooks
+   `#401 <https://github.com/sphinx-gallery/sphinx-gallery/pull/401>`__
+   (`choldgraf <https://github.com/choldgraf>`__)
+-  spelling fix
+   `#398 <https://github.com/sphinx-gallery/sphinx-gallery/pull/398>`__
+   (`amueller <https://github.com/amueller>`__)
+-  [MRG] Fix Circle v2
+   `#393 <https://github.com/sphinx-gallery/sphinx-gallery/pull/393>`__
+   (`lesteve <https://github.com/lesteve>`__)
+-  MRG: Move to CircleCI V2
+   `#392 <https://github.com/sphinx-gallery/sphinx-gallery/pull/392>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  MRG: Fix for 1.8.0 dev
+   `#391 <https://github.com/sphinx-gallery/sphinx-gallery/pull/391>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  Drop “Total running time” when generating the documentation
+   `#390 <https://github.com/sphinx-gallery/sphinx-gallery/pull/390>`__
+   (`lamby <https://github.com/lamby>`__)
+-  Add dedicated class for timing related block
+   `#359 <https://github.com/sphinx-gallery/sphinx-gallery/pull/359>`__
+   (`ThomasG77 <https://github.com/ThomasG77>`__)
+-  MRG: Add timing information
+   `#348 <https://github.com/sphinx-gallery/sphinx-gallery/pull/348>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  MRG: Add refs from docstring to backrefs
+   `#347 <https://github.com/sphinx-gallery/sphinx-gallery/pull/347>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  API: Refactor image scraping
+   `#313 <https://github.com/sphinx-gallery/sphinx-gallery/pull/313>`__
+   (`larsoner <https://github.com/larsoner>`__)
+-  [MRG] FIX import local modules in examples
+   `#305 <https://github.com/sphinx-gallery/sphinx-gallery/pull/305>`__
+   (`NelleV <https://github.com/NelleV>`__)
+-  [MRG] Separate rst notebook generation from execution of the script
+   `#239 <https://github.com/sphinx-gallery/sphinx-gallery/pull/239>`__
+   (`Titan-C <https://github.com/Titan-C>`__)
 
 v0.2.0
 ------
