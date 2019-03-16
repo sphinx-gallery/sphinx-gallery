@@ -19,11 +19,15 @@ Before you start
 You should double-check a few things to make sure that you can create
 a new release for Sphinx Gallery.
 
-1. Ensure that you have push access to the
-   `Sphinx Gallery pypi repository <https://pypi.org/project/sphinx-gallery/>`_.
-2. Install the `GitHub Changelog Generator <https://github.com/github-changelog-generator/github-changelog-generator#installation>`_.
+1. Ensure that you **registered an acccount** on `the PyPI index <https://pypi.org/account/register/>`_,
+   as well as the `test PyPI index <https://test.pypi.org/account/register/>`_
+2. Ensure you have **push access** to the
+   `Sphinx Gallery pypi repository <https://pypi.org/project/sphinx-gallery/>`_
+   as well as the `Test PyPI repository <https://test.pypi.org/project/sphinx-gallery/>`_. As
+   one of the Sphinx Gallery core developers if you do not.
+3. Install the `GitHub Changelog Generator <https://github.com/github-changelog-generator/github-changelog-generator#installation>`_.
    This is a small tool written in Ruby to generate a markdown list of recent changes.
-3. Install `the twine package <https://twine.readthedocs.io/en/latest/>`_. This is
+4. Install `the twine package <https://twine.readthedocs.io/en/latest/>`_. This is
    a package that helps you
    bundle and push new Python package distributions to pip.
 
@@ -79,7 +83,7 @@ Make the release
 
     .. code-block:: bash
 
-       twine upload --repository test dist/sphinx-gallery-<version>.tar.gz
+       twine upload --repository-url https://test.pypi.org/legacy/ dist/sphinx-gallery-<version>.tar.gz
 
   * Upload to PyPI
 
