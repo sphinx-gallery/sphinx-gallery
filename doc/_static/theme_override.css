@@ -1,0 +1,15 @@
+.wy-nav-top {
+    background-color: #FF8C38 !important;
+}
+.wy-side-nav-search {
+    background-color: #FF8C38 !important;
+}
+
+
+div[class^="highlight"] a {
+    background-color: #E6E6E6;
+}
+
+div[class^="highlight"] a:hover {
+    background-color: #ABECFC;
+}
