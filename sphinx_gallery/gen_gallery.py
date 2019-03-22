@@ -120,7 +120,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         version of Sphinx-Gallery. For more details, see the backreferences
         documentation:
 
-        https://sphinx-gallery.readthedocs.io/en/latest/configuration.html#references-to-examples"""  # noqa: E501
+        https://sphinx-gallery.github.io/configuration.html#references-to-examples"""  # noqa: E501
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
         logger.warning(
             backreferences_warning,

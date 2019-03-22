@@ -5,10 +5,6 @@ Welcome to Sphinx-Gallery's documentation!
 .. image:: https://travis-ci.org/sphinx-gallery/sphinx-gallery.svg?branch=master
     :target: https://travis-ci.org/sphinx-gallery/sphinx-gallery
 
-.. image:: https://readthedocs.org/projects/sphinx-gallery/badge/?version=latest
-    :target: https://sphinx-gallery.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
-
 .. image::     https://ci.appveyor.com/api/projects/status/github/sphinx-gallery/sphinx-gallery?branch=master&svg=true
     :target: https://ci.appveyor.com/project/Titan-C/sphinx-gallery/history
 
