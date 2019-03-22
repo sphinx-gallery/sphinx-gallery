@@ -7,6 +7,16 @@ git master
 Developer changes
 '''''''''''''''''
 
+v0.3.1
+------
+
+Bugfix release: add missing file that prevented "pip installing" the
+package.
+
+**Fixed bugs:**
+
+- Version 0.3.0 release is broken on pypi
+  `#459 <https://github.com/sphinx-gallery/sphinx-gallery/issues/459>`__
 
 v0.3.0
 ------
