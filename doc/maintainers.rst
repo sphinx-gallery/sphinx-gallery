@@ -19,12 +19,10 @@ Before you start
 You should double-check a few things to make sure that you can create
 a new release for Sphinx Gallery.
 
-1. Ensure that you **registered an acccount** on `the PyPI index <https://pypi.org/account/register/>`_,
-   as well as the `test PyPI index <https://test.pypi.org/account/register/>`_
+1. Ensure that you **registered an acccount** on `the PyPI index <https://pypi.org/account/register/>`_.
 2. Ensure you have **push access** to the
-   `Sphinx Gallery pypi repository <https://pypi.org/project/sphinx-gallery/>`_
-   as well as the `Test PyPI repository <https://test.pypi.org/project/sphinx-gallery/>`_. As
-   one of the Sphinx Gallery core developers if you do not.
+   `Sphinx Gallery pypi repository <https://pypi.org/project/sphinx-gallery/>`_.
+   Ask one of the Sphinx Gallery core developers if you do not.
 3. Install the `GitHub Changelog Generator <https://github.com/github-changelog-generator/github-changelog-generator#installation>`_.
    This is a small tool written in Ruby to generate a markdown list of recent changes.
 4. Install `the twine package <https://twine.readthedocs.io/en/latest/>`_. This is
@@ -79,12 +77,6 @@ Make the release
 
        python setup.py sdist
 
-  * Test upload to PyPI
-
-    .. code-block:: bash
-
-       twine upload --repository-url https://test.pypi.org/legacy/ dist/sphinx-gallery-<version>.tar.gz
-
   * Upload to PyPI
 
     .. code-block:: bash
@@ -95,12 +87,13 @@ Make the release
     `is posted to pypi <https://pypi.org/project/sphinx-gallery/>`_.
 
 * Create a new release on GitHub
-  * Go to the `Draft a new release <https://github.com/sphinx-gallery/sphinx-gallery/releases/new>`_ page.
 
-  * The **tag version** is whatever the version is in ``__init__.py``.
-  * The **release title** is ``<< tag-version >>``.
+  * Go to the `Draft a new release <https://github.com/sphinx-gallery/sphinx-gallery/releases/new>`_ page.
+  * The **tag version** is whatever the version is in ``__init__.py`` prepended with ``v``. E.g., ``v0.3.0``.
+  * The **release title** is ``Release: << tag-version >>``.
   * The **description** should contain the markdown changelog
-    you generated above (in the ``CHANGELOG.md`` file).
+    you generated above (in the ``CHANGELOG.md`` file). Make sure to update any links to point
+    to the tag that will be created for this release (e.g., change ``HEAD`` to ``v0.3.0``).
   * Click **Publish release** when you are done.
 
 * Now that the releases are complete, we need to switch the "master" branch back into a developer
