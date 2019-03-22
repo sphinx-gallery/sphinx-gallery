@@ -5,10 +5,6 @@ Sphinx-Gallery
 .. image:: https://travis-ci.org/sphinx-gallery/sphinx-gallery.svg?branch=master
     :target: https://travis-ci.org/sphinx-gallery/sphinx-gallery
 
-.. image:: https://readthedocs.org/projects/sphinx-gallery/badge/?version=latest
-    :target: https://sphinx-gallery.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
-
 .. image::     https://ci.appveyor.com/api/projects/status/github/sphinx-gallery/sphinx-gallery?branch=master&svg=true
     :target: https://ci.appveyor.com/project/sphinx-gallery/sphinx-gallery/history
 
@@ -23,7 +19,7 @@ script and puts it into an examples gallery.
 Who uses Sphinx-Gallery
 =======================
 
-* `Sphinx-Gallery <https://sphinx-gallery.readthedocs.io/en/latest/auto_examples/index.html>`_
+* `Sphinx-Gallery <https://sphinx-gallery.github.io/en/latest/auto_examples/index.html>`_
 * `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
 * `Nilearn <https://nilearn.github.io/auto_examples/index.html>`_
 * `MNE-python <https://www.martinos.org/mne/stable/auto_examples/index.html>`_
