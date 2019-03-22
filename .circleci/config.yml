@@ -40,19 +40,9 @@ jobs:
       - run: python setup.py build_sphinx
       - store_artifacts:
           path: doc/_build/html/
-          destination: html
+          destination: rtd_html
       - store_test_results:
           path: doc/_build/html/
-
-      - run: SPHX_GLR_THEME=rtd sphinx-build doc rtd_html
-      - store_artifacts:
-          path: rtd_html
-          destination: rtd_html
-
-      - run: SPHX_GLR_THEME=alabaster sphinx-build doc alabaster_html
-      - store_artifacts:
-          path: alabaster_html
-          destination: alabaster_html
 
       - run: sphinx-build sphinx_gallery/tests/tinybuild/ tiny_html
       - store_artifacts:
@@ -65,7 +55,7 @@ jobs:
           destination: latex
 
       - persist_to_workspace:
-          root: rtd_html
+          root: doc/_build/html
           paths: .
 
   deploy_docs:
