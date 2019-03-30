@@ -406,8 +406,13 @@ def _get_memory_base(gallery_conf):
         sleep, timeout = (1, 2) if sys.platform == 'win32' else (0.5, 1)
         proc = subprocess.Popen(
             [sys.executable, '-c',
-             'import time, sys; time.sleep(%s), sys.exit(0)' % sleep])
-        memory_base = max(memory_usage(proc, interval=1e-3, timeout=timeout))
+             'import time, sys; time.sleep(%s); sys.exit(0)' % sleep],
+            close_fds=True)
+        memories = memory_usage(proc, interval=1e-3, timeout=timeout)
+        proc.communicate(timeout=timeout)
+        # On OSX sometimes the last entry can be None
+        memories = [mem for mem in memories if mem is not None] + [0.]
+        memory_base = max(memories)
     return memory_base
 
 
