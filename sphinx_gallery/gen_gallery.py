@@ -131,7 +131,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         try:
             from memory_profiler import memory_usage  # noqa, analysis:ignore
         except ImportError:
-            logger.warning("Please install 'memory_profile' to enable peak "
+            logger.warning("Please install 'memory_profiler' to enable peak "
                            "memory measurements.")
             gallery_conf['show_memory'] = False
     gallery_conf['memory_base'] = _get_memory_base(gallery_conf)
