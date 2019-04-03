@@ -68,8 +68,8 @@ def test_timings(sphinx_app):
     timings_rst = op.join(src_dir, 'auto_examples',
                           'sg_execution_times.rst')
     assert op.isfile(timings_rst)
-    with open(timings_rst, 'rb') as fid:
-        content = fid.read().decode('utf-8')
+    with codecs.open(timings_rst, 'r', 'utf-8') as fid:
+        content = fid.read()
     assert ':ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`' in content
     parenthetical = '(``%s``)' % ('plot_numpy_matplotlib.py',)
     assert parenthetical in content
@@ -77,8 +77,8 @@ def test_timings(sphinx_app):
     timings_html = op.join(out_dir, 'auto_examples',
                            'sg_execution_times.html')
     assert op.isfile(timings_html)
-    with open(timings_html, 'rb') as fid:
-        content = fid.read().decode('utf-8')
+    with codecs.open(timings_html, 'r', 'utf-8') as fid:
+        content = fid.read()
     assert 'href="plot_numpy_matplotlib.html' in content
     # printed
     status = sphinx_app._status.getvalue()
@@ -90,8 +90,8 @@ def test_junit(sphinx_app, tmpdir):
     out_dir = sphinx_app.outdir
     junit_file = op.join(out_dir, 'sphinx-gallery', 'junit-results.xml')
     assert op.isfile(junit_file)
-    with open(junit_file, 'rb') as fid:
-        contents = fid.read().decode('utf-8')
+    with codecs.open(junit_file, 'r', 'utf-8') as fid:
+        contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
     assert 'tests="5"' in contents
@@ -121,8 +121,8 @@ def test_junit(sphinx_app, tmpdir):
             app.build(False, [])
     junit_file = op.join(new_out_dir, 'sphinx-gallery', 'junit-results.xml')
     assert op.isfile(junit_file)
-    with open(junit_file, 'rb') as fid:
-        contents = fid.read().decode('utf-8')
+    with codecs.open(junit_file, 'r', 'utf-8') as fid:
+        contents = fid.read()
     assert 'errors="0" failures="2"' in contents
     assert 'tests="2"' in contents  # this time we only ran the two stale files
     if LooseVersion(sys.version) >= LooseVersion('3'):
@@ -203,8 +203,8 @@ def test_embed_links_and_styles(sphinx_app):
     # highlight language
     fname = op.join(src_dir, 'auto_examples', 'plot_numpy_matplotlib.rst')
     assert op.isfile(fname)
-    with open(fname, 'rb') as fid:
-        rst = fid.read().decode('utf-8')
+    with codecs.open(fname, 'r', 'utf-8') as fid:
+        rst = fid.read()
     assert '.. code-block:: python3\n' in rst
 
 
@@ -386,8 +386,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     else:
         n = '[2|3]'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
-    assert re.match('.*targets for %s source files that are out of date$.*'
-                    % n, status, re.MULTILINE | re.DOTALL) is not None, lines
+    want = '.*targets for %s source files that are out of date$.*' % n
+    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     want = ('.*executed 1 out of 2.*after excluding %s files.*based on MD5.*'
             % (N_GOOD - 1,))
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None

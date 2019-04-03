@@ -318,16 +318,7 @@ examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
 
-class matplotlib_svg_scraper(object):
-
-    def __repr__(self):
-        return self.__class__.__name__
-
-    def __call__(self, *args, **kwargs):
-        return matplotlib_scraper(*args, format='svg', **kwargs)
-
-
-image_scrapers = (matplotlib_svg_scraper(),)
+image_scrapers = ('matplotlib',)
 try:
     # Run the mayavi examples and find the mayavi figures if mayavi is
     # installed
