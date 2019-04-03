@@ -14,6 +14,12 @@ class matplotlib_format_scraper(object):
             kwargs['format'] = 'svg'
         return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
 
+    def __getstate__(self):
+        return {}
+
+    def __setstate__(self):
+        return
+
 
 my_scraper = matplotlib_format_scraper()
 
