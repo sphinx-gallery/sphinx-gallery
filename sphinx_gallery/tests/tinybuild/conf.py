@@ -8,11 +8,14 @@ class matplotlib_format_scraper(object):
     def __repr__(self):
         return self.__class__.__name__
 
-    def __call__(self, *args):
+    def __call__(self, block, block_vars, gallery_conf):
         kwargs = dict()
-        if op.basename(args[1]['target_file']) == 'plot_svg.py':
+        if op.basename(block_vars['target_file']) == 'plot_svg.py':
             kwargs['format'] = 'svg'
-        return matplotlib_scraper(*args, **kwargs)
+        return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
+
+
+my_scraper = matplotlib_format_scraper()
 
 
 extensions = [
@@ -42,7 +45,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['auto_examples'],
     'backreferences_dir': 'gen_modules/backreferences',
     'within_section_order': FileNameSortKey,
-    'image_scrapers': (matplotlib_format_scraper(),),
+    'image_scrapers': (my_scraper,),
     'expected_failing_examples': ['examples/plot_future_imports_broken.py'],
     'show_memory': True,
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
