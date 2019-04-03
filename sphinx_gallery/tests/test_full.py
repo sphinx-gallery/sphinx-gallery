@@ -33,6 +33,9 @@ N_RST = 12 + N_TOT
 
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory):
+    if LooseVersion(sphinx.__version__) < LooseVersion('1.8'):
+        # Previous versions throw an error trying to pickle the scraper
+        pytest.skip('Sphinx 1.8+ required')
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
@@ -378,7 +381,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
                          buildername='html', status=MixedEncodingStringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    if LooseVersion(sphinx.__version__) <= LooseVersion('1.6'):
+    if LooseVersion(sphinx.__version__) < LooseVersion('1.9'):
         n = N_RST
     else:
         n = '[2|3]'

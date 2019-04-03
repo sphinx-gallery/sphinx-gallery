@@ -32,10 +32,10 @@ def _import_matplotlib():
     # matplotlib
     import matplotlib
     matplotlib.use('agg')
-    matplotlib_backend = matplotlib.get_backend()
+    matplotlib_backend = matplotlib.get_backend().lower()
 
     if matplotlib_backend != 'agg':
-        mpl_backend_msg = (
+        raise ValueError(
             "Sphinx-Gallery relies on the matplotlib 'agg' backend to "
             "render figures and write them to files. You are "
             "currently using the {} backend. Sphinx-Gallery will "
@@ -43,9 +43,8 @@ def _import_matplotlib():
             "not well supported by matplotlib. We advise you to move "
             "sphinx_gallery imports before any matplotlib-dependent "
             "import. Moving sphinx_gallery imports at the top of "
-            "your conf.py file should fix this issue")
-
-        raise ValueError(mpl_backend_msg.format(matplotlib_backend))
+            "your conf.py file should fix this issue"
+            .format(matplotlib_backend))
 
     import matplotlib.pyplot as plt
     return matplotlib, plt

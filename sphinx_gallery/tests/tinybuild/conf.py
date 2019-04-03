@@ -3,25 +3,11 @@ from sphinx_gallery.scrapers import matplotlib_scraper
 from sphinx_gallery.sorting import FileNameSortKey
 
 
-class matplotlib_format_scraper(object):
-
-    def __repr__(self):
-        return self.__class__.__name__
-
-    def __call__(self, block, block_vars, gallery_conf):
-        kwargs = dict()
-        if op.basename(block_vars['target_file']) == 'plot_svg.py':
-            kwargs['format'] = 'svg'
-        return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
-
-    def __getstate__(self):
-        return {}
-
-    def __setstate__(self):
-        return
-
-
-my_scraper = matplotlib_format_scraper()
+def matplotlib_format_scraper(block, block_vars, gallery_conf):
+    kwargs = dict()
+    if op.basename(block_vars['target_file']) == 'plot_svg.py':
+        kwargs['format'] = 'svg'
+    return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
 
 
 extensions = [
@@ -51,7 +37,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['auto_examples'],
     'backreferences_dir': 'gen_modules/backreferences',
     'within_section_order': FileNameSortKey,
-    'image_scrapers': (my_scraper,),
+    'image_scrapers': (matplotlib_format_scraper,),
     'expected_failing_examples': ['examples/plot_future_imports_broken.py'],
     'show_memory': True,
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
