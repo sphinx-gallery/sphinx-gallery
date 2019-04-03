@@ -149,7 +149,7 @@ def test_image_formats(sphinx_app):
     """Test Image format support."""
     generated_examples_dir = op.join(sphinx_app.outdir, 'auto_examples')
     generated_examples_index = op.join(generated_examples_dir, 'index.html')
-    with open(generated_examples_index, 'r') as fid:
+    with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         html = fid.read()
     thumb_fnames = ['../_images/sphx_glr_plot_svg_thumb.svg',
                     '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png']
@@ -162,7 +162,7 @@ def test_image_formats(sphinx_app):
                     ('plot_numpy_matplotlib', 'png'),
                     ):
         html_fname = op.join(generated_examples_dir, '%s.html' % ex)
-        with open(html_fname, 'r') as fid:
+        with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
         img_fname = '../_images/sphx_glr_%s_001.%s' % (ex, ext)
         file_fname = op.join(generated_examples_dir, img_fname)
@@ -369,9 +369,9 @@ def test_rebuild(tmpdir_factory, sphinx_app):
 
     time.sleep(0.1)
     fname = op.join(src_dir, 'examples', 'plot_numpy_matplotlib.py')
-    with open(fname, 'r') as fid:
+    with codecs.open(fname, 'r', 'utf-8') as fid:
         lines = fid.readlines()
-    with open(fname, 'w') as fid:
+    with codecs.open(fname, 'w', 'utf-8') as fid:
         for line in lines:
             if line.startswith('FYI this'):
                 line = 'A ' + line

@@ -59,7 +59,7 @@ jobs:
           path: tiny_html
           destination: tiny_html
 
-      - run: cd sphinx_gallery/tests/tinybuild/ && make latexpdf
+      - run: cd sphinx_gallery/tests/tinybuild/ && make clean && make latexpdf
       - store_artifacts:
           path: sphinx_gallery/tests/tinybuild/_build/latex/
           destination: latex

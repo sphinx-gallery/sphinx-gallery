@@ -89,7 +89,7 @@ def parse_config(app):
     lang = app.builder.config.highlight_language
     gallery_conf = _complete_gallery_conf(
         app.config.sphinx_gallery_conf, src_dir, plot_gallery,
-        abort_on_example_error, lang)
+        abort_on_example_error, lang, app)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
@@ -98,7 +98,7 @@ def parse_config(app):
 
 
 def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
-                           abort_on_example_error, lang='python'):
+                           abort_on_example_error, lang='python', app=None):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     gallery_conf.update(sphinx_gallery_conf)
     if sphinx_gallery_conf.get('find_mayavi_figures', False):
@@ -177,6 +177,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         raise ValueError("The 'first_notebook_cell' parameter must be type str"
                          "or None, found type %s" % type(first_cell))
     gallery_conf['first_notebook_cell'] = first_cell
+
+    # Make it easy to query the app
+    gallery_conf['app'] = app
     return gallery_conf
 
 

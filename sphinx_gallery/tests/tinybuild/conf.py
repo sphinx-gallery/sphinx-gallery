@@ -10,7 +10,8 @@ class matplotlib_format_scraper(object):
 
     def __call__(self, block, block_vars, gallery_conf):
         kwargs = dict()
-        if op.basename(block_vars['target_file']) == 'plot_svg.py':
+        if op.basename(block_vars['target_file']) == 'plot_svg.py' and \
+                gallery_conf['app'].builder.name != 'latex':
             kwargs['format'] = 'svg'
         return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
 
