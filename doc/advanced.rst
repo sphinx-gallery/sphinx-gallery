@@ -201,7 +201,7 @@ output formats. To use SVG, you can do::
 
     sphinx_gallery_conf = {
         ...
-        image_scrapers = (matplotlib_svg_scraper(),)
+        'image_scrapers': (matplotlib_svg_scraper(),),
         ...
     }
 
