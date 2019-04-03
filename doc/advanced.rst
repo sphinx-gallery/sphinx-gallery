@@ -68,8 +68,8 @@ Writing a custom image scraper
 .. warning:: The API for custom scrapers is currently experimental.
 
 By default, Sphinx-gallery supports image scrapers for Matplotlib
-(:func:`sphinx_gallery.scrapers.matplotlib_scraper`) and Mayavi
-(:func:`sphinx_gallery.scrapers.mayavi_scraper`). You can also write a custom
+(:func:`~sphinx_gallery.scrapers.matplotlib_scraper`) and Mayavi
+(:func:`~sphinx_gallery.scrapers.mayavi_scraper`). You can also write a custom
 scraper for other python packages. This section describes how to do so.
 
 Image scrapers are functions (or callable class instances) that do two things:
@@ -82,14 +82,16 @@ Image scrapers are functions (or callable class instances) that do two things:
 The function should take the following inputs (in this order): ``block``,
 ``block_vars``, and ``gallery_conf``. It should return a string containing the
 rST for embedding this figure in the documentation.
-See the :func:`sphinx_gallery.scrapers.matplotlib_scraper` for
+See :func:`~sphinx_gallery.scrapers.matplotlib_scraper` for
 a description of the inputs/outputs.
 
 This function will be called once for each code block of your examples.
+Sphinx-gallery will take care of scaling images for the gallery
+index page thumbnails. PNG images are scaled using Pillow, and
+SVG images are copied.
 
-.. note:: Sphinx-gallery will take care of scaling images for the gallery
-          index page thumbnails. PNG images are scaled using Pillow, and
-          SVG images are copied.
+.. warning:: SVG images do not work with ``latex`` build modes, thus will not
+             work while building a PDF vesion of your documentation.
 
 Example 1: a Matplotlib and Mayavi-style scraper
 ------------------------------------------------

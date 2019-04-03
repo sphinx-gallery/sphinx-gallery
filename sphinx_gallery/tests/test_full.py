@@ -381,7 +381,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
                          buildername='html', status=MixedEncodingStringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    if LooseVersion(sphinx.__version__) < LooseVersion('1.9'):
+    if LooseVersion(sphinx.__version__) <= LooseVersion('1.6'):
         n = N_RST
     else:
         n = '[2|3]'
