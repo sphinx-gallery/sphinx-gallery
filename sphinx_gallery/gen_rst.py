@@ -20,6 +20,7 @@ import codecs
 import gc
 import os
 import re
+from shutil import copyfile
 import subprocess
 import sys
 import traceback
@@ -27,7 +28,8 @@ import codeop
 from io import StringIO
 from distutils.version import LooseVersion
 
-from .scrapers import save_figures, ImagePathIterator, clean_modules
+from .scrapers import (save_figures, ImagePathIterator, clean_modules,
+                       _find_image_ext)
 from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
 
 # Try Python 2 first, otherwise load from Python 3
@@ -255,7 +257,8 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         raise TypeError(
             'sphinx_gallery_thumbnail_number setting is not a number, '
             'got %r' % (thumbnail_number,))
-    thumbnail_image_path = image_path_template.format(thumbnail_number)
+    thumbnail_image_path, ext = _find_image_ext(image_path_template,
+                                                thumbnail_number)
 
     thumb_dir = os.path.join(os.path.dirname(thumbnail_image_path), 'thumb')
     if not os.path.exists(thumb_dir):
@@ -263,7 +266,7 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
 
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir,
-                              'sphx_glr_%s_thumb.png' % base_image_name)
+                              'sphx_glr_%s_thumb.%s' % (base_image_name, ext))
 
     if src_file in gallery_conf['failing_examples']:
         img = os.path.join(glr_path_static(), 'broken_example.png')
@@ -275,7 +278,10 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         img = gallery_conf.get("default_thumb_file", img)
     else:
         return
-    scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
+    if ext == 'svg':
+        copyfile(img, thumb_file)
+    else:
+        scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
 
 
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):

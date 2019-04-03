@@ -56,7 +56,7 @@ def _import_matplotlib():
 _import_matplotlib()
 
 
-def matplotlib_scraper(block, block_vars, gallery_conf):
+def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     """Scrape Matplotlib images.
 
     Parameters
@@ -67,6 +67,11 @@ def matplotlib_scraper(block, block_vars, gallery_conf):
         Dict of block variables.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
+    **kwargs : dict
+        Additional keyword arguments to pass to
+        :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``.
+        The ``format`` kwarg in particular is used to set the file extension
+        of the output file (currently only 'png' and 'svg' are supported).
 
     Returns
     -------
@@ -78,15 +83,18 @@ def matplotlib_scraper(block, block_vars, gallery_conf):
     image_path_iterator = block_vars['image_path_iterator']
     image_paths = list()
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
+        if 'format' in kwargs:
+            image_path = '%s.%s' % (os.path.splitext(image_path)[0],
+                                    kwargs['format'])
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         fig = plt.figure(fig_num)
-        kwargs = {}
         to_rgba = matplotlib.colors.colorConverter.to_rgba
         for attr in ['facecolor', 'edgecolor']:
             fig_attr = getattr(fig, 'get_' + attr)()
             default_attr = matplotlib.rcParams['figure.' + attr]
-            if to_rgba(fig_attr) != to_rgba(default_attr):
+            if to_rgba(fig_attr) != to_rgba(default_attr) and \
+                    attr not in kwargs:
                 kwargs[attr] = fig_attr
         fig.savefig(image_path, **kwargs)
         image_paths.append(image_path)
@@ -186,6 +194,24 @@ class ImagePathIterator(object):
         return path
 
 
+# For now, these are what we support
+_KNOWN_IMG_EXTS = ('png', 'svg')  # XXX add gif next
+
+
+def _find_image_ext(path, number=None):
+    """Find an image, tolerant of different file extensions."""
+    if number is not None:
+        path = path.format(number)
+    path = os.path.splitext(path)[0]
+    for ext in _KNOWN_IMG_EXTS:
+        this_path = '%s.%s' % (path, ext)
+        if os.path.isfile(this_path):
+            break
+    else:
+        ext = 'png'
+    return ('%s.%s' % (path, ext), ext)
+
+
 def save_figures(block, block_vars, gallery_conf):
     """Save all open figures of the example code-block.
 
@@ -214,7 +240,8 @@ def save_figures(block, block_vars, gallery_conf):
                             % (scraper, type(rst), rst))
         n_new = len(image_path_iterator) - prev_count
         for ii in range(n_new):
-            current_path = image_path_iterator.paths[prev_count + ii]
+            current_path, _ = _find_image_ext(
+                image_path_iterator.paths[prev_count + ii])
             if not os.path.isfile(current_path):
                 raise RuntimeError('Scraper %s did not produce expected image:'
                                    '\n%s' % (scraper, current_path))

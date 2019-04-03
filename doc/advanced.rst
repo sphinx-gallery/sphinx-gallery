@@ -75,7 +75,8 @@ scraper for other python packages. This section describes how to do so.
 Image scrapers are functions (or callable class instances) that do two things:
 
 1. Collect a list of images created in the latest execution of code.
-2. Write these images to disk
+2. Write these images to disk in PNG or SVG format (with .png or .svg
+   extensions, respectively)
 3. Return rST that embeds these figures in the built documentation.
 
 The function should take the following inputs (in this order): ``block``,
@@ -86,8 +87,12 @@ a description of the inputs/outputs.
 
 This function will be called once for each code block of your examples.
 
-Example one - a Matplotlib and Mayavi-style scraper
----------------------------------------------------
+.. note:: Sphinx-gallery will take care of scaling images for the gallery
+          index page thumbnails. PNG images are scaled using Pillow, and
+          SVG images are copied.
+
+Example 1: a Matplotlib and Mayavi-style scraper
+------------------------------------------------
 
 For example, we will show sample code for a scraper for a hypothetical package.
 It uses an approach similar to what :func:`sphinx_gallery.scrapers.matplotlib_scraper`
@@ -128,8 +133,8 @@ scraper would look like::
         'image_scrapers': ('matplotlib', my_module_scraper),
     }
 
-Example two - detecting image files on disk
--------------------------------------------
+Example 2: detecting image files on disk
+----------------------------------------
 
 Here's another example that assumes that images have *already been written to
 disk*. In this case we won't *generate* any image files, we'll only generate
@@ -146,6 +151,9 @@ package in a module called ``scraper``. Here is the scraper code::
    class PNGScraper(object):
        def __init__(self):
            self.seen = set()
+
+       def __repr__(self):
+           return 'PNGScraper'
 
        def __call__(self, block, block_vars, gallery_conf):
            # Find all PNG files in the directory of this example.
@@ -168,12 +176,37 @@ package in a module called ``scraper``. Here is the scraper code::
 Then, in our ``conf.py`` file, we include the following code::
 
    from mymodule import PNGScraper
-   my_scraper_instance = PNGScraper()
 
    sphinx_gallery_conf = {
        ...
-       'image_scrapers': ('matplotlib', my_scraper_instance),
+       'image_scrapers': ('matplotlib', PNGScraper()),
    }
+
+Example 3: matplotlib with SVG format
+-------------------------------------
+The :func:`sphinx_gallery.scrapers.matplotlib_scraper` supports ``**kwargs``
+to pass to :meth:`matplotlib.figure.Figure.savefig`, one of which is the
+``format`` argument. Currently sphinx-gallery supports PNG (default) and SVG
+output formats. To use SVG, you can do::
+
+    from sphinx_gallery.scrapers import matplotlib_scraper
+
+    class matplotlib_svg_scraper(object):
+
+        def __repr__(self):
+            return self.__class__.__name__
+
+        def __call__(self, *args, **kwargs):
+            return matplotlib_scraper(*args, format='svg', **kwargs)
+
+    sphinx_gallery_conf = {
+        ...
+        image_scrapers = (matplotlib_svg_scraper(),)
+        ...
+    }
+
+You can also use different formats on a per-image basis, but this requires
+writing a customized scraper class or function.
 
 Contributing scrapers back to Sphinx-gallery
 --------------------------------------------

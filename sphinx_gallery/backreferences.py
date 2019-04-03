@@ -16,6 +16,7 @@ import os
 import re
 
 from . import sphinx_compatibility
+from .scrapers import _find_image_ext
 from .utils import _replace_md5
 
 # Try Python 2 first, otherwise load from Python 3
@@ -195,8 +196,9 @@ BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
 
 def _thumbnail_div(full_dir, fname, snippet, is_backref=False):
     """Generates RST to place a thumbnail in a gallery"""
-    thumb = os.path.join(full_dir, 'images', 'thumb',
-                         'sphx_glr_%s_thumb.png' % fname[:-3])
+    thumb, _ = _find_image_ext(
+        os.path.join(full_dir, 'images', 'thumb',
+                     'sphx_glr_%s_thumb.png' % fname[:-3]))
 
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")

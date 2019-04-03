@@ -1,4 +1,5 @@
 :orphan:
+
 ==========================
 Maintaining Sphinx Gallery
 ==========================
@@ -71,6 +72,7 @@ Make the release
 ----------------
 
 * Create the new release on PyPI
+
   * Build a source distribution
 
     .. code-block:: bash
