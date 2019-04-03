@@ -194,11 +194,18 @@ BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
 """
 
 
-def _thumbnail_div(full_dir, fname, snippet, is_backref=False):
+def _thumbnail_div(target_dir, src_dir, fname, snippet, is_backref=False,
+                   check=True):
     """Generates RST to place a thumbnail in a gallery"""
     thumb, _ = _find_image_ext(
-        os.path.join(full_dir, 'images', 'thumb',
+        os.path.join(target_dir, 'images', 'thumb',
                      'sphx_glr_%s_thumb.png' % fname[:-3]))
+    if check and not os.path.isfile(thumb):
+        # This means we have done something wrong in creating our thumbnail!
+        raise RuntimeError('Could not find internal sphinx-gallery thumbnail '
+                           'file:\n%s' % (thumb,))
+    thumb = os.path.relpath(thumb, src_dir)
+    full_dir = os.path.relpath(target_dir, src_dir)
 
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
@@ -218,7 +225,6 @@ def write_backreferences(seen_backrefs, gallery_conf,
         return
 
     example_file = os.path.join(target_dir, fname)
-    build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     backrefs = scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
@@ -231,8 +237,8 @@ def write_backreferences(seen_backrefs, gallery_conf,
                 heading = '\n\nExamples using ``%s``' % backref
                 ex_file.write(heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
-            ex_file.write(_thumbnail_div(build_target_dir, fname, snippet,
-                                         is_backref=True))
+            ex_file.write(_thumbnail_div(target_dir, gallery_conf['src_dir'],
+                                         fname, snippet, is_backref=True))
             seen_backrefs.add(backref)
 
 

@@ -6,13 +6,18 @@ Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
 
+import pytest
 import sphinx_gallery.backreferences as sg
 
 
 def test_thumbnail_div():
     """Test if the thumbnail div generates the correct string"""
 
-    html_div = sg._thumbnail_div('fake_dir', 'test_file.py', '<"test">')
+    with pytest.raises(RuntimeError, match='internal sphinx-gallery thumb'):
+        html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
+                                     '<"test">')
+    html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
+                                 '<"test">', check=False)
 
     reference = r"""
 .. raw:: html
@@ -36,8 +41,9 @@ def test_thumbnail_div():
 def test_backref_thumbnail_div():
     """Test if the thumbnail div generates the correct string"""
 
-    html_div = sg._thumbnail_div('fake_dir', 'test_file.py', 'test formating',
-                                 is_backref=True)
+    html_div = sg._thumbnail_div('fake_dir', '',
+                                 'test_file.py', 'test formating',
+                                 is_backref=True, check=False)
 
     reference = """
 .. raw:: html

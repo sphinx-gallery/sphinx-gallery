@@ -7,11 +7,11 @@ from PIL import Image
 from sphinx_gallery.gen_gallery import _complete_gallery_conf
 from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SINGLE_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
-                                     save_figures)
+                                     save_figures, _KNOWN_IMG_EXTS)
 from sphinx_gallery.utils import _TempDir
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def gallery_conf(tmpdir):
     """Sets up a test sphinx-gallery configuration"""
     gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False)
@@ -19,8 +19,20 @@ def gallery_conf(tmpdir):
     return gallery_conf
 
 
-def test_save_matplotlib_figures(gallery_conf):
+class matplotlib_svg_scraper():
+
+    def __repr__(self):
+        return self.__class__.__name__
+
+    def __call__(self, *args, **kwargs):
+        return matplotlib_scraper(*args, format='svg', **kwargs)
+
+
+@pytest.mark.parametrize('ext', ('png', 'svg'))
+def test_save_matplotlib_figures(gallery_conf, ext):
     """Test matplotlib figure save"""
+    if ext == 'svg':
+        gallery_conf['image_scrapers'] = (matplotlib_svg_scraper(),)
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
     plt.plot(1, 1)
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
@@ -29,7 +41,10 @@ def test_save_matplotlib_figures(gallery_conf):
     block_vars = dict(image_path_iterator=image_path_iterator)
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 1
-    assert '/image1.png' in image_rst
+    fname = '/image1.{0}'.format(ext)
+    assert fname in image_rst
+    fname = gallery_conf['gallery_dir'] + fname
+    assert os.path.isfile(fname)
 
     # Test capturing 2 images with shifted start number
     image_path_iterator.next()
@@ -39,8 +54,11 @@ def test_save_matplotlib_figures(gallery_conf):
     plt.plot(1, 1)
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 5
-    assert '/image4.png' in image_rst
-    assert '/image5.png' in image_rst
+    for ii in range(4, 6):
+        fname = '/image{0}.{1}'.format(ii, ext)
+        assert fname in image_rst
+        fname = gallery_conf['gallery_dir'] + fname
+        assert os.path.isfile(fname)
 
 
 def test_save_mayavi_figures(gallery_conf):
@@ -116,17 +134,18 @@ def test_save_mayavi_figures(gallery_conf):
         save_figures(block, block_vars, gallery_conf)
 
 
-def test_figure_rst():
+@pytest.mark.parametrize('ext', _KNOWN_IMG_EXTS)
+def test_figure_rst(ext):
     """Testing rst of images"""
-    figure_list = ['sphx_glr_plot_1.png']
+    figure_list = ['sphx_glr_plot_1.' + ext]
     image_rst = figure_rst(figure_list, '.')
     single_image = """
-.. image:: /sphx_glr_plot_1.png
+.. image:: /sphx_glr_plot_1.{ext}
     :class: sphx-glr-single-img
-"""
+""".format(ext=ext)
     assert image_rst == single_image
 
-    image_rst = figure_rst(figure_list + ['second.png'], '.')
+    image_rst = figure_rst(figure_list + ['second.' + ext], '.')
 
     image_list_rst = """
 .. rst-class:: sphx-glr-horizontal
@@ -134,21 +153,21 @@ def test_figure_rst():
 
     *
 
-      .. image:: /sphx_glr_plot_1.png
+      .. image:: /sphx_glr_plot_1.{ext}
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /second.png
+      .. image:: /second.{ext}
             :class: sphx-glr-multi-img
-"""
+""".format(ext=ext)
     assert image_rst == image_list_rst
 
     # test issue #229
-    local_img = [os.path.join(os.getcwd(), 'third.png')]
+    local_img = [os.path.join(os.getcwd(), 'third.' + ext)]
     image_rst = figure_rst(local_img, '.')
 
-    single_image = SINGLE_IMAGE % "third.png"
+    single_image = SINGLE_IMAGE % ("third." + ext)
     assert image_rst == single_image
 
 

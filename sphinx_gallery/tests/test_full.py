@@ -25,6 +25,11 @@ from sphinx_gallery.gen_rst import MixedEncodingStringIO
 
 import pytest
 
+N_TOT = 5
+N_FAILING = 1
+N_GOOD = N_TOT - N_FAILING
+N_RST = 12 + N_TOT
+
 
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory):
@@ -86,7 +91,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read().decode('utf-8')
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="4"' in contents
+    assert 'tests="5"' in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
@@ -133,8 +138,34 @@ def test_run_sphinx(sphinx_app):
     generated_examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(generated_examples_dir)
     status = sphinx_app._status.getvalue()
-    assert 'executed 3 out of 4' in status
+    assert 'executed %d out of %d' % (N_GOOD, N_TOT) in status
     assert 'after excluding 0' in status
+
+
+def test_image_formats(sphinx_app):
+    """Test Image format support."""
+    generated_examples_dir = op.join(sphinx_app.outdir, 'auto_examples')
+    generated_examples_index = op.join(generated_examples_dir, 'index.html')
+    with open(generated_examples_index, 'r') as fid:
+        html = fid.read()
+    thumb_fnames = ['../_images/sphx_glr_plot_svg_thumb.svg',
+                    '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png']
+    for thumb_fname in thumb_fnames:
+        file_fname = op.join(generated_examples_dir, thumb_fname)
+        assert op.isfile(file_fname)
+        want_html = 'src="%s"' % (thumb_fname,)
+        assert want_html in html
+    for ex, ext in (('plot_svg', 'svg'),
+                    ('plot_numpy_matplotlib', 'png'),
+                    ):
+        html_fname = op.join(generated_examples_dir, '%s.html' % ex)
+        with open(html_fname, 'r') as fid:
+            html = fid.read()
+        img_fname = '../_images/sphx_glr_%s_001.%s' % (ex, ext)
+        file_fname = op.join(generated_examples_dir, img_fname)
+        assert op.isfile(file_fname)
+        want_html = 'src="%s"' % (img_fname,)
+        assert want_html in html
 
 
 def test_embed_links_and_styles(sphinx_app):
@@ -210,13 +241,13 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     # First run completes in the fixture.
     #
     status = sphinx_app._status.getvalue()
-    assert re.match('.*16 added, 0 changed, 0 removed$.*',
-                    status, re.MULTILINE | re.DOTALL) is not None
+    want = '.*%s added, 0 changed, 0 removed$.*' % (N_RST,)
+    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
     assert re.match('.*targets for 1 source files that are out of date$.*',
                     status, re.MULTILINE | re.DOTALL) is not None
-    assert re.match('.*executed 3 out of 4.*'
-                    'after excluding 0 files.*based on MD5.*',
-                    status, re.MULTILINE | re.DOTALL) is not None
+    want = ('.*executed %d out of %d.*after excluding 0 files.*based on MD5.*'
+            % (N_GOOD, N_TOT))
+    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
     old_src_dir = (tmpdir_factory.getbasetemp() / 'root_old').strpath
     shutil.copytree(sphinx_app.srcdir, old_src_dir)
     generated_modules_0 = sorted(
@@ -269,12 +300,13 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
-    assert re.match('.*0 added, [2|3|6|7] changed, 0 removed$.*',
+    assert re.match('.*0 added, [2|3|6|7|8] changed, 0 removed$.*',
                     status, re.MULTILINE | re.DOTALL) is not None, lines
-    assert re.match('.*executed 0 out of 1.*'
-                    'after excluding 3 files.*based on MD5.*',
-                    status, re.MULTILINE | re.DOTALL) is not None
-    assert len(new_app.config.sphinx_gallery_conf['stale_examples']) == 3
+    want = ('.*executed 0 out of 1.*after excluding %s files.*based on MD5.*'
+            % (N_GOOD,))
+    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
+    n_stale = len(new_app.config.sphinx_gallery_conf['stale_examples'])
+    assert n_stale == N_GOOD
     assert op.isfile(op.join(new_app.outdir, '_images',
                              'sphx_glr_plot_numpy_matplotlib_001.png'))
 
@@ -347,16 +379,17 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     if LooseVersion(sphinx.__version__) <= LooseVersion('1.6'):
-        n = 16
+        n = N_RST
     else:
         n = '[2|3]'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
     assert re.match('.*targets for %s source files that are out of date$.*'
                     % n, status, re.MULTILINE | re.DOTALL) is not None, lines
-    assert re.match('.*executed 1 out of 2.*'
-                    'after excluding 2 files.*based on MD5.*',
-                    status, re.MULTILINE | re.DOTALL) is not None
-    assert len(new_app.config.sphinx_gallery_conf['stale_examples']) == 2
+    want = ('.*executed 1 out of 2.*after excluding %s files.*based on MD5.*'
+            % (N_GOOD - 1,))
+    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
+    n_stale = len(new_app.config.sphinx_gallery_conf['stale_examples'])
+    assert n_stale == N_GOOD - 1
     assert op.isfile(op.join(new_app.outdir, '_images',
                              'sphx_glr_plot_numpy_matplotlib_001.png'))
 

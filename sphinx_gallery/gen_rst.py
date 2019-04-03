@@ -324,7 +324,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         clean_modules(gallery_conf, fname)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         computation_times.append((time_elapsed, src_file))
-        this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
+        this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
+                                    fname, intro) + """
 
 .. toctree::
    :hidden:
