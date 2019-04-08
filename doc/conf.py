@@ -16,6 +16,8 @@ import sys
 import os
 from datetime import date
 import sphinx_gallery
+from sphinx_gallery.scrapers import matplotlib_scraper
+from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -312,22 +314,24 @@ intersphinx_mapping = {
     'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
 }
 
-from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
 examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
+
+image_scrapers = ('matplotlib',)
 try:
     # Run the mayavi examples and find the mayavi figures if mayavi is
     # installed
     from mayavi import mlab
-    image_scrapers = ('matplotlib', 'mayavi')
+except Exception:  # can raise all sorts of errors
+    image_scrapers = ('matplotlib',)
+else:
+    image_scrapers += ('mayavi',)
     examples_dirs.append('../mayavi_examples')
     gallery_dirs.append('auto_mayavi_examples')
     # Do not pop up any mayavi windows while running the
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
-except Exception:  # can raise all sorts of errors
-    image_scrapers = ('matplotlib',)
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
