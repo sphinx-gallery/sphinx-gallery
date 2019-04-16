@@ -54,17 +54,15 @@ def dummy():
 ###############################################################################
 # .. warning::
 #     The next kind of comments are not supported and become to hard to escape
-#     so just don't code like this.
+#     so just don't code like this::
 #
-# .. code-block:: python
-#
-#     def dummy2():
-#         """Function docstring"""
-#     ####################################
-#     # This comment inside python indentation
-#     # breaks the block structure and is not
-#     # supported
-#         dummy2
+#         def dummy2():
+#             """Function docstring"""
+#         ####################################
+#         # This comment inside python indentation
+#         # breaks the block structure and is not
+#         # supported
+#             dummy2
 #
 
 """Free strings are not supported they remain part of the code"""

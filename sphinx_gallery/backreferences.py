@@ -8,10 +8,16 @@ Backreferences Generator
 Parses example file code in order to keep track of used functions
 """
 from __future__ import print_function, unicode_literals
-import codecs
-import ast
-import os
 
+import ast
+import codecs
+import collections
+import os
+import re
+
+from . import sphinx_compatibility
+from .scrapers import _find_image_ext
+from .utils import _replace_md5
 
 # Try Python 2 first, otherwise load from Python 3
 try:
@@ -27,7 +33,7 @@ except ImportError:
 
     escape = partial(escape, entities={'"': '&quot;'})
 
-from .py_source_parser import parse_source_file
+from .py_source_parser import parse_source_file, split_code_and_text_blocks
 
 
 class NameFinder(ast.NodeVisitor):
@@ -102,17 +108,36 @@ def get_short_module_name(module_name, obj_name):
     return short_name
 
 
+def extract_object_names_from_docs(filename):
+    """Add matches from the text blocks (must be full names!)"""
+    text = split_code_and_text_blocks(filename)[1]
+    text = '\n'.join(t[1] for t in text if t[0] == 'text')
+    regex = re.compile(r':(?:'
+                       r'func(?:tion)?|'
+                       r'meth(?:od)?|'
+                       r'attr(?:ibute)?|'
+                       r'obj(?:ect)?|'
+                       r'class):`(\S*)`'
+                       )
+    return [(x, x) for x in re.findall(regex, text)]
+
+
 def identify_names(filename):
-    """Builds a codeobj summary by identifying and resolving used names"""
+    """Builds a codeobj summary by identifying and resolving used names."""
     node, _ = parse_source_file(filename)
     if node is None:
         return {}
 
+    # Get matches from the code (AST)
     finder = NameFinder()
     finder.visit(node)
+    names = list(finder.get_mapping())
+    names += extract_object_names_from_docs(filename)
 
-    example_code_obj = {}
-    for name, full_name in finder.get_mapping():
+    example_code_obj = collections.OrderedDict()
+    for name, full_name in names:
+        if name in example_code_obj:
+            continue  # if someone puts it in the docstring and code
         # name is as written in file (e.g. np.asarray)
         # full_name includes resolved import path (e.g. numpy.asarray)
         splitted = full_name.rsplit('.', 1)
@@ -134,9 +159,10 @@ def scan_used_functions(example_file, gallery_conf):
     """save variables so we can later add links to the documentation"""
     example_code_obj = identify_names(example_file)
     if example_code_obj:
-        codeobj_fname = example_file[:-3] + '_codeobj.pickle'
+        codeobj_fname = example_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
+        _replace_md5(codeobj_fname)
 
     backrefs = set('{module_short}.{name}'.format(**entry)
                    for entry in example_code_obj.values()
@@ -168,10 +194,18 @@ BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
 """
 
 
-def _thumbnail_div(full_dir, fname, snippet, is_backref=False):
+def _thumbnail_div(target_dir, src_dir, fname, snippet, is_backref=False,
+                   check=True):
     """Generates RST to place a thumbnail in a gallery"""
-    thumb = os.path.join(full_dir, 'images', 'thumb',
-                         'sphx_glr_%s_thumb.png' % fname[:-3])
+    thumb, _ = _find_image_ext(
+        os.path.join(target_dir, 'images', 'thumb',
+                     'sphx_glr_%s_thumb.png' % fname[:-3]))
+    if check and not os.path.isfile(thumb):
+        # This means we have done something wrong in creating our thumbnail!
+        raise RuntimeError('Could not find internal sphinx-gallery thumbnail '
+                           'file:\n%s' % (thumb,))
+    thumb = os.path.relpath(thumb, src_dir)
+    full_dir = os.path.relpath(target_dir, src_dir)
 
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
@@ -191,12 +225,11 @@ def write_backreferences(seen_backrefs, gallery_conf,
         return
 
     example_file = os.path.join(target_dir, fname)
-    build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     backrefs = scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
                                     gallery_conf['backreferences_dir'],
-                                    '%s.examples' % backref)
+                                    '%s.examples.new' % backref)
         seen = backref in seen_backrefs
         with codecs.open(include_path, 'a' if seen else 'w',
                          encoding='utf-8') as ex_file:
@@ -204,6 +237,27 @@ def write_backreferences(seen_backrefs, gallery_conf,
                 heading = '\n\nExamples using ``%s``' % backref
                 ex_file.write(heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
-            ex_file.write(_thumbnail_div(build_target_dir, fname, snippet,
-                                         is_backref=True))
+            ex_file.write(_thumbnail_div(target_dir, gallery_conf['src_dir'],
+                                         fname, snippet, is_backref=True))
             seen_backrefs.add(backref)
+
+
+def finalize_backreferences(seen_backrefs, gallery_conf):
+    """Replace backref files only if necessary."""
+    logger = sphinx_compatibility.getLogger('sphinx-gallery')
+    if gallery_conf['backreferences_dir'] is None:
+        return
+
+    for backref in seen_backrefs:
+        path = os.path.join(gallery_conf['src_dir'],
+                            gallery_conf['backreferences_dir'],
+                            '%s.examples.new' % backref)
+        if os.path.isfile(path):
+            _replace_md5(path)
+        else:
+            level = gallery_conf['log_level'].get('backreference_missing',
+                                                  'warning')
+            func = getattr(logger, level)
+            func('Could not find backreferences file: %s' % (path,))
+            func('The backreferences are likely to be erroneous '
+                 'due to file system case insensitivity.')

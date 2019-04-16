@@ -8,8 +8,16 @@ Parser for python source files
 
 from __future__ import division, absolute_import, print_function
 import ast
+from distutils.version import LooseVersion
+from io import BytesIO
 import re
+import sys
+import tokenize
 from textwrap import dedent
+
+from .sphinx_compatibility import getLogger
+
+logger = getLogger('sphinx-gallery')
 
 SYNTAX_ERROR_DOCSTRING = """
 SyntaxError
@@ -26,7 +34,6 @@ def parse_source_file(filename):
     ----------
     filename : str
         File path
-
 
     Returns
     -------
@@ -61,9 +68,9 @@ def get_docstring_and_rest(filename):
 
     Returns
     -------
-    docstring: str
+    docstring : str
         docstring of ``filename``
-    rest: str
+    rest : str
         ``filename`` content without the docstring
     """
     node, content = parse_source_file(filename)
@@ -74,49 +81,43 @@ def get_docstring_and_rest(filename):
     if not isinstance(node, ast.Module):
         raise TypeError("This function only supports modules. "
                         "You provided {0}".format(node.__class__.__name__))
-    try:
-        # in python 3.7 module knows it's docstring
-        # everything else will raise an attribute error
-        docstring = node.docstring
-
-        import tokenize
-        from io import BytesIO
-        ts = tokenize.tokenize(BytesIO(content).readline)
-        ds_lines = 0
-        # find the first string according to the tokenizer and get
-        # it's end row
-        for tk in ts:
-            if tk.exact_type == 3:
-                ds_lines, _ = tk.end
-                break
-        # grab the rest of the file
-        rest = '\n'.join(content.split('\n')[ds_lines:])
-        lineno = ds_lines + 1
-
-    except AttributeError:
-        # this block can be removed when python 3.6 support is dropped
-        if node.body and isinstance(node.body[0], ast.Expr) and \
-           isinstance(node.body[0].value, ast.Str):
-            docstring_node = node.body[0]
-            docstring = docstring_node.value.s
-            # python2.7: Code was read in bytes needs decoding to utf-8
-            # unless future unicode_literals is imported in source which
-            # make ast output unicode strings
-            if hasattr(docstring, 'decode') and not isinstance(docstring, unicode):
-                docstring = docstring.decode('utf-8')
-            lineno = docstring_node.lineno  # The last line of the string.
-            # This get the content of the file after the docstring last line
-            # Note: 'maxsplit' argument is not a keyword argument in python2
-            rest = content.split('\n', lineno)[-1]
-            lineno += 1
-        else:
-            docstring, rest = '', ''
-
-    if not docstring:
+    if not (node.body and isinstance(node.body[0], ast.Expr) and
+            isinstance(node.body[0].value, ast.Str)):
         raise ValueError(('Could not find docstring in file "{0}". '
                           'A docstring is required by sphinx-gallery '
                           'unless the file is ignored by "ignore_pattern"')
                          .format(filename))
+
+    if LooseVersion(sys.version) >= LooseVersion('3.7'):
+        docstring = ast.get_docstring(node)
+        assert docstring is not None  # should be guaranteed above
+        # This is just for backward compat
+        if len(node.body[0].value.s) and node.body[0].value.s[0] == '\n':
+            # just for strict backward compat here
+            docstring = '\n' + docstring
+        ts = tokenize.tokenize(BytesIO(content.encode()).readline)
+        # find the first string according to the tokenizer and get its end row
+        for tk in ts:
+            if tk.exact_type == 3:
+                lineno, _ = tk.end
+                break
+        else:
+            lineno = 0
+    else:
+        # this block can be removed when python 3.6 support is dropped
+        docstring_node = node.body[0]
+        docstring = docstring_node.value.s
+        # python2.7: Code was read in bytes needs decoding to utf-8
+        # unless future unicode_literals is imported in source which
+        # make ast output unicode strings
+        if hasattr(docstring, 'decode') and not isinstance(docstring, unicode):
+            docstring = docstring.decode('utf-8')
+        lineno = docstring_node.lineno  # The last line of the string.
+
+    # This get the content of the file after the docstring last line
+    # Note: 'maxsplit' argument is not a keyword argument in python2
+    rest = '\n'.join(content.split('\n')[lineno:])
+    lineno += 1
     return docstring, rest, lineno
 
 
@@ -149,11 +150,12 @@ def split_code_and_text_blocks(source_file):
     Returns
     -------
     file_conf : dict
-        File-specific settings given in comments as:
+        File-specific settings given in source file comments as:
         ``# sphinx_gallery_<name> = <value>``
-    blocks : list of (label, content)
+    blocks : list
+        (label, content, line_number)
         List where each element is a tuple with the label ('text' or 'code'),
-        and content string of block.
+        the corresponding content string of block and the leading line number
     """
     docstring, rest_of_content, lineno = get_docstring_and_rest(source_file)
     blocks = [('text', docstring, 1)]

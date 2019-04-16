@@ -16,6 +16,8 @@ import sys
 import os
 from datetime import date
 import sphinx_gallery
+from sphinx_gallery.scrapers import matplotlib_scraper
+from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -106,6 +108,7 @@ suppress_warnings = ['image.nonlocal_uri']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+highlight_language = 'python3'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -120,7 +123,7 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 
 # The theme is set by the make target
-html_theme = os.environ.get('SPHX_GLR_THEME', 'default')
+html_theme = os.environ.get('SPHX_GLR_THEME', 'rtd')
 
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed
 # from docs.readthedocs.org
@@ -130,9 +133,12 @@ if not on_rtd and html_theme == 'rtd':
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+else:
+    # otherwise, readthedocs.org uses their theme by default, so no need to
+    # specify it
+    html_theme = 'default'
 
-# otherwise, readthedocs.org uses their theme by default, so no need to
-# specify it
+
 
 
 def setup(app):
@@ -300,31 +306,36 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'matplotlib': ('https://matplotlib.org/', None),
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
-    'sklearn': ('http://scikit-learn.org/stable', None),
+    'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
 }
 
-from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
 examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
+
+image_scrapers = ('matplotlib',)
 try:
     # Run the mayavi examples and find the mayavi figures if mayavi is
     # installed
     from mayavi import mlab
-    find_mayavi_figures = True
+except Exception:  # can raise all sorts of errors
+    image_scrapers = ('matplotlib',)
+else:
+    image_scrapers += ('mayavi',)
     examples_dirs.append('../mayavi_examples')
     gallery_dirs.append('auto_mayavi_examples')
     # Do not pop up any mayavi windows while running the
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
-except Exception:  # can raise all sorts of errors
-    find_mayavi_figures = False
 
+min_reported_time = 0
+if 'SOURCE_DATE_EPOCH' in os.environ:
+    min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
 
 sphinx_gallery_conf = {
     'backreferences_dir': 'gen_modules/backreferences',
@@ -334,17 +345,22 @@ sphinx_gallery_conf = {
         },
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
+    'image_scrapers': image_scrapers,
     'subsection_order': ExplicitOrder(['../examples/sin_func',
                                        '../examples/no_output',
                                        '../tutorials/seaborn']),
     'within_subsection_order': NumberOfCodeLinesSortKey,
-    'find_mayavi_figures': find_mayavi_figures,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py'],
+    'min_reported_time': min_reported_time,
     'binder': {'org': 'sphinx-gallery',
                'repo': 'sphinx-gallery.github.io',
-               'url': 'https://mybinder.org',
                'branch': 'master',
-               'dependencies': './binder/requirements.txt'
-               }
+               'binderhub_url': 'https://mybinder.org',
+               'dependencies': './binder/requirements.txt',
+               'notebooks_dir': 'notebooks',
+               'use_jupyter_lab': True,
+               },
+    'show_memory': True,
+    'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),
 }

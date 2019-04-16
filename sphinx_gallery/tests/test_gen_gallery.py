@@ -8,13 +8,18 @@ Test Sphinx-Gallery
 from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
+from contextlib import contextmanager
 import os
 import sys
 import re
 import shutil
+
 import pytest
+
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
+from sphinx.util.docutils import docutils_namespace
+
 from sphinx_gallery.gen_rst import MixedEncodingStringIO
 from sphinx_gallery import sphinx_compatibility
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
@@ -24,7 +29,10 @@ from sphinx_gallery.utils import _TempDir
 
 @pytest.fixture
 def conf_file(request):
-    env = request.node.get_marker('conf_file')
+    try:
+        env = request.node.get_closest_marker('conf_file')
+    except AttributeError:  # old pytest
+        env = request.node.get_marker('conf_file')
     kwargs = env.kwargs if env else {}
     result = {
         'content': "",
@@ -43,92 +51,123 @@ def tempdir():
     return _TempDir()
 
 
+class SphinxAppWrapper(object):
+    """Wrapper for sphinx.application.Application.
+
+    This allows to control when the sphinx application is initialized, since
+    part of the sphinx-gallery build is done in
+    sphinx.application.Application.__init__ and the remainder is done in
+    sphinx.application.Application.build.
+
+    """
+
+    def __init__(self, srcdir, confdir, outdir, doctreedir, buildername,
+                 **kwargs):
+        self.srcdir = srcdir
+        self.confdir = confdir
+        self.outdir = outdir
+        self.doctreedir = doctreedir
+        self.buildername = buildername
+        self.kwargs = kwargs
+
+    def create_sphinx_app(self):
+        # Avoid warnings about re-registration, see:
+        # https://github.com/sphinx-doc/sphinx/issues/5038
+        with self.create_sphinx_app_context() as app:
+            pass
+        return app
+
+    @contextmanager
+    def create_sphinx_app_context(self):
+        with docutils_namespace():
+            app = Sphinx(self.srcdir, self.confdir, self.outdir,
+                         self.doctreedir, self.buildername, **self.kwargs)
+            sphinx_compatibility._app = app
+            yield app
+
+    def build_sphinx_app(self, *args, **kwargs):
+        with self.create_sphinx_app_context() as app:
+            # building should be done in the same docutils_namespace context
+            app.build(*args, **kwargs)
+        return app
+
+
 @pytest.fixture
-def config_app(tempdir, conf_file):
+def sphinx_app_wrapper(tempdir, conf_file):
     _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
     srcdir = os.path.join(tempdir, "config_test")
     shutil.copytree(_fixturedir, srcdir)
     shutil.copytree(os.path.join(_fixturedir, "src"),
                     os.path.join(tempdir, "examples"))
 
-    with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
-        conffile.write(conf_file['content'])
-
-    app = Sphinx(srcdir, srcdir, os.path.join(srcdir, "_build"),
-                 os.path.join(srcdir, "_build", "toctree"),
-                 "html", warning=MixedEncodingStringIO())
-
-    sphinx_compatibility._app = app
-    return app
-
-
-@pytest.mark.conf_file(content="""
+    base_config = """
 import os
 import sphinx_gallery
 extensions = ['sphinx_gallery.gen_gallery']
+exclude_patterns = ['_build']
+source_suffix = '.rst'
+master_doc = 'index'
 # General information about the project.
-project = u'Sphinx-Gallery <Tests>'""")
-def test_default_config(config_app):
+project = u'Sphinx-Gallery <Tests>'\n\n
+"""
+    with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
+        conffile.write(base_config + conf_file['content'])
+
+    return SphinxAppWrapper(
+        srcdir, srcdir, os.path.join(srcdir, "_build"),
+        os.path.join(srcdir, "_build", "toctree"),
+        "html", warning=MixedEncodingStringIO())
+
+
+def test_default_config(sphinx_app_wrapper):
     """Test the default Sphinx-Gallery configuration is loaded
 
     if only the extension is added to Sphinx"""
-
-    cfg = config_app.config
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    cfg = sphinx_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     # no duplicate values allowed The config is present already
     with pytest.raises(ExtensionError) as excinfo:
-        config_app.add_config_value('sphinx_gallery_conf', 'x', True)
+        sphinx_app.add_config_value('sphinx_gallery_conf', 'x', True)
     assert 'already present' in str(excinfo.value)
 
 
 @pytest.mark.conf_file(content="""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'
-
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
 }""")
-def test_no_warning_simple_config(config_app):
+def test_no_warning_simple_config(sphinx_app_wrapper):
     """Testing that no warning is issued with a simple config.
 
     The simple config only specifies input (examples_dirs) and output
     (gallery_dirs) directories.
     """
-
-    cfg = config_app.config
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    cfg = sphinx_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
-    build_warn = config_app._warning.getvalue()
+    build_warn = sphinx_app._warning.getvalue()
     assert build_warn == ''
 
 
 @pytest.mark.conf_file(content="""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'
-
 sphinx_gallery_conf = {
     'mod_example_dir' : os.path.join('modules', 'gen'),
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
 }""")
-def test_config_old_backreferences_conf(config_app):
+def test_config_old_backreferences_conf(sphinx_app_wrapper):
     """Testing Deprecation warning message against old backreference config
 
     In this case the user is required to update the mod_example_dir config
     variable Sphinx-Gallery should notify the user and also silently update
     the old config to the new one. """
-
-    cfg = config_app.config
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    cfg = sphinx_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
         'modules', 'gen')
-    build_warn = config_app._warning.getvalue()
+    build_warn = sphinx_app._warning.getvalue()
 
     assert "WARNING:" in build_warn
     assert "deprecated" in build_warn
@@ -136,30 +175,26 @@ def test_config_old_backreferences_conf(config_app):
 
 
 @pytest.mark.conf_file(content="""
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'
-
 sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('gen_modules', 'backreferences'),
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
 }""")
-def test_config_backreferences(config_app):
+def test_config_backreferences(sphinx_app_wrapper):
     """Test no warning is issued under the new configuration"""
-
-    cfg = config_app.config
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    cfg = sphinx_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
     assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
         'gen_modules', 'backreferences')
-    build_warn = config_app._warning.getvalue()
-    assert build_warn == ""
+    build_warn = sphinx_app._warning.getvalue()
+    assert build_warn == ''
 
 
-def test_duplicate_files_warn(config_app):
+def test_duplicate_files_warn(sphinx_app_wrapper):
     """Test for a warning when two files with the same filename exist."""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
     files = ['./a/file1.py', './a/file2.py', 'a/file3.py', './b/file1.py']
     msg = ("Duplicate file name(s) found. Having duplicate file names "
            "will break some links. List of files: {}")
@@ -167,17 +202,17 @@ def test_duplicate_files_warn(config_app):
 
     # No warning because no overlapping names
     check_duplicate_filenames(files[:-1])
-    warnings = config_app._warning.getvalue()
-    assert warnings == ''
+    build_warn = sphinx_app._warning.getvalue()
+    assert build_warn == ''
 
     # Warning because last file is named the same
     check_duplicate_filenames(files)
-    warnings = config_app._warning.getvalue()
-    assert msg.format(m) in warnings
+    build_warn = sphinx_app._warning.getvalue()
+    assert msg.format(m) in build_warn
 
 
-def _check_order(config_app, key):
-    index_fname = os.path.join(config_app.outdir, '..', 'ex', 'index.rst')
+def _check_order(sphinx_app, key):
+    index_fname = os.path.join(sphinx_app.outdir, '..', 'ex', 'index.rst')
     order = list()
     regex = '.*:%s=(.):.*' % key
     with codecs.open(index_fname, 'r', 'utf-8') as fid:
@@ -189,60 +224,56 @@ def _check_order(config_app, key):
 
 
 @pytest.mark.conf_file(content="""
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
 }""")
-def test_example_sorting_default(config_app):
+def test_example_sorting_default(sphinx_app_wrapper):
     """Test sorting of examples by default key (number of code lines)."""
-    _check_order(config_app, 'lines')
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    _check_order(sphinx_app, 'lines')
 
 
 @pytest.mark.conf_file(content="""
-import sphinx_gallery
 from sphinx_gallery.sorting import FileSizeSortKey
-extensions = ['sphinx_gallery.gen_gallery']
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
     'within_subsection_order': FileSizeSortKey,
 }""")
-def test_example_sorting_filesize(config_app):
+def test_example_sorting_filesize(sphinx_app_wrapper):
     """Test sorting of examples by filesize."""
-    _check_order(config_app, 'filesize')
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    _check_order(sphinx_app, 'filesize')
 
 
 @pytest.mark.conf_file(content="""
-import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
-extensions = ['sphinx_gallery.gen_gallery']
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
     'within_subsection_order': FileNameSortKey,
 }""")
-def test_example_sorting_filename(config_app):
+def test_example_sorting_filename(sphinx_app_wrapper):
     """Test sorting of examples by filename."""
-    _check_order(config_app, 'filename')
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    _check_order(sphinx_app, 'filename')
 
 
 @pytest.mark.conf_file(content="""
-import sphinx_gallery
 from sphinx_gallery.sorting import ExampleTitleSortKey
-extensions = ['sphinx_gallery.gen_gallery']
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
     'within_subsection_order': ExampleTitleSortKey,
 }""")
-def test_example_sorting_title(config_app):
+def test_example_sorting_title(sphinx_app_wrapper):
     """Test sorting of examples by title."""
-    _check_order(config_app, 'title')
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    _check_order(sphinx_app, 'title')
 
 
-def test_collect_gallery_files(config_app, tmpdir):
+def test_collect_gallery_files(sphinx_app_wrapper, tmpdir):
     """Test that example files are collected properly."""
     rel_filepaths = ['examples/file1.py',
                      'examples/test.rst',
@@ -273,3 +304,82 @@ def test_collect_gallery_files(config_app, tmpdir):
         [ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)])
 
     assert collected_files == expected_files
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+    'binder': {'binderhub_url': 'http://test1.com', 'org': 'org',
+               'repo': 'repo', 'branch': 'branch',
+               'notebooks_dir': 'ntbk_folder',
+               'dependencies': 'requirements.txt'}
+}""")
+def test_binder_copy_files(sphinx_app_wrapper, tmpdir):
+    """Test that notebooks are copied properly."""
+    from sphinx_gallery.binder import copy_binder_files
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    gallery_conf = sphinx_app.config.sphinx_gallery_conf
+    # Create requirements file
+    with open(os.path.join(sphinx_app.srcdir, 'requirements.txt'), 'w'):
+        pass
+    copy_binder_files(sphinx_app, None)
+
+    for i_file in ['plot_1', 'plot_2', 'plot_3']:
+        assert os.path.exists(os.path.join(
+            sphinx_app.outdir, 'ntbk_folder', gallery_conf['gallery_dirs'][0],
+            i_file+'.ipynb'))
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}""")
+def test_failing_examples_raise_exception(sphinx_app_wrapper):
+    example_dir = os.path.join(sphinx_app_wrapper.srcdir,
+                               'src')
+    with codecs.open(os.path.join(example_dir, 'plot_3.py'), 'a',
+                     encoding='utf-8') as fid:
+        fid.write('raise SyntaxError')
+    with pytest.raises(ValueError) as excinfo:
+        sphinx_app_wrapper.build_sphinx_app()
+    assert "Unexpected failing examples" in str(excinfo.value)
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'filename_pattern': 'plot_1.py',
+}""")
+def test_expected_failing_examples_were_executed(sphinx_app_wrapper):
+    """Testing that no exception is issued when broken example is not built
+
+    See #335 for more details.
+    """
+    sphinx_app_wrapper.build_sphinx_app()
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'expected_failing_examples' :['src/plot_2.py'],
+}""")
+def test_examples_not_expected_to_pass(sphinx_app_wrapper):
+    with pytest.raises(ValueError) as excinfo:
+        sphinx_app_wrapper.build_sphinx_app()
+    assert "expected to fail, but not failing" in str(excinfo.value)
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'first_notebook_cell': 2,
+}""")
+def test_first_notebook_cell_config(sphinx_app_wrapper):
+    from sphinx_gallery.gen_gallery import parse_config
+    # First cell must be str
+    with pytest.raises(ValueError):
+        parse_config(sphinx_app_wrapper.create_sphinx_app())

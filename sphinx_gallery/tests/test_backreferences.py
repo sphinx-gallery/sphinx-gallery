@@ -6,13 +6,18 @@ Testing the rst files generator
 """
 from __future__ import division, absolute_import, print_function
 
+import pytest
 import sphinx_gallery.backreferences as sg
 
 
 def test_thumbnail_div():
     """Test if the thumbnail div generates the correct string"""
 
-    html_div = sg._thumbnail_div('fake_dir', 'test_file.py', '<"test">')
+    with pytest.raises(RuntimeError, match='internal sphinx-gallery thumb'):
+        html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
+                                     '<"test">')
+    html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
+                                 '<"test">', check=False)
 
     reference = r"""
 .. raw:: html
@@ -36,8 +41,9 @@ def test_thumbnail_div():
 def test_backref_thumbnail_div():
     """Test if the thumbnail div generates the correct string"""
 
-    html_div = sg._thumbnail_div('fake_dir', 'test_file.py', 'test formating',
-                                 is_backref=True)
+    html_div = sg._thumbnail_div('fake_dir', '',
+                                 'test_file.py', 'test formating',
+                                 is_backref=True, check=False)
 
     reference = """
 .. raw:: html
@@ -83,6 +89,12 @@ def test_identify_names(unicode_sample):
 
 def test_identify_names2(tmpdir):
     code_str = b"""
+'''
+Title
+-----
+
+This is an example.
+'''
 # -*- coding: utf-8 -*-
 # \xc3\x9f
 from a.b import c
@@ -92,6 +104,23 @@ e.HelloWorld().f.g
 """
     expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
                 'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd', 'module_short': 'd'}}
+
+    fname = tmpdir.join("indentify_names.py")
+    fname.write(code_str, 'wb')
+
+    res = sg.identify_names(fname.strpath)
+
+    assert expected == res
+
+    code_str = b"""
+'''
+Title
+-----
+
+This example uses :func:`h.i`.
+'''
+""" + code_str.split(b"'''")[-1]
+    expected['h.i'] = {u'module': u'h', u'module_short': u'h', u'name': u'i'}
 
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')

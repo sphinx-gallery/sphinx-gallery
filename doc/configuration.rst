@@ -1,3 +1,5 @@
+.. _configuration:
+
 =============
 Configuration
 =============
@@ -24,13 +26,19 @@ file:
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
 - ``line_numbers`` (:ref:`adding_line_numbers`)
-- ``download_section_examples`` (:ref:`disable_joint_download`)
+- ``download_all_examples`` (:ref:`disable_all_scripts_download`)
 - ``plot_gallery`` (:ref:`without_execution`)
-- ``find_mayavi_figures`` (:ref:`find_mayavi`)
+- ``image_scrapers`` (and the deprecated ``find_mayavi_figures``)
+  (:ref:`image_scrapers`)
+- ``reset_modules`` (:ref:`reset_modules`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
+- ``show_memory`` (:ref:`show_memory`)
 - ``binder`` (:ref:`binder_links`)
+- ``first_notebook_cell`` (:ref:`first_notebook_cell`)
+- ``junit`` (:ref:`junit_xml`)
+- ``log_level`` (:ref:`log_level`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -49,8 +57,8 @@ And some things can be tweaked directly in CSS:
 
 .. _multiple_galleries_config:
 
-Managing multiple galleries
-===========================
+Manage multiple galleries
+=========================
 
 Sphinx-Gallery only supports up to sub-folder level in its gallery directories.
 This might be a limitation for you. Or you might want to have separate
@@ -66,47 +74,62 @@ the sphinx configuration dictionary::
 
 Keep in mind that both lists have to be of the same length.
 
+.. note:: If your examples take a long time to run, consider looking at the
+          :ref:`execution times <sphx_glr_auto_examples_sg_execution_times>`
+          file that is generated for each gallery dir (as long as any examples
+          were actually executed in that directory during the build).
 
 .. _build_pattern:
 
-Parsing and executing examples based on matching patterns
-=========================================================
+Parsing and executing examples via matching patterns
+====================================================
 
 By default, Sphinx-Gallery will **parse and add** all files with a ``.py``
-extension to the gallery. To ignore some files and omit them from the gallery
-entirely, you can use a regular expression (the default is shown here)::
+extension to the gallery, but only **execute** files beginning with ``plot_``.
+These behaviors are controlled by the ``ignore_pattern`` and ``filename_pattern``
+entries, which have the default values::
 
     sphinx_gallery_conf = {
         ...
-        'ignore_pattern': '__init__\.py',
+        'filename_pattern': '/plot_',
+        'ignore_pattern': r'__init__\.py',
     }
 
-Of the files that get **parsed and added** to the gallery, by default
-Sphinx-Gallery only **executes** files whose name begins with ``plot``.
-However, if this naming convention does not suit your project, you can modify
-the pattern of filenames to build in your Sphinx ``conf.py``. For example::
+To omit some files from the gallery entirely (i.e., not execute, parse, or
+add them), you can change the ``ignore_pattern`` option.
+To choose which of the parsed and added Python scripts are actualy
+executed, you can modify ``filename_pattern``. For example::
 
     sphinx_gallery_conf = {
         ...
         'filename_pattern': '/plot_compute_',
     }
 
-will build all examples starting with ``plot_compute_``. The key ``filename_pattern`` accepts
-`regular expressions`_ which will be matched with the full path of the example. This is the reason
-the leading ``'/'`` is required. Users are advised to use ``os.sep`` instead of ``'/'`` if
-they want to be agnostic to the operating system.
+will build all examples starting with ``plot_compute_``. The key
+``filename_pattern`` (and ``ignore_pattern``) accepts `regular expressions`_
+which will be matched with the full path of the example. This is the reason
+the leading ``'/'`` is required. Users are advised to use ``re.escape(os.sep)``
+instead of ``'/'`` if they want to be agnostic to the operating system.
 
-This option is also useful if you want to build only a subset of the examples. For example, you may
+The ``filename_pattern`` option is also useful if you want to build only a
+subset of the examples. For example, you may
 want to build only one example so that you can link it in the documentation. In that case,
 you would do::
 
     sphinx_gallery_conf = {
         ...
-        'filename_pattern': 'plot_awesome_example\.py',
+        'filename_pattern': r'plot_awesome_example\.py',
     }
 
-Here, one should escape the dot ``'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
+Here, one should escape the dot ``r'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
 one is targeting a specific file, it would match the dot in the filename even without this escape character.
+
+.. note::
+    Sphinx-gallery only re-runs examples that have changed (according to their
+    md5 hash). You can delete the associated MD5 files (e.g.,
+    ``./auto_examples/plot_awesome_example.py.md5``) to force a rebuild if
+    you have not changed the example itself between subsequent ``sphinx``
+    calls.
 
 Similarly, to build only examples in a specific directory, you can do::
 
@@ -168,6 +191,22 @@ the converse does not hold.
 If you so desire you can implement your own sorting key. It will be
 provided the relative paths to `conf.py` of each sub gallery folder.
 
+.. warning:: If you create your own class for ``'subsection_order'``, ensure
+             that the ``__str__`` of your class is stable across runs.
+             Sphinx determines if the build environment has changed
+             (and thus if *all* documents should be rewritten)
+             by examining the config values using
+             ``md5(str(obj).encode()).hexdigest()`` in
+             ``sphinx/builders/html.py``. Default class instances
+             in Python have their memory address in their ``__repr__`` which
+             will in general change for each build. For ``ExplicitOrder``
+             for example, this is fixed via::
+
+                 def __repr__(self):
+                     return '<%s: %s>' % (self.__class__.__name__, self.ordered_list)
+
+             Thus the files are only all rebuilt if the specified ordered list
+             is changed.
 
 .. _within_gallery_order:
 
@@ -198,8 +237,8 @@ In addition, multiple convenience classes are provided for use with
 
 .. _link_to_documentation:
 
-Linking to documentation
-========================
+Add intersphinx links to your examples
+======================================
 
 Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
 you can link the used functions to their matching online documentation. As such
@@ -235,23 +274,32 @@ point to the directory containing ``searchindex.js``, such as
 
 .. _references_to_examples:
 
-Adding references to examples
-=============================
+Add mini-galleries for API documentation
+========================================
 
-Sphinx-Gallery enables you, when documenting your modules, to
-reference to the examples that use a particular function. For example
-if we are documenting the :func:`numpy.exp` function its possible to embed
-a small gallery of examples that is specific to this function and
-looks like this:
+When documenting a given function/class, Sphinx-Gallery enables you to link to
+any examples that either:
+
+1. Use the function/instantiate the class in the code.
+2. Refer to that function/class using sphinx markup ``:func:``/``:class:``
+   in a documentation block.
+
+The former is useful for auto-documenting functions that are used and classes
+that are explicitly instantiated. The latter is useful for classes that are
+typically implicitly returned rather than explicitly instantiated (e.g.,
+:class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
+within function calls).
+
+For example, we can embed a small gallery of all examples that use or
+refer to :obj:`numpy.exp`, which looks like this:
 
 .. include:: gen_modules/backreferences/numpy.exp.examples
 .. raw:: html
 
         <div style='clear:both'></div>
 
-
-For such behavior to be available, you have to activate it in your
-Sphinx-Gallery configuration ``conf.py`` file with::
+For such behavior to be available, you have to activate it in
+your Sphinx-Gallery configuration ``conf.py`` file with::
 
     sphinx_gallery_conf = {
         ...
@@ -262,9 +310,9 @@ Sphinx-Gallery configuration ``conf.py`` file with::
         # this case sphinx_gallery and numpy in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
-The path you specify in ``backreferences_dir``, here we choose
-``gen_modules/backreferences`` will get populated with
-ReStructuredText files, each of which contains a reduced version of the
+The path you specify in ``backreferences_dir`` (here we choose
+``gen_modules/backreferences``) will be populated with
+ReStructuredText files. Each will contain a reduced version of the
 gallery specific to every function used across all the examples
 galleries and belonging to the modules listed in ``doc_module``. Keep
 in mind that the path set in ``backreferences_dir`` is **relative** to the
@@ -307,7 +355,7 @@ it with the standard sphinx extensions `autodoc
 
 `autodoc <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
 <http://sphinx-doc.org/ext/autosummary.html>`_ are very powerful
-extensions please read about them. In this example we'll explain how
+extensions, please read about them. In this example we'll explain how
 the :ref:`sphx_glr_api_reference` is automatically generated. The
 documentation is done at the module level. We first start with the
 ``reference.rst`` file
@@ -339,7 +387,7 @@ configuration option setup for Sphinx-Gallery.
 .. literalinclude:: _templates/module.rst
     :language: rst
     :lines: 3-
-    :emphasize-lines: 12-22
+    :emphasize-lines: 12-22, 32-42
     :linenos:
 
 
@@ -381,19 +429,110 @@ Note that for Sphinx < 1.3, the line numbers will not be consistent with the
 original file.
 
 
-.. _disable_joint_download:
+.. _first_notebook_cell:
 
-Disabling joint download of scripts
-===================================
+Add your own first notebook cell
+================================
 
-By default Sphinx-Gallery prepares zip files of all python scripts and
-all Jupyter notebooks for each gallery section and makes them
-available for download at the end of each section. To disable this
-behavior add to the configuration dictionary in your ``conf.py`` file::
+Sphinx-Gallery adds an extra cell to the beginning of every generated notebook.
+This is often for adding code that is required to run properly in the notebook,
+but not in a ``.py`` file. By default, this text is
+
+.. code-block:: ipython
+
+   %matplotlib inline
+
+You can choose whatever text you like by modifying the ``first_notebook_cell``
+configuration parameter. For example, the gallery of this documentation
+displays a comment along-side each the code shown above.
+
+.. code-block:: ipython
+
+  # This cell is added by sphinx-gallery
+  # It can be customized to whatever you like
+  %matplotlib inline
+
+Which is achieved by the following configuration::
 
     sphinx_gallery_conf = {
         ...
-        'download_section_examples': False,
+        'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+                                "# It can be customized to whatever you like\n"
+                                "%matplotlib inline")
+    }
+
+If the value of ``first_notebook_cell`` is set to ``None``, then no extra first
+cell will be added to the notebook.
+
+
+.. _junit_xml:
+
+Using JUnit XML files
+=====================
+
+Sphinx-Gallery can create a JUnit XML file of your example run times,
+successes, and failures. To create a file named e.g. ``junit-result.xml``
+in the ``/build`` output directory, set the configuration key (path is relative
+to the HTML output directory)::
+
+     sphinx_gallery_conf = {
+         ...
+         'junit': '../test-results/sphinx-gallery/junit.xml',
+     }
+
+By default, JUnit XML file generation is disabled (by setting ``'junit': ''``).
+JUnit XML files are useful for example on CircleCI builds, where you can add
+a line like this to get a summary of your example run times in the CircleCI GUI
+(which will parse the file path
+``doc/_build/test-results/sphinx-gallery/junit.xml`` and infer the tests
+came from ``sphinx-gallery`` based on the nested subdirectory name):
+
+.. code-block:: yaml
+
+    - store_test_results:
+        path: doc/_build/test-results
+    - store_artifacts:
+        path: doc/_build/test-results
+
+For more information on CircleCI integration, peruse the related
+`CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
+and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
+
+
+.. _log_level:
+
+Setting log level
+=================
+
+Sphinx-Gallery logs output at several stages. Warnings can be generated for
+code that requires case sensitivity (e.g., ``plt.subplot`` and ``plt.Subplot``)
+when building docs on a filesystem that does not support case sensitive
+naming (e.g., Windows). In this case, by default a ``logger.warning`` is
+emitted, which will lead to a build failure when buidling with ``-W``.
+The log level can be set with::
+
+    sphinx_gallery_conf = {
+        ...
+        'log_level': {'backreference_missing': 'warning'},
+    }
+
+The only valid key currently is ``backreference_missing``.
+The valid values are ``'debug'``, ``'info'``, ``'warning'``, and ``'error'``.
+
+
+.. _disable_all_scripts_download:
+
+Disabling download button of all scripts
+========================================
+
+By default Sphinx-Gallery collects all python scripts and all Jupyter
+notebooks from each gallery into zip files which are made available for
+download at the bottom of each gallery. To disable this behavior add to the
+configuration dictionary in your ``conf.py`` file::
+
+    sphinx_gallery_conf = {
+        ...
+        'download_all_examples': False,
     }
 
 
@@ -421,14 +560,14 @@ Generate Binder links for gallery notebooks (experimental)
 ==========================================================
 
 Sphinx-Gallery automatically generates Jupyter notebooks for any
-examples built with the gallery. `Binder <http://mybinder.org>`_ makes it
+examples built with the gallery. `Binder <https://mybinder.org>`_ makes it
 possible to create interactive GitHub repositories that connect to cloud resources.
 
 If you host your documentation on a GitHub repository, it is possible to
 auto-generate a Binder link for each notebook. Clicking this link will
 take users to a live version of the Jupyter notebook where they may
 run the code interactively. For more information see the `Binder documentation
-<http://docs.mybinder.org>`_.
+<https://docs.mybinder.org>`__.
 
 .. warning::
 
@@ -442,30 +581,62 @@ dictionary following the pattern below::
     sphinx_gallery_conf = {
       ...
       'binder': {
+         # Required keys
          'org': '<github_org>',
          'repo': '<github_repo>',
-         'url': '<binder_url>',  # Any URL of a binder server. Must be full URL (e.g. https://mybinder.org).
-         'branch': '<branch-for-documentation>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
+         'ref': '<ref-for-documentation>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
+         'binderhub_url': '<binder_url>',  # Any URL of a binderhub deployment. Must be full URL (e.g. https://mybinder.org).
          'dependencies': '<list_of_paths_to_dependency_files>',
-         'filepath_prefix': '<prefix>' # Optional, a prefix to append to any filepaths in Binder links.
-                            use this if you move your built documentation to a sub-folder of your repository (e.g., "v2.1")
+         # Optional keys
+         'filepath_prefix': '<prefix>' # A prefix to prepend to any filepaths in Binder links.
+         'notebooks_dir': '<notebooks-directory-name>' # Jupyter notebooks for Binder will be copied to this directory (relative to built documentation root).
+         'use_jupyter_lab': <bool> # Whether Binder links should start Jupyter Lab instead of the Jupyter Notebook interface.
          }
     }
 
-Note that ``branch:`` should be the branch on which your documentation is hosted.
-If you host your documentation on GitHub, this is usually ``gh-pages`` or ``master``.
+If a Sphinx-Gallery configuration for Binder is discovered, the following extra things will happen:
 
-.. important::
+1. The dependency files specified in ``dependencies`` will be copied to a ``binder/`` folder in your built documentation.
+2. The built Jupyter Notebooks from the documentation will be copied to a folder called ``<notebooks_dir/>`` at the root of
+   your built documentation (they will follow the same folder hierarchy within the notebooks directory folder.
+3. The rST output of each Sphinx-Gallery example will now have a ``launch binder`` button in it.
+4. That button will point to a binder link with the following structure::
 
-   ``dependencies`` should be a list of paths to Binder configuration files that
-   define the environment needed to run the examples. For example, a
-   ``requirements.txt`` file. These will be copied to
-   the documentation branch specified in ``branch:``. When a user clicks your
-   Binder link, these files will be used to create the environment.
-   For more information on what files you can use, see `preparing your
-   repository <https://mybinder.readthedocs.io/en/latest/using.html#preparing-a-repository-for-binder>`_
-   in the `Binder documentation <docs.mybinder.org>`_ for more information on
-   what build files are supported.
+       <binderhub_url>/v2/gh/<org>/<repo>/<ref>?filepath=<filepath_prefix>/<notebooks_dir>/path/to/notebook.ipynb
+
+Below is a more complete explanation of each field.
+
+org (type: string)
+  The GitHub organization where your documentation is stored.
+repo (type: string)
+  The GitHub repository where your documentation is stored.
+ref (type: string)
+  A reference to the version of your repository where your documentation exists.
+  For example, if your built documentation is stored on a ``gh-pages`` branch, then this field
+  should be set to ``gh-pages``.
+binderhub_url (type: string)
+  The full URL to a BinderHub deployment where you want your examples to run. One
+  public BinderHub deployment is at ``https://mybinder.org``, though if you (and your users) have access to
+  another, this can be configured with this field.
+dependencies (type: list)
+  A list of paths (relative to ``conf.py``) to dependency files that Binder uses to infer the environment needed
+  to run your examples. For example, a ``requirements.txt`` file. These will be copied into a folder
+  called ``binder/`` in your built documentation folder. For a list of all the possible dependency files
+  you can use, see `the Binder configuration documentation <https://mybinder.readthedocs.io/en/latest/config_files.html#config-files>`_.
+filepath_prefix (type: string | None, default: ``None``)
+  A prefix to append to the filepath in the Binder links. You should use this if you will store your built
+  documentation in a sub-folder of a repository, instead of in the root.
+notebooks_dir (type: string, default: ``notebooks``)
+  The name of a folder where the built Jupyter notebooks will be copied. This ensures that all the notebooks are
+  in one place (though they retain their folder hierarchy) in case you'd like users to browse multiple notebook examples in one session.
+use_jupyter_lab (type: bool, default: ``False``)
+  Whether the default interface activated by the Binder link will be for
+  Jupyter Lab or the classic Jupyter Notebook interface.
+
+Each generated Jupyter Notebook will be copied to the folder
+specified in ``notebooks_dir``. This will be a subfolder of the sphinx output
+directory and included with your site build.
+Binder links will point to these notebooks.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the `public Binder server <http://mybinder.org>`_.
@@ -503,19 +674,76 @@ The highest precedence is always given to the `-D` flag of the
 ``sphinx-build`` command.
 
 
-.. _find_mayavi:
+.. _image_scrapers:
 
-Finding Mayavi figures
-======================
-By default, Sphinx-gallery will only look for :mod:`matplotlib.pyplot` figures
-when building. However, extracting figures generated by :mod:`mayavi.mlab` is
-also supported. To enable this feature, you can do::
+Image scrapers
+==============
 
+Image scrapers are plugins that allow Sphinx-gallery to detect images produced
+during execution of your examples, and then embed them into documentation.
+Scrapers can be activated by appending scraper names to the ``image_scrapers``
+field of your Sphinx-gallery configuration (see below). There are currently
+two native image scrapers in Sphinx-gallery (Matplotlib and Mayavi).
+
+By default, Sphinx-gallery will only detect new :mod:`matplotlib.pyplot`
+figures. This behavior is equivalent to the default of::
 
     sphinx_gallery_conf = {
         ...
-        'find_mayavi_figures': True,
+        'image_scrapers': ('matplotlib',),
     }
+
+Built-in support is also provided for finding :mod:`Mayavi <mayavi.mlab>`
+figures. Enable this feature with the following configuration::
+
+   sphinx_gallery_conf = {
+       ...
+       'image_scrapers': ('matplotlib', 'mayavi'),
+   }
+
+.. note:: The parameter ``find_mayavi_figures`` which can also be used to
+          extract Mayavi figures is **deprecated** in version 0.2+,
+          and will be removed in a future release.
+
+Custom scrapers
+^^^^^^^^^^^^^^^
+
+It is possible to write custom scrapers for images generated by packages
+outside of those supported natively in Sphinx-gallery. This is accomplished
+by writing your own Python function to define how to detect and retrieve
+images produced by an arbitrary package. For instructions on how to accomplish
+this, see :ref:`custom_scraper`.
+
+.. note:: If you've developed a custom scraper for Sphinx-gallery that would
+          be useful to the broader community, we encourage you to contribute
+          it to the list of natively-supported scrapers located in
+          `the scrapers module <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinx_gallery/scrapers.py>`_.
+          We welcome PRs!
+
+.. _reset_modules:
+
+Resetting modules
+=================
+
+Often you wish to "reset" the behavior of your visualization packages in order
+to ensure that any changes made to plotting behavior in one example do not
+propagate to the other examples.
+
+By default, at the end of executing each example file, Sphinx-gallery will
+reset ``matplotlib`` (by using :func:`matplotlib.pyplot.rcdefaults`) and ``seaborn``
+(by trying to unload the module from ``sys.modules``). This is equivalent to the
+following configuration::
+
+    sphinx_gallery_conf = {
+        ...
+        'reset_modules': ('matplotlib', 'seaborn'),
+    }
+
+Currently, Sphinx-gallery natively supports resetting ``matplotlib`` and
+``seaborn``. However, you can also add your own custom function to
+this tuple in order to define resetting behavior for other visualization libraries.
+
+To do so, follow the instructions in :ref:`custom_reset`.
 
 
 Dealing with failing Gallery example scripts
@@ -591,6 +819,9 @@ Here you list the examples you allow to fail during the build process,
 keep in mind to specify the full relative path from your `conf.py` to
 the example script.
 
+.. note:: If an example is expected to fail, sphinx-gallery will error if
+          the example runs without error.
+
 
 .. _setting_thumbnail_size:
 
@@ -639,9 +870,23 @@ By default, Sphinx-gallery logs and embeds in the html output the time it took
 to run each script.  If the majority of your examples runs quickly, you may not
 need this information.
 
-The ``min_reported_time`` configuration can be set to a number of seconds.  The
+The ``min_reported_time`` parameter can be set to a number of seconds.  The
 duration of scripts that ran faster than that amount will not be logged nor
 embedded in the html output.
 
-
 .. _regular expressions: https://docs.python.org/2/library/re.html
+
+
+.. _show_memory:
+
+Showing memory consumption
+==========================
+
+Sphinx-Gallery can use ``memory_profiler``, if installed, to report the peak
+memory during the run of an example. After installing ``memory_profiler``,
+you can do::
+
+    sphinx_gallery_conf = {
+        ...
+        'show_memory': True,
+    }

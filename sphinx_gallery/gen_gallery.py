@@ -13,15 +13,22 @@ when building the documentation.
 from __future__ import division, print_function, absolute_import
 import codecs
 import copy
+from datetime import timedelta, datetime
 import re
 import os
+from xml.sax.saxutils import quoteattr, escape
 
+from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .gen_rst import generate_dir_rst, SPHX_GLR_SIG
+from .utils import _replace_md5
+from .backreferences import finalize_backreferences
+from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
+                      extract_intro_and_title, get_docstring_and_rest)
+from .scrapers import _scraper_dict, _reset_dict
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .binder import copy_binder_reqs, check_binder_conf
+from .binder import copy_binder_files
 
 try:
     FileNotFoundError
@@ -29,9 +36,15 @@ except NameError:
     # Python2
     FileNotFoundError = IOError
 
+try:
+    basestring
+except NameError:
+    basestring = str
+    unicode = str
+
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
-    'ignore_pattern': '__init__\.py',
+    'ignore_pattern': r'__init__\.py',
     'examples_dirs': os.path.join('..', 'examples'),
     'subsection_order': None,
     'within_subsection_order': NumberOfCodeLinesSortKey,
@@ -48,38 +61,21 @@ DEFAULT_GALLERY_CONF = {
     'download_all_examples': True,
     'abort_on_example_error': False,
     'failing_examples': {},
+    'passing_examples': [],
+    'stale_examples': [],  # ones that did not need to be run due to md5sum
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
+    'image_scrapers': ('matplotlib',),
+    'reset_modules': ('matplotlib', 'seaborn'),
+    'first_notebook_cell': '%matplotlib inline',
+    'show_memory': False,
+    'junit': '',
+    'log_level': {'backreference_missing': 'warning'},
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
-
-
-def clean_gallery_out(build_dir):
-    """Deletes images under the sphx_glr namespace in the build directory"""
-    # Sphinx hack: sphinx copies generated images to the build directory
-    #  each time the docs are made.  If the desired image name already
-    #  exists, it appends a digit to prevent overwrites.  The problem is,
-    #  the directory is never cleared.  This means that each time you build
-    #  the docs, the number of images in the directory grows.
-    #
-    # This question has been asked on the sphinx development list, but there
-    #  was no response: https://git.net/ml/sphinx-dev/2011-02/msg00123.html
-    #
-    # The following is a hack that prevents this behavior by clearing the
-    #  image build directory from gallery images each time the docs are built.
-    #  If sphinx changes their layout between versions, this will not
-    #  work (though it should probably not cause a crash).
-    # Tested successfully on Sphinx 1.0.7
-
-    build_image_dir = os.path.join(build_dir, '_images')
-    if os.path.exists(build_image_dir):
-        filelist = os.listdir(build_image_dir)
-        for filename in filelist:
-            if filename.startswith('sphx_glr') and filename.endswith('png'):
-                os.remove(os.path.join(build_image_dir, filename))
 
 
 def parse_config(app):
@@ -88,13 +84,34 @@ def parse_config(app):
         plot_gallery = eval(app.builder.config.plot_gallery)
     except TypeError:
         plot_gallery = bool(app.builder.config.plot_gallery)
+    src_dir = app.builder.srcdir
+    abort_on_example_error = app.builder.config.abort_on_example_error
+    lang = app.builder.config.highlight_language
+    gallery_conf = _complete_gallery_conf(
+        app.config.sphinx_gallery_conf, src_dir, plot_gallery,
+        abort_on_example_error, lang, app.builder.name)
 
+    # this assures I can call the config in other places
+    app.config.sphinx_gallery_conf = gallery_conf
+    app.config.html_static_path.append(glr_path_static())
+    return gallery_conf
+
+
+def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
+                           abort_on_example_error, lang='python',
+                           builder_name='html'):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
-    gallery_conf.update(app.config.sphinx_gallery_conf)
+    gallery_conf.update(sphinx_gallery_conf)
+    if sphinx_gallery_conf.get('find_mayavi_figures', False):
+        logger.warning(
+            "Deprecated image scraping variable `find_mayavi_figures`\n"
+            "detected, use `image_scrapers` instead as:\n\n"
+            "   image_scrapers=('matplotlib', 'mayavi')",
+            type=DeprecationWarning)
+        gallery_conf['image_scrapers'] += ('mayavi',)
     gallery_conf.update(plot_gallery=plot_gallery)
-    gallery_conf.update(
-        abort_on_example_error=app.builder.config.abort_on_example_error)
-    gallery_conf['src_dir'] = app.builder.srcdir
+    gallery_conf.update(abort_on_example_error=abort_on_example_error)
+    gallery_conf['src_dir'] = src_dir
 
     if gallery_conf.get("mod_example_dir", False):
         backreferences_warning = """\n========
@@ -104,21 +121,70 @@ def parse_config(app):
         version of Sphinx-Gallery. For more details, see the backreferences
         documentation:
 
-        https://sphinx-gallery.readthedocs.io/en/latest/advanced_configuration.html#references-to-examples"""
+        https://sphinx-gallery.github.io/configuration.html#references-to-examples"""  # noqa: E501
         gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
         logger.warning(
             backreferences_warning,
             type=DeprecationWarning)
 
-    # this assures I can call the config in other places
-    app.config.sphinx_gallery_conf = gallery_conf
-    app.config.html_static_path.append(glr_path_static())
+    # deal with show_memory
+    if gallery_conf['show_memory']:
+        try:
+            from memory_profiler import memory_usage  # noqa, analysis:ignore
+        except ImportError:
+            logger.warning("Please install 'memory_profiler' to enable peak "
+                           "memory measurements.")
+            gallery_conf['show_memory'] = False
+    gallery_conf['memory_base'] = _get_memory_base(gallery_conf)
 
+    # deal with scrapers
+    scrapers = gallery_conf['image_scrapers']
+    if not isinstance(scrapers, (tuple, list)):
+        scrapers = [scrapers]
+    scrapers = list(scrapers)
+    for si, scraper in enumerate(scrapers):
+        if isinstance(scraper, basestring):
+            if scraper not in _scraper_dict:
+                raise ValueError('Unknown image scraper named %r' % (scraper,))
+            scrapers[si] = _scraper_dict[scraper]
+        elif not callable(scraper):
+            raise ValueError('Scraper %r was not callable' % (scraper,))
+    gallery_conf['image_scrapers'] = tuple(scrapers)
+    del scrapers
+
+    # deal with resetters
+    resetters = gallery_conf['reset_modules']
+    if not isinstance(resetters, (tuple, list)):
+        resetters = [resetters]
+    resetters = list(resetters)
+    for ri, resetter in enumerate(resetters):
+        if isinstance(resetter, basestring):
+            if resetter not in _reset_dict:
+                raise ValueError('Unknown module resetter named %r'
+                                 % (resetter,))
+            resetters[ri] = _reset_dict[resetter]
+        elif not callable(resetter):
+            raise ValueError('Module resetter %r was not callable'
+                             % (resetter,))
+    gallery_conf['reset_modules'] = tuple(resetters)
+
+    lang = lang if lang in ('python', 'python3', 'default') else 'python'
+    gallery_conf['lang'] = lang
+    del resetters
+
+    # Ensure the first cell text is a string if we have it
+    first_cell = gallery_conf.get("first_notebook_cell")
+    if (not isinstance(first_cell, basestring)) and (first_cell is not None):
+        raise ValueError("The 'first_notebook_cell' parameter must be type str"
+                         "or None, found type %s" % type(first_cell))
+    gallery_conf['first_notebook_cell'] = first_cell
+    # Make it easy to know which builder we're in
+    gallery_conf['builder_name'] = builder_name
     return gallery_conf
 
 
 def get_subsections(srcdir, examples_dir, sortkey):
-    """Returns the list of subsections of a gallery
+    """Return the list of subsections of a gallery
 
     Parameters
     ----------
@@ -136,7 +202,8 @@ def get_subsections(srcdir, examples_dir, sortkey):
 
     """
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)
-                  if os.path.exists(os.path.join(examples_dir, subfolder, 'README.txt'))]
+                  if os.path.exists(os.path.join(
+                      examples_dir, subfolder, 'README.txt'))]
     base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
     subfolders_with_path = [os.path.join(base_examples_dir_path, item)
                             for item in subfolders]
@@ -175,8 +242,6 @@ def generate_gallery_rst(app):
     logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
 
-    clean_gallery_out(app.builder.outdir)
-
     seen_backrefs = set()
 
     computation_times = []
@@ -206,41 +271,146 @@ def generate_gallery_rst(app):
             examples_dir, gallery_dir, gallery_conf, seen_backrefs)
 
         computation_times += this_computation_times
+        write_computation_times(gallery_conf, gallery_dir,
+                                this_computation_times)
 
         # we create an index.rst with all examples
-        with codecs.open(os.path.join(gallery_dir, 'index.rst'), 'w',
-                         encoding='utf-8') as fhindex:
+        index_rst_new = os.path.join(gallery_dir, 'index.rst.new')
+        with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             fhindex.write(":orphan:\n\n" + this_fhindex)
 
-            for subsection in get_subsections(app.builder.srcdir, examples_dir, gallery_conf['subsection_order']):
+            for subsection in get_subsections(
+                    app.builder.srcdir, examples_dir,
+                    gallery_conf['subsection_order']):
                 src_dir = os.path.join(examples_dir, subsection)
                 target_dir = os.path.join(gallery_dir, subsection)
-                this_fhindex, this_computation_times = generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                                                        seen_backrefs)
+                this_fhindex, this_computation_times = \
+                    generate_dir_rst(src_dir, target_dir, gallery_conf,
+                                     seen_backrefs)
                 fhindex.write(this_fhindex)
                 computation_times += this_computation_times
+                write_computation_times(gallery_conf, target_dir,
+                                        this_computation_times)
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(gallery_dir)
                 fhindex.write(download_fhindex)
 
             fhindex.write(SPHX_GLR_SIG)
+        _replace_md5(index_rst_new)
+    finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf['plot_gallery']:
         logger.info("computation time summary:", color='white')
         for time_elapsed, fname in sorted(computation_times, reverse=True):
+            fname = os.path.relpath(fname,
+                                    os.path.normpath(gallery_conf['src_dir']))
             if time_elapsed is not None:
                 if time_elapsed >= gallery_conf['min_reported_time']:
-                    logger.info("\t- %s: %.2g sec", fname, time_elapsed)
+                    logger.info("    - %s: %.2g sec", fname, time_elapsed)
             else:
-                logger.info("\t- %s: not run", fname)
+                logger.info("    - %s: not run", fname)
+        # Also create a junit.xml file, useful e.g. on CircleCI
+        write_junit_xml(gallery_conf, app.builder.outdir, computation_times)
 
-    # Copy the requirements files for binder
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
-    if len(binder_conf) > 0:
-        logger.info("copying binder requirements...")
-        copy_binder_reqs(app)
+
+SPHX_GLR_COMP_TIMES = """
+:orphan:
+
+.. _{0}:
+
+Computation times
+=================
+"""
+
+
+def _sec_to_readable(t):
+    """Convert a number of seconds to a more readable representation."""
+    # This will only work for < 1 day execution time
+    # And we reserve 2 digits for minutes because presumably
+    # there aren't many > 99 minute scripts, but occasionally some
+    # > 9 minute ones
+    t = datetime(1, 1, 1) + timedelta(seconds=t)
+    t = '{0:02d}:{1:02d}.{2:03d}'.format(
+        t.hour * 60 + t.minute, t.second,
+        int(round(t.microsecond / 1000.)))
+    return t
+
+
+def write_computation_times(gallery_conf, target_dir, computation_times):
+    if all(time[0] == 0 for time in computation_times):
+        return
+    target_dir_clean = os.path.relpath(
+        target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
+    new_ref = 'sphx_glr_%s_sg_execution_times' % target_dir_clean
+    with codecs.open(os.path.join(target_dir, 'sg_execution_times.rst'), 'w',
+                     encoding='utf-8') as fid:
+        fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
+        total_time = sum(ct[0] for ct in computation_times)
+        fid.write('**{0}** total execution time for **{1}** files:\n\n'
+                  .format(_sec_to_readable(total_time), target_dir_clean))
+        # sort by time (descending) then alphabetical
+        for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
+            name = os.path.basename(ct[1])
+            example_link = 'sphx_glr_%s_%s' % (target_dir_clean, name)
+            fid.write(u'- **{0}**: :ref:`{2}` (``{1}``)\n'.format(
+                _sec_to_readable(ct[0]), name, example_link))
+
+
+def write_junit_xml(gallery_conf, target_dir, computation_times):
+    if not gallery_conf['junit'] or not gallery_conf['plot_gallery']:
+        return
+    failing_as_expected, failing_unexpectedly, passing_unexpectedly = \
+        _parse_failures(gallery_conf)
+    n_tests = 0
+    n_failures = 0
+    n_skips = 0
+    elapsed = 0.
+    src_dir = gallery_conf['src_dir']
+    output = ''
+    for ct in computation_times:
+        t, fname = ct
+        if not any(fname in x for x in (gallery_conf['passing_examples'],
+                                        failing_unexpectedly,
+                                        failing_as_expected,
+                                        passing_unexpectedly)):
+            continue  # not subselected by our regex
+        _, title = extract_intro_and_title(
+            fname, get_docstring_and_rest(fname)[0])
+        output += (
+            u'<testcase classname={0!s} file={1!s} line="1" '
+            u'name={2!s} time="{3!r}">'
+            .format(quoteattr(os.path.splitext(os.path.basename(fname))[0]),
+                    quoteattr(os.path.relpath(fname, src_dir)),
+                    quoteattr(title), t))
+        if fname in failing_as_expected:
+            output += u'<skipped message="expected example failure"></skipped>'
+            n_skips += 1
+        elif fname in failing_unexpectedly or fname in passing_unexpectedly:
+            if fname in failing_unexpectedly:
+                traceback = gallery_conf['failing_examples'][fname]
+            else:  # fname in passing_unexpectedly
+                traceback = 'Passed even though it was marked to fail'
+            n_failures += 1
+            output += (u'<failure message={0!s}>{1!s}</failure>'
+                       .format(quoteattr(traceback.splitlines()[-1].strip()),
+                               escape(traceback)))
+        output += u'</testcase>'
+        n_tests += 1
+        elapsed += ct[0]
+    output += u'</testsuite>'
+    output = (u'<?xml version="1.0" encoding="utf-8"?>'
+              u'<testsuite errors="0" failures="{0}" name="sphinx-gallery" '
+              u'skipped="{1}" tests="{2}" time="{3}">'
+              .format(n_failures, n_skips, n_tests, elapsed)) + output
+    # Actually write it
+    fname = os.path.normpath(os.path.join(target_dir, gallery_conf['junit']))
+    junit_dir = os.path.dirname(fname)
+    if not os.path.isdir(junit_dir):
+        os.makedirs(junit_dir)
+    with codecs.open(fname, 'w', encoding='utf-8') as fid:
+        fid.write(output)
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
@@ -262,50 +432,82 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
-def sumarize_failing_examples(app, exception):
-    """Collects the list of falling examples during build and prints them with the traceback
+def _parse_failures(gallery_conf):
+    """Split the failures."""
+    failing_examples = set(gallery_conf['failing_examples'].keys())
+    expected_failing_examples = set(
+        os.path.normpath(os.path.join(gallery_conf['src_dir'], path))
+        for path in gallery_conf['expected_failing_examples'])
+    failing_as_expected = failing_examples.intersection(
+        expected_failing_examples)
+    failing_unexpectedly = failing_examples.difference(
+        expected_failing_examples)
+    passing_unexpectedly = expected_failing_examples.difference(
+        failing_examples)
+    # filter from examples actually run
+    passing_unexpectedly = [
+        src_file for src_file in passing_unexpectedly
+        if re.search(gallery_conf.get('filename_pattern'), src_file)]
+    return failing_as_expected, failing_unexpectedly, passing_unexpectedly
 
-    Raises ValueError if there where failing examples
+
+def summarize_failing_examples(app, exception):
+    """Collects the list of falling examples and prints them with a traceback.
+
+    Raises ValueError if there where failing examples.
     """
     if exception is not None:
         return
 
     # Under no-plot Examples are not run so nothing to summarize
     if not app.config.sphinx_gallery_conf['plot_gallery']:
+        logger.info('Sphinx-gallery gallery_conf["plot_gallery"] was '
+                    'False, so no examples were executed.', color='brown')
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    failing_examples = set(gallery_conf['failing_examples'].keys())
-    expected_failing_examples = set([os.path.normpath(os.path.join(app.srcdir, path))
-                                     for path in
-                                     gallery_conf['expected_failing_examples']])
+    failing_as_expected, failing_unexpectedly, passing_unexpectedly = \
+        _parse_failures(gallery_conf)
 
-    examples_expected_to_fail = failing_examples.intersection(
-        expected_failing_examples)
-    if examples_expected_to_fail:
+    if failing_as_expected:
         logger.info("Examples failing as expected:", color='brown')
-        for fail_example in examples_expected_to_fail:
-            logger.info('%s failed leaving traceback:', fail_example)
-            logger.info(gallery_conf['failing_examples'][fail_example])
+        for fail_example in failing_as_expected:
+            logger.info('%s failed leaving traceback:', fail_example,
+                        color='brown')
+            logger.info(gallery_conf['failing_examples'][fail_example],
+                        color='brown')
 
-    examples_not_expected_to_fail = failing_examples.difference(
-        expected_failing_examples)
     fail_msgs = []
-    if examples_not_expected_to_fail:
-        fail_msgs.append("Unexpected failing examples:")
-        for fail_example in examples_not_expected_to_fail:
+    if failing_unexpectedly:
+        fail_msgs.append(red("Unexpected failing examples:"))
+        for fail_example in failing_unexpectedly:
             fail_msgs.append(fail_example + ' failed leaving traceback:\n' +
                              gallery_conf['failing_examples'][fail_example] +
                              '\n')
 
-    examples_not_expected_to_pass = expected_failing_examples.difference(
-        failing_examples)
-    if examples_not_expected_to_pass:
-        fail_msgs.append("Examples expected to fail, but not failing:\n" +
+    if passing_unexpectedly:
+        fail_msgs.append(red("Examples expected to fail, but not failing:\n") +
                          "Please remove these examples from\n" +
                          "sphinx_gallery_conf['expected_failing_examples']\n" +
                          "in your conf.py file"
-                         "\n".join(examples_not_expected_to_pass))
+                         "\n".join(passing_unexpectedly))
+
+    # standard message
+    n_good = len(gallery_conf['passing_examples'])
+    n_tot = len(gallery_conf['failing_examples']) + n_good
+    n_stale = len(gallery_conf['stale_examples'])
+    logger.info('\nSphinx-gallery successfully executed %d out of %d '
+                'file%s subselected by:\n\n'
+                '    gallery_conf["filename_pattern"] = %r\n'
+                '    gallery_conf["ignore_pattern"]   = %r\n'
+                '\nafter excluding %d file%s that had previously been run '
+                '(based on MD5).\n'
+                % (n_good, n_tot, 's' if n_tot != 1 else '',
+                   gallery_conf['filename_pattern'],
+                   gallery_conf['ignore_pattern'],
+                   n_stale, 's' if n_stale != 1 else '',
+                   ),
+                color='brown')
 
     if fail_msgs:
         raise ValueError("Here is a summary of the problems encountered when "
@@ -357,7 +559,10 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
-    app.add_stylesheet('gallery.css')
+    try:
+        app.add_css_file('gallery.css')
+    except AttributeError:  # Sphinx < 1.8
+        app.add_stylesheet('gallery.css')
 
     # Sphinx < 1.6 calls it `_extensions`, >= 1.6 is `extensions`.
     extensions_attr = '_extensions' if hasattr(
@@ -366,10 +571,11 @@ def setup(app):
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
 
     app.connect('builder-inited', generate_gallery_rst)
-
-    app.connect('build-finished', sumarize_failing_examples)
+    app.connect('build-finished', copy_binder_files)
+    app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     metadata = {'parallel_read_safe': True,
+                'parallel_write_safe': False,
                 'version': _sg_version}
     return metadata
 

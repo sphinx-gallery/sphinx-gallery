@@ -13,21 +13,30 @@ if [ "$DISTRIB" == "conda" ]; then
     chmod +x miniconda.sh
     ./miniconda.sh -b
     export PATH=$HOME/miniconda3/bin:$PATH
-    conda update --yes conda
+    conda update -y conda
 
-    # force no mkl because mayavi requires old version of numpy
-    # which then crashes with pandas and seaborn
-    conda create --yes -n testenv python=$PYTHON_VERSION pip nomkl numpy\
-        setuptools matplotlib pillow pytest pytest-cov coverage seaborn
+    # Force conda to think about other dependencies that can break
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler $CONDA_PKGS"
+    conda create -yn testenv $CONDA_PKGS
     source activate testenv
-    if [ "$INSTALL_MAYAVI" == "true" ]; then
-        conda install --yes mayavi
+    if [[ ! -z "$PIP_PKGS" ]]; then
+        pip install -q $PIP_PKGS
+    fi
+    # The 3.4 on is quite old
+    if [ "$PYTHON_VERSION" == "3.4" ]; then
+        conda remove -y memory_profiler
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
         conda install "sphinx=${SPHINX_VERSION-*}" --yes
     else
-        pip install git+https://github.com/sphinx-doc/sphinx.git
+        pip install "https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
+    python setup.py install
+elif [ "$PYTHON_VERSION" == "nightly" ]; then
+    # Python nightly requires to use the virtual env provided by travis.
+    pip install . numpy sphinx==1.5.5 "six>=1.10.0" pytest-cov
+elif [ "$DISTRIB" == "minimal" ]; then
+    pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
     # Use a separate virtual environment than the one provided by
     # Travis because it contains numpy and we want to use numpy
@@ -35,13 +44,15 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
+    pip install --upgrade pip setuptools wheel pyopenssl
     pip install -U requests[security]  # ensure SSL certificate works
     pip install "tornado<5"
-    pip install -r requirements.txt
-    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov
+    # The pipe just gets rid of the progress bars
+    pip install -r requirements.txt | cat
+    # test show_memory=True without memory_profiler by not installing it (not in req)
+    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
+    python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
 fi
-
-python setup.py install
