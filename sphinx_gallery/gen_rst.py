@@ -481,7 +481,7 @@ def execute_code_block(compiler, block, example_globals,
         sys.path = sys_path
         os.chdir(cwd)
 
-        my_stdout = my_stdout.getvalue().strip().expandtabs()
+        my_stdout = my_stdout.getvalue().expandtabs()
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         else:
