@@ -236,7 +236,7 @@ def check_binder_conf(binder_conf):
 
     # Ensure we have at least one dependency file
     # Need at least one of these two files
-    required_reqs_files = ['requirements.txt', 'environment.yml']
+    required_reqs_files = ['requirements.txt', 'environment.yml', 'Dockerfile']
     path_reqs = binder_conf['dependencies']
     if isinstance(path_reqs, basestring):
         path_reqs = [path_reqs]
