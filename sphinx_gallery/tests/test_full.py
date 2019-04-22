@@ -439,16 +439,17 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # on the one script above that changes...
         'sg_execution_times.rst',
     )
-    _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
+    if not sys.platform.startswith('win'):  # not reliable on Windows
+        _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
 
-    # mtimes for pickles
-    _assert_mtimes(generated_pickle_0, generated_pickle_1,
-                   different=('plot_numpy_matplotlib.codeobj.pickle'))
+        # mtimes for pickles
+        _assert_mtimes(generated_pickle_0, generated_pickle_1,
+                       different=('plot_numpy_matplotlib.codeobj.pickle'))
 
-    # mtimes for .py files (gh-395)
-    _assert_mtimes(copied_py_0, copied_py_1,
-                   different=('plot_numpy_matplotlib.py'))
+        # mtimes for .py files (gh-395)
+        _assert_mtimes(copied_py_0, copied_py_1,
+                       different=('plot_numpy_matplotlib.py'))
 
-    # mtimes for .ipynb files
-    _assert_mtimes(copied_ipy_0, copied_ipy_1,
-                   different=('plot_numpy_matplotlib.ipynb'))
+        # mtimes for .ipynb files
+        _assert_mtimes(copied_ipy_0, copied_ipy_1,
+                       different=('plot_numpy_matplotlib.ipynb'))
