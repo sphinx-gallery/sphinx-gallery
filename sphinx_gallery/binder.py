@@ -235,7 +235,7 @@ def check_binder_conf(binder_conf):
                          'gave binderhub_url: {}'.format(binder_conf['binderhub_url']))
 
     # Ensure we have at least one dependency file
-    # Need at least one of these two files
+    # Need at least one of these three files
     required_reqs_files = ['requirements.txt', 'environment.yml', 'Dockerfile']
     path_reqs = binder_conf['dependencies']
     if isinstance(path_reqs, basestring):
