@@ -132,9 +132,20 @@ def mayavi_scraper(block, block_vars, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
+def ipyvolume_scraper(block, block_vars, gallery_conf):
+    import ipyvolume as ipv
+    image_path = next(block_vars['image_path_iterator'])
+    ipv.savefig(image_path, headless=True, devmode=True)
+    html = """
+    .. raw:: html
+
+{0}""".format(indent(html_snippet, u' ' * 4))
+    return figure_rst([image_path], gallery_conf['src_dir'])
+
 _scraper_dict = dict(
     matplotlib=matplotlib_scraper,
     mayavi=mayavi_scraper,
+    ipyvolume=ipyvolume_scraper
 )
 
 
