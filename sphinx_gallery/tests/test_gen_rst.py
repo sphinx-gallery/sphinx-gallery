@@ -97,6 +97,41 @@ def test_direct_comment_after_docstring():
     assert result == expected_result
 
 
+def test_rst_block_after_docstring(gallery_conf, tmpdir):
+    """Assert there is a blank line between the docstring and rst blocks."""
+    filename = str(tmpdir.join('temp.py'))
+    with open(filename, 'w') as f:
+        f.write('\n'.join(['"Docstring"',
+                           '####################',
+                           '# Paragraph 1',
+                           '',
+                           '####################',
+                           '# Paragraph 2',
+                           '']))
+    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+
+    assert file_conf == {}
+    assert blocks[0][0] == 'text'
+    assert blocks[1][0] == 'text'
+    assert blocks[2][0] == 'text'
+
+    script_vars = {'execute_script': ''}
+
+    output_blocks, time_elapsed = sg.execute_script(blocks,
+                                                    script_vars,
+                                                    gallery_conf)
+
+    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
+    assert example_rst == '\n'.join([
+        'Docstring',
+        '',
+        'Paragraph 1',
+        '',
+        'Paragraph 2',
+        '',
+        ''])
+
+
 def test_codestr2rst():
     """Test the correct translation of a code block into rst"""
     output = sg.codestr2rst('print("hello world")')
