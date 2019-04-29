@@ -714,7 +714,8 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
                     example_rst += "\n\n|\n\n"
                 example_rst += code_rst
         else:
-            example_rst += bcontent + '\n'
+            block_separator = '\n\n' if not bcontent.endswith('\n') else '\n'
+            example_rst += bcontent + block_separator
     return example_rst
 
 
