@@ -13,6 +13,7 @@ import tempfile
 import re
 import os
 import zipfile
+import codeop
 
 import pytest
 
@@ -20,6 +21,7 @@ import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst, _complete_gallery_conf
 from sphinx_gallery.utils import _TempDir
+from sphinx_gallery.scrapers import ImagePathIterator
 
 CONTENT = [
     '"""',
@@ -342,6 +344,35 @@ def test_rst_example(gallery_conf):
     # CSS classes
     assert "rst-class:: sphx-glr-signature" in rst
     assert "rst-class:: sphx-glr-timing" in rst
+
+
+def test_output_indentation(gallery_conf):
+    """Test whether indentation of code output is retained."""
+    compiler = codeop.Compile()
+    
+    test_string = r"\n".join([
+        "  A B",
+        "A 1 2",
+        "B 3 4"
+    ])
+    code = "print('" + test_string + "')"
+    code_block = ("code", code, 1)
+
+    script_vars = {
+        "execute_script": True,
+        "image_path_iterator": ImagePathIterator("temp.png"),
+        "src_file": __file__,
+        "memory_delta": [],
+    }
+
+    output = sg.execute_code_block(
+        compiler, code_block, {}, script_vars, gallery_conf
+    )
+    output_test_string = "\n".join(
+        [line[4:] for line in output.strip().split("\n")[-3:]]
+    )
+    assert output_test_string == test_string.replace(r"\n", "\n")
+
 
 
 class TestLoggingTee:
