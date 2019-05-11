@@ -25,3 +25,19 @@ def test_get_docstring_and_rest(unicode_sample, tmpdir):
         fid.write('print("hello")\n')
     with pytest.raises(ValueError, match='Could not find docstring'):
         sg.get_docstring_and_rest(fname)
+
+
+@pytest.mark.parametrize('content, file_conf', [
+    ("No config\nin here.",
+     {}),
+    ("# sphinx_gallery_line_numbers = True",
+     {'line_numbers': True}),
+    ("  #   sphinx_gallery_line_numbers   =   True   ",
+     {'line_numbers': True}),
+    ("#sphinx_gallery_line_numbers=True",
+     {'line_numbers': True}),
+    ("#sphinx_gallery_thumbnail_number\n=\n5",
+     {'thumbnail_number': 5}),
+])
+def test_extract_file_config(content, file_conf):
+    assert sg.extract_file_config(content) == file_conf
