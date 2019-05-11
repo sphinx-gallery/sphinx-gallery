@@ -36,6 +36,7 @@ CONTENT = [
     'And this is a second paragraph',
     '"""',
     '',
+    '# sphinx_gallery_thumbnail_number = 1'
     '# and now comes the module code',
     'import logging',
     'import sys',
@@ -247,6 +248,53 @@ def test_fail_example(gallery_conf, log_collector):
             raise ValueError('Did not stop executing script after error')
 
 
+def _generate_rst(gallery_conf, fname, content):
+    """
+    Helper function returning the rst text a given example content.
+
+    This writes a file gallery_conf['examples_dir']/fname with *content*,
+    creates the corresponding rst file by running generate_file_rst() and
+    returns the generated rest code.
+
+    Parameters
+    ----------
+    gallery_conf
+        A gallery_conf as cerated by the gallery_conf fixture.
+    fname : str
+        A filename; e.g. 'test.py'. This is relative to
+        gallery_conf['examples_dir']
+    content : str
+        The content of fname.
+
+    Returns
+    -------
+    rst : str
+        The generated rst code.
+    """
+    with codecs.open(os.path.join(gallery_conf['examples_dir'], fname),
+                     mode='w', encoding='utf-8') as f:
+        f.write('\n'.join(content))
+    # generate rst file
+    sg.generate_file_rst(fname, gallery_conf['gallery_dir'],
+                         gallery_conf['examples_dir'], gallery_conf)
+    # read rst file and check if it contains code output
+    rst_fname = os.path.splitext(fname)[0] + '.rst'
+    with codecs.open(os.path.join(gallery_conf['gallery_dir'], rst_fname),
+                     mode='r', encoding='utf-8') as f:
+        rst = f.read()
+    return rst
+
+
+def test_remove_config_comments(gallery_conf):
+    """Test the gallery_conf['remove_config_comments'] setting."""
+    rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
+    assert '# sphinx_gallery_thumbnail_number = 1' in rst
+
+    gallery_conf['remove_config_comments'] = True
+    rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
+    assert '# sphinx_gallery_thumbnail_number = 1' not in rst
+
+
 def test_gen_dir_rst(gallery_conf, fakesphinxapp):
     """Test gen_dir_rst."""
     print(os.listdir(gallery_conf['examples_dir']))
@@ -273,17 +321,8 @@ def test_pattern_matching(gallery_conf, log_collector):
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
-        with codecs.open(os.path.join(gallery_conf['examples_dir'], fname),
-                         mode='w', encoding='utf-8') as f:
-            f.write('\n'.join(CONTENT))
-        # generate rst file
-        sg.generate_file_rst(fname, gallery_conf['gallery_dir'],
-                             gallery_conf['examples_dir'], gallery_conf)
-        # read rst file and check if it contains code output
+        rst = _generate_rst(gallery_conf, fname, CONTENT)
         rst_fname = os.path.splitext(fname)[0] + '.rst'
-        with codecs.open(os.path.join(gallery_conf['gallery_dir'], rst_fname),
-                         mode='r', encoding='utf-8') as f:
-            rst = f.read()
         if re.search(gallery_conf['filename_pattern'],
                      os.path.join(gallery_conf['gallery_dir'], rst_fname)):
             assert code_output in rst
