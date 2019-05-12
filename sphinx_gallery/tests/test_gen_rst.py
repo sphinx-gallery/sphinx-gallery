@@ -269,7 +269,7 @@ def _generate_rst(gallery_conf, fname, content):
     Returns
     -------
     rst : str
-        The generated rst code.
+        The generated rST code.
     """
     with codecs.open(os.path.join(gallery_conf['examples_dir'], fname),
                      mode='w', encoding='utf-8') as f:
