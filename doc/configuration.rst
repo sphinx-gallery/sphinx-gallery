@@ -438,7 +438,7 @@ Removing config comments
 ========================
 
 Some configurations can be done on a file-by-file basis by adding a special
-comment with the pattern ``# sphinx_gallery_[config] = [value]`` to the
+comment with the pattern :samp:`# sphinx_gallery_{config} = {value}` to the
 example source files. By default, the source files are parsed as is and thus
 the comment will appear in the example.
 
