@@ -254,7 +254,7 @@ def _generate_rst(gallery_conf, fname, content):
 
     This writes a file gallery_conf['examples_dir']/fname with *content*,
     creates the corresponding rst file by running generate_file_rst() and
-    returns the generated rest code.
+    returns the generated rST code.
 
     Parameters
     ----------
