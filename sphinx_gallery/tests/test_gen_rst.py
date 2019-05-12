@@ -250,7 +250,7 @@ def test_fail_example(gallery_conf, log_collector):
 
 def _generate_rst(gallery_conf, fname, content):
     """
-    Helper function returning the rst text a given example content.
+    Helper function returning the rST text of a given example content.
 
     This writes a file gallery_conf['examples_dir']/fname with *content*,
     creates the corresponding rst file by running generate_file_rst() and
