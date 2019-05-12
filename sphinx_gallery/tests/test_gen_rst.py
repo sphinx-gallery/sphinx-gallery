@@ -259,7 +259,7 @@ def _generate_rst(gallery_conf, fname, content):
     Parameters
     ----------
     gallery_conf
-        A gallery_conf as cerated by the gallery_conf fixture.
+        A gallery_conf as created by the gallery_conf fixture.
     fname : str
         A filename; e.g. 'test.py'. This is relative to
         gallery_conf['examples_dir']
