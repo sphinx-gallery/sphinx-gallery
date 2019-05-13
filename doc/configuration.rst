@@ -26,6 +26,7 @@ file:
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
 - ``line_numbers`` (:ref:`adding_line_numbers`)
+- ``remove_config_comments`` (:ref:`removing_config_comments`)
 - ``download_all_examples`` (:ref:`disable_all_scripts_download`)
 - ``plot_gallery`` (:ref:`without_execution`)
 - ``image_scrapers`` (and the deprecated ``find_mayavi_figures``)
@@ -44,6 +45,9 @@ Some options can also be set or overridden on a file-by-file basis:
 
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
+
+See also :ref:`removing_config_comments` to hide these comments from the
+rendered examples.
 
 Some options can be set during the build execution step, e.g. using a Makefile:
 
@@ -428,6 +432,22 @@ setting::
 Note that for Sphinx < 1.3, the line numbers will not be consistent with the
 original file.
 
+.. _removing_config_comments
+
+Removing config comments
+========================
+
+Some configurations can be done on a file-by-file basis by adding a special
+comment with the pattern :samp:`# sphinx_gallery_{config} = {value}` to the
+example source files. By default, the source files are parsed as is and thus
+the comment will appear in the example.
+
+To remove the comment from the rendered example set the option::
+
+    sphinx_gallery_conf = {
+        ...
+        'remove_config_comments': True,
+    }
 
 .. _first_notebook_cell:
 

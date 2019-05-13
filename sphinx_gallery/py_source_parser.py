@@ -26,6 +26,20 @@ SyntaxError
 Example script with invalid Python syntax
 """
 
+# The pattern for in-file config comments is designed to not greedily match
+# newlines at the start and end, except for one newline at the end. This
+# ensures that the matched pattern can be removed from the code without
+# changing the block structure; i.e. empty newlines are preserved, e.g. in
+#
+#     a = 1
+#
+#     # sphinx_gallery_thumbnail_number = 2
+#
+#     b = 2
+INFILE_CONFIG_PATTERN = re.compile(
+    r"^[\ \t]*#\s*sphinx_gallery_([A-Za-z0-9_]+)\s*=\s*(.+)[\ \t]*\n?",
+    re.MULTILINE)
+
 
 def parse_source_file(filename):
     """Parse source file into AST node
@@ -125,12 +139,8 @@ def extract_file_config(content):
     """
     Pull out the file-specific config specified in the docstring.
     """
-
-    prop_pat = re.compile(
-        r"^\s*#\s*sphinx_gallery_([A-Za-z0-9_]+)\s*=\s*(.+)\s*$",
-        re.MULTILINE)
     file_conf = {}
-    for match in re.finditer(prop_pat, content):
+    for match in re.finditer(INFILE_CONFIG_PATTERN, content):
         name = match.group(1)
         value = match.group(2)
         try:
@@ -188,3 +198,19 @@ def split_code_and_text_blocks(source_file):
         blocks.append(('code', remaining_content, lineno))
 
     return file_conf, blocks
+
+
+def remove_config_comments(code_block):
+    """
+    Return the content of *code_block* with in-file config comments removed.
+
+    Comment lines of the pattern '# sphinx_gallery_[option] = [val]' are
+    removed, but surrounding empty lines are preserved.
+
+    Parameters
+    ----------
+    code_block : str
+        A code segment.
+    """
+    parsed_code, _ = re.subn(INFILE_CONFIG_PATTERN, '', code_block)
+    return parsed_code

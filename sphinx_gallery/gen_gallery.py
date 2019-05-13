@@ -70,6 +70,7 @@ DEFAULT_GALLERY_CONF = {
     'image_scrapers': ('matplotlib',),
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
+    'remove_config_comments': False,
     'show_memory': False,
     'junit': '',
     'log_level': {'backreference_missing': 'warning'},
