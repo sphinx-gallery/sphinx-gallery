@@ -34,6 +34,8 @@ Who uses Sphinx-Gallery
 * `Matplotlib <https://matplotlib.org/index.html>`_ `Examples <https://matplotlib.org/gallery/index.html>`_ and `Tutorials  <https://matplotlib.org/tutorials/index.html>`__
 * `PyTorch tutorials <http://pytorch.org/tutorials>`_
 * `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
+* `PyVista <https://docs.pyvista.org/examples/>`_
+* `SimPEG <http://docs.simpeg.xyz/content/examples/>`_
 
 Installation
 ============
