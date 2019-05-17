@@ -62,6 +62,12 @@ Sphinx-Gallery has also support for packages like:
 * Seaborn
 * Mayavi
 
+Other packages that maintain their own Sphinx-Gallery image scrapers include:
+
+* `PyVista <https://github.com/pyvista/pyvista>`_
+* `PyGMT <https://github.com/GenericMappingTools/pygmt>`_
+
+
 Install as a developer
 ----------------------
 
