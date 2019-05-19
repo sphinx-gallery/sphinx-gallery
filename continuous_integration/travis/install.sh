@@ -16,7 +16,7 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update -y conda
 
     # Force conda to think about other dependencies that can break
-    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler $CONDA_PKGS"
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler plotly plotly-orca psutil $CONDA_PKGS"
     conda create -yn testenv $CONDA_PKGS
     source activate testenv
     if [[ ! -z "$PIP_PKGS" ]]; then
@@ -50,7 +50,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     # The pipe just gets rid of the progress bars
     pip install -r requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
+    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme plotly orca psutil
     python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
