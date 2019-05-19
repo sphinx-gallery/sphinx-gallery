@@ -7,7 +7,7 @@ information are displayed on hover and it is possible to zoom and pan through
 the figure.
 """
 import plotly.graph_objs as go
-from plotly.offline import iplot, plot
+import plotly
 
 # Create random data with numpy
 import numpy as np
@@ -32,5 +32,5 @@ trace_1 = go.Scatter(
 )
 
 data = [trace_0, trace_1]
-res = plot(data)
+res = plotly.offline.plot(data)
 

@@ -136,6 +136,32 @@ def mayavi_scraper(block, block_vars, gallery_conf):
 
 # ---------- plotly scraper --------------------------------------
 
+# First we monkey-patch plotly.offline.plot
+import inspect, os
+import plotly
+plotly_plot = plotly.offline.plot
+
+
+def _patched_plotly_plot(*args, **kwargs):
+    """
+    Monkey-patched version of plotly.offline.plot, in order to save
+    html file with the same name as python script. Also, a static
+    png file is saved.
+    """
+    stack = inspect.stack()
+    filename = stack[1].filename # let's hope this is robust...
+    filename_root, _ = os.path.splitext(filename)
+    filename_html = filename_root + '.html'
+    filename_png = filename_root + '.png'
+    figure = plotly.tools.return_figure_from_figure_or_data(*args, True)
+    res = plotly_plot(*args, auto_open=False,
+		    filename=filename_html)
+    plotly.io.write_image(figure, filename_png)
+    return res
+
+
+plotly.offline.plot = _patched_plotly_plot
+
 
 def plotly_scraper(block, block_vars, gallery_conf, **kwargs):
     """Scrape Plotly figures.

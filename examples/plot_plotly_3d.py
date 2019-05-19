@@ -5,7 +5,7 @@ Topographical 3D Surface Plot
 A 3D surface plot showing the topograph of Mount Bruno (Quebec). Try to
 rotate (left button and drag) and scale (scroll) this animated 3D plot.
 """
-from plotly.offline import plot
+import plotly
 import plotly.graph_objs as go
 
 import pandas as pd
@@ -28,4 +28,4 @@ layout = go.Layout(
     )
 )
 fig = go.Figure(data=data, layout=layout)
-plot(fig)
+plotly.offline.plot(fig)

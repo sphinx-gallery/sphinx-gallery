@@ -113,6 +113,8 @@ def jupyter_notebook(script_blocks, gallery_conf):
     """
     first_cell = gallery_conf.get("first_notebook_cell", "%matplotlib inline")
     work_notebook = jupyter_notebook_skeleton()
+    if any("plotly" in s[1] for s in script_blocks if s[0]=='code'):
+        first_cell="from plotly.offline import init_notebook_mode\ninit_notebook_mode(connected=True)"
     if first_cell is not None:
         add_code_cell(work_notebook, first_cell)
     fill_notebook(work_notebook, script_blocks)
@@ -155,6 +157,13 @@ def add_markdown_cell(work_notebook, text):
     work_notebook["cells"].append(markdown_cell)
 
 
+def _replace_plotly_plot(code):
+    """
+    Replace plot by iplot for plotly example
+    """
+    return code.replace('plotly.offline.plot', 'plotly.offline.iplot')
+
+
 def fill_notebook(work_notebook, script_blocks):
     """Writes the Jupyter notebook cells
 
@@ -166,6 +175,7 @@ def fill_notebook(work_notebook, script_blocks):
 
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
+            bcontent = _replace_plotly_plot(bcontent)
             add_code_cell(work_notebook, bcontent)
         else:
             add_markdown_cell(work_notebook, bcontent + '\n')
