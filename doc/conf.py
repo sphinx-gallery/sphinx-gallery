@@ -19,6 +19,7 @@ import sphinx_gallery
 from sphinx_gallery.scrapers import matplotlib_scraper
 from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
 
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -332,6 +333,8 @@ else:
     # Do not pop up any mayavi windows while running the
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
+
+image_scrapers += ('plotly',)
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:

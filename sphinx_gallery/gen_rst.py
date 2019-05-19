@@ -32,6 +32,27 @@ from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
 from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
 
+
+## ------ monkey-patching plotly.offline.plot -----------------------
+import inspect, os
+import plotly
+plotly_plot = plotly.offline.plot
+
+def patched_plotly_plot(*args, **kwargs):
+    stack = inspect.stack()
+    filename = stack[1].filename # let's hope this is robust...
+    filename_root, _ = os.path.splitext(filename)
+    filename_html = filename_root + '.html'
+    filename_png = filename_root + '.png'
+    figure = plotly.tools.return_figure_from_figure_or_data(*args, True)
+    res = plotly_plot(*args, auto_open=False,
+		    filename=filename_html)
+    plotly.io.write_image(figure, filename_png)
+    return res
+
+plotly.offline.plot = patched_plotly_plot
+
+
 # Try Python 2 first, otherwise load from Python 3
 try:
     # textwrap indent only exists in python 3

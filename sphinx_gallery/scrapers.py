@@ -10,11 +10,13 @@ Collect images that have been produced by code blocks.
 
 import os
 import sys
+from glob import glob
+import shutil
 
 from .utils import scale_image
 
 __all__ = ['save_figures', 'figure_rst', 'ImagePathIterator', 'clean_modules',
-           'matplotlib_scraper', 'mayavi_scraper']
+           'matplotlib_scraper', 'mayavi_scraper', 'plotly_scraper']
 
 try:
     basestring
@@ -132,9 +134,56 @@ def mayavi_scraper(block, block_vars, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
+# ---------- plotly scraper --------------------------------------
+
+
+def plotly_scraper(block, block_vars, gallery_conf, **kwargs):
+    """Scrape Plotly figures.
+
+    Parameters
+    ----------
+    block : tuple
+        A tuple containing the (label, content, line_number) of the block.
+    block_vars : dict
+        Dict of block variables.
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery
+    **kwargs : dict
+        Additional keyword arguments to pass to
+        :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``.
+        The ``format`` kwarg in particular is used to set the file extension
+        of the output file (currently only 'png' and 'svg' are supported).
+
+    Returns
+    -------
+    rst : str
+        The ReSTructuredText that will be rendered to HTML containing
+        the images.
+    """
+    pngs = sorted(glob(os.path.join(gallery_conf['examples_dirs'][0],
+                            '*.png')))
+    htmls = sorted(glob(os.path.join(gallery_conf['examples_dirs'][0],
+                            '*.html')))
+    image_path_iterator = block_vars['image_path_iterator']
+    image_names = list()
+    seen = set()
+    for html, png in zip(htmls, pngs):
+        if png not in seen:
+            seen |= set(png)
+            this_image_path_png = image_path_iterator.next()
+            this_image_path_html = (os.path.splitext(
+                                    this_image_path_png)[0] + '.html') 
+            image_names.append(this_image_path_html)
+            shutil.move(png, this_image_path_png)
+            shutil.move(html, this_image_path_html)
+    # Use the `figure_rst` helper function to generate rST for image files
+    return figure_rst(image_names, gallery_conf['src_dir'])
+
+
 _scraper_dict = dict(
     matplotlib=matplotlib_scraper,
     mayavi=mayavi_scraper,
+    plotly=plotly_scraper,
 )
 
 
@@ -194,7 +243,7 @@ class ImagePathIterator(object):
 
 
 # For now, these are what we support
-_KNOWN_IMG_EXTS = ('png', 'svg')  # XXX add gif next
+_KNOWN_IMG_EXTS = ('png', 'svg', 'html')  # XXX add gif next
 
 
 def _find_image_ext(path, number=None):
@@ -273,7 +322,15 @@ def figure_rst(figure_list, sources_dir):
     images_rst = ""
     if len(figure_paths) == 1:
         figure_name = figure_paths[0]
-        images_rst = SINGLE_IMAGE % figure_name
+        ext = os.path.splitext(figure_name)[1]
+        if ext == '.png':
+            images_rst = SINGLE_IMAGE % figure_name
+        elif ext == '.html':
+            figure_path = os.path.join('images',
+                                       os.path.basename(figure_name))
+            images_rst = SINGLE_HTML % figure_path
+        else:
+            images_rst = ''
     elif len(figure_paths) > 1:
         images_rst = HLIST_HEADER
         for figure_name in figure_paths:
@@ -301,6 +358,12 @@ SINGLE_IMAGE = """
 .. image:: /%s
     :class: sphx-glr-single-img
 """
+
+SINGLE_HTML = """
+.. raw:: html
+    :file: %s
+"""
+
 
 
 ###############################################################################
