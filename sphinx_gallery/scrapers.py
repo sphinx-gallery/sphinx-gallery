@@ -14,6 +14,7 @@ from glob import glob
 import shutil
 
 from .utils import scale_image
+from . import sphinx_compatibility
 
 __all__ = ['save_figures', 'figure_rst', 'ImagePathIterator', 'clean_modules',
            'matplotlib_scraper', 'mayavi_scraper', 'plotly_scraper']
@@ -23,6 +24,7 @@ try:
 except NameError:
     basestring = str
     unicode = str
+
 
 
 ###############################################################################
@@ -138,29 +140,34 @@ def mayavi_scraper(block, block_vars, gallery_conf):
 
 # First we monkey-patch plotly.offline.plot
 import inspect, os
-import plotly
-plotly_plot = plotly.offline.plot
+
+try:
+    import plotly
+    plotly_plot = plotly.offline.plot
 
 
-def _patched_plotly_plot(*args, **kwargs):
-    """
-    Monkey-patched version of plotly.offline.plot, in order to save
-    html file with the same name as python script. Also, a static
-    png file is saved.
-    """
-    stack = inspect.stack()
-    filename = stack[1].filename # let's hope this is robust...
-    filename_root, _ = os.path.splitext(filename)
-    filename_html = filename_root + '.html'
-    filename_png = filename_root + '.png'
-    figure = plotly.tools.return_figure_from_figure_or_data(*args, True)
-    res = plotly_plot(*args, auto_open=False,
-		    filename=filename_html)
-    plotly.io.write_image(figure, filename_png)
-    return res
+    def _patched_plotly_plot(*args, **kwargs):
+        """
+        Monkey-patched version of plotly.offline.plot, in order to save
+        html file with the same name as python script. Also, a static
+        png file is saved.
+        """
+        stack = inspect.stack()
+        filename = stack[1].filename # let's hope this is robust...
+        filename_root, _ = os.path.splitext(filename)
+        filename_html = filename_root + '.html'
+        filename_png = filename_root + '.png'
+        figure = plotly.tools.return_figure_from_figure_or_data(*args, True)
+        res = plotly_plot(*args, auto_open=False,
+                        filename=filename_html)
+        plotly.io.write_image(figure, filename_png)
+        return res
 
+    plotly.offline.plot = _patched_plotly_plot
+except ImportError:
+    logger = sphinx_compatibility.getLogger('sphinx-gallery')
+    logger.warning('plotly is not installed, figures will not be generated for examples using plotly.' )
 
-plotly.offline.plot = _patched_plotly_plot
 
 
 def plotly_scraper(block, block_vars, gallery_conf, **kwargs):
