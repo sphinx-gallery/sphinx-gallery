@@ -725,6 +725,18 @@ figures. Enable this feature with the following configuration::
           extract Mayavi figures is **deprecated** in version 0.2+,
           and will be removed in a future release.
 
+
+External scrapers
+^^^^^^^^^^^^^^^^^
+
+Several external packages maintain their own Sphinx-Gallery image 
+scrapers. If you are using these projects, then it is possible to 
+leverage their scrapers with Sphinx-Gallery. These packages include:
+
+* `PyVista <https://github.com/pyvista/pyvista>`_
+* `PyGMT <https://github.com/GenericMappingTools/pygmt>`_
+
+
 Custom scrapers
 ^^^^^^^^^^^^^^^
 
