@@ -6,7 +6,7 @@ jobs:
     steps:
       # Get our data and merge with upstream
       - run: sudo apt-get update
-      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk
+      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk curl
       - checkout
       - run: echo $(git log -1 --pretty=%B) | tee gitlog.txt
       - run: echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
@@ -25,7 +25,8 @@ jobs:
           keys:
             - cache-pip
       # PyQt5 5.12 causes problems with libxcb
-      - run: sudo apt-get install npm
+      - run: curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+      - run: sudo apt-get install -y nodejs
       - run: pip install --user numpy scipy matplotlib "pyqt5<5.12" seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface mayavi memory_profiler ipython plotly orca psutil
       - run: npm install -g electron@1.8.4 orca
       - save_cache:
