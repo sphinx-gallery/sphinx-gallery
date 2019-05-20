@@ -396,7 +396,10 @@ def _memory_usage(func, gallery_conf):
         assert callable(func)
         mem, out = memory_usage(func, max_usage=True, retval=True,
                                 multiprocess=True)
-        mem = mem[0]
+        try:
+            mem = mem[0]  # old MP always returned a list
+        except TypeError:  # 'float' object is not subscriptable
+            pass
     else:
         out = func()
         mem = 0

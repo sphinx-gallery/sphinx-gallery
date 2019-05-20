@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from PIL import Image
 
+import sphinx_gallery
 from sphinx_gallery.gen_gallery import _complete_gallery_conf
 from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SINGLE_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
@@ -30,7 +31,7 @@ class matplotlib_svg_scraper():
 
 @pytest.mark.parametrize('ext', ('png', 'svg'))
 def test_save_matplotlib_figures(gallery_conf, ext):
-    """Test matplotlib figure save"""
+    """Test matplotlib figure save."""
     if ext == 'svg':
         gallery_conf['image_scrapers'] = (matplotlib_svg_scraper(),)
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
@@ -115,16 +116,30 @@ def test_save_mayavi_figures(gallery_conf):
         pixels = np.asarray(img.convert("RGB"))
     assert (pixels == [255, 245, 240]).all()
 
+
+def _custom_func(x, y, z):
+    return ''
+
+
+def test_custom_scraper(gallery_conf, monkeypatch):
+    """Test custom scrapers."""
     # custom finders
-    gallery_conf.update(image_scrapers=[lambda x, y, z: ''])
-    image_rst = save_figures(block, block_vars, gallery_conf)
-    assert len(image_path_iterator) == 3
+    with monkeypatch.context() as m:
+        m.setattr(sphinx_gallery, '_get_sg_image_scraper',
+                  lambda: _custom_func, raising=False)
+        for cust in (_custom_func, 'sphinx_gallery'):
+            gallery_conf.update(image_scrapers=[cust])
+            fname_template = os.path.join(gallery_conf['gallery_dir'],
+                                          'image{0}.png')
+            image_path_iterator = ImagePathIterator(fname_template)
+            block = ('',) * 3
+            block_vars = dict(image_path_iterator=image_path_iterator)
 
     # degenerate
     gallery_conf.update(image_scrapers=['foo'])
+    complete_args = (gallery_conf, gallery_conf['gallery_dir'], True, False)
     with pytest.raises(ValueError, match='Unknown image scraper'):
-        _complete_gallery_conf(
-            gallery_conf, gallery_conf['gallery_dir'], True, False)
+        _complete_gallery_conf(*complete_args)
     gallery_conf.update(
         image_scrapers=[lambda x, y, z: y['image_path_iterator'].next()])
     with pytest.raises(RuntimeError, match='did not produce expected image'):
@@ -132,6 +147,18 @@ def test_save_mayavi_figures(gallery_conf):
     gallery_conf.update(image_scrapers=[lambda x, y, z: 1.])
     with pytest.raises(TypeError, match='was not a string'):
         save_figures(block, block_vars, gallery_conf)
+    # degenerate string interface
+    gallery_conf.update(image_scrapers=['sphinx_gallery'])
+    with monkeypatch.context() as m:
+        m.setattr(sphinx_gallery, '_get_sg_image_scraper', 'foo',
+                  raising=False)
+        with pytest.raises(ValueError, match='^Unknown image.*\n.*callable'):
+            _complete_gallery_conf(*complete_args)
+    with monkeypatch.context() as m:
+        m.setattr(sphinx_gallery, '_get_sg_image_scraper', lambda: 'foo',
+                  raising=False)
+        with pytest.raises(ValueError, match='^Scraper.*was not callable'):
+            _complete_gallery_conf(*complete_args)
 
 
 @pytest.mark.parametrize('ext', _KNOWN_IMG_EXTS)
