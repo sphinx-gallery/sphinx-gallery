@@ -40,6 +40,7 @@ CONTENT = [
     '# and now comes the module code',
     'import logging',
     'import sys',
+    'from warnings import warn',
     'x, y = 1, 2',
     'print(u"Óscar output") # need some code output',
     'logger = logging.getLogger()',
@@ -49,6 +50,7 @@ CONTENT = [
     'logger.addHandler(lh)',
     'logger.info(u"Óscar")',
     'print(r"$\\langle n_\\uparrow n_\\downarrow \\rangle$")',
+    'warn("WarningsAbound", RuntimeWarning)',
 ]
 
 
@@ -316,8 +318,9 @@ def test_pattern_matching(gallery_conf, log_collector):
                    '\n'
                    '    Óscar output\n'
                    '    log:Óscar\n'
-                   '    $\\langle n_\\uparrow n_\\downarrow \\rangle$\n\n'
+                   '    $\\langle n_\\uparrow n_\\downarrow \\rangle$'
                    )
+    warn_output = 'RuntimeWarning: WarningsAbound'
     # create three files in tempdir (only one matches the pattern)
     fnames = ['plot_0.py', 'plot_1.py', 'plot_2.py']
     for fname in fnames:
@@ -326,8 +329,10 @@ def test_pattern_matching(gallery_conf, log_collector):
         if re.search(gallery_conf['filename_pattern'],
                      os.path.join(gallery_conf['gallery_dir'], rst_fname)):
             assert code_output in rst
+            assert warn_output in rst
         else:
             assert code_output not in rst
+            assert warn_output not in rst
 
 
 @pytest.mark.parametrize('test_str', [
@@ -388,7 +393,7 @@ def test_rst_example(gallery_conf):
 def test_output_indentation(gallery_conf):
     """Test whether indentation of code output is retained."""
     compiler = codeop.Compile()
-    
+
     test_string = r"\n".join([
         "  A B",
         "A 1 2",

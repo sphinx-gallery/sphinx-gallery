@@ -15,11 +15,13 @@ Files that generate images should start with 'plot'.
 from __future__ import division, print_function, absolute_import
 from time import time
 import copy
+import contextlib
 import ast
 import codecs
 import gc
 import os
 import re
+import warnings
 from shutil import copyfile
 import subprocess
 import sys
@@ -375,6 +377,38 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     return except_rst
 
 
+# Adapted from github.com/python/cpython/blob/3.7/Lib/warnings.py
+def _showwarning(message, category, filename, lineno, file=None, line=None):
+    msg = warnings.WarningMessage(
+        message, category, filename, lineno, file, line)
+    file = msg.file
+    if file is None:
+        file = sys.stderr
+        if file is None:
+            # sys.stderr is None when run with pythonw.exe:
+            # warnings get lost
+            return
+    text = warnings._formatwarnmsg(msg)
+    try:
+        file.write(text)
+    except OSError:
+        # the file (probably stderr) is invalid - this warning gets lost.
+        pass
+
+
+@contextlib.contextmanager
+def patch_warnings():
+    """Patch warnings.showwarning to actually write out the warning."""
+    # Sphinx or logging or someone is patching warnings, but we want to
+    # capture them, so let's patch over their patch...
+    orig_showwarning = warnings.showwarning
+    try:
+        warnings.showwarning = _showwarning
+        yield
+    finally:
+        warnings.showwarning = orig_showwarning
+
+
 class _exec_once(object):
     """Deal with memory_usage calling functions more than once (argh)."""
 
@@ -386,7 +420,8 @@ class _exec_once(object):
     def __call__(self):
         if not self.run:
             self.run = True
-            exec(self.code, self.globals)
+            with patch_warnings():
+                exec(self.code, self.globals)
 
 
 def _memory_usage(func, gallery_conf):
@@ -435,18 +470,18 @@ def execute_code_block(compiler, block, example_globals,
 
     cwd = os.getcwd()
     # Redirect output to stdout and
-    orig_stdout = sys.stdout
+    orig_stdout, orig_stderr = sys.stdout, sys.stderr
     src_file = script_vars['src_file']
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
 
-    my_stdout = MixedEncodingStringIO()
+    captured_std = MixedEncodingStringIO()
     os.chdir(os.path.dirname(src_file))
 
     sys_path = copy.deepcopy(sys.path)
     sys.path.append(os.getcwd())
-    sys.stdout = LoggingTee(my_stdout, logger, src_file)
+    sys.stdout = sys.stderr = LoggingTee(captured_std, logger, src_file)
 
     try:
         dont_inherit = 1
@@ -460,7 +495,8 @@ def execute_code_block(compiler, block, example_globals,
             gallery_conf)
     except Exception:
         sys.stdout.flush()
-        sys.stdout = orig_stdout
+        sys.stderr.flush()
+        sys.stdout, sys.stderr = orig_stdout, orig_stderr
         except_rst = handle_exception(sys.exc_info(), src_file, script_vars,
                                       gallery_conf)
         # python2.7: Code was read in bytes needs decoding to utf-8
@@ -477,22 +513,23 @@ def execute_code_block(compiler, block, example_globals,
         mem = 0
     else:
         sys.stdout.flush()
-        sys.stdout = orig_stdout
+        sys.stderr.flush()
+        sys.stdout, orig_stderr = orig_stdout, orig_stderr
         sys.path = sys_path
         os.chdir(cwd)
 
-        my_stdout = my_stdout.getvalue().expandtabs()
-        if my_stdout:
-            stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
+        captured_std = captured_std.getvalue().expandtabs()
+        if captured_std:
+            captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
         else:
-            stdout = ''
+            captured_std = ''
         images_rst = save_figures(block, script_vars, gallery_conf)
-        code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, stdout)
+        code_output = u"\n{0}\n\n{1}\n\n".format(images_rst, captured_std)
 
     finally:
         os.chdir(cwd)
         sys.path = sys_path
-        sys.stdout = orig_stdout
+        sys.stdout, sys.stderr = orig_stdout, orig_stderr
     script_vars['memory_delta'].append(mem)
 
     return code_output

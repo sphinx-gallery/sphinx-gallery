@@ -207,6 +207,12 @@ def test_embed_links_and_styles(sphinx_app):
         rst = fid.read()
     assert '.. code-block:: python3\n' in rst
 
+    # warnings
+    want_warn = ('plot_numpy_matplotlib.py:31: RuntimeWarning: This'
+                 ' warning should show up in the output')
+    assert want_warn in lines
+    sys.stdout.write(lines)
+
 
 def test_backreferences(sphinx_app):
     """Test backreferences."""
