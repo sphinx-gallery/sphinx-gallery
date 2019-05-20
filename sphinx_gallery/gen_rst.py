@@ -379,16 +379,13 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
 
 # Adapted from github.com/python/cpython/blob/3.7/Lib/warnings.py
 def _showwarning(message, category, filename, lineno, file=None, line=None):
-    msg = warnings.WarningMessage(
-        message, category, filename, lineno, file, line)
-    file = msg.file
     if file is None:
         file = sys.stderr
         if file is None:
             # sys.stderr is None when run with pythonw.exe:
             # warnings get lost
             return
-    text = warnings._formatwarnmsg(msg)
+    text = warnings.formatwarning(message, category, filename, lineno, line)
     try:
         file.write(text)
     except OSError:
