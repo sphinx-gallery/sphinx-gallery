@@ -6,6 +6,9 @@ Scrapers for embedding images
 =============================
 
 Collect images that have been produced by code blocks.
+
+The only scrapers we support are Matplotlib and Mayavi, others should
+live in modules that will support them (e.g., PyVista, Plotly).
 """
 
 import os

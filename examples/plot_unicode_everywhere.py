@@ -25,6 +25,7 @@ s = np.random.rand(*x.shape) * 800 + 500
 plt.scatter(x, y, s, marker=r'$\oint$')
 x = np.random.randn(60) * 7 - 4
 y = np.random.randn(60) * 3 - 2
+s = s[:x.size]
 plt.scatter(x, y, s, alpha=0.5, c='g', marker=r'$\clubsuit$')
 plt.xlabel('⇒')
 plt.ylabel('⇒')

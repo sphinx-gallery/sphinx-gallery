@@ -14,6 +14,7 @@ from __future__ import division, print_function, absolute_import
 import codecs
 import copy
 from datetime import timedelta, datetime
+from importlib import import_module
 import re
 import os
 from xml.sax.saxutils import quoteattr, escape
@@ -145,10 +146,19 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     scrapers = list(scrapers)
     for si, scraper in enumerate(scrapers):
         if isinstance(scraper, basestring):
-            if scraper not in _scraper_dict:
-                raise ValueError('Unknown image scraper named %r' % (scraper,))
-            scrapers[si] = _scraper_dict[scraper]
-        elif not callable(scraper):
+            if scraper in _scraper_dict:
+                scraper = _scraper_dict[scraper]
+            else:
+                orig_scraper = scraper
+                try:
+                    scraper = import_module(scraper)
+                    scraper = getattr(scraper, '_get_sg_image_scraper')
+                    scraper = scraper()
+                except Exception as exp:
+                    raise ValueError('Unknown image scraper %r, got:\n%s'
+                                     % (orig_scraper, exp))
+            scrapers[si] = scraper
+        if not callable(scraper):
             raise ValueError('Scraper %r was not callable' % (scraper,))
     gallery_conf['image_scrapers'] = tuple(scrapers)
     del scrapers

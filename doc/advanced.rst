@@ -7,6 +7,10 @@ Advanced usage
 This page contains more advanced topics in case you want to understand how
 to use Sphinx-Gallery more deeply.
 
+.. contents:: **Contents**
+    :local:
+    :depth: 2
+
 Extend your Makefile for Sphinx-Gallery
 =======================================
 
@@ -62,8 +66,8 @@ and its thumbnail is ``sphx_glr_plot_gallery_version_thumb.png``
 
 .. _custom_scraper:
 
-Writing a custom image scraper
-==============================
+Write a custom image scraper
+============================
 
 .. warning:: The API for custom scrapers is currently experimental.
 
@@ -210,19 +214,39 @@ output formats. To use SVG, you can do::
 You can also use different formats on a per-image basis, but this requires
 writing a customized scraper class or function.
 
-Contributing scrapers back to Sphinx-gallery
---------------------------------------------
+Integrate custom scrapers with Sphinx-gallery
+---------------------------------------------
 
-If you've developed a custom scraper for Sphinx-gallery that would be useful
-to the broader community, we encourage you to contribute it to the list of
-natively-supported scrapers located in
-`the scrapers module <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinx_gallery/scrapers.py>`_.
-We welcome PRs!
+Sphinx-gallery plans to internally maintain only two scrapers: matplotlib and
+mayavi. If you have extended or fixed bugs with these scrapers, we welcome PRs
+to improve them!
+
+On the other hand, if you have developed a custom scraper for a different
+plotting library that would be useful to the broader community, we encourage
+you to get it working with Sphinx-gallery and then maintain it externally
+(probably in the package that it scrapes), and then integrate and advertise
+it with Sphinx-gallery. You can:
+
+1. Contribute it to the list of externally supported scrapers located in
+   :ref:`reset_modules`.
+2. Optional: add a custom hook to your module root to simplify scraper use.
+   Taking PyVista as an example, adding ``pyvista._get_sg_image_scraper()``
+   that returns the ``callable`` scraper to be used by Sphinx-gallery allows
+   PyVista users to just use strings as they already can for
+   ``'matplotlib'`` and ``'mayavi'``::
+
+       sphinx_gallery_conf = {
+           ...
+           'image_scrapers': ('pyvista',)
+       }
+
+   Sphinx-gallery will look for this custom function and call it to get the
+   PyVista image scraper to use before running any examples.
 
 .. _custom_reset:
 
-Defining resetting behavior for custom visualization libraries
---------------------------------------------------------------
+Define resetting behavior (e.g., for custom libraries)
+======================================================
 
 Sphinx-gallery natively supports resetting ``matplotlib`` and ``seaborn``.
 However, if you'd like to support resetting for other libraries (or would like
