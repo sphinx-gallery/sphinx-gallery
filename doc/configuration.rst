@@ -604,7 +604,7 @@ dictionary following the pattern below::
          # Required keys
          'org': '<github_org>',
          'repo': '<github_repo>',
-         'ref': '<ref-for-documentation>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
+         'branch': '<github_branch>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
          'binderhub_url': '<binder_url>',  # Any URL of a binderhub deployment. Must be full URL (e.g. https://mybinder.org).
          'dependencies': '<list_of_paths_to_dependency_files>',
          # Optional keys
