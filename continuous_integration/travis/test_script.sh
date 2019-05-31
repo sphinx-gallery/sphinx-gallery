@@ -9,6 +9,6 @@ set -e
 pytest sphinx_gallery
 cd doc
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
-    make html-noplot
-    make html -j 2
+    make SPHINXOPTS=${SPHINXOPTS} html-noplot
+    make SPHINXOPTS=${SPHINXOPTS} html -j 2
 fi

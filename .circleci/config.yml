@@ -37,7 +37,7 @@ jobs:
       - run: python -c "from mayavi import mlab; import matplotlib.pyplot as plt; mlab.figure(); plt.figure()"
       - run: python setup.py develop --user
 
-      - run: python setup.py build_sphinx
+      - run: python setup.py build_sphinx -nW --keep-going
       - store_artifacts:
           path: doc/_build/html/
           destination: rtd_html

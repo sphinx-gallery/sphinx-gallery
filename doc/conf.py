@@ -89,8 +89,7 @@ exclude_patterns = ['_build']
 
 # See warnings about bad links
 nitpicky = True
-# we intentionally link outside images
-suppress_warnings = ['image.nonlocal_uri']
+nitpick_ignore = [('', "Pygments lexer name 'ipython' is not known")]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
