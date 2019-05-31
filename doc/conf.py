@@ -35,6 +35,7 @@ from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
