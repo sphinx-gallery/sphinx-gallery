@@ -203,7 +203,7 @@ def get_subsections(srcdir, examples_dir, sortkey):
         absolute path to directory containing conf.py
     examples_dir : str
         path to the examples directory relative to conf.py
-    sortkey : callable
+    sortkey : :func:`python:callable`
         The sort key to use.
 
     Returns
@@ -425,7 +425,7 @@ def write_junit_xml(gallery_conf, target_dir, computation_times):
 
 
 def touch_empty_backreferences(app, what, name, obj, options, lines):
-    """Generate empty back-reference example files
+    """Generate empty back-reference example files.
 
     This avoids inclusion errors/warnings if there are no gallery
     examples for a class / module that is being parsed by autodoc"""
@@ -443,12 +443,16 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
+def _expected_failing_examples(gallery_conf):
+    return set(
+        os.path.normpath(os.path.join(gallery_conf['src_dir'], path))
+        for path in gallery_conf['expected_failing_examples'])
+
+
 def _parse_failures(gallery_conf):
     """Split the failures."""
     failing_examples = set(gallery_conf['failing_examples'].keys())
-    expected_failing_examples = set(
-        os.path.normpath(os.path.join(gallery_conf['src_dir'], path))
-        for path in gallery_conf['expected_failing_examples'])
+    expected_failing_examples = _expected_failing_examples(gallery_conf)
     failing_as_expected = failing_examples.intersection(
         expected_failing_examples)
     failing_unexpectedly = failing_examples.difference(

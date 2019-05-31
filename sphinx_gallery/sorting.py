@@ -24,7 +24,7 @@ class ExplicitOrder(object):
 
     Parameters
     ----------
-    ordered_list : list, tuple, or generator
+    ordered_list : list, tuple, or :term:`python:generator`
         Hold the paths of each galleries' subsections.
 
     Raises
