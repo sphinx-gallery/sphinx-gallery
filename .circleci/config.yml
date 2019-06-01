@@ -25,7 +25,8 @@ jobs:
           keys:
             - cache-pip
       # PyQt5 5.12 causes problems with libxcb
-      - run: pip install --user numpy scipy matplotlib "pyqt5<5.12" seaborn sphinx_rtd_theme pillow sphinx pytest vtk traits traitsui pyface mayavi memory_profiler ipython
+      # We use a specific commit of sphinx to get --keep-going support in setup.py build (as of 2019/05/31, it's not released)
+      - run: pip install --user numpy scipy matplotlib "pyqt5<5.12" seaborn sphinx_rtd_theme pillow https://api.github.com/repos/sphinx-doc/sphinx/zipball/925bc187eacbc0fbdd2c56f360a040a23cb13145 pytest vtk traits traitsui pyface mayavi memory_profiler ipython
       - save_cache:
           key: cache-pip
           paths:
@@ -37,7 +38,7 @@ jobs:
       - run: python -c "from mayavi import mlab; import matplotlib.pyplot as plt; mlab.figure(); plt.figure()"
       - run: python setup.py develop --user
 
-      - run: python setup.py build_sphinx
+      - run: python setup.py build_sphinx -nW --keep-going
       - store_artifacts:
           path: doc/_build/html/
           destination: rtd_html

@@ -89,8 +89,7 @@ exclude_patterns = ['_build']
 
 # See warnings about bad links
 nitpicky = True
-# we intentionally link outside images
-suppress_warnings = ['image.nonlocal_uri']
+nitpick_ignore = [('', "Pygments lexer name 'ipython' is not known")]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -143,7 +142,10 @@ else:
 
 
 def setup(app):
-    app.add_stylesheet('theme_override.css')
+    try:
+        app.add_css_file('theme_override.css')
+    except AttributeError:
+        app.add_stylesheet('theme_override.css')
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

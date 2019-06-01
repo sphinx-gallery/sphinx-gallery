@@ -350,6 +350,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):
+    from .gen_gallery import _expected_failing_examples
     etype, exc, tb = exc_info
     stack = traceback.extract_tb(tb)
     # Remove our code from traceback:
@@ -362,8 +363,13 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
         traceback.format_list(stack) +
         traceback.format_exception_only(etype, exc))
 
-    logger.warning('%s failed to execute correctly: %s', src_file,
-                   formatted_exception)
+    expected = src_file in _expected_failing_examples(gallery_conf)
+    if expected:
+        func, color = logger.info, 'blue',
+    else:
+        func, color = logger.warning, 'red'
+    func('%s failed to execute correctly: %s', src_file,
+         formatted_exception, color=color)
 
     except_rst = codestr2rst(formatted_exception, lang='pytb')
 
