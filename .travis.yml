@@ -33,7 +33,7 @@ matrix:
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.7" LOCALE=C PIP_PKGS="vtk mayavi"
+      env: DISTRIB="conda" PYTHON_VERSION="3.7" LOCALE=C PIP_PKGS="vtk mayavi ipython"
            SPHINXOPTS="-nWT --keep-going"
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" SPHINX_VERSION="dev"
