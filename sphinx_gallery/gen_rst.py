@@ -600,6 +600,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         '__name__': '__main__',
         # Don't ever support __file__: Issues #166 #212
     }
+    script_vars['example_globals'] = example_globals
 
     argv_orig = sys.argv[:]
     if script_vars['execute_script']:
