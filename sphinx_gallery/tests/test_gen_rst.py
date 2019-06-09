@@ -137,8 +137,38 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
         ''])
 
 
+def test_script_vars_globals(gallery_conf, tmpdir):
+    """Assert the global vars get stored."""
+    filename = str(tmpdir.join('temp.py'))
+    with open(filename, 'w') as f:
+        f.write("""
+'''
+My example
+----------
+
+This is it.
+'''
+a = 1.
+b = 'foo'
+""")
+    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    assert len(blocks) == 2
+    assert blocks[0][0] == 'text'
+    assert blocks[1][0] == 'code'
+    assert file_conf == {}
+    script_vars = {'execute_script': True, 'src_file': filename,
+                   'image_path_iterator': [],
+                   'target_file': filename}
+    output_blocks, time_elapsed = sg.execute_script(blocks,
+                                                    script_vars,
+                                                    gallery_conf)
+    assert 'example_globals' in script_vars
+    assert script_vars['example_globals']['a'] == 1.
+    assert script_vars['example_globals']['b'] == 'foo'
+
+
 def test_codestr2rst():
-    """Test the correct translation of a code block into rst"""
+    """Test the correct translation of a code block into rst."""
     output = sg.codestr2rst('print("hello world")')
     reference = """
 .. code-block:: python
