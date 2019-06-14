@@ -36,7 +36,7 @@ Who uses Sphinx-Gallery
 * `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
 * `SimPEG <http://docs.simpeg.xyz/content/examples/>`_
-* `PlasmaPy <http://docs.plasmapy.org/en/master/auto_examples/index.html#general-examples>`_        
+* `PlasmaPy <http://docs.plasmapy.org/en/master/auto_examples/>`_        
 
 Installation
 ============
