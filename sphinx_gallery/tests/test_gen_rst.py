@@ -7,7 +7,6 @@ Testing the rst files generator
 from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import ast
-from collections import namedtuple
 import codecs
 import io
 import tempfile
@@ -22,7 +21,7 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst, _complete_gallery_conf
-from sphinx_gallery.utils import _TempDir
+from sphinx_gallery.utils import _TempDir, Bunch
 from sphinx_gallery.scrapers import ImagePathIterator
 
 try:
@@ -254,7 +253,8 @@ def test_md5sums():
 @pytest.fixture
 def gallery_conf(tmpdir):
     """Set up a test sphinx-gallery configuration."""
-    app = namedtuple('app', ('config'))(dict(source_suffix={'.rst': None}))
+    app = Bunch()
+    app.config = dict(source_suffix={'.rst': None})
     gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False,
                                           app=app)
     gallery_conf.update(examples_dir=_TempDir(), gallery_dir=str(tmpdir))

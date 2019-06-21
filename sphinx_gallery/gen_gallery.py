@@ -14,14 +14,16 @@ from __future__ import division, print_function, absolute_import
 import codecs
 import copy
 from datetime import timedelta, datetime
+from distutils.version import LooseVersion
 from importlib import import_module
 import re
 import os
 from xml.sax.saxutils import quoteattr, escape
 
+import sphinx
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5
+from .utils import _replace_md5, Bunch
 from .backreferences import finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       extract_intro_and_title, get_docstring_and_rest,
@@ -109,6 +111,10 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf.update(plot_gallery=plot_gallery)
     gallery_conf.update(abort_on_example_error=abort_on_example_error)
     gallery_conf['src_dir'] = src_dir
+    # Old Sphinx can't handle pickling app, so let's just expose the one
+    # thing we need internally
+    if LooseVersion(sphinx.__version__) < LooseVersion('1.8'):
+        app = Bunch(config=app.config) if app is not None else app
     gallery_conf['app'] = app
 
     if gallery_conf.get("mod_example_dir", False):
