@@ -5,14 +5,18 @@ Pytest fixtures
 from __future__ import division, absolute_import, print_function
 
 import collections
-import logging
 
 import pytest
 
+import sphinx
 import sphinx_gallery.docs_resolv
 import sphinx_gallery.gen_gallery
 import sphinx_gallery.gen_rst
-from sphinx_gallery import sphinx_compatibility
+
+
+def pytest_report_header(config, startdir):
+    """Add information to the pytest run header."""
+    return 'Sphinx:  %s (%s)' % (sphinx.__version__, sphinx.__file__)
 
 
 Params = collections.namedtuple('Params', 'args kwargs')

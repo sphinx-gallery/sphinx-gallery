@@ -40,7 +40,7 @@ try:
     from textwrap import indent
 except ImportError:
     def indent(text, prefix, predicate=None):
-        """Adds 'prefix' to the beginning of selected lines in 'text'.
+        """Add 'prefix' to the beginning of selected lines in 'text'.
 
         If 'predicate' is provided, 'prefix' will only be added to the lines
         where 'predicate(line)' is True. If 'predicate' is not provided,
@@ -55,6 +55,9 @@ except ImportError:
             for line in text.splitlines(True):
                 yield (prefix + line if predicate(line) else line)
         return ''.join(prefixed_lines())
+
+    FileNotFoundError = IOError
+
 
 import sphinx
 
@@ -286,15 +289,28 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
-    """Generate the gallery reStructuredText for an example directory"""
+def _get_readme(dir_, gallery_conf, raise_error=True):
+    extensions = ['.txt'] + sorted(gallery_conf['app'].config['source_suffix'])
+    for ext in extensions:
+        fname = os.path.join(dir_, 'README' + ext)
+        if os.path.isfile(fname):
+            return fname
+    if raise_error:
+        raise FileNotFoundError(
+            "Example directory {0} does not have a README file with one "
+            "of the expected file extensions {1}. Please write one to "
+            "introduce your gallery.".format(dir_, extensions))
+    return None
 
+
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
+    """Generate the gallery reStructuredText for an example directory."""
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
     fhindex = """\n\n.. _sphx_glr_{0}:\n\n""".format(
         head_ref.replace(os.path.sep, '_'))
 
-    with codecs.open(os.path.join(src_dir, 'README.txt'), 'r',
-                     encoding='utf-8') as fid:
+    fname = _get_readme(src_dir, gallery_conf)
+    with codecs.open(fname, 'r', encoding='utf-8') as fid:
         fhindex += fid.read()
     # Add empty lines to avoid bug in issue #165
     fhindex += "\n\n"
