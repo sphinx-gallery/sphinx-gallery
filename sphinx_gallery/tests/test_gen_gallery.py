@@ -273,7 +273,7 @@ def test_example_sorting_title(sphinx_app_wrapper):
     _check_order(sphinx_app, 'title')
 
 
-def test_collect_gallery_files(sphinx_app_wrapper, tmpdir):
+def test_collect_gallery_files(tmpdir):
     """Test that example files are collected properly."""
     rel_filepaths = ['examples/file1.py',
                      'examples/test.rst',
