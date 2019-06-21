@@ -25,6 +25,12 @@ from sphinx_gallery.gen_gallery import generate_dir_rst, _complete_gallery_conf
 from sphinx_gallery.utils import _TempDir
 from sphinx_gallery.scrapers import ImagePathIterator
 
+try:
+    FileNotFoundError
+except NameError:
+    # Python2
+    FileNotFoundError = IOError
+
 CONTENT = [
     '"""',
     '================',

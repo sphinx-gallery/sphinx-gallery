@@ -14,7 +14,7 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery.notebook import (rst2md, jupyter_notebook, save_notebook,
                                      python_to_jupyter_cli)
-from sphinx_gallery.tests.test_gen_rst import gallery_conf
+from sphinx_gallery.tests.test_gen_rst import gallery_conf  # noqa
 
 try:
     FileNotFoundError
