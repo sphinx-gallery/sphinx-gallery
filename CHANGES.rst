@@ -1,11 +1,23 @@
 Change Log
 ==========
 
-git master
-----------
+v0.4.0
+------
 
 Developer changes
 '''''''''''''''''
+- Added a private API contract for external scrapers to have string-based
+  support, see:
+
+    https://github.com/sphinx-gallery/sphinx-gallery/pull/494
+
+- Standard error is now caught and displayed alongside standard output.
+
+Incompatible changes
+''''''''''''''''''''
+- v0.4.0 will be the last release to support Python <= 3.4.
+- Moving forward, we will support only the latest two stable Sphinx releases
+  at the time of each sphinx-gallery release.
 
 v0.3.1
 ------
