@@ -196,7 +196,7 @@ BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
 
 def _thumbnail_div(target_dir, src_dir, fname, snippet, is_backref=False,
                    check=True):
-    """Generates RST to place a thumbnail in a gallery"""
+    """Generate RST to place a thumbnail in a gallery."""
     thumb, _ = _find_image_ext(
         os.path.join(target_dir, 'images', 'thumb',
                      'sphx_glr_%s_thumb.png' % fname[:-3]))
