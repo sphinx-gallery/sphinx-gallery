@@ -24,7 +24,8 @@ from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5
 from .backreferences import finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
-                      extract_intro_and_title, get_docstring_and_rest)
+                      extract_intro_and_title, get_docstring_and_rest,
+                      _get_readme)
 from .scrapers import _scraper_dict, _reset_dict
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
@@ -91,7 +92,7 @@ def parse_config(app):
     lang = app.builder.config.highlight_language
     gallery_conf = _complete_gallery_conf(
         app.config.sphinx_gallery_conf, src_dir, plot_gallery,
-        abort_on_example_error, lang, app.builder.name)
+        abort_on_example_error, lang, app.builder.name, app)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
@@ -101,7 +102,7 @@ def parse_config(app):
 
 def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                            abort_on_example_error, lang='python',
-                           builder_name='html'):
+                           builder_name='html', app=None):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     gallery_conf.update(sphinx_gallery_conf)
     if sphinx_gallery_conf.get('find_mayavi_figures', False):
@@ -114,6 +115,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf.update(plot_gallery=plot_gallery)
     gallery_conf.update(abort_on_example_error=abort_on_example_error)
     gallery_conf['src_dir'] = src_dir
+    gallery_conf['app'] = app
 
     if gallery_conf.get("mod_example_dir", False):
         backreferences_warning = """\n========
@@ -194,8 +196,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     return gallery_conf
 
 
-def get_subsections(srcdir, examples_dir, sortkey):
-    """Return the list of subsections of a gallery
+def get_subsections(srcdir, examples_dir, gallery_conf):
+    """Return the list of subsections of a gallery.
 
     Parameters
     ----------
@@ -203,18 +205,18 @@ def get_subsections(srcdir, examples_dir, sortkey):
         absolute path to directory containing conf.py
     examples_dir : str
         path to the examples directory relative to conf.py
-    sortkey : :func:`python:callable`
-        The sort key to use.
+    gallery_conf : dict
+        The gallery configuration.
 
     Returns
     -------
     out : list
         sorted list of gallery subsection folder names
-
     """
+    sortkey = gallery_conf['subsection_order']
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)
-                  if os.path.exists(os.path.join(
-                      examples_dir, subfolder, 'README.txt'))]
+                  if _get_readme(os.path.join(examples_dir, subfolder),
+                                 gallery_conf, raise_error=False) is not None]
     base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
     subfolders_with_path = [os.path.join(base_examples_dir_path, item)
                             for item in subfolders]
@@ -269,15 +271,8 @@ def generate_gallery_rst(app):
         examples_dir = os.path.join(app.builder.srcdir, examples_dir)
         gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
 
-        if not os.path.exists(os.path.join(examples_dir, 'README.txt')):
-            raise FileNotFoundError("Main example directory {0} does not "
-                                    "have a README.txt file. Please write "
-                                    "one to introduce your gallery."
-                                    .format(examples_dir))
-
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
-
         this_fhindex, this_computation_times = generate_dir_rst(
             examples_dir, gallery_dir, gallery_conf, seen_backrefs)
 
@@ -292,8 +287,7 @@ def generate_gallery_rst(app):
             fhindex.write(":orphan:\n\n" + this_fhindex)
 
             for subsection in get_subsections(
-                    app.builder.srcdir, examples_dir,
-                    gallery_conf['subsection_order']):
+                    app.builder.srcdir, examples_dir, gallery_conf):
                 src_dir = os.path.join(examples_dir, subsection)
                 target_dir = os.path.join(gallery_dir, subsection)
                 this_fhindex, this_computation_times = \

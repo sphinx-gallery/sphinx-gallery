@@ -39,7 +39,7 @@ Let's say your Python project looks like this:
     └── examples
       	├── plot_example.py
       	├── example.py
-      	└── README.txt
+      	└── README.txt (or .rst)
 
 Your Python module is in ``my_python_module``, examples for how to use it are
 in ``examples`` and the ``doc`` folder holds the base documentation
@@ -59,7 +59,8 @@ Structure the examples folder
 In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
-* **The Gallery Header** (``README.txt``). A file called ``README.txt`` that
+* **The Gallery Header** (``README.txt``). A file called ``README.txt``
+  or ``README.rst`` that
   contains rST that will be used as a header for the gallery generated from
   this folder. It must have at least a title. For example::
 
