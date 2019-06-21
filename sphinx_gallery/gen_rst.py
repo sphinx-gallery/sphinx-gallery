@@ -40,7 +40,7 @@ try:
     from textwrap import indent
 except ImportError:
     def indent(text, prefix, predicate=None):
-        """Adds 'prefix' to the beginning of selected lines in 'text'.
+        """Add 'prefix' to the beginning of selected lines in 'text'.
 
         If 'predicate' is provided, 'prefix' will only be added to the lines
         where 'predicate(line)' is True. If 'predicate' is not provided,
@@ -55,6 +55,9 @@ except ImportError:
             for line in text.splitlines(True):
                 yield (prefix + line if predicate(line) else line)
         return ''.join(prefixed_lines())
+
+    FileNotFoundError = IOError
+
 
 import sphinx
 

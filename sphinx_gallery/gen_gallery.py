@@ -33,12 +33,6 @@ from .sorting import NumberOfCodeLinesSortKey
 from .binder import copy_binder_files
 
 try:
-    FileNotFoundError
-except NameError:
-    # Python2
-    FileNotFoundError = IOError
-
-try:
     basestring
 except NameError:
     basestring = str
