@@ -34,8 +34,12 @@ REFERENCE = r"""
     # backref support
     ('test formating', 'test formating', True),
     # RST sanitizing
-    ('1 :class:`~a.b` 2 :class:`a.b` 3 :ref:`whatever <better name>`',
-     '1 b 2 a.b 3 better name', False),
+    ('1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`',
+     '1 b. 2 a.b 3 better name', False),
+    ('use :meth:`mne.io.Raw.plot_psd` to',
+     'use mne.io.Raw.plot_psd to', False),
+    ('`this` and ``that``; and `these things` and ``those things``',
+     'this and that; and these things and those things', False),
 ])
 def test_thumbnail_div(content, tooltip, is_backref):
     """Test if the thumbnail div generates the correct string."""

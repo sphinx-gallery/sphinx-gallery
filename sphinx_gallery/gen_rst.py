@@ -196,16 +196,26 @@ def codestr2rst(codestr, lang='python', lineno=None):
     return code_directive + indented_block
 
 
+def _regroup(x):
+    x = x.groups()
+    return x[0] + x[1].split('.')[-1] + x[2]
+
+
 def _sanitize_rst(string):
     """Use regex to remove at least some sphinx directives."""
     # :class:`a.b.c <thing here>`, :ref:`abc <thing here>` --> thing here
-    p, e = r':[^:\s]+:`', '`'
-    string = re.sub(p + r'\S+\s*<([^>]+)>' + e, r'\1', string)
+    p, e = r'(\s|^):[^:\s]+:`', r'`(\W|$)'
+    string = re.sub(p + r'\S+\s*<([^>`]+)>' + e, r'\1\2\3', string)
     # :class:`~a.b.c` --> c
-    string = re.sub(p + r'~([\S.]+)' + e,
-                    lambda x: x.groups()[0].split('.')[-1], string)
+    string = re.sub(p + r'~([^`]+)' + e, _regroup, string)
     # :class:`a.b.c` --> a.b.c
-    string = re.sub(p + r'([^`]+)`', r'\1', string)
+    string = re.sub(p + r'([^`]+)' + e, r'\1\2\3', string)
+
+    # ``whatever thing`` --> whatever thing
+    p = r'(\s|^)`'
+    string = re.sub(p + r'`([^`]+)`' + e, r'\1\2\3', string)
+    # `whatever thing` --> whatever thing
+    string = re.sub(p + r'([^`]+)' + e, r'\1\2\3', string)
     return string
 
 
