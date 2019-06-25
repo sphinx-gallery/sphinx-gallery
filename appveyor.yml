@@ -23,8 +23,6 @@ install:
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - "activate test"
-    - "pip install vtk"
-    - "pip install mayavi"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 

@@ -40,7 +40,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     # Travis because it contains numpy and we want to use numpy
     # from apt-get
     deactivate
-    virtualenv --system-site-packages -p python$PYTHON_VERSION testvenv
+    virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
     pip install --upgrade pip setuptools wheel pyopenssl
     pip install -U requests[security]  # ensure SSL certificate works
