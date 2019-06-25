@@ -44,7 +44,7 @@ Prepare for release
 
        .. code-block:: bash
 
-          github_changelog_generator sphinx-gallery/sphinx-gallery --between-tags v0.3.0,v0.4.0 --token <<your-github-api-token>>
+          github_changelog_generator sphinx-gallery/sphinx-gallery --between-tags v0.3.0,v0.4.0
 
     2. Edit CHANGELOG.md to look reasonable (it will be used later)
 
@@ -53,7 +53,7 @@ Prepare for release
 
        .. code-block:: bash
 
-          pandoc CHANGELOG.md CHANGELOG.rst
+          pandoc CHANGELOG.md --wrap=none -o CHANGELOG.rst
 
 2. Build the docs cleanly
 
