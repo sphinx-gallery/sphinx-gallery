@@ -12,7 +12,6 @@ import sys
 import pytest
 
 import sphinx_gallery.docs_resolv as sg
-from sphinx_gallery.utils import _TempDir
 
 
 def test_embed_code_links_get_data():
@@ -21,11 +20,11 @@ def test_embed_code_links_get_data():
     sg._get_data('http://scikit-learn.org/stable/')  # GZip
 
 
-def test_shelve():
+def test_shelve(tmpdir):
     """Test if shelve can be caches information
     retrieved after file is deleted"""
     test_string = 'test information'
-    tmp_cache = _TempDir()
+    tmp_cache = str(tmpdir)
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write(test_string)
     try:
@@ -41,8 +40,7 @@ def test_shelve():
 
     # shelve keys need to be str in python 2, deal with unicode input
     if sys.version_info[0] == 2:
-        unicode_name = unicode(f.name)
-        assert sg.get_data(unicode_name, tmp_cache) == test_string
+        assert sg.get_data(f.name, tmp_cache) == test_string
 
 
 def test_parse_sphinx_docopts():

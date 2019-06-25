@@ -8,27 +8,16 @@ Link resolver objects
 from __future__ import print_function
 import codecs
 import gzip
+from io import BytesIO
 import os
+import pickle
 import posixpath
 import re
 import shelve
 import sys
-
-# Try Python 2 first, otherwise load from Python 3
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-try:
-    import urllib2 as urllib_request
-    from urllib2 import HTTPError, URLError
-    import urlparse as urllib_parse
-except ImportError:
-    import urllib.request as urllib_request
-    import urllib.parse as urllib_parse
-    from urllib.error import HTTPError, URLError
-
-from io import BytesIO
+import urllib.request as urllib_request
+import urllib.parse as urllib_parse
+from urllib.error import HTTPError, URLError
 
 from sphinx.search import js_index
 

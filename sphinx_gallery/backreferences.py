@@ -12,27 +12,14 @@ from __future__ import print_function, unicode_literals
 import ast
 import codecs
 import collections
+from html import escape
+import pickle
 import os
 import re
 
 from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
-
-# Try Python 2 first, otherwise load from Python 3
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-# Try Python 3 first, otherwise load from Python 2
-try:
-    from html import escape
-except ImportError:
-    from functools import partial
-    from xml.sax.saxutils import escape
-
-    escape = partial(escape, entities={'"': '&quot;'})
-
 from .py_source_parser import parse_source_file, split_code_and_text_blocks
 
 

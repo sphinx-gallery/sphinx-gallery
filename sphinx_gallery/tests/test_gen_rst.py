@@ -21,7 +21,7 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst, _complete_gallery_conf
-from sphinx_gallery.utils import _TempDir, Bunch
+from sphinx_gallery.utils import Bunch
 from sphinx_gallery.scrapers import ImagePathIterator
 
 try:
@@ -257,7 +257,7 @@ def gallery_conf(tmpdir):
     app.config = dict(source_suffix={'.rst': None})
     gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False,
                                           app=app)
-    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=str(tmpdir))
+    gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
     return gallery_conf
 
 

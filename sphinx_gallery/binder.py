@@ -18,12 +18,6 @@ change in the future.
 import shutil
 import os
 
-try:
-    basestring
-except NameError:
-    basestring = str
-    unicode = str
-
 from .utils import replace_py_ipynb
 from . import sphinx_compatibility
 
@@ -88,16 +82,16 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     binder_conf: dict or None
         If a dictionary it must have the following keys:
 
-        'binderhub_url': The URL of the BinderHub instance that's running a Binder
-            service.
-        'org': The GitHub organization to which the documentation will be
-            pushed.
-        'repo': The GitHub repository to which the documentation will be
-            pushed.
-        'branch': The Git branch on which the documentation exists (e.g.,
-            gh-pages).
-        'dependencies': A list of paths to dependency files that match the
-            Binderspec.
+        'binderhub_url'
+            The URL of the BinderHub instance that's running a Binder service.
+        'org'
+            The GitHub organization to which the documentation will be pushed.
+        'repo'
+            The GitHub repository to which the documentation will be pushed.
+        'branch'
+            The Git branch on which the documentation exists (e.g., gh-pages).
+        'dependencies'
+            A list of paths to dependency files that match the Binderspec.
 
     Returns
     -------
@@ -140,8 +134,9 @@ def _copy_binder_reqs(app, binder_conf):
     path_reqs = binder_conf.get('dependencies')
     for path in path_reqs:
         if not os.path.exists(os.path.join(app.srcdir, path)):
-            raise ValueError(("Couldn't find the Binder requirements file: {}, "
-                              "did you specify the path correctly?".format(path)))
+            raise ValueError(("Couldn't find the Binder requirements file: {},"
+                              " did you specify the path correctly?"
+                              .format(path)))
 
     binder_folder = os.path.join(app.outdir, 'binder')
     if not os.path.isdir(binder_folder):
@@ -205,13 +200,6 @@ def check_binder_conf(binder_conf):
     if len(binder_conf) == 0:
         return binder_conf
 
-    if binder_conf.get('url') and not binder_conf.get('binderhub_url'):
-        logger.warning(
-            'Found old BinderHub URL keyword ("url"). Please update your '
-            'configuration to use the new keyword ("binderhub_url"). "url" will be '
-            'deprecated in sphinx-gallery v0.4')
-        binder_conf['binderhub_url'] = binderhub_conf.get('url')
-
     # Ensure all fields are populated
     req_values = ['binderhub_url', 'org', 'repo', 'branch', 'dependencies']
     optional_values = ['filepath_prefix', 'notebooks_dir', 'use_jupyter_lab']
@@ -232,13 +220,14 @@ def check_binder_conf(binder_conf):
     if not any(binder_conf['binderhub_url'].startswith(ii)
                for ii in ['http://', 'https://']):
         raise ValueError('did not supply a valid url, '
-                         'gave binderhub_url: {}'.format(binder_conf['binderhub_url']))
+                         'gave binderhub_url: {}'
+                         .format(binder_conf['binderhub_url']))
 
     # Ensure we have at least one dependency file
     # Need at least one of these three files
     required_reqs_files = ['requirements.txt', 'environment.yml', 'Dockerfile']
     path_reqs = binder_conf['dependencies']
-    if isinstance(path_reqs, basestring):
+    if isinstance(path_reqs, str):
         path_reqs = [path_reqs]
         binder_conf['dependencies'] = path_reqs
     elif not isinstance(path_reqs, (list, tuple)):

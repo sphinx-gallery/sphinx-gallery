@@ -20,16 +20,10 @@ matrix:
             - python-coverage
             - cython
             - python-pandas
-    # This environment tests is for mayavi
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="2.7" CONDA_PKGS="mayavi"
-    # This environment tests the Python 3 versions
+      env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="==1.8.3"
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.5"
-    - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.6"
-    - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="2.7" LOCALE=C
+      env: DISTRIB="conda" PYTHON_VERSION="3.6" PIP_PKGS="vtk mayavi ipython"
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
     - os: linux

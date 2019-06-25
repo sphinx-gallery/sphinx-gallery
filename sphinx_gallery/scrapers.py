@@ -19,12 +19,6 @@ from .utils import scale_image
 __all__ = ['save_figures', 'figure_rst', 'ImagePathIterator', 'clean_modules',
            'matplotlib_scraper', 'mayavi_scraper']
 
-try:
-    basestring
-except NameError:
-    basestring = str
-    unicode = str
-
 
 ###############################################################################
 # Scrapers
@@ -236,7 +230,7 @@ def save_figures(block, block_vars, gallery_conf):
     prev_count = len(image_path_iterator)
     for scraper in gallery_conf['image_scrapers']:
         rst = scraper(block, block_vars, gallery_conf)
-        if not isinstance(rst, basestring):
+        if not isinstance(rst, str):
             raise TypeError('rst from scraper %r was not a string, '
                             'got type %s:\n%r'
                             % (scraper, type(rst), rst))
@@ -329,7 +323,7 @@ def _reset_seaborn(gallery_conf, fname):
 _reset_dict = {
     'matplotlib': _reset_matplotlib,
     'seaborn': _reset_seaborn,
-    }
+}
 
 
 def clean_modules(gallery_conf, fname):

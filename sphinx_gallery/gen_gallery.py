@@ -14,7 +14,6 @@ from __future__ import division, print_function, absolute_import
 import codecs
 import copy
 from datetime import timedelta, datetime
-from distutils.version import LooseVersion
 from importlib import import_module
 import re
 import os
@@ -33,12 +32,6 @@ from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
 from .binder import copy_binder_files
-
-try:
-    basestring
-except NameError:
-    basestring = str
-    unicode = str
 
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
@@ -111,10 +104,6 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf.update(plot_gallery=plot_gallery)
     gallery_conf.update(abort_on_example_error=abort_on_example_error)
     gallery_conf['src_dir'] = src_dir
-    # Old Sphinx can't handle pickling app, so let's just expose the one
-    # thing we need internally
-    if LooseVersion(sphinx.__version__) < LooseVersion('1.8'):
-        app = Bunch(config=app.config) if app is not None else app
     gallery_conf['app'] = app
 
     if gallery_conf.get("mod_example_dir", False):
@@ -147,7 +136,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         scrapers = [scrapers]
     scrapers = list(scrapers)
     for si, scraper in enumerate(scrapers):
-        if isinstance(scraper, basestring):
+        if isinstance(scraper, str):
             if scraper in _scraper_dict:
                 scraper = _scraper_dict[scraper]
             else:
@@ -171,7 +160,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         resetters = [resetters]
     resetters = list(resetters)
     for ri, resetter in enumerate(resetters):
-        if isinstance(resetter, basestring):
+        if isinstance(resetter, str):
             if resetter not in _reset_dict:
                 raise ValueError('Unknown module resetter named %r'
                                  % (resetter,))
@@ -187,7 +176,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
 
     # Ensure the first cell text is a string if we have it
     first_cell = gallery_conf.get("first_notebook_cell")
-    if (not isinstance(first_cell, basestring)) and (first_cell is not None):
+    if (not isinstance(first_cell, str)) and (first_cell is not None):
         raise ValueError("The 'first_notebook_cell' parameter must be type str"
                          "or None, found type %s" % type(first_cell))
     gallery_conf['first_notebook_cell'] = first_cell
@@ -568,15 +557,9 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
-    try:
-        app.add_css_file('gallery.css')
-    except AttributeError:  # Sphinx < 1.8
-        app.add_stylesheet('gallery.css')
+    app.add_css_file('gallery.css')
 
-    # Sphinx < 1.6 calls it `_extensions`, >= 1.6 is `extensions`.
-    extensions_attr = '_extensions' if hasattr(
-        app, '_extensions') else 'extensions'
-    if 'sphinx.ext.autodoc' in getattr(app, extensions_attr):
+    if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
 
     app.connect('builder-inited', generate_gallery_rst)

@@ -6,6 +6,20 @@ v0.4.0
 
 Developer changes
 '''''''''''''''''
+
+- N/A
+
+Incompatible changes
+''''''''''''''''''''
+
+- Dropped support for Sphinx < 1.8.3.
+- Dropped support for Python < 3.5.
+
+v0.4.0
+------
+
+Developer changes
+'''''''''''''''''
 - Added a private API contract for external scrapers to have string-based
   support, see:
 

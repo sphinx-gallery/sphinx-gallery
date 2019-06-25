@@ -7,7 +7,7 @@ Test the SG pipeline used with Sphinx
 from __future__ import division, absolute_import, print_function
 
 import codecs
-from distutils.version import LooseVersion
+from io import StringIO
 import os
 import os.path as op
 import re
@@ -21,7 +21,6 @@ from numpy.testing import assert_allclose
 import sphinx
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
-from sphinx_gallery.gen_rst import MixedEncodingStringIO
 
 import pytest
 
@@ -33,9 +32,6 @@ N_RST = 12 + N_TOT
 
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory):
-    if LooseVersion(sphinx.__version__) < LooseVersion('1.8'):
-        # Previous versions throw an error trying to pickle the scraper
-        pytest.skip('Sphinx 1.8+ required')
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
@@ -53,7 +49,7 @@ def sphinx_app(tmpdir_factory):
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                     buildername='html', status=MixedEncodingStringIO())
+                     buildername='html', status=StringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
         app.build(False, [])
@@ -114,7 +110,7 @@ def test_junit(sphinx_app, tmpdir):
     with docutils_namespace():
         app = Sphinx(new_src_dir, new_src_dir, new_out_dir,
                      new_toctree_dir,
-                     buildername='html', status=MixedEncodingStringIO())
+                     buildername='html', status=StringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
         with pytest.raises(ValueError, match='Here is a summary of the '):
@@ -125,10 +121,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert 'errors="0" failures="2"' in contents
     assert 'tests="2"' in contents  # this time we only ran the two stale files
-    if LooseVersion(sys.version) >= LooseVersion('3'):
-        assert '<failure message="RuntimeError: Forcing' in contents
-    else:
-        assert '<failure message="SyntaxError: invalid' in contents
+    assert '<failure message="RuntimeError: Forcing' in contents
     assert 'Passed even though it was marked to fail' in contents
 
 
@@ -305,7 +298,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     time.sleep(0.1)
     with docutils_namespace():
         new_app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                         buildername='html', status=MixedEncodingStringIO())
+                         buildername='html', status=StringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
@@ -384,13 +377,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
             fid.write(line)
     with docutils_namespace():
         new_app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                         buildername='html', status=MixedEncodingStringIO())
+                         buildername='html', status=StringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    if LooseVersion(sphinx.__version__) <= LooseVersion('1.6'):
-        n = N_RST
-    else:
-        n = '[2|3]'
+    n = '[2|3]'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
     want = '.*targets for %s source files that are out of date$.*' % n
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines

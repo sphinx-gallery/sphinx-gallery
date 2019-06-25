@@ -16,14 +16,14 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update -y conda
 
     # Force conda to think about other dependencies that can break
-    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler $CONDA_PKGS"
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn memory_profiler $CONDA_PKGS"
     conda create -yn testenv $CONDA_PKGS
     source activate testenv
     if [[ ! -z "$PIP_PKGS" ]]; then
         pip install -q $PIP_PKGS
     fi
     # The 3.4 on is quite old
-    if [ "$PYTHON_VERSION" == "3.4" ]; then
+    if [ "$PYTHON_VERSION" == "3.5" ]; then
         conda remove -y memory_profiler
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
@@ -34,7 +34,7 @@ if [ "$DISTRIB" == "conda" ]; then
     python setup.py install
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
-    pip install . numpy sphinx==1.5.5 "six>=1.10.0" pytest-cov
+    pip install . numpy sphinx pytest-cov
 elif [ "$DISTRIB" == "minimal" ]; then
     pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
