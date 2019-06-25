@@ -19,8 +19,8 @@ if [ "$DISTRIB" == "conda" ]; then
     conda create -yn testenv python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 $CONDA_PKGS
     source activate testenv
     # Optional packages
-    if [ "$PYTHON_VERSION" != "3.5" ]; then
-        LOCALE=UTF-8 pip install memory_profiler vtk mayavi ipython
+    if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
+        pip install memory_profiler vtk mayavi ipython
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
         pip install "sphinx${SPHINX_VERSION}"
