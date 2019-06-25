@@ -12,12 +12,73 @@ Developer changes
     https://github.com/sphinx-gallery/sphinx-gallery/pull/494
 
 - Standard error is now caught and displayed alongside standard output.
+- Some sphinx markup is now removed from image thumbnail tooltips.
 
 Incompatible changes
 ''''''''''''''''''''
 - v0.4.0 will be the last release to support Python <= 3.4.
 - Moving forward, we will support only the latest two stable Sphinx releases
   at the time of each sphinx-gallery release.
+
+**Implemented enhancements:**
+
+-  ENH: Remove some Sphinx markup from text `#511 <https://github.com/sphinx-gallery/sphinx-gallery/pull/511>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Allow README.rst ext `#510 <https://github.com/sphinx-gallery/sphinx-gallery/pull/510>`__ (`larsoner <https://github.com/larsoner>`__)
+-  binder requirements with Dockerfile? `#476 <https://github.com/sphinx-gallery/sphinx-gallery/issues/476>`__
+-  ENH: Update docs `#509 <https://github.com/sphinx-gallery/sphinx-gallery/pull/509>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Add documentation note on RTD-Binder incompatibility `#505 <https://github.com/sphinx-gallery/sphinx-gallery/pull/505>`__ (`StanczakDominik <https://github.com/StanczakDominik>`__)
+-  Add PlasmaPy to list of sphinx-gallery users `#504 <https://github.com/sphinx-gallery/sphinx-gallery/pull/504>`__ (`StanczakDominik <https://github.com/StanczakDominik>`__)
+-  ENH: Expose example globals `#502 <https://github.com/sphinx-gallery/sphinx-gallery/pull/502>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC: Update docs `#501 <https://github.com/sphinx-gallery/sphinx-gallery/pull/501>`__ (`larsoner <https://github.com/larsoner>`__)
+-  add link to view sourcecode in docs `#499 <https://github.com/sphinx-gallery/sphinx-gallery/pull/499>`__ (`sappelhoff <https://github.com/sappelhoff>`__)
+-  MRG, ENH: Catch and write warnings `#495 <https://github.com/sphinx-gallery/sphinx-gallery/pull/495>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MRG, ENH: Add private API for external scrapers `#494 <https://github.com/sphinx-gallery/sphinx-gallery/pull/494>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Add list of external image scrapers `#492 <https://github.com/sphinx-gallery/sphinx-gallery/pull/492>`__ (`banesullivan <https://github.com/banesullivan>`__)
+-  Add more examples of projects using sphinx-gallery `#489 <https://github.com/sphinx-gallery/sphinx-gallery/pull/489>`__ (`banesullivan <https://github.com/banesullivan>`__)
+-  Add option to remove sphinx_gallery config comments `#487 <https://github.com/sphinx-gallery/sphinx-gallery/pull/487>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  FIX: allow Dockerfile `#477 <https://github.com/sphinx-gallery/sphinx-gallery/pull/477>`__ (`jasmainak <https://github.com/jasmainak>`__)
+-  MRG: Add SVG support `#471 <https://github.com/sphinx-gallery/sphinx-gallery/pull/471>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Simplify CircleCI build `#462 <https://github.com/sphinx-gallery/sphinx-gallery/pull/462>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Release v0.3.0 `#456 <https://github.com/sphinx-gallery/sphinx-gallery/pull/456>`__ (`choldgraf <https://github.com/choldgraf>`__)
+-  adding contributing guide for releases `#455 <https://github.com/sphinx-gallery/sphinx-gallery/pull/455>`__ (`choldgraf <https://github.com/choldgraf>`__)
+
+**Fixed bugs:**
+
+-  fix wrong keyword in docs for “binder” `#500 <https://github.com/sphinx-gallery/sphinx-gallery/pull/500>`__ (`sappelhoff <https://github.com/sappelhoff>`__)
+-  Fix ‘Out:’ label position in html output block `#484 <https://github.com/sphinx-gallery/sphinx-gallery/pull/484>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Mention pytest-coverage dependency `#482 <https://github.com/sphinx-gallery/sphinx-gallery/pull/482>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Fix ReST block after docstring `#480 <https://github.com/sphinx-gallery/sphinx-gallery/pull/480>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MAINT: Tolerate Windows mtime `#478 <https://github.com/sphinx-gallery/sphinx-gallery/pull/478>`__ (`larsoner <https://github.com/larsoner>`__)
+-  FIX: Output from code execution is not stripped `#475 <https://github.com/sphinx-gallery/sphinx-gallery/pull/475>`__ (`padix-key <https://github.com/padix-key>`__)
+-  FIX: Link `#470 <https://github.com/sphinx-gallery/sphinx-gallery/pull/470>`__ (`larsoner <https://github.com/larsoner>`__)
+-  FIX: Minor fixes for memory profiling `#468 <https://github.com/sphinx-gallery/sphinx-gallery/pull/468>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Add output figure numbering breaking change in release notes. `#466 <https://github.com/sphinx-gallery/sphinx-gallery/pull/466>`__ (`lesteve <https://github.com/lesteve>`__)
+-  Remove links to read the docs `#461 <https://github.com/sphinx-gallery/sphinx-gallery/pull/461>`__ (`GaelVaroquaux <https://github.com/GaelVaroquaux>`__)
+-  [MRG+1] Add requirements.txt to manifest `#458 <https://github.com/sphinx-gallery/sphinx-gallery/pull/458>`__ (`ksunden <https://github.com/ksunden>`__)
+
+**Closed issues:**
+
+-  Allow .rst extension for README files `#508 <https://github.com/sphinx-gallery/sphinx-gallery/issues/508>`__
+-  Generation of unchanged examples `#506 <https://github.com/sphinx-gallery/sphinx-gallery/issues/506>`__
+-  Binder integration and Read the docs `#503 <https://github.com/sphinx-gallery/sphinx-gallery/issues/503>`__
+-  Extending figure_rst to support html figures? `#498 <https://github.com/sphinx-gallery/sphinx-gallery/issues/498>`__
+-  ENH: remove API crossrefs from hover text `#497 <https://github.com/sphinx-gallery/sphinx-gallery/issues/497>`__
+-  BUG: warnings/stderr not captured `#491 <https://github.com/sphinx-gallery/sphinx-gallery/issues/491>`__
+-  Should ``image\_scrapers`` be renamed (to ``output\_scrapers`` for example)? `#485 <https://github.com/sphinx-gallery/sphinx-gallery/issues/485>`__
+-  Strip in-file sphinx_gallery directives from code `#481 <https://github.com/sphinx-gallery/sphinx-gallery/issues/481>`__
+-  Generating gallery sometimes freezes `#479 <https://github.com/sphinx-gallery/sphinx-gallery/issues/479>`__
+-  Adding a ReST block immediately after the module docstring breaks the generated .rst file `#473 <https://github.com/sphinx-gallery/sphinx-gallery/issues/473>`__
+-  how to make custom image scraper `#469 <https://github.com/sphinx-gallery/sphinx-gallery/issues/469>`__
+-  pythonhosted.org seems to be still up and running `#465 <https://github.com/sphinx-gallery/sphinx-gallery/issues/465>`__
+-  Small regression in 0.3.1 with output figure numbering `#464 <https://github.com/sphinx-gallery/sphinx-gallery/issues/464>`__
+-  Change output format of images `#463 <https://github.com/sphinx-gallery/sphinx-gallery/issues/463>`__
+-  Version 0.3.0 release is broken on pypi `#459 <https://github.com/sphinx-gallery/sphinx-gallery/issues/459>`__
+-  sphinx-gallery doesn’t play nice with sphinx’s ability to detect new files… `#449 <https://github.com/sphinx-gallery/sphinx-gallery/issues/449>`__
+-  Remove the readthedocs version of sphinx gallery docs `#444 <https://github.com/sphinx-gallery/sphinx-gallery/issues/444>`__
+-  Support for Plotly `#441 <https://github.com/sphinx-gallery/sphinx-gallery/issues/441>`__
+-  Release v0.3.0 `#406 <https://github.com/sphinx-gallery/sphinx-gallery/issues/406>`__
+-  Unnecessary regeneration of example pages `#395 <https://github.com/sphinx-gallery/sphinx-gallery/issues/395>`__
+-  Unnecessary regeneration of API docs `#394 <https://github.com/sphinx-gallery/sphinx-gallery/issues/394>`__
 
 v0.3.1
 ------

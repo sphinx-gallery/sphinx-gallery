@@ -40,6 +40,7 @@ setup(
     name="sphinx-gallery",
     description=description,  # noqa: E501, analysis:ignore
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     version=sphinx_gallery.__version__,
     packages=find_packages(),
     package_data={'sphinx_gallery': [

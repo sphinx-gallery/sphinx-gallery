@@ -13,6 +13,8 @@ This document contains tips for maintenance.
 How to make a release
 =====================
 
+.. highlight:: console
+
 Check credentials and prerequisites
 -----------------------------------
 
@@ -40,20 +42,16 @@ Prepare for release
        <https://github.com/skywinder/github-changelog-generator#installation>`_ to
        gather all merged pull requests and closed issues during the development
        cycle. We do this because our failing discipline of writing in the
-       CHANGES.rst all relevant changes, this helps our memory.
+       CHANGES.rst all relevant changes, this helps our memory. ::
 
-       .. code-block:: bash
-
-          github_changelog_generator sphinx-gallery/sphinx-gallery --between-tags v0.3.0,v0.4.0 --token <<your-github-api-token>>
+          github_changelog_generator sphinx-gallery/sphinx-gallery --between-tags v0.3.0,v0.4.0
 
     2. Edit CHANGELOG.md to look reasonable (it will be used later)
 
     3. Propagate the relevant changes to `CHANGES.rst <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/CHANGES.rst>`_.
-       You can easily convert it RST with pandoc:
+       You can easily convert it RST with pandoc::
 
-       .. code-block:: bash
-
-          pandoc CHANGELOG.md CHANGELOG.rst
+          pandoc CHANGELOG.md --wrap=none -o CHANGELOG.rst
 
 2. Build the docs cleanly
 
@@ -80,15 +78,15 @@ Finalize the release
 
 1. Create the new release on PyPI
 
-   * Build a source distribution
-
-     .. code-block:: bash
+   * Build a source distribution::
 
         python setup.py sdist
 
-   * Upload to PyPI
+   * Check the release::
 
-     .. code-block:: bash
+        twine check dist/sphinx-gallery-0.4.0.tar.gz
+
+   * Upload to PyPI::
 
         twine upload dist/sphinx-gallery-<version>.tar.gz
 
