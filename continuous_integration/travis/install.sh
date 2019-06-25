@@ -16,19 +16,18 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update -y conda
 
     # Force conda to think about other dependencies that can break
-    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn memory_profiler flake8 $CONDA_PKGS"
-    conda create -yn testenv $CONDA_PKGS
+    conda create -yn testenv "python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 $CONDA_PKGS"
     source activate testenv
-    pip install -q $PIP_PKGS sphinx_rtd_theme
-    # The 3.4 on is quite old
-    if [ "$PYTHON_VERSION" == "3.5" ]; then
-        conda remove -y memory_profiler
+    # Optional packages
+    if [ "$PYTHON_VERSION" != "3.5" ]; then
+        pip install memory_profiler vtk mayavi ipython
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
-        conda install "sphinx=${SPHINX_VERSION-*}" --yes
+        pip install "sphinx${SPHINX_VERSION}"
     else
         pip install "https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
+    pip install -q sphinx_rtd_theme
     python setup.py install
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.

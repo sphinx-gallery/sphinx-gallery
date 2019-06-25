@@ -19,17 +19,16 @@ matrix:
             - python3-pip
             - python3-coverage
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="1.8.3"
+      env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="==1.8.3"
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.6" PIP_PKGS="vtk mayavi ipython"
+      env: DISTRIB="conda" PYTHON_VERSION="3.6"
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.7" LOCALE=C PIP_PKGS="vtk mayavi ipython"
+      env: DISTRIB="conda" PYTHON_VERSION="3.7" LOCALE=C
            SPHINXOPTS="-nWT --keep-going"
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.6" SPHINX_VERSION="dev"
-      if: type = cron
+      env: DISTRIB="conda" PYTHON_VERSION="3.7" SPHINX_VERSION="dev"
     - python: 3.7
       env: DISTRIB="minimal"
     - python: "nightly"

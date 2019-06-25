@@ -5,7 +5,7 @@
 Link resolver objects
 =====================
 """
-from __future__ import print_function
+
 import codecs
 import gzip
 from io import BytesIO
@@ -358,9 +358,9 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                 return str_repl[match.group()]
 
             if len(str_repl) > 0:
-                with open(full_fname, 'r') as fid:
+                with codecs.open(full_fname, 'r', 'utf-8') as fid:
                     lines_in = fid.readlines()
-                with open(full_fname, 'w') as fid:
+                with codecs.open(full_fname, 'w', 'utf-8') as fid:
                     for line in lines_in:
                         fid.write(regex.sub(substitute_link, line))
 
