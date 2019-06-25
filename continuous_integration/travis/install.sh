@@ -20,7 +20,7 @@ if [ "$DISTRIB" == "conda" ]; then
     source activate testenv
     # Optional packages
     if [ "$PYTHON_VERSION" != "3.5" ]; then
-        pip install memory_profiler vtk mayavi ipython
+        LOCALE= pip install memory_profiler vtk mayavi ipython
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
         pip install "sphinx${SPHINX_VERSION}"
