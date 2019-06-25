@@ -114,7 +114,6 @@ def get_docstring_and_rest(filename):
         # this block can be removed when python 3.6 support is dropped
         docstring_node = node.body[0]
         docstring = docstring_node.value.s
-        docstring = docstring.decode('utf-8')
         lineno = docstring_node.lineno  # The last line of the string.
 
     # This get the content of the file after the docstring last line
