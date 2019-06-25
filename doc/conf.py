@@ -142,10 +142,7 @@ else:
 
 
 def setup(app):
-    try:
-        app.add_css_file('theme_override.css')
-    except AttributeError:
-        app.add_stylesheet('theme_override.css')
+    app.add_css_file('theme_override.css')
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

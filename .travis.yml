@@ -9,17 +9,15 @@ services:
 matrix:
   include:
     - os: linux
-      env: DISTRIB="ubuntu" PYTHON_VERSION="2.7" SPHINXOPTS=""
+      env: DISTRIB="ubuntu" PYTHON_VERSION="3.6" SPHINXOPTS=""
       addons:
         apt:
           packages:
-            - python-numpy
-            - python-matplotlib
-            - python-scipy
-            - python-pip
-            - python-coverage
-            - cython
-            - python-pandas
+            - python3-numpy
+            - python3-matplotlib
+            - python3-scipy
+            - python3-pip
+            - python3-coverage
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="==1.8.3"
     - os: linux

@@ -30,8 +30,6 @@ import sys
 import traceback
 import codeop
 
-import sphinx
-
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
 from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5

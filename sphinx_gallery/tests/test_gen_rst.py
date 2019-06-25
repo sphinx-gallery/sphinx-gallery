@@ -20,15 +20,8 @@ import pytest
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
-from sphinx_gallery.gen_gallery import generate_dir_rst, _complete_gallery_conf
-from sphinx_gallery.utils import Bunch
+from sphinx_gallery.gen_gallery import generate_dir_rst
 from sphinx_gallery.scrapers import ImagePathIterator
-
-try:
-    FileNotFoundError
-except NameError:
-    # Python2
-    FileNotFoundError = IOError
 
 CONTENT = [
     '"""',
@@ -129,9 +122,8 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
 
     script_vars = {'execute_script': ''}
 
-    output_blocks, time_elapsed = sg.execute_script(blocks,
-                                                    script_vars,
-                                                    gallery_conf)
+    output_blocks, time_elapsed = sg.execute_script(
+        blocks, script_vars, gallery_conf)
 
     example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
     assert example_rst == '\n'.join([
@@ -166,9 +158,8 @@ b = 'foo'
     script_vars = {'execute_script': True, 'src_file': filename,
                    'image_path_iterator': [],
                    'target_file': filename}
-    output_blocks, time_elapsed = sg.execute_script(blocks,
-                                                    script_vars,
-                                                    gallery_conf)
+    output_blocks, time_elapsed = sg.execute_script(
+        blocks, script_vars, gallery_conf)
     assert 'example_globals' in script_vars
     assert script_vars['example_globals']['a'] == 1.
     assert script_vars['example_globals']['b'] == 'foo'
@@ -248,17 +239,6 @@ def test_md5sums():
             os.remove(f.name + '.md5')
     finally:
         os.remove(f.name)
-
-
-@pytest.fixture
-def gallery_conf(tmpdir):
-    """Set up a test sphinx-gallery configuration."""
-    app = Bunch()
-    app.config = dict(source_suffix={'.rst': None})
-    gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False,
-                                          app=app)
-    gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
-    return gallery_conf
 
 
 def test_fail_example(gallery_conf, log_collector):

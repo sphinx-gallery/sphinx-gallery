@@ -16,12 +16,10 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update -y conda
 
     # Force conda to think about other dependencies that can break
-    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn memory_profiler $CONDA_PKGS"
+    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn memory_profiler flake8 $CONDA_PKGS"
     conda create -yn testenv $CONDA_PKGS
     source activate testenv
-    if [[ ! -z "$PIP_PKGS" ]]; then
-        pip install -q $PIP_PKGS
-    fi
+    pip install -q $PIP_PKGS sphinx_rtd_theme
     # The 3.4 on is quite old
     if [ "$PYTHON_VERSION" == "3.5" ]; then
         conda remove -y memory_profiler
@@ -42,11 +40,10 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     # Travis because it contains numpy and we want to use numpy
     # from apt-get
     deactivate
-    virtualenv --system-site-packages testvenv
+    virtualenv --system-site-packages -p python$PYTHON_VERSION testvenv
     source testvenv/bin/activate
     pip install --upgrade pip setuptools wheel pyopenssl
     pip install -U requests[security]  # ensure SSL certificate works
-    pip install "tornado<5"
     # The pipe just gets rid of the progress bars
     pip install -r requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)

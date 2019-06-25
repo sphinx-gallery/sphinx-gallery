@@ -19,10 +19,9 @@ import re
 import os
 from xml.sax.saxutils import quoteattr, escape
 
-import sphinx
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5, Bunch
+from .utils import _replace_md5
 from .backreferences import finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       extract_intro_and_title, get_docstring_and_rest,

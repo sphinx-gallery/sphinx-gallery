@@ -12,8 +12,7 @@ from __future__ import division, absolute_import, print_function
 
 import hashlib
 import os
-from shutil import rmtree, move, copyfile
-import tempfile
+from shutil import move, copyfile
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):

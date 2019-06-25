@@ -18,7 +18,6 @@ import time
 import numpy as np
 from numpy.testing import assert_allclose
 
-import sphinx
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
 
