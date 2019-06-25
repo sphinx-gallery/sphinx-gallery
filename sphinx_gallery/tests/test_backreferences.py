@@ -8,68 +8,61 @@ from __future__ import division, absolute_import, print_function
 
 import pytest
 import sphinx_gallery.backreferences as sg
+from sphinx_gallery.gen_rst import _sanitize_rst
 
 
-def test_thumbnail_div():
-    """Test if the thumbnail div generates the correct string"""
+REFERENCE = r"""
+.. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="{0}">
+
+.. only:: html
+
+    .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
+
+        :ref:`sphx_glr_fake_dir_test_file.py`
+
+.. raw:: html
+
+    </div>{1}
+"""
+
+
+@pytest.mark.parametrize('content, tooltip, is_backref', [
+    # HTML sanitizing
+    ('<"test">', '&lt;&quot;test&quot;&gt;', False),
+    # backref support
+    ('test formating', 'test formating', True),
+    # RST sanitizing
+    ('1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`',
+     '1 b. 2 a.b 3 better name', False),
+    ('use :meth:`mne.io.Raw.plot_psd` to',
+     'use mne.io.Raw.plot_psd to', False),
+    ('`this` and ``that``; and `these things` and ``those things``',
+     'this and that; and these things and those things', False),
+])
+def test_thumbnail_div(content, tooltip, is_backref):
+    """Test if the thumbnail div generates the correct string."""
     with pytest.raises(RuntimeError, match='internal sphinx-gallery thumb'):
         html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
                                      '<"test">')
+    content = _sanitize_rst(content)
     html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
-                                 '<"test">', check=False)
-
-    reference = r"""
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="&lt;&quot;test&quot;&gt;">
-
-.. only:: html
-
-    .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
-
-        :ref:`sphx_glr_fake_dir_test_file.py`
-
-.. raw:: html
-
-    </div>
-"""
-
-    assert html_div == reference
-
-
-def test_backref_thumbnail_div():
-    """Test if the thumbnail div generates the correct string"""
-
-    html_div = sg._thumbnail_div('fake_dir', '',
-                                 'test_file.py', 'test formating',
-                                 is_backref=True, check=False)
-
-    reference = """
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="test formating">
-
-.. only:: html
-
-    .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
-
-        :ref:`sphx_glr_fake_dir_test_file.py`
-
-.. raw:: html
-
-    </div>
+                                 content, is_backref=is_backref, check=False)
+    if is_backref:
+        extra = """
 
 .. only:: not html
 
-    * :ref:`sphx_glr_fake_dir_test_file.py`
-"""
-
+    * :ref:`sphx_glr_fake_dir_test_file.py`"""
+    else:
+        extra = ''
+    reference = REFERENCE.format(tooltip, extra)
     assert html_div == reference
 
 
 def test_identify_names(unicode_sample):
-
+    """Test name identification."""
     expected = {
         'os.path.join':
             {'name': 'join', 'module': 'os.path', 'module_short': 'os.path'},
@@ -88,6 +81,7 @@ def test_identify_names(unicode_sample):
 
 
 def test_identify_names2(tmpdir):
+    """Test more name identification."""
     code_str = b"""
 '''
 Title
@@ -103,7 +97,8 @@ print(c)
 e.HelloWorld().f.g
 """
     expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
-                'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd', 'module_short': 'd'}}
+                'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd',
+                                 'module_short': 'd'}}
 
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')

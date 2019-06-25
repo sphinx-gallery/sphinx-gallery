@@ -196,9 +196,31 @@ def codestr2rst(codestr, lang='python', lineno=None):
     return code_directive + indented_block
 
 
-def extract_intro_and_title(filename, docstring):
-    """ Extract the first paragraph of module-level docstring. max:95 char"""
+def _regroup(x):
+    x = x.groups()
+    return x[0] + x[1].split('.')[-1] + x[2]
 
+
+def _sanitize_rst(string):
+    """Use regex to remove at least some sphinx directives."""
+    # :class:`a.b.c <thing here>`, :ref:`abc <thing here>` --> thing here
+    p, e = r'(\s|^):[^:\s]+:`', r'`(\W|$)'
+    string = re.sub(p + r'\S+\s*<([^>`]+)>' + e, r'\1\2\3', string)
+    # :class:`~a.b.c` --> c
+    string = re.sub(p + r'~([^`]+)' + e, _regroup, string)
+    # :class:`a.b.c` --> a.b.c
+    string = re.sub(p + r'([^`]+)' + e, r'\1\2\3', string)
+
+    # ``whatever thing`` --> whatever thing
+    p = r'(\s|^)`'
+    string = re.sub(p + r'`([^`]+)`' + e, r'\1\2\3', string)
+    # `whatever thing` --> whatever thing
+    string = re.sub(p + r'([^`]+)' + e, r'\1\2\3', string)
+    return string
+
+
+def extract_intro_and_title(filename, docstring):
+    """Extract and clean the first paragraph of module-level docstring."""
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split('\n\n')
     # remove comments and other syntax like `.. _link:`
@@ -223,9 +245,9 @@ def extract_intro_and_title(filename, docstring):
     intro_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
     # Concatenate all lines of the first paragraph and truncate at 95 chars
     intro = re.sub('\n', ' ', intro_paragraph)
+    intro = _sanitize_rst(intro)
     if len(intro) > 95:
         intro = intro[:95] + '...'
-
     return intro, title
 
 
@@ -708,7 +730,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             (label, remove_config_comments(content), line_number)
             for label, content, line_number in script_blocks
         ]
-
 
     output_blocks, time_elapsed = execute_script(script_blocks,
                                                  script_vars,
