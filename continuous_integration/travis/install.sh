@@ -16,7 +16,7 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update -y conda
 
     # Force conda to think about other dependencies that can break
-    conda create -yn testenv "python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 $CONDA_PKGS"
+    conda create -yn testenv python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 $CONDA_PKGS
     source activate testenv
     # Optional packages
     if [ "$PYTHON_VERSION" != "3.5" ]; then
