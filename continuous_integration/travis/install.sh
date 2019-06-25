@@ -36,18 +36,9 @@ elif [ "$PYTHON_VERSION" == "nightly" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    # Use a separate virtual environment than the one provided by
-    # Travis because it contains numpy and we want to use numpy
-    # from apt-get
-    deactivate
-    virtualenv --system-site-packages testvenv
-    source testvenv/bin/activate
-    pip install --upgrade pip setuptools wheel pyopenssl
-    pip install -U requests[security]  # ensure SSL certificate works
-    # The pipe just gets rid of the progress bars
     pip install -r requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
+    pip install seaborn sphinx==1.8.3 pytest pytest-cov sphinx_rtd_theme
     python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"

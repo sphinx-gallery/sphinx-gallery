@@ -19,7 +19,7 @@ matrix:
             - python3-pip
             - python3-coverage
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="==1.8.3"
+      env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="1.8.3"
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" PIP_PKGS="vtk mayavi ipython"
     - os: linux
