@@ -38,7 +38,7 @@ elif [ "$DISTRIB" == "minimal" ]; then
 elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install -r requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install seaborn sphinx==1.8.3 pytest pytest-cov sphinx_rtd_theme
+    pip install seaborn sphinx==1.8.3 pytest pytest-cov sphinx_rtd_theme flake8
     python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
