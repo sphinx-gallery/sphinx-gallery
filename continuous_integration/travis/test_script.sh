@@ -11,4 +11,5 @@ cd doc
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
     make SPHINXOPTS= html-noplot
     make SPHINXOPTS=${SPHINXOPTS} html -j 2
+    flake8 sphinx_gallery
 fi

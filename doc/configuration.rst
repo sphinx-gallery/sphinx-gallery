@@ -429,9 +429,6 @@ setting::
 
     # sphinx_gallery_line_numbers = True
 
-Note that for Sphinx < 1.3, the line numbers will not be consistent with the
-original file.
-
 .. _removing_config_comments:
 
 Removing config comments

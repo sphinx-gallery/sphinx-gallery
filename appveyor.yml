@@ -10,7 +10,7 @@ environment:
     CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme vtk pyface traits traitsui ipython"
 
   matrix:
-    - PYTHON_VERSION: "2.7"
+    - PYTHON_VERSION: "3.5"
       PYTHON_ARCH: "64"
     - PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "64"
@@ -23,8 +23,6 @@ install:
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - "activate test"
-    # mayavi only available for Python 2.7 through conda
-    - 'IF "%PYTHON_VERSION%"=="2.7" ( conda install mayavi )'
 
 build: false  # Not a C# project, build stuff at the test step instead.
 

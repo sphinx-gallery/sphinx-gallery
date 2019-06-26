@@ -6,8 +6,6 @@ Backwards-compatility shims for Sphinx
 """
 from __future__ import division, absolute_import, print_function
 
-from distutils.version import LooseVersion
-
 import sphinx
 import sphinx.util
 
@@ -69,9 +67,5 @@ def _app_status_iterator(iterable, summary, **kwargs):
         yield item
 
 
-if LooseVersion(sphinx.__version__) >= '1.6':
-    getLogger = sphinx.util.logging.getLogger
-    status_iterator = sphinx.util.status_iterator
-else:
-    getLogger = _app_get_logger
-    status_iterator = _app_status_iterator
+getLogger = sphinx.util.logging.getLogger
+status_iterator = sphinx.util.status_iterator

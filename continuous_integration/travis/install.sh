@@ -16,41 +16,28 @@ if [ "$DISTRIB" == "conda" ]; then
     conda update -y conda
 
     # Force conda to think about other dependencies that can break
-    export CONDA_PKGS="python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn sphinx_rtd_theme memory_profiler $CONDA_PKGS"
-    conda create -yn testenv $CONDA_PKGS
+    conda create -yn testenv python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 $CONDA_PKGS
     source activate testenv
-    if [[ ! -z "$PIP_PKGS" ]]; then
-        pip install -q $PIP_PKGS
-    fi
-    # The 3.4 on is quite old
-    if [ "$PYTHON_VERSION" == "3.4" ]; then
-        conda remove -y memory_profiler
+    # Optional packages
+    if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
+        pip install memory_profiler vtk mayavi ipython
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
-        conda install "sphinx=${SPHINX_VERSION-*}" --yes
+        pip install "sphinx${SPHINX_VERSION}"
     else
         pip install "https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
+    pip install -q sphinx_rtd_theme
     python setup.py install
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
-    pip install . numpy sphinx==1.5.5 "six>=1.10.0" pytest-cov
+    pip install . numpy sphinx pytest-cov
 elif [ "$DISTRIB" == "minimal" ]; then
     pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    # Use a separate virtual environment than the one provided by
-    # Travis because it contains numpy and we want to use numpy
-    # from apt-get
-    deactivate
-    virtualenv --system-site-packages testvenv
-    source testvenv/bin/activate
-    pip install --upgrade pip setuptools wheel pyopenssl
-    pip install -U requests[security]  # ensure SSL certificate works
-    pip install "tornado<5"
-    # The pipe just gets rid of the progress bars
     pip install -r requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install seaborn sphinx==1.5.5 pytest "six>=1.10.0" pytest-cov sphinx_rtd_theme
+    pip install seaborn sphinx==1.8.3 pytest pytest-cov sphinx_rtd_theme flake8
     python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"

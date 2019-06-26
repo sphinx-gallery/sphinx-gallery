@@ -19,48 +19,20 @@ import contextlib
 import ast
 import codecs
 import gc
+from io import StringIO
 import os
 import re
+from textwrap import indent
 import warnings
 from shutil import copyfile
 import subprocess
 import sys
 import traceback
 import codeop
-from io import StringIO
-from distutils.version import LooseVersion
 
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
 from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
-
-# Try Python 2 first, otherwise load from Python 3
-try:
-    # textwrap indent only exists in python 3
-    from textwrap import indent
-except ImportError:
-    def indent(text, prefix, predicate=None):
-        """Add 'prefix' to the beginning of selected lines in 'text'.
-
-        If 'predicate' is provided, 'prefix' will only be added to the lines
-        where 'predicate(line)' is True. If 'predicate' is not provided,
-        it will default to adding 'prefix' to all non-empty lines that do not
-        consist solely of whitespace characters.
-        """
-        if predicate is None:
-            def predicate(line):
-                return line.strip()
-
-        def prefixed_lines():
-            for line in text.splitlines(True):
-                yield (prefix + line if predicate(line) else line)
-        return ''.join(prefixed_lines())
-
-    FileNotFoundError = IOError
-
-
-import sphinx
-
 from . import glr_path_static
 from . import sphinx_compatibility
 from .backreferences import write_backreferences, _thumbnail_div
@@ -70,12 +42,6 @@ from .py_source_parser import (split_code_and_text_blocks,
 
 from .notebook import jupyter_notebook, save_notebook
 from .binder import check_binder_conf, gen_binder_rst
-
-try:
-    basestring
-except NameError:
-    basestring = str
-    unicode = str
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
@@ -123,15 +89,6 @@ class LoggingTee(object):
     # When called from a local terminal seaborn needs it in Python3
     def isatty(self):
         return self.output_file.isatty()
-
-
-class MixedEncodingStringIO(StringIO):
-    """Helper when both ASCII and unicode strings will be written"""
-
-    def write(self, data):
-        if not isinstance(data, unicode):
-            data = data.decode('utf-8')
-        StringIO.write(self, data)
 
 
 ###############################################################################
@@ -183,12 +140,9 @@ SPHX_GLR_SIG = """\n
 def codestr2rst(codestr, lang='python', lineno=None):
     """Return reStructuredText code block from code string"""
     if lineno is not None:
-        if LooseVersion(sphinx.__version__) >= '1.3':
-            # Sphinx only starts numbering from the first non-empty line.
-            blank_lines = codestr.count('\n', 0, -len(codestr.lstrip()))
-            lineno = '   :lineno-start: {0}\n'.format(lineno + blank_lines)
-        else:
-            lineno = '   :linenos:\n'
+        # Sphinx only starts numbering from the first non-empty line.
+        blank_lines = codestr.count('\n', 0, -len(codestr.lstrip()))
+        lineno = '   :lineno-start: {0}\n'.format(lineno + blank_lines)
     else:
         lineno = ''
     code_directive = "\n.. code-block:: {0}\n{1}\n".format(lang, lineno)
@@ -520,7 +474,7 @@ def execute_code_block(compiler, block, example_globals,
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
 
-    captured_std = MixedEncodingStringIO()
+    captured_std = StringIO()
     os.chdir(os.path.dirname(src_file))
 
     sys_path = copy.deepcopy(sys.path)
@@ -532,8 +486,6 @@ def execute_code_block(compiler, block, example_globals,
         code_ast = compile(bcontent, src_file, 'exec',
                            ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
-        # don't use unicode_literals at the top of this file or you get
-        # nasty errors here on Py2.7
         _, mem = _memory_usage(_exec_once(
             compiler(code_ast, src_file, 'exec'), example_globals),
             gallery_conf)
@@ -543,13 +495,6 @@ def execute_code_block(compiler, block, example_globals,
         sys.stdout, sys.stderr = orig_stdout, orig_stderr
         except_rst = handle_exception(sys.exc_info(), src_file, script_vars,
                                       gallery_conf)
-        # python2.7: Code was read in bytes needs decoding to utf-8
-        # unless future unicode_literals is imported in source which
-        # make ast output unicode strings
-        if hasattr(except_rst, 'decode') and not \
-                isinstance(except_rst, unicode):
-            except_rst = except_rst.decode('utf-8')
-
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
         # still call this even though we won't use the images so that
         # figures are closed

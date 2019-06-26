@@ -9,6 +9,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
 from contextlib import contextmanager
+from io import StringIO
 import os
 import sys
 import re
@@ -20,11 +21,9 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 
-from sphinx_gallery.gen_rst import MixedEncodingStringIO
 from sphinx_gallery import sphinx_compatibility
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
                                         collect_gallery_files)
-from sphinx_gallery.utils import _TempDir
 
 
 @pytest.fixture
@@ -40,15 +39,6 @@ def conf_file(request):
     result.update(kwargs)
 
     return result
-
-
-@pytest.fixture
-def tempdir():
-    """
-    temporary directory that wrapped with `path` class.
-    this fixture is for compat with old test implementation.
-    """
-    return _TempDir()
 
 
 class SphinxAppWrapper(object):
@@ -93,12 +83,12 @@ class SphinxAppWrapper(object):
 
 
 @pytest.fixture
-def sphinx_app_wrapper(tempdir, conf_file):
+def sphinx_app_wrapper(tmpdir, conf_file):
     _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
-    srcdir = os.path.join(tempdir, "config_test")
+    srcdir = os.path.join(str(tmpdir), "config_test")
     shutil.copytree(_fixturedir, srcdir)
     shutil.copytree(os.path.join(_fixturedir, "src"),
-                    os.path.join(tempdir, "examples"))
+                    os.path.join(str(tmpdir), "examples"))
 
     base_config = """
 import os
@@ -115,8 +105,7 @@ project = u'Sphinx-Gallery <Tests>'\n\n
 
     return SphinxAppWrapper(
         srcdir, srcdir, os.path.join(srcdir, "_build"),
-        os.path.join(srcdir, "_build", "toctree"),
-        "html", warning=MixedEncodingStringIO())
+        os.path.join(srcdir, "_build", "toctree"), "html", warning=StringIO())
 
 
 def test_default_config(sphinx_app_wrapper):
@@ -329,7 +318,7 @@ def test_binder_copy_files(sphinx_app_wrapper, tmpdir):
     for i_file in ['plot_1', 'plot_2', 'plot_3']:
         assert os.path.exists(os.path.join(
             sphinx_app.outdir, 'ntbk_folder', gallery_conf['gallery_dirs'][0],
-            i_file+'.ipynb'))
+            i_file + '.ipynb'))
 
 
 @pytest.mark.conf_file(content="""

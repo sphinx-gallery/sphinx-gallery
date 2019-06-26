@@ -9,9 +9,8 @@ import collections
 import pytest
 
 import sphinx
-import sphinx_gallery.docs_resolv
-import sphinx_gallery.gen_gallery
-import sphinx_gallery.gen_rst
+from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
+                            sphinx_compatibility)
 
 
 def pytest_report_header(config, startdir):
@@ -48,30 +47,41 @@ class FakeSphinxApp:
 
 
 @pytest.fixture
+def gallery_conf(tmpdir):
+    """Set up a test sphinx-gallery configuration."""
+    app = utils.Bunch()
+    app.config = dict(source_suffix={'.rst': None})
+    gallery_conf = gen_gallery._complete_gallery_conf(
+        {}, str(tmpdir), True, False, app=app)
+    gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
+    return gallery_conf
+
+
+@pytest.fixture
 def fakesphinxapp():
-    orig_app = sphinx_gallery.sphinx_compatibility._app
-    sphinx_gallery.sphinx_compatibility._app = app = FakeSphinxApp()
+    orig_app = sphinx_compatibility._app
+    sphinx_compatibility._app = app = FakeSphinxApp()
     try:
         yield app
     finally:
-        sphinx_gallery.sphinx_compatibility._app = orig_app
+        sphinx_compatibility._app = orig_app
 
 
 @pytest.fixture
 def log_collector():
-    orig_dr_logger = sphinx_gallery.docs_resolv.logger
-    orig_gg_logger = sphinx_gallery.gen_gallery.logger
-    orig_gr_logger = sphinx_gallery.gen_rst.logger
+    orig_dr_logger = docs_resolv.logger
+    orig_gg_logger = gen_gallery.logger
+    orig_gr_logger = gen_rst.logger
     app = FakeSphinxApp()
-    sphinx_gallery.docs_resolv.logger = app
-    sphinx_gallery.gen_gallery.logger = app
-    sphinx_gallery.gen_rst.logger = app
+    docs_resolv.logger = app
+    gen_gallery.logger = app
+    gen_rst.logger = app
     try:
         yield app
     finally:
-        sphinx_gallery.docs_resolv.logger = orig_dr_logger
-        sphinx_gallery.gen_gallery.logger = orig_gg_logger
-        sphinx_gallery.gen_rst.logger = orig_gr_logger
+        docs_resolv.logger = orig_dr_logger
+        gen_gallery.logger = orig_gg_logger
+        gen_rst.logger = orig_gr_logger
 
 
 @pytest.fixture

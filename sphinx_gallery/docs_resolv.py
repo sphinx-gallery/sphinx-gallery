@@ -5,30 +5,19 @@
 Link resolver objects
 =====================
 """
-from __future__ import print_function
+
 import codecs
 import gzip
+from io import BytesIO
 import os
+import pickle
 import posixpath
 import re
 import shelve
 import sys
-
-# Try Python 2 first, otherwise load from Python 3
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-try:
-    import urllib2 as urllib_request
-    from urllib2 import HTTPError, URLError
-    import urlparse as urllib_parse
-except ImportError:
-    import urllib.request as urllib_request
-    import urllib.parse as urllib_parse
-    from urllib.error import HTTPError, URLError
-
-from io import BytesIO
+import urllib.request as urllib_request
+import urllib.parse as urllib_parse
+from urllib.error import HTTPError, URLError
 
 from sphinx.search import js_index
 
@@ -39,18 +28,16 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def _get_data(url):
-    """Helper function to get data over http(s) or from a local file"""
+    """Get data over http(s) or from a local file."""
     if urllib_parse.urlparse(url).scheme in ('http', 'https'):
         resp = urllib_request.urlopen(url)
         encoding = resp.headers.get('content-encoding', 'plain')
         data = resp.read()
-        if encoding == 'plain':
-            data = data.decode('utf-8')
-        elif encoding == 'gzip':
-            data = BytesIO(data)
-            data = gzip.GzipFile(fileobj=data).read().decode('utf-8')
-        else:
-            raise RuntimeError('unknown encoding')
+        if encoding == 'gzip':
+            data = gzip.GzipFile(fileobj=BytesIO(data)).read()
+        elif encoding != 'plain':
+            raise RuntimeError('unknown encoding %r' % (encoding,))
+        data = data.decode('utf-8')
     else:
         with codecs.open(url, mode='r', encoding='utf-8') as fid:
             data = fid.read()
@@ -60,9 +47,8 @@ def _get_data(url):
 
 def get_data(url, gallery_dir):
     """Persistent dictionary usage to retrieve the search indexes"""
-
     # shelve keys need to be str in python 2
-    if sys.version_info[0] == 2 and isinstance(url, unicode):
+    if sys.version_info[0] == 2 and isinstance(url, str):
         url = url.encode('utf-8')
 
     cached_file = os.path.join(gallery_dir, 'searchindex')
@@ -159,7 +145,8 @@ class SphinxDocLinkResolver(object):
         else:
             index_url = os.path.join(doc_url, 'index.html')
             searchindex_url = os.path.join(doc_url, 'searchindex.js')
-            docopts_url = os.path.join(doc_url, '_static', 'documentation_options.js')
+            docopts_url = os.path.join(
+                doc_url, '_static', 'documentation_options.js')
 
         # detect if we are using relative links on a Windows system
         if (os.name.lower() == 'nt' and
@@ -174,9 +161,10 @@ class SphinxDocLinkResolver(object):
         # Download and find documentation options. As of Sphinx 1.7, these
         # options are now kept in a standalone file called
         # 'documentation_options.js'. Since SphinxDocLinkResolver can be called
-        # not only for the documentation which is being built but also ones that
-        # are being referenced, we need to try and get the index page first and
-        # if that doesn't work, check for the documentation_options.js file.
+        # not only for the documentation which is being built but also ones
+        # that are being referenced, we need to try and get the index page
+        # first and if that doesn't work, check for the
+        # documentation_options.js file.
         index = get_data(index_url, gallery_dir)
         if 'var DOCUMENTATION_OPTIONS' in index:
             self._docopts = parse_sphinx_docopts(index)
@@ -370,13 +358,11 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                 return str_repl[match.group()]
 
             if len(str_repl) > 0:
-                with open(full_fname, 'rb') as fid:
+                with codecs.open(full_fname, 'r', 'utf-8') as fid:
                     lines_in = fid.readlines()
-                with open(full_fname, 'wb') as fid:
+                with codecs.open(full_fname, 'w', 'utf-8') as fid:
                     for line in lines_in:
-                        line = line.decode('utf-8')
-                        line = regex.sub(substitute_link, line)
-                        fid.write(line.encode('utf-8'))
+                        fid.write(regex.sub(substitute_link, line))
 
 
 def embed_code_links(app, exception):

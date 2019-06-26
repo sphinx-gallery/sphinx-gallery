@@ -1,4 +1,4 @@
 setuptools
 matplotlib
 pillow
-sphinx
+sphinx>=1.8.3

@@ -16,12 +16,6 @@ from sphinx_gallery.sorting import (ExplicitOrder, NumberOfCodeLinesSortKey,
                                     ExampleTitleSortKey)
 
 
-try:
-    basestring
-except NameError:
-    basestring = str
-
-
 def test_ExplicitOrder_sorting_key():
     """Test ExplicitOrder"""
 
@@ -47,9 +41,9 @@ def test_ExplicitOrder_sorting_key():
     assert str(key) != str(ExplicitOrder(explicit_folders[::-1]))
     src_dir = op.dirname(__file__)
     for klass, type_ in ((NumberOfCodeLinesSortKey, int),
-                         (FileNameSortKey, basestring),
+                         (FileNameSortKey, str),
                          (FileSizeSortKey, int),
-                         (ExampleTitleSortKey, basestring)):
+                         (ExampleTitleSortKey, str)):
         sorter = klass(src_dir)
         assert str(sorter) == '<%s>' % (klass.__name__,)
         out = sorter(op.basename(__file__))

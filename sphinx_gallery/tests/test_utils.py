@@ -12,13 +12,12 @@ from __future__ import division, absolute_import, print_function
 import sphinx_gallery.utils as utils
 import pytest
 
-def test_replace_py_ipynb():
+
+@pytest.mark.parametrize('file_name', ('some/file/name', '/corner.pycase'))
+def test_replace_py_ipynb(file_name):
     # Test behavior of function with expected input:
-    for file_name in ['some/file/name', '/corner.pycase']:
-        assert utils.replace_py_ipynb(file_name+'.py') == file_name+'.ipynb'
+    assert utils.replace_py_ipynb(file_name + '.py') == file_name + '.ipynb'
 
     # Test behavior of function with unexpected input:
-    with pytest.raises(ValueError) as expected_exception:
-        utils.replace_py_ipynb(file_name+'.txt')
-
-    assert 'Unrecognized file extension' in str(expected_exception.value)
+    with pytest.raises(ValueError, match='Unrecognized file extension'):
+        utils.replace_py_ipynb(file_name + '.txt')

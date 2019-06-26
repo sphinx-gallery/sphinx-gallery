@@ -7,6 +7,8 @@ Parser for python source files
 # Author: Óscar Nájera
 
 from __future__ import division, absolute_import, print_function
+
+import codecs
 import ast
 from distutils.version import LooseVersion
 from io import BytesIO
@@ -42,7 +44,7 @@ INFILE_CONFIG_PATTERN = re.compile(
 
 
 def parse_source_file(filename):
-    """Parse source file into AST node
+    """Parse source file into AST node.
 
     Parameters
     ----------
@@ -54,29 +56,20 @@ def parse_source_file(filename):
     node : AST node
     content : utf-8 encoded string
     """
-
-    # can't use codecs.open(filename, 'r', 'utf-8') here b/c ast doesn't
-    # work with unicode strings in Python2.7 "SyntaxError: encoding
-    # declaration in Unicode string" In python 2.7 the string can't be
-    # encoded and have information about its encoding. That is particularly
-    # problematic since source files include in their header information
-    # about the file encoding.
-    # Minimal example to fail: ast.parse(u'# -*- coding: utf-8 -*-')
-
-    with open(filename, 'rb') as fid:
+    with codecs.open(filename, 'r', 'utf-8') as fid:
         content = fid.read()
     # change from Windows format to UNIX for uniformity
-    content = content.replace(b'\r\n', b'\n')
+    content = content.replace('\r\n', '\n')
 
     try:
         node = ast.parse(content)
-        return node, content.decode('utf-8')
+        return node, content
     except SyntaxError:
-        return None, content.decode('utf-8')
+        return None, content
 
 
 def get_docstring_and_rest(filename):
-    """Separate ``filename`` content between docstring and the rest
+    """Separate ``filename`` content between docstring and the rest.
 
     Strongly inspired from ast.get_docstring.
 
@@ -121,11 +114,6 @@ def get_docstring_and_rest(filename):
         # this block can be removed when python 3.6 support is dropped
         docstring_node = node.body[0]
         docstring = docstring_node.value.s
-        # python2.7: Code was read in bytes needs decoding to utf-8
-        # unless future unicode_literals is imported in source which
-        # make ast output unicode strings
-        if hasattr(docstring, 'decode') and not isinstance(docstring, unicode):
-            docstring = docstring.decode('utf-8')
         lineno = docstring_node.lineno  # The last line of the string.
 
     # This get the content of the file after the docstring last line

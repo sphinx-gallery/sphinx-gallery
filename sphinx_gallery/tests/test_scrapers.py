@@ -9,14 +9,13 @@ from sphinx_gallery.gen_gallery import _complete_gallery_conf
 from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SINGLE_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
                                      save_figures, _KNOWN_IMG_EXTS)
-from sphinx_gallery.utils import _TempDir
 
 
 @pytest.fixture(scope='function')
 def gallery_conf(tmpdir):
     """Sets up a test sphinx-gallery configuration"""
     gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False)
-    gallery_conf.update(examples_dir=_TempDir(), gallery_dir=str(tmpdir))
+    gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
     return gallery_conf
 
 

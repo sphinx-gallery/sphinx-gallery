@@ -36,7 +36,7 @@ Who uses Sphinx-Gallery
 * `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
 * `SimPEG <http://docs.simpeg.xyz/content/examples/>`_
-* `PlasmaPy <http://docs.plasmapy.org/en/master/auto_examples/>`_        
+* `PlasmaPy <http://docs.plasmapy.org/en/master/auto_examples/>`_
 
 Installation
 ============
@@ -54,7 +54,7 @@ Sphinx-Gallery will not manage its dependencies when installing, thus
 you are required to install them manually. Our minimal dependencies
 are:
 
-* Sphinx >= 1.5 (1.8 recommended)
+* Sphinx >= 1.8.3
 * Matplotlib
 * Pillow
 

@@ -97,7 +97,7 @@ Finalize the release
 
    * Go to the `Draft a new release <https://github.com/sphinx-gallery/sphinx-gallery/releases/new>`_ page.
    * The **tag version** is whatever the version is in ``__init__.py`` prepended with ``v``. E.g., ``v0.3.0``.
-   * The **release title** is ``Release: << tag-version >>``.
+   * The **release title** is ``Release << tag-version >>``.
    * The **description** should contain the markdown changelog
      you generated above (in the ``CHANGELOG.md`` file). Make sure to update any links to point
      to the tag that will be created for this release (e.g., change ``HEAD`` to ``v0.3.0``).

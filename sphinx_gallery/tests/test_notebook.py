@@ -14,13 +14,6 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery.notebook import (rst2md, jupyter_notebook, save_notebook,
                                      python_to_jupyter_cli)
-from sphinx_gallery.tests.test_gen_rst import gallery_conf  # noqa
-
-try:
-    FileNotFoundError
-except NameError:
-    # Python2
-    FileNotFoundError = IOError
 
 
 def test_latex_conversion():
@@ -81,8 +74,9 @@ For more details on interpolation see the page `channel_interpolation`.
 
 
 def test_jupyter_notebook(gallery_conf):
-    """Test that written ipython notebook file corresponds to python object"""
-    file_conf, blocks = sg.split_code_and_text_blocks('tutorials/plot_parse.py')
+    """Test that written ipython notebook file corresponds to python object."""
+    file_conf, blocks = sg.split_code_and_text_blocks(
+        'tutorials/plot_parse.py')
     example_nb = jupyter_notebook(blocks, gallery_conf)
 
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
@@ -104,7 +98,8 @@ def test_jupyter_notebook(gallery_conf):
     test_text = None
     gallery_conf['first_notebook_cell'] = test_text
     example_nb = jupyter_notebook(blocks, gallery_conf)
-    assert example_nb.get('cells')[0]['source'][0].startswith('\nThe Header Docstring')
+    cell_src = example_nb.get('cells')[0]['source'][0]
+    assert cell_src.startswith('\nThe Header Docstring')
 
 ###############################################################################
 # Notebook shell utility
