@@ -664,7 +664,9 @@ Binder links will point to these notebooks.
    with a GitHub repository you could link Binder to. If you'd like to
    use readthedocs with Sphinx-Gallery and Binder links, you should
    independently build your documentation and host it on a GitHub branch
-   as well as building it with readthedocs.
+   as well as building it with readthedocs. It is however possible to
+   `use Jupytext to turn sphinx-gallery Python scripts into Jupyter notebooks <https://jupytext.readthedocs.io/en/latest/formats.html?highlight=gallery#sphinx-gallery-scripts>`_
+   from within the Binder instance, bypassing RTD.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the `public Binder server <http://mybinder.org>`_.
