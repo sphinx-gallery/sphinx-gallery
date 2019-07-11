@@ -39,8 +39,9 @@ Jupyter Notebooks are structured (in fact, Sphinx-Gallery also **creates** a
 Jupyter Notebook for each example that is built).
 
 You can embed rST in your Python examples by including a line of ``#`` symbols
-that spans >= 20 columns. We recommend using 79 columns, like
-this::
+that spans >= 20 columns or ``# %%`` (consistent with Jupyter VS code plugin, 
+Pycharm, Hydrogen plugin and Spyder). If using ``#``'s, we recommend using 79 
+columns, like this::
 
   ###############################################################################
 
