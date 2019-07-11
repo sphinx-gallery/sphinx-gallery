@@ -65,20 +65,15 @@ def test_split_code_and_text_blocks():
     assert blocks[1][0] == 'code'
 
 
-@pytest.mark.parametrize(
-    "file_to_parse", 
-    ["plot_parse.py", "plot_parse_both.py"],
-    ids=["sep-###", "sep-both"]
-)
-def test_bug_cases_of_notebook_syntax(file_to_parse):
+def test_bug_cases_of_notebook_syntax():
     """Test over the known requirements of supported syntax in the
-    notebook styled comments, using only #'s as cell separator and using both
-    both the #'s' and '# %%'"""
+    notebook styled comments. Use both '#'s' and '# %%' as cell 
+    separators"""
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
         file_conf, blocks = sg.split_code_and_text_blocks(
-            'tutorials/{}'.format(file_to_parse))
+            'tutorials/plot_parse.py')
 
         assert file_conf == {}
         assert blocks == ref_blocks

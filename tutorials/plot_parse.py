@@ -11,7 +11,7 @@ or use a raw docstring
 Closing this string quotes on same line"""
 
 
-##############################################################################
+# %%
 # Direct first comment
 # with second line
 
@@ -26,11 +26,11 @@ import matplotlib.pyplot as plt
 # There is no need to always alternate between code and comment blocks
 # Now there is free repetition of both
 
-#############################################
+# %%
 # And a single line of hashes can split your blocks
 
 
-###############################################################################
+# %%
 # Latex in the comments does not need to be escaped
 #
 # .. math::
@@ -51,7 +51,7 @@ def dummy():
 #
 # Making a line cut in sphinx
 
-###############################################################################
+# %%
 # .. warning::
 #     The next kind of comments are not supported and become to hard to escape
 #     so just don't code like this::
@@ -77,7 +77,7 @@ def dummy():
 
 print('one')
 
-###############################################################################
+# %%
 # Code block separators
 ###############################################################################
 # Surrounding a comment line with lines of # like a block spliter also
@@ -86,11 +86,11 @@ print('one')
 # RestructuredText syntax in the comment blocks.
 
 print('two')
-##################################################
+# %%
 #
 B = 1
 
-##############################################################################
+# %%
 # End comments
 #
 # That's all folks !
