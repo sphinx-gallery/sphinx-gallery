@@ -67,13 +67,13 @@ def test_split_code_and_text_blocks():
 
 @pytest.mark.parametrize(
     "file_to_parse", 
-    ["plot_parse.py", "plot_parse_cell_seps.py"],
-    ids=["sep-###", "sep-#%%"]
+    ["plot_parse_hash.py", "plot_parse_both.py"],
+    ids=["sep-###", "sep-both"]
 )
 def test_bug_cases_of_notebook_syntax(file_to_parse):
     """Test over the known requirements of supported syntax in the
-    notebook styled comments, with both the '###..' and '# %%' cell
-    separators"""
+    notebook styled comments, using only #'s as cell separator and using both
+    both the #'s' and '# %%'"""
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
