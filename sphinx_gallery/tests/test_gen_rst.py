@@ -84,7 +84,6 @@ def test_bug_cases_of_notebook_syntax(file_to_parse):
         assert blocks == ref_blocks
 
 
-
 def test_direct_comment_after_docstring():
     # For more details see
     # https://github.com/sphinx-gallery/sphinx-gallery/pull/49
