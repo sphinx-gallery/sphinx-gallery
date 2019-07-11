@@ -67,7 +67,7 @@ def test_split_code_and_text_blocks():
 
 @pytest.mark.parametrize(
     "file_to_parse", 
-    ["plot_parse_hash.py", "plot_parse_both.py"],
+    ["plot_parse.py", "plot_parse_both.py"],
     ids=["sep-###", "sep-both"]
 )
 def test_bug_cases_of_notebook_syntax(file_to_parse):
