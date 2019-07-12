@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-v0.4.0
+v0.5.0
 ------
 
 Developer changes
@@ -14,6 +14,10 @@ Incompatible changes
 
 - Dropped support for Sphinx < 1.8.3.
 - Dropped support for Python < 3.5.
+
+**Implemented enhancements:**
+
+-  ENH: Support ``#%%`` cell separator `#370 <https://github.com/sphinx-gallery/sphinx-gallery/pull/518>`__ (`lucyleeow <https://github.com/lucyleeow>`_)
 
 v0.4.0
 ------
