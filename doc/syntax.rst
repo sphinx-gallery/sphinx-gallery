@@ -64,11 +64,11 @@ gallery examples. For example::
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
 The ``#%%`` syntax is consistent with the 'code block' (or 'code cell')
-functionality in `Jupyter VSCode plugin
+syntax in `Jupyter VSCode plugin
 <https://code.visualstudio.com/docs/python/jupyter-support>`_, `Jupytext
 <https://jupytext.readthedocs.io/en/latest/introduction.html>`_, `Pycharm
 <https://www.jetbrains.com/help/pycharm/running-jupyter-notebook-cells.html>`_, 
-`Hydrogen plugin
+`Hydrogen plugin (for Atom)
 <https://nteract.gitbooks.io/hydrogen/>`_ and `Spyder
 <https://docs.spyder-ide.org/editor.html>`_. In these IDEs/with these IDE 
 plugins, ``#%%`` at the start of a line signifies the start of a code block. 
