@@ -27,10 +27,12 @@ import matplotlib.pyplot as plt
 # Now there is free repetition of both
 
 #############################################
-# And a single line of hashes can split your blocks
+# A block an be split by either a single line of ``#``'s (>=20 columns) or 
+# ``#%%``. For compatibility reasons ``# %%`` (with a space) can also be used
+# but we recommend only using ``#%%`` for consistency. All future 
+# 'block splitters' used in the source ``.py`` document will be ``#%%``.
 
-
-###############################################################################
+#%%
 # Latex in the comments does not need to be escaped
 #
 # .. math::
@@ -45,30 +47,32 @@ def dummy():
 
 # this should not be part of a 'text' block
 
-######################################################################
+#%%
 #
 # ####################################################################
 #
 # Making a line cut in sphinx
 
-###############################################################################
+#%%
 # .. warning::
-#     The next kind of comments are not supported and become to hard to escape
+#     The next kind of comments are not supported and become too hard to escape
 #     so just don't code like this::
 #
 #         def dummy2():
 #             """Function docstring"""
 #         ####################################
-#         # This comment inside python indentation
+#         # This comment 
+#         #%%
+#         # and this comment inside python indentation
 #         # breaks the block structure and is not
 #         # supported
 #             dummy2
 #
 
-"""Free strings are not supported they remain part of the code"""
+"""Free strings are not supported. They remain part of the code"""
 
-##############################################################################
-# New lines can be included in you block comments and the parser
+#%%
+# New lines can be included in your block comments and the parser
 # is capable of retaining this significant whitespace to work with sphinx
 #
 # So the reStructuredText headers survive
@@ -77,20 +81,21 @@ def dummy():
 
 print('one')
 
-###############################################################################
+#%%
 # Code block separators
-###############################################################################
-# Surrounding a comment line with lines of # like a block spliter also
-# works and creates a new header for that comment block
-# too. Nevertheless to get rich text formatting we advise to use
-# RestructuredText syntax in the comment blocks.
+####################################################################
+# Surrounding a comment line with a line of ``#``'s (like a block splitter)
+# above and below (or ``#%%`` on top and a line of ``#``'s below, as we have 
+# done here in the source ``.py`` doc) also works and creates a new header for
+# that comment block too. Nevertheless to get rich text formatting we advise to
+# use RestructuredText syntax in the comment blocks.
 
 print('two')
-##################################################
+#%%
 #
 B = 1
 
-##############################################################################
+#%%
 # End comments
 #
 # That's all folks !

@@ -67,7 +67,8 @@ def test_split_code_and_text_blocks():
 
 def test_bug_cases_of_notebook_syntax():
     """Test over the known requirements of supported syntax in the
-    notebook styled comments"""
+    notebook styled comments. Use both '#'s' and '# %%' as cell 
+    separators"""
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
@@ -110,8 +111,11 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
                            '####################',
                            '# Paragraph 1',
                            '',
-                           '####################',
+                           '#%%',
                            '# Paragraph 2',
+                           '',
+                           '# %%',
+                           '# Paragraph 3',
                            '']))
     file_conf, blocks = sg.split_code_and_text_blocks(filename)
 
@@ -119,6 +123,7 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
     assert blocks[0][0] == 'text'
     assert blocks[1][0] == 'text'
     assert blocks[2][0] == 'text'
+    assert blocks[3][0] == 'text'
 
     script_vars = {'execute_script': ''}
 
@@ -132,6 +137,8 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
         'Paragraph 1',
         '',
         'Paragraph 2',
+        '',
+        'Paragraph 3',
         '',
         ''])
 

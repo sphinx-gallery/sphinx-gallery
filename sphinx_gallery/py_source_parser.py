@@ -161,7 +161,7 @@ def split_code_and_text_blocks(source_file):
     file_conf = extract_file_config(rest_of_content)
 
     pattern = re.compile(
-        r'(?P<header_line>^#{20,}.*)\s(?P<text_content>(?:^#.*\s)*)',
+        r'(?P<header_line>^#{20,}.*|^# ?%%.*)\s(?P<text_content>(?:^#.*\s)*)',
         flags=re.M)
     sub_pat = re.compile('^#', flags=re.M)
 

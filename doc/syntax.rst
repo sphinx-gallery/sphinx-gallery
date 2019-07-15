@@ -39,8 +39,9 @@ Jupyter Notebooks are structured (in fact, Sphinx-Gallery also **creates** a
 Jupyter Notebook for each example that is built).
 
 You can embed rST in your Python examples by including a line of ``#`` symbols
-that spans >= 20 columns. We recommend using 79 columns, like
-this::
+that spans >= 20 columns or ``#%%``. For compatibility reasons, 
+``# %%`` (with a space) can also be used but ``#%%`` is recommended for 
+consistency. If using ``#``'s, we recommend using 79 columns, like this::
 
   ###############################################################################
 
@@ -62,7 +63,20 @@ gallery examples. For example::
   # commented rST block. Instead, they'll resolve as regular Python comments.
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
-Here are the contents of an example Python file from the snippets above.::
+The ``#%%`` syntax is consistent with the 'code block' (or 'code cell')
+syntax in `Jupyter VSCode plugin
+<https://code.visualstudio.com/docs/python/jupyter-support>`_, `Jupytext
+<https://jupytext.readthedocs.io/en/latest/introduction.html>`_, `Pycharm
+<https://www.jetbrains.com/help/pycharm/running-jupyter-notebook-cells.html>`_, 
+`Hydrogen plugin (for Atom)
+<https://nteract.gitbooks.io/hydrogen/>`_ and `Spyder
+<https://docs.spyder-ide.org/editor.html>`_. In these IDEs/with these IDE 
+plugins, ``#%%`` at the start of a line signifies the start of a code block. 
+The code within a code block can be easily executed all at once. This 
+functionality can be helpful when writing a Sphinx-Gallery ``.py`` script.
+
+Here are the contents of an example Python file using the 'code block' 
+functionality::
 
   """
   This is my example script
@@ -71,21 +85,26 @@ Here are the contents of an example Python file from the snippets above.::
   This example doesn't do much, it just makes a simple plot
   """
 
-  ###############################################################################
+  #%%
   # This is a section header
   # ------------------------
-  #
-  # .. note:: This is the first section!
+  # This is the first section!
+  # The `#%%` signifies to Sphinx-Gallery that this text should be rendered as
+  # rST and if using one of the above IDE/plugin's, also signifies the start of a 
+  # 'code block'.
 
   # This line won't be rendered as rST because there's a space after the last block.
   myvariable = 2
   print("my variable is {}".format(myvariable))
+  # This is the end of the 'code block' (if using an above IDE). All code within
+  # this block can be easily executed all at once.
 
-  ###############################################################################
+  #%%
   # This is another section header
   # ------------------------------
   #
   # In the built documentation, it will be rendered as rST after the code above!
+  # This is also another code block.
 
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
