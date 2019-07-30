@@ -15,8 +15,9 @@
 import sys
 import os
 from datetime import date
+import warnings
+
 import sphinx_gallery
-from sphinx_gallery.scrapers import matplotlib_scraper
 from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -364,3 +365,8 @@ sphinx_gallery_conf = {
     'show_memory': True,
     'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),
 }
+
+# Remove matplotlib agg warnings from generated doc when using plt.show
+warnings.filterwarnings("ignore", category=UserWarning,
+                        message='Matplotlib is currently using agg, which is a'
+                                ' non-GUI backend, so cannot show the figure.')
