@@ -6,7 +6,7 @@ environment:
 
   global:
     PYTHON: "C:\\conda"
-    MINICONDA_VERSION: "latest"
+    MINICONDA_VERSION: "4.6.3"
     CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme vtk pyface traits traitsui ipython"
 
   matrix:
