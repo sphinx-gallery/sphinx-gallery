@@ -124,22 +124,19 @@ _regex = re.compile(r':(?:'
                     )
 
 
-def _identify_names(script_blocks, global_variables=None):
+def identify_names(script_blocks, global_variables=None, node=''):
     """Build a codeobj summary by identifying and resolving used names."""
+    if node == '':  # mostly convenience for testing functions
+        c = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'code')
+        node = ast.parse(c)
+    # Get matches from the code (AST)
     finder = NameFinder(global_variables)
-    names = list()
-    for script_block in script_blocks:
-        kind, txt, _ = script_block
-        # Get matches from the code (AST)
-        if kind == 'code':
-            node = ast.parse(txt)
-            finder.visit(node)
-        # Get matches from docstring inspection
-        else:
-            assert script_block[0] == 'text'
-            names.extend((x, x, False)
-                         for x in re.findall(_regex, script_block[1]))
-    names.extend(list(finder.get_mapping()))
+    if node is not None:
+        finder.visit(node)
+    names = list(finder.get_mapping())
+    # Get matches from docstring inspection
+    text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
+    names.extend((x, x, False) for x in re.findall(_regex, text))
     example_code_obj = collections.OrderedDict()  # order is important
     fill_guess = dict()
     for name, full_name, class_like in names:
@@ -149,10 +146,7 @@ def _identify_names(script_blocks, global_variables=None):
         # full_name includes resolved import path (e.g. numpy.asarray)
         splitted = full_name.rsplit('.', 1 + class_like)
         if len(splitted) == 1:
-            raise RuntimeError(splitted)
-            # module without attribute. This is not useful for
-            # backreferences
-            continue
+            splitted = ('builtins', splitted[0])
         elif len(splitted) == 3:  # class-like
             assert class_like
             splitted = (splitted[0], '.'.join(splitted[1:]))

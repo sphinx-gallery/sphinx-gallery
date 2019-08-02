@@ -24,7 +24,6 @@ from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
-                      extract_intro_and_title, get_docstring_and_rest,
                       _get_readme)
 from .scrapers import _scraper_dict, _reset_dict
 from .docs_resolv import embed_code_links
@@ -181,6 +180,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf['first_notebook_cell'] = first_cell
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
+    gallery_conf['titles'] = {}
     return gallery_conf
 
 
@@ -400,8 +400,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
                                         failing_as_expected,
                                         passing_unexpectedly)):
             continue  # not subselected by our regex
-        _, title = extract_intro_and_title(
-            fname, get_docstring_and_rest(fname)[0])
+        title = gallery_conf['titles'][fname]
         output += (
             u'<testcase classname={0!s} file={1!s} line="1" '
             u'name={2!s} time="{3!r}">'

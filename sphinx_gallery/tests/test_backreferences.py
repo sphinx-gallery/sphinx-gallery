@@ -78,7 +78,7 @@ def test_identify_names(unicode_sample):
              'module_short': 'sphinx_gallery.back_references'}
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
-    res = sg._identify_names(script_blocks)
+    res = sg.identify_names(script_blocks)
     assert expected == res
 
 
@@ -106,7 +106,7 @@ e.HelloWorld().f.g
     fname.write(code_str, 'wb')
 
     _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    res = sg._identify_names(script_blocks)
+    res = sg.identify_names(script_blocks)
 
     assert expected == res
 
@@ -123,6 +123,6 @@ This example uses :func:`h.i`.
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')
     _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    res = sg._identify_names(script_blocks)
+    res = sg.identify_names(script_blocks)
 
     assert expected == res
