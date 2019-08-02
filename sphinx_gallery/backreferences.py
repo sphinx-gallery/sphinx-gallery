@@ -13,7 +13,6 @@ import ast
 import codecs
 import collections
 from html import escape
-import pickle
 import os
 import re
 
@@ -95,31 +94,30 @@ def _get_short_module_name(module_name, obj_name):
     return short_name
 
 
-def _extract_object_names_from_docs(filename):
-    """Add matches from the text blocks (must be full names!)."""
-    text = split_code_and_text_blocks(filename)[1]
-    text = '\n'.join(t[1] for t in text if t[0] == 'text')
-    regex = re.compile(r':(?:'
-                       r'func(?:tion)?|'
-                       r'meth(?:od)?|'
-                       r'attr(?:ibute)?|'
-                       r'obj(?:ect)?|'
-                       r'class):`(\S*)`'
-                       )
-    return [(x, x) for x in re.findall(regex, text)]
+_regex = re.compile(r':(?:'
+                    r'func(?:tion)?|'
+                    r'meth(?:od)?|'
+                    r'attr(?:ibute)?|'
+                    r'obj(?:ect)?|'
+                    r'class):`(\S*)`'
+                    )
 
 
-def _identify_names(filename):
+def _identify_names(script_blocks):
     """Build a codeobj summary by identifying and resolving used names."""
-    node, _ = parse_source_file(filename)
-    if node is None:
-        return {}
-
-    # Get matches from the code (AST)
     finder = NameFinder()
-    finder.visit(node)
-    names = list(finder.get_mapping())
-    names += _extract_object_names_from_docs(filename)
+    names = list()
+    for script_block in script_blocks:
+        kind, txt, _ = script_block
+        # Get matches from the code (AST)
+        if kind == 'code':
+            node = ast.parse(txt)
+            finder.visit(node)
+        # Get matches from docstring inspection
+        else:
+            assert script_block[0] == 'text'
+            names.extend((x, x) for x in re.findall(_regex, script_block[1]))
+    names.extend(list(finder.get_mapping()))
 
     example_code_obj = collections.OrderedDict()
     for name, full_name in names:
@@ -140,22 +138,6 @@ def _identify_names(filename):
                 'module_short': module_short}
         example_code_obj[name] = cobj
     return example_code_obj
-
-
-def _scan_used_functions(example_file, gallery_conf):
-    """Save variables so we can later add links to the documentation."""
-    example_code_obj = _identify_names(example_file)
-    if example_code_obj:
-        codeobj_fname = example_file[:-3] + '_codeobj.pickle.new'
-        with open(codeobj_fname, 'wb') as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
-        _replace_md5(codeobj_fname)
-
-    backrefs = set('{module_short}.{name}'.format(**entry)
-                   for entry in example_code_obj.values()
-                   if entry['module'].startswith(gallery_conf['doc_module']))
-
-    return backrefs
 
 
 THUMBNAIL_TEMPLATE = """
