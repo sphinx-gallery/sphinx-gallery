@@ -11,6 +11,7 @@ from __future__ import print_function, unicode_literals
 
 import ast
 import codecs
+import collections
 from html import escape
 import os
 import re
@@ -26,9 +27,10 @@ class NameFinder(ast.NodeVisitor):
     Only retains names from imported modules.
     """
 
-    def __init__(self):
+    def __init__(self, global_variables=None):
         super(NameFinder, self).__init__()
         self.imported_names = {}
+        self.global_variables = global_variables or {}
         self.accessed_names = set()
 
     def visit_Import(self, node, prefix=''):
@@ -60,21 +62,42 @@ class NameFinder(ast.NodeVisitor):
         for name in self.accessed_names:
             local_name = name.split('.', 1)[0]
             remainder = name[len(local_name):]
+            class_attr = False
             if local_name in self.imported_names:
                 # Join import path to relative path
                 full_name = self.imported_names[local_name] + remainder
-                yield name, full_name
+                yield name, full_name, class_attr
+            elif local_name in self.global_variables:
+                obj = self.global_variables[local_name]
+                c = obj.__class__
+                # XXX Eventually this should probably recurse through all
+                # levels of bases
+                for cc in [c] + list(c.__bases__):
+                    joiner = (cc.__module__, cc.__name__)
+                    if remainder and remainder[0] == '.':  # maybe meth or attr
+                        joiner += (remainder[1:],)
+                        class_attr = True
+                    full_name = '.'.join(joiner)
+                    yield name, full_name, class_attr
 
 
 def _get_short_module_name(module_name, obj_name):
     """Get the shortest possible module name."""
+    if '.' in obj_name:
+        obj_name, attr = obj_name.split('.')
+    else:
+        attr = None
     scope = {}
     try:
         # Find out what the real object is supposed to be.
-        exec('from %s import %s' % (module_name, obj_name), scope, scope)
+        imp_line = 'from %s import %s' % (module_name, obj_name)
+        exec(imp_line, scope, scope)
+    except Exception:  # wrong object
+        return None
+    else:
         real_obj = scope[obj_name]
-    except Exception:
-        return module_name
+        if attr is not None and not hasattr(real_obj, attr):  # wrong class
+            return None  # wrong object
 
     parts = module_name.split('.')
     short_name = module_name
@@ -101,10 +124,9 @@ _regex = re.compile(r':(?:'
                     )
 
 
-def _identify_names(script_blocks, example_code_obj, finder=None):
+def _identify_names(script_blocks, global_variables=None):
     """Build a codeobj summary by identifying and resolving used names."""
-    if finder is None:
-        finder = NameFinder()
+    finder = NameFinder(global_variables)
     names = list()
     for script_block in script_blocks:
         kind, txt, _ = script_block
@@ -115,25 +137,41 @@ def _identify_names(script_blocks, example_code_obj, finder=None):
         # Get matches from docstring inspection
         else:
             assert script_block[0] == 'text'
-            names.extend((x, x) for x in re.findall(_regex, script_block[1]))
+            names.extend((x, x, False)
+                         for x in re.findall(_regex, script_block[1]))
     names.extend(list(finder.get_mapping()))
-    for name, full_name in names:
+    example_code_obj = collections.OrderedDict()  # order is important
+    fill_guess = dict()
+    for name, full_name, class_like in names:
         if name in example_code_obj:
             continue  # if someone puts it in the docstring and code
         # name is as written in file (e.g. np.asarray)
         # full_name includes resolved import path (e.g. numpy.asarray)
-        splitted = full_name.rsplit('.', 1)
+        splitted = full_name.rsplit('.', 1 + class_like)
         if len(splitted) == 1:
+            raise RuntimeError(splitted)
             # module without attribute. This is not useful for
             # backreferences
             continue
+        elif len(splitted) == 3:  # class-like
+            assert class_like
+            splitted = (splitted[0], '.'.join(splitted[1:]))
+        else:
+            assert not class_like
 
         module, attribute = splitted
         # get shortened module name
         module_short = _get_short_module_name(module, attribute)
         cobj = {'name': attribute, 'module': module,
                 'module_short': module_short}
-        example_code_obj[name] = cobj
+        if module_short is not None:
+            example_code_obj[name] = cobj
+        elif name not in fill_guess:
+            cobj['module_short'] = module
+            fill_guess[name] = cobj
+    for key, value in fill_guess.items():
+        if key not in example_code_obj:
+            example_code_obj[key] = value
     return example_code_obj
 
 

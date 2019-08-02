@@ -14,7 +14,6 @@ Files that generate images should start with 'plot'.
 # tricky errors come up with exec(code_blocks, ...) calls
 from __future__ import division, print_function, absolute_import
 from time import time
-import collections
 import copy
 import contextlib
 import ast
@@ -38,9 +37,9 @@ from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
 from . import glr_path_static
 from . import sphinx_compatibility
 from .backreferences import (_write_backreferences, _thumbnail_div,
-                             _identify_names, NameFinder)
+                             _identify_names)
 from .downloads import CODE_DOWNLOAD
-from .py_source_parser import (split_code_and_text_blocks,
+from .py_source_parser import (split_code_and_text_blocks, parse_source_file,
                                get_docstring_and_rest, remove_config_comments)
 
 from .notebook import jupyter_notebook, save_notebook
@@ -611,9 +610,6 @@ def execute_script(script_blocks, script_vars, gallery_conf):
             file_checksum.write(get_md5sum(script_vars['target_file']))
         gallery_conf['passing_examples'].append(script_vars['src_file'])
 
-    _identify_names(
-        script_blocks, script_vars['example_code_obj'], script_vars['finder'])
-
     return output_blocks, time_elapsed
 
 
@@ -668,10 +664,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         'execute_script': executable,
         'image_path_iterator': ImagePathIterator(image_path_template),
         'src_file': src_file,
-        'target_file': target_file,
-        'example_code_obj': collections.OrderedDict(),  # ordered is important
-        'finder': NameFinder(),
-    }
+        'target_file': target_file}
 
     file_conf, script_blocks = split_code_and_text_blocks(src_file)
 
@@ -705,14 +698,15 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     _replace_md5(ipy_fname)
 
     # Write names
-    if script_vars['example_code_obj']:
+    example_code_obj = _identify_names(
+        script_blocks, script_vars['example_globals'])
+    if example_code_obj:
         codeobj_fname = target_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:
-            pickle.dump(script_vars['example_code_obj'],
-                        fid, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)
     backrefs = set('{module_short}.{name}'.format(**entry)
-                   for entry in script_vars['example_code_obj'].values()
+                   for entry in example_code_obj.values()
                    if entry['module'].startswith(gallery_conf['doc_module']))
     # Write backreferences
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,

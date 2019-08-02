@@ -182,6 +182,11 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'numpy.arange.html' in lines
     assert '#module-matplotlib.pyplot' in lines
     assert 'pyplot.html' in lines
+    assert 'matplotlib.figure.Figure.html#matplotlib.figure.Figure.tight_layout' in lines  # noqa
+    assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
+    assert 'matplotlib_configuration_api.html#matplotlib.rcParams' in lines
+    assert 'stdtypes.html#list' in lines
+
     try:
         import memory_profiler  # noqa, analysis:ignore
     except ImportError:
@@ -201,7 +206,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert '.. code-block:: python3\n' in rst
 
     # warnings
-    want_warn = ('plot_numpy_matplotlib.py:31: RuntimeWarning: This'
+    want_warn = ('plot_numpy_matplotlib.py:33: RuntimeWarning: This'
                  ' warning should show up in the output')
     assert want_warn in lines
     sys.stdout.write(lines)

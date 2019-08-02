@@ -312,40 +312,47 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             str_repl = {}
             # generate replacement strings with the links
             for name, cobj in example_code_obj.items():
-                this_module = cobj['module'].split('.')[0]
+                for modname in (cobj['module_short'], cobj['module']):
+                    this_module = modname.split('.')[0]
+                    cname = cobj['name']
 
-                # Try doc resolvers first
-                link = None
-                if this_module in doc_resolvers:
-                    try:
-                        link = doc_resolvers[this_module].resolve(cobj,
-                                                                  full_fname)
-                    except (HTTPError, URLError) as e:
-                        if isinstance(e, HTTPError):
-                            extra = e.code
+                    # Try doc resolvers first
+                    link = None
+                    if this_module in doc_resolvers:
+                        try:
+                            link = doc_resolvers[this_module].resolve(
+                                cobj, full_fname)
+                        except (HTTPError, URLError) as e:
+                            if isinstance(e, HTTPError):
+                                extra = e.code
+                            else:
+                                extra = e.reason
+                            logger.warning("Error resolving %s.%s: %r (%s)",
+                                           modname, cname, e, extra)
+                            link = None
+
+                    # next try intersphinx
+                    if this_module == modname == 'builtins':
+                        this_module = 'python'
+                    if link is None and this_module in intersphinx_inv:
+                        inv = app.env.intersphinx_named_inventory[this_module]
+                        if this_module == 'python':
+                            want = cname
                         else:
-                            extra = e.reason
-                        logger.warning("Error resolving %s.%s: %r (%s)",
-                                       cobj['module'], cobj['name'], e, extra)
-                        link = None
+                            want = '%s.%s' % (modname, cname)
+                        for value in inv.values():
+                            if want in value:
+                                link = value[want][2]
+                                break
 
-                # next try intersphinx
-                if link is None and this_module in intersphinx_inv:
-                    inv = app.env.intersphinx_named_inventory[this_module]
-                    want = '%s.%s' % (cobj['module'], cobj['name'])
-                    for value in inv.values():
-                        if want in value:
-                            link = value[want][2]
-                            break
-
-                if link is not None:
-                    parts = name.split('.')
-                    name_html = period.join(orig_pattern % part
-                                            for part in parts)
-                    full_function_name = '%s.%s' % (
-                        cobj['module'], cobj['name'])
-                    str_repl[name_html] = link_pattern % (
-                        link, full_function_name, name_html)
+                    if link is not None:
+                        parts = name.split('.')
+                        name_html = period.join(orig_pattern % part
+                                                for part in parts)
+                        full_function_name = '%s.%s' % (modname, cname)
+                        str_repl[name_html] = link_pattern % (
+                            link, full_function_name, name_html)
+                        break  # loop over possible module names
 
             # do the replacement in the html file
 
