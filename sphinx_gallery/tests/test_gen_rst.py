@@ -125,7 +125,8 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
     assert blocks[2][0] == 'text'
     assert blocks[3][0] == 'text'
 
-    script_vars = {'execute_script': ''}
+    script_vars = {'execute_script': '', 'example_code_obj': {},
+                   'finder': None}
 
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf)
@@ -163,13 +164,14 @@ b = 'foo'
     assert blocks[1][0] == 'code'
     assert file_conf == {}
     script_vars = {'execute_script': True, 'src_file': filename,
-                   'image_path_iterator': [],
-                   'target_file': filename}
+                   'image_path_iterator': [], 'example_code_obj': {},
+                   'target_file': filename, 'finder': None}
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf)
     assert 'example_globals' in script_vars
     assert script_vars['example_globals']['a'] == 1.
     assert script_vars['example_globals']['b'] == 'foo'
+    assert len(script_vars['example_code_obj']) == 0
 
 
 def test_codestr2rst():

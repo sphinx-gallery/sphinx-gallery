@@ -11,7 +11,6 @@ from __future__ import print_function, unicode_literals
 
 import ast
 import codecs
-import collections
 from html import escape
 import os
 import re
@@ -19,7 +18,6 @@ import re
 from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
-from .py_source_parser import parse_source_file, split_code_and_text_blocks
 
 
 class NameFinder(ast.NodeVisitor):
@@ -103,9 +101,10 @@ _regex = re.compile(r':(?:'
                     )
 
 
-def _identify_names(script_blocks):
+def _identify_names(script_blocks, example_code_obj, finder=None):
     """Build a codeobj summary by identifying and resolving used names."""
-    finder = NameFinder()
+    if finder is None:
+        finder = NameFinder()
     names = list()
     for script_block in script_blocks:
         kind, txt, _ = script_block
@@ -118,8 +117,6 @@ def _identify_names(script_blocks):
             assert script_block[0] == 'text'
             names.extend((x, x) for x in re.findall(_regex, script_block[1]))
     names.extend(list(finder.get_mapping()))
-
-    example_code_obj = collections.OrderedDict()
     for name, full_name in names:
         if name in example_code_obj:
             continue  # if someone puts it in the docstring and code
