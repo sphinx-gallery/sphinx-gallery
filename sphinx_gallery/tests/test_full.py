@@ -221,7 +221,7 @@ def test_backreferences(sphinx_app):
                        'sphinx_gallery.backreferences.html')
     with codecs.open(mod_file, 'r', 'utf-8') as fid:
         lines = fid.read()
-    assert 'identify_names' in lines  # in API doc
+    assert 'NameFinder' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
 
 

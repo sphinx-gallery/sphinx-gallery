@@ -24,7 +24,7 @@ from .py_source_parser import parse_source_file, split_code_and_text_blocks
 
 
 class NameFinder(ast.NodeVisitor):
-    """Finds the longest form of variable names and their imports in code
+    """Finds the longest form of variable names and their imports in code.
 
     Only retains names from imported modules.
     """
@@ -69,8 +69,8 @@ class NameFinder(ast.NodeVisitor):
                 yield name, full_name
 
 
-def get_short_module_name(module_name, obj_name):
-    """ Get the shortest possible module name """
+def _get_short_module_name(module_name, obj_name):
+    """Get the shortest possible module name."""
     scope = {}
     try:
         # Find out what the real object is supposed to be.
@@ -95,8 +95,8 @@ def get_short_module_name(module_name, obj_name):
     return short_name
 
 
-def extract_object_names_from_docs(filename):
-    """Add matches from the text blocks (must be full names!)"""
+def _extract_object_names_from_docs(filename):
+    """Add matches from the text blocks (must be full names!)."""
     text = split_code_and_text_blocks(filename)[1]
     text = '\n'.join(t[1] for t in text if t[0] == 'text')
     regex = re.compile(r':(?:'
@@ -109,8 +109,8 @@ def extract_object_names_from_docs(filename):
     return [(x, x) for x in re.findall(regex, text)]
 
 
-def identify_names(filename):
-    """Builds a codeobj summary by identifying and resolving used names."""
+def _identify_names(filename):
+    """Build a codeobj summary by identifying and resolving used names."""
     node, _ = parse_source_file(filename)
     if node is None:
         return {}
@@ -119,7 +119,7 @@ def identify_names(filename):
     finder = NameFinder()
     finder.visit(node)
     names = list(finder.get_mapping())
-    names += extract_object_names_from_docs(filename)
+    names += _extract_object_names_from_docs(filename)
 
     example_code_obj = collections.OrderedDict()
     for name, full_name in names:
@@ -135,16 +135,16 @@ def identify_names(filename):
 
         module, attribute = splitted
         # get shortened module name
-        module_short = get_short_module_name(module, attribute)
+        module_short = _get_short_module_name(module, attribute)
         cobj = {'name': attribute, 'module': module,
                 'module_short': module_short}
         example_code_obj[name] = cobj
     return example_code_obj
 
 
-def scan_used_functions(example_file, gallery_conf):
-    """save variables so we can later add links to the documentation"""
-    example_code_obj = identify_names(example_file)
+def _scan_used_functions(example_file, gallery_conf):
+    """Save variables so we can later add links to the documentation."""
+    example_code_obj = _identify_names(example_file)
     if example_code_obj:
         codeobj_fname = example_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:
@@ -206,13 +206,12 @@ def _thumbnail_div(target_dir, src_dir, fname, snippet, is_backref=False,
 
 def write_backreferences(seen_backrefs, gallery_conf,
                          target_dir, fname, snippet):
-    """Writes down back reference files, which include a thumbnail list
-    of examples using a certain module"""
+    """Write backreference file including a thumbnail list of examples."""
     if gallery_conf['backreferences_dir'] is None:
         return
 
     example_file = os.path.join(target_dir, fname)
-    backrefs = scan_used_functions(example_file, gallery_conf)
+    backrefs = _scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
                                     gallery_conf['backreferences_dir'],
