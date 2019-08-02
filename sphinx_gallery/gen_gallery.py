@@ -22,7 +22,7 @@ from xml.sax.saxutils import quoteattr, escape
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5
-from .backreferences import finalize_backreferences
+from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       extract_intro_and_title, get_docstring_and_rest,
                       _get_readme)
@@ -290,7 +290,7 @@ def generate_gallery_rst(app):
 
             fhindex.write(SPHX_GLR_SIG)
         _replace_md5(index_rst_new)
-    finalize_backreferences(seen_backrefs, gallery_conf)
+    _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf['plot_gallery']:
         logger.info("computation time summary:", color='white')

@@ -35,7 +35,8 @@ from .scrapers import (save_figures, ImagePathIterator, clean_modules,
 from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
 from . import glr_path_static
 from . import sphinx_compatibility
-from .backreferences import write_backreferences, _thumbnail_div
+from .backreferences import (_write_backreferences, _thumbnail_div,
+                             _scan_used_functions)
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (split_code_and_text_blocks,
                                get_docstring_and_rest, remove_config_comments)
@@ -313,7 +314,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         length=len(sorted_listdir))
     for fname in iterator:
         intro, cost = generate_file_rst(
-            fname, target_dir, src_dir, gallery_conf)
+            fname, target_dir, src_dir, gallery_conf, seen_backrefs)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append((cost, src_file))
         this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
@@ -324,10 +325,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
    /%s\n""" % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')
         entries_text.append(this_entry)
-
-        if gallery_conf['backreferences_dir']:
-            write_backreferences(seen_backrefs, gallery_conf,
-                                 target_dir, fname, intro)
 
     for entry_text in entries_text:
         fhindex += entry_text
@@ -615,7 +612,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     return output_blocks, time_elapsed
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
+                      seen_backrefs=None):
     """Generate the rst file for a given example.
 
     Parameters
@@ -628,6 +626,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         Absolute path to directory where source examples are stored
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
+    seen_backrefs : set
+        The seen backreferences.
 
     Returns
     -------
@@ -636,6 +636,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     cost : tuple
         A tuple containing the ``(time, memory)`` required to run the script.
     """
+    seen_backrefs = set() if seen_backrefs is None else seen_backrefs
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     target_file = os.path.join(target_dir, fname)
     _replace_md5(src_file, target_file, 'copy')
@@ -694,6 +695,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ipy_fname = replace_py_ipynb(target_file) + '.new'
     save_notebook(example_nb, ipy_fname)
     _replace_md5(ipy_fname)
+
+    backrefs = _scan_used_functions(target_file, gallery_conf)
+    _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
+                          fname, intro)
 
     return intro, (time_elapsed, memory_used)
 

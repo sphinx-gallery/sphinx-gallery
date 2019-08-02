@@ -204,14 +204,12 @@ def _thumbnail_div(target_dir, src_dir, fname, snippet, is_backref=False,
                            thumbnail=thumb, ref_name=ref_name)
 
 
-def write_backreferences(seen_backrefs, gallery_conf,
-                         target_dir, fname, snippet):
+def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
+                          target_dir, fname, snippet):
     """Write backreference file including a thumbnail list of examples."""
     if gallery_conf['backreferences_dir'] is None:
         return
 
-    example_file = os.path.join(target_dir, fname)
-    backrefs = _scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
                                     gallery_conf['backreferences_dir'],
@@ -228,7 +226,7 @@ def write_backreferences(seen_backrefs, gallery_conf,
             seen_backrefs.add(backref)
 
 
-def finalize_backreferences(seen_backrefs, gallery_conf):
+def _finalize_backreferences(seen_backrefs, gallery_conf):
     """Replace backref files only if necessary."""
     logger = sphinx_compatibility.getLogger('sphinx-gallery')
     if gallery_conf['backreferences_dir'] is None:
