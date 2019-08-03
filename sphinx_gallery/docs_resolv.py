@@ -340,8 +340,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             want = cname
                         else:
                             want = '%s.%s' % (modname, cname)
-                        for value in inv.values():
-                            if want in value:
+                        for key, value in inv.items():  # only python domain
+                            if key.startswith('py') and want in value:
                                 link = value[want][2]
                                 break
 
