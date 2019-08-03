@@ -311,11 +311,9 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         sorted_listdir,
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
-    clean_modules(gallery_conf, src_dir)  # fix gh-316
     for fname in iterator:
         intro, time_elapsed = generate_file_rst(
             fname, target_dir, src_dir, gallery_conf)
-        clean_modules(gallery_conf, fname)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         computation_times.append((time_elapsed, src_file))
         this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
@@ -592,10 +590,12 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         # for more details.
         sys.argv[0] = script_vars['src_file']
         sys.argv[1:] = []
+        gc.collect()
+        _, memory_start = _memory_usage(lambda: None, gallery_conf)
+    else:
+        memory_start = 0
 
     t_start = time()
-    gc.collect()
-    _, memory_start = _memory_usage(lambda: None, gallery_conf)
     compiler = codeop.Compile()
     # include at least one entry to avoid max() ever failing
     script_vars['memory_delta'] = [memory_start]
@@ -604,14 +604,13 @@ def execute_script(script_blocks, script_vars, gallery_conf):
                                         script_vars, gallery_conf)
                      for block in script_blocks]
     time_elapsed = time() - t_start
-    script_vars['memory_delta'] = (  # actually turn it into a delta now
-        max(script_vars['memory_delta']) - memory_start)
-
     sys.argv = argv_orig
-
-    # Write md5 checksum if the example was meant to run (no-plot
-    # shall not cache md5sum) and has built correctly
+    script_vars['memory_delta'] = max(script_vars['memory_delta'])
     if script_vars['execute_script']:
+        script_vars['memory_delta'] = (  # actually turn it into a delta now
+            script_vars['memory_delta'] - memory_start)
+        # Write md5 checksum if the example was meant to run (no-plot
+        # shall not cache md5sum) and has built correctly
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
             file_checksum.write(get_md5sum(script_vars['target_file']))
         gallery_conf['passing_examples'].append(script_vars['src_file'])
@@ -676,6 +675,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             for label, content, line_number in script_blocks
         ]
 
+    if executable:
+        clean_modules(gallery_conf, fname)
     output_blocks, time_elapsed = execute_script(script_blocks,
                                                  script_vars,
                                                  gallery_conf)
