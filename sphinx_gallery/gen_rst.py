@@ -461,7 +461,6 @@ def execute_code_block(compiler, block, example_globals,
     blabel, bcontent, lineno = block
     # If example is not suitable to run, skip executing its blocks
     if not script_vars['execute_script'] or blabel == 'text':
-        script_vars['memory_delta'].append(0)
         return ''
 
     cwd = os.getcwd()
@@ -487,6 +486,7 @@ def execute_code_block(compiler, block, example_globals,
         _, mem = _memory_usage(_exec_once(
             compiler(code_ast, src_file, 'exec'), example_globals),
             gallery_conf)
+        script_vars['memory_delta'].append(mem)
     except Exception:
         sys.stdout.flush()
         sys.stderr.flush()
@@ -497,7 +497,6 @@ def execute_code_block(compiler, block, example_globals,
         # still call this even though we won't use the images so that
         # figures are closed
         save_figures(block, script_vars, gallery_conf)
-        mem = 0
     else:
         sys.stdout.flush()
         sys.stderr.flush()
@@ -517,7 +516,6 @@ def execute_code_block(compiler, block, example_globals,
         os.chdir(cwd)
         sys.path = sys_path
         sys.stdout, sys.stderr = orig_stdout, orig_stderr
-    script_vars['memory_delta'].append(mem)
 
     return code_output
 
@@ -593,7 +591,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         gc.collect()
         _, memory_start = _memory_usage(lambda: None, gallery_conf)
     else:
-        memory_start = 0
+        memory_start = 0.
 
     t_start = time()
     compiler = codeop.Compile()
@@ -607,8 +605,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     sys.argv = argv_orig
     script_vars['memory_delta'] = max(script_vars['memory_delta'])
     if script_vars['execute_script']:
-        script_vars['memory_delta'] = (  # actually turn it into a delta now
-            script_vars['memory_delta'] - memory_start)
+        script_vars['memory_delta'] -= memory_start
         # Write md5 checksum if the example was meant to run (no-plot
         # shall not cache md5sum) and has built correctly
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
