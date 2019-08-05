@@ -26,7 +26,7 @@ import pytest
 N_TOT = 5
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
-N_RST = 12 + N_TOT
+N_RST = 14 + N_TOT
 
 
 @pytest.fixture(scope='module')
@@ -101,7 +101,7 @@ def test_junit(sphinx_app, tmpdir):
     new_toctree_dir = op.join(new_src_dir, '_build', 'toctrees')
     passing_fname = op.join(new_src_dir, 'examples',
                             'plot_numpy_matplotlib.py')
-    failing_fname = op.join(new_src_dir, 'examples',
+    failing_fname = op.join(new_src_dir, 'examples', 'future',
                             'plot_future_imports_broken.py')
     shutil.move(passing_fname, passing_fname + '.temp')
     shutil.move(failing_fname, passing_fname)
@@ -242,10 +242,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     # First run completes in the fixture.
     #
     status = sphinx_app._status.getvalue()
-    want = '.*%s added, 0 changed, 0 removed$.*' % (N_RST,)
+    want = '.*%s added, 0 changed, 0 removed.*' % (N_RST,)
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
-    assert re.match('.*targets for 1 source files that are out of date$.*',
-                    status, re.MULTILINE | re.DOTALL) is not None
+    want = '.*targets for 2 source files that are out of date$.*'
+    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
     want = ('.*executed %d out of %d.*after excluding 0 files.*based on MD5.*'
             % (N_GOOD, N_TOT))
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
@@ -379,7 +379,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
                          buildername='html', status=StringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    n = '[2|3]'
+    n = '[3|4]'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
     want = '.*targets for %s source files that are out of date$.*' % n
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines

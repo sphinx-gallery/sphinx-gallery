@@ -23,7 +23,8 @@ from sphinx.util.docutils import docutils_namespace
 
 from sphinx_gallery import sphinx_compatibility
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
-                                        collect_gallery_files)
+                                        collect_gallery_files,
+                                        write_computation_times)
 
 
 @pytest.fixture
@@ -390,3 +391,7 @@ def test_first_notebook_cell_config(sphinx_app_wrapper):
     # First cell must be str
     with pytest.raises(ValueError):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
+
+
+def test_write_computation_times_noop():
+    write_computation_times(None, None, [[[0]]])

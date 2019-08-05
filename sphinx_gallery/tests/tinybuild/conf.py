@@ -44,7 +44,7 @@ sphinx_gallery_conf = {
     'backreferences_dir': 'gen_modules/backreferences',
     'within_section_order': FileNameSortKey,
     'image_scrapers': (matplotlib_format_scraper(),),
-    'expected_failing_examples': ['examples/plot_future_imports_broken.py'],
+    'expected_failing_examples': ['examples/future/plot_future_imports_broken.py'],  # noqa
     'show_memory': True,
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
 }
