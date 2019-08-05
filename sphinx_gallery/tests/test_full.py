@@ -424,8 +424,6 @@ def test_rebuild(tmpdir_factory, sphinx_app):
 
     # generated RST files
     different = (
-        # this one should get rewritten as we retried it
-        'plot_future_imports_broken.rst',
         'plot_numpy_matplotlib.rst',
     )
     ignore = (
@@ -433,6 +431,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # get extremely unlucky and have identical run times
         # on the one script above that changes...
         'sg_execution_times.rst',
+        # this one will not change even though it was retried
+        'plot_future_imports_broken.rst',
     )
     if not sys.platform.startswith('win'):  # not reliable on Windows
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
