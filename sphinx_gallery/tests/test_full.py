@@ -49,7 +49,8 @@ def sphinx_app(tmpdir_factory):
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                     buildername='html', status=StringIO())
+                     buildername='html', status=StringIO(),
+                     warning=StringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
         app.build(False, [])
@@ -136,6 +137,10 @@ def test_run_sphinx(sphinx_app):
     status = sphinx_app._status.getvalue()
     assert 'executed %d out of %d' % (N_GOOD, N_TOT) in status
     assert 'after excluding 0' in status
+    # intentionally have a bad URL in references
+    warning = sphinx_app._warning.getvalue()
+    assert re.match('.*fetching .*wrong_url.*404.*', warning) is not None, \
+        warning
 
 
 def test_image_formats(sphinx_app):

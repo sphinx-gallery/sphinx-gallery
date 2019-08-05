@@ -255,6 +255,12 @@ class SphinxDocLinkResolver(object):
         return link
 
 
+def _handle_http_url_error(e, msg='fetching'):
+    extra = e.code if isinstance(e, HTTPError) else e.reason
+    logger.warning('The following HTTP Error has occurred %s %s: %s (%s)',
+                   msg, e.url, extra, e.msg)
+
+
 def _embed_code_links(app, gallery_conf, gallery_dir):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
@@ -269,17 +275,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                     url, src_gallery_dir)
 
-        except HTTPError as e:
-            logger.warning(
-                'The following HTTP Error has occurred fetching %s: %d %s',
-                e.url, e.code, e.msg)
-        except URLError as e:
-            logger.warning(
-                "Embedding the documentation hyperlinks requires Internet "
-                "access.\nPlease check your network connection.\nUnable to "
-                "continue embedding `%s` links due to a URL Error:\n%s",
-                this_module,
-                str(e.args))
+        except (URLError, HTTPError) as e:
+            _handle_http_url_error(e)
 
     html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
                                                     gallery_dir))
@@ -323,13 +320,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             link = doc_resolvers[this_module].resolve(
                                 cobj, full_fname)
                         except (HTTPError, URLError) as e:
-                            if isinstance(e, HTTPError):
-                                extra = e.code
-                            else:
-                                extra = e.reason
-                            logger.warning("Error resolving %s.%s: %r (%s)",
-                                           modname, cname, e, extra)
-                            link = None
+                            _handle_http_url_error(
+                                e, msg='resolving %s.%s' % (modname, cname))
 
                     # next try intersphinx
                     if this_module == modname == 'builtins':
@@ -380,7 +372,8 @@ def embed_code_links(app, exception):
     # No need to waste time embedding hyperlinks when not running the examples
     # XXX: also at the time of writing this fixes make html-noplot
     # for some reason I don't fully understand
-    if not app.builder.config.plot_gallery:
+    gallery_conf = app.config.sphinx_gallery_conf
+    if not gallery_conf['plot_gallery']:
         return
 
     # XXX: Whitelist of builders for which it makes sense to embed
@@ -392,8 +385,6 @@ def embed_code_links(app, exception):
         return
 
     logger.info('embedding documentation hyperlinks...', color='white')
-
-    gallery_conf = app.config.sphinx_gallery_conf
 
     gallery_dirs = gallery_conf['gallery_dirs']
     if not isinstance(gallery_dirs, list):

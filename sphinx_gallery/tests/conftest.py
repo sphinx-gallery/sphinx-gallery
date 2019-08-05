@@ -10,7 +10,7 @@ import pytest
 
 import sphinx
 from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
-                            sphinx_compatibility)
+                            sphinx_compatibility, py_source_parser)
 
 
 def pytest_report_header(config, startdir):
@@ -72,9 +72,11 @@ def log_collector():
     orig_dr_logger = docs_resolv.logger
     orig_gg_logger = gen_gallery.logger
     orig_gr_logger = gen_rst.logger
+    orig_ps_logger = py_source_parser.logger
     app = FakeSphinxApp()
     docs_resolv.logger = app
     gen_gallery.logger = app
+    py_source_parser.logger = app
     gen_rst.logger = app
     try:
         yield app
@@ -82,6 +84,7 @@ def log_collector():
         docs_resolv.logger = orig_dr_logger
         gen_gallery.logger = orig_gg_logger
         gen_rst.logger = orig_gr_logger
+        py_source_parser.logger = orig_ps_logger
 
 
 @pytest.fixture
