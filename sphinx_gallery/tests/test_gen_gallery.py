@@ -141,6 +141,24 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
 
 @pytest.mark.conf_file(content="""
 sphinx_gallery_conf = {
+    'reset_modules': ('foo',),
+}""")
+def test_bad_reset_str(sphinx_app_wrapper):
+    with pytest.raises(ValueError, match='Unknown module resetter'):
+        sphinx_app_wrapper.create_sphinx_app()
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'reset_modules': (1.,),
+}""")
+def test_bad_reset_callable(sphinx_app_wrapper):
+    with pytest.raises(ValueError, match='Module resetter .* was not callab'):
+        sphinx_app_wrapper.create_sphinx_app()
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
     'mod_example_dir' : os.path.join('modules', 'gen'),
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
