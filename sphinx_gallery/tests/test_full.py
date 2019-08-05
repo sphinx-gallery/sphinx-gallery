@@ -139,8 +139,8 @@ def test_run_sphinx(sphinx_app):
     assert 'after excluding 0' in status
     # intentionally have a bad URL in references
     warning = sphinx_app._warning.getvalue()
-    assert re.match('.*fetching .*wrong_url.*404.*', warning) is not None, \
-        warning
+    want = '.*fetching .*wrong_url.*404.*'
+    assert re.match(want, warning, re.DOTALL) is not None, warning
 
 
 def test_image_formats(sphinx_app):
