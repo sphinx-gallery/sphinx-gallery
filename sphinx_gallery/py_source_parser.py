@@ -135,7 +135,6 @@ def extract_file_config(content):
     for match in re.finditer(INFILE_CONFIG_PATTERN, content):
         name = match.group(1)
         value = match.group(2)
-        print(name, value)
         try:
             value = ast.literal_eval(value)
         except (SyntaxError, ValueError):
