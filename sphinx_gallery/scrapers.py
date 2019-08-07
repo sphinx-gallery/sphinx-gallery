@@ -86,13 +86,16 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         # save a figure that's not the current figure.
         fig = plt.figure(fig_num)
         to_rgba = matplotlib.colors.colorConverter.to_rgba
+        # shallow copy should be fine here, just want to avoid changing
+        # "kwargs" for subsequent figures processed by the loop
+        these_kwargs = kwargs.copy()
         for attr in ['facecolor', 'edgecolor']:
             fig_attr = getattr(fig, 'get_' + attr)()
             default_attr = matplotlib.rcParams['figure.' + attr]
             if to_rgba(fig_attr) != to_rgba(default_attr) and \
                     attr not in kwargs:
-                kwargs[attr] = fig_attr
-        fig.savefig(image_path, **kwargs)
+                these_kwargs[attr] = fig_attr
+        fig.savefig(image_path, **these_kwargs)
         image_paths.append(image_path)
     plt.close('all')
     return figure_rst(image_paths, gallery_conf['src_dir'])
