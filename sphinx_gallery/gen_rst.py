@@ -508,7 +508,7 @@ def execute_code_block(compiler, block, example_globals,
         os.chdir(cwd)
 
         captured_std = captured_std.getvalue().expandtabs()
-        if captured_std:
+        if captured_std and not captured_std.isspace():
             captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
         else:
             captured_std = ''

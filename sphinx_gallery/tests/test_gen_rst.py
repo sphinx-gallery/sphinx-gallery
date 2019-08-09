@@ -448,6 +448,27 @@ def test_output_indentation(gallery_conf):
     assert output_test_string == test_string.replace(r"\n", "\n")
 
 
+def test_empty_output_box(gallery_conf):
+    """Tests that `print(__doc__)` doesn't produce an empty output box."""
+    compiler = codeop.Compile()
+    
+    code_block = ("code", "print(__doc__)", 1)
+
+    script_vars = {
+        "execute_script": True,
+        "image_path_iterator": ImagePathIterator("temp.png"),
+        "src_file": __file__,
+        "memory_delta": [],
+    }
+
+    example_globals = {'__doc__': ''}
+
+    output = sg.execute_code_block(
+        compiler, code_block, example_globals, script_vars, gallery_conf
+    )
+    assert output.isspace() == True
+
+
 class TestLoggingTee:
     def setup(self):
         self.output_file = io.StringIO()
