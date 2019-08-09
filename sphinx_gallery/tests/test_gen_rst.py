@@ -466,7 +466,7 @@ def test_empty_output_box(gallery_conf):
     output = sg.execute_code_block(
         compiler, code_block, example_globals, script_vars, gallery_conf
     )
-    assert output.isspace() == True
+    assert output.isspace()
 
 
 class TestLoggingTee:
