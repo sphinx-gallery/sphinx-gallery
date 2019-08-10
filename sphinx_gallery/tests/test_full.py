@@ -301,7 +301,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
-    assert re.match('.*0 added, [2|3|6|7|8] changed, 0 removed$.*',
+    assert re.match('.*0 added, [1|2|3|6|7|8] changed, 0 removed$.*',
                     status, re.MULTILINE | re.DOTALL) is not None, lines
     want = ('.*executed 0 out of 1.*after excluding %s files.*based on MD5.*'
             % (N_GOOD,))
@@ -424,8 +424,6 @@ def test_rebuild(tmpdir_factory, sphinx_app):
 
     # generated RST files
     different = (
-        # this one should get rewritten as we retried it
-        'plot_future_imports_broken.rst',
         'plot_numpy_matplotlib.rst',
     )
     ignore = (
@@ -433,6 +431,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # get extremely unlucky and have identical run times
         # on the one script above that changes...
         'sg_execution_times.rst',
+        # this one will not change even though it was retried
+        'plot_future_imports_broken.rst',
     )
     if not sys.platform.startswith('win'):  # not reliable on Windows
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)

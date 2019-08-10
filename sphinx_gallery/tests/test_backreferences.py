@@ -18,9 +18,9 @@ REFERENCE = r"""
 
 .. only:: html
 
-    .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
+ .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
 
-        :ref:`sphx_glr_fake_dir_test_file.py`
+     :ref:`sphx_glr_fake_dir_test_file.py`
 
 .. raw:: html
 
@@ -54,7 +54,7 @@ def test_thumbnail_div(content, tooltip, is_backref):
 
 .. only:: not html
 
-    * :ref:`sphx_glr_fake_dir_test_file.py`"""
+ * :ref:`sphx_glr_fake_dir_test_file.py`"""
     else:
         extra = ''
     reference = REFERENCE.format(tooltip, extra)

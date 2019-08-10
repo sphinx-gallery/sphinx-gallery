@@ -758,7 +758,7 @@ Often you wish to "reset" the behavior of your visualization packages in order
 to ensure that any changes made to plotting behavior in one example do not
 propagate to the other examples.
 
-By default, at the end of executing each example file, Sphinx-gallery will
+By default, before each example file executes, Sphinx-gallery will
 reset ``matplotlib`` (by using :func:`matplotlib.pyplot.rcdefaults`) and ``seaborn``
 (by trying to unload the module from ``sys.modules``). This is equivalent to the
 following configuration::

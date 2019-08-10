@@ -38,6 +38,10 @@
 
    .. include:: backreferences/{{fullname}}.{{item}}.examples
 
+   .. raw:: html
+
+      <div style='clear:both'></div>
+
    {%- endfor %}
    {% endif %}
    {% endblock %}
