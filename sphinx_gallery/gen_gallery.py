@@ -245,7 +245,7 @@ def generate_gallery_rst(app):
 
     seen_backrefs = set()
 
-    computation_times = []
+    costs = []
     workdirs = _prepare_sphx_glr_dirs(gallery_conf,
                                       app.builder.srcdir)
 
@@ -261,12 +261,11 @@ def generate_gallery_rst(app):
 
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
-        this_fhindex, this_computation_times = generate_dir_rst(
+        this_fhindex, this_costs = generate_dir_rst(
             examples_dir, gallery_dir, gallery_conf, seen_backrefs)
 
-        computation_times += this_computation_times
-        write_computation_times(gallery_conf, gallery_dir,
-                                this_computation_times)
+        costs += this_costs
+        write_computation_times(gallery_conf, gallery_dir, this_costs)
 
         # we create an index.rst with all examples
         index_rst_new = os.path.join(gallery_dir, 'index.rst.new')
@@ -278,13 +277,12 @@ def generate_gallery_rst(app):
                     app.builder.srcdir, examples_dir, gallery_conf):
                 src_dir = os.path.join(examples_dir, subsection)
                 target_dir = os.path.join(gallery_dir, subsection)
-                this_fhindex, this_computation_times = \
+                this_fhindex, this_costs = \
                     generate_dir_rst(src_dir, target_dir, gallery_conf,
                                      seen_backrefs)
                 fhindex.write(this_fhindex)
-                computation_times += this_computation_times
-                write_computation_times(gallery_conf, target_dir,
-                                        this_computation_times)
+                costs += this_costs
+                write_computation_times(gallery_conf, target_dir, this_costs)
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(gallery_dir)
@@ -296,16 +294,20 @@ def generate_gallery_rst(app):
 
     if gallery_conf['plot_gallery']:
         logger.info("computation time summary:", color='white')
-        for time_elapsed, fname in sorted(computation_times, reverse=True):
-            fname = os.path.relpath(fname,
-                                    os.path.normpath(gallery_conf['src_dir']))
-            if time_elapsed is not None:
-                if time_elapsed >= gallery_conf['min_reported_time']:
-                    logger.info("    - %s: %.2g sec", fname, time_elapsed)
+        lines, lens = _format_for_writing(
+            costs, os.path.normpath(gallery_conf['src_dir']), kind='console')
+        for name, t, m in lines:
+            text = ('    - %s:   ' % (name,)).ljust(lens[0] + 10)
+            if t is None:
+                text += '(not run)'
+                logger.info(text)
             else:
-                logger.info("    - %s: not run", fname)
+                t_float = float(t.split()[0])
+                if t_float >= gallery_conf['min_reported_time']:
+                    text += t.rjust(lens[1]) + '   ' + m.rjust(lens[2])
+                    logger.info(text)
         # Also create a junit.xml file, useful e.g. on CircleCI
-        write_junit_xml(gallery_conf, app.builder.outdir, computation_times)
+        write_junit_xml(gallery_conf, app.builder.outdir, costs)
 
 
 SPHX_GLR_COMP_TIMES = """
@@ -331,8 +333,32 @@ def _sec_to_readable(t):
     return t
 
 
-def write_computation_times(gallery_conf, target_dir, computation_times):
-    if all(time[0] == 0 for time in computation_times):
+def cost_name_key(cost_name):
+    cost, name = cost_name
+    # sort by descending computation time, descending memory, alphabetical name
+    return (-cost[0], -cost[1], name)
+
+
+def _format_for_writing(costs, path, kind='rst'):
+    lines = list()
+    for cost in sorted(costs, key=cost_name_key):
+        if kind == 'rst':  # like in sg_execution_times
+            name = ':ref:`sphx_glr_{0}_{1}` (``{1}``)'.format(
+                path, os.path.basename(cost[1]))
+            t = _sec_to_readable(cost[0][0])
+        else:  # like in generate_gallery
+            assert kind == 'console'
+            name = os.path.relpath(cost[1], path)
+            t = '%0.2f sec' % (cost[0][0],)
+        m = '{0:.1f} MB'.format(cost[0][1])
+        lines.append([name, t, m])
+    lens = [max(x) for x in zip(*[[len(l) for l in ll] for ll in lines])]
+    return lines, lens
+
+
+def write_computation_times(gallery_conf, target_dir, costs):
+    total_time = sum(cost[0][0] for cost in costs)
+    if total_time == 0:
         return
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
@@ -340,18 +366,23 @@ def write_computation_times(gallery_conf, target_dir, computation_times):
     with codecs.open(os.path.join(target_dir, 'sg_execution_times.rst'), 'w',
                      encoding='utf-8') as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
-        total_time = sum(ct[0] for ct in computation_times)
         fid.write('**{0}** total execution time for **{1}** files:\n\n'
                   .format(_sec_to_readable(total_time), target_dir_clean))
-        # sort by time (descending) then alphabetical
-        for ct in sorted(computation_times, key=lambda x: (-x[0], x[1])):
-            name = os.path.basename(ct[1])
-            example_link = 'sphx_glr_%s_%s' % (target_dir_clean, name)
-            fid.write(u'- **{0}**: :ref:`{2}` (``{1}``)\n'.format(
-                _sec_to_readable(ct[0]), name, example_link))
+        lines, lens = _format_for_writing(costs, target_dir_clean)
+        del costs
+        hline = ''.join(('+' + '-' * (l + 2)) for l in lens) + '+\n'
+        fid.write(hline)
+        format_str = ''.join('| {%s} ' % (ii,)
+                             for ii in range(len(lines[0]))) + '|\n'
+        for line in lines:
+            line = [ll.ljust(len_) for ll, len_ in zip(line, lens)]
+            text = format_str.format(*line)
+            assert len(text) == len(hline)
+            fid.write(text)
+            fid.write(hline)
 
 
-def write_junit_xml(gallery_conf, target_dir, computation_times):
+def write_junit_xml(gallery_conf, target_dir, costs):
     if not gallery_conf['junit'] or not gallery_conf['plot_gallery']:
         return
     failing_as_expected, failing_unexpectedly, passing_unexpectedly = \
@@ -362,8 +393,8 @@ def write_junit_xml(gallery_conf, target_dir, computation_times):
     elapsed = 0.
     src_dir = gallery_conf['src_dir']
     output = ''
-    for ct in computation_times:
-        t, fname = ct
+    for cost in costs:
+        (t, _), fname = cost
         if not any(fname in x for x in (gallery_conf['passing_examples'],
                                         failing_unexpectedly,
                                         failing_as_expected,
@@ -391,7 +422,7 @@ def write_junit_xml(gallery_conf, target_dir, computation_times):
                                escape(traceback)))
         output += u'</testcase>'
         n_tests += 1
-        elapsed += ct[0]
+        elapsed += t
     output += u'</testsuite>'
     output = (u'<?xml version="1.0" encoding="utf-8"?>'
               u'<testsuite errors="0" failures="{0}" name="sphinx-gallery" '

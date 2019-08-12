@@ -23,7 +23,8 @@ from sphinx.util.docutils import docutils_namespace
 
 from sphinx_gallery import sphinx_compatibility
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
-                                        collect_gallery_files)
+                                        collect_gallery_files,
+                                        write_computation_times)
 
 
 @pytest.fixture
@@ -137,6 +138,24 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     assert cfg.project == "Sphinx-Gallery <Tests>"
     build_warn = sphinx_app._warning.getvalue()
     assert build_warn == ''
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'reset_modules': ('foo',),
+}""")
+def test_bad_reset_str(sphinx_app_wrapper):
+    with pytest.raises(ValueError, match='Unknown module resetter'):
+        sphinx_app_wrapper.create_sphinx_app()
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'reset_modules': (1.,),
+}""")
+def test_bad_reset_callable(sphinx_app_wrapper):
+    with pytest.raises(ValueError, match='Module resetter .* was not callab'):
+        sphinx_app_wrapper.create_sphinx_app()
 
 
 @pytest.mark.conf_file(content="""
@@ -372,3 +391,7 @@ def test_first_notebook_cell_config(sphinx_app_wrapper):
     # First cell must be str
     with pytest.raises(ValueError):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
+
+
+def test_write_computation_times_noop():
+    write_computation_times(None, None, [[[0]]])

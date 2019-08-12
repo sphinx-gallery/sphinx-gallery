@@ -305,17 +305,17 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
     entries_text = []
-    computation_times = []
+    costs = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     iterator = sphinx_compatibility.status_iterator(
         sorted_listdir,
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
     for fname in iterator:
-        intro, time_elapsed = generate_file_rst(
+        intro, cost = generate_file_rst(
             fname, target_dir, src_dir, gallery_conf)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
-        computation_times.append((time_elapsed, src_file))
+        costs.append((cost, src_file))
         this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
                                     fname, intro) + """
 
@@ -336,7 +336,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     fhindex += """.. raw:: html\n
     <div style='clear:both'></div>\n\n"""
 
-    return fhindex, computation_times
+    return fhindex, costs
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):
@@ -633,8 +633,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     -------
     intro: str
         The introduction of the example
-    time_elapsed : float
-        seconds required to run the script
+    cost : tuple
+        A tuple containing the ``(time, memory)`` required to run the script.
     """
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     target_file = os.path.join(target_dir, fname)
@@ -648,7 +648,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     if md5sum_is_current(target_file):
         if executable:
             gallery_conf['stale_examples'].append(target_file)
-        return intro, 0
+        return intro, (0, 0)
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
@@ -695,7 +695,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     save_notebook(example_nb, ipy_fname)
     _replace_md5(ipy_fname)
 
-    return intro, time_elapsed
+    return intro, (time_elapsed, memory_used)
 
 
 def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
