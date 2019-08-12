@@ -13,25 +13,25 @@ import ast
 import codecs
 import collections
 from html import escape
-import pickle
 import os
 import re
+import warnings
 
 from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
-from .py_source_parser import parse_source_file, split_code_and_text_blocks
 
 
 class NameFinder(ast.NodeVisitor):
-    """Finds the longest form of variable names and their imports in code
+    """Finds the longest form of variable names and their imports in code.
 
     Only retains names from imported modules.
     """
 
-    def __init__(self):
+    def __init__(self, global_variables=None):
         super(NameFinder, self).__init__()
         self.imported_names = {}
+        self.global_variables = global_variables or {}
         self.accessed_names = set()
 
     def visit_Import(self, node, prefix=''):
@@ -63,21 +63,62 @@ class NameFinder(ast.NodeVisitor):
         for name in self.accessed_names:
             local_name = name.split('.', 1)[0]
             remainder = name[len(local_name):]
+            class_attr = False
             if local_name in self.imported_names:
                 # Join import path to relative path
                 full_name = self.imported_names[local_name] + remainder
-                yield name, full_name
+                yield name, full_name, class_attr
+            elif local_name in self.global_variables:
+                obj = self.global_variables[local_name]
+                if remainder and remainder[0] == '.':  # maybe meth or attr
+                    method = [remainder[1:]]
+                    class_attr = True
+                else:
+                    method = []
+                # Recurse through all levels of bases
+                classes = [obj.__class__]
+                offset = 0
+                while offset < len(classes):
+                    for base in classes[offset].__bases__:
+                        if base not in classes:
+                            classes.append(base)
+                    offset += 1
+                for cc in classes:
+                    module = cc.__module__.split('.')
+                    class_name = cc.__name__
+                    # a.b.C.meth could be documented as a.C.meth,
+                    # so go down the list
+                    for depth in range(len(module), 0, -1):
+                        full_name = '.'.join(
+                            module[:depth] + [class_name] + method)
+                        yield name, full_name, class_attr
 
 
-def get_short_module_name(module_name, obj_name):
-    """ Get the shortest possible module name """
+def _from_import(a, b):
+    imp_line = 'from %s import %s' % (a, b)
+    scope = dict()
+    with warnings.catch_warnings(record=True):  # swallow warnings
+        warnings.simplefilter('ignore')
+        exec(imp_line, scope, scope)
+    return scope
+
+
+def _get_short_module_name(module_name, obj_name):
+    """Get the shortest possible module name."""
+    if '.' in obj_name:
+        obj_name, attr = obj_name.split('.')
+    else:
+        attr = None
     scope = {}
     try:
         # Find out what the real object is supposed to be.
-        exec('from %s import %s' % (module_name, obj_name), scope, scope)
+        scope = _from_import(module_name, obj_name)
+    except Exception:  # wrong object
+        return None
+    else:
         real_obj = scope[obj_name]
-    except Exception:
-        return module_name
+        if attr is not None and not hasattr(real_obj, attr):  # wrong class
+            return None  # wrong object
 
     parts = module_name.split('.')
     short_name = module_name
@@ -85,7 +126,7 @@ def get_short_module_name(module_name, obj_name):
         short_name = '.'.join(parts[:i])
         scope = {}
         try:
-            exec('from %s import %s' % (short_name, obj_name), scope, scope)
+            scope = _from_import(short_name, obj_name)
             # Ensure shortened object is the same as what we expect.
             assert real_obj is scope[obj_name]
         except Exception:  # libraries can throw all sorts of exceptions...
@@ -95,67 +136,58 @@ def get_short_module_name(module_name, obj_name):
     return short_name
 
 
-def extract_object_names_from_docs(filename):
-    """Add matches from the text blocks (must be full names!)"""
-    text = split_code_and_text_blocks(filename)[1]
-    text = '\n'.join(t[1] for t in text if t[0] == 'text')
-    regex = re.compile(r':(?:'
-                       r'func(?:tion)?|'
-                       r'meth(?:od)?|'
-                       r'attr(?:ibute)?|'
-                       r'obj(?:ect)?|'
-                       r'class):`(\S*)`'
-                       )
-    return [(x, x) for x in re.findall(regex, text)]
+_regex = re.compile(r':(?:'
+                    r'func(?:tion)?|'
+                    r'meth(?:od)?|'
+                    r'attr(?:ibute)?|'
+                    r'obj(?:ect)?|'
+                    r'class):`(\S*)`'
+                    )
 
 
-def identify_names(filename):
-    """Builds a codeobj summary by identifying and resolving used names."""
-    node, _ = parse_source_file(filename)
-    if node is None:
-        return {}
-
+def identify_names(script_blocks, global_variables=None, node=''):
+    """Build a codeobj summary by identifying and resolving used names."""
+    if node == '':  # mostly convenience for testing functions
+        c = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'code')
+        node = ast.parse(c)
     # Get matches from the code (AST)
-    finder = NameFinder()
-    finder.visit(node)
+    finder = NameFinder(global_variables)
+    if node is not None:
+        finder.visit(node)
     names = list(finder.get_mapping())
-    names += extract_object_names_from_docs(filename)
-
-    example_code_obj = collections.OrderedDict()
-    for name, full_name in names:
+    # Get matches from docstring inspection
+    text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
+    names.extend((x, x, False) for x in re.findall(_regex, text))
+    example_code_obj = collections.OrderedDict()  # order is important
+    fill_guess = dict()
+    for name, full_name, class_like in names:
         if name in example_code_obj:
             continue  # if someone puts it in the docstring and code
         # name is as written in file (e.g. np.asarray)
         # full_name includes resolved import path (e.g. numpy.asarray)
-        splitted = full_name.rsplit('.', 1)
+        splitted = full_name.rsplit('.', 1 + class_like)
         if len(splitted) == 1:
-            # module without attribute. This is not useful for
-            # backreferences
-            continue
+            splitted = ('builtins', splitted[0])
+        elif len(splitted) == 3:  # class-like
+            assert class_like
+            splitted = (splitted[0], '.'.join(splitted[1:]))
+        else:
+            assert not class_like
 
         module, attribute = splitted
         # get shortened module name
-        module_short = get_short_module_name(module, attribute)
+        module_short = _get_short_module_name(module, attribute)
         cobj = {'name': attribute, 'module': module,
                 'module_short': module_short}
-        example_code_obj[name] = cobj
+        if module_short is not None:
+            example_code_obj[name] = cobj
+        elif name not in fill_guess:
+            cobj['module_short'] = module
+            fill_guess[name] = cobj
+    for key, value in fill_guess.items():
+        if key not in example_code_obj:
+            example_code_obj[key] = value
     return example_code_obj
-
-
-def scan_used_functions(example_file, gallery_conf):
-    """save variables so we can later add links to the documentation"""
-    example_code_obj = identify_names(example_file)
-    if example_code_obj:
-        codeobj_fname = example_file[:-3] + '_codeobj.pickle.new'
-        with open(codeobj_fname, 'wb') as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
-        _replace_md5(codeobj_fname)
-
-    backrefs = set('{module_short}.{name}'.format(**entry)
-                   for entry in example_code_obj.values()
-                   if entry['module'].startswith(gallery_conf['doc_module']))
-
-    return backrefs
 
 
 THUMBNAIL_TEMPLATE = """
@@ -204,15 +236,12 @@ def _thumbnail_div(target_dir, src_dir, fname, snippet, is_backref=False,
                            thumbnail=thumb, ref_name=ref_name)
 
 
-def write_backreferences(seen_backrefs, gallery_conf,
-                         target_dir, fname, snippet):
-    """Writes down back reference files, which include a thumbnail list
-    of examples using a certain module"""
+def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
+                          target_dir, fname, snippet):
+    """Write backreference file including a thumbnail list of examples."""
     if gallery_conf['backreferences_dir'] is None:
         return
 
-    example_file = os.path.join(target_dir, fname)
-    backrefs = scan_used_functions(example_file, gallery_conf)
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
                                     gallery_conf['backreferences_dir'],
@@ -229,7 +258,7 @@ def write_backreferences(seen_backrefs, gallery_conf,
             seen_backrefs.add(backref)
 
 
-def finalize_backreferences(seen_backrefs, gallery_conf):
+def _finalize_backreferences(seen_backrefs, gallery_conf):
     """Replace backref files only if necessary."""
     logger = sphinx_compatibility.getLogger('sphinx-gallery')
     if gallery_conf['backreferences_dir'] is None:

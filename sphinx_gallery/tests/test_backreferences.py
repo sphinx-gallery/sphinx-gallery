@@ -8,6 +8,8 @@ from __future__ import division, absolute_import, print_function
 
 import pytest
 import sphinx_gallery.backreferences as sg
+from sphinx_gallery.py_source_parser import (split_code_and_text_blocks,
+                                             parse_source_file)
 from sphinx_gallery.gen_rst import _sanitize_rst
 
 
@@ -75,8 +77,8 @@ def test_identify_names(unicode_sample):
              'module': 'sphinx_gallery.back_references',
              'module_short': 'sphinx_gallery.back_references'}
     }
-
-    res = sg.identify_names(unicode_sample)
+    _, script_blocks = split_code_and_text_blocks(unicode_sample)
+    res = sg.identify_names(script_blocks)
     assert expected == res
 
 
@@ -103,7 +105,8 @@ e.HelloWorld().f.g
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')
 
-    res = sg.identify_names(fname.strpath)
+    _, script_blocks = split_code_and_text_blocks(fname.strpath)
+    res = sg.identify_names(script_blocks)
 
     assert expected == res
 
@@ -119,7 +122,7 @@ This example uses :func:`h.i`.
 
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')
-
-    res = sg.identify_names(fname.strpath)
+    _, script_blocks = split_code_and_text_blocks(fname.strpath)
+    res = sg.identify_names(script_blocks)
 
     assert expected == res

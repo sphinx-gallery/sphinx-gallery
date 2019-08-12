@@ -177,8 +177,7 @@ class SphinxDocLinkResolver(object):
         self._searchindex = js_index.loads(sindex)
 
     def _get_link(self, cobj):
-        """Get a valid link, False if not found"""
-
+        """Get a valid link, False if not found."""
         fullname = cobj['module_short'] + '.' + cobj['name']
         try:
             value = self._searchindex['objects'][cobj['module_short']]
@@ -255,6 +254,12 @@ class SphinxDocLinkResolver(object):
         return link
 
 
+def _handle_http_url_error(e, msg='fetching'):
+    extra = e.code if isinstance(e, HTTPError) else e.reason
+    logger.warning('The following HTTP Error has occurred %s %s: %s (%s)',
+                   msg, e.url, extra, e.msg)
+
+
 def _embed_code_links(app, gallery_conf, gallery_dir):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
@@ -269,17 +274,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                     url, src_gallery_dir)
 
-        except HTTPError as e:
-            logger.warning(
-                'The following HTTP Error has occurred fetching %s: %d %s',
-                e.url, e.code, e.msg)
-        except URLError as e:
-            logger.warning(
-                "Embedding the documentation hyperlinks requires Internet "
-                "access.\nPlease check your network connection.\nUnable to "
-                "continue embedding `%s` links due to a URL Error:\n%s",
-                this_module,
-                str(e.args))
+        except (URLError, HTTPError) as e:
+            _handle_http_url_error(e)
 
     html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
                                                     gallery_dir))
@@ -312,40 +308,43 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             str_repl = {}
             # generate replacement strings with the links
             for name, cobj in example_code_obj.items():
-                this_module = cobj['module'].split('.')[0]
+                for modname in (cobj['module_short'], cobj['module']):
+                    this_module = modname.split('.')[0]
+                    cname = cobj['name']
 
-                # Try doc resolvers first
-                link = None
-                if this_module in doc_resolvers:
-                    try:
-                        link = doc_resolvers[this_module].resolve(cobj,
-                                                                  full_fname)
-                    except (HTTPError, URLError) as e:
-                        if isinstance(e, HTTPError):
-                            extra = e.code
+                    # Try doc resolvers first
+                    link = None
+                    if this_module in doc_resolvers:
+                        try:
+                            link = doc_resolvers[this_module].resolve(
+                                cobj, full_fname)
+                        except (HTTPError, URLError) as e:
+                            _handle_http_url_error(
+                                e, msg='resolving %s.%s' % (modname, cname))
+
+                    # next try intersphinx
+                    if this_module == modname == 'builtins':
+                        this_module = 'python'
+                    if link is None and this_module in intersphinx_inv:
+                        inv = app.env.intersphinx_named_inventory[this_module]
+                        if this_module == 'python':
+                            want = cname
                         else:
-                            extra = e.reason
-                        logger.warning("Error resolving %s.%s: %r (%s)",
-                                       cobj['module'], cobj['name'], e, extra)
-                        link = None
+                            want = '%s.%s' % (modname, cname)
+                        for key, value in inv.items():
+                            # only python domain
+                            if key.startswith('py') and want in value:
+                                link = value[want][2]
+                                break
 
-                # next try intersphinx
-                if link is None and this_module in intersphinx_inv:
-                    inv = app.env.intersphinx_named_inventory[this_module]
-                    want = '%s.%s' % (cobj['module'], cobj['name'])
-                    for value in inv.values():
-                        if want in value:
-                            link = value[want][2]
-                            break
-
-                if link is not None:
-                    parts = name.split('.')
-                    name_html = period.join(orig_pattern % part
-                                            for part in parts)
-                    full_function_name = '%s.%s' % (
-                        cobj['module'], cobj['name'])
-                    str_repl[name_html] = link_pattern % (
-                        link, full_function_name, name_html)
+                    if link is not None:
+                        parts = name.split('.')
+                        name_html = period.join(orig_pattern % part
+                                                for part in parts)
+                        full_function_name = '%s.%s' % (modname, cname)
+                        str_repl[name_html] = link_pattern % (
+                            link, full_function_name, name_html)
+                        break  # loop over possible module names
 
             # do the replacement in the html file
 
@@ -373,7 +372,8 @@ def embed_code_links(app, exception):
     # No need to waste time embedding hyperlinks when not running the examples
     # XXX: also at the time of writing this fixes make html-noplot
     # for some reason I don't fully understand
-    if not app.builder.config.plot_gallery:
+    gallery_conf = app.config.sphinx_gallery_conf
+    if not gallery_conf['plot_gallery']:
         return
 
     # XXX: Whitelist of builders for which it makes sense to embed
@@ -385,8 +385,6 @@ def embed_code_links(app, exception):
         return
 
     logger.info('embedding documentation hyperlinks...', color='white')
-
-    gallery_conf = app.config.sphinx_gallery_conf
 
     gallery_dirs = gallery_conf['gallery_dirs']
     if not isinstance(gallery_dirs, list):

@@ -38,6 +38,7 @@ sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery',),
     'reference_url': {
         'sphinx_gallery': None,
+        'scipy': 'http://docs.scipy.org/doc/scipy/wrong_url',  # bad one
     },
     'examples_dirs': ['examples/'],
     'gallery_dirs': ['auto_examples'],

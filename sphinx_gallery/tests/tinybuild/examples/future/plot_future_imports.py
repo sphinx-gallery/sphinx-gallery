@@ -10,7 +10,7 @@ from __future__ import print_function
 import matplotlib
 
 ####################
-# Dummy section, with :func:`sphinx_gallery.backreferences.identify_names` ref.
+# Dummy section, with :func:`sphinx_gallery.backreferences.NameFinder` ref.
 
 assert 3/2 == 1.5
 print(3/2, end='')

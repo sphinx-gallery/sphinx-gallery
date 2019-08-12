@@ -19,6 +19,7 @@ import contextlib
 import ast
 import codecs
 import gc
+import pickle
 from io import StringIO
 import os
 import re
@@ -35,10 +36,11 @@ from .scrapers import (save_figures, ImagePathIterator, clean_modules,
 from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
 from . import glr_path_static
 from . import sphinx_compatibility
-from .backreferences import write_backreferences, _thumbnail_div
+from .backreferences import (_write_backreferences, _thumbnail_div,
+                             identify_names)
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (split_code_and_text_blocks,
-                               get_docstring_and_rest, remove_config_comments)
+                               remove_config_comments)
 
 from .notebook import jupyter_notebook, save_notebook
 from .binder import check_binder_conf, gen_binder_rst
@@ -313,7 +315,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         length=len(sorted_listdir))
     for fname in iterator:
         intro, cost = generate_file_rst(
-            fname, target_dir, src_dir, gallery_conf)
+            fname, target_dir, src_dir, gallery_conf, seen_backrefs)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append((cost, src_file))
         this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
@@ -324,10 +326,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
    /%s\n""" % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')
         entries_text.append(this_entry)
-
-        if gallery_conf['backreferences_dir']:
-            write_backreferences(seen_backrefs, gallery_conf,
-                                 target_dir, fname, intro)
 
     for entry_text in entries_text:
         fhindex += entry_text
@@ -615,7 +613,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     return output_blocks, time_elapsed
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
+                      seen_backrefs=None):
     """Generate the rst file for a given example.
 
     Parameters
@@ -628,6 +627,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         Absolute path to directory where source examples are stored
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
+    seen_backrefs : set
+        The seen backreferences.
 
     Returns
     -------
@@ -636,12 +637,15 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     cost : tuple
         A tuple containing the ``(time, memory)`` required to run the script.
     """
+    seen_backrefs = set() if seen_backrefs is None else seen_backrefs
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     target_file = os.path.join(target_dir, fname)
     _replace_md5(src_file, target_file, 'copy')
 
-    intro, _ = extract_intro_and_title(fname,
-                                       get_docstring_and_rest(src_file)[0])
+    file_conf, script_blocks, node = split_code_and_text_blocks(
+        src_file, return_node=True)
+    intro, title = extract_intro_and_title(fname, script_blocks[0][1])
+    gallery_conf['titles'][src_file] = title
 
     executable = executable_script(src_file, gallery_conf)
 
@@ -663,8 +667,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         'image_path_iterator': ImagePathIterator(image_path_template),
         'src_file': src_file,
         'target_file': target_file}
-
-    file_conf, script_blocks = split_code_and_text_blocks(src_file)
 
     if gallery_conf['remove_config_comments']:
         script_blocks = [
@@ -694,6 +696,24 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ipy_fname = replace_py_ipynb(target_file) + '.new'
     save_notebook(example_nb, ipy_fname)
     _replace_md5(ipy_fname)
+
+    # Write names
+    if gallery_conf['inspect_global_variables']:
+        global_variables = script_vars['example_globals']
+    else:
+        global_variables = None
+    example_code_obj = identify_names(script_blocks, global_variables, node)
+    if example_code_obj:
+        codeobj_fname = target_file[:-3] + '_codeobj.pickle.new'
+        with open(codeobj_fname, 'wb') as fid:
+            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
+        _replace_md5(codeobj_fname)
+    backrefs = set('{module_short}.{name}'.format(**entry)
+                   for entry in example_code_obj.values()
+                   if entry['module'].startswith(gallery_conf['doc_module']))
+    # Write backreferences
+    _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
+                          fname, intro)
 
     return intro, (time_elapsed, memory_used)
 

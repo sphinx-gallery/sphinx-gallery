@@ -68,7 +68,7 @@ def parse_source_file(filename):
         return None, content
 
 
-def get_docstring_and_rest(filename):
+def _get_docstring_and_rest(filename):
     """Separate ``filename`` content between docstring and the rest.
 
     Strongly inspired from ast.get_docstring.
@@ -79,11 +79,15 @@ def get_docstring_and_rest(filename):
         docstring of ``filename``
     rest : str
         ``filename`` content without the docstring
+    lineno : int
+        The line number.
+    node : ast Node
+        The node.
     """
     node, content = parse_source_file(filename)
 
     if node is None:
-        return SYNTAX_ERROR_DOCSTRING, content, 1
+        return SYNTAX_ERROR_DOCSTRING, content, 1, node
 
     if not isinstance(node, ast.Module):
         raise TypeError("This function only supports modules. "
@@ -120,7 +124,7 @@ def get_docstring_and_rest(filename):
     # Note: 'maxsplit' argument is not a keyword argument in python2
     rest = '\n'.join(content.split('\n')[lineno:])
     lineno += 1
-    return docstring, rest, lineno
+    return docstring, rest, lineno, node
 
 
 def extract_file_config(content):
@@ -142,8 +146,15 @@ def extract_file_config(content):
     return file_conf
 
 
-def split_code_and_text_blocks(source_file):
+def split_code_and_text_blocks(source_file, return_node=False):
     """Return list with source file separated into code and text blocks.
+
+    Parameters
+    ----------
+    source_file : str
+        Path to the source file.
+    return_node : bool
+        If True, return the ast node.
 
     Returns
     -------
@@ -154,8 +165,11 @@ def split_code_and_text_blocks(source_file):
         (label, content, line_number)
         List where each element is a tuple with the label ('text' or 'code'),
         the corresponding content string of block and the leading line number
+    node : ast Node
+        The parsed node.
     """
-    docstring, rest_of_content, lineno = get_docstring_and_rest(source_file)
+    docstring, rest_of_content, lineno, node = _get_docstring_and_rest(
+        source_file)
     blocks = [('text', docstring, 1)]
 
     file_conf = extract_file_config(rest_of_content)
@@ -185,7 +199,10 @@ def split_code_and_text_blocks(source_file):
     if remaining_content.strip():
         blocks.append(('code', remaining_content, lineno))
 
-    return file_conf, blocks
+    out = (file_conf, blocks)
+    if return_node:
+        out += (node,)
+    return out
 
 
 def remove_config_comments(code_block):

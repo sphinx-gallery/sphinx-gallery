@@ -49,7 +49,8 @@ def sphinx_app(tmpdir_factory):
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                     buildername='html', status=StringIO())
+                     buildername='html', status=StringIO(),
+                     warning=StringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
         app.build(False, [])
@@ -136,6 +137,10 @@ def test_run_sphinx(sphinx_app):
     status = sphinx_app._status.getvalue()
     assert 'executed %d out of %d' % (N_GOOD, N_TOT) in status
     assert 'after excluding 0' in status
+    # intentionally have a bad URL in references
+    warning = sphinx_app._warning.getvalue()
+    want = '.*fetching .*wrong_url.*404.*'
+    assert re.match(want, warning, re.DOTALL) is not None, warning
 
 
 def test_image_formats(sphinx_app):
@@ -182,6 +187,11 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'numpy.arange.html' in lines
     assert '#module-matplotlib.pyplot' in lines
     assert 'pyplot.html' in lines
+    assert 'matplotlib.figure.Figure.html#matplotlib.figure.Figure.tight_layout' in lines  # noqa
+    assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
+    assert 'matplotlib_configuration_api.html#matplotlib.rcParams' in lines
+    assert 'stdtypes.html#list' in lines
+
     try:
         import memory_profiler  # noqa, analysis:ignore
     except ImportError:
@@ -201,7 +211,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert '.. code-block:: python3\n' in rst
 
     # warnings
-    want_warn = ('plot_numpy_matplotlib.py:31: RuntimeWarning: This'
+    want_warn = ('plot_numpy_matplotlib.py:33: RuntimeWarning: This'
                  ' warning should show up in the output')
     assert want_warn in lines
     sys.stdout.write(lines)
@@ -221,7 +231,7 @@ def test_backreferences(sphinx_app):
                        'sphinx_gallery.backreferences.html')
     with codecs.open(mod_file, 'r', 'utf-8') as fid:
         lines = fid.read()
-    assert 'identify_names' in lines  # in API doc
+    assert 'NameFinder' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
 
 

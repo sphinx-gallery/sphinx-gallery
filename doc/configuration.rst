@@ -22,7 +22,7 @@ file:
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
 - ``reference_url`` (:ref:`link_to_documentation`)
-- ``backreferences_dir`` and ``doc_module`` (:ref:`references_to_examples`)
+- ``backreferences_dir``, ``doc_module``, and ``inspect_global_variables`` (:ref:`references_to_examples`)
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
 - ``line_numbers`` (:ref:`adding_line_numbers`)
@@ -394,6 +394,36 @@ configuration option setup for Sphinx-Gallery.
     :emphasize-lines: 12-22, 32-42
     :linenos:
 
+.. note::
+   By default, Sphinx-gallery will inspect global variables (and code objects)
+   at the end of each code block to try to find classes of variables and
+   method calls. It also tries to find methods called on classes.
+   For example, this code::
+
+       lst = [1, 2]
+       fig, ax = plt.subplots()
+       ax.plot(lst)
+
+   should end up with the following links (assuming intersphinx is set up
+   properly):
+
+   - :class:`lst <python:list>`
+   - :func:`plt.subplots <matplotlib.pyplot.subplots>`
+   - :class:`fig  <matplotlib.figure.Figure>`
+   - :class:`ax <matplotlib.axes.Axes>`
+   - :meth:`ax.plot <matplotlib.axes.Axes.plot>`
+
+   However, this feature is might not work properly in all instances.
+   Moreover, if variable names get reused in the same script to refer to
+   different classes, it will break.
+
+   To disable this global variable introspection, you can use the configuration
+   key::
+
+       sphinx_gallery_conf = {
+           ...
+           'inspect_global_variables'  : False,
+        }
 
 .. _custom_default_thumb:
 
