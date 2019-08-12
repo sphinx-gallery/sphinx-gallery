@@ -177,8 +177,7 @@ class SphinxDocLinkResolver(object):
         self._searchindex = js_index.loads(sindex)
 
     def _get_link(self, cobj):
-        """Get a valid link, False if not found"""
-
+        """Get a valid link, False if not found."""
         fullname = cobj['module_short'] + '.' + cobj['name']
         try:
             value = self._searchindex['objects'][cobj['module_short']]
@@ -332,7 +331,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             want = cname
                         else:
                             want = '%s.%s' % (modname, cname)
-                        for key, value in inv.items():  # only python domain
+                        for key, value in inv.items():
+                            # only python domain
                             if key.startswith('py') and want in value:
                                 link = value[want][2]
                                 break

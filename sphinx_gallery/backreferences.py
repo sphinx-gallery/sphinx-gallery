@@ -15,6 +15,7 @@ import collections
 from html import escape
 import os
 import re
+import warnings
 
 from . import sphinx_compatibility
 from .scrapers import _find_image_ext
@@ -69,16 +70,37 @@ class NameFinder(ast.NodeVisitor):
                 yield name, full_name, class_attr
             elif local_name in self.global_variables:
                 obj = self.global_variables[local_name]
-                c = obj.__class__
-                # XXX Eventually this should probably recurse through all
-                # levels of bases
-                for cc in [c] + list(c.__bases__):
-                    joiner = (cc.__module__, cc.__name__)
-                    if remainder and remainder[0] == '.':  # maybe meth or attr
-                        joiner += (remainder[1:],)
-                        class_attr = True
-                    full_name = '.'.join(joiner)
-                    yield name, full_name, class_attr
+                if remainder and remainder[0] == '.':  # maybe meth or attr
+                    method = [remainder[1:]]
+                    class_attr = True
+                else:
+                    method = []
+                # Recurse through all levels of bases
+                classes = [obj.__class__]
+                offset = 0
+                while offset < len(classes):
+                    for base in classes[offset].__bases__:
+                        if base not in classes:
+                            classes.append(base)
+                    offset += 1
+                for cc in classes:
+                    module = cc.__module__.split('.')
+                    class_name = cc.__name__
+                    # a.b.C.meth could be documented as a.C.meth,
+                    # so go down the list
+                    for depth in range(len(module), 0, -1):
+                        full_name = '.'.join(
+                            module[:depth] + [class_name] + method)
+                        yield name, full_name, class_attr
+
+
+def _from_import(a, b):
+    imp_line = 'from %s import %s' % (a, b)
+    scope = dict()
+    with warnings.catch_warnings(record=True):  # swallow warnings
+        warnings.simplefilter('ignore')
+        exec(imp_line, scope, scope)
+    return scope
 
 
 def _get_short_module_name(module_name, obj_name):
@@ -90,8 +112,7 @@ def _get_short_module_name(module_name, obj_name):
     scope = {}
     try:
         # Find out what the real object is supposed to be.
-        imp_line = 'from %s import %s' % (module_name, obj_name)
-        exec(imp_line, scope, scope)
+        scope = _from_import(module_name, obj_name)
     except Exception:  # wrong object
         return None
     else:
@@ -105,7 +126,7 @@ def _get_short_module_name(module_name, obj_name):
         short_name = '.'.join(parts[:i])
         scope = {}
         try:
-            exec('from %s import %s' % (short_name, obj_name), scope, scope)
+            scope = _from_import(short_name, obj_name)
             # Ensure shortened object is the same as what we expect.
             assert real_obj is scope[obj_name]
         except Exception:  # libraries can throw all sorts of exceptions...

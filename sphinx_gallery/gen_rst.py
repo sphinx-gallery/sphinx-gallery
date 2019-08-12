@@ -698,8 +698,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     _replace_md5(ipy_fname)
 
     # Write names
-    example_code_obj = identify_names(
-        script_blocks, script_vars['example_globals'], node)
+    if gallery_conf['inspect_global_variables']:
+        global_variables = script_vars['example_globals']
+    else:
+        global_variables = None
+    example_code_obj = identify_names(script_blocks, global_variables, node)
     if example_code_obj:
         codeobj_fname = target_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:
