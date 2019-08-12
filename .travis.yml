@@ -25,10 +25,10 @@ matrix:
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.7" LOCALE=C
+      env: DISTRIB="conda" PYTHON_VERSION="3.7.3" LOCALE=C
            SPHINXOPTS="-nWT --keep-going"
     - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.7" SPHINX_VERSION="dev"
+      env: DISTRIB="conda" PYTHON_VERSION="3.7.3" SPHINX_VERSION="dev"
     - python: 3.7
       env: DISTRIB="minimal"
     - python: "nightly"
