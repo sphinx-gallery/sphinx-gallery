@@ -242,8 +242,9 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     # First run completes in the fixture.
     #
     status = sphinx_app._status.getvalue()
+    lines = [line for line in status.split('\n') if 'removed' in line]
     want = '.*%s added, 0 changed, 0 removed.*' % (N_RST,)
-    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
+    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     want = '.*targets for 2 source files that are out of date$.*'
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
     want = ('.*executed %d out of %d.*after excluding 0 files.*based on MD5.*'
