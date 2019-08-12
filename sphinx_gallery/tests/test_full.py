@@ -27,6 +27,7 @@ N_TOT = 5
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 14 + N_TOT
+N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
 @pytest.fixture(scope='module')
