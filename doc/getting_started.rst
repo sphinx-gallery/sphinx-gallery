@@ -43,9 +43,9 @@ Let's say your Python project looks like this:
       	├── example.py
       	└── README.txt (or .rst)
 
-``doc`` is the Sphinx 'source directory' and it contains the Sphinx base files. 
-Default versions of these base files can obtained from executing
-``sphinx-quickstart`` (more details at `Sphinx-quickstart 
+``doc`` is the Sphinx 'source directory' and it contains the Sphinx base 
+configuration files. Default versions of these base files can obtained from 
+executing ``sphinx-quickstart`` (more details at `Sphinx-quickstart 
 <http://www.sphinx-doc.org/en/master/usage/quickstart.html>`_). Sphinx
 ``.rst`` source files are generally also placed here (none included in 
 our example directory structure above) but these are 
@@ -81,9 +81,9 @@ this folder must have the following things:
   to structure these Python scripts with embedded rST, see
   :ref:`python_script_syntax`. 
   
-    * By default files prefixed with ``plot_`` will be executed and their 
-      outputs captured to incorporate them in the HTML (or another output format
-      depending on the `Sphinx 'builder'
+    * By default **only** files prefixed with ``plot_`` will be executed and 
+      their outputs captured to incorporate them in the HTML (or another output 
+      format depending on the `Sphinx 'builder'
       <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ selected)
       output of the script. Files without that prefix will be only parsed and 
       presented in a rich literate programming fashion, without any output. To 
@@ -128,7 +128,7 @@ After building your documentation, ``gallery_dirs`` will contain the following
 files and directories:
 
 * ``index.rst`` - the master document of the gallery containing the Gallery
-  Header and table of contents tree, which will serve as the welcome page for 
+  Header and table of contents tree. It which will serve as the welcome page for 
   that gallery.
 * ``sg_execution_times.rst`` - execution time of all example ``.py`` files, 
   summarised in table format (`original pull request on GitHub
@@ -153,17 +153,17 @@ generated:
   they belong (more details in 
   :ref:`sphx_glr_auto_examples_plot_function_identifier.py`)
 
-Two compressed ``.zip`` files containing all the ``.ipynb`` and ``.py`` files
-are also generated.
+Additionally, two compressed ``.zip`` files containing all the ``.ipynb`` and 
+``.py`` files are generated.
 
 For more advanced configuration, see the :ref:`configuration` page.
 
 Add your gallery to the documentation
 -------------------------------------
 
-The ``index.rst`` file generated for your gallery (and for each sub-gallery) can 
-be added to the table of contents tree in the main Sphinx ``doc/index.rst`` 
-file  or embedded in a ``.rst`` file with an ``.. include::`` statement.
+The ``index.rst`` file generated for your gallery can be added to the table of 
+contents tree in the main Sphinx ``doc/index.rst`` file  or embedded in a 
+Sphinx source ``.rst`` file with an ``.. include::`` statement.
 
 Build the documentation
 -----------------------
@@ -175,8 +175,8 @@ In your Sphinx source directory, (e.g., ``myproject/doc``) execute:
     $ make html
 
 This will start the build of your complete documentation. Both 
-the Sphinx-Gallery generated output files described above and 
-the Sphinx generated output HTML (or another output format depending on the 
+the Sphinx-Gallery output files described above and 
+the Sphinx output HTML (or another output format depending on the 
 `Sphinx 'builder'
 <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ selected) will
 be generated. Once a build is completed, all your examples' outputs are cached.
