@@ -10,9 +10,10 @@ Creating a basic Gallery
 This section describes how to set up a basic gallery for your examples
 using the Sphinx extension Sphinx-Gallery, which will do the following:
 
-* Automatically generate Sphinx rST for your example ``.py`` files, along with
-  ``.ipynb`` (Jupyter notebook) and ``.py`` files of each example that users 
-  can download.
+* Automatically generate Sphinx rST out of your ``.py`` example files. The 
+  rendering of the resulting rST will provide the users with ``.ipynb``
+  (Jupyter notebook) and ``.py`` files of each example, which users can 
+  download.
 * Create a gallery with thumbnails for each of these examples
   (such as `the one that scikit-learn
   <http://scikit-learn.org/stable/auto_examples/index.html>`_ uses)
@@ -139,7 +140,7 @@ files and directories:
 * A directory for each sub-directory in 'example_dirs'. Within each directory
   will be the above and below listed files for that 'sub-gallery'.
 
-Additionally for EACH ``.py`` file, a file with the following suffix is 
+Additionally for **each** ``.py`` file, a file with the following suffix is 
 generated:
 
 * ``.rst`` - the rendered rST version of the ``.py`` file, ready for Sphinx 
@@ -179,9 +180,11 @@ the Sphinx-Gallery output files described above and
 the Sphinx output HTML (or another output format depending on the 
 `Sphinx 'builder'
 <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ selected) will
-be generated. Once a build is completed, all your examples' outputs are cached.
+be generated. Once a build is completed, all the outputs from your examples
+will be cached.
 In the future, only examples that have changed will be re-built.
 
 You should now have a gallery built from your example scripts! For more
 advanced usage and configuration, check out the :ref:`advanced_usage` page or
 the :ref:`configuration` reference.
+ 
