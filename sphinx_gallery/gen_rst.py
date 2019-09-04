@@ -114,7 +114,6 @@ SINGLE_IMAGE = """
     :class: sphx-glr-single-img
 """
 
-
 # This one could contain unicode
 CODE_OUTPUT = u""".. rst-class:: sphx-glr-script-out
 
@@ -270,9 +269,10 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
 def _get_readme(dir_, gallery_conf, raise_error=True):
     extensions = ['.txt'] + sorted(gallery_conf['app'].config['source_suffix'])
     for ext in extensions:
-        fname = os.path.join(dir_, 'README' + ext)
-        if os.path.isfile(fname):
-            return fname
+        for fname in ('README', 'readme'):
+            fpth = os.path.join(dir_, fname + ext)
+            if os.path.isfile(fpth):
+                return fpth
     if raise_error:
         raise FileNotFoundError(
             "Example directory {0} does not have a README file with one "
