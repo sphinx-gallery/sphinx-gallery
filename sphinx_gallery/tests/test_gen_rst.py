@@ -229,7 +229,7 @@ def test_extract_intro_and_title():
     with pytest.raises(ValueError, match='should have a header'):
         sg.extract_intro_and_title('<string>', '')  # no title
     with pytest.raises(ValueError, match='Could not find a title'):
-        sg.extract_intro_and_title('<string>', '-')  # no real title
+        sg.extract_intro_and_title('<string>', '=')  # no real title
 
 
 def test_md5sums():
