@@ -13,7 +13,10 @@ A simple example
 Sphinx-Gallery expects each Python file to have two things:
 
 1. **A docstring**, written in rST, that defines the
-   header for the example. It must begin by defining an rST title. For example::
+   header for the example. It must begin by defining a rST title. The title
+   may contain the following punctuation marks: ``' " ` : ; -``. We
+   recommend using ``=`` to underline your title to avoid regex problems, since
+   punctuation marks are allowed in the title. For example::
 
     """
     This is my example script

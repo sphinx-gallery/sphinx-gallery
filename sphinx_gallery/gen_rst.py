@@ -189,7 +189,7 @@ def extract_intro_and_title(filename, docstring):
     # removed, i.e. lines that consist of (all the same) 7-bit non-ASCII chars.
     # This conditional is not perfect but should hopefully be good enough.
     title_paragraph = paragraphs[0]
-    match = re.search(r'([\w ]+)', title_paragraph)
+    match = re.search(r'([\w -:;`"\']+)', title_paragraph)
 
     if match is None:
         raise ValueError(
