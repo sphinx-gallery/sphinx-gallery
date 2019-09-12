@@ -186,16 +186,18 @@ def extract_intro_and_title(filename, docstring):
             "Example docstring should have a header for the example title. "
             "Please check the example file:\n {}\n".format(filename))
     # Title is the first paragraph with any ReSTructuredText title chars
-    # removed, i.e. lines that consist of (all the same) 7-bit non-ASCII chars.
+    # removed, i.e. lines that consist of (3 or more of the same) 7-bit
+    # non-ASCII chars.
     # This conditional is not perfect but should hopefully be good enough.
     title_paragraph = paragraphs[0]
-    match = re.search(r'([\w -:;`"\']+)', title_paragraph)
+    match = re.search(r'^(?!(\W)\1{3,})[\w \-\'\"`;:]+', title_paragraph,
+                      re.MULTILINE)
 
     if match is None:
         raise ValueError(
             'Could not find a title in first paragraph:\n{}'.format(
                 title_paragraph))
-    title = match.group(1).strip()
+    title = match.group(0).strip()
     # Use the title if no other paragraphs are provided
     intro_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
     # Concatenate all lines of the first paragraph and truncate at 95 chars
