@@ -190,7 +190,7 @@ def extract_intro_and_title(filename, docstring):
     # non-ASCII chars.
     # This conditional is not perfect but should hopefully be good enough.
     title_paragraph = paragraphs[0]
-    match = re.search(r'^(?!(\W)\1{3,})[\w \-\'\"`;:]+', title_paragraph,
+    match = re.search(r'^(?!([\W _])\1{3,})(.+)', title_paragraph,
                       re.MULTILINE)
 
     if match is None:

@@ -14,8 +14,8 @@ Sphinx-Gallery expects each Python file to have two things:
 
 1. **A docstring**, written in rST, that defines the
    header for the example. It must begin by defining a rST title. The title
-   may contain the following punctuation marks: ``' " ` : ; -`` but **cannot**
-   start with 3 or more of the same punctuation marks. For example::
+   may contain any punctuation marks but cannot start with 3 or more of the
+   **same** punctuation marks. For example::
 
     """
     "This" is my example-script

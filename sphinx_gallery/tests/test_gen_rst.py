@@ -212,7 +212,7 @@ def test_extract_intro_and_title():
 
     # Title with punctuation (gh-517)
     intro, title = sg.extract_intro_and_title('<string>',
-                                              '----------------\n"-`Header"-with:; `punct` mark\'s\n----------------')
+                                              '    ------------\n"-`Header"-with:; `punct` mark\'s\n----------------')
     assert title == '"-`Header"-with:; `punct` mark\'s'
 
     # Long intro paragraph gets shortened
@@ -229,7 +229,7 @@ def test_extract_intro_and_title():
     with pytest.raises(ValueError, match='should have a header'):
         sg.extract_intro_and_title('<string>', '')  # no title
     with pytest.raises(ValueError, match='Could not find a title'):
-        sg.extract_intro_and_title('<string>', '=')  # no real title
+        sg.extract_intro_and_title('<string>', '=====')  # no real title
 
 
 def test_md5sums():
