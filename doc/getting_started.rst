@@ -94,6 +94,8 @@ this folder must have the following things:
       included as sub-sections of your gallery. They **must** contain their own
       ``README.txt`` or ``README.rst`` file as well.
 
+.. _configure_and_use_sphinx_gallery:
+
 Configure and use sphinx-gallery
 --------------------------------
 
