@@ -83,11 +83,39 @@ Image scrapers are functions (or callable class instances) that do two things:
    extensions, respectively)
 3. Return rST that embeds these figures in the built documentation.
 
-The function should take the following inputs (in this order): ``block``,
-``block_vars``, and ``gallery_conf``. It should return a string containing the
-rST for embedding this figure in the documentation.
-See :func:`~sphinx_gallery.scrapers.matplotlib_scraper` for
-a description of the inputs/outputs.
+The function should take the following inputs (in this order):
+
+1. ``block`` - a Sphinx-Gallery ``.py`` file is separated into consecutive
+   lines of 'code' and rST 'text', called 'blocks'. For each
+   block, a tuple containing the (label, content, line_number) 
+   (e.g. ``('code', 'print("Hello world")', 5)``) of the block is created.
+
+   * 'label' is a string that can either be ``'text'`` or ``'code'``. In this
+     context, it should only be ``'code'`` as this function is only called for
+     code blocks.
+   * 'content' is a string containing the actual content of the code block.
+   * 'line_number' is an integer, indicating the line number that the block
+     starts at.
+
+2. ``block_vars`` - dictionary of configuration and runtime variables. Of
+   interest for image scrapers is the element ``'image_path_iterator'`` which
+   is an iterable object which returns an absolute path to an image file name
+   adhering to Sphinx-Gallery naming convention. The path directs to the 
+   ``gallery_dirs/images`` directory (:ref:`configure_and_use_sphinx_gallery`)
+   and the image file name is ``'sphx_glr_'`` followed by the name of the 
+   source ``.py`` file then a number, which starts at 1 and increases by 1 at
+   each iteration. The default file format is ``.'png'``. For example:
+   ``'home/user/Documents/module/auto_examples/images/sphx_glr_plot_mymodule_001.png'``
+   
+3. ``gallery_conf`` - dictionary containing the configuration of Sphinx-Gallery,
+   set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
+
+It should return a string containing the rST for embedding this figure in the
+documentation. See :func:`~sphinx_gallery.scrapers.matplotlib_scraper` for an
+example of a scraper function (click on 'source' below the function name to see
+the source code). The :func:`~sphinx_gallery.scrapers.matplotlib_scraper` uses
+the helper function :func:`sphinx_gallery.scrapers.figure_rst` to help generate
+rST (see below).
 
 This function will be called once for each code block of your examples.
 Sphinx-gallery will take care of scaling images for the gallery
