@@ -111,8 +111,11 @@ The function should take the following inputs (in this order):
    set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
 
 It should return a string containing the rST for embedding this figure in the
-documentation. The helper function :func:`sphinx_gallery.scrapers.figure_rst`
-may be used to help generate rST (see below).
+documentation. See :func:`~sphinx_gallery.scrapers.matplotlib_scraper` for an
+example of a scraper function (click on 'source' below the function name to see
+the source code). The :func:`~sphinx_gallery.scrapers.matplotlib_scraper` uses
+the helper function :func:`sphinx_gallery.scrapers.figure_rst` to help generate
+rST (see below).
 
 This function will be called once for each code block of your examples.
 Sphinx-gallery will take care of scaling images for the gallery
