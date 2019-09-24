@@ -493,6 +493,34 @@ def test_empty_output_box(gallery_conf):
     assert output.isspace()
 
 
+@pytest.mark.parametrize('code,out', [
+    ('a=2\nb=3', ''),
+    ('a=2\na', '2'),
+    ('a=2\nprint(a)', '2'),
+    ('print("hello")\na=2\na', 'hello\n\n2')])
+def test_eval_last_line_expr(gallery_conf, code, out):
+    """Test's last line is eval if it's an expression and output captured."""
+    compiler = codeop.Compile()
+    
+    code_block = ("code", code, 1)
+
+    script_vars = {
+        "execute_script": True,
+        "image_path_iterator": ImagePathIterator("temp.png"),
+        "src_file": __file__,
+        "memory_delta": [],
+    }
+
+    output = sg.execute_code_block(
+        compiler, code_block, {}, script_vars, gallery_conf
+    )
+    output_test_string = "\n".join(
+        [line[4:] for line in output.strip().split("\n")[6:]])
+
+    output_test_string = output_test_string.strip()
+    assert output_test_string == out
+
+
 class TestLoggingTee:
     def setup(self):
         self.output_file = io.StringIO()
