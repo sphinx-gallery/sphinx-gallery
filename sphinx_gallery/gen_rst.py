@@ -417,6 +417,21 @@ class _exec_once(object):
                 exec(self.code, self.globals)
 
 
+class _eval_once(object):
+    """Deal with memory_usage calling functions more than once (argh)."""
+
+    def __init__(self, code, globals_):
+        self.code = code
+        self.globals = globals_
+        self.run = False
+
+    def __call__(self):
+        if not self.run:
+            self.run = True
+            with patch_warnings():
+                return eval(self.code, self.globals)
+
+
 def _memory_usage(func, gallery_conf):
     """Get memory usage of a function call."""
     if gallery_conf['show_memory']:
@@ -487,22 +502,22 @@ def execute_code_block(compiler, block, example_globals,
         code_ast = compile(bcontent, src_file, 'exec',
                            ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
-        # eval if last line is expr
+        # eval and capture output if last line is expression
         if isinstance(code_ast.body[-1], ast.Expr):
             last_expr = ast.Expression(body=code_ast.body.pop().value)
-            _, mem = _memory_usage(_exec_once(
+            _, mem1 = _memory_usage(_exec_once(
                 compiler(code_ast, src_file, 'exec'), example_globals),
                 gallery_conf)
-            with patch_warnings():
-                last_out = eval(compiler(last_expr, src_file, 'eval'),
-                    example_globals)
+            last_out, mem2 = _memory_usage(_eval_once(
+                compiler(last_expr, src_file, 'eval'), example_globals),
+                gallery_conf)
+            mem_tot = max(mem1, mem2)
         else:
             last_out = None
-            _, mem = _memory_usage(_exec_once(
+            _, mem_tot = _memory_usage(_exec_once(
                 compiler(code_ast, src_file, 'exec'), example_globals),
                 gallery_conf)
-
-        script_vars['memory_delta'].append(mem)
+        script_vars['memory_delta'].append(mem_tot)
     except Exception:
         sys.stdout.flush()
         sys.stderr.flush()
