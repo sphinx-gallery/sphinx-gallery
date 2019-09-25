@@ -13,11 +13,13 @@ A simple example
 Sphinx-Gallery expects each Python file to have two things:
 
 1. **A docstring**, written in rST, that defines the
-   header for the example. It must begin by defining an rST title. For example::
+   header for the example. It must begin by defining a rST title. The title
+   may contain any punctuation mark but cannot start with the same punctuation
+   mark repeated more than 3 times. For example::
 
     """
-    This is my example script
-    =========================
+    "This" is my example-script
+    ===========================
 
     This example doesn't do much, it just makes a simple plot
     """
