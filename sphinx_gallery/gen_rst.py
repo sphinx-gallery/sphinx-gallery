@@ -493,8 +493,9 @@ def execute_code_block(compiler, block, example_globals,
             _, mem = _memory_usage(_exec_once(
                 compiler(code_ast, src_file, 'exec'), example_globals),
                 gallery_conf)
-            last_out = eval(compiler(last_expr, src_file, 'eval'),
-                example_globals)
+            with patch_warnings():
+                last_out = eval(compiler(last_expr, src_file, 'eval'),
+                    example_globals)
         else:
             last_out = None
             _, mem = _memory_usage(_exec_once(
