@@ -505,19 +505,19 @@ def execute_code_block(compiler, block, example_globals,
         # eval and capture output if last line is expression
         if isinstance(code_ast.body[-1], ast.Expr):
             last_expr = ast.Expression(body=code_ast.body.pop().value)
-            _, mem1 = _memory_usage(_exec_once(
+            _, mem_exec = _memory_usage(_exec_once(
                 compiler(code_ast, src_file, 'exec'), example_globals),
                 gallery_conf)
-            last_out, mem2 = _memory_usage(_eval_once(
+            last_out, mem_eval = _memory_usage(_eval_once(
                 compiler(last_expr, src_file, 'eval'), example_globals),
                 gallery_conf)
-            mem_tot = max(mem1, mem2)
+            mem_max = max(mem_exec, mem_eval)
         else:
             last_out = None
-            _, mem_tot = _memory_usage(_exec_once(
+            _, mem_max = _memory_usage(_exec_once(
                 compiler(code_ast, src_file, 'exec'), example_globals),
                 gallery_conf)
-        script_vars['memory_delta'].append(mem_tot)
+        script_vars['memory_delta'].append(mem_max)
     except Exception:
         sys.stdout.flush()
         sys.stderr.flush()
