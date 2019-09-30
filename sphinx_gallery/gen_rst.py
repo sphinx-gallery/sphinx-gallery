@@ -503,6 +503,7 @@ def execute_code_block(compiler, block, example_globals,
                            ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
         if gallery_conf['print_eval_repr'] == ():
+            last_out = None
             _, mem_max = _memory_usage(_exec_once(
                 compiler(code_ast, src_file, 'exec'), example_globals),
                 gallery_conf)
