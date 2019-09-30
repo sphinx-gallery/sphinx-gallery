@@ -499,8 +499,9 @@ def test_empty_output_box(gallery_conf):
     ('a=2\nprint(a)', '2'),
     ('print("hello")\na=2\na', 'hello\n\n2')])
 def test_eval_last_line_expr(gallery_conf, code, out):
-    """Test's last line is eval if it's an expression and output captured."""
+    """Tests last line is eval if it's an expression and output captured."""
     compiler = codeop.Compile()
+    gallery_conf['print_eval_repr'] = ('__repr__')
     
     code_block = ("code", code, 1)
 
@@ -519,6 +520,9 @@ def test_eval_last_line_expr(gallery_conf, code, out):
 
     output_test_string = output_test_string.strip()
     assert output_test_string == out
+
+def test_defualt_print_eval_repr(gallery_conf):
+    """Test
 
 
 class TestLoggingTee:
