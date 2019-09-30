@@ -521,9 +521,6 @@ def test_eval_last_line_expr(gallery_conf, code, out):
     output_test_string = output_test_string.strip()
     assert output_test_string == out
 
-def test_defualt_print_eval_repr(gallery_conf):
-    """Test
-
 
 class TestLoggingTee:
     def setup(self):
