@@ -40,6 +40,7 @@ file:
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
+- ``print_eval_repr`` (:ref:`print_eval_repr`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -949,5 +950,51 @@ you can do::
         ...
         'show_memory': True,
     }
+
+
+.. _print_eval_repr:
+
+Controlling what output is captured
+===================================
+
+Sphinx-Gallery can run your code blocks in two ways:
+
+* **Exec only** - ``exec()`` the whole code block.
+* **Exec eval** - ``exec()`` the whole code block except the last statement. If
+  the last statement is an expression, ``eval()`` it, otherwise ``exec()` it.
+
+The code block::
+
+    a=2
+    a
+
+would output nothing with 'exec only' but would output ``2`` with 'exec eval'.
+If you did wish to output the value of ``a`` in 'exec only' mode, you would
+need to use ``print(a)``.
+
+The 'exec only' option is the default option and remains mostly for backward
+compatibility.
+
+The 'exec eval' option behaves similar to the IPython terminal (with the
+default ``TerminalInteractiveShell.ast_node_interactivity`` -
+`'last_expr' <https://ipython.readthedocs.io/en/stable/config/options/terminal.html#configtrait-TerminalInteractiveShell.ast_node_interactivity>`_
+option). Of note, if the last expression is a Matplotlib function call, there
+will be an output box returned as well as the figure. This is because a value
+is returned as well. For example, ``plt.plot()`` returns a list of ``Line2D``
+objects representing the plotted data. To prevent this output box you can:
+
+* assign the (last) plotting function to a temporary variable. For example::
+
+    import matplotlib as plt
+
+    _ = plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+
+* add ``plt.show()`` (which does not return anything) to the end of your
+  plotting function(s). For example::
+  
+    import matplotlib as plt
+
+    plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+    plt.show()
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
