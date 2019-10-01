@@ -957,41 +957,42 @@ you can do::
 Controlling what output is captured
 ===================================
 
-Sphinx-Gallery can run your code blocks in two ways:
+The ``print_eval_repr`` configuration allows the user to control what output of
+the last expression in a code block, is captured and rendered in the built
+documentation. By default ``print_eval_repr`` is an empty tuple. With this
+setting, the last statement in a code block is executed with ``exec()`` and
+thus only data directed to standard output is captured.
 
-* **Exec only** - ``exec()`` the whole code block. Only data directed to
-  standard output is captured.
-* **Exec eval** - ``exec()`` everything in the code block *except* the last
-  statement. If the last statement is an expression, ``eval()`` it and if it is
-  not an expression, ``exec()`` it. Both data directed to standard output
-  and the value of the last statement, if it is an expression, is captured.
+If you added ``__repr__`` to the tuple like so::
+
+        sphinx_gallery_conf = {
+            ...
+            'print_eval_repr': ('__repr__',),
+        }
+
+the last statement would be evaluated with ``eval()`` *if* it is an
+expression and the ``__repr__()`` of the expression would be captured.
 
 For example, the code block::
 
     a=2
     a
 
-would output nothing in 'exec only' mode but would output ``2`` in
-'exec eval' mode. If you did wish to output the value of ``a`` in 'exec only'
-mode, you would need to change the last statement to ``print(a)``.
+would output nothing in the default mode but with
+``'print_eval_repr': ('__repr__',)``, ``2`` would be captured. If you did wish
+to output the ``__repr__()`` of ``a`` in the default mode, you would need to
+change the last statement to ``print(a)``. The configuration
+``'print_eval_repr': ('__repr__',)`` behaves similarly to the
+IPython terminal. 
 
-The 'exec only' option is the default option and remains mostly for backward
-compatibility.
-
-The 'exec eval' option behaves similar to the IPython terminal (with the
-default ``TerminalInteractiveShell.ast_node_interactivity`` -
-`'last_expr' <https://ipython.readthedocs.io/en/stable/config/options/terminal.html#configtrait-TerminalInteractiveShell.ast_node_interactivity>`_
-option). Of note, if the last expression is a Matplotlib function call, there
-will generally be a yellow output box produced in the built documentation,
-as well as the figure. This is because matplotlib function calls usually
-returns something as well as creating/amending the plot in standard output.
-For example, ``plt.plot()`` returns a list of ``Line2D``
-objects representing the plotted data.
-
-This does not occur in 'exec only' mode as the return value of the last
-Matplotlib function call is not captured. 
-
-You can prevent this output box in 'exec eval' by:
+Of note, with the configuration ``'print_eval_repr': ('__repr__',)``, if the
+last expression is a Matplotlib function call, there will generally be a
+yellow output box produced in the built documentation, as well as the figure.
+This is because matplotlib function calls usually return something as well as
+creating/amending the plot in standard output. For example, ``plt.plot()``
+returns a list of ``Line2D`` objects representing the plotted data. The
+``__repr__()`` of this list would thus be captured. You can prevent this
+by:
 
 * assigning the (last) plotting function to a temporary variable. For example::
 
@@ -1006,5 +1007,8 @@ You can prevent this output box in 'exec eval' by:
 
     plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
     plt.show()
+
+The unwanted string output does not occur in default mode as the return value
+of the last Matplotlib function call is not captured. 
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
