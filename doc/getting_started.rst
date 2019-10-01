@@ -91,8 +91,11 @@ this folder must have the following things:
       presented in a rich literate programming fashion, without any output. To
       change the default pattern for execution and capture see
       :ref:`build_pattern`.
-    * Which outputs are captured by executing the ``plot_`` files can be
-      tuned, see :ref:`print_eval_repr`.
+    * By default Sphinx-Gallery will ``exec()`` the code in the ``plot_`` files
+      and only data directed to standard output is captured. You can change
+      this to work more like the Ipython terminal, where the last expression is
+      ``eval()`` in the Sphinx-Gallery configurations, see
+      :ref:`print_eval_repr`.
     * You can have sub-directories in your ``examples`` directory. These will be
       included as sub-sections of your gallery. They **must** contain their own
       ``README.txt`` or ``README.rst`` file as well.
@@ -174,7 +177,7 @@ Sphinx source ``.rst`` file with an ``.. include::`` statement.
 Build the documentation
 -----------------------
 
-In your Sphinx source directory, (e.g., ``myproject/doc``) execute:
+In your Sphinx source directory, (e.g. ``myproject/doc``) execute:
 
 .. code-block:: bash
 

@@ -959,18 +959,21 @@ Controlling what output is captured
 
 Sphinx-Gallery can run your code blocks in two ways:
 
-* **Exec only** - ``exec()`` the whole code block.
-* **Exec eval** - ``exec()`` the whole code block except the last statement. If
-  the last statement is an expression, ``eval()`` it, otherwise ``exec()` it.
+* **Exec only** - ``exec()`` the whole code block. Only data directed to
+  standard output is captured.
+* **Exec eval** - ``exec()`` everything in the code block *except* the last
+  statement. If the last statement is an expression, ``eval()`` it and if it is
+  not an expression, ``exec()`` it. Both data directed to standard output
+  and the value of the last statement, if it is an expression, is captured.
 
-The code block::
+For example, the code block::
 
     a=2
     a
 
-would output nothing with 'exec only' but would output ``2`` with 'exec eval'.
-If you did wish to output the value of ``a`` in 'exec only' mode, you would
-need to use ``print(a)``.
+would output nothing in 'exec only' mode but would output ``2`` in
+'exec eval' mode. If you did wish to output the value of ``a`` in 'exec only'
+mode, you would need to change the last statement to ``print(a)``.
 
 The 'exec only' option is the default option and remains mostly for backward
 compatibility.
@@ -979,11 +982,18 @@ The 'exec eval' option behaves similar to the IPython terminal (with the
 default ``TerminalInteractiveShell.ast_node_interactivity`` -
 `'last_expr' <https://ipython.readthedocs.io/en/stable/config/options/terminal.html#configtrait-TerminalInteractiveShell.ast_node_interactivity>`_
 option). Of note, if the last expression is a Matplotlib function call, there
-will be an output box returned as well as the figure. This is because a value
-is returned as well. For example, ``plt.plot()`` returns a list of ``Line2D``
-objects representing the plotted data. To prevent this output box you can:
+will generally be a yellow output box produced in the built documentation,
+as well as the figure. This is because matplotlib function calls usually
+returns something as well as creating/amending the plot in standard output.
+For example, ``plt.plot()`` returns a list of ``Line2D``
+objects representing the plotted data.
 
-* assign the (last) plotting function to a temporary variable. For example::
+This does not occur in 'exec only' mode as the return value of the last
+Matplotlib function call is not captured. 
+
+You can prevent this output box in 'exec eval' by:
+
+* assigning the (last) plotting function to a temporary variable. For example::
 
     import matplotlib as plt
 
