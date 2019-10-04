@@ -676,30 +676,6 @@ def test_print_eval_repr(gallery_conf, print_eval_repr, code, expected_out):
     assert _clean_output(output) == expected_out
 
 
-
-def test_lucy(gallery_conf):
-    """Tests output capturing with various repr's in tuple."""
-    compiler = codeop.Compile()
-
-    gallery_conf['print_eval_repr'] = ('__repr__',)
-    code_block = ('code', 'a=2\nprint(a)', 1)
-    script_vars = {
-        "execute_script": True,
-        "image_path_iterator": ImagePathIterator("temp.png"),
-        "src_file": __file__,
-        "memory_delta": [],
-    }
-
-    output = sg.execute_code_block(
-        compiler, code_block, {}, script_vars, gallery_conf
-    )
-
-    # output_test_string = "\n".join(output.strip().split("\n")[-5:])
-    # output_test_string = output_test_string.strip()
-    print(output)
-    print(_clean_output(output))
-    assert False
-
 class TestLoggingTee:
     def setup(self):
         self.output_file = io.StringIO()
