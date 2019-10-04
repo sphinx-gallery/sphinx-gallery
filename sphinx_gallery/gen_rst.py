@@ -480,6 +480,10 @@ def execute_code_block(compiler, block, example_globals,
 
     try:
         dont_inherit = 1
+        if sys.version_info >= (3, 8):
+            code_ast = ast.Module([bcontent], [])
+        else:
+            code_ast = ast.Module([bcontent])
         code_ast = compile(bcontent, src_file, 'exec',
                            ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
