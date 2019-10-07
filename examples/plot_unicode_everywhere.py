@@ -31,6 +31,7 @@ plt.xlabel('⇒')
 plt.ylabel('⇒')
 plt.title('♲' * 10)
 print('Std out capture 😎')
+# To avoid matplotlib text output
 plt.show()
 
 ###########################################################################

@@ -32,7 +32,7 @@ def main():
     plt.plot(x, -np.exp(-x), color='orange', linewidth=4)
     plt.xlabel('$x$')
     plt.ylabel('$-\exp(-x)$')
-
+    # To avoid matplotlib text output
     plt.show()
 
 

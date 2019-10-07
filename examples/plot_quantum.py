@@ -63,4 +63,5 @@ for b in [10, 20, 30]:
 plt.xlabel(r'$\mu$ ($\epsilon=1$, $U=1$)')
 plt.ylabel(r'$\langle N \rangle=\langle n_\uparrow \rangle+\langle n_\downarrow\rangle$')
 plt.legend(loc=0)
+# To avoid matplotlib text output
 plt.show()
