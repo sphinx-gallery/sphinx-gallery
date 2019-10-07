@@ -560,106 +560,36 @@ def _clean_output(output):
         return output_test_string.strip()
     
 
-@pytest.mark.parametrize('print_eval_repr, code, expected_out', [
-    pytest.param(
-        tuple(),
-        'a=2\nb=3',
-        '',
-        id='assign,()'
-    ),
-    pytest.param(
-        tuple(),
-        'a=2\na',
-        '',
-        id='var,()'
-    ),
-    pytest.param(
-        tuple(),
-        'a=2\nprint(a)',
-        '2',
-        id='print(var),()'
-    ),
-    pytest.param(
-        tuple(),
-        'print("hello")\na=2\na',
-        'hello',
-        id='print+var,()'
-    ),
-    pytest.param(
-        ('__repr__',),
-        'a=2\nb=3',
-        '',
-        id='assign,(repr)'
-    ),
-    pytest.param(
-        ('__repr__',),
-        'a=2\na',
-        '2',
-        id='var,(repr)'
-    ),
-    pytest.param(
-        ('__repr__',),
-        'a=2\nprint(a)',
-        '2',
-        id='print(var),(repr)'
-    ),
-    pytest.param(   
-        ('__repr__',),
-        'print("hello")\na=2\na',
-        'hello\n\n2',
-        id='print+var,(repr)'
-    ),
-    pytest.param(
-        ('__repr__',),
-        code_repr_and_html,
-        'This is the __repr__',
-        id='repr_and_html,(repr)'
-    ),
-    pytest.param(
-        ('__repr__',),
-        code_print_and_repr_and_html,
-        'print statement\n\nThis is the __repr__',
-        id='print and repr_and_html,(repr)'
-    ),
-    pytest.param(
-        ('_repr_html_',),
-        code_repr_only,
-        '',
-        id='repr_only,(html)'
-    ),
-    pytest.param(
-        ('_repr_html_',),
-        code_repr_and_html,
-        html_out,
-        id='repr_and_html,(html)'
-    ),
-    pytest.param(
-        ('_repr_html_',),
-        code_print_and_repr_and_html,
-        ''.join([text_above_html, html_out]),
-        id='print and repr_and_html,(html)'
-    ),
-    pytest.param(
-        ('_repr_html_', '__repr__'),
-        code_repr_and_html,
-        html_out,
-        id='repr_and_html,(html,repr)'
-    ),
-    pytest.param(
-        ('__repr__', '_repr_html_'),
-        code_repr_and_html,
-        'This is the __repr__',
-        id='repr_and_html,(repr,html)'
-    ),
-    pytest.param(
-        ('_repr_html_', '__repr__'),
-        code_repr_only,
-        'This is the __repr__',
-        id='repr_only,(html,repr)'
-    )
+@pytest.mark.parametrize('capture_repr, code, expected_out', [
+    pytest.param(tuple(), 'a=2\nb=3', '', id='assign,()' ),
+    pytest.param(tuple(), 'a=2\na', '', id='var,()' ),
+    pytest.param(tuple(), 'a=2\nprint(a)', '2',  id='print(var),()'),
+    pytest.param(tuple(), 'print("hello")\na=2\na', 'hello', id='print+var,()'),
+    pytest.param(('__repr__',), 'a=2\nb=3', '', id='assign,(repr)' ),
+    pytest.param(('__repr__',), 'a=2\na', '2', id='var,(repr)' ),
+    pytest.param(('__repr__',), 'a=2\nprint(a)', '2', id='print(var),(repr)'),
+    pytest.param(('__repr__',), 'print("hello")\na=2\na', 'hello\n\n2',
+                 id='print+var,(repr)'),
+    pytest.param(('__repr__',), code_repr_and_html, 'This is the __repr__',
+                 id='repr_and_html,(repr)' ),
+    pytest.param(('__repr__',), code_print_and_repr_and_html,
+                 'print statement\n\nThis is the __repr__',
+                 id='print and repr_and_html,(repr)'),
+    pytest.param(('_repr_html_',), code_repr_only, '', id='repr_only,(html)'),
+    pytest.param(('_repr_html_',), code_repr_and_html, html_out,
+                 id='repr_and_html,(html)'),
+    pytest.param(('_repr_html_',), code_print_and_repr_and_html,
+                 ''.join([text_above_html, html_out]),
+                 id='print and repr_and_html,(html)'),
+    pytest.param(('_repr_html_', '__repr__'), code_repr_and_html, html_out,
+                 id='repr_and_html,(html,repr)' ),
+    pytest.param(('__repr__', '_repr_html_'), code_repr_and_html,
+                 'This is the __repr__', id='repr_and_html,(repr,html)'),
+    pytest.param(('_repr_html_', '__repr__'), code_repr_only,
+                 'This is the __repr__', id='repr_only,(html,repr)')
 ])
-def test_print_eval_repr(gallery_conf, print_eval_repr, code, expected_out):
-    """Tests output capturing with various print_eval_repr settings."""
+def test_capture_repr(gallery_conf, capture_repr, code, expected_out):
+    """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
     code_block = ('code', code, 1)
     script_vars = {
@@ -669,7 +599,7 @@ def test_print_eval_repr(gallery_conf, print_eval_repr, code, expected_out):
         "memory_delta": [],
     }
 
-    gallery_conf['print_eval_repr'] = print_eval_repr
+    gallery_conf['capture_repr'] = capture_repr
     output = sg.execute_code_block(
         compiler, code_block, {}, script_vars, gallery_conf
     )
