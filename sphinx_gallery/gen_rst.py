@@ -334,7 +334,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
     # clear at the end of the section
     fhindex += """.. raw:: html\n
-    <div style='clear:both'></div>\n\n"""
+    <div class="sphx-glr-clear"></div>\n\n"""
 
     return fhindex, costs
 

@@ -20,7 +20,7 @@
 
    .. raw:: html
 
-	       <div style='clear:both'></div>
+	       <div class="sphx-glr-clear"></div>
 
    {%- endfor %}
    {% endif %}
@@ -40,7 +40,7 @@
 
    .. raw:: html
 
-      <div style='clear:both'></div>
+      <div class="sphx-glr-clear"></div>
 
    {%- endfor %}
    {% endif %}

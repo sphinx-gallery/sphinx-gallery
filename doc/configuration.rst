@@ -300,7 +300,7 @@ refer to :obj:`numpy.exp`, which looks like this:
 .. include:: gen_modules/backreferences/numpy.exp.examples
 .. raw:: html
 
-        <div style='clear:both'></div>
+        <div class="sphx-glr-clear"></div>
 
 For such behavior to be available, you have to activate it in
 your Sphinx-Gallery configuration ``conf.py`` file with::
@@ -329,7 +329,7 @@ examples in use of a specific function, in this case ``numpy.exp``::
     .. include:: gen_modules/backreferences/numpy.exp.examples
     .. raw:: html
 
-        <div style='clear:both'></div>
+        <div class="sphx-glr-clear"></div>
 
 The ``include`` directive takes a path **relative** to the ``rst``
 file it is called from. In the case of this documentation file (which
