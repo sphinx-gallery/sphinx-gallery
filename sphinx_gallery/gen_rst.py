@@ -142,7 +142,7 @@ html_header = """.. only:: builder_html
 
     .. raw:: html
 
-    {0}\n"""
+    {0}\n        <br />        <br />"""
 
 def codestr2rst(codestr, lang='python', lineno=None):
     """Return reStructuredText code block from code string"""
@@ -562,7 +562,7 @@ def execute_code_block(compiler, block, example_globals,
         images_rst = save_figures(block, script_vars, gallery_conf)
         # give html output its own header
         if repr_meth == '_repr_html_':
-            captured_html = html_header.format(indent(last_repr, u' ' * 4))
+            captured_html = html_header.format(indent(last_repr, u' ' * 8))
         else:
             captured_html = ''
         code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(images_rst, captured_std, captured_html)
