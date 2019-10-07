@@ -100,8 +100,8 @@ this folder must have the following things:
 
 .. warning::
 
-   The variable name ``___``` (3 underscores) should never be used in your
-   Python scripts as it is used as an internal Sphinx-Gallery variable.
+   The variable name ``___`` (3 underscores) should never be used in your
+   example Python scripts as it is used as an internal Sphinx-Gallery variable.
 
 .. _configure_and_use_sphinx_gallery:
 

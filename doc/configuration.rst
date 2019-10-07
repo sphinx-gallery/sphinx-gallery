@@ -985,24 +985,25 @@ For example, if the configuration was::
         }
 
 for every code block, if the last statement is an expression, the
-``_repr_html__`` method would be captured, if it exists. If it does not exist,
+``_repr_html_`` method would be captured, if it exists. If it does not exist,
 the ``__repr__`` would be captured. If the ``__repr__`` also does not exist
 (unlikely for non-user defined objects), nothing would be captured. Data
 directed to standard output is **always** captured.
 
 From another perspective, take for example, the following code block::
 
-    print('hello world')
+    print('Hello world')
     a=2
     a   # this is an expression
 
-``'hello world'`` would be captured for every ``capture_repr`` setting as this
+``'Hello world'`` would be captured for every ``capture_repr`` setting as this
 is directed to standard output. Further,
 
-* if ``capture_repr`` is an empty tuple, nothing else would be captured.
+* if ``capture_repr`` is an empty tuple, the default, nothing else would be
+  captured.
 * if ``capture_repr`` is ``('__repr__')``, ``2`` would also be captured.
 * if ``capture_repr`` is ``('_repr_html_', '__repr__')``, Sphinx-Gallery would
-  attempt to capture ``_repr_html_` but as this does not exist for ``a``, it
+  attempt to capture ``_repr_html_`` but as this does not exist for ``a``, it
   will then attempt to capture ``__repr__``. As the ``__repr__`` method exists
   for ``a``, ``2`` would be also captured in this case.
 
