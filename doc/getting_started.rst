@@ -92,11 +92,16 @@ this folder must have the following things:
       change the default pattern for execution and capture see
       :ref:`build_pattern`.
     * The output that is captured while executing the ``.py`` files and
-      incorporated into the built documentation can be finely tuned. 
-      See :ref:`print_eval_repr`.
+      subsequently incorporated into the built documentation, can be finely
+      tuned. See :ref:`print_eval_repr`.
     * You can have sub-directories in your ``examples`` directory. These will be
       included as sub-sections of your gallery. They **must** contain their own
       ``README.txt`` or ``README.rst`` file as well.
+
+.. warning::
+
+   The variable name ``___``` (3 underscores) should never be used in your
+   Python scripts as it is used as an internal Sphinx-Gallery variable.
 
 .. _configure_and_use_sphinx_gallery:
 
@@ -175,7 +180,7 @@ Sphinx source ``.rst`` file with an ``.. include::`` statement.
 Build the documentation
 -----------------------
 
-In your Sphinx source directory, (e.g. ``myproject/doc``) execute:
+In your Sphinx source directory, (e.g., ``myproject/doc``) execute:
 
 .. code-block:: bash
 
