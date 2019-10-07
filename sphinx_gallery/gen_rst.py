@@ -537,8 +537,8 @@ def execute_code_block(compiler, block, example_globals,
         
         last_repr = None
         repr_meth = None
-        if gallery_conf['print_eval_repr'] != () and is_last_expr:
-            for meth in gallery_conf['print_eval_repr']:
+        if gallery_conf['capture_repr'] != () and is_last_expr:
+            for meth in gallery_conf['capture_repr']:
                 try:
                     last_repr = getattr(___, meth)()
                     # for case when last statement is print()
