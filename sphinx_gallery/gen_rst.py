@@ -18,6 +18,7 @@ import copy
 import contextlib
 import ast
 import codecs
+from functools import partial
 import gc
 import pickle
 from io import StringIO
@@ -487,9 +488,10 @@ def execute_code_block(compiler, block, example_globals,
     try:
         dont_inherit = 1
         if sys.version_info >= (3, 8):
-            code_ast = ast.Module([bcontent], [])
+            ast_Module = partial(ast.Module, type_ignores=[])
         else:
-            code_ast = ast.Module([bcontent])
+            ast_Module = ast.Module
+        code_ast = ast_Module([bcontent])
         code_ast = compile(bcontent, src_file, 'exec',
                            ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
@@ -503,9 +505,9 @@ def execute_code_block(compiler, block, example_globals,
                 compiler(code_ast, src_file, 'exec'), example_globals),
                 gallery_conf)
             # exec last expression, made into assignment
-            last_val_ast = ast.Module(body=[
-                ast.Assign(targets=[ast.Name(id='___', ctx=ast.Store())],
-                           value=last_val)])
+            body = [ast.Assign(
+                targets=[ast.Name(id='___', ctx=ast.Store())], value=last_val)]
+            last_val_ast = ast_Module(body=body)
             ast.fix_missing_locations(last_val_ast)
             _, mem_last = _memory_usage(_exec_once(
                 compiler(last_val_ast, src_file, 'exec'), example_globals),
@@ -534,7 +536,7 @@ def execute_code_block(compiler, block, example_globals,
         sys.stdout, orig_stderr = orig_stdout, orig_stderr
         sys.path = sys_path
         os.chdir(cwd)
-        
+
         last_repr = None
         repr_meth = None
         if gallery_conf['capture_repr'] != () and is_last_expr:
