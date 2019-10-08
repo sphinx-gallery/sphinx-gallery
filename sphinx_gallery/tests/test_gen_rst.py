@@ -558,7 +558,7 @@ def _clean_output(output):
         [line[4:] for line in output.strip().split("\n")[6:]])
         return output_test_string.strip()
     elif is_html:
-        output_test_string = "\n".join(output.strip().split("\n")[-7:])
+        output_test_string = "\n".join(output.strip().split("\n"))
         return output_test_string
     
 
