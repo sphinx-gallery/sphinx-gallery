@@ -142,7 +142,7 @@ html_header = """.. only:: builder_html
 
     .. raw:: html
 
-    {0}\n        <br />        <br />"""
+{0}\n        <br />\n        <br />"""
 
 def codestr2rst(codestr, lang='python', lineno=None):
     """Return reStructuredText code block from code string"""

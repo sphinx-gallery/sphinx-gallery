@@ -531,7 +531,9 @@ code_print_and_repr_and_html = (
 html_out = (
     '.. only:: builder_html\n\n'
     '    .. raw:: html\n\n'
-    '        <div> This is the _repr_html_ div </div>'
+    '        <div> This is the _repr_html_ div </div>\n'
+    '        <br />\n'
+    '        <br />'
 )
 
 text_above_html = (
@@ -556,8 +558,8 @@ def _clean_output(output):
         [line[4:] for line in output.strip().split("\n")[6:]])
         return output_test_string.strip()
     elif is_html:
-        output_test_string = "\n".join(output.strip().split("\n")[-5:])
-        return output_test_string.strip()
+        output_test_string = "\n".join(output.strip().split("\n")[-7:])
+        return output_test_string
     
 
 @pytest.mark.parametrize('capture_repr, code, expected_out', [
