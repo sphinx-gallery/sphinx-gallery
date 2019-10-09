@@ -57,10 +57,10 @@ Let's say your Python project has the following structure:
   purposes outside of documenting examples for a package, for example
   creating a website for a Python tutorial.
 
-* ``examples`` ontains the files used by Sphinx-Gallery to build the gallery.
+* ``examples`` contains the files used by Sphinx-Gallery to build the gallery.
 
-Sphinx-Gallery expects examples to have a specific structure, which we'll
-cover next.
+Sphinx-Gallery expects the ``examples`` directory to have a specific structure,
+which we'll cover next.
 
 Structure the examples folder
 -----------------------------
@@ -69,8 +69,9 @@ In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
 * **The gallery header**: A file named ``README.txt`` or ``README.rst`` that
-  contains rST to be used as a header for the gallery with thumbnails generated
-  from this folder. It must have at least a title. For example::
+  contains rST to be used as a header for the gallery welcome page, which will
+  also include thumbnails generated from this folder. It must have at least a
+  title. For example::
 
     This is my gallery
     ==================
@@ -119,28 +120,28 @@ directory to place the output files generated. The path to both of these
 directories should be relative to the ``doc/conf.py`` file.
 
 The following configuration declares the location of the 'examples' directory
-('example_dirs') to be ``../examples`` and the 'output' directory
-('gallery_dirs') to be ``auto_examples``::
+(``'example_dirs'``) to be ``../examples`` and the 'output' directory
+(``'gallery_dirs'``) to be ``auto_examples``::
 
     sphinx_gallery_conf = {
          'examples_dirs': '../examples',   # path to your example scripts
-         'gallery_dirs': 'auto_examples',  # path where to save gallery generated output
+         'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
     }
 
 After building your documentation, ``gallery_dirs`` will contain the following
 files and directories:
 
 * ``index.rst`` - the master document of the gallery containing the Gallery
-  Header and table of contents tree. It which will serve as the welcome page for
-  that gallery.
+  Header, table of contents tree and thumbnails for each example. It will serve
+  as the welcome page for that gallery.
 * ``sg_execution_times.rst`` - execution time of all example ``.py`` files,
   summarised in table format (`original pull request on GitHub
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/348>`_).
 * ``images`` - directory containing images produced during execution of the
   example ``.py`` files (more details in :ref:`image_scrapers`) and thumbnail
   images for the gallery.
-* A directory for each sub-directory in 'example_dirs'. Within each directory
-  will be the above and below listed files for that 'sub-gallery'.
+* A directory for each sub-directory in ``'example_dirs'``. Within each 
+  directory will be the above and below listed files for that 'sub-gallery'.
 
 Additionally for **each** ``.py`` file, a file with the following suffix is
 generated:
@@ -179,7 +180,7 @@ In your Sphinx source directory, (e.g., ``myproject/doc``) execute:
 
 This will start the build of your complete documentation. Both
 the Sphinx-Gallery output files described above and
-the Sphinx output HTML (or another output format depending on the
+the Sphinx built HTML documentation (or another output format depending on the
 `Sphinx 'builder'
 <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ selected) will
 be generated. Once a build is completed, all the outputs from your examples

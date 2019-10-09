@@ -24,8 +24,10 @@ Sphinx-Gallery expects each Python file to have two things:
     This example doesn't do much, it just makes a simple plot
     """
 2. **Python code**. This can be any valid Python code that you wish. Any
-   Matplotlib or Mayavi images that are generated will be saved to disk, and
-   the rST generated will display these images with the built examples.
+   Matplotlib images that are generated will be saved to disk, and
+   the rST generated will display these images with the built examples. By
+   default only Matplotlib images are saved and displayed but this can be
+   changed to include other packages, see :ref:`image_scrapers`.
 
 For a quick reference have a look at the example
 :ref:`sphx_glr_auto_examples_plot_gallery_version.py`
