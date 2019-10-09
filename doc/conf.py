@@ -365,7 +365,9 @@ sphinx_gallery_conf = {
                },
     'show_memory': True,
     'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),
-    'capture_repr': ('_repr_html_', '__repr__')
+    # capture raw HTML or, if not present, __repr__ of last expression in
+    # each code block
+    'capture_repr': ('_repr_html_', '__repr__'),
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show
