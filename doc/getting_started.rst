@@ -10,9 +10,10 @@ Creating a basic Gallery
 This section describes how to set up a basic gallery for your examples
 using the Sphinx extension Sphinx-Gallery, which will do the following:
 
-* Automatically generate Sphinx rST out of your ``.py`` example files.
-  Sphinx-Gallery will also generate ``.ipynb`` (Jupyter notebook) and ``.py``
-  files of each example, which users can download.
+* Automatically generate Sphinx rST out of your ``.py`` example files. The
+  rendering of the resulting rST will provide the users with ``.ipynb``
+  (Jupyter notebook) and ``.py`` files of each example, which users can
+  download.
 * Create a gallery with thumbnails for each of these examples
   (such as `the one that scikit-learn
   <http://scikit-learn.org/stable/auto_examples/index.html>`_ uses)
