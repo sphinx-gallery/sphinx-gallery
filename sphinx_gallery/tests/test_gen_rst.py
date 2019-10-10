@@ -493,54 +493,67 @@ def test_empty_output_box(gallery_conf):
     assert output.isspace()
 
 
-code_repr_only = (
-    'class repr_only_class():\n'
-    '    def __init__(self):\n'
-    '        pass\n\n'
-    '    def __repr__(self):\n'
-    '        return "This is the __repr__"\n\n'
-    'class_inst = repr_only_class()\n\n'
-    'class_inst'
-)
+code_repr_only = """
+class repr_only_class():
+    
+    def __init__(self):
+        pass
+    
+    def __repr__(self):
+        return "This is the __repr__"
 
-code_repr_and_html = (
-    'class repr_and_html_class():\n'
-    '    def __init__(self):\n'
-    '        pass\n\n'
-    '    def __repr__(self):\n'
-    '        return "This is the __repr__"\n\n'
-    '    def _repr_html_(self):\n'
-    '        return "<div> This is the _repr_html_ div </div>"\n\n'
-    'class_inst = repr_and_html_class()\n\n'
-    'class_inst'
-)
+class_inst = repr_only_class()
+class_inst
+"""
 
-code_print_and_repr_and_html = (
-    'print("print statement")\n\n'
-    'class repr_and_html_class():\n'
-    '    def __init__(self):\n'
-    '        pass\n\n'
-    '    def __repr__(self):\n'
-    '        return "This is the __repr__"\n\n'
-    '    def _repr_html_(self):\n'
-    '        return "<div> This is the _repr_html_ div </div>"\n\n'
-    'class_inst = repr_and_html_class()\n\n'
-    'class_inst'
-)
+code_repr_and_html = """
+class repr_and_html_class():
+    def __init__(self):
+        pass
 
-html_out = (
-    '.. only:: builder_html\n\n'
-    '    .. raw:: html\n\n'
-    '        <div> This is the _repr_html_ div </div>\n'
-    '        <br />\n'
-    '        <br />'
-)
+    def __repr__(self):
+        return "This is the __repr__"
+    
+    def _repr_html_(self):
+        return "<div> This is the _repr_html_ div </div>"
 
-text_above_html = (
-    'Out:\n\n'
-    ' .. code-block:: none\n\n'
-    '    print statement\n\n\n'
-)
+class_inst = repr_and_html_class()
+class_inst
+"""
+
+code_print_and_repr_and_html = """
+print("print statement")
+
+class repr_and_html_class():
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return "This is the __repr__"
+
+    def _repr_html_(self):
+        return "<div> This is the _repr_html_ div </div>"
+
+class_inst = repr_and_html_class()
+class_inst
+"""
+
+html_out = """.. only:: builder_html
+
+    .. raw:: html
+
+        <div> This is the _repr_html_ div </div>
+        <br />
+        <br />"""
+
+text_above_html = """Out:
+
+ .. code-block:: none
+
+    print statement
+
+
+"""
 
 
 def _clean_output(output):
