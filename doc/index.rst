@@ -96,6 +96,7 @@ Sphinx-Gallery Show: :ref:`examples-index`
    getting_started
    syntax
    configuration
+   projects_list
 
 .. toctree::
    :maxdepth: 2
