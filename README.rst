@@ -19,14 +19,14 @@ script and puts it into an examples gallery.
 Who uses Sphinx-Gallery
 =======================
 
-* `Sphinx-Gallery <https://sphinx-gallery.github.io/en/latest/auto_examples/index.html>`_
+* `Sphinx-Gallery <https://sphinx-gallery.github.io/auto_examples/index.html>`_
 * `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
 * `Nilearn <https://nilearn.github.io/auto_examples/index.html>`_
 * `MNE-python <https://www.martinos.org/mne/stable/auto_examples/index.html>`_
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
 * `GIMLi <http://www.pygimli.org/_examples_auto/index.html>`_
 * `Nestle <https://kbarbary.github.io/nestle/examples/index.html>`_
-* `pyRiemann <https://pythonhosted.org/pyriemann/auto_examples/index.html>`_
+* `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
 * `scikit-image <http://scikit-image.org/docs/dev/auto_examples/>`_
 * `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
 * `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
@@ -36,7 +36,7 @@ Who uses Sphinx-Gallery
 * `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
 * `SimPEG <http://docs.simpeg.xyz/content/examples/>`_
-* `PlasmaPy <http://docs.plasmapy.org/en/master/auto_examples/>`_
+* `PlasmaPy <http://docs.plasmapy.org/en/latest/auto_examples/>`_
 * `Fury <http://fury.gl/latest/auto_examples/index.html>`_
 
 Installation

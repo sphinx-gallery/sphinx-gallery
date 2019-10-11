@@ -11,7 +11,7 @@ Here is a list of projects using `sphinx-gallery`.
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
 * `GIMLi <http://www.pygimli.org/_examples_auto/index.html>`_
 * `Nestle <https://kbarbary.github.io/nestle/examples/index.html>`_
-* `pyRiemann <https://pythonhosted.org/pyriemann/auto_examples/index.html>`_
+* `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
 * `scikit-image <http://scikit-image.org/docs/dev/auto_examples/>`_
 * `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
 * `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
