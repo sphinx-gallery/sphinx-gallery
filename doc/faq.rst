@@ -39,8 +39,8 @@ that if the last statement was a Matplotlib function, which usually returns a
 value, the representation of that value will be captured as well.
 
 To prevent Matplotlib function calls from outputting text as well as the figure,
-you can assign the last plotting function to a temporary variable or added
-``matplotlib.plot()`` to the end of your code block (see :ref:`capture_repr`).
+you can assign the last plotting function to a temporary variable or add
+``matplotlib.show()`` to the end of your code block (see :ref:`capture_repr`).
 Alternatively, you can set ``capture_repr`` to be an empty tuple
 (``'capture_repr': ()``), which will imitate the behaviour of Sphinx-Gallery
 prior to v0.5.0. This will also prevent you from getting any other unwanted
