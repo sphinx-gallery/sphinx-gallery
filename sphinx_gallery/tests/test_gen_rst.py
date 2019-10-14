@@ -103,6 +103,26 @@ def test_direct_comment_after_docstring():
     assert result == expected_result
 
 
+def test_final_rst_last_word():
+    """Tests last word in final rst block included as text"""
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+        f.write('\n'.join(['"Docstring"',
+                           '# comment only code block',
+                           '#%%',
+                           '# Include this whole sentence.']))
+    try:
+        file_conf, result = sg.split_code_and_text_blocks(f.name)
+    finally:
+        os.remove(f.name)
+
+    assert file_conf == {}
+    expected_result = [
+        ('text', 'Docstring', 1),
+        ('code', '# comment only code block\n', 2),
+        ('text', 'Include this whole sentence.', 4)]
+    assert result == expected_result
+
+
 def test_rst_block_after_docstring(gallery_conf, tmpdir):
     """Assert there is a blank line between the docstring and rst blocks."""
     filename = str(tmpdir.join('temp.py'))
