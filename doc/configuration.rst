@@ -959,38 +959,40 @@ Controlling what output is captured
 
 The ``capture_repr`` configuration allows the user to control what output
 is captured, while executing the example ``.py`` files, and subsequently
-incorporated into the built documentation. By default ``capture_repr`` is an
-empty tuple. With this setting, only data directed to standard output is
-captured.
-
-The value of the last statement of each code block, *if* it is an expression,
-can also be captured, along with data directed to standard output. This can be
-done by providing the name of the 'representation' method to be captured, in
-the ``capture_repr`` tuple, in order of preference. The representation methods
-currently supported are:
+incorporated into the built documentation. Data directed to standard output
+is always captured. The value of the last statement of *each* code block, *if*
+it is an expression, can also be captured. This can be done by providing
+the name of the 'representation' method to be captured in the ``capture_repr``
+tuple, in order of preference. The representation methods currently supported
+are:
 
 * ``__repr__`` - returns the official string representation of an object. This
   is what is returned when your Python shell evaluates an expression. 
 * ``__str__`` - returns a string containing a nicely printable representation
   of an object. This is what is used when you ``print()`` an object or pass it
   to ``format()``.
-* ``_repr_html__`` - returns HTML version of the object. This method is only
+* ``_repr_html__`` - returns a HTML version of the object. This method is only
   present in some objects, for example, pandas dataframes.
 
-For example, if the configuration was::
+The default setting is::
 
         sphinx_gallery_conf = {
             ...
             'capture_repr': ('_repr_html_', '__repr__'),
         }
 
-for every code block, if the last statement is an expression, the
-``_repr_html_`` method would be captured, if it exists. If it does not exist,
-the ``__repr__`` would be captured. If the ``__repr__`` also does not exist
-(unlikely for non-user defined objects), nothing would be captured. Data
+With this setting, for every code block, if the last statement is an expression,
+Sphinx-Gallery would first attempt to capture the ``_repr_html_``. If this
+method does not exist for the expression, the second 'representation' method
+in the tuple, ``__repr__``, would be captured. If the ``__repr__`` also does not
+exist (unlikely for non-user defined objects), nothing would be captured. Data
 directed to standard output is **always** captured.
 
-From another perspective, take for example, the following code block::
+To capture only data directed to standard output, configure ``'capture_repr'``
+to be an empty tuple (``'capture_repr': ()``). This will imitate the behaviour
+of Sphinx-Gallery prior to v0.5.0.
+
+From another perspective, take for example the following code block::
 
     print('Hello world')
     a=2
@@ -999,13 +1001,14 @@ From another perspective, take for example, the following code block::
 ``'Hello world'`` would be captured for every ``capture_repr`` setting as this
 is directed to standard output. Further,
 
-* if ``capture_repr`` is an empty tuple, the default, nothing else would be
+* if ``capture_repr`` is an empty tuple, nothing else would be
   captured.
 * if ``capture_repr`` is ``('__repr__')``, ``2`` would also be captured.
-* if ``capture_repr`` is ``('_repr_html_', '__repr__')``, Sphinx-Gallery would
-  attempt to capture ``_repr_html_`` but as this does not exist for ``a``, it
-  will then attempt to capture ``__repr__``. As the ``__repr__`` method exists
-  for ``a``, ``2`` would be also captured in this case.
+* if ``capture_repr`` is ``('_repr_html_', '__repr__')``, the default,
+  Sphinx-Gallery would first attempt to capture ``_repr_html_``. Since this
+  does not exist for ``a``, it will then attempt to capture ``__repr__``.
+  The ``__repr__`` method does exist for ``a``, thus ``2`` would be also
+  captured in this case.
 
 **Matplotlib note**: if the ``'capture_repr'`` tuple includes ``'__repr__'``
 and the last expression is a Matplotlib function call, there will generally be
