@@ -92,7 +92,7 @@ this folder must have the following things:
       change the default pattern for execution and capture see
       :ref:`build_pattern`.
     * The output that is captured while executing the ``.py`` files and
-      subsequently incorporated into the built documentation, can be finely
+      subsequently incorporated into the built documentation can be finely
       tuned. See :ref:`capture_repr`.
     * You can have sub-directories in your ``examples`` directory. These will be
       included as sub-sections of your gallery. They **must** contain their own
