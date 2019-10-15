@@ -103,17 +103,16 @@ def test_direct_comment_after_docstring():
     assert result == expected_result
 
 
-def test_final_rst_last_word():
+def test_final_rst_last_word(tmpdir):
     """Tests last word in final rst block included as text"""
-    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+    filename = str(tmpdir.join('temp.py'))
+    with open(filename, 'w') as f:
         f.write('\n'.join(['"Docstring"',
                            '# comment only code block',
                            '#%%',
                            '# Include this whole sentence.']))
-    try:
-        file_conf, result = sg.split_code_and_text_blocks(f.name)
-    finally:
-        os.remove(f.name)
+
+    file_conf, result = sg.split_code_and_text_blocks(f.name)
 
     assert file_conf == {}
     expected_result = [
