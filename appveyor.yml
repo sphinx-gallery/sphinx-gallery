@@ -20,8 +20,7 @@ platform:
 install:
     - "git clone git://github.com/astropy/ci-helpers.git"
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
-    - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-    - "activate test"
+    - "conda activate test"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 

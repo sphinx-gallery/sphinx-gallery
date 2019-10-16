@@ -9,25 +9,18 @@
 set -e
 
 if [ "$DISTRIB" == "conda" ]; then
-    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-    chmod +x miniconda.sh
-    ./miniconda.sh -b
-    export PATH=$HOME/miniconda3/bin:$PATH
-    conda update -y conda
-
-    # Force conda to think about other dependencies that can break
-    conda create -yn testenv python=$PYTHON_VERSION pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 $CONDA_PKGS
-    source activate testenv
-    # Optional packages
+    export CONDA_DEPENDENCIES="pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 ${CONDA_PKGS}"
+    export PIP_DEPENDENCIES="sphinx_rtd_theme"
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
-        pip install memory_profiler vtk mayavi ipython
+        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk mayavi ipython"
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
-        pip install "sphinx${SPHINX_VERSION}"
+        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx${SPHINX_VERSION}"
     else
-        pip install "https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
+        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
-    pip install -q sphinx_rtd_theme
+    git clone git://github.com/astropy/ci-helpers.git --depth=1
+    source ci-helpers/travis/setup_conda.sh
     python setup.py install
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
