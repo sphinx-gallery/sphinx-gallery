@@ -26,7 +26,7 @@ jobs:
             - cache-pip
       # PyQt5 5.12 causes problems with libxcb
       # We use a specific commit of sphinx to get --keep-going support in setup.py build (as of 2019/05/31, it's not released)
-      - run: pip install --user numpy scipy matplotlib "pyqt5<5.12" seaborn sphinx_rtd_theme pillow https://api.github.com/repos/sphinx-doc/sphinx/zipball/925bc187eacbc0fbdd2c56f360a040a23cb13145 pytest vtk traits traitsui pyface mayavi memory_profiler ipython
+      - run: pip install --user numpy scipy matplotlib "pyqt5<5.12" seaborn sphinx_rtd_theme pillow https://api.github.com/repos/sphinx-doc/sphinx/zipball/925bc187eacbc0fbdd2c56f360a040a23cb13145 pytest vtk traits traitsui pyface mayavi memory_profiler ipython pandas
       - save_cache:
           key: cache-pip
           paths:

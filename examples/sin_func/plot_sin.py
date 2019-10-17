@@ -37,4 +37,5 @@ y = np.sin(x)
 plt.plot(x, y)
 plt.xlabel('$x$')
 plt.ylabel('$\sin(x)$')
+# To avoid matplotlib text output
 plt.show()

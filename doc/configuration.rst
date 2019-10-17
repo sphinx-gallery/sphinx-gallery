@@ -40,6 +40,7 @@ file:
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
+- ``capture_repr`` (:ref:`capture_repr`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -949,5 +950,90 @@ you can do::
         ...
         'show_memory': True,
     }
+
+
+.. _capture_repr:
+
+Controlling what output is captured
+===================================
+
+The ``capture_repr`` configuration allows the user to control what output
+is captured, while executing the example ``.py`` files, and subsequently
+incorporated into the built documentation. Data directed to standard output
+is always captured. The value of the last statement of *each* code block, *if*
+it is an expression, can also be captured. This can be done by providing
+the name of the 'representation' method to be captured in the ``capture_repr``
+tuple, in order of preference. The representation methods currently supported
+are:
+
+* ``__repr__`` - returns the official string representation of an object. This
+  is what is returned when your Python shell evaluates an expression. 
+* ``__str__`` - returns a string containing a nicely printable representation
+  of an object. This is what is used when you ``print()`` an object or pass it
+  to ``format()``.
+* ``_repr_html__`` - returns a HTML version of the object. This method is only
+  present in some objects, for example, pandas dataframes.
+
+The default setting is::
+
+        sphinx_gallery_conf = {
+            ...
+            'capture_repr': ('_repr_html_', '__repr__'),
+        }
+
+With this setting, for every code block, if the last statement is an expression,
+Sphinx-Gallery would first attempt to capture the ``_repr_html_``. If this
+method does not exist for the expression, the second 'representation' method
+in the tuple, ``__repr__``, would be captured. If the ``__repr__`` also does not
+exist (unlikely for non-user defined objects), nothing would be captured. Data
+directed to standard output is **always** captured.
+
+To capture only data directed to standard output, configure ``'capture_repr'``
+to be an empty tuple (``'capture_repr': ()``). This will imitate the behaviour
+of Sphinx-Gallery prior to v0.5.0.
+
+From another perspective, take for example the following code block::
+
+    print('Hello world')
+    a=2
+    a   # this is an expression
+
+``'Hello world'`` would be captured for every ``capture_repr`` setting as this
+is directed to standard output. Further,
+
+* if ``capture_repr`` is an empty tuple, nothing else would be
+  captured.
+* if ``capture_repr`` is ``('__repr__')``, ``2`` would also be captured.
+* if ``capture_repr`` is ``('_repr_html_', '__repr__')``, the default,
+  Sphinx-Gallery would first attempt to capture ``_repr_html_``. Since this
+  does not exist for ``a``, it will then attempt to capture ``__repr__``.
+  The ``__repr__`` method does exist for ``a``, thus ``2`` would be also
+  captured in this case.
+
+**Matplotlib note**: if the ``'capture_repr'`` tuple includes ``'__repr__'``
+and the last expression is a Matplotlib function call, there will generally be
+a yellow output box produced in the built documentation, as well as the figure.
+This is because matplotlib function calls usually return something as well as
+creating/amending the plot in standard output. For example,
+``matplotlib.plot()`` returns a list of ``Line2D`` objects representing the
+plotted data. The ``__repr__`` of this list would thus be captured. You can
+prevent this by:
+
+* assigning the (last) plotting function to a temporary variable. For example::
+
+    import matplotlib as plt
+
+    _ = plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+
+* add ``plt.show()`` (which does not return anything) to the end of your
+  code block. For example::
+  
+    import matplotlib as plt
+
+    plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+    plt.show()
+
+The unwanted string output does not occur if ``'capture_repr'`` is an empty
+tuple, as only data directed to standard output is captured.
 
 .. _regular expressions: https://docs.python.org/2/library/re.html

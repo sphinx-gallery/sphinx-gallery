@@ -91,9 +91,17 @@ this folder must have the following things:
       presented in a rich literate programming fashion, without any output. To
       change the default pattern for execution and capture see
       :ref:`build_pattern`.
+    * The output that is captured while executing the ``.py`` files and
+      subsequently incorporated into the built documentation can be finely
+      tuned. See :ref:`capture_repr`.
     * You can have sub-directories in your ``examples`` directory. These will be
       included as sub-sections of your gallery. They **must** contain their own
       ``README.txt`` or ``README.rst`` file as well.
+
+.. warning::
+
+   The variable name ``___`` (3 underscores) should never be used in your
+   example Python scripts as it is used as an internal Sphinx-Gallery variable.
 
 .. _configure_and_use_sphinx_gallery:
 

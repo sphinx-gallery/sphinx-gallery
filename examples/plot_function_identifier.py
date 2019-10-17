@@ -51,4 +51,5 @@ for i, (name, obj) in enumerate(names.items()):
              bbox=dict(boxstyle='larrow', fc="w", ec="k"))
 #
 plt.draw()
+# To avoid matplotlib text output
 plt.show()

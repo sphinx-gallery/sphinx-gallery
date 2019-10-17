@@ -313,6 +313,7 @@ intersphinx_mapping = {
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
+    'pandas': ('https://pandas.pydata.org/', None),
 }
 
 examples_dirs = ['../examples', '../tutorials']
@@ -364,6 +365,9 @@ sphinx_gallery_conf = {
                },
     'show_memory': True,
     'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),
+    # capture raw HTML or, if not present, __repr__ of last expression in
+    # each code block
+    'capture_repr': ('_repr_html_', '__repr__'),
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show

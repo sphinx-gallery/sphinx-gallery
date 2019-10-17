@@ -30,4 +30,5 @@ y = np.sin(x)
 plt.plot(x, y, 'cyan', axes=axes)
 plt.xlabel('$x$', color=fg_color)
 plt.ylabel('$\sin(x)$', color=fg_color)
+# To avoid matplotlib text output
 plt.show()

@@ -493,6 +493,134 @@ def test_empty_output_box(gallery_conf):
     assert output.isspace()
 
 
+code_repr_only = """
+class repr_only_class():
+    
+    def __init__(self):
+        pass
+    
+    def __repr__(self):
+        return "This is the __repr__"
+
+class_inst = repr_only_class()
+class_inst
+"""
+
+code_repr_and_html = """
+class repr_and_html_class():
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return "This is the __repr__"
+    
+    def _repr_html_(self):
+        return "<div> This is the _repr_html_ div </div>"
+
+class_inst = repr_and_html_class()
+class_inst
+"""
+
+code_print_and_repr_and_html = """
+print("print statement")
+
+class repr_and_html_class():
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return "This is the __repr__"
+
+    def _repr_html_(self):
+        return "<div> This is the _repr_html_ div </div>"
+
+class_inst = repr_and_html_class()
+class_inst
+"""
+
+html_out = """.. only:: builder_html
+
+    .. raw:: html
+
+        <div> This is the _repr_html_ div </div>
+        <br />
+        <br />"""
+
+text_above_html = """Out:
+
+ .. code-block:: none
+
+    print statement
+
+
+"""
+
+
+def _clean_output(output):
+    is_text = '.. rst-class:: sphx-glr-script-out' in output
+
+    is_html = '.. only:: builder_html' in output
+
+    if output.isspace():
+        return ''
+    elif is_text and is_html:
+        output_test_string = "\n".join(output.strip().split("\n")[2:])
+        return output_test_string.strip()
+    elif is_text:
+        output_test_string = "\n".join(
+        [line[4:] for line in output.strip().split("\n")[6:]])
+        return output_test_string.strip()
+    elif is_html:
+        output_test_string = "\n".join(output.strip().split("\n"))
+        return output_test_string
+    
+
+@pytest.mark.parametrize('capture_repr, code, expected_out', [
+    pytest.param(tuple(), 'a=2\nb=3', '', id='assign,()' ),
+    pytest.param(tuple(), 'a=2\na', '', id='var,()' ),
+    pytest.param(tuple(), 'a=2\nprint(a)', '2',  id='print(var),()'),
+    pytest.param(tuple(), 'print("hello")\na=2\na', 'hello', id='print+var,()'),
+    pytest.param(('__repr__',), 'a=2\nb=3', '', id='assign,(repr)' ),
+    pytest.param(('__repr__',), 'a=2\na', '2', id='var,(repr)' ),
+    pytest.param(('__repr__',), 'a=2\nprint(a)', '2', id='print(var),(repr)'),
+    pytest.param(('__repr__',), 'print("hello")\na=2\na', 'hello\n\n2',
+                 id='print+var,(repr)'),
+    pytest.param(('__repr__',), code_repr_and_html, 'This is the __repr__',
+                 id='repr_and_html,(repr)' ),
+    pytest.param(('__repr__',), code_print_and_repr_and_html,
+                 'print statement\n\nThis is the __repr__',
+                 id='print and repr_and_html,(repr)'),
+    pytest.param(('_repr_html_',), code_repr_only, '', id='repr_only,(html)'),
+    pytest.param(('_repr_html_',), code_repr_and_html, html_out,
+                 id='repr_and_html,(html)'),
+    pytest.param(('_repr_html_',), code_print_and_repr_and_html,
+                 ''.join([text_above_html, html_out]),
+                 id='print and repr_and_html,(html)'),
+    pytest.param(('_repr_html_', '__repr__'), code_repr_and_html, html_out,
+                 id='repr_and_html,(html,repr)' ),
+    pytest.param(('__repr__', '_repr_html_'), code_repr_and_html,
+                 'This is the __repr__', id='repr_and_html,(repr,html)'),
+    pytest.param(('_repr_html_', '__repr__'), code_repr_only,
+                 'This is the __repr__', id='repr_only,(html,repr)')
+])
+def test_capture_repr(gallery_conf, capture_repr, code, expected_out):
+    """Tests output capturing with various capture_repr settings."""
+    compiler = codeop.Compile()
+    code_block = ('code', code, 1)
+    script_vars = {
+        "execute_script": True,
+        "image_path_iterator": ImagePathIterator("temp.png"),
+        "src_file": __file__,
+        "memory_delta": [],
+    }
+
+    gallery_conf['capture_repr'] = capture_repr
+    output = sg.execute_code_block(
+        compiler, code_block, {}, script_vars, gallery_conf
+    )
+    assert _clean_output(output) == expected_out
+
+
 class TestLoggingTee:
     def setup(self):
         self.output_file = io.StringIO()

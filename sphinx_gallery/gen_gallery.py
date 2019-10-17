@@ -41,6 +41,7 @@ DEFAULT_GALLERY_CONF = {
     'backreferences_dir': None,
     'doc_module': (),
     'reference_url': {},
+    'capture_repr': ('_repr_html_','__repr__'),
     # Build options
     # -------------
     # We use a string for 'plot_gallery' rather than simply the Python boolean

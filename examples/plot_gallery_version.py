@@ -48,5 +48,5 @@ plt.annotate('Introducing Sphinx-Gallery ' + sphinx_gallery.__version__,
 plt.xticks([])
 plt.yticks([])
 
-
+# To avoid matplotlib text output
 plt.show()

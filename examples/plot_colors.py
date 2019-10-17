@@ -28,8 +28,7 @@ plt.figure()
 plt.imshow(z, cmap=plt.cm.get_cmap('Spectral'),
            interpolation='none')
 
-# Not needed for the Gallery.
-# Only for direct execution
+# To avoid matplotlib text output
 plt.show()
 
 ################################################

@@ -59,6 +59,8 @@ plt.imshow(z)
 plt.colorbar()
 plt.xlabel('$x$')
 plt.ylabel('$y$')
+# To avoid matplotlib text output
+plt.show()
 
 ###########################################################################
 # Again it is possble to continue the discussion with a new Python string. This
@@ -68,6 +70,8 @@ plt.figure()
 plt.imshow(z, cmap=plt.cm.get_cmap('hot'))
 plt.figure()
 plt.imshow(z, cmap=plt.cm.get_cmap('Spectral'), interpolation='none')
+# To avoid matplotlib text output
+plt.show()
 
 ##########################################################################
 # There's some subtle differences between rendered html rendered comment
@@ -94,8 +98,9 @@ Triple-quoted string which tries to break parser but doesn't.
 print('Some output from Python')
 
 ############################################################################
-# Finally, I'll call ``show`` at the end just so someone running the Python
-# code directly will see the plots; this is not necessary for creating the docs
+# Finally, I'll call ``show`` at the end to prevent Matplotlib text output
+# and so that someone running the Python code ('.py') directly will see the
+# plots:
 
 plt.show()
 
