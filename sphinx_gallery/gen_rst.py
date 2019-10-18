@@ -497,7 +497,7 @@ def execute_code_block(compiler, block, example_globals,
         ast.increment_lineno(code_ast, lineno - 1)
         # capture output if last line is expression
         is_last_expr = False
-        if isinstance(code_ast.body[-1], ast.Expr):
+        if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
             is_last_expr = True
             last_val = code_ast.body.pop().value
             # exec body minus last expression
@@ -556,7 +556,7 @@ def execute_code_block(compiler, block, example_globals,
         captured_std = captured_std.getvalue().expandtabs()
         # normal string output
         if repr_meth in ['__repr__', '__str__'] and last_repr:
-            captured_std = u"{0}\n{1}".format(captured_std,last_repr)
+            captured_std = u"{0}\n{1}".format(captured_std, last_repr)
         if captured_std and not captured_std.isspace():
             captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
         else:
@@ -567,7 +567,8 @@ def execute_code_block(compiler, block, example_globals,
             captured_html = html_header.format(indent(last_repr, u' ' * 8))
         else:
             captured_html = ''
-        code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(images_rst, captured_std, captured_html)
+        code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(
+            images_rst, captured_std, captured_html)
 
     finally:
         os.chdir(cwd)

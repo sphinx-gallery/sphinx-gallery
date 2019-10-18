@@ -139,6 +139,7 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
     file_conf, blocks = sg.split_code_and_text_blocks(filename)
 
     assert file_conf == {}
+    assert len(blocks) == 4
     assert blocks[0][0] == 'text'
     assert blocks[1][0] == 'text'
     assert blocks[2][0] == 'text'
@@ -160,6 +161,43 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
         'Paragraph 3',
         '',
         ''])
+
+
+def test_rst_empty_code_block(gallery_conf, tmpdir):
+    """Test that we can "execute" a code block containing only comments."""
+    filename = str(tmpdir.join('temp.py'))
+    with open(filename, 'w') as f:
+        f.write('\n'.join(['"Docstring"',
+                           '####################',
+                           '# Paragraph 1',
+                           '',
+                           '# just a comment'
+                           '']))
+    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+
+    assert file_conf == {}
+    assert len(blocks) == 3
+    assert blocks[0][0] == 'text'
+    assert blocks[1][0] == 'text'
+    assert blocks[2][0] == 'code'
+
+    gallery_conf['abort_on_example_error'] = True
+    script_vars = dict(execute_script=True, src_file=filename,
+                       image_path_iterator=[], target_file=filename)
+
+    output_blocks, time_elapsed = sg.execute_script(
+        blocks, script_vars, gallery_conf)
+
+    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
+    assert example_rst.rstrip('\n') == """Docstring
+
+Paragraph 1
+
+
+.. code-block:: python
+
+
+    # just a comment"""
 
 
 def test_script_vars_globals(gallery_conf, tmpdir):
@@ -475,7 +513,7 @@ def test_output_indentation(gallery_conf):
 def test_empty_output_box(gallery_conf):
     """Tests that `print(__doc__)` doesn't produce an empty output box."""
     compiler = codeop.Compile()
-    
+
     code_block = ("code", "print(__doc__)", 1)
 
     script_vars = {
@@ -495,10 +533,10 @@ def test_empty_output_box(gallery_conf):
 
 code_repr_only = """
 class repr_only_class():
-    
+
     def __init__(self):
         pass
-    
+
     def __repr__(self):
         return "This is the __repr__"
 
@@ -513,7 +551,7 @@ class repr_and_html_class():
 
     def __repr__(self):
         return "This is the __repr__"
-    
+
     def _repr_html_(self):
         return "<div> This is the _repr_html_ div </div>"
 
@@ -573,7 +611,7 @@ def _clean_output(output):
     elif is_html:
         output_test_string = "\n".join(output.strip().split("\n"))
         return output_test_string
-    
+
 
 @pytest.mark.parametrize('capture_repr, code, expected_out', [
     pytest.param(tuple(), 'a=2\nb=3', '', id='assign,()' ),
