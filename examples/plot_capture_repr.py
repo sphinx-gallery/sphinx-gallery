@@ -4,14 +4,14 @@ Capturing output representations
 ================================
 
 This example demonstrates how the configuration ``capture_repr``
-(:ref:`capture_repr`) works. The setting used to build this Sphinx-Gallery
-documentation is ``capture_repr: ('_repr_html_', '__repr__')``. The output that
-is captured with this setting can be observed in this example. Differences in
-outputs that would be captured with other ``capture_repr`` tuples is also
-explained.
+(:ref:`capture_repr`) works. The default ``capture_repr`` setting is
+``capture_repr: ('_repr_html_', '__repr__')`` and this was used to build this
+documentation. The output that is captured with this setting can be observed in
+this example. Differences in outputs that would be captured with other
+``capture_repr`` settings is also explained.
 """
 #%%
-# Nothing is captured for the code block above because no data is directed to
+# Nothing is captured for the code block below because no data is directed to
 # standard output and the last statement is not an expression.
 
 # example 1
@@ -27,11 +27,11 @@ b = 10
 b   # this is an expression
 
 #%%
-# Technically, Sphinx-Gallery first attempts to capture the ``_repr_html_``
-# of ``b`` as this is the first 'representation' method in the ``capture_repr``
-# tuple. As this method does not exist for ``b``, Sphinx-Gallery moves on to
-# try and capture the ``__repr__`` method, which is second in the tuple. This
-# does exist for ``b`` so it is captured and included above. 
+# Sphinx-Gallery first attempts to capture the ``_repr_html_`` of ``b`` as this
+# is the first 'representation' method in the ``capture_repr`` tuple. As this
+# method does not exist for ``b``, Sphinx-Gallery moves on and tries to capture
+# the ``__repr__`` method, which is second in the tuple. This does exist for
+# ``b`` so it is captured and the output is seen above. 
 # 
 # A pandas dataframe is used in the code block below to provide an example of
 # an expression with a ``_repr_html_`` method. 
@@ -45,10 +45,10 @@ df
 #%%
 # The pandas dataframe ``df`` has both a ``__repr__`` and ``_repr_html_``
 # method. As ``_repr_html_`` appears first in the ``capture_repr`` tuple, the
-# ``_repr_html_`` is captured in preference.
+# ``_repr_html_`` is captured in preference to ``__repr__``.
 #
-# For the example below, the last statement is an expression and there is
-# standard output data:
+# For the example below, there is data directed to standard output and the last
+# statement is an expression.
 
 # example 4
 print('Hello world')
@@ -57,26 +57,30 @@ a + b
 #%%
 # ``print()`` outputs to standard output, which is always captured. The
 # string ``'Hello world'`` is thus captured. A 'representation' of the last
-# expression is also captured. Again, since this expression does not have a
-# ``_repr_html_`` method, the ``__repr__`` method is captured.
+# expression is also captured. Again, since this expression ``a + b`` does not
+# have a ``_repr_html_`` method, the ``__repr__`` method is captured.
 #
 # The ``capture_repr`` configuration
 # ##################################
 #
-# The ``capture_repr`` configuration is an empty tuple by default. With this
-# setting, only data directed to standard output is captured. Thus, output
-# would only be captured for example 4.
+# The ``capture_repr`` configuration is ``('_repr_html_', '__repr__')`` by
+# default. This directs Sphinx-Gallery to capture 'representations' of the last
+# statement of a code block, if it is an expression. Sphinx-Gallery does
+# this according to the order 'representations' appear in the tuple. With the
+# default ``capture_repr`` setting, ``_repr_html_`` is attempted to be captured
+# first. If this method does not exist, the ``__repr__`` method would be
+# captured. If the ``__repr__`` also does not exist (unlikely for non-user
+# defined objects), nothing would be captured. For example, if the the
+# configuration was set to ``'capture_repr': ('_repr_html_')`` nothing would be
+# captured for example 2 as ``b`` does not have a ``_repr_html_``.
+# You can change the 'representations' in the ``capture_repr`` tuple to finely
+# tune what is captured in your example ``.py`` files.
 # 
-# Adding 'representations' to the ``capture_repr`` tuple would direct
-# Sphinx-Gallery to capture a 'representation' of the last statement, only if
-# it is an expression. In examples 2, 3 and 4, the last statement is an
-# expression. If the ``capture_repr`` configuration was *not* an empty tuple,
-# Sphinx-Gallery would attempt to capture a 'representation' of the last
-# expression for these examples. This would be performed according to the order
-# that the ' ' methods are given in the tuple, with
-# preference given to earlier methods.
-#
-# If no 'representation' in the ``capture_repr`` tuple is present for a last
-# expression, nothing would be captured. For example, if the the configuration
-# was set to ``'capture_repr': ('_repr_html_')`` nothing would be captured for
-# example 2 as ``b`` does not have a ``_repr_html_``.
+# To only capture data directed to standard output you can set ``capture_repr``
+# to be an empty tuple: ``capture_repr: ()``. With this setting, only data
+# directed to standard output is captured. For the examples above, output would
+# only be captured for example 4. Although the last statement is an expression
+# for examples 2, 3 and 4 no 'representation' of the last expression would be
+# output. You would need to add ``print()`` to the last expression to capture
+# a 'representation' of it. The empty tuple setting imitates the behaviour of
+# Sphinx-Gallery prior to v0.5.0, when this configuration was introduced.
