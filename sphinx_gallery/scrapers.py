@@ -194,7 +194,7 @@ class ImagePathIterator(object):
 
 
 # For now, these are what we support
-_KNOWN_IMG_EXTS = ('png', 'svg')  # XXX add gif next
+_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg')  # XXX add gif next
 
 
 def _find_image_ext(path, number=None):
