@@ -53,7 +53,11 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     pos_insert = ((max_width - width_sc) // 2, (max_height - height_sc) // 2)
     thumb.paste(img, pos_insert)
 
-    thumb.save(out_fname)
+    try:
+        thumb.save(out_fname)
+    except IOError:
+        # try again, without the alpha channel (e.g., for JPEG)
+        thumb.convert('RGB').save(out_fname)
 
 
 def replace_py_ipynb(fname):
