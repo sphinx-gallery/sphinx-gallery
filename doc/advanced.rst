@@ -79,15 +79,15 @@ scraper for other python packages. This section describes how to do so.
 Image scrapers are functions (or callable class instances) that do two things:
 
 1. Collect a list of images created in the latest execution of code.
-2. Write these images to disk in PNG or SVG format (with .png or .svg
-   extensions, respectively)
+2. Write these images to disk in PNG, JPEG, or SVG format (with .png, .jpg, or
+   .svg extensions, respectively)
 3. Return rST that embeds these figures in the built documentation.
 
 The function should take the following inputs (in this order):
 
 1. ``block`` - a Sphinx-Gallery ``.py`` file is separated into consecutive
    lines of 'code' and rST 'text', called 'blocks'. For each
-   block, a tuple containing the (label, content, line_number) 
+   block, a tuple containing the (label, content, line_number)
    (e.g. ``('code', 'print("Hello world")', 5)``) of the block is created.
 
    * 'label' is a string that can either be ``'text'`` or ``'code'``. In this
@@ -100,13 +100,13 @@ The function should take the following inputs (in this order):
 2. ``block_vars`` - dictionary of configuration and runtime variables. Of
    interest for image scrapers is the element ``'image_path_iterator'`` which
    is an iterable object which returns an absolute path to an image file name
-   adhering to Sphinx-Gallery naming convention. The path directs to the 
+   adhering to Sphinx-Gallery naming convention. The path directs to the
    ``gallery_dirs/images`` directory (:ref:`configure_and_use_sphinx_gallery`)
-   and the image file name is ``'sphx_glr_'`` followed by the name of the 
+   and the image file name is ``'sphx_glr_'`` followed by the name of the
    source ``.py`` file then a number, which starts at 1 and increases by 1 at
    each iteration. The default file format is ``.'png'``. For example:
    ``'home/user/Documents/module/auto_examples/images/sphx_glr_plot_mymodule_001.png'``
-   
+
 3. ``gallery_conf`` - dictionary containing the configuration of Sphinx-Gallery,
    set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
 

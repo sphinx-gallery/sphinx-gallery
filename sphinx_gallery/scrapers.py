@@ -67,7 +67,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         Additional keyword arguments to pass to
         :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``.
         The ``format`` kwarg in particular is used to set the file extension
-        of the output file (currently only 'png' and 'svg' are supported).
+        of the output file (currently only 'png', 'jpg', and 'svg' are
+        supported).
 
     Returns
     -------
@@ -249,7 +250,7 @@ def save_figures(block, block_vars, gallery_conf):
 
 
 def figure_rst(figure_list, sources_dir):
-    """Generate RST for a list of PNG filenames.
+    """Generate RST for a list of image filenames.
 
     Depending on whether we have one or more figures, we use a
     single rst call to 'image' or a horizontal list.

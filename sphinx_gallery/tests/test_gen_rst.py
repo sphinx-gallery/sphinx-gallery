@@ -401,7 +401,7 @@ def _alpha_mpl_scraper(block, block_vars, gallery_conf):
 
 
 def test_custom_scraper_thumbnail_alpha(gallery_conf):
-    """Test that thumbnails without an alpha channel work custom scraper."""
+    """Test that thumbnails without an alpha channel work w/custom scraper."""
     gallery_conf['image_scrapers'] = [_alpha_mpl_scraper]
     rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
     assert '.jpg' in rst
