@@ -117,30 +117,37 @@ def test_save_mayavi_figures(gallery_conf):
 
 
 def _custom_func(x, y, z):
-    return ''
+    return y['image_path_iterator'].next()
 
 
 def test_custom_scraper(gallery_conf, monkeypatch):
     """Test custom scrapers."""
-    # custom finders
+    # Test the API contract for custom scrapers
+    complete_args = (gallery_conf, gallery_conf['gallery_dir'], True, False)
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, '_get_sg_image_scraper',
                   lambda: _custom_func, raising=False)
         for cust in (_custom_func, 'sphinx_gallery'):
             gallery_conf.update(image_scrapers=[cust])
-            fname_template = os.path.join(gallery_conf['gallery_dir'],
-                                          'image{0}.png')
-            image_path_iterator = ImagePathIterator(fname_template)
-            block = ('',) * 3
-            block_vars = dict(image_path_iterator=image_path_iterator)
-
+            _complete_gallery_conf(*complete_args)  # smoke test that it works
     # degenerate
+    # without the monkey patch to add sphinx_gallery._get_sg_image_scraper,
+    # we should get an error
+    gallery_conf.update(image_scrapers=['sphinx_gallery'])
+    with pytest.raises(ValueError,
+                       match="has no attribute '_get_sg_image_scraper'"):
+        _complete_gallery_conf(*complete_args)
+
+    # other degenerate conditions
     gallery_conf.update(image_scrapers=['foo'])
-    complete_args = (gallery_conf, gallery_conf['gallery_dir'], True, False)
     with pytest.raises(ValueError, match='Unknown image scraper'):
         _complete_gallery_conf(*complete_args)
-    gallery_conf.update(
-        image_scrapers=[lambda x, y, z: y['image_path_iterator'].next()])
+    gallery_conf.update(image_scrapers=[_custom_func])
+    fname_template = os.path.join(gallery_conf['gallery_dir'],
+                                  'image{0}.png')
+    image_path_iterator = ImagePathIterator(fname_template)
+    block = ('',) * 3
+    block_vars = dict(image_path_iterator=image_path_iterator)
     with pytest.raises(RuntimeError, match='did not produce expected image'):
         save_figures(block, block_vars, gallery_conf)
     gallery_conf.update(image_scrapers=[lambda x, y, z: 1.])
