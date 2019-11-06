@@ -191,6 +191,8 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
     assert 'matplotlib_configuration_api.html#matplotlib.rcParams' in lines
     assert 'stdtypes.html#list' in lines
+    assert 'warnings.html#warnings.warn' in lines
+    assert 'itertools.html#itertools.compress' in lines
 
     try:
         import memory_profiler  # noqa, analysis:ignore
