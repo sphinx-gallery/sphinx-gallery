@@ -31,5 +31,5 @@ assert plt.rcParams['figure.dpi'] == orig_dpi
 plt.rcParams['figure.dpi'] = 70.
 assert plt.rcParams['figure.dpi'] == 70.
 listy = [0, 1]
-warn('This warning should show up in the output', RuntimeWarning)
 compress('abc', [0, 0, 1])
+warn('This warning should show up in the output', RuntimeWarning)

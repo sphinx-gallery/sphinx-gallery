@@ -213,7 +213,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert '.. code-block:: python3\n' in rst
 
     # warnings
-    want_warn = ('plot_numpy_matplotlib.py:33: RuntimeWarning: This'
+    want_warn = ('plot_numpy_matplotlib.py:35: RuntimeWarning: This'
                  ' warning should show up in the output')
     assert want_warn in lines
     sys.stdout.write(lines)
