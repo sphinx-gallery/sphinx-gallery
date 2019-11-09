@@ -294,6 +294,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         color='fuchsia', length=len(flat),
         stringify_func=lambda x: os.path.basename(x[1]))
     intersphinx_inv = getattr(app.env, 'intersphinx_named_inventory', dict())
+    builtin_modules = set(intersphinx_inv.get(
+        'python', dict()).get('py:module', dict()).keys())
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1:]
@@ -325,9 +327,11 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                     # next try intersphinx
                     if this_module == modname == 'builtins':
                         this_module = 'python'
+                    elif modname in builtin_modules:
+                        this_module = 'python'
                     if link is None and this_module in intersphinx_inv:
-                        inv = app.env.intersphinx_named_inventory[this_module]
-                        if this_module == 'python':
+                        inv = intersphinx_inv[this_module]
+                        if modname == 'builtins':
                             want = cname
                         else:
                             want = '%s.%s' % (modname, cname)

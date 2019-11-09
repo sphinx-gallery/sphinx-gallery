@@ -13,6 +13,7 @@ from warnings import warn
 
 import numpy as np
 from matplotlib.colors import is_color_like
+from itertools import compress  # noqa
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -30,4 +31,5 @@ assert plt.rcParams['figure.dpi'] == orig_dpi
 plt.rcParams['figure.dpi'] = 70.
 assert plt.rcParams['figure.dpi'] == 70.
 listy = [0, 1]
+compress('abc', [0, 0, 1])
 warn('This warning should show up in the output', RuntimeWarning)
