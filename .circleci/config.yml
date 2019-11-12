@@ -59,7 +59,7 @@ jobs:
           root: doc/_build/html
           paths: .
 
-  deploy_docs:
+  deploy_dev:
     docker:
       - image: circleci/python:3.6-stretch
     steps:
@@ -69,7 +69,19 @@ jobs:
             - "aa:70:d9:6b:35:74:50:d1:f7:73:fb:3d:3c:79:cd:5c"
       - attach_workspace:
           at: rtd_html
-      - run: ./docs_deploy.sh rtd_html
+      - run: ./.circleci/docs_deploy.sh rtd_html dev
+
+  deploy_stable:
+    docker:
+      - image: circleci/python:3.6-stretch
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "aa:70:d9:6b:35:74:50:d1:f7:73:fb:3d:3c:79:cd:5c"
+      - attach_workspace:
+          at: rtd_html
+      - run: ./.circleci/docs_deploy.sh rtd_html stable
 
 
 workflows:
@@ -77,9 +89,17 @@ workflows:
   default:
     jobs:
       - build_docs
-      - deploy_docs:
+      - deploy_dev:
           requires:
             - build_docs
           filters:
             branches:
               only: master
+      - deploy_stable:
+          requires:
+            - build_docs
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^Release.*$/
