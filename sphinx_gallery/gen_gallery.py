@@ -598,7 +598,7 @@ def setup(app):
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     metadata = {'parallel_read_safe': True,
-                'parallel_write_safe': False,
+                'parallel_write_safe': True,
                 'version': _sg_version}
     return metadata
 
