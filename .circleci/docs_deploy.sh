@@ -22,17 +22,21 @@ fi
 git config --global user.email "Circle CI" > /dev/null 2>&1
 git config --global user.name "bot@try.out" > /dev/null 2>&1
 git clone git@github.com:sphinx-gallery/sphinx-gallery.github.io.git
-mkdir -p sphinx-gallery.github.io/${destDir}
-cd sphinx-gallery.github.io/${destDir}
+
+siteSource="${PWD}/siteSource"
+cd sphinx-gallery.github.io/
+mkdir -p ${destDir}
+destDir="${PWD}/${destDir}"
+echo "Copying ${siteSource} to ${destDir}"
 
 # copy over or recompile the new site
-git rm -rf .
-cp -a "../${siteSource}/." .
+git rm -rf ${destDir}
+cp -a ${siteSource} ${destDir}
 
 # stage any changes and new files
 git add -A
 # now commit
-git commit --allow-empty -m "Update the docs from master"
+git commit --allow-empty -m "Update the docs: ${CIRCLE_BUILD_URL}"
 # and push, but send any output to /dev/null to hide anything sensitive
 git push --force --quiet origin master > /dev/null 2>&1
 
