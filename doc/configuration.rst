@@ -59,6 +59,17 @@ And some things can be tweaked directly in CSS:
 
 - ``.sphx-glr-thumbcontainer`` (:ref:`setting_thumbnail_size`)
 
+You can also use the package ``warnings`` in the ``conf.py`` file to prevent
+warnings from being captured and included in your built documentation. For
+example, to remove the specific Matplotlib agg warning, you can add::
+
+    import warnings
+
+    warnings.filterwarnings("ignore", category=UserWarning,
+                            message='Matplotlib is currently using agg, which is a'
+                                    ' non-GUI backend, so cannot show the figure.')
+
+to your ``conf.py`` file.
 
 .. _multiple_galleries_config:
 
