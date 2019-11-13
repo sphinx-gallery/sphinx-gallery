@@ -3,6 +3,10 @@ r"""
 Some Quantum Mechanics, filling an atomic orbital
 =================================================
 
+This example demonstrates the use of math notation and a matplotlib plot. Note
+that when there is only one code block, as in this example, the output
+appears before the code block.
+
 Considering an atomic single orbital and how to fill it by use of the
 chemical potential. This system has a four element basis, :math:`B =
 \{ \lvert \emptyset \rangle, \lvert \uparrow \rangle, \lvert

@@ -3,9 +3,9 @@
 A short Python script
 =====================
 
-A script that is not executed when gallery is generated but nevertheless
-gets included as an example.
-Doing a list
+This demonstrates an example ``.py`` file that is not executed when gallery is
+generated (see :ref:`build_pattern`) but nevertheless gets included as an
+example. Note that no output is capture as this file is not executed.
 """
 
 # Code source: Óscar Nájera

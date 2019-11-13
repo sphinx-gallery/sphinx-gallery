@@ -3,10 +3,9 @@
 Constrained Text output frame
 =============================
 
-This example captures the stdout and includes it in the
+This example captures the standard output and includes it in the
 example. If output is too long it becomes automatically
 framed into a text area.
-
 """
 
 # Code source: Óscar Nájera

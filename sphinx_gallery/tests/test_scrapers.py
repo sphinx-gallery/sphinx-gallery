@@ -139,6 +139,7 @@ def test_custom_scraper(gallery_conf, monkeypatch):
     complete_args = (gallery_conf, gallery_conf['gallery_dir'], True, False)
     with pytest.raises(ValueError, match='Unknown image scraper'):
         _complete_gallery_conf(*complete_args)
+        print(_complete_gallery_conf(*complete_args))
     gallery_conf.update(
         image_scrapers=[lambda x, y, z: y['image_path_iterator'].next()])
     with pytest.raises(RuntimeError, match='did not produce expected image'):
@@ -158,6 +159,7 @@ def test_custom_scraper(gallery_conf, monkeypatch):
                   raising=False)
         with pytest.raises(ValueError, match='^Scraper.*was not callable'):
             _complete_gallery_conf(*complete_args)
+    assert False
 
 
 @pytest.mark.parametrize('ext', _KNOWN_IMG_EXTS)

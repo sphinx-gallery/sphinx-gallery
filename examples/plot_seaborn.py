@@ -3,7 +3,7 @@ r"""
 Seaborn example
 ===============
 
-Preview the capture of seaborn styles in plots
+This example demonstrates a seaborn plot.
 """
 # Author: Michael Waskom
 # License: BSD 3 clause
@@ -13,6 +13,7 @@ from __future__ import division, absolute_import, print_function
 
 import numpy as np
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Enforce the use of default set style
 #sns.set(style="darkgrid", palette="Set2")
@@ -27,3 +28,5 @@ for _ in range(15):
 
 # Plot the average over replicates with bootstrap resamples
 sns.tsplot(sines, err_style="boot_traces", n_boot=500)
+# to avoid text output
+plt.show()

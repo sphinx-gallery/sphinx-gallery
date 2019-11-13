@@ -3,12 +3,14 @@ r"""
 Colormaps alter your perception
 ===============================
 
-Here I plot the function
+This example demonstrates a matplotlib plot and rST text embedded between
+code blocks.
+
+The function
 
 .. math:: f(x, y) = \sin(x) + \cos(y)
 
-with different colormaps.
-
+is plotted with different colormaps.
 """
 
 import numpy as np

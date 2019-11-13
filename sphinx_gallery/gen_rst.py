@@ -854,12 +854,13 @@ def save_rst_example(example_rst, example_file, time_elapsed,
 
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
 
-    binder_text = (" or run this example in your browser via Binder"
+    binder_text = (" or to run this example in your browser via Binder"
                    if len(binder_conf) else "")
     example_rst = (".. note::\n"
                    "    :class: sphx-glr-download-link-note\n\n"
                    "    Click :ref:`here <sphx_glr_download_{0}>` "
-                   "to download the full example code{1}\n"
+                   "to download the full example code "
+                   "(useful for comparing to the output below){1}\n"
                    ".. rst-class:: sphx-glr-example-title\n\n"
                    ".. _sphx_glr_{0}:\n\n"
                    ).format(ref_fname, binder_text) + example_rst

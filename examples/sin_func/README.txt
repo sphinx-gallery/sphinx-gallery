@@ -3,5 +3,4 @@
 The sin function
 ----------------
 
-Specific examples for the sin function. Saved in the examples
-directory in a subfolder.
+Examples using the sin function.

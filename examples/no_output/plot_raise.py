@@ -3,10 +3,13 @@
 Example that fails to execute
 =============================
 
-When scripts fail their gallery thumbnail is replaced with the broken
-image stamp. Thus allowing easy identification in the gallery display.
+This example demonstrates a code block that raises an error and how any code
+blocks that follow are not executed.
 
-You also get the python traceback of the failed code block
+When scripts fail, their gallery thumbnail is replaced with the broken
+image stamp. This allows easy identification in the gallery display.
+
+You will also get the python traceback of the failed code block.
 """
 
 # Code source: Óscar Nájera

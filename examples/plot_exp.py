@@ -3,9 +3,9 @@
 Plotting the exponential function
 =================================
 
-A simple example for ploting two figures of a exponential
-function in order to test the autonomy of the gallery
-stacking multiple images.
+This example demonstrates how to import a local module (``local_module``) and
+the plotting of two exponential function figures, in order to test the autonomy
+of stacking multiple images.
 """
 
 # Code source: Óscar Nájera
