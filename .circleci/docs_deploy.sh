@@ -32,6 +32,7 @@ echo "Copying ${siteSource} to ${destDir}"
 # copy over or recompile the new site
 git rm -rf ${destDir}
 cp -a ${siteSource} ${destDir}
+cp dev/binder/requirements.txt binder/requirements.txt
 
 # stage any changes and new files
 git add -A
