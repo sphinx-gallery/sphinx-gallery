@@ -165,7 +165,6 @@ def test_custom_scraper(gallery_conf, monkeypatch):
                   raising=False)
         with pytest.raises(ValueError, match='^Scraper.*was not callable'):
             _complete_gallery_conf(*complete_args)
-    assert False
 
 
 @pytest.mark.parametrize('ext', _KNOWN_IMG_EXTS)
