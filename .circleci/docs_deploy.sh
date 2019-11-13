@@ -6,13 +6,15 @@ set -e
 
 # show where we are on the machine
 pwd
+ls ${PWD}
 
 siteSource="$1"
 destDir="$2"
 
-if [ ! -d "$siteSource" ] || [ ! -d "$destDir" ];
+if [ ! -d "$siteSource" ] || [ -z "$destDir" ];
 then
-    echo "Usage: $0 <site source dir> <site dest dir>"
+    echo "Usage: $0 <site source dir> <site dest dir>, got: "
+    echo "    $@"
     exit 1
 fi
 
