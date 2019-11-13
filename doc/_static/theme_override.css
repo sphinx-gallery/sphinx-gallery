@@ -13,3 +13,10 @@ div[class^="highlight"] a {
 div[class^="highlight"] a:hover {
     background-color: #ABECFC;
 }
+
+.rst-versions {
+    position: relative;
+}
+.rst-versions.shift-up {
+    overflow-y: visible;
+}

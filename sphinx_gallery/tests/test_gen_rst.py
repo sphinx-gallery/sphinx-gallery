@@ -21,7 +21,7 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst
-from sphinx_gallery.scrapers import ImagePathIterator
+from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 
 CONTENT = [
     '"""',
@@ -371,6 +371,40 @@ def _generate_rst(gallery_conf, fname, content):
                      mode='r', encoding='utf-8') as f:
         rst = f.read()
     return rst
+
+
+ALPHA_CONTENT = '''
+"""
+Make a plot
+===========
+
+Plot.
+"""
+import matplotlib.pyplot as plt
+plt.plot([0, 1], [0, 1])
+'''.split('\n')
+
+
+def _alpha_mpl_scraper(block, block_vars, gallery_conf):
+    import matplotlib.pyplot as plt
+    image_path_iterator = block_vars['image_path_iterator']
+    image_paths = list()
+    for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
+        fig = plt.figure(fig_num)
+        assert image_path.endswith('.png')
+        # use format that does not support alpha
+        image_path = image_path[:-3] + 'jpg'
+        fig.savefig(image_path)
+        image_paths.append(image_path)
+    plt.close('all')
+    return figure_rst(image_paths, gallery_conf['src_dir'])
+
+
+def test_custom_scraper_thumbnail_alpha(gallery_conf):
+    """Test that thumbnails without an alpha channel work w/custom scraper."""
+    gallery_conf['image_scrapers'] = [_alpha_mpl_scraper]
+    rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
+    assert '.jpg' in rst
 
 
 def test_remove_config_comments(gallery_conf):

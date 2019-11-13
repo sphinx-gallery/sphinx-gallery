@@ -8,10 +8,11 @@ set -e
 pwd
 
 siteSource="$1"
+destDir="$2"
 
-if [ ! -d "$siteSource" ]
+if [ ! -d "$siteSource" ] || [ ! -d "$destDir" ];
 then
-    echo "Usage: $0 <site source dir>"
+    echo "Usage: $0 <site source dir> <site dest dir>"
     exit 1
 fi
 
@@ -19,13 +20,12 @@ fi
 git config --global user.email "Circle CI" > /dev/null 2>&1
 git config --global user.name "bot@try.out" > /dev/null 2>&1
 git clone git@github.com:sphinx-gallery/sphinx-gallery.github.io.git
-cd sphinx-gallery.github.io/
+mkdir -p sphinx-gallery.github.io/${destDir}
+cd sphinx-gallery.github.io/${destDir}
 
 # copy over or recompile the new site
 git rm -rf .
 cp -a "../${siteSource}/." .
-# github nojekyll
-touch .nojekyll
 
 # stage any changes and new files
 git add -A
