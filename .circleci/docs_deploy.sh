@@ -23,7 +23,7 @@ git config --global user.email "Circle CI" > /dev/null 2>&1
 git config --global user.name "bot@try.out" > /dev/null 2>&1
 git clone git@github.com:sphinx-gallery/sphinx-gallery.github.io.git
 
-siteSource="${PWD}/siteSource"
+siteSource="${PWD}/${siteSource}"
 cd sphinx-gallery.github.io/
 mkdir -p ${destDir}
 destDir="${PWD}/${destDir}"
