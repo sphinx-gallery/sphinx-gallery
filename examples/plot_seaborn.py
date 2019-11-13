@@ -27,6 +27,6 @@ for _ in range(15):
     sines.append(y)
 
 # Plot the average over replicates with bootstrap resamples
-sns.tsplot(sines, err_style="boot_traces", n_boot=500)
+sns.lineplot(sines, err_style="boot_traces", n_boot=500)
 # to avoid text output
 plt.show()

@@ -49,7 +49,7 @@ for i, (name, obj) in enumerate(names.items()):
              size=fontsize,
              transform=fig.transFigure,
              bbox=dict(boxstyle='larrow', fc="w", ec="k"))
-#
+
 plt.draw()
 # To avoid matplotlib text output
 plt.show()
