@@ -121,6 +121,6 @@ def test_missing_file():
 def test_file_is_generated():
     """User passes good python file. Check notebook file is created"""
 
-    python_to_jupyter_cli(['examples/plot_1_sin.py'])
-    assert os.path.isfile('examples/plot_1_sin.ipynb')
-    os.remove('examples/plot_1_sin.ipynb')
+    python_to_jupyter_cli(['examples/plot_0_sin.py'])
+    assert os.path.isfile('examples/plot_0_sin.ipynb')
+    os.remove('examples/plot_0_sin.ipynb')
