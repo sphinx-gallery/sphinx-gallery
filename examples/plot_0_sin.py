@@ -5,7 +5,7 @@ Introductory example - Plotting sin
 
 This is a general example demonstrating a Matplotlib plot output, embedded
 rST, the use of math notation and cross-linking to other examples. It would be
-useful to compare the :download:`source Python file <plot_1_sin.py>` with the
+useful to compare the :download:`source Python file <plot_0_sin.py>` with the
 output below.
 
 Example files should start with a header docstring. Anything before the

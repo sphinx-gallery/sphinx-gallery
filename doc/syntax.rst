@@ -114,5 +114,5 @@ functionality::
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
 For a clear example refer to the rendered example
-:ref:`sphx_glr_tutorials_plot_notebook.py` and compare it to the generated
-:download:`original python script <tutorials/plot_notebook.py>`
+:ref:`sphx_glr_tutorials_plot_parse.py` and compare it to the generated
+:download:`original python script <tutorials/plot_parse.py>`
