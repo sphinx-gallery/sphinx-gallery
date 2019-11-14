@@ -599,7 +599,7 @@ to use the 2nd figure created as the thumbnail::
     # sphinx_gallery_thumbnail_number = 2
 
 The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
-:ref:`sphx_glr_auto_examples_plot_choose_thumbnail.py` for an example
+:ref:`sphx_glr_auto_examples_plot_4_choose_thumbnail.py` for an example
 of this functionality.
 
 .. _binder_links:

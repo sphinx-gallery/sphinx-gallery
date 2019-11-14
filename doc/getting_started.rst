@@ -163,7 +163,7 @@ generated:
   have been made to the file and thus if new output files need to be generated.
 * ``_codeobj.pickle`` - used to identify function names and to which module
   they belong (more details in
-  :ref:`sphx_glr_auto_examples_plot_function_identifier.py`)
+  :ref:`sphx_glr_auto_examples_plot_6_function_identifier.py`)
 
 Additionally, two compressed ``.zip`` files containing all the ``.ipynb`` and
 ``.py`` files are generated.
