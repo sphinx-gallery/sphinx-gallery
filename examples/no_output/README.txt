@@ -1,8 +1,8 @@
 .. _no_out_examples:
 
-Examples which don't produce image output
------------------------------------------
+No image output examples
+------------------------
 
-This section gathers examples which, by design don't follow the pattern of
-producing figures. Some examples only output to standard output, others
-are here to demonstrate how Sphinx-Gallery handles examples with errors.
+This section gathers examples which don't produce any figures. Some examples
+only output to standard output, others demonstrate how Sphinx-Gallery handles
+examples with errors.

@@ -58,11 +58,11 @@ change path separators with underscores. This is valid for
 cross-references labels, and images.
 
 So for example if we want to reference the example
-:ref:`sphx_glr_auto_examples_plot_gallery_version.py`, we just call
+:ref:`sphx_glr_auto_examples_plot_0_sin.py`, we just call
 its reference
-``:ref:`sphx_glr_auto_examples_plot_gallery_version.py```. The image
-it generated has the name ``sphx_glr_plot_gallery_version_thumb.png``
-and its thumbnail is ``sphx_glr_plot_gallery_version_thumb.png``
+``:ref:`sphx_glr_auto_examples_plot_0_sin.py```. The image
+it generated has the name ``sphx_glr_plot_0_sin_001.png``
+and its thumbnail is ``sphx_glr_plot_0_sin_thumb.png``
 
 .. _custom_scraper:
 

@@ -257,7 +257,7 @@ code snippets within the gallery appear like this
     </div>
 
 Have a look at this in full action
-in our example :ref:`sphx_glr_auto_examples_plot_gallery_version.py`.
+in our example :ref:`sphx_glr_auto_examples_plot_0_sin.py`.
 
 To make this work in your documentation you need to include to the configuration
 dictionary within your Sphinx ``conf.py`` file::
@@ -752,7 +752,8 @@ to scrape both matplotlib and Mayavi images you can do::
       }
 
 The default value is ``'image_scrapers': ('matplotlib',)`` which only scrapes
-matplotlib images.
+Matplotlib images. Note that this includes any images produced by pacakges that
+are based on Matplotlib, for example Seaborn or Yellowbrick.
 
 The following scrapers are supported:
 

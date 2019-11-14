@@ -3,19 +3,17 @@
 Gallery of Examples
 ===================
 
-This page consists of the 'General example' gallery and two sub-galleries.
-These sub-galleries are generated from the sub-directories within the general
-examples directory. The file structure looks like this:
+This page consists of the 'General example' gallery and a sub-gallery,
+'No image output examples'. This sub-gallery is generated from a
+sub-directory within the general examples directory. The file structure of
+this gallery looks like this:
 
 .. code-block:: none
 
-    examples/ 
+    examples/           # base 'Gallery of Examples' directory
     ├── README.txt
     ├── <.py files>
-    ├── sin_funct/      # 'The sin function' sub-gallery
-    │   ├── README.txt
-    │   └── <.py files>
-    └── no_output/      # 'Examples which don’t produce image output' sub-gallery
+    └── no_output/      # generates the 'No image output examples' sub-gallery
         ├── README.txt
         └── <.py files>
 
@@ -24,5 +22,5 @@ examples directory. The file structure looks like this:
 General examples
 ----------------
 
-This gallery consists of general-purpose and introductory examples from
-Sphinx-Gallery.
+This gallery consists of introductory examples and examples demonstrating
+specific features of Sphinx-Gallery.

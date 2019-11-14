@@ -1,35 +1,104 @@
 [('text',
-  '\nThe Header Docstring\n====================\n\nWhen writting latex in a Python string keep in mind to escape the backslashes\nor use a raw docstring\n\n.. math:: \\sin (x)\n\nClosing this string quotes on same line',
+  '\n'
+  'Alternating text and code\n'
+  '=========================\n'
+  '\n'
+  'Sphinx-Gallery is capable of transforming Python files into rST files\n'
+  'with a notebook structure. For this to be used you need to respect some '
+  'syntax\n'
+  'rules. This example demonstrates how to alternate text and code blocks and '
+  'some\n'
+  'edge cases. It was designed to be compared with the\n'
+  ':download:`source Python script <plot_parse.py>`.',
   1),
- ('text', 'Direct first comment\nwith second line\n', 15),
- ('code', '\nimport numpy as np\n\n', 17),
- ('code', 'A = 1\n\nimport matplotlib.pyplot as plt\n\n', 21),
  ('text',
-  'There is no need to always alternate between code and comment blocks\nNow there is free repetition of both\n',
+  'This is the first text block and directly follows the header docstring '
+  'above.\n',
+  14),
+ ('code', '\nimport numpy as np\n\n', 15),
+ ('code',
+  '\n'
+  "# a block separator (line of #'s) allows you to create two separate code "
+  'blocks\n'
+  'A = 1\n'
+  '\n'
+  'import matplotlib.pyplot as plt\n'
+  '\n',
+  19),
+ ('text',
+  'You can easily alternate between code and text blocks **and** separate\n'
+  'sequential blocks of code (above) and text (below). Note that separated\n'
+  'text blocks only shows as a new lines between text, in the rendered '
+  'output.\n',
   26),
  ('text',
-  "A block an be split by either a single line of ``#``'s (>=20 columns) or \n``#%%``. For compatibility reasons ``# %%`` (with a space) can also be used\nbut we recommend only using ``#%%`` for consistency. All future \n'block splitters' used in the source ``.py`` document will be ``#%%``.\n",
-  30),
- ('text', 'Latex in the comments does not need to be escaped\n\n.. math::\n   \\sin\n', 36),
+  "You can separate blocks using either a single line of ``#``'s (>=20 "
+  'columns)\n'
+  'or ``#%%``. For compatibility reasons ``# %%`` (with a space) can also be '
+  'used\n'
+  'but we recommend only using ``#%%`` for consistency. All future \n'
+  "'block splitters' used in the source ``.py`` document will be ``#%%``.\n",
+  31),
  ('code',
-  '\ndef dummy():\n    """This should not be part of a \'text\' block\'"""\n\n    ######################################\n    # Comment inside code to remain here\n    pass\n\n# this should not be part of a \'text\' block\n\n',
-  40),
+  '\n'
+  'def dummy():\n'
+  '    """This should not be part of a \'text\' block\'"""\n'
+  '\n'
+  '    #############################################\n'
+  '    # Comment inside code to remain in code block\n'
+  '    pass\n'
+  '\n'
+  "# this should not be part of a 'text' block\n"
+  '\n',
+  35),
  ('text',
-  '####################################################################\n\nMaking a line cut in sphinx\n',
-  51),
+  '####################################################################\n'
+  '\n'
+  'The above syntax makes a line cut in Sphinx. Note the space between the '
+  'first\n'
+  "``#`` and the line of ``#``'s.\n",
+  46),
  ('text',
-  '.. warning::\n    The next kind of comments are not supported and become too hard to escape\n    so just don\'t code like this::\n\n        def dummy2():\n            """Function docstring"""\n        ####################################\n        # This comment \n        #%%\n        # and this comment inside python indentation\n        # breaks the block structure and is not\n        # supported\n            dummy2\n\n',
-  57),
- ('code', '\n"""Free strings are not supported. They remain part of the code"""\n\n', 71),
+  '.. warning::\n'
+  '    The next kind of comments are not supported and become too hard to '
+  'escape\n'
+  "    so just don't code like this::\n"
+  '\n'
+  '        def dummy2():\n'
+  '            """Function docstring"""\n'
+  '        ####################################\n'
+  '        # This comment \n'
+  '        #%%\n'
+  '        # and this comment inside python indentation\n'
+  '        # breaks the block structure and is not\n'
+  '        # supported\n'
+  '            dummy2\n'
+  '\n',
+  53),
+ ('code',
+  '\n'
+  '"""Free strings are not supported. They will be rendered as a code '
+  'block"""\n'
+  '\n',
+  67),
  ('text',
-  'New lines can be included in your block comments and the parser\nis capable of retaining this significant whitespace to work with sphinx\n\nSo the reStructuredText headers survive\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
-  75),
- ('code', "\n\nprint('one')\n\n", 80),
+  'New lines can be included in your text block and the parser\n'
+  'is capable of retaining this important whitespace to work with Sphinx.\n'
+  'Everything after a block splitter and starting with ``#`` then one space,\n'
+  'is interpreted by Sphinx-Gallery to be a rST text block. Keep your text\n'
+  'block together using ``#`` and a space at the beginning of each line.\n'
+  '\n'
+  'rST header within text block\n'
+  '^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
+  71),
+ ('code', "\nprint('one')\n\n", 79),
+ ('code', '\n# another way to separate code blocks shown above\nB = 1\n\n', 84),
  ('text',
-  "Code block separators\n###################################################################\n Surrounding a comment line with a line of ``#``'s (like a block splitter)\n above and below (or ``#%%`` on top and a line of ``#``'s below, as we have \n done here in the source ``.py`` doc) also works and creates a new header for\n that comment block too. Nevertheless to get rich text formatting we advise to\n use RestructuredText syntax in the comment blocks.\n",
-  85),
- ('code', "\nprint('two')\n", 92),
- ('code', 'B = 1\n\n', 96),
- ('text',
-  "End comments\n\nThat's all folks !\n\n.. literalinclude:: plot_parse.py\n\n\n",
-  99)]
+  'Last text block.\n'
+  '\n'
+  "That's all folks !\n"
+  '\n'
+  '.. literalinclude:: plot_parse.py\n'
+  '\n'
+  '\n',
+  89)]

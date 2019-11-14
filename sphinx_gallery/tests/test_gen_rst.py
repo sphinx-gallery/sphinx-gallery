@@ -66,8 +66,8 @@ def test_split_code_and_text_blocks():
 
 
 def test_bug_cases_of_notebook_syntax():
-    """Test over the known requirements of supported syntax in the
-    notebook styled comments. Use both '#'s' and '# %%' as cell
+    """Test the known requirements of supported syntax in the
+    notebook styled comments. Use both '#'s' and '#%%' as cell
     separators"""
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
