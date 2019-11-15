@@ -33,8 +33,8 @@ about to plot the following function:
 
 Here the function :math:`\\sin` is evaluated at each point the variable
 :math:`x` is defined. When including LaTeX in a Python string, ensure that you
-escape the backslashes or use a raw docstring. You do not need to do this in
-text blocks (see below).
+escape the backslashes or use a :ref:`raw docstring <python:strings>`. You do
+not need to do this in text blocks (see below).
 """
 
 # Code source: Óscar Nájera
