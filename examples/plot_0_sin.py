@@ -8,28 +8,33 @@ rST, the use of math notation and cross-linking to other examples. It would be
 useful to compare the :download:`source Python file <plot_0_sin.py>` with the
 output below.
 
-Example files should start with a header docstring. Anything before the
-docstring is ignored by Sphinx-Gallery and will not appear in the rendered
-output, nor will it be executed. This docstring requires an rST header, used
-at the title of the example and to correctly build reference links.
+Source files for gallery examples should start with a triple-quoted header
+docstring. Anything before the docstring is ignored by Sphinx-Gallery and will
+not appear in the rendered output, nor will it be executed. This docstring
+requires a rST header, which is used as the title of the example and
+to correctly build cross-referencing links.
 
-Once you close the docstring you will be writing Python code. This code gets
-executed by Sphinx-Gallery and any output, including plots will be captured.
-You can also alternate between code blocks and text blocks that provide
-explanations about the code.
+Code and embedded rST text blocks follow the docstring. The first block
+immediately after the docstring is deemed a code block, by default, unless you
+specify it to be a text block using a line of ``#``'s or ``#%%`` (see below).
+All code blocks get executed by Sphinx-Gallery and any output, including plots
+will be captured. Typically, code and text blocks are interspersed to provide
+narrative explanations of what the code is doing or interpretations of code
+output.
 
-To include displayed math notation, use the directive ``.. math::`` and to
-include inline math notation use ``:math:``. For example, we wish to plot the
-following function:
+Mathematical expressions can be included as LaTeX, and will be rendered with
+MathJax. To include displayed math notation, use the directive ``.. math::``.
+To include inline math notation use the ``:math:`` role. For example, we are
+about to plot the following function:
 
 .. math::
 
     x \\rightarrow \\sin(x)
 
 Here the function :math:`\\sin` is evaluated at each point the variable
-:math:`x` is defined. When writting latex in a Python string, ensure that you
-escape the backslashes or use a raw docstring. You do not need to do
-this in text blocks (see below).
+:math:`x` is defined. When including LaTeX in a Python string, ensure that you
+escape the backslashes or use a raw docstring. You do not need to do this in
+text blocks (see below).
 """
 
 # Code source: Óscar Nájera
@@ -48,15 +53,15 @@ plt.ylabel('$\sin(x)$')
 plt.show()
 
 #%%
-# To include embedded rST, use a line of ``#`` symbols that spans >= 20 columns
-# or ``#%%`` between your rST and your code (see :ref:`embedding_rst`). This
-# separates your example into distinct text and code blocks. You can continue
-# writing code below the rST:
+# To include embedded rST, use a line of >= 20 ``#``'s or ``#%%`` between your
+# rST and your code (see :ref:`embedding_rst`). This separates your example
+# into distinct text and code blocks. You can continue writing code below the
+# embedded rST text block:
 
-print('this example shows a sin plot')
+print('This example shows a sin plot!')
 
 #%%
-# Latex syntax in the text blocks does not require backslashes to be escaped:
+# LaTeX syntax in the text blocks does not require backslashes to be escaped:
 #
 # .. math::
 #    \sin
@@ -68,14 +73,16 @@ print('this example shows a sin plot')
 # including from other examples. Sphinx-Gallery automatically creates reference
 # labels for each example. The label consists of the ``.py`` file name,
 # prefixed with ``sphx_glr_`` and the name of the
-# folder(s) the example is in. In this case, the example is in
-# ``auto_examples``, the ``gallery_dirs`` (see
+# folder(s) the example is in. In this case, the example we want to
+# cross-reference is in ``auto_examples`` (the ``gallery_dirs``; see
 # :ref:`configure_and_use_sphinx_gallery`), then the subdirectory ``no_output``
 # (since the example is within a sub-gallery). The file name of the example is
 # ``plot_syntaxerror.py``. We can thus cross-link to the example 'SyntaxError'
 # using:
-# ``:ref:`sphx_glr_auto_examples_no_output_plot_syntaxerror.py\```.
+# ``:ref:`sphx_glr_auto_examples_no_output_plot_syntaxerror.py```.
 #
 # .. seealso::
 #     :ref:`sphx_glr_auto_examples_no_output_plot_syntaxerror.py` for a
 #     an example with an error.
+#
+# .. |docstring| replace:: """

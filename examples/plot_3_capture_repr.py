@@ -12,7 +12,7 @@ with other ``capture_repr`` settings is also explained.
 """
 #%%
 # Nothing is captured for the code block below because no data is directed to
-# standard output and the last statement is not an expression.
+# standard output and the last statement is an assignment, not an expression.
 
 # example 1
 a = 2

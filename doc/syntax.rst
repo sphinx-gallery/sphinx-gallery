@@ -43,14 +43,14 @@ be rendered in-line with the Python code and its outputs, similar to how
 Jupyter Notebooks are structured (in fact, Sphinx-Gallery also **creates** a
 Jupyter Notebook for each example that is built).
 
-You can embed rST in your Python examples by including a line of ``#`` symbols
-that spans >= 20 columns or ``#%%``. For compatibility reasons, 
-``# %%`` (with a space) can also be used but ``#%%`` is recommended for 
-consistency. If using ``#``'s, we recommend using 79 columns, like this::
+You can embed rST in your Python examples by including a line of  >= 20 ``#``
+symbols or ``#%%``. For compatibility reasons, ``# %%`` (with a space) can also
+be used but ``#%%`` is recommended for consistency. If using ``#``'s, we
+recommend using 79 ``#``'s, like this::
 
   ###############################################################################
 
-Any commented lines (that begin with ``#`` and a space so they are
+Any commented lines (a line beginning with ``#`` and a space so they are
 PEP8-compliant) that immediately follow will be rendered as rST in the built
 gallery examples. For example::
 
