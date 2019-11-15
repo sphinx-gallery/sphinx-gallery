@@ -59,7 +59,35 @@ a + b
 # string ``'Hello world'`` is thus captured. A 'representation' of the last
 # expression is also captured. Again, since this expression ``a + b`` does not
 # have a ``_repr_html_`` method, the ``__repr__`` method is captured.
-#
+# 
+# Matplotlib figures
+# ##################
+# 
+# Matplotlib function calls generally return a Matplotlib object as well as the
+# figure. For code blocks where the last statement is a Matplotlib expression,
+# a representation of the object will be captured, as well as the plot. This
+# will occur if the ``capture_repr`` tuple contains ``__repr__`` or ``__str__``.
+# For example, ``matplotlib.pyplot.plot()`` returns a list of ``Line2D`` objects
+# representing the plotted data:
+
+import matplotlib.pyplot as plt
+
+plt.plot([1,2,3])
+
+#%%
+# To avoid capturing the text representation, you can assign the last Matplotlib
+# expression to a temporary variable:
+
+_ = plt.plot([1,2,3])
+
+#%%
+# Alternatively, you can add ``plt.show()``, which does not return anything,
+# to the end of the code block:
+
+plt.plot([1,2,3])
+plt.show()
+
+#%%
 # The ``capture_repr`` configuration
 # ##################################
 #
