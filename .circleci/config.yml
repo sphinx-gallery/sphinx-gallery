@@ -88,13 +88,20 @@ workflows:
   version: 2
   default:
     jobs:
+      # https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag
+      # Run for all branches and tags
       - build_docs
+          filters:
+            tags:
+              only: /.*/
+      # Run for master branch
       - deploy_dev:
           requires:
             - build_docs
           filters:
             branches:
               only: master
+      # Run for tags named vX.Y.Z
       - deploy_stable:
           requires:
             - build_docs
