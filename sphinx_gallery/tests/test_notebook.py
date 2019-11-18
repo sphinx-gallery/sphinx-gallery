@@ -99,7 +99,7 @@ def test_jupyter_notebook(gallery_conf):
     gallery_conf['first_notebook_cell'] = test_text
     example_nb = jupyter_notebook(blocks, gallery_conf)
     cell_src = example_nb.get('cells')[0]['source'][0]
-    assert cell_src.startswith('\nThe Header Docstring')
+    assert cell_src.startswith('\nAlternating text and code')
 
 ###############################################################################
 # Notebook shell utility
@@ -121,6 +121,6 @@ def test_missing_file():
 def test_file_is_generated():
     """User passes good python file. Check notebook file is created"""
 
-    python_to_jupyter_cli(['examples/plot_quantum.py'])
-    assert os.path.isfile('examples/plot_quantum.ipynb')
-    os.remove('examples/plot_quantum.ipynb')
+    python_to_jupyter_cli(['examples/plot_0_sin.py'])
+    assert os.path.isfile('examples/plot_0_sin.ipynb')
+    os.remove('examples/plot_0_sin.ipynb')

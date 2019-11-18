@@ -3,9 +3,11 @@
 Plotting the exponential function
 =================================
 
-A simple example for ploting two figures of a exponential
-function in order to test the autonomy of the gallery
-stacking multiple images.
+This example demonstrates how to import a local module and how images are
+stacked when two plots are created in one code block. The variable ``N`` from
+the example 'Local module' (file ``local_module.py``) is imported in the code
+below. Further, note that when there is only one code block in an example, the
+output appears before the code block. 
 """
 
 # Code source: Óscar Nájera
@@ -14,8 +16,8 @@ stacking multiple images.
 import numpy as np
 import matplotlib.pyplot as plt
 
-# You can use modules local to the example being run, here
-# we just use a trivial NumPy wrapper
+# You can use modules local to the example being run, here we import
+# N from local_module
 from local_module import N  # = 100
 
 

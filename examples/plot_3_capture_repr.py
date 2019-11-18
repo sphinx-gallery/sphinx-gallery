@@ -5,14 +5,14 @@ Capturing output representations
 
 This example demonstrates how the configuration ``capture_repr``
 (:ref:`capture_repr`) works. The default ``capture_repr`` setting is
-``capture_repr: ('_repr_html_', '__repr__')`` and this was used to build this
-documentation. The output that is captured with this setting can be observed in
-this example. Differences in outputs that would be captured with other
-``capture_repr`` settings is also explained.
+``capture_repr: ('_repr_html_', '__repr__')`` and was used when building the
+Sphinx-Gallery documentation. The output that is captured with this setting
+is demonstrated in this example. Differences in outputs that would be captured
+with other ``capture_repr`` settings is also explained.
 """
 #%%
 # Nothing is captured for the code block below because no data is directed to
-# standard output and the last statement is not an expression.
+# standard output and the last statement is an assignment, not an expression.
 
 # example 1
 a = 2
@@ -59,7 +59,39 @@ a + b
 # string ``'Hello world'`` is thus captured. A 'representation' of the last
 # expression is also captured. Again, since this expression ``a + b`` does not
 # have a ``_repr_html_`` method, the ``__repr__`` method is captured.
+# 
+# Matplotlib output
+# ##################
+# 
+# Matplotlib function calls generally return a Matplotlib object as well as
+# outputting the figure. For code blocks where the last statement is a
+# Matplotlib expression, a 'representation' of the object will be captured, as
+# well as the plot. This is because Matplotlib objects have a ``__repr__``
+# method and our ``capture_repr`` tuple contains ``__repr__``. Note that
+# Matplotlib objects also have a ``__str__`` method.
 #
+# In the example below, ``matplotlib.pyplot.plot()`` returns a list of
+# ``Line2D`` objects representing the plotted data and the ``__repr__`` of the
+# list is captured as well as the figure:
+
+import matplotlib.pyplot as plt
+
+plt.plot([1,2,3])
+
+#%%
+# To avoid capturing the text representation, you can assign the last Matplotlib
+# expression to a temporary variable:
+
+_ = plt.plot([1,2,3])
+
+#%%
+# Alternatively, you can add ``plt.show()``, which does not return anything,
+# to the end of the code block:
+
+plt.plot([1,2,3])
+plt.show()
+
+#%%
 # The ``capture_repr`` configuration
 # ##################################
 #

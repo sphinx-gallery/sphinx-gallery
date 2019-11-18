@@ -18,7 +18,7 @@ from datetime import date
 import warnings
 
 import sphinx_gallery
-from sphinx_gallery.sorting import ExplicitOrder, NumberOfCodeLinesSortKey
+from sphinx_gallery.sorting import FileNameSortKey
 import sphinx_rtd_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -342,10 +342,8 @@ sphinx_gallery_conf = {
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'image_scrapers': image_scrapers,
-    'subsection_order': ExplicitOrder(['../examples/sin_func',
-                                       '../examples/no_output',
-                                       '../tutorials/seaborn']),
-    'within_subsection_order': NumberOfCodeLinesSortKey,
+    # specify the order of examples to be according to filename
+    'within_subsection_order': FileNameSortKey,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
                                   '../examples/no_output/plot_syntaxerror.py'],
     'min_reported_time': min_reported_time,

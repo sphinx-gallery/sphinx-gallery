@@ -20,7 +20,7 @@ _, script_blocks = split_code_and_text_blocks(filename)
 names = identify_names(script_blocks)
 figheight = len(names) + .5
 
-fontsize = 20
+fontsize = 12.5
 
 ###############################################################################
 # Sphinx-Gallery examines both the executed code itself, as well as the
@@ -48,8 +48,6 @@ for i, (name, obj) in enumerate(names.items()):
              ha="left",
              size=fontsize,
              transform=fig.transFigure,
-             bbox=dict(boxstyle='larrow', fc="w", ec="k"))
-#
+             bbox=dict(boxstyle='larrow,pad=0.1', fc="w", ec="k"))
+
 plt.draw()
-# To avoid matplotlib text output
-plt.show()

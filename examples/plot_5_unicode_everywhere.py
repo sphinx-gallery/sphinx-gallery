@@ -3,8 +3,9 @@
 Using Unicode everywhere 🤗
 ===========================
 
-This examples includes unicode characters, mostly emoji 🎉 to stress test the
-build and test environments that parse the example files. """
+This example demonstrates how to include non-ASCII characters, mostly emoji 🎉
+to stress test the build and test environments that parse the example files.
+"""
 from __future__ import unicode_literals
 
 # 🎉 👍

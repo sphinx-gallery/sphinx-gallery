@@ -1,57 +1,53 @@
 # -*- coding: utf-8 -*-
 """
-The Header Docstring
-====================
+Alternating text and code
+=========================
 
-When writting latex in a Python string keep in mind to escape the backslashes
-or use a raw docstring
-
-.. math:: \\sin (x)
-
-Closing this string quotes on same line"""
+Sphinx-Gallery is capable of transforming Python files into rST files
+with a notebook structure. For this to be used you need to respect some syntax
+rules. This example demonstrates how to alternate text and code blocks and some
+edge cases. It was designed to be compared with the
+:download:`source Python script <plot_parse.py>`."""
 
 
 ##############################################################################
-# Direct first comment
-# with second line
+# This is the first text block and directly follows the header docstring above.
 
 import numpy as np
 
 ##################################################
+
+# a block separator (line of #'s) allows you to create two separate code blocks
 A = 1
 
 import matplotlib.pyplot as plt
 
 #####################################
-# There is no need to always alternate between code and comment blocks
-# Now there is free repetition of both
+# You can easily alternate between code and text blocks **and** separate
+# sequential blocks of code (above) and text (below). Note that separated
+# text blocks only shows as a new lines between text, in the rendered output.
 
 #############################################
-# A block an be split by either a single line of ``#``'s (>=20 columns) or 
-# ``#%%``. For compatibility reasons ``# %%`` (with a space) can also be used
+# You can separate blocks using either a single line of ``#``'s (>=20 columns)
+# or ``#%%``. For compatibility reasons ``# %%`` (with a space) can also be used
 # but we recommend only using ``#%%`` for consistency. All future 
 # 'block splitters' used in the source ``.py`` document will be ``#%%``.
-
-#%%
-# Latex in the comments does not need to be escaped
-#
-# .. math::
-#    \sin
 
 def dummy():
     """This should not be part of a 'text' block'"""
 
-    ######################################
-    # Comment inside code to remain here
+    #############################################
+    # Comment inside code to remain in code block
     pass
 
 # this should not be part of a 'text' block
 
 #%%
-#
+# 
 # ####################################################################
 #
-# Making a line cut in sphinx
+# The above syntax makes a line cut in Sphinx. Note the space between the first
+# ``#`` and the line of ``#``'s.
 
 #%%
 # .. warning::
@@ -69,34 +65,28 @@ def dummy():
 #             dummy2
 #
 
-"""Free strings are not supported. They remain part of the code"""
+"""Free strings are not supported. They will be rendered as a code block"""
 
 #%%
-# New lines can be included in your block comments and the parser
-# is capable of retaining this significant whitespace to work with sphinx
+# New lines can be included in your text block and the parser
+# is capable of retaining this important whitespace to work with Sphinx.
+# Everything after a block splitter and starting with ``#`` then one space,
+# is interpreted by Sphinx-Gallery to be a rST text block. Keep your text
+# block together using ``#`` and a space at the beginning of each line.
 #
-# So the reStructuredText headers survive
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+# rST header within text block
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 print('one')
 
 #%%
-# Code block separators
-####################################################################
-# Surrounding a comment line with a line of ``#``'s (like a block splitter)
-# above and below (or ``#%%`` on top and a line of ``#``'s below, as we have 
-# done here in the source ``.py`` doc) also works and creates a new header for
-# that comment block too. Nevertheless to get rich text formatting we advise to
-# use RestructuredText syntax in the comment blocks.
-
-print('two')
-#%%
 #
+
+# another way to separate code blocks shown above
 B = 1
 
 #%%
-# End comments
+# Last text block.
 #
 # That's all folks !
 #

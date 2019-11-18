@@ -855,7 +855,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
 
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
 
-    binder_text = (" or run this example in your browser via Binder"
+    binder_text = (" or to run this example in your browser via Binder"
                    if len(binder_conf) else "")
     example_rst = (".. note::\n"
                    "    :class: sphx-glr-download-link-note\n\n"

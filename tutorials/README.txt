@@ -1,13 +1,10 @@
-.. _tutorials-index:
-
-Secondary gallery
-=================
-
-
 .. _notebook_examples:
 
-Notebook styled examples
-------------------------
+Notebook style example
+======================
 
-You can have multiple galleries each one for different uses. Serving the
-purpose of having just examples and a different section for tutorials.
+You can have multiple galleries, each one for different uses. For example,
+one gallery of examples and a different gallery for tutorials.
+
+This gallery demonstrates the ability of Sphinx-Gallery to transform a file
+with a Jupyter notebook style structure (i.e., with alternating text and code).
