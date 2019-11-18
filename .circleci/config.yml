@@ -90,7 +90,7 @@ workflows:
     jobs:
       # https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag
       # Run for all branches and tags
-      - build_docs
+      - build_docs:
           filters:
             tags:
               only: /.*/
