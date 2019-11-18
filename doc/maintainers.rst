@@ -66,9 +66,9 @@ Prepare for release
 
 4. Update version
 
-     Update the version in ``sphinx_gallery/__init__.py``. It should end in
-     ``dev0``. You should remove this text, and the remaining number will become
-     the version for this release.
+     Update the version in ``sphinx_gallery/__init__.py``, which should end in
+     ``.dev0``. You should remove ``.dev0``, and the remaining numbers will 
+     become the version for this release.
 
 5. Open a Pull Request that contains the two changes we've made above
 
