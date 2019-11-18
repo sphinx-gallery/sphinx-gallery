@@ -41,10 +41,12 @@ Prepare for release
     1. Use `github_changelog_generator
        <https://github.com/skywinder/github-changelog-generator#installation>`_ to
        gather all merged pull requests and closed issues during the development
-       cycle. We do this because our failing discipline of writing in the
-       CHANGES.rst all relevant changes, this helps our memory. ::
+       cycle. You will likely need to `generate a Github token <https://github.com/settings/tokens/new?description=GitHub%20Changelog%20Generator%20token>`_
+       as Github only allows 50 unauthenticated requests per hour. We do this
+       because our failing discipline of writing in the CHANGES.rst all relevant
+       changes, this helps our memory. ::
 
-          github_changelog_generator sphinx-gallery/sphinx-gallery --between-tags v0.3.0,v0.4.0
+          github_changelog_generator sphinx-gallery/sphinx-gallery --since-tag=v0.5.0 --token <your-40-digit-token>
 
     2. Edit CHANGELOG.md to look reasonable (it will be used later)
 
@@ -64,9 +66,9 @@ Prepare for release
 
 4. Update version
 
-     Update the version in ``sphinx_gallery/__init__.py``. It should end in
-     ``dev0``. You should remove this text, and the remaining number will become
-     the version for this release.
+     Update the version in ``sphinx_gallery/__init__.py``, which should end in
+     ``.dev0``. You should remove ``.dev0``, and the remaining numbers will 
+     become the version for this release.
 
 5. Open a Pull Request that contains the two changes we've made above
 

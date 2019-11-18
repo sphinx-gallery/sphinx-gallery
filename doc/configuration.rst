@@ -969,6 +969,11 @@ you can do::
 Controlling what output is captured
 ===================================
 
+.. note::
+
+    Configure ``capture_repr`` to be an empty tuple (i.e.,``capture_repr: ()``)
+    to return to the output capturing behaviour prior to release v0.5.0.
+
 The ``capture_repr`` configuration allows the user to control what output
 is captured, while executing the example ``.py`` files, and subsequently
 incorporated into the built documentation. Data directed to standard output

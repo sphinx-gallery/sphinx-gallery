@@ -2,22 +2,90 @@ Change Log
 ==========
 
 v0.5.0
-------
+---------------
 
 Developer changes
 '''''''''''''''''
 
-- N/A
+- Separated 'dev' documentation, which tracks master and 'stable' documentation,
+  which follows releases.
+- Added official jpeg support.
 
 Incompatible changes
 ''''''''''''''''''''
 
 - Dropped support for Sphinx < 1.8.3.
 - Dropped support for Python < 3.5.
+- Added ``capture_repr`` configuration with the default setting 
+  ``('_repr_html_', __repr__')``. This may result the capturing of unwanted output
+  in existing projects. Set ``capture_repr: ()`` to return to behaviour prior
+  to this release.
 
 **Implemented enhancements:**
 
--  ENH: Support ``#%%`` cell separator `#370 <https://github.com/sphinx-gallery/sphinx-gallery/pull/518>`__ (`lucyleeow <https://github.com/lucyleeow>`_)
+-  Explain the inputs of the image scrapers `#472 <https://github.com/sphinx-gallery/sphinx-gallery/issues/472>`__
+-  Capture HTML output as in Jupyter `#396 <https://github.com/sphinx-gallery/sphinx-gallery/issues/396>`__
+-  Feature request: Add an option for different cell separations `#370 <https://github.com/sphinx-gallery/sphinx-gallery/issues/370>`__
+-  Mark sphinx extension as parallel-safe for writing `#561 <https://github.com/sphinx-gallery/sphinx-gallery/pull/561>`__ (`astrofrog <https://github.com/astrofrog>`__)
+-  ENH: Support linking to builtin modules `#558 <https://github.com/sphinx-gallery/sphinx-gallery/pull/558>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Add official JPG support and better tests `#557 <https://github.com/sphinx-gallery/sphinx-gallery/pull/557>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [MRG] ENH: Capture ’repr’s of last expression `#541 <https://github.com/sphinx-gallery/sphinx-gallery/pull/541>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  look for both ‘README’ and ‘readme’ `#535 <https://github.com/sphinx-gallery/sphinx-gallery/pull/535>`__ (`revesansparole <https://github.com/revesansparole>`__)
+-  ENH: Speed up builds `#526 <https://github.com/sphinx-gallery/sphinx-gallery/pull/526>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Add live object refs and methods `#525 <https://github.com/sphinx-gallery/sphinx-gallery/pull/525>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Show memory usage, too `#523 <https://github.com/sphinx-gallery/sphinx-gallery/pull/523>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [MRG] EHN support #%% cell separators `#518 <https://github.com/sphinx-gallery/sphinx-gallery/pull/518>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT: Remove support for old Python and Sphinx `#513 <https://github.com/sphinx-gallery/sphinx-gallery/pull/513>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Fixed bugs:**
+
+-  Documentation is ahead of current release `#559 <https://github.com/sphinx-gallery/sphinx-gallery/issues/559>`__
+-  Fix JPEG thumbnail generation `#556 <https://github.com/sphinx-gallery/sphinx-gallery/pull/556>`__ (`rgov <https://github.com/rgov>`__)
+-  [MRG] Fix terminal rst block last word `#548 <https://github.com/sphinx-gallery/sphinx-gallery/pull/548>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [MRG][FIX] Remove output box from print(__doc__) `#529 <https://github.com/sphinx-gallery/sphinx-gallery/pull/529>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG: Fix kwargs modification in loop `#527 <https://github.com/sphinx-gallery/sphinx-gallery/pull/527>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Fix AppVeyor `#524 <https://github.com/sphinx-gallery/sphinx-gallery/pull/524>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Closed issues:**
+
+-  Making sphinx-gallery parallel_write_safe `#560 <https://github.com/sphinx-gallery/sphinx-gallery/issues/560>`__
+-  Mayavi example cannot run in binder `#554 <https://github.com/sphinx-gallery/sphinx-gallery/issues/554>`__
+-  Support pyqtgraph plots `#553 <https://github.com/sphinx-gallery/sphinx-gallery/issues/553>`__
+-  Last word in rst used as code `#546 <https://github.com/sphinx-gallery/sphinx-gallery/issues/546>`__
+-  ENH capture ’repr’s of last expression `#540 <https://github.com/sphinx-gallery/sphinx-gallery/issues/540>`__
+-  Mention list of projects using sphinx-gallery in a documentation page `#536 <https://github.com/sphinx-gallery/sphinx-gallery/issues/536>`__
+-  consider looking also for ‘readme.\*’ instead of only ‘README.\*’ `#534 <https://github.com/sphinx-gallery/sphinx-gallery/issues/534>`__
+-  Small regression in 0.4.1: print(__doc__) creates empty output block `#528 <https://github.com/sphinx-gallery/sphinx-gallery/issues/528>`__
+-  Show memory usage in build output `#522 <https://github.com/sphinx-gallery/sphinx-gallery/issues/522>`__
+-  Linking to external examples `#519 <https://github.com/sphinx-gallery/sphinx-gallery/issues/519>`__
+-  Intro text gets truncated on ‘-’ character `#517 <https://github.com/sphinx-gallery/sphinx-gallery/issues/517>`__
+-  REL: New release `#507 <https://github.com/sphinx-gallery/sphinx-gallery/issues/507>`__
+-  Matplotlib raises warning when ‘pyplot.show()’ is called `#488 <https://github.com/sphinx-gallery/sphinx-gallery/issues/488>`__
+-  Only support the latest 2 or 3 Sphinx versions `#407 <https://github.com/sphinx-gallery/sphinx-gallery/issues/407>`__
+-  Drop Python 2.X support `#405 <https://github.com/sphinx-gallery/sphinx-gallery/issues/405>`__
+-  Inspiration from new gallery package for sphinx: sphinx-exhibit `#402 <https://github.com/sphinx-gallery/sphinx-gallery/issues/402>`__
+-  DOC: each example should start by explaining why it’s there `#143 <https://github.com/sphinx-gallery/sphinx-gallery/issues/143>`__
+
+**Merged pull requests:**
+
+-  [MRG] DOC: Add warning filter note in doc `#564 <https://github.com/sphinx-gallery/sphinx-gallery/pull/564>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [MRG] DOC: Explain each example `#563 <https://github.com/sphinx-gallery/sphinx-gallery/pull/563>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Add dev/stable distinction `#562 <https://github.com/sphinx-gallery/sphinx-gallery/pull/562>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC update example capture_repr `#552 <https://github.com/sphinx-gallery/sphinx-gallery/pull/552>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG: Fix index check `#551 <https://github.com/sphinx-gallery/sphinx-gallery/pull/551>`__ (`larsoner <https://github.com/larsoner>`__)
+-  FIX: Fix spurious failures `#550 <https://github.com/sphinx-gallery/sphinx-gallery/pull/550>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Update CIs `#549 <https://github.com/sphinx-gallery/sphinx-gallery/pull/549>`__ (`larsoner <https://github.com/larsoner>`__)
+-  list of projects using sphinx-gallery `#547 <https://github.com/sphinx-gallery/sphinx-gallery/pull/547>`__ (`emmanuelle <https://github.com/emmanuelle>`__)
+-  [MRG] DOC typos and clarifications `#545 <https://github.com/sphinx-gallery/sphinx-gallery/pull/545>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  add class to clear tag `#543 <https://github.com/sphinx-gallery/sphinx-gallery/pull/543>`__ (`dorafc <https://github.com/dorafc>`__)
+-  MAINT: Fix for 3.8 `#542 <https://github.com/sphinx-gallery/sphinx-gallery/pull/542>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [MRG] DOC: Explain image scraper inputs `#539 <https://github.com/sphinx-gallery/sphinx-gallery/pull/539>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [MRG] Allow punctuation marks in title `#537 <https://github.com/sphinx-gallery/sphinx-gallery/pull/537>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Improve documentation `#533 <https://github.com/sphinx-gallery/sphinx-gallery/pull/533>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Add direct link to artifact `#532 <https://github.com/sphinx-gallery/sphinx-gallery/pull/532>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [MRG] Remove matplotlib agg backend + plt.show warnings from doc `#521 <https://github.com/sphinx-gallery/sphinx-gallery/pull/521>`__ (`lesteve <https://github.com/lesteve>`__)
+-  MAINT: Fixes for latest pytest `#516 <https://github.com/sphinx-gallery/sphinx-gallery/pull/516>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Add FURY to the sphinx-gallery users list `#515 <https://github.com/sphinx-gallery/sphinx-gallery/pull/515>`__ (`skoudoro <https://github.com/skoudoro>`__)
 
 v0.4.0
 ------
