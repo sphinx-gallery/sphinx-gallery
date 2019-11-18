@@ -60,15 +60,19 @@ a + b
 # expression is also captured. Again, since this expression ``a + b`` does not
 # have a ``_repr_html_`` method, the ``__repr__`` method is captured.
 # 
-# Matplotlib figures
+# Matplotlib output
 # ##################
 # 
-# Matplotlib function calls generally return a Matplotlib object as well as the
-# figure. For code blocks where the last statement is a Matplotlib expression,
-# a representation of the object will be captured, as well as the plot. This
-# will occur if the ``capture_repr`` tuple contains ``__repr__`` or ``__str__``.
-# For example, ``matplotlib.pyplot.plot()`` returns a list of ``Line2D`` objects
-# representing the plotted data:
+# Matplotlib function calls generally return a Matplotlib object as well as
+# outputting the figure. For code blocks where the last statement is a
+# Matplotlib expression, a 'representation' of the object will be captured, as
+# well as the plot. This is because Matplotlib objects have a ``__repr__``
+# method and our ``capture_repr`` tuple contains ``__repr__``. Note that
+# Matplotlib objects also have a ``__str__`` method.
+#
+# In the example below, ``matplotlib.pyplot.plot()`` returns a list of
+# ``Line2D`` objects representing the plotted data and the ``__repr__`` of the
+# list is captured as well as the figure:
 
 import matplotlib.pyplot as plt
 
