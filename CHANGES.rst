@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-v0.5.0.stable.0
+v0.5.0
 ---------------
 
 Developer changes
