@@ -969,6 +969,11 @@ you can do::
 Controlling what output is captured
 ===================================
 
+.. note::
+
+    To return to the behaviour of Sphinx-Gallery prior to v0.5.0, configure
+    ``capture_repr`` to be an empty tuple (i.e.,``capture_repr: ()``).
+
 The ``capture_repr`` configuration allows the user to control what output
 is captured, while executing the example ``.py`` files, and subsequently
 incorporated into the built documentation. Data directed to standard output
