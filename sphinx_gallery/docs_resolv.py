@@ -255,9 +255,11 @@ class SphinxDocLinkResolver(object):
 
 
 def _handle_http_url_error(e, msg='fetching'):
-    extra = e.code if isinstance(e, HTTPError) else e.reason
-    logger.warning('The following HTTP Error has occurred %s %s: %s (%s)',
-                   msg, e.url, extra, e.msg)
+    if isinstance(e, URLError):
+        error_msg = '%s: %s' % (msg, e.reason)
+    elif isinstance(e, HTTPError):
+        error_msg = '%s %s: %s (%s)' % (msg, e.url, e.code, e.msg)
+    logger.warning('The following HTTP Error has occurred %s' % error_msg)
 
 
 def _embed_code_links(app, gallery_conf, gallery_dir):
