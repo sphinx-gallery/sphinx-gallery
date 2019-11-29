@@ -393,5 +393,17 @@ def test_first_notebook_cell_config(sphinx_app_wrapper):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
 
 
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'backreferences_dir': False,
+}""")
+def test_backreferences_dir_config(sphinx_app_wrapper):
+    """Tests 'backreferences_dir' type checking."""
+    from sphinx_gallery.gen_gallery import parse_config
+    with pytest.raises(ValueError,
+                       match="The 'backreferences_dir' parameter must be of"):
+        parse_config(sphinx_app_wrapper.create_sphinx_app())
+
+
 def test_write_computation_times_noop():
     write_computation_times(None, None, [[[0]]])
