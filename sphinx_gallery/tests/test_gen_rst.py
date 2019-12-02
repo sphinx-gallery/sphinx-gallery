@@ -417,6 +417,16 @@ def test_remove_config_comments(gallery_conf):
     assert '# sphinx_gallery_thumbnail_number = 1' not in rst
 
 
+def test_download_link_note_only_html(gallery_conf):
+    """Test if the download_link."""
+    rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
+    download_link_note = (".. only:: html\n\n"
+                          "    .. note::\n"
+                          "        :class: sphx-glr-download-link-note\n\n"
+                          )
+    assert download_link_note in rst
+
+
 @pytest.mark.parametrize('ext', ('.txt', '.rst', '.bad'))
 def test_gen_dir_rst(gallery_conf, fakesphinxapp, ext):
     """Test gen_dir_rst."""
