@@ -281,7 +281,7 @@ def test_example_sorting_title(sphinx_app_wrapper):
     _check_order(sphinx_app, 'title')
 
 
-def test_collect_gallery_files(tmpdir):
+def test_collect_gallery_files(tmpdir, gallery_conf):
     """Test that example files are collected properly."""
     rel_filepaths = ['examples/file1.py',
                      'examples/test.rst',
@@ -298,7 +298,7 @@ def test_collect_gallery_files(tmpdir):
 
     examples_path = tmpdir.join('examples')
     dirs = [examples_path.strpath]
-    collected_files = set(collect_gallery_files(dirs))
+    collected_files = set(collect_gallery_files(dirs, gallery_conf))
     expected_files = set(
         [ap.strpath for ap in abs_paths
          if re.search(r'examples.*\.py$', ap.strpath)])
@@ -307,9 +307,31 @@ def test_collect_gallery_files(tmpdir):
 
     tutorials_path = tmpdir.join('tutorials')
     dirs = [examples_path.strpath, tutorials_path.strpath]
-    collected_files = set(collect_gallery_files(dirs))
+    collected_files = set(collect_gallery_files(dirs, gallery_conf))
     expected_files = set(
         [ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)])
+
+    assert collected_files == expected_files
+
+
+def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
+    """Test that ignore pattern example files are not collected."""
+    rel_filepaths = ['examples/file1.py',
+                     'examples/folder1/fileone.py',
+                     'examples/folder1/file2.py',
+                     'examples/folder2/fileone.py']
+
+    abs_paths = [tmpdir.join(rp) for rp in rel_filepaths]
+    for ap in abs_paths:
+        ap.ensure()
+
+    gallery_conf['ignore_pattern'] = r'one'
+    examples_path = tmpdir.join('examples')
+    dirs = [examples_path.strpath]
+    collected_files = set(collect_gallery_files(dirs, gallery_conf))
+    expected_files = set(
+        [ap.strpath for ap in abs_paths
+         if re.search(r'one', ap.strpath) is None])
 
     assert collected_files == expected_files
 
