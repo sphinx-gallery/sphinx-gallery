@@ -418,7 +418,7 @@ def test_remove_config_comments(gallery_conf):
 
 
 def test_download_link_note_only_html(gallery_conf):
-    """Test if the download_link."""
+    """Test html only directive for download_link."""
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     download_link_note = (".. only:: html\n\n"
                           "    .. note::\n"
