@@ -6,12 +6,13 @@ environment:
 
   global:
     PYTHON: "C:\\conda"
-    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme vtk pyface traits traitsui ipython"
+    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme"
+    PIP_DEPENDENCIES: "ipython"
 
   matrix:
     - PYTHON_VERSION: "3.5"
       PYTHON_ARCH: "64"
-    - PYTHON_VERSION: "3.6"
+    - PYTHON_VERSION: "3.7"
       PYTHON_ARCH: "64"
 
 platform:
