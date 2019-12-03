@@ -258,7 +258,7 @@ def generate_gallery_rst(app):
 
     # Check for duplicate filenames to make sure linking works as expected
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
-    files = collect_gallery_files(examples_dirs)
+    files = collect_gallery_files(examples_dirs, gallery_conf)
     check_duplicate_filenames(files)
 
     for examples_dir, gallery_dir in workdirs:
@@ -549,14 +549,16 @@ def summarize_failing_examples(app, exception):
                          "\n" + "-" * 79)
 
 
-def collect_gallery_files(examples_dirs):
+def collect_gallery_files(examples_dirs, gallery_conf):
     """Collect python files from the gallery example directories."""
     files = []
     for example_dir in examples_dirs:
         for root, dirnames, filenames in os.walk(example_dir):
             for filename in filenames:
                 if filename.endswith('.py'):
-                    files.append(os.path.join(root, filename))
+                    if re.search(gallery_conf['ignore_pattern'],
+                                 filename) is None:
+                        files.append(os.path.join(root, filename))
     return files
 
 
