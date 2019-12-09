@@ -540,7 +540,7 @@ def execute_code_block(compiler, block, example_globals,
 
         last_repr = None
         repr_meth = None
-        if gallery_conf['capture_repr'] != () and is_last_expr:
+        if gallery_conf['capture_repr'] != () and is_last_expr and type(___) not in gallery_conf['ignore_repr_classes']:
             for meth in gallery_conf['capture_repr']:
                 try:
                     last_repr = getattr(___, meth)()
