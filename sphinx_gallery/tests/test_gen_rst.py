@@ -620,6 +620,13 @@ class_inst = repr_and_html_class()
 class_inst
 """
 
+code_plt = """
+import matplotlib.pyplot as plt
+fig = plt.figure()
+plt.close('all')
+fig
+"""
+
 html_out = """.. only:: builder_html
 
     .. raw:: html
@@ -683,7 +690,8 @@ def _clean_output(output):
     pytest.param(('__repr__', '_repr_html_'), code_repr_and_html,
                  'This is the __repr__', id='repr_and_html,(repr,html)'),
     pytest.param(('_repr_html_', '__repr__'), code_repr_only,
-                 'This is the __repr__', id='repr_only,(html,repr)')
+                 'This is the __repr__', id='repr_only,(html,repr)'),
+    pytest.param(('_repr_html_',), code_plt, '', id='html_none'),
 ])
 def test_capture_repr(gallery_conf, capture_repr, code, expected_out):
     """Tests output capturing with various capture_repr settings."""

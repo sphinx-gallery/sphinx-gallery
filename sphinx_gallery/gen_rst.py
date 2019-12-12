@@ -545,7 +545,7 @@ def execute_code_block(compiler, block, example_globals,
                 try:
                     last_repr = getattr(___, meth)()
                     # for case when last statement is print()
-                    if last_repr == 'None':
+                    if last_repr is None or last_repr == 'None':
                         repr_meth = None
                     else:
                         repr_meth = meth
