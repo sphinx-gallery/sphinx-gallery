@@ -437,6 +437,54 @@ configuration option setup for Sphinx-Gallery.
            'inspect_global_variables'  : False,
         }
 
+Each link will be decorated with two or three CSS classes.
+
+1. ``sphx-glr-backref-module-*``
+        The module where it the object is documented.
+        For example, ``sphx-glr-backref-module-matplotlib-figure``.
+2. ``sphx-glr-backref-type-*``
+        The type of the object. This is a sanitized intersphinx type, for
+        example a ``py:function`` will have the CSS class
+        ``sphx-glr-backref-type-py-class``.
+3. ``sphx-glr-backref-instance``
+        A class that is added if the object is an instace of a class
+        (rather than, e.g., a class itself, method, or function).
+        By default, Sphinx-Gallery adds the following CSS in ``gallery.css``:
+
+        .. code-block:: css
+
+            a.sphx-glr-backref-instance {
+                text-decoration: none;
+            }
+
+        This is done to reduce the visual impact of instance linking
+        in example code. This means that for the following code::
+
+            x = Figure()
+
+        here ``x`` is an instance of a class, so it will have the
+        ``sphx-glr-backref-instance`` CSS class, and it will not be decorated;
+        and ``Figure`` is a class, so it will not have the
+        ``sphx-glr-backref-instance`` CSS class, and will thus be decorated the
+        standard way for links in the given parent styles.
+
+These three CSS classes are meant to give fine-grained control over how
+different links are decorated. For example, using CSS selectors you could
+choose to avoid highlighting any ``sphx-glr-backref-*`` links except for ones
+that you whitelist (e.g., those from your own module). For example:
+
+.. code-block:: css
+
+    a[class^="sphx-glr-backref-module-"] {
+        text-decoration: none;
+    }
+    a.sphx-glr-backref-module-matplotlib {
+        text-decoration: underline;
+    }
+
+There are likely elements other than ``text-decoration`` that might be worth
+setting, as well.
+
 .. _custom_default_thumb:
 
 Using a custom default thumbnail
@@ -984,7 +1032,7 @@ tuple, in order of preference. The representation methods currently supported
 are:
 
 * ``__repr__`` - returns the official string representation of an object. This
-  is what is returned when your Python shell evaluates an expression. 
+  is what is returned when your Python shell evaluates an expression.
 * ``__str__`` - returns a string containing a nicely printable representation
   of an object. This is what is used when you ``print()`` an object or pass it
   to ``format()``.
@@ -1045,7 +1093,7 @@ method which would thus be captured. You can prevent this by:
 
 * add ``plt.show()`` (which does not return anything) to the end of your
   code block. For example::
-  
+
     import matplotlib.pyplot as plt
 
     plt.plot([1, 2, 3, 4], [1, 4, 9, 16])

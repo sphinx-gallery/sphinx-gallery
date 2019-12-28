@@ -263,6 +263,12 @@ def _handle_http_url_error(e, msg='fetching'):
         type(e).__name__, error_msg))
 
 
+def _sanitize_css_class(s):
+    for x in '~!@$%^&*()+=,./\';:"?><[]\\{}|`#':
+        s = s.replace(x, '-')
+    return s
+
+
 def _embed_code_links(app, gallery_conf, gallery_dir):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
@@ -284,7 +290,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                                     gallery_dir))
 
     # patterns for replacement
-    link_pattern = ('<a href="%s" title="View documentation for %s">%s</a>')
+    link_pattern = (
+        '<a href="{link}" title="{title}" class="{css_class}">{text}</a>')
     orig_pattern = '<span class="n">%s</span>'
     period = '<span class="o">.</span>'
 
@@ -318,7 +325,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                     cname = cobj['name']
 
                     # Try doc resolvers first
-                    link = None
+                    link = type_ = None
+                    is_instance = False
                     if this_module in doc_resolvers:
                         try:
                             link = doc_resolvers[this_module].resolve(
@@ -327,7 +335,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             _handle_http_url_error(
                                 e, msg='resolving %s.%s' % (modname, cname))
 
-                    # next try intersphinx
+                    # next try intersphinx (which gives us the type_ as well)
                     if this_module == modname == 'builtins':
                         this_module = 'python'
                     elif modname in builtin_modules:
@@ -342,6 +350,10 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             # only python domain
                             if key.startswith('py') and want in value:
                                 link = value[want][2]
+                                type_ = key
+                                # differentiate classes from instances
+                                is_instance = ('py:class' in type_ and
+                                               not cobj['is_class'])
                                 break
 
                     if link is not None:
@@ -349,8 +361,16 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                         name_html = period.join(orig_pattern % part
                                                 for part in parts)
                         full_function_name = '%s.%s' % (modname, cname)
-                        str_repl[name_html] = link_pattern % (
-                            link, full_function_name, name_html)
+                        css_class = ("sphx-glr-backref-module-" +
+                                     _sanitize_css_class(modname))
+                        if type_ is not None:
+                            css_class += (" sphx-glr-backref-type-" +
+                                          _sanitize_css_class(type_))
+                        if is_instance:
+                            css_class += " sphx-glr-backref-instance"
+                        str_repl[name_html] = link_pattern.format(
+                            link=link, title=full_function_name,
+                            css_class=css_class, text=name_html)
                         break  # loop over possible module names
 
             # do the replacement in the html file

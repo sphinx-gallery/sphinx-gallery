@@ -20,3 +20,12 @@ div[class^="highlight"] a:hover {
 .rst-versions.shift-up {
     overflow-y: visible;
 }
+
+a[class^="sphx-glr-backref-module-"] {
+    text-decoration: none;
+    background-color: rgba(0, 0, 0, 0) !important;
+}
+a.sphx-glr-backref-module-sphinx_gallery {
+    text-decoration: underline;
+    background-color: #E6E6E6;
+}
