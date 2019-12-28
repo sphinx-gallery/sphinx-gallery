@@ -406,41 +406,43 @@ configuration option setup for Sphinx-Gallery.
     :emphasize-lines: 12-22, 32-42
     :linenos:
 
-.. note::
-   By default, Sphinx-gallery will inspect global variables (and code objects)
-   at the end of each code block to try to find classes of variables and
-   method calls. It also tries to find methods called on classes.
-   For example, this code::
+Toggling global variable inspection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-       lst = [1, 2]
-       fig, ax = plt.subplots()
-       ax.plot(lst)
+By default, Sphinx-gallery will inspect global variables (and code objects)
+at the end of each code block to try to find classes of variables and
+method calls. It also tries to find methods called on classes.
+For example, this code::
 
-   should end up with the following links (assuming intersphinx is set up
-   properly):
+    lst = [1, 2]
+    fig, ax = plt.subplots()
+    ax.plot(lst)
 
-   - :class:`lst <python:list>`
-   - :func:`plt.subplots <matplotlib.pyplot.subplots>`
-   - :class:`fig  <matplotlib.figure.Figure>`
-   - :class:`ax <matplotlib.axes.Axes>`
-   - :meth:`ax.plot <matplotlib.axes.Axes.plot>`
+should end up with the following links (assuming intersphinx is set up
+properly):
 
-   However, this feature is might not work properly in all instances.
-   Moreover, if variable names get reused in the same script to refer to
-   different classes, it will break.
+- :class:`lst <python:list>`
+- :func:`plt.subplots <matplotlib.pyplot.subplots>`
+- :class:`fig  <matplotlib.figure.Figure>`
+- :class:`ax <matplotlib.axes.Axes>`
+- :meth:`ax.plot <matplotlib.axes.Axes.plot>`
 
-   To disable this global variable introspection, you can use the configuration
-   key::
+However, this feature is might not work properly in all instances.
+Moreover, if variable names get reused in the same script to refer to
+different classes, it will break.
 
-       sphinx_gallery_conf = {
-           ...
-           'inspect_global_variables'  : False,
-        }
+To disable this global variable introspection, you can use the configuration
+key::
+
+    sphinx_gallery_conf = {
+        ...
+        'inspect_global_variables'  : False,
+    }
 
 Stylizing the code links using CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Each link will be decorated with two or three CSS classes.
+Each link in the code blocks will be decorated with two or three CSS classes.
 
 1. ``sphx-glr-backref-module-*``
         The module where it the object is documented.
