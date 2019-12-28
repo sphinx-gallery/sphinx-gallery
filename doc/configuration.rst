@@ -439,8 +439,8 @@ key::
         'inspect_global_variables'  : False,
     }
 
-Stylizing the code links using CSS
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Stylizing code links using CSS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each link in the code blocks will be decorated with two or three CSS classes.
 
