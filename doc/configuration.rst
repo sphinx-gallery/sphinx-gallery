@@ -437,6 +437,9 @@ configuration option setup for Sphinx-Gallery.
            'inspect_global_variables'  : False,
         }
 
+Stylizing the code links using CSS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Each link will be decorated with two or three CSS classes.
 
 1. ``sphx-glr-backref-module-*``
