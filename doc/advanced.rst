@@ -69,7 +69,8 @@ using the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/
 
    .. literalinclude:: ../examples/plot_0_sin.py
       :language: python
-      :lines: 43-53
+      :start-after: # License: BSD 3 clause
+      :end-before: # To avoid matplotlib
 
 The above directive inserts the following block:
 
@@ -77,6 +78,12 @@ The above directive inserts the following block:
     :language: python
     :lines: 43-51
 
+.. warning::
+
+   Using literalinclude is fragile and can break easily when examples are
+   changed (all the more when line numbers are used instead of ``start-after``
+   and  ``end-before``). Use with caution: linking directly to examples is
+   a more robust alternative.
 
 .. _custom_scraper:
 
