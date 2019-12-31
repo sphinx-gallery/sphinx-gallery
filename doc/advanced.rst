@@ -64,6 +64,20 @@ its reference
 it generated has the name ``sphx_glr_plot_0_sin_001.png``
 and its thumbnail is ``sphx_glr_plot_0_sin_thumb.png``
 
+You can also include part of a gallery script elsewhere in your documentation
+using the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`_, in order to limit code duplication::
+
+   .. literalinclude:: ../examples/plot_0_sin.py
+      :language: python
+      :lines: 43-53
+
+The above directive inserts the following block:
+
+.. literalinclude:: ../examples/plot_0_sin.py
+    :language: python
+    :lines: 43-51
+
+
 .. _custom_scraper:
 
 Write a custom image scraper
