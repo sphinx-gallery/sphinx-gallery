@@ -64,6 +64,28 @@ its reference
 it generated has the name ``sphx_glr_plot_0_sin_001.png``
 and its thumbnail is ``sphx_glr_plot_0_sin_thumb.png``
 
+You can also include part of a gallery script elsewhere in your documentation
+using the :rst:dir:`literalinclude` directive, in order to limit code duplication::
+
+   .. literalinclude:: ../examples/plot_0_sin.py
+      :language: python
+      :start-after: # License: BSD 3 clause
+      :end-before: # To avoid matplotlib
+
+The above directive inserts the following block:
+
+.. literalinclude:: ../examples/plot_0_sin.py
+    :language: python
+    :start-after: # License: BSD 3 clause
+    :end-before: # To avoid matplotlib
+
+.. warning::
+
+   Using literalinclude is fragile and can break easily when examples are
+   changed (all the more when line numbers are used instead of ``start-after``
+   and  ``end-before``). Use with caution: linking directly to examples is
+   a more robust alternative.
+
 .. _custom_scraper:
 
 Write a custom image scraper
