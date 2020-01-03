@@ -60,38 +60,46 @@ class NameFinder(ast.NodeVisitor):
             self.visit(node)
 
     def get_mapping(self):
+        imported_names_split = \
+            [key.split('.') for key in self.imported_names.keys()]
+        print('accessed names')
+        print(self.accessed_names)
+        print(self.global_variables)
         for name in self.accessed_names:
-            local_name = name.split('.', 1)[0]
-            remainder = name[len(local_name):]
-            class_attr = False
-            if local_name in self.imported_names:
-                # Join import path to relative path
-                full_name = self.imported_names[local_name] + remainder
-                yield name, full_name, class_attr
-            elif local_name in self.global_variables:
-                obj = self.global_variables[local_name]
-                if remainder and remainder[0] == '.':  # maybe meth or attr
-                    method = [remainder[1:]]
-                    class_attr = True
-                else:
-                    method = []
-                # Recurse through all levels of bases
-                classes = [obj.__class__]
-                offset = 0
-                while offset < len(classes):
-                    for base in classes[offset].__bases__:
-                        if base not in classes:
-                            classes.append(base)
-                    offset += 1
-                for cc in classes:
-                    module = cc.__module__.split('.')
-                    class_name = cc.__name__
-                    # a.b.C.meth could be documented as a.C.meth,
-                    # so go down the list
-                    for depth in range(len(module), 0, -1):
-                        full_name = '.'.join(
-                            module[:depth] + [class_name] + method)
-                        yield name, full_name, class_attr
+            for i in range(len(max(imported_names_split, key=len))):
+                local_name_split = name.split('.')
+                local_name = '.'.join(local_name_split[:i+1])
+                remainder = name[len(local_name):]
+                class_attr = False
+                if local_name in self.imported_names:
+                    # Join import path to relative path
+                    full_name = self.imported_names[local_name] + remainder
+                    yield name, full_name, class_attr
+                    break
+                elif local_name in self.global_variables:
+                    obj = self.global_variables[local_name]
+                    if remainder and remainder[0] == '.':  # maybe meth or attr
+                        method = [remainder[1:]]
+                        class_attr = True
+                    else:
+                        method = []
+                    # Recurse through all levels of bases
+                    classes = [obj.__class__]
+                    offset = 0
+                    while offset < len(classes):
+                        for base in classes[offset].__bases__:
+                            if base not in classes:
+                                classes.append(base)
+                        offset += 1
+                    for cc in classes:
+                        module = cc.__module__.split('.')
+                        class_name = cc.__name__
+                        # a.b.C.meth could be documented as a.C.meth,
+                        # so go down the list
+                        for depth in range(len(module), 0, -1):
+                            full_name = '.'.join(
+                                module[:depth] + [class_name] + method)
+                            yield name, full_name, class_attr
 
 
 def _from_import(a, b):
@@ -187,6 +195,7 @@ def identify_names(script_blocks, global_variables=None, node=''):
     for key, value in fill_guess.items():
         if key not in example_code_obj:
             example_code_obj[key] = value
+    print(example_code_obj)
     return example_code_obj
 
 

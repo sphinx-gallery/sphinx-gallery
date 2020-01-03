@@ -95,12 +95,15 @@ This is an example.
 # \xc3\x9f
 from a.b import c
 import d as e
+import h.i
 print(c)
 e.HelloWorld().f.g
+h.i.j()
 """
     expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
                 'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd',
-                                 'module_short': 'd'}}
+                                 'module_short': 'd'},
+                'h.i.j': {'name': 'j', 'module': 'h.i', 'module_short': 'h.i'}}
 
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')
@@ -115,10 +118,10 @@ e.HelloWorld().f.g
 Title
 -----
 
-This example uses :func:`h.i`.
+This example uses :func:`k.l`.
 '''
 """ + code_str.split(b"'''")[-1]
-    expected['h.i'] = {u'module': u'h', u'module_short': u'h', u'name': u'i'}
+    expected['k.l'] = {u'module': u'k', u'module_short': u'k', u'name': u'l'}
 
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')
