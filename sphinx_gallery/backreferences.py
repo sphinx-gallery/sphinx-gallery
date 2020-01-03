@@ -62,9 +62,6 @@ class NameFinder(ast.NodeVisitor):
     def get_mapping(self):
         imported_names_split = \
             [key.split('.') for key in self.imported_names.keys()]
-        print('accessed names')
-        print(self.accessed_names)
-        print(self.global_variables)
         for name in self.accessed_names:
             for i in range(len(max(imported_names_split, key=len))):
                 local_name_split = name.split('.')
@@ -195,7 +192,6 @@ def identify_names(script_blocks, global_variables=None, node=''):
     for key, value in fill_guess.items():
         if key not in example_code_obj:
             example_code_obj[key] = value
-    print(example_code_obj)
     return example_code_obj
 
 
