@@ -62,8 +62,12 @@ class NameFinder(ast.NodeVisitor):
     def get_mapping(self):
         imported_names_split = \
             [key.split('.') for key in self.imported_names.keys()]
+        if imported_names_split:
+            max_import_splits = len(max(imported_names_split, key=len))
+        else:
+            max_import_splits = 1
         for name in self.accessed_names:
-            for i in range(len(max(imported_names_split, key=len))):
+            for i in range(max_import_splits):
                 local_name_split = name.split('.')
                 local_name = '.'.join(local_name_split[:i+1])
                 remainder = name[len(local_name):]
