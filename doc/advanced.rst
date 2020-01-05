@@ -65,7 +65,10 @@ it generated has the name ``sphx_glr_plot_0_sin_001.png``
 and its thumbnail is ``sphx_glr_plot_0_sin_thumb.png``
 
 You can also include part of a gallery script elsewhere in your documentation
-using the :rst:dir:`literalinclude` directive, in order to limit code duplication::
+using the :rst:dir:`literalinclude` directive, in order to limit code duplication:
+
+
+.. code-block:: rst
 
    .. literalinclude:: ../examples/plot_0_sin.py
       :language: python
