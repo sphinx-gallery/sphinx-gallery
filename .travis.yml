@@ -18,7 +18,6 @@ matrix:
             - python3-scipy
             - python3-pip
             - python3-coverage
-            - libjpeg8
     - os: linux
       env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="==1.8.3"
     - os: linux
@@ -32,10 +31,6 @@ matrix:
       env: DISTRIB="conda" PYTHON_VERSION="3.7" SPHINX_VERSION="dev"
     - python: 3.7
       env: DISTRIB="minimal"
-      addons:
-        apt:
-          packages:
-            libjpeg8
     - python: "nightly"
       env: PYTHON_VERSION="nightly"
       os: linux
@@ -45,8 +40,6 @@ matrix:
             libblas-dev
             liblapack-dev
             gfortran
-            libjpeg8
-
 
 before_install:
   # Make sure that things work even if the locale is set to C (which
