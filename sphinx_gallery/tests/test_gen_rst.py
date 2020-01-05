@@ -400,7 +400,7 @@ def _alpha_mpl_scraper(block, block_vars, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
-def test_custom_scraper_thumbnail_alpha(gallery_conf):
+def test_custom_scraper_thumbnail_alpha(gallery_conf, requires_jpeg):
     """Test that thumbnails without an alpha channel work w/custom scraper."""
     gallery_conf['image_scrapers'] = [_alpha_mpl_scraper]
     rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)

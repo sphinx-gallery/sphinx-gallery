@@ -117,3 +117,16 @@ identify_names
     fname = tmpdir.join("unicode_sample.py")
     fname.write(code_str, 'wb')
     return fname.strpath
+
+
+@pytest.fixture
+def requires_jpeg(tmpdir):
+    """Raise SkipTest if JPEG support is not available."""
+    # mostly this is needed because of
+    # https://github.com/matplotlib/matplotlib/issues/16083
+    import matplotlib.pyplot as plt
+    plt.plot(range(10))
+    try:
+        plt.savefig(str(tmpdir.join('testplot.jpg')))
+    except Exception as exp:
+        pytest.skip('Matplotlib jpeg saving failed: %s' % (exp,))
