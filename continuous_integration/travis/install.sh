@@ -24,13 +24,16 @@ if [ "$DISTRIB" == "conda" ]; then
     python setup.py install
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
-    pip install . numpy sphinx pytest-cov pillow
+    pip install . numpy sphinx pytest-cov
+    pip install --upgrade pillow
 elif [ "$DISTRIB" == "minimal" ]; then
-    pip install . pytest pytest-cov pillow
+    pip install . pytest pytest-cov
+    pip install --upgrade pillow
 elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install -r requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install seaborn sphinx==1.8.3 pytest pytest-cov sphinx_rtd_theme flake8 pillow
+    pip install seaborn sphinx==1.8.3 pytest pytest-cov sphinx_rtd_theme flake8
+    pip install --upgrade pillow
     python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
