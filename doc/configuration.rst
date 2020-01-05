@@ -427,7 +427,7 @@ properly):
 - :class:`ax <matplotlib.axes.Axes>`
 - :meth:`ax.plot <matplotlib.axes.Axes.plot>`
 
-However, this feature is might not work properly in all instances.
+However, this feature might not work properly in all instances.
 Moreover, if variable names get reused in the same script to refer to
 different classes, it will break.
 
@@ -445,14 +445,14 @@ Stylizing code links using CSS
 Each link in the code blocks will be decorated with two or three CSS classes.
 
 1. ``sphx-glr-backref-module-*``
-        The module where it the object is documented.
+        The module where the object is documented.
         For example, ``sphx-glr-backref-module-matplotlib-figure``.
 2. ``sphx-glr-backref-type-*``
         The type of the object. This is a sanitized intersphinx type, for
-        example a ``py:function`` will have the CSS class
+        example a ``py:class`` will have the CSS class
         ``sphx-glr-backref-type-py-class``.
 3. ``sphx-glr-backref-instance``
-        A class that is added if the object is an instace of a class
+        A class that is added if the object is an instance of a class
         (rather than, e.g., a class itself, method, or function).
         By default, Sphinx-Gallery adds the following CSS in ``gallery.css``:
 
@@ -483,7 +483,7 @@ that you whitelist (e.g., those from your own module). For example:
     a[class^="sphx-glr-backref-module-"] {
         text-decoration: none;
     }
-    a.sphx-glr-backref-module-matplotlib {
+    a[class^="sphx-glr-backref-module-matplotlib"] {
         text-decoration: underline;
     }
 
