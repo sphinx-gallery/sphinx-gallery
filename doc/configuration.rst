@@ -406,36 +406,89 @@ configuration option setup for Sphinx-Gallery.
     :emphasize-lines: 12-22, 32-42
     :linenos:
 
-.. note::
-   By default, Sphinx-gallery will inspect global variables (and code objects)
-   at the end of each code block to try to find classes of variables and
-   method calls. It also tries to find methods called on classes.
-   For example, this code::
+Toggling global variable inspection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-       lst = [1, 2]
-       fig, ax = plt.subplots()
-       ax.plot(lst)
+By default, Sphinx-gallery will inspect global variables (and code objects)
+at the end of each code block to try to find classes of variables and
+method calls. It also tries to find methods called on classes.
+For example, this code::
 
-   should end up with the following links (assuming intersphinx is set up
-   properly):
+    lst = [1, 2]
+    fig, ax = plt.subplots()
+    ax.plot(lst)
 
-   - :class:`lst <python:list>`
-   - :func:`plt.subplots <matplotlib.pyplot.subplots>`
-   - :class:`fig  <matplotlib.figure.Figure>`
-   - :class:`ax <matplotlib.axes.Axes>`
-   - :meth:`ax.plot <matplotlib.axes.Axes.plot>`
+should end up with the following links (assuming intersphinx is set up
+properly):
 
-   However, this feature is might not work properly in all instances.
-   Moreover, if variable names get reused in the same script to refer to
-   different classes, it will break.
+- :class:`lst <python:list>`
+- :func:`plt.subplots <matplotlib.pyplot.subplots>`
+- :class:`fig  <matplotlib.figure.Figure>`
+- :class:`ax <matplotlib.axes.Axes>`
+- :meth:`ax.plot <matplotlib.axes.Axes.plot>`
 
-   To disable this global variable introspection, you can use the configuration
-   key::
+However, this feature might not work properly in all instances.
+Moreover, if variable names get reused in the same script to refer to
+different classes, it will break.
 
-       sphinx_gallery_conf = {
-           ...
-           'inspect_global_variables'  : False,
-        }
+To disable this global variable introspection, you can use the configuration
+key::
+
+    sphinx_gallery_conf = {
+        ...
+        'inspect_global_variables'  : False,
+    }
+
+Stylizing code links using CSS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each link in the code blocks will be decorated with two or three CSS classes.
+
+1. ``sphx-glr-backref-module-*``
+        The module where the object is documented.
+        For example, ``sphx-glr-backref-module-matplotlib-figure``.
+2. ``sphx-glr-backref-type-*``
+        The type of the object. This is a sanitized intersphinx type, for
+        example a ``py:class`` will have the CSS class
+        ``sphx-glr-backref-type-py-class``.
+3. ``sphx-glr-backref-instance``
+        A class that is added if the object is an instance of a class
+        (rather than, e.g., a class itself, method, or function).
+        By default, Sphinx-Gallery adds the following CSS in ``gallery.css``:
+
+        .. code-block:: css
+
+            a.sphx-glr-backref-instance {
+                text-decoration: none;
+            }
+
+        This is done to reduce the visual impact of instance linking
+        in example code. This means that for the following code::
+
+            x = Figure()
+
+        here ``x`` is an instance of a class, so it will have the
+        ``sphx-glr-backref-instance`` CSS class, and it will not be decorated;
+        and ``Figure`` is a class, so it will not have the
+        ``sphx-glr-backref-instance`` CSS class, and will thus be decorated the
+        standard way for links in the given parent styles.
+
+These three CSS classes are meant to give fine-grained control over how
+different links are decorated. For example, using CSS selectors you could
+choose to avoid highlighting any ``sphx-glr-backref-*`` links except for ones
+that you whitelist (e.g., those from your own module). For example:
+
+.. code-block:: css
+
+    a[class^="sphx-glr-backref-module-"] {
+        text-decoration: none;
+    }
+    a[class^="sphx-glr-backref-module-matplotlib"] {
+        text-decoration: underline;
+    }
+
+There are likely elements other than ``text-decoration`` that might be worth
+setting, as well.
 
 .. _custom_default_thumb:
 
@@ -984,7 +1037,7 @@ tuple, in order of preference. The representation methods currently supported
 are:
 
 * ``__repr__`` - returns the official string representation of an object. This
-  is what is returned when your Python shell evaluates an expression. 
+  is what is returned when your Python shell evaluates an expression.
 * ``__str__`` - returns a string containing a nicely printable representation
   of an object. This is what is used when you ``print()`` an object or pass it
   to ``format()``.
@@ -1045,7 +1098,7 @@ method which would thus be captured. You can prevent this by:
 
 * add ``plt.show()`` (which does not return anything) to the end of your
   code block. For example::
-  
+
     import matplotlib.pyplot as plt
 
     plt.plot([1, 2, 3, 4], [1, 4, 9, 16])

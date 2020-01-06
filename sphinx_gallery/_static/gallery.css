@@ -194,3 +194,7 @@ p.sphx-glr-signature a.reference.external {
 .sphx-glr-clear{
   clear: both;
 }
+
+a.sphx-glr-backref-instance {
+  text-decoration: none;
+}
