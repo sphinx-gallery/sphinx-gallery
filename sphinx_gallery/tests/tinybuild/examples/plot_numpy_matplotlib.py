@@ -13,6 +13,7 @@ from warnings import warn
 
 import numpy as np
 from matplotlib.colors import is_color_like
+from matplotlib.figure import Figure
 from itertools import compress  # noqa
 import matplotlib
 import matplotlib.pyplot as plt
@@ -33,3 +34,7 @@ assert plt.rcParams['figure.dpi'] == 70.
 listy = [0, 1]
 compress('abc', [0, 0, 1])
 warn('This warning should show up in the output', RuntimeWarning)
+x = Figure()  # plt.Figure should be decorated (class), x shouldn't (inst)
+# should not crash, nested resolution, but doesn't resolve because
+# NumPy intersphinx looks to numpy.random.mtrand.RandomState (?)
+np.random.RandomState(0)

@@ -13,6 +13,7 @@ import ast
 import codecs
 import collections
 from html import escape
+import inspect
 import os
 import re
 import warnings
@@ -75,10 +76,19 @@ class NameFinder(ast.NodeVisitor):
                 if local_name in self.imported_names:
                     # Join import path to relative path
                     full_name = self.imported_names[local_name] + remainder
-                    yield name, full_name, class_attr
+                    if local_name in self.global_variables:
+                        obj = self.global_variables[local_name]
+                        if remainder:
+                            for level in remainder[1:].split('.'):
+                                obj = getattr(obj, level)
+                        is_class = inspect.isclass(obj)
+                    else:
+                        is_class = False
+                    yield name, full_name, class_attr, is_class
                     break
                 elif local_name in self.global_variables:
                     obj = self.global_variables[local_name]
+                    is_class = inspect.isclass(obj)
                     if remainder and remainder[0] == '.':  # maybe meth or attr
                         method = [remainder[1:]]
                         class_attr = True
@@ -100,7 +110,7 @@ class NameFinder(ast.NodeVisitor):
                         for depth in range(len(module), 0, -1):
                             full_name = '.'.join(
                                 module[:depth] + [class_name] + method)
-                            yield name, full_name, class_attr
+                            yield name, full_name, class_attr, is_class
 
 
 def _from_import(a, b):
@@ -166,10 +176,10 @@ def identify_names(script_blocks, global_variables=None, node=''):
     names = list(finder.get_mapping())
     # Get matches from docstring inspection
     text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
-    names.extend((x, x, False) for x in re.findall(_regex, text))
+    names.extend((x, x, False, False) for x in re.findall(_regex, text))
     example_code_obj = collections.OrderedDict()  # order is important
     fill_guess = dict()
-    for name, full_name, class_like in names:
+    for name, full_name, class_like, is_class in names:
         if name in example_code_obj:
             continue  # if someone puts it in the docstring and code
         # name is as written in file (e.g. np.asarray)
@@ -187,7 +197,7 @@ def identify_names(script_blocks, global_variables=None, node=''):
         # get shortened module name
         module_short = _get_short_module_name(module, attribute)
         cobj = {'name': attribute, 'module': module,
-                'module_short': module_short}
+                'module_short': module_short, 'is_class': is_class}
         if module_short is not None:
             example_code_obj[name] = cobj
         elif name not in fill_guess:
