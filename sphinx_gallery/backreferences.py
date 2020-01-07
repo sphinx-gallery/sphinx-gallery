@@ -66,10 +66,10 @@ class NameFinder(ast.NodeVisitor):
         # ensure that max is at least one
         max_import_splits = len(max(imported_names_split + [''], key=len))
         for name in self.accessed_names:
-            # ensures self.imported_names with '.' are not missed by adding
-            # consecutive '.' split names to local_name
             for split_level in range(max_import_splits):
                 local_name_split = name.split('.')
+                # add the next '.' split to local_name
+                # ensures self.imported names with '.' are not missed
                 local_name = '.'.join(local_name_split[:split_level+1])
                 remainder = name[len(local_name):]
                 class_attr = False
