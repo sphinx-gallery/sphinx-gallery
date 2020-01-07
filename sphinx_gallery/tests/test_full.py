@@ -253,7 +253,6 @@ def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
     backref_dir = sphinx_app.srcdir
     examples_rst = op.join(backref_dir, 'gen_modules', 'backreferences',
                            rst_file)
-    print(examples_rst)
     with codecs.open(examples_rst, 'r', 'utf-8') as fid:
         lines = fid.read()
     assert example_used_in in lines
