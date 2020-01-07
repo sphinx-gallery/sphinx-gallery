@@ -196,6 +196,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'warnings.html#warnings.warn' in lines
     assert 'itertools.html#itertools.compress' in lines
     assert 'numpy.ndarray.html' in lines
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.identify_names' in lines
     # instances have an extra CSS class
     assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a>' in lines  # noqa
     assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class"><span class="n">Figure</span></a>' in lines  # noqa
@@ -241,6 +242,20 @@ def test_backreferences(sphinx_app):
         lines = fid.read()
     assert 'NameFinder' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
+
+
+@pytest.mark.parametrize('rst_file, example_used_in', [
+    ('sphinx_gallery.backreferences.identify_names.examples', 'plot_numpy_matplotlib'),
+    ('sphinx_gallery.sorting.ExplicitOrder.examples', 'plot_second_future_imports'),
+])
+def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
+    """Test linking to mini-galleries using backreferences_dir."""
+    backref_dir = sphinx_app.srcdir
+    examples_rst = op.join(backref_dir, 'gen_modules', 'backreferences',
+                           rst_file)
+    with codecs.open(examples_rst, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert example_used_in in lines
 
 
 def _assert_mtimes(list_orig, list_new, different=(), ignore=()):

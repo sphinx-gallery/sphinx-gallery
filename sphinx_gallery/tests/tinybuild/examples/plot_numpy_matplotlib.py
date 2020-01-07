@@ -17,6 +17,7 @@ from matplotlib.figure import Figure
 from itertools import compress  # noqa
 import matplotlib
 import matplotlib.pyplot as plt
+import sphinx_gallery.backreferences
 
 from local_module import N  # N = 1000
 
@@ -38,3 +39,5 @@ x = Figure()  # plt.Figure should be decorated (class), x shouldn't (inst)
 # should not crash, nested resolution, but doesn't resolve because
 # NumPy intersphinx looks to numpy.random.mtrand.RandomState (?)
 np.random.RandomState(0)
+# test Issue 583
+sphinx_gallery.backreferences.identify_names([('text', 'Text block', 1)])
