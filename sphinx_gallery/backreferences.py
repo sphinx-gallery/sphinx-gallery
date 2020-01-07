@@ -63,9 +63,11 @@ class NameFinder(ast.NodeVisitor):
     def get_mapping(self):
         imported_names_split = \
             [key.split('.') for key in self.imported_names]
-        # ensure that max is at least one here
+        # ensure that max is at least one
         max_import_splits = len(max(imported_names_split + [''], key=len))
         for name in self.accessed_names:
+            # ensures self.imported_names with '.' are not missed by adding
+            # consecutive '.' split names to local_name
             for split_level in range(max_import_splits):
                 local_name_split = name.split('.')
                 local_name = '.'.join(local_name_split[:split_level+1])
@@ -109,7 +111,6 @@ class NameFinder(ast.NodeVisitor):
                             full_name = '.'.join(
                                 module[:depth] + [class_name] + method)
                             yield name, full_name, class_attr, is_class
-                            break
 
 
 def _from_import(a, b):
