@@ -111,6 +111,7 @@ class NameFinder(ast.NodeVisitor):
                             full_name = '.'.join(
                                 module[:depth] + [class_name] + method)
                             yield name, full_name, class_attr, is_class
+                    break
 
 
 def _from_import(a, b):
