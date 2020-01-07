@@ -243,6 +243,21 @@ def test_backreferences(sphinx_app):
     assert 'plot_future_imports.html' in lines  # backref via doc block
 
 
+@pytest.mark.parametrize('rst_file, example_used_in', [
+    ('sphinx_gallery.backreferences.identify_names.examples', 'plot_numpy_matplotlib'),
+    ('sphinx_gallery.sorting.ExplicitOrder.examples', 'plot_second_future_imports'),
+])
+def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
+    """Test linking to mini-galleries using backreferences_dir."""
+    backref_dir = sphinx_app.srcdir
+    examples_rst = op.join(backref_dir, 'gen_modules', 'backreferences',
+                           rst_file)
+    print(examples_rst)
+    with codecs.open(examples_rst, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert example_used_in in lines
+
+
 def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
     assert ([op.basename(x) for x in list_orig] ==
             [op.basename(x) for x in list_new])
