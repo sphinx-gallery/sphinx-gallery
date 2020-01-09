@@ -206,6 +206,7 @@ table.dataframe table{
   border: none;
   border-collapse: collapse;
   border-spacing: 0;
+  border-color: transparent;
   color: black;
   font-size: 12px;
   table-layout: fixed;
