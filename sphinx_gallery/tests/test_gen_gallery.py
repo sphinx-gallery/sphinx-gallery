@@ -331,7 +331,7 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
     collected_files = set(collect_gallery_files(dirs, gallery_conf))
     expected_files = set(
         [ap.strpath for ap in abs_paths
-         if re.search(r'one', ap.strpath) is None])
+         if re.search(r'one', os.path.basename(ap.strpath)) is None])
 
     assert collected_files == expected_files
 
