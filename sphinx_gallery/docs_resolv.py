@@ -176,18 +176,19 @@ class SphinxDocLinkResolver(object):
         sindex = get_data(searchindex_url, gallery_dir)
         self._searchindex = js_index.loads(sindex)
 
-    def _get_link(self, cobj):
-        """Get a valid link, False if not found."""
+    def _get_link_type(self, cobj):
+        """Get a valid link and type_, False if not found."""
         fullname = cobj['module_short'] + '.' + cobj['name']
         try:
             value = self._searchindex['objects'][cobj['module_short']]
             match = value[cobj['name']]
         except KeyError:
-            link = False
+            link, type_ = False, None
         else:
             fname_idx = match[0]
             objname_idx = str(match[1])
             anchor = match[3]
+            type_ = self._searchindex['objtypes'][objname_idx]
 
             fname = self._searchindex['filenames'][fname_idx]
             # In 1.5+ Sphinx seems to have changed from .rst.html to only
@@ -208,9 +209,9 @@ class SphinxDocLinkResolver(object):
 
             link = link + '#' + anchor
 
-        return link
+        return link, type_
 
-    def resolve(self, cobj, this_url):
+    def resolve(self, cobj, this_url, return_type=False):
         """Resolve the link to the documentation, returns None if not found
 
         Parameters
@@ -224,19 +225,21 @@ class SphinxDocLinkResolver(object):
         this_url: str
             URL of the current page. Needed to construct relative URLs
             (only used if relative=True in constructor).
+        return_type : bool
+            If True, return the type as well.
 
         Returns
         -------
         link : str or None
             The link (URL) to the documentation.
+        type_ : str
+            The type. Only returned if return_type is True.
         """
         full_name = cobj['module_short'] + '.' + cobj['name']
-        link = self._link_cache.get(full_name, None)
-        if link is None:
+        if full_name not in self._link_cache:
             # we don't have it cached
-            link = self._get_link(cobj)
-            # cache it for the future
-            self._link_cache[full_name] = link
+            self._link_cache[full_name] = self._get_link_type(cobj)
+        link, type_ = self._link_cache[full_name]
 
         if link is False or link is None:
             # failed to resolve
@@ -251,7 +254,7 @@ class SphinxDocLinkResolver(object):
             # for some reason, the relative link goes one directory too high up
             link = link[3:]
 
-        return link
+        return (link, type_) if return_type else link
 
 
 def _handle_http_url_error(e, msg='fetching'):
@@ -329,13 +332,13 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                     is_instance = False
                     if this_module in doc_resolvers:
                         try:
-                            link = doc_resolvers[this_module].resolve(
-                                cobj, full_fname)
+                            link, type_ = doc_resolvers[this_module].resolve(
+                                cobj, full_fname, return_type=True)
                         except (HTTPError, URLError) as e:
                             _handle_http_url_error(
                                 e, msg='resolving %s.%s' % (modname, cname))
 
-                    # next try intersphinx (which gives us the type_ as well)
+                    # next try intersphinx
                     if this_module == modname == 'builtins':
                         this_module = 'python'
                     elif modname in builtin_modules:
@@ -351,10 +354,12 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             if key.startswith('py') and want in value:
                                 link = value[want][2]
                                 type_ = key
-                                # differentiate classes from instances
-                                is_instance = ('py:class' in type_ and
-                                               not cobj['is_class'])
                                 break
+
+                    # differentiate classes from instances
+                    is_instance = (type_ is not None and
+                                   'py:class' in type_ and
+                                   not cobj['is_class'])
 
                     if link is not None:
                         parts = name.split('.')
