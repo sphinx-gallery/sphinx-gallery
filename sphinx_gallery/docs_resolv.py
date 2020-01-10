@@ -183,7 +183,7 @@ class SphinxDocLinkResolver(object):
             value = self._searchindex['objects'][cobj['module_short']]
             match = value[cobj['name']]
         except KeyError:
-            link, type_ = False, None
+            link = type_ = None
         else:
             fname_idx = match[0]
             objname_idx = str(match[1])
@@ -241,11 +241,7 @@ class SphinxDocLinkResolver(object):
             self._link_cache[full_name] = self._get_link_type(cobj)
         link, type_ = self._link_cache[full_name]
 
-        if link is False or link is None:
-            # failed to resolve
-            return None
-
-        if self.relative:
+        if self.relative and link is not None:
             link = os.path.relpath(link, start=this_url)
             if self._is_windows:
                 # replace '\' with '/' so it on the web
@@ -314,22 +310,25 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         subpath = dirpath[len(html_gallery_dir) + 1:]
         pickle_fname = os.path.join(src_gallery_dir, subpath,
                                     fname[:-5] + '_codeobj.pickle')
+        if not os.path.exists(pickle_fname):
+            continue
 
-        if os.path.exists(pickle_fname):
-            # we have a pickle file with the objects to embed links for
-            with open(pickle_fname, 'rb') as fid:
-                example_code_obj = pickle.load(fid)
-            fid.close()
-            str_repl = {}
-            # generate replacement strings with the links
-            for name, cobj in example_code_obj.items():
+        # we have a pickle file with the objects to embed links for
+        with open(pickle_fname, 'rb') as fid:
+            example_code_obj = pickle.load(fid)
+        # generate replacement strings with the links
+        str_repl = {}
+        for name in sorted(example_code_obj):
+            cobjs = example_code_obj[name]
+            # possible names from identify_names, which in turn gets
+            # possibilites from NameFinder.get_mapping
+            link = type_ = None
+            for cobj in cobjs:
                 for modname in (cobj['module_short'], cobj['module']):
                     this_module = modname.split('.')[0]
                     cname = cobj['name']
 
                     # Try doc resolvers first
-                    link = type_ = None
-                    is_instance = False
                     if this_module in doc_resolvers:
                         try:
                             link, type_ = doc_resolvers[this_module].resolve(
@@ -362,9 +361,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                    not cobj['is_class'])
 
                     if link is not None:
-                        parts = name.split('.')
                         name_html = period.join(orig_pattern % part
-                                                for part in parts)
+                                                for part in name.split('.'))
                         full_function_name = '%s.%s' % (modname, cname)
                         css_class = ("sphx-glr-backref-module-" +
                                      _sanitize_css_class(modname))
@@ -378,22 +376,26 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             css_class=css_class, text=name_html)
                         break  # loop over possible module names
 
-            # do the replacement in the html file
+                if link is not None:
+                    break  # loop over cobjs
 
-            # ensure greediness
-            names = sorted(str_repl, key=len, reverse=True)
-            regex_str = '|'.join(re.escape(name) for name in names)
-            regex = re.compile(regex_str)
+        # do the replacement in the html file
 
-            def substitute_link(match):
-                return str_repl[match.group()]
+        # ensure greediness
+        names = sorted(str_repl, key=len, reverse=True)
+        regex_str = '|'.join(re.escape(name) for name in names)
+        regex = re.compile(regex_str)
 
-            if len(str_repl) > 0:
-                with codecs.open(full_fname, 'r', 'utf-8') as fid:
-                    lines_in = fid.readlines()
-                with codecs.open(full_fname, 'w', 'utf-8') as fid:
-                    for line in lines_in:
-                        fid.write(regex.sub(substitute_link, line))
+        def substitute_link(match):
+            return str_repl[match.group()]
+
+        if len(str_repl) > 0:
+            with codecs.open(full_fname, 'r', 'utf-8') as fid:
+                lines_in = fid.readlines()
+            with codecs.open(full_fname, 'w', 'utf-8') as fid:
+                for line in lines_in:
+                    line_out = regex.sub(substitute_link, line)
+                    fid.write(line_out)
 
 
 def embed_code_links(app, exception):
