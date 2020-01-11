@@ -183,23 +183,26 @@ def test_embed_links_and_styles(sphinx_app):
     # ensure we've linked properly
     assert '#module-matplotlib.colors' in lines
     assert 'matplotlib.colors.is_color_like' in lines
-    assert 'class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-function">' in lines  # noqa
+    assert 'class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-function">' in lines  # noqa: E501
     assert '#module-numpy' in lines
     assert 'numpy.arange.html' in lines
-    assert 'class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function">' in lines  # noqa
+    assert 'class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function">' in lines  # noqa: E501
     assert '#module-matplotlib.pyplot' in lines
     assert 'pyplot.html' in lines
-    assert 'matplotlib.figure.Figure.html#matplotlib.figure.Figure.tight_layout' in lines  # noqa
+    assert 'matplotlib.figure.Figure.html#matplotlib.figure.Figure.tight_layout' in lines  # noqa: E501
     assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
     assert 'matplotlib_configuration_api.html#matplotlib.rcParams' in lines
     assert 'stdtypes.html#list' in lines
     assert 'warnings.html#warnings.warn' in lines
     assert 'itertools.html#itertools.compress' in lines
     assert 'numpy.ndarray.html' in lines
-    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.identify_names' in lines
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.identify_names' in lines  # noqa: E501
     # instances have an extra CSS class
-    assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a>' in lines  # noqa
-    assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class"><span class="n">Figure</span></a>' in lines  # noqa
+    assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a>' in lines  # noqa: E501
+    assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class"><span class="n">Figure</span></a>' in lines  # noqa: E501
+    # gh-587: no classes that are only marked as module without type
+    assert re.search(r'"sphx-glr-backref-module-\S*"', lines) is None
+    assert 'class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-function"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">identify_names</span></a>' in lines  # noqa: E501
 
     try:
         import memory_profiler  # noqa, analysis:ignore
@@ -220,8 +223,8 @@ def test_embed_links_and_styles(sphinx_app):
     assert '.. code-block:: python3\n' in rst
 
     # warnings
-    want_warn = (r'.*plot_numpy_matplotlib\.py:[0-9][0-9]: RuntimeWarning: This'
-                 r' warning should show up in the output.*')
+    want_warn = (r'.*plot_numpy_matplotlib\.py:[0-9][0-9]: RuntimeWarning: '
+                 r'This warning should show up in the output.*')
     assert re.match(want_warn, lines, re.DOTALL) is not None
     sys.stdout.write(lines)
 
