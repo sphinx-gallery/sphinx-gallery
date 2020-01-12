@@ -24,7 +24,9 @@ if [ "$DISTRIB" == "conda" ]; then
     python setup.py install
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
-    pip install . numpy sphinx pytest-cov
+    pip install https://api.github.com/repos/cython/cython/zipball/master
+    pip install --no-use-pep517 numpy
+    pip install . sphinx pytest-cov
 elif [ "$DISTRIB" == "minimal" ]; then
     pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
