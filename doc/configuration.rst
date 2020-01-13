@@ -445,16 +445,18 @@ Stylizing code links using CSS
 Each link in the code blocks will be decorated with two or three CSS classes.
 
 1. ``sphx-glr-backref-module-*``
-        The module where the object is documented.
-        For example, ``sphx-glr-backref-module-matplotlib-figure``.
+        CSS class named after the module where the object is documented.
+        ``*`` represents the module, e.g.,
+        ``sphx-glr-backref-module-matplotlib-figure``.
 2. ``sphx-glr-backref-type-*``
-        The type of the object. This is a sanitized intersphinx type, for
-        example a ``py:class`` will have the CSS class
-        ``sphx-glr-backref-type-py-class``.
+        CSS class named after the type of the object, where ``*`` represents
+        the object type. This is a sanitized intersphinx type, e.g., a
+        ``py:class`` will have the CSS class ``sphx-glr-backref-type-py-class``.
 3. ``sphx-glr-backref-instance``
-        A class that is added if the object is an instance of a class
-        (rather than, e.g., a class itself, method, or function).
-        By default, Sphinx-Gallery adds the following CSS in ``gallery.css``:
+        The third 'optional' class that is added only if the object is an
+        instance of a class (rather than, e.g., a class itself, method, or
+        function). By default, Sphinx-Gallery adds the following CSS in
+        ``gallery.css``:
 
         .. code-block:: css
 
@@ -467,16 +469,17 @@ Each link in the code blocks will be decorated with two or three CSS classes.
 
             x = Figure()
 
-        here ``x`` is an instance of a class, so it will have the
-        ``sphx-glr-backref-instance`` CSS class, and it will not be decorated;
-        and ``Figure`` is a class, so it will not have the
+        ``x``, an instance of a class, will have the
+        ``sphx-glr-backref-instance`` CSS class, and will not be decorated.
+        ``Figure`` however, is a class, so will not have the
         ``sphx-glr-backref-instance`` CSS class, and will thus be decorated the
         standard way for links in the given parent styles.
 
 These three CSS classes are meant to give fine-grained control over how
 different links are decorated. For example, using CSS selectors you could
 choose to avoid highlighting any ``sphx-glr-backref-*`` links except for ones
-that you whitelist (e.g., those from your own module). For example:
+that you whitelist (e.g., those from your own module). For example, the
+following css prevents any module except for matplotlib from being decorated:
 
 .. code-block:: css
 
