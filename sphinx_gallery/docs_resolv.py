@@ -361,6 +361,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                    not cobj['is_class'])
 
                     if link is not None:
+                        # Add CSS classes
                         name_html = period.join(orig_pattern % part
                                                 for part in name.split('.'))
                         full_function_name = '%s.%s' % (modname, cname)
