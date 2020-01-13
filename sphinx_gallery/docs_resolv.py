@@ -178,11 +178,20 @@ class SphinxDocLinkResolver(object):
 
     def _get_link_type(self, cobj):
         """Get a valid link and type_, False if not found."""
-        fullname = cobj['module_short'] + '.' + cobj['name']
+        first, second = cobj['module_short'], cobj['name']
+        match = None
         try:
-            value = self._searchindex['objects'][cobj['module_short']]
-            match = value[cobj['name']]
+            match = self._searchindex['objects'][first][second]
         except KeyError:
+            pass
+        if match is None and '.' in second:  # possible class attribute
+            first, second = second.split('.', 1)
+            first = '.'.join([cobj['module_short'], first])
+            try:
+                match = self._searchindex['objects'][first][second]
+            except KeyError:
+                pass
+        if match is None:
             link = type_ = None
         else:
             fname_idx = match[0]
@@ -201,6 +210,7 @@ class SphinxDocLinkResolver(object):
             else:
                 link = posixpath.join(self.doc_url, fname)
 
+            fullname = '.'.join([first, second])
             if anchor == '':
                 anchor = fullname
             elif anchor == '-':

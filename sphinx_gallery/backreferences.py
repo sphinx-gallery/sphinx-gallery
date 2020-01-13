@@ -23,6 +23,19 @@ from .scrapers import _find_image_ext
 from .utils import _replace_md5
 
 
+class DummyClass(object):
+    """Dummy class for testing method resolution."""
+
+    def run(self):
+        """Do nothing."""
+        pass
+
+    @property
+    def prop(self):
+        """Property."""
+        return 'Property'
+
+
 class NameFinder(ast.NodeVisitor):
     """Finds the longest form of variable names and their imports in code.
 
@@ -61,56 +74,47 @@ class NameFinder(ast.NodeVisitor):
             self.visit(node)
 
     def get_mapping(self):
-        imported_names_split = \
-            [key.split('.') for key in self.imported_names]
-        # ensure that max is at least one
-        max_import_splits = len(max(imported_names_split + [''], key=len))
+        options = list()
         for name in self.accessed_names:
-            for split_level in range(max_import_splits):
-                local_name_split = name.split('.')
-                # add the next '.' split to local_name
-                # ensures self.imported names with '.' are not missed
+            local_name_split = name.split('.')
+            # first pass: by global variables and object inspection (preferred)
+            for split_level in range(len(local_name_split)):
                 local_name = '.'.join(local_name_split[:split_level + 1])
                 remainder = name[len(local_name):]
-                class_attr = False
                 if local_name in self.global_variables:
                     obj = self.global_variables[local_name]
-                    if local_name in self.imported_names:
-                        # Join import path to relative path
-                        full_name = self.imported_names[local_name] + remainder
-                        if remainder:
-                            for level in remainder[1:].split('.'):
+                    class_attr, method = False, []
+                    if remainder:
+                        for level in remainder[1:].split('.'):
+                            last_obj = obj
+                            # determine if it's a property
+                            prop = getattr(last_obj.__class__, level, None)
+                            if isinstance(prop, property):
+                                obj = last_obj
+                                class_attr, method = True, [level]
+                                break
+                            try:
                                 obj = getattr(obj, level)
-                        is_class = inspect.isclass(obj)
-                        yield name, full_name, class_attr, is_class
-                        # Some things like np.random.RandomState are actually
-                        # documented at a level *deeper* than their possible
-                        # access level (e.g., np.random.mtrand.RandomState), so
-                        # let's also yield the name from the class itself
-                        obj_module = inspect.getmodule(obj)
-                        if obj_module is not None:
-                            if inspect.isclass(obj):
-                                obj_name = obj.__name__
-                            else:
-                                obj_name = obj.__class__.__name__
-                            full_name = '.'.join([obj_module.__name__,
-                                                  obj_name])
-                            yield name, full_name, class_attr, is_class
+                            except AttributeError:
+                                break
+                            if inspect.ismethod(obj):
+                                obj = last_obj
+                                class_attr, method = True, [level]
+                                break
+                    del remainder
+                    is_class = inspect.isclass(obj)
+                    if is_class or class_attr:
+                        # Traverse all bases
+                        classes = [obj if is_class else obj.__class__]
+                        offset = 0
+                        while offset < len(classes):
+                            for base in classes[offset].__bases__:
+                                # "object" as a base class is not very useful
+                                if base not in classes and base is not object:
+                                    classes.append(base)
+                            offset += 1
                     else:
-                        is_class = inspect.isclass(obj)
-                    if remainder and remainder[0] == '.':  # maybe meth or attr
-                        method = [remainder[1:]]
-                        class_attr = True
-                    else:
-                        method = []
-                    # Recurse through all levels of bases
-                    classes = [obj.__class__]
-                    offset = 0
-                    while offset < len(classes):
-                        for base in classes[offset].__bases__:
-                            if base not in classes:
-                                classes.append(base)
-                        offset += 1
+                        classes = [obj.__class__]
                     for cc in classes:
                         module = inspect.getmodule(cc)
                         if module is not None:
@@ -121,12 +125,20 @@ class NameFinder(ast.NodeVisitor):
                             for depth in range(len(module), 0, -1):
                                 full_name = '.'.join(
                                     module[:depth] + [class_name] + method)
-                                yield name, full_name, class_attr, is_class
-                elif local_name in self.imported_names:
+                                options.append(
+                                    (name, full_name, class_attr, is_class))
+            # second pass: by import (can't resolve as well without doing
+            # some actions like actually importing the modules, so use it
+            # as a last resort)
+            for split_level in range(len(local_name_split)):
+                local_name = '.'.join(local_name_split[:split_level + 1])
+                remainder = name[len(local_name):]
+                if local_name in self.imported_names:
                     full_name = self.imported_names[local_name] + remainder
-                    is_class = False
-                    yield name, full_name, class_attr, is_class
-                    break
+                    is_class = class_attr = False  # can't tell without import
+                    options.append(
+                        (name, full_name, class_attr, is_class))
+        return options
 
 
 def _from_import(a, b):
