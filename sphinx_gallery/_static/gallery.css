@@ -202,7 +202,7 @@ a.sphx-glr-backref-instance {
 /* Pandas dataframe css */
 /* Taken from: https://github.com/spatialaudio/nbsphinx/blob/fb3ba670fc1ba5f54d4c487573dbc1b4ecf7e9ff/src/nbsphinx.py#L587-L619 */
 
-table.dataframe table{
+table.dataframe {
   border: none !important;
   border-collapse: collapse;
   border-spacing: 0;
