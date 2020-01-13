@@ -213,8 +213,9 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">DummyClass</span>' in lines  # noqa: E501
     # method
     assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass.run" title="sphinx_gallery.backreferences.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>' in lines  # noqa: E501
-    # property
-    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass.prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>' in lines  # noqa: E501
+    # property (Sphinx 2+ calls it a method rather than attribute, so regex)
+    regex = re.compile('sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass.prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-(attribute|method)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>')  # noqa: E501
+    assert regex.search(lines) is not None
 
     try:
         import memory_profiler  # noqa, analysis:ignore
