@@ -203,6 +203,9 @@ def test_embed_links_and_styles(sphinx_app):
     # gh-587: no classes that are only marked as module without type
     assert re.search(r'"sphx-glr-backref-module-\S*"', lines) is None
     assert 'class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-function"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">identify_names</span></a>' in lines  # noqa: E501
+    # gh-587: np.random.RandomState links properly
+    assert '.html#numpy.random.mtrand.RandomState" title="numpy.random.mtrand.RandomState" class="sphx-glr-backref-module-numpy-random-mtrand sphx-glr-backref-type-py-class"><span class="n">np</span>' in lines  # noqa: E501
+    assert '.html#numpy.random.mtrand.RandomState" title="numpy.random.mtrand.RandomState" class="sphx-glr-backref-module-numpy-random-mtrand sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>' in lines  # noqa: E501
 
     try:
         import memory_profiler  # noqa, analysis:ignore

@@ -36,8 +36,7 @@ listy = [0, 1]
 compress('abc', [0, 0, 1])
 warn('This warning should show up in the output', RuntimeWarning)
 x = Figure()  # plt.Figure should be decorated (class), x shouldn't (inst)
-# should not crash, nested resolution, but doesn't resolve because
-# NumPy intersphinx looks to numpy.random.mtrand.RandomState (?)
-np.random.RandomState(0)
+# nested resolution resolves to numpy.random.mtrand.RandomState:
+rng = np.random.RandomState(0)
 # test Issue 583
 sphinx_gallery.backreferences.identify_names([('text', 'Text block', 1)])

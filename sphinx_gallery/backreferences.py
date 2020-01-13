@@ -70,25 +70,34 @@ class NameFinder(ast.NodeVisitor):
                 local_name_split = name.split('.')
                 # add the next '.' split to local_name
                 # ensures self.imported names with '.' are not missed
-                local_name = '.'.join(local_name_split[:split_level+1])
+                local_name = '.'.join(local_name_split[:split_level + 1])
                 remainder = name[len(local_name):]
                 class_attr = False
-                if local_name in self.imported_names:
-                    # Join import path to relative path
-                    full_name = self.imported_names[local_name] + remainder
-                    if local_name in self.global_variables:
-                        obj = self.global_variables[local_name]
+                if local_name in self.global_variables:
+                    obj = self.global_variables[local_name]
+                    if local_name in self.imported_names:
+                        # Join import path to relative path
+                        full_name = self.imported_names[local_name] + remainder
                         if remainder:
                             for level in remainder[1:].split('.'):
                                 obj = getattr(obj, level)
                         is_class = inspect.isclass(obj)
+                        yield name, full_name, class_attr, is_class
+                        # Some things like np.random.RandomState are actually
+                        # documented at a level *deeper* than their possible
+                        # access level (e.g., np.random.mtrand.RandomState), so
+                        # let's also yield the name from the class itself
+                        obj_module = inspect.getmodule(obj)
+                        if obj_module is not None:
+                            if inspect.isclass(obj):
+                                obj_name = obj.__name__
+                            else:
+                                obj_name = obj.__class__.__name__
+                            full_name = '.'.join([obj_module.__name__,
+                                                  obj_name])
+                            yield name, full_name, class_attr, is_class
                     else:
-                        is_class = False
-                    yield name, full_name, class_attr, is_class
-                    break
-                elif local_name in self.global_variables:
-                    obj = self.global_variables[local_name]
-                    is_class = inspect.isclass(obj)
+                        is_class = inspect.isclass(obj)
                     if remainder and remainder[0] == '.':  # maybe meth or attr
                         method = [remainder[1:]]
                         class_attr = True
@@ -103,14 +112,21 @@ class NameFinder(ast.NodeVisitor):
                                 classes.append(base)
                         offset += 1
                     for cc in classes:
-                        module = cc.__module__.split('.')
-                        class_name = cc.__name__
-                        # a.b.C.meth could be documented as a.C.meth,
-                        # so go down the list
-                        for depth in range(len(module), 0, -1):
-                            full_name = '.'.join(
-                                module[:depth] + [class_name] + method)
-                            yield name, full_name, class_attr, is_class
+                        module = inspect.getmodule(cc)
+                        if module is not None:
+                            module = module.__name__.split('.')
+                            class_name = cc.__qualname__
+                            # a.b.C.meth could be documented as a.C.meth,
+                            # so go down the list
+                            for depth in range(len(module), 0, -1):
+                                full_name = '.'.join(
+                                    module[:depth] + [class_name] + method)
+                                yield name, full_name, class_attr, is_class
+                elif local_name in self.imported_names:
+                    full_name = self.imported_names[local_name] + remainder
+                    is_class = False
+                    yield name, full_name, class_attr, is_class
+                    break
 
 
 def _from_import(a, b):
@@ -178,10 +194,11 @@ def identify_names(script_blocks, global_variables=None, node=''):
     text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
     names.extend((x, x, False, False) for x in re.findall(_regex, text))
     example_code_obj = collections.OrderedDict()  # order is important
-    fill_guess = dict()
+    # Make a list of all guesses, in `_embed_code_links` we will break
+    # when we find a match
     for name, full_name, class_like, is_class in names:
-        if name in example_code_obj:
-            continue  # if someone puts it in the docstring and code
+        if name not in example_code_obj:
+            example_code_obj[name] = list()
         # name is as written in file (e.g. np.asarray)
         # full_name includes resolved import path (e.g. numpy.asarray)
         splitted = full_name.rsplit('.', 1 + class_like)
@@ -194,18 +211,12 @@ def identify_names(script_blocks, global_variables=None, node=''):
             assert not class_like
 
         module, attribute = splitted
+
         # get shortened module name
         module_short = _get_short_module_name(module, attribute)
         cobj = {'name': attribute, 'module': module,
-                'module_short': module_short, 'is_class': is_class}
-        if module_short is not None:
-            example_code_obj[name] = cobj
-        elif name not in fill_guess:
-            cobj['module_short'] = module
-            fill_guess[name] = cobj
-    for key, value in fill_guess.items():
-        if key not in example_code_obj:
-            example_code_obj[key] = value
+                'module_short': module_short or module, 'is_class': is_class}
+        example_code_obj[name].append(cobj)
     return example_code_obj
 
 

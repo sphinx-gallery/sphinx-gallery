@@ -44,7 +44,7 @@ for i, (name, obj) in enumerate(names.items()):
              transform=fig.transFigure,
              bbox=dict(boxstyle='square', fc="w", ec="k"))
     fig.text(0.6, (float(len(names)) - 0.5 - i) / figheight,
-             obj["module"],
+             obj[0]["module"],
              ha="left",
              size=fontsize,
              transform=fig.transFigure,
