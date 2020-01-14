@@ -40,3 +40,7 @@ x = Figure()  # plt.Figure should be decorated (class), x shouldn't (inst)
 rng = np.random.RandomState(0)
 # test Issue 583
 sphinx_gallery.backreferences.identify_names([('text', 'Text block', 1)])
+# 583: methods don't link properly
+dc = sphinx_gallery.backreferences.DummyClass()
+dc.run()
+print(dc.prop)

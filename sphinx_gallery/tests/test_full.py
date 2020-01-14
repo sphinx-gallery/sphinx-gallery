@@ -191,7 +191,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'pyplot.html' in lines
     assert 'matplotlib.figure.Figure.html#matplotlib.figure.Figure.tight_layout' in lines  # noqa: E501
     assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
-    assert 'matplotlib_configuration_api.html#matplotlib.rcParams' in lines
+    assert 'matplotlib_configuration_api.html#matplotlib.RcParams' in lines
     assert 'stdtypes.html#list' in lines
     assert 'warnings.html#warnings.warn' in lines
     assert 'itertools.html#itertools.compress' in lines
@@ -206,6 +206,16 @@ def test_embed_links_and_styles(sphinx_app):
     # gh-587: np.random.RandomState links properly
     assert '.html#numpy.random.mtrand.RandomState" title="numpy.random.mtrand.RandomState" class="sphx-glr-backref-module-numpy-random-mtrand sphx-glr-backref-type-py-class"><span class="n">np</span>' in lines  # noqa: E501
     assert '.html#numpy.random.mtrand.RandomState" title="numpy.random.mtrand.RandomState" class="sphx-glr-backref-module-numpy-random-mtrand sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>' in lines  # noqa: E501
+    # gh-587: methods of classes in the module currently being documented
+    # instance
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>' in lines  # noqa: E501
+    # class
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">DummyClass</span>' in lines  # noqa: E501
+    # method
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass.run" title="sphinx_gallery.backreferences.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>' in lines  # noqa: E501
+    # property (Sphinx 2+ calls it a method rather than attribute, so regex)
+    regex = re.compile('sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass.prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-(attribute|method)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>')  # noqa: E501
+    assert regex.search(lines) is not None
 
     try:
         import memory_profiler  # noqa, analysis:ignore
