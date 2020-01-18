@@ -25,7 +25,7 @@ from .utils import _replace_md5
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
-from .scrapers import _scraper_dict, _reset_dict
+from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
@@ -153,6 +153,19 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             raise ValueError('Scraper %r was not callable' % (scraper,))
     gallery_conf['image_scrapers'] = tuple(scrapers)
     del scrapers
+    # Here we try to set up matplotlib but don't raise an error,
+    # we will raise an error later when we actually try to use it
+    # (if we do so) in scrapers.py.
+    # In principle we could look to see if there is a matplotlib scraper
+    # in our scrapers list, but this would be backward incompatible with
+    # anyone using or relying on our Agg-setting behavior (e.g., for some
+    # custom matplotlib SVG scraper as in our docs).
+    # Eventually we can make this a config var like matplotlib_agg or something
+    # if people need us not to set it to Agg.
+    try:
+        _import_matplotlib()
+    except (ImportError, ValueError):
+        pass
 
     # deal with resetters
     resetters = gallery_conf['reset_modules']

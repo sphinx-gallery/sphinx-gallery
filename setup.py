@@ -29,12 +29,7 @@ description = description.strip()
 
 # Get the requirements from requirements.txt and environment
 with open('requirements.txt', 'r') as fid:
-    install_requires = [line.strip() for line in fid]
-
-if os.environ.get('READTHEDOCS', None) == 'True':
-    # So that we can build documentation using seaborn
-    install_requires = ['seaborn']
-
+    install_requires = [line.strip() for line in fid if line.strip()]
 
 setup(
     name="sphinx-gallery",

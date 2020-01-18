@@ -11,6 +11,7 @@ import pytest
 import sphinx
 from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
                             sphinx_compatibility, py_source_parser)
+from sphinx_gallery.scrapers import _import_matplotlib
 
 
 def pytest_report_header(config, startdir):
@@ -120,7 +121,7 @@ identify_names
 
 
 @pytest.fixture
-def requires_jpeg(tmpdir):
+def req_mpl_jpg(tmpdir, req_mpl, scope='session'):
     """Raise SkipTest if JPEG support is not available."""
     # mostly this is needed because of
     # https://github.com/matplotlib/matplotlib/issues/16083
@@ -130,3 +131,22 @@ def requires_jpeg(tmpdir):
         plt.savefig(str(tmpdir.join('testplot.jpg')))
     except Exception as exp:
         pytest.skip('Matplotlib jpeg saving failed: %s' % (exp,))
+
+
+@pytest.fixture(scope='session')
+def req_mpl():
+    try:
+        _import_matplotlib()
+    except (ImportError, ValueError):
+        pytest.skip('Test requires matplotlib')
+
+
+@pytest.fixture(scope='session')
+def req_pil():
+    try:
+        from PIL import Image
+    except ImportError:
+        try:
+            import Image
+        except ImportError:
+            pytest.skip('Test requires pillow')

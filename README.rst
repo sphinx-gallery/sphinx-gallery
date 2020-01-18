@@ -52,17 +52,18 @@ You can do a direct install via pip by using:
     $ pip install sphinx-gallery
 
 Sphinx-Gallery will not manage its dependencies when installing, thus
-you are required to install them manually. Our minimal dependencies
-are:
+you are required to install them manually. Our minimal dependency
+is:
 
 * Sphinx >= 1.8.3
-* Matplotlib
-* Pillow
 
 Sphinx-Gallery has also support for packages like:
 
+* Matplotlib
 * Seaborn
 * Mayavi
+
+For much of this functionality, you will need `pillow`.
 
 Install as a developer
 ----------------------
@@ -71,21 +72,7 @@ You can get the latest development source from our `Github repository
 <https://github.com/sphinx-gallery/sphinx-gallery>`_. You need
 ``setuptools`` installed in your system to install Sphinx-Gallery.
 
-Additional to the dependencies listed above you will need to install `pytest`
-and `pytest-coverage` for testing.
-
-To install everything do:
-
-.. code-block:: bash
-
-    $ git clone https://github.com/sphinx-gallery/sphinx-gallery
-    $ cd sphinx-gallery
-    $ pip install -r requirements.txt
-    $ pip install pytest pytest-coverage
-    $ pip install -e .
-
-In addition, you will need the following dependencies to build the
-``sphinx-gallery`` documentation:
-
-* Scipy
-* Seaborn
+Additional to the dependencies listed above you will need to install `pytest`,
+`pytest-coverage`, `matplotlib`, `numpy`, `seaborn`, and `pillow` for many
+of the tests. In addition, you will need `scipy` and `seaborn` to build the
+``sphinx-gallery`` documentation.

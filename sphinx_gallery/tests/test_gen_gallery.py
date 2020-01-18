@@ -84,7 +84,7 @@ class SphinxAppWrapper(object):
 
 
 @pytest.fixture
-def sphinx_app_wrapper(tmpdir, conf_file):
+def sphinx_app_wrapper(tmpdir, conf_file, req_mpl, req_pil):
     _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
     srcdir = os.path.join(str(tmpdir), "config_test")
     shutil.copytree(_fixturedir, srcdir)

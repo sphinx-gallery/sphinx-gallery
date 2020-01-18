@@ -1,4 +1,1 @@
-setuptools
-matplotlib
-pillow
 sphinx>=1.8.3
