@@ -126,11 +126,14 @@ def req_mpl_jpg(tmpdir, req_mpl, scope='session'):
     # mostly this is needed because of
     # https://github.com/matplotlib/matplotlib/issues/16083
     import matplotlib.pyplot as plt
-    plt.plot(range(10))
+    fig, ax = plt.subplots()
+    ax.plot(range(10))
     try:
         plt.savefig(str(tmpdir.join('testplot.jpg')))
     except Exception as exp:
         pytest.skip('Matplotlib jpeg saving failed: %s' % (exp,))
+    finally:
+        plt.close(fig)
 
 
 @pytest.fixture(scope='session')

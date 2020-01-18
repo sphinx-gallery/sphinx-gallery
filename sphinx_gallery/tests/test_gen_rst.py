@@ -530,7 +530,7 @@ def test_rst_example(gallery_conf):
     assert "rst-class:: sphx-glr-timing" in rst
 
 
-def test_output_indentation(gallery_conf):
+def test_output_indentation(gallery_conf, tmpdir):
     """Test whether indentation of code output is retained."""
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
@@ -545,7 +545,7 @@ def test_output_indentation(gallery_conf):
 
     script_vars = {
         "execute_script": True,
-        "image_path_iterator": ImagePathIterator("temp.png"),
+        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
         "src_file": __file__,
         "memory_delta": [],
     }
@@ -559,7 +559,7 @@ def test_output_indentation(gallery_conf):
     assert output_test_string == test_string.replace(r"\n", "\n")
 
 
-def test_empty_output_box(gallery_conf):
+def test_empty_output_box(gallery_conf, tmpdir):
     """Tests that `print(__doc__)` doesn't produce an empty output box."""
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
@@ -568,7 +568,7 @@ def test_empty_output_box(gallery_conf):
 
     script_vars = {
         "execute_script": True,
-        "image_path_iterator": ImagePathIterator("temp.png"),
+        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
         "src_file": __file__,
         "memory_delta": [],
     }
@@ -700,13 +700,13 @@ def _clean_output(output):
     pytest.param(('_repr_html_',), code_plt, '', id='html_none'),
 ])
 def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
-                      req_mpl, req_pil):
+                      req_mpl, req_pil, tmpdir):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
     code_block = ('code', code, 1)
     script_vars = {
         "execute_script": True,
-        "image_path_iterator": ImagePathIterator("temp.png"),
+        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
         "src_file": __file__,
         "memory_delta": [],
     }
