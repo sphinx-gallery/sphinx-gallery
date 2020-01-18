@@ -31,6 +31,9 @@ from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
 from .binder import copy_binder_files
 
+
+_KNOWN_CSS = ('gallery', 'gallery-binder', 'gallery-dataframe')
+
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'ignore_pattern': r'__init__\.py',
@@ -65,6 +68,7 @@ DEFAULT_GALLERY_CONF = {
     'junit': '',
     'log_level': {'backreference_missing': 'warning'},
     'inspect_global_variables': True,
+    'css': _KNOWN_CSS,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -188,6 +192,17 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     if (not isinstance(backref, str)) and (backref is not None):
         raise ValueError("The 'backreferences_dir' parameter must be of type"
                          "str or None, found type %s" % type(backref))
+
+    if not isinstance(gallery_conf['css'], (list, tuple)):
+        raise TypeError('gallery_conf["css"] must be list or tuple, got %r'
+                        % (gallery_conf['css'],))
+    for css in gallery_conf['css']:
+        if css not in _KNOWN_CSS:
+            raise ValueError('Unknown css %r, must be one of %r'
+                             % (css, known_css))
+        if gallery_conf['app'] is not None:  # can be None in testing
+            gallery_conf['app'].add_css_file(css + '.css')
+
     return gallery_conf
 
 
@@ -594,8 +609,6 @@ def setup(app):
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
-
-    app.add_css_file('gallery.css')
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
