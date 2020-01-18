@@ -26,13 +26,12 @@ elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
     pip install https://api.github.com/repos/cython/cython/zipball/master
     pip install --no-use-pep517 numpy
-    pip install . sphinx pytest-cov
+    pip install . pytest-cov matplotlib pillow
 elif [ "$DISTRIB" == "minimal" ]; then
     pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    pip install -r requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install seaborn sphinx==1.8.3 pytest pytest-cov sphinx_rtd_theme flake8
+    pip install sphinx==1.8.3 matplotlib pillow seaborn pytest pytest-cov sphinx_rtd_theme flake8
     python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
