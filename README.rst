@@ -39,6 +39,8 @@ Who uses Sphinx-Gallery
 * `PlasmaPy <http://docs.plasmapy.org/en/latest/auto_examples/>`_
 * `Fury <http://fury.gl/latest/auto_examples/index.html>`_
 
+.. installation-begin-content
+
 Installation
 ============
 
@@ -65,14 +67,20 @@ Sphinx-Gallery has also support for packages like:
 
 For much of this functionality, you will need `pillow`.
 
-Install as a developer
-----------------------
+Install as a Sphinx-gallery developer
+-------------------------------------
 
 You can get the latest development source from our `Github repository
 <https://github.com/sphinx-gallery/sphinx-gallery>`_. You need
-``setuptools`` installed in your system to install Sphinx-Gallery.
+``setuptools`` installed in your system to install Sphinx-Gallery. For example,
+you can do:
 
-Additional to the dependencies listed above you will need to install `pytest`,
-`pytest-coverage`, `matplotlib`, `numpy`, `seaborn`, and `pillow` for many
-of the tests. In addition, you will need `scipy` and `seaborn` to build the
-``sphinx-gallery`` documentation.
+.. code-block:: console
+
+    $ git clone https://github.com/sphinx-gallery/sphinx-gallery
+    $ cd sphinx-gallery
+    $ pip install -r dev-requirements.txt
+    $ pip install -e .
+
+.. installation-end-content
+
