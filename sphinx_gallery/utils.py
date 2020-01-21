@@ -23,8 +23,13 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     # local import to avoid testing dependency on PIL:
     try:
         from PIL import Image
-    except ImportError:
-        import Image
+    except ImportError as exc:  # capture the error for the modern way
+        try:
+            import Image
+        except ImportError:
+            raise RuntimeError('Could not import pillow, which is required '
+                               'to rescale images (e.g., for thumbnails): %s'
+                               % (exc,))
     img = Image.open(in_fname)
     width_in, height_in = img.size
     scale_w = max_width / float(width_in)

@@ -9,7 +9,7 @@
 set -e
 
 if [ "$DISTRIB" == "conda" ]; then
-    export CONDA_DEPENDENCIES="pip numpy scipy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 ${CONDA_PKGS}"
+    export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 ${CONDA_PKGS}"
     export PIP_DEPENDENCIES="sphinx_rtd_theme"
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
         export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk mayavi ipython"
@@ -30,9 +30,9 @@ elif [ "$PYTHON_VERSION" == "nightly" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    pip install -r requirements.txt | cat
+    pip install -r dev-requirements.txt | cat
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install seaborn sphinx==1.8.3 pytest pytest-cov sphinx_rtd_theme flake8
+    pip install sphinx==1.8.3
     python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
