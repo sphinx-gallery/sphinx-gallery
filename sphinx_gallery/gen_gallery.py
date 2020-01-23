@@ -199,7 +199,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     for css in gallery_conf['css']:
         if css not in _KNOWN_CSS:
             raise ValueError('Unknown css %r, must be one of %r'
-                             % (css, known_css))
+                             % (css, _KNOWN_CSS))
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
