@@ -378,6 +378,8 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     gallery_conf['failing_examples'][src_file] = formatted_exception
     script_vars['execute_script'] = False
 
+    # Ensure it's marked as our style
+    except_rst = ".. rst-class:: sphx-glr-script-out\n\n" + except_rst
     return except_rst
 
 

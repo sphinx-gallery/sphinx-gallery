@@ -140,21 +140,31 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     assert build_warn == ''
 
 
-@pytest.mark.conf_file(content="""
-sphinx_gallery_conf = {
-    'reset_modules': ('foo',),
-}""")
-def test_bad_reset_str(sphinx_app_wrapper):
-    with pytest.raises(ValueError, match='Unknown module resetter'):
+@pytest.mark.parametrize('err_class, err_match', [
+    pytest.param(ValueError, 'Unknown module resetter',
+                 id='Resetter unknown',
+                 marks=pytest.mark.conf_file(
+                     content="sphinx_gallery_conf={'reset_modules': ('f',)}")),
+    pytest.param(ValueError, 'Module resetter .* was not callab',
+                 id='Resetter not callable',
+                 marks=pytest.mark.conf_file(
+                     content="sphinx_gallery_conf={'reset_modules': (1.,),}")),
+])
+def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
+    with pytest.raises(err_class, match=err_match):
         sphinx_app_wrapper.create_sphinx_app()
 
 
-@pytest.mark.conf_file(content="""
-sphinx_gallery_conf = {
-    'reset_modules': (1.,),
-}""")
-def test_bad_reset_callable(sphinx_app_wrapper):
-    with pytest.raises(ValueError, match='Module resetter .* was not callab'):
+@pytest.mark.parametrize('err_class, err_match', [
+    pytest.param(ValueError, 'Unknown css', id='CSS str error',
+                 marks=pytest.mark.conf_file(
+                     content="sphinx_gallery_conf={'css': ('foo',)}")),
+    pytest.param(TypeError, 'must be list or tuple', id="CSS type error",
+                 marks=pytest.mark.conf_file(
+                     content="sphinx_gallery_conf={'css': 1.}")),
+])
+def test_bad_css(sphinx_app_wrapper, err_class, err_match):
+    with pytest.raises(err_class, match=err_match):
         sphinx_app_wrapper.create_sphinx_app()
 
 

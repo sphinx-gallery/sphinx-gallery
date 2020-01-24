@@ -51,6 +51,7 @@ class FakeSphinxApp:
 def gallery_conf(tmpdir):
     """Set up a test sphinx-gallery configuration."""
     app = utils.Bunch()
+    app.add_css_file = lambda x: None
     app.config = dict(source_suffix={'.rst': None})
     gallery_conf = gen_gallery._complete_gallery_conf(
         {}, str(tmpdir), True, False, app=app)
