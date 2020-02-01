@@ -24,7 +24,7 @@ from sphinx_gallery.utils import _get_image, scale_image
 
 import pytest
 
-N_TOT = 5
+N_TOT = 6
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 14 + N_TOT
@@ -92,7 +92,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="5"' in contents
+    assert 'tests="%d"' % (N_TOT,) in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents

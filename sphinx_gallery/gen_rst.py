@@ -21,6 +21,7 @@ import codecs
 from functools import partial
 import gc
 import pickle
+import imp
 from io import StringIO
 import os
 import re
@@ -425,16 +426,22 @@ def patch_warnings():
 class _exec_once(object):
     """Deal with memory_usage calling functions more than once (argh)."""
 
-    def __init__(self, code, globals_):
+    def __init__(self, code, fake_main):
         self.code = code
-        self.globals = globals_
+        self.fake_main = fake_main
         self.run = False
 
     def __call__(self):
         if not self.run:
             self.run = True
+            old_main = sys.modules.get('__main__', None)
             with patch_warnings():
-                exec(self.code, self.globals)
+                sys.modules['__main__'] = self.fake_main
+                try:
+                        exec(self.code, self.fake_main.__dict__)
+                finally:
+                    if old_main is not None:
+                        sys.modules['__main__'] = old_main
 
 
 def _memory_usage(func, gallery_conf):
@@ -515,7 +522,7 @@ def execute_code_block(compiler, block, example_globals,
             last_val = code_ast.body.pop().value
             # exec body minus last expression
             _, mem_body = _memory_usage(_exec_once(
-                compiler(code_ast, src_file, 'exec'), example_globals),
+                compiler(code_ast, src_file, 'exec'), script_vars['fake_main']),
                 gallery_conf)
             # exec last expression, made into assignment
             body = [ast.Assign(
@@ -523,14 +530,14 @@ def execute_code_block(compiler, block, example_globals,
             last_val_ast = ast_Module(body=body)
             ast.fix_missing_locations(last_val_ast)
             _, mem_last = _memory_usage(_exec_once(
-                compiler(last_val_ast, src_file, 'exec'), example_globals),
+                compiler(last_val_ast, src_file, 'exec'), script_vars['fake_main']),
                 gallery_conf)
             # capture the assigned variable
             ___ = example_globals['___']
             mem_max = max(mem_body, mem_last)
         else:
             _, mem_max = _memory_usage(_exec_once(
-                compiler(code_ast, src_file, 'exec'), example_globals),
+                compiler(code_ast, src_file, 'exec'), script_vars['fake_main']),
                 gallery_conf)
         script_vars['memory_delta'].append(mem_max)
     except Exception:
@@ -636,8 +643,14 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     time_elapsed : float
         Time elapsed during execution
     """
+    # Examples may contain if __name__ == '__main__' guards
+    # for in example scikit-learn if the example uses multiprocessing.
+    # Here we create a new __main__ module, and temporarily change
+    # sys.modules when running our example
+    fake_main = imp.new_module("__main__")
+    example_globals = fake_main.__dict__
 
-    example_globals = {
+    example_globals.update({
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
         # information. Because the docstring has been separated from
@@ -645,11 +658,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         # __builtin__.__doc__ in the execution context and we do not
         # want to print it
         '__doc__': '',
-        # Examples may contain if __name__ == '__main__' guards
-        # for in example scikit-learn if the example uses multiprocessing
-        '__name__': '__main__',
         # Don't ever support __file__: Issues #166 #212
-    }
+    })
     script_vars['example_globals'] = example_globals
 
     argv_orig = sys.argv[:]
@@ -668,6 +678,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     compiler = codeop.Compile()
     # include at least one entry to avoid max() ever failing
     script_vars['memory_delta'] = [memory_start]
+    script_vars['fake_main'] = fake_main
     output_blocks = [execute_code_block(compiler, block,
                                         example_globals,
                                         script_vars, gallery_conf)
