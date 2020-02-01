@@ -8,6 +8,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import ast
 import codecs
+import imp
 import io
 import tempfile
 import re
@@ -547,7 +548,21 @@ def test_rst_example(gallery_conf):
     assert "rst-class:: sphx-glr-timing" in rst
 
 
-def test_output_indentation(gallery_conf, tmpdir):
+@pytest.fixture(scope='function')
+def script_vars(tmpdir):
+    fake_main = imp.new_module('__main__')
+    fake_main.__dict__.update({'__doc__': ''})
+    script_vars = {
+        "execute_script": True,
+        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
+        "src_file": __file__,
+        "memory_delta": [],
+        "fake_main": fake_main,
+    }
+    return script_vars
+
+
+def test_output_indentation(gallery_conf, script_vars):
     """Test whether indentation of code output is retained."""
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
@@ -559,16 +574,8 @@ def test_output_indentation(gallery_conf, tmpdir):
     ])
     code = "print('" + test_string + "')"
     code_block = ("code", code, 1)
-
-    script_vars = {
-        "execute_script": True,
-        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
-        "src_file": __file__,
-        "memory_delta": [],
-    }
-
     output = sg.execute_code_block(
-        compiler, code_block, {}, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf
     )
     output_test_string = "\n".join(
         [line[4:] for line in output.strip().split("\n")[-3:]]
@@ -576,24 +583,15 @@ def test_output_indentation(gallery_conf, tmpdir):
     assert output_test_string == test_string.replace(r"\n", "\n")
 
 
-def test_empty_output_box(gallery_conf, tmpdir):
+def test_empty_output_box(gallery_conf, script_vars):
     """Tests that `print(__doc__)` doesn't produce an empty output box."""
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
 
     code_block = ("code", "print(__doc__)", 1)
 
-    script_vars = {
-        "execute_script": True,
-        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
-        "src_file": __file__,
-        "memory_delta": [],
-    }
-
-    example_globals = {'__doc__': ''}
-
     output = sg.execute_code_block(
-        compiler, code_block, example_globals, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf
     )
     assert output.isspace()
 
@@ -717,20 +715,13 @@ def _clean_output(output):
     pytest.param(('_repr_html_',), code_plt, '', id='html_none'),
 ])
 def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
-                      req_mpl, req_pil, tmpdir):
+                      req_mpl, req_pil, script_vars):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
     code_block = ('code', code, 1)
-    script_vars = {
-        "execute_script": True,
-        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
-        "src_file": __file__,
-        "memory_delta": [],
-    }
-
     gallery_conf['capture_repr'] = capture_repr
     output = sg.execute_code_block(
-        compiler, code_block, {}, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf
     )
     assert _clean_output(output) == expected_out
 
