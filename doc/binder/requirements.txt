@@ -4,4 +4,5 @@ numpy
 matplotlib
 pillow
 seaborn
+joblib
 sphinx-gallery

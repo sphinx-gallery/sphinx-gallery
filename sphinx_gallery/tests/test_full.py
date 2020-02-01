@@ -261,6 +261,11 @@ def test_embed_links_and_styles(sphinx_app):
     assert re.match(want_warn, lines, re.DOTALL) is not None
     sys.stdout.write(lines)
 
+    example_file = op.join(examples_dir, 'plot_pickle.html')
+    with codecs.open(example_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'joblib.Parallel.html' in lines
+
 
 def test_backreferences(sphinx_app):
     """Test backreferences."""

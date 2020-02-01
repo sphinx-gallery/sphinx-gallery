@@ -6,4 +6,5 @@ numpy
 matplotlib
 pillow
 seaborn
+joblib
 flake8
