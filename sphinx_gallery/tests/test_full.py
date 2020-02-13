@@ -20,6 +20,7 @@ from numpy.testing import assert_allclose
 
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
+from sphinx_gallery.utils import _get_image, scale_image
 
 import pytest
 
@@ -143,6 +144,25 @@ def test_run_sphinx(sphinx_app):
     assert re.match(want, warning, re.DOTALL) is not None, warning
 
 
+def test_thumbnail_path(sphinx_app, tmpdir):
+    """Test sphinx_gallery_thumbnail_path."""
+    # Make sure our thumbnail matches what it should be
+    fname_orig = op.join(
+        sphinx_app.srcdir, '_static', 'demo.png')
+    fname_thumb = op.join(
+        sphinx_app.outdir, '_images',
+        'sphx_glr_plot_second_future_imports_thumb.png')
+    fname_new = str(tmpdir.join('new.png'))
+    scale_image(fname_orig, fname_new,
+                *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"])
+    Image = _get_image()
+    orig = np.asarray(Image.open(fname_thumb))
+    new = np.asarray(Image.open(fname_new))
+    assert new.shape == orig.shape
+    corr = np.corrcoef(new.ravel(), orig.ravel())[0, 1]
+    assert corr > 0.99
+
+
 def test_image_formats(sphinx_app):
     """Test Image format support."""
     generated_examples_dir = op.join(sphinx_app.outdir, 'auto_examples')
@@ -204,8 +224,8 @@ def test_embed_links_and_styles(sphinx_app):
     assert re.search(r'"sphx-glr-backref-module-\S*"', lines) is None
     assert 'class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-function"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">identify_names</span></a>' in lines  # noqa: E501
     # gh-587: np.random.RandomState links properly
-    assert '.html#numpy.random.mtrand.RandomState" title="numpy.random.mtrand.RandomState" class="sphx-glr-backref-module-numpy-random-mtrand sphx-glr-backref-type-py-class"><span class="n">np</span>' in lines  # noqa: E501
-    assert '.html#numpy.random.mtrand.RandomState" title="numpy.random.mtrand.RandomState" class="sphx-glr-backref-module-numpy-random-mtrand sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>' in lines  # noqa: E501
+    assert '.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class"><span class="n">np</span>' in lines  # noqa: E501
+    assert '.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>' in lines  # noqa: E501
     # gh-587: methods of classes in the module currently being documented
     # instance
     assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>' in lines  # noqa: E501
@@ -354,7 +374,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
-    assert re.match('.*[0|1] added, [1|2|3|6|7|8] changed, 0 removed$.*',
+    assert re.match('.*[0|1] added, [1-9] changed, 0 removed$.*',
                     status, re.MULTILINE | re.DOTALL) is not None, lines
     want = ('.*executed 0 out of 1.*after excluding %s files.*based on MD5.*'
             % (N_GOOD,))

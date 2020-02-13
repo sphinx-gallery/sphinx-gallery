@@ -30,7 +30,10 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 def _get_data(url):
     """Get data over http(s) or from a local file."""
     if urllib_parse.urlparse(url).scheme in ('http', 'https'):
-        resp = urllib_request.urlopen(url)
+        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11'  # noqa: E501
+        headers = {'User-Agent': user_agent}
+        req = urllib_request.Request(url, None, headers)
+        resp = urllib_request.urlopen(req)
         encoding = resp.headers.get('content-encoding', 'plain')
         data = resp.read()
         if encoding == 'gzip':

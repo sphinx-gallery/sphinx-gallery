@@ -12,6 +12,7 @@ import sphinx
 from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
                             sphinx_compatibility, py_source_parser)
 from sphinx_gallery.scrapers import _import_matplotlib
+from sphinx_gallery.utils import _get_image
 
 
 def pytest_report_header(config, startdir):
@@ -148,9 +149,6 @@ def req_mpl():
 @pytest.fixture(scope='session')
 def req_pil():
     try:
-        from PIL import Image
-    except ImportError:
-        try:
-            import Image
-        except ImportError:
-            pytest.skip('Test requires pillow')
+        _get_image()
+    except RuntimeError:
+        pytest.skip('Test requires pillow')

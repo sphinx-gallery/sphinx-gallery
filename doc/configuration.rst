@@ -46,6 +46,7 @@ Some options can also be set or overridden on a file-by-file basis:
 
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
+- ``# sphinx_gallery_thumbnail_path`` (:ref:`providing_thumbnail`)
 
 See also :ref:`removing_config_comments` to hide these comments from the
 rendered examples.
@@ -668,6 +669,26 @@ to use the 2nd figure created as the thumbnail::
 The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
 :ref:`sphx_glr_auto_examples_plot_4_choose_thumbnail.py` for an example
 of this functionality.
+
+
+.. _providing_thumbnail:
+
+Providing a figure for the thumbnail image
+==========================================
+
+An arbitrary image can be provided to serve as a thumbnail image. To provide a
+figure for the thumbnail image, add a comment to the example script to specify
+the path to the figure you would like to use as the thumbnail. For example, the
+following defines that the figure ``demo.png`` in the folder ``_static/``
+should be used to create the thumbnail::
+
+    # sphinx_gallery_thumbnail_path = ``_static/demo.png``
+
+Note that ``sphinx_gallery_thumbnail_number`` overrules
+``sphinx_gallery_thumbnail_path``. See
+:ref:`sphx_glr_auto_examples_plot_4b_provide_thumbnail.py` for an example of
+this functionality.
+
 
 .. _binder_links:
 

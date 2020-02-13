@@ -15,12 +15,7 @@ import os
 from shutil import move, copyfile
 
 
-def scale_image(in_fname, out_fname, max_width, max_height):
-    """Scales an image with the same aspect ratio centered in an
-       image box with the given max_width and max_height
-       if in_fname == out_fname the image can only be scaled down
-    """
-    # local import to avoid testing dependency on PIL:
+def _get_image():
     try:
         from PIL import Image
     except ImportError as exc:  # capture the error for the modern way
@@ -30,6 +25,16 @@ def scale_image(in_fname, out_fname, max_width, max_height):
             raise RuntimeError('Could not import pillow, which is required '
                                'to rescale images (e.g., for thumbnails): %s'
                                % (exc,))
+    return Image
+
+
+def scale_image(in_fname, out_fname, max_width, max_height):
+    """Scales an image with the same aspect ratio centered in an
+       image box with the given max_width and max_height
+       if in_fname == out_fname the image can only be scaled down
+    """
+    # local import to avoid testing dependency on PIL:
+    Image = _get_image()
     img = Image.open(in_fname)
     width_in, height_in = img.size
     scale_w = max_width / float(width_in)
