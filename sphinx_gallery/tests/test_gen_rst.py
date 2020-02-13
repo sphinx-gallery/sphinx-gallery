@@ -493,6 +493,23 @@ def test_thumbnail_number(test_str):
     assert file_conf == {'thumbnail_number': 2}
 
 
+@pytest.mark.parametrize('test_str', [
+    "# sphinx_gallery_thumbnail_path= '_static/demo.png'",
+    "# sphinx_gallery_thumbnail_path='_static/demo.png'",
+    "#sphinx_gallery_thumbnail_path = '_static/demo.png'",
+    "    # sphinx_gallery_thumbnail_path='_static/demo.png'"])
+def test_thumbnail_path(test_str):
+    # which plot to show as the thumbnail image
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+        f.write('\n'.join(['"Docstring"',
+                           test_str]))
+    try:
+        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
+    finally:
+        os.remove(f.name)
+    assert file_conf == {'thumbnail_path': '_static/demo.png'}
+
+
 def test_zip_notebooks(gallery_conf):
     """Test generated zipfiles are not corrupt."""
     gallery_conf.update(examples_dir='examples')
