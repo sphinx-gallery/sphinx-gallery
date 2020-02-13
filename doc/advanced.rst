@@ -330,3 +330,13 @@ the ``reset_modules`` configuration key. For the function defined above::
           standard behavior that users will experience when manually running
           examples themselves is discouraged due to the inconsistency
           that results between the rendered examples and local outputs.
+
+Using (only) Sphinx-gallery styles
+==================================
+
+If you just want to make use of sphinx-gallery CSS files, instead of using
+the ``sphinx_gallery.gen_gallery`` extension, you can use in ``conf.py``::
+
+    extensions = ['sphinx_gallery.load_style']
+
+This will only cause the ``gallery.css`` file to be added to your build.
