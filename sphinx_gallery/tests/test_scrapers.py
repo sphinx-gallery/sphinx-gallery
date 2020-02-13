@@ -8,6 +8,7 @@ from sphinx_gallery.gen_gallery import _complete_gallery_conf
 from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SINGLE_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
                                      save_figures, _KNOWN_IMG_EXTS)
+from sphinx_gallery.utils import _get_image
 
 
 @pytest.fixture(scope='function')
@@ -62,7 +63,7 @@ def test_save_matplotlib_figures(gallery_conf, ext, req_mpl, req_pil):
 
 def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     """Test file naming when saving figures. Requires mayavi."""
-    from PIL import Image
+    Image = _get_image()
     try:
         from mayavi import mlab
     except ImportError:

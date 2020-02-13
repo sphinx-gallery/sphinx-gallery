@@ -251,25 +251,20 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
     # read specification of the figure to display as thumbnail from main text
     thumbnail_number = file_conf.get('thumbnail_number', None)
     thumbnail_path = file_conf.get('thumbnail_path', None)
-
     # thumbnail_number has priority.
     if thumbnail_number is None and thumbnail_path is None:
-
         # If no number AND no path, set to default thumbnail_number
         thumbnail_number = 1
-
-    elif thumbnail_number is None:
-        image_path_template = os.path.join(
-                gallery_conf['src_dir'], thumbnail_path)
-
+    if thumbnail_number is None:
+        image_path = os.path.join(gallery_conf['src_dir'], thumbnail_path)
     else:
         if not isinstance(thumbnail_number, int):
             raise TypeError(
                 'sphinx_gallery_thumbnail_number setting is not a number, '
                 'got %r' % (thumbnail_number,))
-
-    thumbnail_image_path, ext = _find_image_ext(image_path_template,
-                                                thumbnail_number)
+        image_path = image_path_template.format(thumbnail_number)
+    del thumbnail_number, thumbnail_path, image_path_template
+    thumbnail_image_path, ext = _find_image_ext(image_path)
 
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir,

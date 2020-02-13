@@ -193,10 +193,8 @@ class ImagePathIterator(object):
 _KNOWN_IMG_EXTS = ('png', 'svg', 'jpg')  # XXX add gif next
 
 
-def _find_image_ext(path, number=None):
+def _find_image_ext(path):
     """Find an image, tolerant of different file extensions."""
-    if number is not None:
-        path = path.format(number)
     path = os.path.splitext(path)[0]
     for ext in _KNOWN_IMG_EXTS:
         this_path = '%s.%s' % (path, ext)

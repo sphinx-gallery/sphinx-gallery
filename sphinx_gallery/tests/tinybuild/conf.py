@@ -50,3 +50,4 @@ sphinx_gallery_conf = {
 }
 nitpicky = True
 highlight_language = 'python3'
+html_static_path = ['_static']

@@ -16,7 +16,7 @@ import sphinx_gallery.docs_resolv as sg
 
 def test_embed_code_links_get_data():
     """Test that we can get data for code links."""
-    sg._get_data('http://docs.scipy.org/doc/numpy/reference')
+    sg._get_data('https://numpy.org/doc/1.18/reference')
     sg._get_data('http://scikit-learn.org/stable/')  # GZip
 
 
