@@ -29,8 +29,8 @@ import matplotlib.pyplot as plt
 
 #############################################
 # You can separate blocks using either a single line of ``#``'s (>=20 columns)
-# or ``#%%``. For compatibility reasons ``# %%`` (with a space) can also be used
-# but we recommend only using ``#%%`` for consistency. All future 
+# or ``#%%``. For compatibility reasons ``# %%`` (with a space) can also be used.
+# We recommend consistently using either ``# %%`` or ``#%%``. All future 
 # 'block splitters' used in the source ``.py`` document will be ``#%%``.
 
 def dummy():
