@@ -45,8 +45,9 @@ Jupyter Notebook for each example that is built).
 
 You can embed rST in your Python examples by including a line of  >= 20 ``#``
 symbols or ``#%%``. For compatibility reasons, ``# %%`` (with a space) can also
-be used but ``#%%`` is recommended for consistency. If using ``#``'s, we
-recommend using 79 ``#``'s, like this::
+be used but it is recommended to consistently use either ``#%%`` or ``# %%`` for
+all examples in the gallery. If using ``#``'s, we recommend using 79 ``#``'s,
+like this::
 
   ###############################################################################
 
