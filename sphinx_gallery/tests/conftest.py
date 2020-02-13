@@ -179,7 +179,7 @@ def conf_file(request):
 class SphinxAppWrapper(object):
     """Wrapper for sphinx.application.Application.
 
-    This allows to control when the sphinx application is initialized, since
+    This allows control over when the sphinx application is initialized, since
     part of the sphinx-gallery build is done in
     sphinx.application.Application.__init__ and the remainder is done in
     sphinx.application.Application.build.
