@@ -243,18 +243,33 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
-    # read specification of the figure to display as thumbnail from main text
-    thumbnail_number = file_conf.get('thumbnail_number', 1)
-    if not isinstance(thumbnail_number, int):
-        raise TypeError(
-            'sphinx_gallery_thumbnail_number setting is not a number, '
-            'got %r' % (thumbnail_number,))
-    thumbnail_image_path, ext = _find_image_ext(image_path_template,
-                                                thumbnail_number)
 
-    thumb_dir = os.path.join(os.path.dirname(thumbnail_image_path), 'thumb')
+    thumb_dir = os.path.join(os.path.dirname(image_path_template), 'thumb')
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
+
+    # read specification of the figure to display as thumbnail from main text
+    thumbnail_number = file_conf.get('thumbnail_number', None)
+    thumbnail_path = file_conf.get('thumbnail_path', None)
+
+    # thumbnail_number has priority.
+    if thumbnail_number is None and thumbnail_path is None:
+
+        # If no number AND no path, set to default thumbnail_number
+        thumbnail_number = 1
+
+    elif thumbnail_number is None:
+        image_path_template = os.path.join(
+                gallery_conf['src_dir'], thumbnail_path)
+
+    else:
+        if not isinstance(thumbnail_number, int):
+            raise TypeError(
+                'sphinx_gallery_thumbnail_number setting is not a number, '
+                'got %r' % (thumbnail_number,))
+
+    thumbnail_image_path, ext = _find_image_ext(image_path_template,
+                                                thumbnail_number)
 
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir,
