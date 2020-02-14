@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 # text blocks only shows as a new lines between text, in the rendered output.
 
 #############################################
-# You can separate blocks using either a single line of ``#``'s (>=20 columns)
+# You can separate blocks using either a single line of ``#``'s (>=20 columns),
 # ``#%%``, or ``# %%``. For consistency, it is recommend that you use only one
 # of the above three options in your project. All future 'block splitters' used
 # in the sphinx-gallery source ``.py`` documents will be ``#%%``.
