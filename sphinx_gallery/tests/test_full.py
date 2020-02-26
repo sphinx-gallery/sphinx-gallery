@@ -224,8 +224,10 @@ def test_embed_links_and_styles(sphinx_app):
     assert re.search(r'"sphx-glr-backref-module-\S*"', lines) is None
     assert 'class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-function"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">identify_names</span></a>' in lines  # noqa: E501
     # gh-587: np.random.RandomState links properly
-    assert '.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class"><span class="n">np</span>' in lines  # noqa: E501
-    assert '.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>' in lines  # noqa: E501
+    # NumPy has had this linked as numpy.random.RandomState and
+    # numpy.random.mtrand.RandomState so we need regex...
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class"><span class="n">np</span>', lines) is not None  # noqa: E501
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>', lines) is not None  # noqa: E501
     # gh-587: methods of classes in the module currently being documented
     # instance
     assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>' in lines  # noqa: E501
