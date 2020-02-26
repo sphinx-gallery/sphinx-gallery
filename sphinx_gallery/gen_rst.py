@@ -21,7 +21,7 @@ import codecs
 from functools import partial
 import gc
 import pickle
-import imp
+import importlib
 from io import StringIO
 import os
 import re
@@ -656,7 +656,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     # for in example scikit-learn if the example uses multiprocessing.
     # Here we create a new __main__ module, and temporarily change
     # sys.modules when running our example
-    fake_main = imp.new_module("__main__")
+    fake_main = importlib.util.module_from_spec(
+        importlib.util.spec_from_loader('__main__', None))
     example_globals = fake_main.__dict__
 
     example_globals.update({
