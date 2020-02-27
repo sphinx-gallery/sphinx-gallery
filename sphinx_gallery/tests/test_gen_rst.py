@@ -551,7 +551,7 @@ def test_rst_example(gallery_conf):
 @pytest.fixture(scope='function')
 def script_vars(tmpdir):
     fake_main = importlib.util.module_from_spec(
-        importlib.util.spec_from_loader('__main__'))
+        importlib.util.spec_from_loader('__main__', None))
     fake_main.__dict__.update({'__doc__': ''})
     script_vars = {
         "execute_script": True,
