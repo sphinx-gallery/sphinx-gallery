@@ -24,7 +24,7 @@ from sphinx_gallery.utils import _get_image, scale_image
 
 import pytest
 
-N_TOT = 5
+N_TOT = 6
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 14 + N_TOT
@@ -92,7 +92,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="5"' in contents
+    assert 'tests="%d"' % (N_TOT,) in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
@@ -224,8 +224,10 @@ def test_embed_links_and_styles(sphinx_app):
     assert re.search(r'"sphx-glr-backref-module-\S*"', lines) is None
     assert 'class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-function"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">identify_names</span></a>' in lines  # noqa: E501
     # gh-587: np.random.RandomState links properly
-    assert '.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class"><span class="n">np</span>' in lines  # noqa: E501
-    assert '.html#numpy.random.RandomState" title="numpy.random.RandomState" class="sphx-glr-backref-module-numpy-random sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>' in lines  # noqa: E501
+    # NumPy has had this linked as numpy.random.RandomState and
+    # numpy.random.mtrand.RandomState so we need regex...
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class"><span class="n">np</span>', lines) is not None  # noqa: E501
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>', lines) is not None  # noqa: E501
     # gh-587: methods of classes in the module currently being documented
     # instance
     assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>' in lines  # noqa: E501
@@ -260,6 +262,11 @@ def test_embed_links_and_styles(sphinx_app):
                  r'This warning should show up in the output.*')
     assert re.match(want_warn, lines, re.DOTALL) is not None
     sys.stdout.write(lines)
+
+    example_file = op.join(examples_dir, 'plot_pickle.html')
+    with codecs.open(example_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'joblib.Parallel.html' in lines
 
 
 def test_backreferences(sphinx_app):

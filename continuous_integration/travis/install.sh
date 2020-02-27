@@ -9,7 +9,7 @@
 set -e
 
 if [ "$DISTRIB" == "conda" ]; then
-    export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn flake8 ${CONDA_PKGS}"
+    export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn joblib flake8 ${CONDA_PKGS}"
     export PIP_DEPENDENCIES="sphinx_rtd_theme"
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
         export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk mayavi ipython"
@@ -26,7 +26,7 @@ elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
     pip install https://api.github.com/repos/cython/cython/zipball/master
     pip install --no-use-pep517 numpy
-    pip install . sphinx pytest-cov
+    pip install . sphinx joblib pytest-cov
 elif [ "$DISTRIB" == "minimal" ]; then
     pip install . pytest pytest-cov
 elif [ "$DISTRIB" == "ubuntu" ]; then

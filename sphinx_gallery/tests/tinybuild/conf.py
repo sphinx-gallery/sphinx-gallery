@@ -32,6 +32,7 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'matplotlib': ('https://matplotlib.org/', None),
+    'joblib': ('https://joblib.readthedocs.io/en/latest', None),
 }
 sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery',),
