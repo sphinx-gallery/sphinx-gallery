@@ -8,7 +8,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import ast
 import codecs
-import imp
+import importlib
 import io
 import tempfile
 import re
