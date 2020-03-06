@@ -65,7 +65,7 @@ DEFAULT_GALLERY_CONF = {
     'junit': '',
     'log_level': {'backreference_missing': 'warning'},
     'inspect_global_variables': True,
-    'ignore_repr_classes': (),
+    'ignore_repr_classes': r'',
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')

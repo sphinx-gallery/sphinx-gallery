@@ -40,7 +40,7 @@ file:
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
-- ``capture_repr`` (:ref:`capture_repr`)
+- ``capture_repr``, ``ignore_repr_classes`` (:ref:`capture_repr`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -984,7 +984,7 @@ tuple, in order of preference. The representation methods currently supported
 are:
 
 * ``__repr__`` - returns the official string representation of an object. This
-  is what is returned when your Python shell evaluates an expression. 
+  is what is returned when your Python shell evaluates an expression.
 * ``__str__`` - returns a string containing a nicely printable representation
   of an object. This is what is used when you ``print()`` an object or pass it
   to ``format()``.
@@ -1045,7 +1045,7 @@ method which would thus be captured. You can prevent this by:
 
 * add ``plt.show()`` (which does not return anything) to the end of your
   code block. For example::
-  
+
     import matplotlib.pyplot as plt
 
     plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
@@ -1055,3 +1055,23 @@ The unwanted string output will not occur if ``'capture_repr'`` is an empty
 tuple or does not contain ``__repr__`` or ``__str__``.
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
+
+Prevent capture of certain classes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you wish to capture a representation of the last expression of each code
+blocks **unless** the last expression is of a certain class, you can use
+``'ignore_repr_classes'``. ``'ignore_repr_classes'`` is by default an empty raw
+string (``r''``), meaning no classes are ignored. To exclude specific class(es)
+from being captured, ``'ignore_repr_classes'`` can be set to a regular
+expression matching the name of the class to be excluded.
+
+For example, the following configuration would capture the ``__repr__`` of the
+last expression of each code block unless the last expression is of the class,
+or a subclass of, 'matplotlib.text' *or* 'matplotlib.axes'::
+
+        sphinx_gallery_conf = {
+            ...
+            'capture_repr': ('__repr__'),
+            'ignore_repr_classes': r'matplotlib.text|matplotlib.axes',
+        }

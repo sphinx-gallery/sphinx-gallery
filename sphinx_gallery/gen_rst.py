@@ -540,7 +540,9 @@ def execute_code_block(compiler, block, example_globals,
 
         last_repr = None
         repr_meth = None
-        ignore_repr = isinstance(___, gallery_conf['ignore_repr_classes'])
+        ignore_repr = re.search(
+            gallery_conf['ignore_repr_classes'], str(type(___))
+        )
         if gallery_conf['capture_repr'] != () and is_last_expr and not ignore_repr:
             for meth in gallery_conf['capture_repr']:
                 try:
