@@ -47,11 +47,6 @@ def _import_matplotlib():
     return matplotlib, plt
 
 
-# eventually it would be nice not to have to require MPL e.g. for PNG-based
-# scrapers, but for now we need to do it to ensure we get Agg
-_import_matplotlib()
-
-
 def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     """Scrape Matplotlib images.
 
@@ -198,10 +193,8 @@ class ImagePathIterator(object):
 _KNOWN_IMG_EXTS = ('png', 'svg', 'jpg')  # XXX add gif next
 
 
-def _find_image_ext(path, number=None):
+def _find_image_ext(path):
     """Find an image, tolerant of different file extensions."""
-    if number is not None:
-        path = path.format(number)
     path = os.path.splitext(path)[0]
     for ext in _KNOWN_IMG_EXTS:
         this_path = '%s.%s' % (path, ext)

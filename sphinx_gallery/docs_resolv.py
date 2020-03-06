@@ -30,7 +30,10 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 def _get_data(url):
     """Get data over http(s) or from a local file."""
     if urllib_parse.urlparse(url).scheme in ('http', 'https'):
-        resp = urllib_request.urlopen(url)
+        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11'  # noqa: E501
+        headers = {'User-Agent': user_agent}
+        req = urllib_request.Request(url, None, headers)
+        resp = urllib_request.urlopen(req)
         encoding = resp.headers.get('content-encoding', 'plain')
         data = resp.read()
         if encoding == 'gzip':
@@ -176,18 +179,28 @@ class SphinxDocLinkResolver(object):
         sindex = get_data(searchindex_url, gallery_dir)
         self._searchindex = js_index.loads(sindex)
 
-    def _get_link(self, cobj):
-        """Get a valid link, False if not found."""
-        fullname = cobj['module_short'] + '.' + cobj['name']
+    def _get_link_type(self, cobj):
+        """Get a valid link and type_, False if not found."""
+        first, second = cobj['module_short'], cobj['name']
+        match = None
         try:
-            value = self._searchindex['objects'][cobj['module_short']]
-            match = value[cobj['name']]
+            match = self._searchindex['objects'][first][second]
         except KeyError:
-            link = False
+            pass
+        if match is None and '.' in second:  # possible class attribute
+            first, second = second.split('.', 1)
+            first = '.'.join([cobj['module_short'], first])
+            try:
+                match = self._searchindex['objects'][first][second]
+            except KeyError:
+                pass
+        if match is None:
+            link = type_ = None
         else:
             fname_idx = match[0]
             objname_idx = str(match[1])
             anchor = match[3]
+            type_ = self._searchindex['objtypes'][objname_idx]
 
             fname = self._searchindex['filenames'][fname_idx]
             # In 1.5+ Sphinx seems to have changed from .rst.html to only
@@ -200,6 +213,7 @@ class SphinxDocLinkResolver(object):
             else:
                 link = posixpath.join(self.doc_url, fname)
 
+            fullname = '.'.join([first, second])
             if anchor == '':
                 anchor = fullname
             elif anchor == '-':
@@ -208,9 +222,9 @@ class SphinxDocLinkResolver(object):
 
             link = link + '#' + anchor
 
-        return link
+        return link, type_
 
-    def resolve(self, cobj, this_url):
+    def resolve(self, cobj, this_url, return_type=False):
         """Resolve the link to the documentation, returns None if not found
 
         Parameters
@@ -224,25 +238,23 @@ class SphinxDocLinkResolver(object):
         this_url: str
             URL of the current page. Needed to construct relative URLs
             (only used if relative=True in constructor).
+        return_type : bool
+            If True, return the type as well.
 
         Returns
         -------
         link : str or None
             The link (URL) to the documentation.
+        type_ : str
+            The type. Only returned if return_type is True.
         """
         full_name = cobj['module_short'] + '.' + cobj['name']
-        link = self._link_cache.get(full_name, None)
-        if link is None:
+        if full_name not in self._link_cache:
             # we don't have it cached
-            link = self._get_link(cobj)
-            # cache it for the future
-            self._link_cache[full_name] = link
+            self._link_cache[full_name] = self._get_link_type(cobj)
+        link, type_ = self._link_cache[full_name]
 
-        if link is False or link is None:
-            # failed to resolve
-            return None
-
-        if self.relative:
+        if self.relative and link is not None:
             link = os.path.relpath(link, start=this_url)
             if self._is_windows:
                 # replace '\' with '/' so it on the web
@@ -251,7 +263,7 @@ class SphinxDocLinkResolver(object):
             # for some reason, the relative link goes one directory too high up
             link = link[3:]
 
-        return link
+        return (link, type_) if return_type else link
 
 
 def _handle_http_url_error(e, msg='fetching'):
@@ -261,6 +273,12 @@ def _handle_http_url_error(e, msg='fetching'):
         error_msg = '%s: %s' % (msg, e.reason)
     logger.warning('The following %s has occurred %s' % (
         type(e).__name__, error_msg))
+
+
+def _sanitize_css_class(s):
+    for x in '~!@$%^&*()+=,./\';:"?><[]\\{}|`#':
+        s = s.replace(x, '-')
+    return s
 
 
 def _embed_code_links(app, gallery_conf, gallery_dir):
@@ -284,7 +302,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                                     gallery_dir))
 
     # patterns for replacement
-    link_pattern = ('<a href="%s" title="View documentation for %s">%s</a>')
+    link_pattern = (
+        '<a href="{link}" title="{title}" class="{css_class}">{text}</a>')
     orig_pattern = '<span class="n">%s</span>'
     period = '<span class="o">.</span>'
 
@@ -304,25 +323,29 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         subpath = dirpath[len(html_gallery_dir) + 1:]
         pickle_fname = os.path.join(src_gallery_dir, subpath,
                                     fname[:-5] + '_codeobj.pickle')
+        if not os.path.exists(pickle_fname):
+            continue
 
-        if os.path.exists(pickle_fname):
-            # we have a pickle file with the objects to embed links for
-            with open(pickle_fname, 'rb') as fid:
-                example_code_obj = pickle.load(fid)
-            fid.close()
-            str_repl = {}
-            # generate replacement strings with the links
-            for name, cobj in example_code_obj.items():
+        # we have a pickle file with the objects to embed links for
+        with open(pickle_fname, 'rb') as fid:
+            example_code_obj = pickle.load(fid)
+        # generate replacement strings with the links
+        str_repl = {}
+        for name in sorted(example_code_obj):
+            cobjs = example_code_obj[name]
+            # possible names from identify_names, which in turn gets
+            # possibilites from NameFinder.get_mapping
+            link = type_ = None
+            for cobj in cobjs:
                 for modname in (cobj['module_short'], cobj['module']):
                     this_module = modname.split('.')[0]
                     cname = cobj['name']
 
                     # Try doc resolvers first
-                    link = None
                     if this_module in doc_resolvers:
                         try:
-                            link = doc_resolvers[this_module].resolve(
-                                cobj, full_fname)
+                            link, type_ = doc_resolvers[this_module].resolve(
+                                cobj, full_fname, return_type=True)
                         except (HTTPError, URLError) as e:
                             _handle_http_url_error(
                                 e, msg='resolving %s.%s' % (modname, cname))
@@ -342,33 +365,51 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             # only python domain
                             if key.startswith('py') and want in value:
                                 link = value[want][2]
+                                type_ = key
                                 break
 
+                    # differentiate classes from instances
+                    is_instance = (type_ is not None and
+                                   'py:class' in type_ and
+                                   not cobj['is_class'])
+
                     if link is not None:
-                        parts = name.split('.')
+                        # Add CSS classes
                         name_html = period.join(orig_pattern % part
-                                                for part in parts)
+                                                for part in name.split('.'))
                         full_function_name = '%s.%s' % (modname, cname)
-                        str_repl[name_html] = link_pattern % (
-                            link, full_function_name, name_html)
+                        css_class = ("sphx-glr-backref-module-" +
+                                     _sanitize_css_class(modname))
+                        if type_ is not None:
+                            css_class += (" sphx-glr-backref-type-" +
+                                          _sanitize_css_class(type_))
+                        if is_instance:
+                            css_class += " sphx-glr-backref-instance"
+                        str_repl[name_html] = link_pattern.format(
+                            link=link, title=full_function_name,
+                            css_class=css_class, text=name_html)
                         break  # loop over possible module names
 
-            # do the replacement in the html file
+                if link is not None:
+                    break  # loop over cobjs
 
-            # ensure greediness
-            names = sorted(str_repl, key=len, reverse=True)
-            regex_str = '|'.join(re.escape(name) for name in names)
-            regex = re.compile(regex_str)
+        # do the replacement in the html file
 
-            def substitute_link(match):
-                return str_repl[match.group()]
+        # ensure greediness
+        names = sorted(str_repl, key=len, reverse=True)
+        regex_str = '|'.join(re.escape(name) for name in names)
+        regex = re.compile(regex_str)
 
-            if len(str_repl) > 0:
-                with codecs.open(full_fname, 'r', 'utf-8') as fid:
-                    lines_in = fid.readlines()
-                with codecs.open(full_fname, 'w', 'utf-8') as fid:
-                    for line in lines_in:
-                        fid.write(regex.sub(substitute_link, line))
+        def substitute_link(match):
+            return str_repl[match.group()]
+
+        if len(str_repl) > 0:
+            with codecs.open(full_fname, 'r', 'utf-8') as fid:
+                lines_in = fid.readlines()
+            with codecs.open(full_fname, 'w', 'utf-8') as fid:
+                for line in lines_in:
+                    line_out = regex.sub(substitute_link, line)
+                    fid.write(line_out)
 
 
 def embed_code_links(app, exception):

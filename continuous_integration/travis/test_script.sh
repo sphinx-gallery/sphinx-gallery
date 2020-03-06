@@ -6,7 +6,7 @@
 
 set -e
 
-pytest sphinx_gallery -vv
+pytest sphinx_gallery -vv  --tb=short
 cd doc
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
     make SPHINXOPTS= html-noplot

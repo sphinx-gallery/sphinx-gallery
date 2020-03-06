@@ -27,6 +27,5 @@ every module.
    docs_resolv
    notebook
    downloads
-   docs_resolv
    sorting
    binder

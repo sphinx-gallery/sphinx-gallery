@@ -25,11 +25,14 @@ from .utils import _replace_md5
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
-from .scrapers import _scraper_dict, _reset_dict
+from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
 from .binder import copy_binder_files
+
+
+_KNOWN_CSS = ('gallery', 'gallery-binder', 'gallery-dataframe')
 
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
@@ -66,6 +69,7 @@ DEFAULT_GALLERY_CONF = {
     'log_level': {'backreference_missing': 'warning'},
     'inspect_global_variables': True,
     'ignore_repr_classes': r'',
+    'css': _KNOWN_CSS,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -154,6 +158,19 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             raise ValueError('Scraper %r was not callable' % (scraper,))
     gallery_conf['image_scrapers'] = tuple(scrapers)
     del scrapers
+    # Here we try to set up matplotlib but don't raise an error,
+    # we will raise an error later when we actually try to use it
+    # (if we do so) in scrapers.py.
+    # In principle we could look to see if there is a matplotlib scraper
+    # in our scrapers list, but this would be backward incompatible with
+    # anyone using or relying on our Agg-setting behavior (e.g., for some
+    # custom matplotlib SVG scraper as in our docs).
+    # Eventually we can make this a config var like matplotlib_agg or something
+    # if people need us not to set it to Agg.
+    try:
+        _import_matplotlib()
+    except (ImportError, ValueError):
+        pass
 
     # deal with resetters
     resetters = gallery_conf['reset_modules']
@@ -189,6 +206,17 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     if (not isinstance(backref, str)) and (backref is not None):
         raise ValueError("The 'backreferences_dir' parameter must be of type"
                          "str or None, found type %s" % type(backref))
+
+    if not isinstance(gallery_conf['css'], (list, tuple)):
+        raise TypeError('gallery_conf["css"] must be list or tuple, got %r'
+                        % (gallery_conf['css'],))
+    for css in gallery_conf['css']:
+        if css not in _KNOWN_CSS:
+            raise ValueError('Unknown css %r, must be one of %r'
+                             % (css, _KNOWN_CSS))
+        if gallery_conf['app'] is not None:  # can be None in testing
+            gallery_conf['app'].add_css_file(css + '.css')
+
     return gallery_conf
 
 
@@ -595,8 +623,6 @@ def setup(app):
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
-
-    app.add_css_file('gallery.css')
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)

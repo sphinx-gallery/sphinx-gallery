@@ -1,0 +1,10 @@
+sphinx>=1.8.3
+sphinx_rtd_theme
+pytest
+pytest-coverage
+numpy
+matplotlib
+pillow
+seaborn
+joblib
+flake8

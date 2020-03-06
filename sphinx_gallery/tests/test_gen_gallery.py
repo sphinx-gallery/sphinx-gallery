@@ -8,105 +8,16 @@ Test Sphinx-Gallery
 from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
-from contextlib import contextmanager
-from io import StringIO
 import os
 import sys
 import re
-import shutil
 
 import pytest
 
-from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
-from sphinx.util.docutils import docutils_namespace
-
-from sphinx_gallery import sphinx_compatibility
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
                                         collect_gallery_files,
                                         write_computation_times)
-
-
-@pytest.fixture
-def conf_file(request):
-    try:
-        env = request.node.get_closest_marker('conf_file')
-    except AttributeError:  # old pytest
-        env = request.node.get_marker('conf_file')
-    kwargs = env.kwargs if env else {}
-    result = {
-        'content': "",
-    }
-    result.update(kwargs)
-
-    return result
-
-
-class SphinxAppWrapper(object):
-    """Wrapper for sphinx.application.Application.
-
-    This allows to control when the sphinx application is initialized, since
-    part of the sphinx-gallery build is done in
-    sphinx.application.Application.__init__ and the remainder is done in
-    sphinx.application.Application.build.
-
-    """
-
-    def __init__(self, srcdir, confdir, outdir, doctreedir, buildername,
-                 **kwargs):
-        self.srcdir = srcdir
-        self.confdir = confdir
-        self.outdir = outdir
-        self.doctreedir = doctreedir
-        self.buildername = buildername
-        self.kwargs = kwargs
-
-    def create_sphinx_app(self):
-        # Avoid warnings about re-registration, see:
-        # https://github.com/sphinx-doc/sphinx/issues/5038
-        with self.create_sphinx_app_context() as app:
-            pass
-        return app
-
-    @contextmanager
-    def create_sphinx_app_context(self):
-        with docutils_namespace():
-            app = Sphinx(self.srcdir, self.confdir, self.outdir,
-                         self.doctreedir, self.buildername, **self.kwargs)
-            sphinx_compatibility._app = app
-            yield app
-
-    def build_sphinx_app(self, *args, **kwargs):
-        with self.create_sphinx_app_context() as app:
-            # building should be done in the same docutils_namespace context
-            app.build(*args, **kwargs)
-        return app
-
-
-@pytest.fixture
-def sphinx_app_wrapper(tmpdir, conf_file):
-    _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
-    srcdir = os.path.join(str(tmpdir), "config_test")
-    shutil.copytree(_fixturedir, srcdir)
-    shutil.copytree(os.path.join(_fixturedir, "src"),
-                    os.path.join(str(tmpdir), "examples"))
-
-    base_config = """
-import os
-import sphinx_gallery
-extensions = ['sphinx_gallery.gen_gallery']
-exclude_patterns = ['_build']
-source_suffix = '.rst'
-master_doc = 'index'
-# General information about the project.
-project = u'Sphinx-Gallery <Tests>'\n\n
-"""
-    with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
-        conffile.write(base_config + conf_file['content'])
-
-    return SphinxAppWrapper(
-        srcdir, srcdir, os.path.join(srcdir, "_build"),
-        os.path.join(srcdir, "_build", "toctree"), "html", warning=StringIO())
 
 
 def test_default_config(sphinx_app_wrapper):
@@ -140,21 +51,31 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     assert build_warn == ''
 
 
-@pytest.mark.conf_file(content="""
-sphinx_gallery_conf = {
-    'reset_modules': ('foo',),
-}""")
-def test_bad_reset_str(sphinx_app_wrapper):
-    with pytest.raises(ValueError, match='Unknown module resetter'):
+@pytest.mark.parametrize('err_class, err_match', [
+    pytest.param(ValueError, 'Unknown module resetter',
+                 id='Resetter unknown',
+                 marks=pytest.mark.conf_file(
+                     content="sphinx_gallery_conf={'reset_modules': ('f',)}")),
+    pytest.param(ValueError, 'Module resetter .* was not callab',
+                 id='Resetter not callable',
+                 marks=pytest.mark.conf_file(
+                     content="sphinx_gallery_conf={'reset_modules': (1.,),}")),
+])
+def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
+    with pytest.raises(err_class, match=err_match):
         sphinx_app_wrapper.create_sphinx_app()
 
 
-@pytest.mark.conf_file(content="""
-sphinx_gallery_conf = {
-    'reset_modules': (1.,),
-}""")
-def test_bad_reset_callable(sphinx_app_wrapper):
-    with pytest.raises(ValueError, match='Module resetter .* was not callab'):
+@pytest.mark.parametrize('err_class, err_match', [
+    pytest.param(ValueError, 'Unknown css', id='CSS str error',
+                 marks=pytest.mark.conf_file(
+                     content="sphinx_gallery_conf={'css': ('foo',)}")),
+    pytest.param(TypeError, 'must be list or tuple', id="CSS type error",
+                 marks=pytest.mark.conf_file(
+                     content="sphinx_gallery_conf={'css': 1.}")),
+])
+def test_bad_css(sphinx_app_wrapper, err_class, err_match):
+    with pytest.raises(err_class, match=err_match):
         sphinx_app_wrapper.create_sphinx_app()
 
 
@@ -331,7 +252,7 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
     collected_files = set(collect_gallery_files(dirs, gallery_conf))
     expected_files = set(
         [ap.strpath for ap in abs_paths
-         if re.search(r'one', ap.strpath) is None])
+         if re.search(r'one', os.path.basename(ap.strpath)) is None])
 
     assert collected_files == expected_files
 

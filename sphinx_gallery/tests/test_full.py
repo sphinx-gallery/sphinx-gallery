@@ -20,10 +20,11 @@ from numpy.testing import assert_allclose
 
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
+from sphinx_gallery.utils import _get_image, scale_image
 
 import pytest
 
-N_TOT = 5
+N_TOT = 6
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 14 + N_TOT
@@ -31,7 +32,7 @@ N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
 @pytest.fixture(scope='module')
-def sphinx_app(tmpdir_factory):
+def sphinx_app(tmpdir_factory, req_mpl, req_pil):
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
@@ -91,7 +92,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="5"' in contents
+    assert 'tests="%d"' % (N_TOT,) in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
@@ -143,6 +144,25 @@ def test_run_sphinx(sphinx_app):
     assert re.match(want, warning, re.DOTALL) is not None, warning
 
 
+def test_thumbnail_path(sphinx_app, tmpdir):
+    """Test sphinx_gallery_thumbnail_path."""
+    # Make sure our thumbnail matches what it should be
+    fname_orig = op.join(
+        sphinx_app.srcdir, '_static', 'demo.png')
+    fname_thumb = op.join(
+        sphinx_app.outdir, '_images',
+        'sphx_glr_plot_second_future_imports_thumb.png')
+    fname_new = str(tmpdir.join('new.png'))
+    scale_image(fname_orig, fname_new,
+                *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"])
+    Image = _get_image()
+    orig = np.asarray(Image.open(fname_thumb))
+    new = np.asarray(Image.open(fname_new))
+    assert new.shape == orig.shape
+    corr = np.corrcoef(new.ravel(), orig.ravel())[0, 1]
+    assert corr > 0.99
+
+
 def test_image_formats(sphinx_app):
     """Test Image format support."""
     generated_examples_dir = op.join(sphinx_app.outdir, 'auto_examples')
@@ -183,16 +203,41 @@ def test_embed_links_and_styles(sphinx_app):
     # ensure we've linked properly
     assert '#module-matplotlib.colors' in lines
     assert 'matplotlib.colors.is_color_like' in lines
+    assert 'class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-function">' in lines  # noqa: E501
     assert '#module-numpy' in lines
     assert 'numpy.arange.html' in lines
+    assert 'class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function">' in lines  # noqa: E501
     assert '#module-matplotlib.pyplot' in lines
     assert 'pyplot.html' in lines
-    assert 'matplotlib.figure.Figure.html#matplotlib.figure.Figure.tight_layout' in lines  # noqa
+    assert 'matplotlib.figure.Figure.html#matplotlib.figure.Figure.tight_layout' in lines  # noqa: E501
     assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
-    assert 'matplotlib_configuration_api.html#matplotlib.rcParams' in lines
+    assert 'matplotlib_configuration_api.html#matplotlib.RcParams' in lines
     assert 'stdtypes.html#list' in lines
     assert 'warnings.html#warnings.warn' in lines
     assert 'itertools.html#itertools.compress' in lines
+    assert 'numpy.ndarray.html' in lines
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.identify_names' in lines  # noqa: E501
+    # instances have an extra CSS class
+    assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a>' in lines  # noqa: E501
+    assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class"><span class="n">Figure</span></a>' in lines  # noqa: E501
+    # gh-587: no classes that are only marked as module without type
+    assert re.search(r'"sphx-glr-backref-module-\S*"', lines) is None
+    assert 'class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-function"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">identify_names</span></a>' in lines  # noqa: E501
+    # gh-587: np.random.RandomState links properly
+    # NumPy has had this linked as numpy.random.RandomState and
+    # numpy.random.mtrand.RandomState so we need regex...
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class"><span class="n">np</span>', lines) is not None  # noqa: E501
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>', lines) is not None  # noqa: E501
+    # gh-587: methods of classes in the module currently being documented
+    # instance
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>' in lines  # noqa: E501
+    # class
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">DummyClass</span>' in lines  # noqa: E501
+    # method
+    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass.run" title="sphinx_gallery.backreferences.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>' in lines  # noqa: E501
+    # property (Sphinx 2+ calls it a method rather than attribute, so regex)
+    regex = re.compile('sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.DummyClass.prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-(attribute|method)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>')  # noqa: E501
+    assert regex.search(lines) is not None
 
     try:
         import memory_profiler  # noqa, analysis:ignore
@@ -213,10 +258,15 @@ def test_embed_links_and_styles(sphinx_app):
     assert '.. code-block:: python3\n' in rst
 
     # warnings
-    want_warn = ('plot_numpy_matplotlib.py:35: RuntimeWarning: This'
-                 ' warning should show up in the output')
-    assert want_warn in lines
+    want_warn = (r'.*plot_numpy_matplotlib\.py:[0-9][0-9]: RuntimeWarning: '
+                 r'This warning should show up in the output.*')
+    assert re.match(want_warn, lines, re.DOTALL) is not None
     sys.stdout.write(lines)
+
+    example_file = op.join(examples_dir, 'plot_pickle.html')
+    with codecs.open(example_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'joblib.Parallel.html' in lines
 
 
 def test_backreferences(sphinx_app):
@@ -235,6 +285,20 @@ def test_backreferences(sphinx_app):
         lines = fid.read()
     assert 'NameFinder' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
+
+
+@pytest.mark.parametrize('rst_file, example_used_in', [
+    ('sphinx_gallery.backreferences.identify_names.examples', 'plot_numpy_matplotlib'),
+    ('sphinx_gallery.sorting.ExplicitOrder.examples', 'plot_second_future_imports'),
+])
+def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
+    """Test linking to mini-galleries using backreferences_dir."""
+    backref_dir = sphinx_app.srcdir
+    examples_rst = op.join(backref_dir, 'gen_modules', 'backreferences',
+                           rst_file)
+    with codecs.open(examples_rst, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert example_used_in in lines
 
 
 def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
@@ -317,7 +381,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
-    assert re.match('.*[0|1] added, [1|2|3|6|7|8] changed, 0 removed$.*',
+    assert re.match('.*[0|1] added, [1-9] changed, 0 removed$.*',
                     status, re.MULTILINE | re.DOTALL) is not None, lines
     want = ('.*executed 0 out of 1.*after excluding %s files.*based on MD5.*'
             % (N_GOOD,))

@@ -64,6 +64,31 @@ its reference
 it generated has the name ``sphx_glr_plot_0_sin_001.png``
 and its thumbnail is ``sphx_glr_plot_0_sin_thumb.png``
 
+You can also include part of a gallery script elsewhere in your documentation
+using the :rst:dir:`literalinclude` directive, in order to limit code duplication:
+
+
+.. code-block:: rst
+
+   .. literalinclude:: ../examples/plot_0_sin.py
+      :language: python
+      :start-after: # License: BSD 3 clause
+      :end-before: # To avoid matplotlib
+
+The above directive inserts the following block:
+
+.. literalinclude:: ../examples/plot_0_sin.py
+    :language: python
+    :start-after: # License: BSD 3 clause
+    :end-before: # To avoid matplotlib
+
+.. warning::
+
+   Using literalinclude is fragile and can break easily when examples are
+   changed (all the more when line numbers are used instead of ``start-after``
+   and  ``end-before``). Use with caution: linking directly to examples is
+   a more robust alternative.
+
 .. _custom_scraper:
 
 Write a custom image scraper
@@ -305,3 +330,13 @@ the ``reset_modules`` configuration key. For the function defined above::
           standard behavior that users will experience when manually running
           examples themselves is discouraged due to the inconsistency
           that results between the rendered examples and local outputs.
+
+Using (only) Sphinx-gallery styles
+==================================
+
+If you just want to make use of sphinx-gallery CSS files, instead of using
+the ``sphinx_gallery.gen_gallery`` extension, you can use in ``conf.py``::
+
+    extensions = ['sphinx_gallery.load_style']
+
+This will only cause the ``gallery.css`` file to be added to your build.

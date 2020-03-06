@@ -2,13 +2,13 @@ import os
 
 import pytest
 import numpy as np
-from PIL import Image
 
 import sphinx_gallery
 from sphinx_gallery.gen_gallery import _complete_gallery_conf
 from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SINGLE_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
                                      save_figures, _KNOWN_IMG_EXTS)
+from sphinx_gallery.utils import _get_image
 
 
 @pytest.fixture(scope='function')
@@ -29,7 +29,7 @@ class matplotlib_svg_scraper():
 
 
 @pytest.mark.parametrize('ext', ('png', 'svg'))
-def test_save_matplotlib_figures(gallery_conf, ext):
+def test_save_matplotlib_figures(gallery_conf, ext, req_mpl, req_pil):
     """Test matplotlib figure save."""
     if ext == 'svg':
         gallery_conf['image_scrapers'] = (matplotlib_svg_scraper(),)
@@ -61,8 +61,9 @@ def test_save_matplotlib_figures(gallery_conf, ext):
         assert os.path.isfile(fname)
 
 
-def test_save_mayavi_figures(gallery_conf):
+def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     """Test file naming when saving figures. Requires mayavi."""
+    Image = _get_image()
     try:
         from mayavi import mlab
     except ImportError:

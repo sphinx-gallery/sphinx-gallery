@@ -13,6 +13,7 @@ import ast
 import codecs
 import collections
 from html import escape
+import inspect
 import os
 import re
 import warnings
@@ -20,6 +21,19 @@ import warnings
 from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
+
+
+class DummyClass(object):
+    """Dummy class for testing method resolution."""
+
+    def run(self):
+        """Do nothing."""
+        pass
+
+    @property
+    def prop(self):
+        """Property."""
+        return 'Property'
 
 
 class NameFinder(ast.NodeVisitor):
@@ -60,38 +74,71 @@ class NameFinder(ast.NodeVisitor):
             self.visit(node)
 
     def get_mapping(self):
+        options = list()
         for name in self.accessed_names:
-            local_name = name.split('.', 1)[0]
-            remainder = name[len(local_name):]
-            class_attr = False
-            if local_name in self.imported_names:
-                # Join import path to relative path
-                full_name = self.imported_names[local_name] + remainder
-                yield name, full_name, class_attr
-            elif local_name in self.global_variables:
-                obj = self.global_variables[local_name]
-                if remainder and remainder[0] == '.':  # maybe meth or attr
-                    method = [remainder[1:]]
-                    class_attr = True
-                else:
-                    method = []
-                # Recurse through all levels of bases
-                classes = [obj.__class__]
-                offset = 0
-                while offset < len(classes):
-                    for base in classes[offset].__bases__:
-                        if base not in classes:
-                            classes.append(base)
-                    offset += 1
-                for cc in classes:
-                    module = cc.__module__.split('.')
-                    class_name = cc.__name__
-                    # a.b.C.meth could be documented as a.C.meth,
-                    # so go down the list
-                    for depth in range(len(module), 0, -1):
-                        full_name = '.'.join(
-                            module[:depth] + [class_name] + method)
-                        yield name, full_name, class_attr
+            local_name_split = name.split('.')
+            # first pass: by global variables and object inspection (preferred)
+            for split_level in range(len(local_name_split)):
+                local_name = '.'.join(local_name_split[:split_level + 1])
+                remainder = name[len(local_name):]
+                if local_name in self.global_variables:
+                    obj = self.global_variables[local_name]
+                    class_attr, method = False, []
+                    if remainder:
+                        for level in remainder[1:].split('.'):
+                            last_obj = obj
+                            # determine if it's a property
+                            prop = getattr(last_obj.__class__, level, None)
+                            if isinstance(prop, property):
+                                obj = last_obj
+                                class_attr, method = True, [level]
+                                break
+                            try:
+                                obj = getattr(obj, level)
+                            except AttributeError:
+                                break
+                            if inspect.ismethod(obj):
+                                obj = last_obj
+                                class_attr, method = True, [level]
+                                break
+                    del remainder
+                    is_class = inspect.isclass(obj)
+                    if is_class or class_attr:
+                        # Traverse all bases
+                        classes = [obj if is_class else obj.__class__]
+                        offset = 0
+                        while offset < len(classes):
+                            for base in classes[offset].__bases__:
+                                # "object" as a base class is not very useful
+                                if base not in classes and base is not object:
+                                    classes.append(base)
+                            offset += 1
+                    else:
+                        classes = [obj.__class__]
+                    for cc in classes:
+                        module = inspect.getmodule(cc)
+                        if module is not None:
+                            module = module.__name__.split('.')
+                            class_name = cc.__qualname__
+                            # a.b.C.meth could be documented as a.C.meth,
+                            # so go down the list
+                            for depth in range(len(module), 0, -1):
+                                full_name = '.'.join(
+                                    module[:depth] + [class_name] + method)
+                                options.append(
+                                    (name, full_name, class_attr, is_class))
+            # second pass: by import (can't resolve as well without doing
+            # some actions like actually importing the modules, so use it
+            # as a last resort)
+            for split_level in range(len(local_name_split)):
+                local_name = '.'.join(local_name_split[:split_level + 1])
+                remainder = name[len(local_name):]
+                if local_name in self.imported_names:
+                    full_name = self.imported_names[local_name] + remainder
+                    is_class = class_attr = False  # can't tell without import
+                    options.append(
+                        (name, full_name, class_attr, is_class))
+        return options
 
 
 def _from_import(a, b):
@@ -157,12 +204,13 @@ def identify_names(script_blocks, global_variables=None, node=''):
     names = list(finder.get_mapping())
     # Get matches from docstring inspection
     text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
-    names.extend((x, x, False) for x in re.findall(_regex, text))
+    names.extend((x, x, False, False) for x in re.findall(_regex, text))
     example_code_obj = collections.OrderedDict()  # order is important
-    fill_guess = dict()
-    for name, full_name, class_like in names:
-        if name in example_code_obj:
-            continue  # if someone puts it in the docstring and code
+    # Make a list of all guesses, in `_embed_code_links` we will break
+    # when we find a match
+    for name, full_name, class_like, is_class in names:
+        if name not in example_code_obj:
+            example_code_obj[name] = list()
         # name is as written in file (e.g. np.asarray)
         # full_name includes resolved import path (e.g. numpy.asarray)
         splitted = full_name.rsplit('.', 1 + class_like)
@@ -175,18 +223,12 @@ def identify_names(script_blocks, global_variables=None, node=''):
             assert not class_like
 
         module, attribute = splitted
+
         # get shortened module name
         module_short = _get_short_module_name(module, attribute)
         cobj = {'name': attribute, 'module': module,
-                'module_short': module_short}
-        if module_short is not None:
-            example_code_obj[name] = cobj
-        elif name not in fill_guess:
-            cobj['module_short'] = module
-            fill_guess[name] = cobj
-    for key, value in fill_guess.items():
-        if key not in example_code_obj:
-            example_code_obj[key] = value
+                'module_short': module_short or module, 'is_class': is_class}
+        example_code_obj[name].append(cobj)
     return example_code_obj
 
 

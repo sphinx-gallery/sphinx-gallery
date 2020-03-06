@@ -31,8 +31,8 @@ exclude_patterns = ['_build']
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'matplotlib': ('https://matplotlib.org/', None),
+    'joblib': ('https://joblib.readthedocs.io/en/latest', None),
 }
 sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery',),
@@ -51,3 +51,4 @@ sphinx_gallery_conf = {
 }
 nitpicky = True
 highlight_language = 'python3'
+html_static_path = ['_static']

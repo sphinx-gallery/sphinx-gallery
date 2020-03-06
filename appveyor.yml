@@ -6,7 +6,7 @@ environment:
 
   global:
     PYTHON: "C:\\conda"
-    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme"
+    CONDA_DEPENDENCIES: "numpy seaborn matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib"
     PIP_DEPENDENCIES: "ipython"
 
   matrix:
@@ -27,7 +27,7 @@ build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
   - python setup.py develop
-  - pytest sphinx_gallery
+  - pytest --tb=short sphinx_gallery
   # Build the docs
   - cd doc
   # The Makefile doesn't work directly on Windows PowerShell because of

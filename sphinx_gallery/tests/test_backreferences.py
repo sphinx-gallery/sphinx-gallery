@@ -67,15 +67,26 @@ def test_identify_names(unicode_sample):
     """Test name identification."""
     expected = {
         'os.path.join':
-            {'name': 'join', 'module': 'os.path', 'module_short': 'os.path'},
+            [{
+                'name': 'join',
+                'module': 'os.path',
+                'module_short': 'os.path',
+                'is_class': False,
+            }],
         'br.identify_names':
-            {'name': 'identify_names',
-             'module': 'sphinx_gallery.back_references',
-             'module_short': 'sphinx_gallery.back_references'},
+            [{
+                'name': 'identify_names',
+                'module': 'sphinx_gallery.back_references',
+                'module_short': 'sphinx_gallery.back_references',
+                'is_class': False,
+            }],
         'identify_names':
-            {'name': 'identify_names',
-             'module': 'sphinx_gallery.back_references',
-             'module_short': 'sphinx_gallery.back_references'}
+            [{
+                'name': 'identify_names',
+                'module': 'sphinx_gallery.back_references',
+                'module_short': 'sphinx_gallery.back_references',
+                'is_class': False,
+             }],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
     res = sg.identify_names(script_blocks)
@@ -95,12 +106,34 @@ This is an example.
 # \xc3\x9f
 from a.b import c
 import d as e
+import h.i
 print(c)
 e.HelloWorld().f.g
+h.i.j()
 """
-    expected = {'c': {'name': 'c', 'module': 'a.b', 'module_short': 'a.b'},
-                'e.HelloWorld': {'name': 'HelloWorld', 'module': 'd',
-                                 'module_short': 'd'}}
+    expected = {
+        'c':
+        [{
+            'name': 'c',
+            'module': 'a.b',
+            'module_short': 'a.b',
+            'is_class': False,
+        }],
+        'e.HelloWorld':
+        [{
+            'name': 'HelloWorld',
+            'module': 'd',
+            'module_short': 'd',
+            'is_class': False,
+        }],
+        'h.i.j':
+        [{
+            'name': 'j',
+            'module': 'h.i',
+            'module_short': 'h.i',
+            'is_class': False,
+        }],
+    }
 
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')
@@ -115,10 +148,11 @@ e.HelloWorld().f.g
 Title
 -----
 
-This example uses :func:`h.i`.
+This example uses :func:`k.l`.
 '''
 """ + code_str.split(b"'''")[-1]
-    expected['h.i'] = {u'module': u'h', u'module_short': u'h', u'name': u'i'}
+    expected['k.l'] = [{u'module': u'k', u'module_short': u'k', u'name': u'l',
+                        'is_class': False}]
 
     fname = tmpdir.join("indentify_names.py")
     fname.write(code_str, 'wb')

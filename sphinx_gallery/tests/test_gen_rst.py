@@ -8,6 +8,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import ast
 import codecs
+import importlib
 import io
 import tempfile
 import re
@@ -165,6 +166,7 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
 
 def test_rst_empty_code_block(gallery_conf, tmpdir):
     """Test that we can "execute" a code block containing only comments."""
+    gallery_conf.update(image_scrapers=())
     filename = str(tmpdir.join('temp.py'))
     with open(filename, 'w') as f:
         f.write('\n'.join(['"Docstring"',
@@ -202,6 +204,7 @@ Paragraph 1
 
 def test_script_vars_globals(gallery_conf, tmpdir):
     """Assert the global vars get stored."""
+    gallery_conf.update(image_scrapers=())
     filename = str(tmpdir.join('temp.py'))
     with open(filename, 'w') as f:
         f.write("""
@@ -310,8 +313,9 @@ def test_md5sums():
         os.remove(f.name)
 
 
-def test_fail_example(gallery_conf, log_collector):
+def test_fail_example(gallery_conf, log_collector, req_pil):
     """Test that failing examples are only executed until failing block."""
+    gallery_conf.update(image_scrapers=(), reset_modules=())
     gallery_conf.update(filename_pattern='raise.py')
 
     failing_code = CONTENT + ['#' * 79,
@@ -400,14 +404,14 @@ def _alpha_mpl_scraper(block, block_vars, gallery_conf):
     return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
-def test_custom_scraper_thumbnail_alpha(gallery_conf):
+def test_custom_scraper_thumbnail_alpha(gallery_conf, req_mpl_jpg):
     """Test that thumbnails without an alpha channel work w/custom scraper."""
     gallery_conf['image_scrapers'] = [_alpha_mpl_scraper]
     rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
     assert '.jpg' in rst
 
 
-def test_remove_config_comments(gallery_conf):
+def test_remove_config_comments(gallery_conf, req_pil):
     """Test the gallery_conf['remove_config_comments'] setting."""
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     assert '# sphinx_gallery_thumbnail_number = 1' in rst
@@ -417,7 +421,7 @@ def test_remove_config_comments(gallery_conf):
     assert '# sphinx_gallery_thumbnail_number = 1' not in rst
 
 
-def test_download_link_note_only_html(gallery_conf):
+def test_download_link_note_only_html(gallery_conf, req_pil):
     """Test html only directive for download_link."""
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     download_link_note = (".. only:: html\n\n"
@@ -447,8 +451,9 @@ def test_gen_dir_rst(gallery_conf, fakesphinxapp, ext):
         assert u"Óscar here" in out[0]
 
 
-def test_pattern_matching(gallery_conf, log_collector):
+def test_pattern_matching(gallery_conf, log_collector, req_pil):
     """Test if only examples matching pattern are executed."""
+    gallery_conf.update(image_scrapers=(), reset_modules=())
     gallery_conf.update(filename_pattern=re.escape(os.sep) + 'plot_0')
 
     code_output = ('\n Out:\n\n .. code-block:: none\n'
@@ -489,6 +494,23 @@ def test_thumbnail_number(test_str):
     assert file_conf == {'thumbnail_number': 2}
 
 
+@pytest.mark.parametrize('test_str', [
+    "# sphinx_gallery_thumbnail_path= '_static/demo.png'",
+    "# sphinx_gallery_thumbnail_path='_static/demo.png'",
+    "#sphinx_gallery_thumbnail_path = '_static/demo.png'",
+    "    # sphinx_gallery_thumbnail_path='_static/demo.png'"])
+def test_thumbnail_path(test_str):
+    # which plot to show as the thumbnail image
+    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+        f.write('\n'.join(['"Docstring"',
+                           test_str]))
+    try:
+        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
+    finally:
+        os.remove(f.name)
+    assert file_conf == {'thumbnail_path': '_static/demo.png'}
+
+
 def test_zip_notebooks(gallery_conf):
     """Test generated zipfiles are not corrupt."""
     gallery_conf.update(examples_dir='examples')
@@ -526,8 +548,24 @@ def test_rst_example(gallery_conf):
     assert "rst-class:: sphx-glr-timing" in rst
 
 
-def test_output_indentation(gallery_conf):
+@pytest.fixture(scope='function')
+def script_vars(tmpdir):
+    fake_main = importlib.util.module_from_spec(
+        importlib.util.spec_from_loader('__main__', None))
+    fake_main.__dict__.update({'__doc__': ''})
+    script_vars = {
+        "execute_script": True,
+        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
+        "src_file": __file__,
+        "memory_delta": [],
+        "fake_main": fake_main,
+    }
+    return script_vars
+
+
+def test_output_indentation(gallery_conf, script_vars):
     """Test whether indentation of code output is retained."""
+    gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
 
     test_string = r"\n".join([
@@ -537,16 +575,8 @@ def test_output_indentation(gallery_conf):
     ])
     code = "print('" + test_string + "')"
     code_block = ("code", code, 1)
-
-    script_vars = {
-        "execute_script": True,
-        "image_path_iterator": ImagePathIterator("temp.png"),
-        "src_file": __file__,
-        "memory_delta": [],
-    }
-
     output = sg.execute_code_block(
-        compiler, code_block, {}, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf
     )
     output_test_string = "\n".join(
         [line[4:] for line in output.strip().split("\n")[-3:]]
@@ -554,23 +584,15 @@ def test_output_indentation(gallery_conf):
     assert output_test_string == test_string.replace(r"\n", "\n")
 
 
-def test_empty_output_box(gallery_conf):
+def test_empty_output_box(gallery_conf, script_vars):
     """Tests that `print(__doc__)` doesn't produce an empty output box."""
+    gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
 
     code_block = ("code", "print(__doc__)", 1)
 
-    script_vars = {
-        "execute_script": True,
-        "image_path_iterator": ImagePathIterator("temp.png"),
-        "src_file": __file__,
-        "memory_delta": [],
-    }
-
-    example_globals = {'__doc__': ''}
-
     output = sg.execute_code_block(
-        compiler, code_block, example_globals, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf
     )
     assert output.isspace()
 
@@ -618,6 +640,13 @@ class repr_and_html_class():
 
 class_inst = repr_and_html_class()
 class_inst
+"""
+
+code_plt = """
+import matplotlib.pyplot as plt
+fig = plt.figure()
+plt.close('all')
+fig
 """
 
 html_out = """.. only:: builder_html
@@ -683,22 +712,17 @@ def _clean_output(output):
     pytest.param(('__repr__', '_repr_html_'), code_repr_and_html,
                  'This is the __repr__', id='repr_and_html,(repr,html)'),
     pytest.param(('_repr_html_', '__repr__'), code_repr_only,
-                 'This is the __repr__', id='repr_only,(html,repr)')
+                 'This is the __repr__', id='repr_only,(html,repr)'),
+    pytest.param(('_repr_html_',), code_plt, '', id='html_none'),
 ])
-def test_capture_repr(gallery_conf, capture_repr, code, expected_out):
+def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
+                      req_mpl, req_pil, script_vars):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
     code_block = ('code', code, 1)
-    script_vars = {
-        "execute_script": True,
-        "image_path_iterator": ImagePathIterator("temp.png"),
-        "src_file": __file__,
-        "memory_delta": [],
-    }
-
     gallery_conf['capture_repr'] = capture_repr
     output = sg.execute_code_block(
-        compiler, code_block, {}, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf
     )
     assert _clean_output(output) == expected_out
 
