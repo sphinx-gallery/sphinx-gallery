@@ -1070,10 +1070,10 @@ are:
 
 The default setting is::
 
-        sphinx_gallery_conf = {
-            ...
-            'capture_repr': ('_repr_html_', '__repr__'),
-        }
+    sphinx_gallery_conf = {
+        ...
+        'capture_repr': ('_repr_html_', '__repr__'),
+    }
 
 With the default setting Sphinx-Gallery would first attempt to capture the
 ``_repr_html_`` of the last statement of a code block, *if* it is an
@@ -1147,8 +1147,8 @@ For example, the following configuration would capture the ``__repr__`` of the
 last expression of each code block unless the last expression is of the class,
 or a subclass of, 'matplotlib.text' *or* 'matplotlib.axes'::
 
-        sphinx_gallery_conf = {
-            ...
-            'capture_repr': ('__repr__'),
-            'ignore_repr_classes': r'matplotlib.text|matplotlib.axes',
-        }
+    sphinx_gallery_conf = {
+        ...
+        'capture_repr': ('__repr__'),
+        'ignore_repr_classes': r'matplotlib.text|matplotlib.axes',
+    }
