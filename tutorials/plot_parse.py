@@ -10,28 +10,28 @@ edge cases. It was designed to be compared with the
 :download:`source Python script <plot_parse.py>`."""
 
 
-##############################################################################
+# %%
 # This is the first text block and directly follows the header docstring above.
 
 import numpy as np
 
-##################################################
+# %%
 
-# a block separator (line of #'s) allows you to create two separate code blocks
+# You can separate code blocks using either a single line of ``#``'s
+# (>=20 columns), ``#%%``, or ``# %%``. For consistency, it is recommend that
+# you use only one of the above three 'block splitter' options in your project.
 A = 1
 
 import matplotlib.pyplot as plt
 
-#####################################
-# You can easily alternate between code and text blocks **and** separate
-# sequential blocks of code (above) and text (below). Note that separated
-# text blocks only shows as a new lines between text, in the rendered output.
+# %%
+# Block splitters allow you alternate between code and text blocks **and**
+# separate sequential blocks of code (above) and text (below). Note that
+# separated text blocks only shows as a new lines between text, in the rendered
+# output.
 
-#############################################
-# You can separate blocks using either a single line of ``#``'s (>=20 columns),
-# ``#%%``, or ``# %%``. For consistency, it is recommend that you use only one
-# of the above three options in your project. All future 'block splitters' used
-# in the sphinx-gallery source ``.py`` documents will be ``#%%``.
+##############################################################################
+# A line of ``#``'s also works for separating blocks (above).
 
 def dummy():
     """This should not be part of a 'text' block'"""
@@ -42,14 +42,14 @@ def dummy():
 
 # this should not be part of a 'text' block
 
-#%%
-# 
+# %%
+#
 # ####################################################################
 #
 # The above syntax makes a line cut in Sphinx. Note the space between the first
 # ``#`` and the line of ``#``'s.
 
-#%%
+# %%
 # .. warning::
 #     The next kind of comments are not supported and become too hard to escape
 #     so just don't code like this::
@@ -57,7 +57,7 @@ def dummy():
 #         def dummy2():
 #             """Function docstring"""
 #         ####################################
-#         # This comment 
+#         # This comment
 #         #%%
 #         # and this comment inside python indentation
 #         # breaks the block structure and is not
@@ -67,7 +67,7 @@ def dummy():
 
 """Free strings are not supported. They will be rendered as a code block"""
 
-#%%
+# %%
 # New lines can be included in your text block and the parser
 # is capable of retaining this important whitespace to work with Sphinx.
 # Everything after a block splitter and starting with ``#`` then one space,
@@ -79,13 +79,13 @@ def dummy():
 
 print('one')
 
-#%%
+# %%
 #
 
 # another way to separate code blocks shown above
 B = 1
 
-#%%
+# %%
 # Last text block.
 #
 # That's all folks !
