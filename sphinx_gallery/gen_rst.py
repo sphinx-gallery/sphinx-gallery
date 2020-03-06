@@ -568,20 +568,27 @@ def execute_code_block(compiler, block, example_globals,
 
         last_repr = None
         repr_meth = None
-        if gallery_conf['capture_repr'] != () and is_last_expr:
-            for meth in gallery_conf['capture_repr']:
-                try:
-                    last_repr = getattr(___, meth)()
-                    # for case when last statement is print()
-                    if last_repr is None or last_repr == 'None':
-                        repr_meth = None
+        if is_last_expr:
+            if gallery_conf['ignore_repr_types']:
+                ignore_repr = re.search(
+                    gallery_conf['ignore_repr_types'], str(type(___))
+                )
+            else:
+                ignore_repr = False
+            if gallery_conf['capture_repr'] != () and not ignore_repr:
+                for meth in gallery_conf['capture_repr']:
+                    try:
+                        last_repr = getattr(___, meth)()
+                        # for case when last statement is print()
+                        if last_repr is None or last_repr == 'None':
+                            repr_meth = None
+                        else:
+                            repr_meth = meth
+                    except Exception:
+                        pass
                     else:
-                        repr_meth = meth
-                except Exception:
-                    pass
-                else:
-                    if isinstance(last_repr, str):
-                        break
+                        if isinstance(last_repr, str):
+                            break
         captured_std = captured_std.getvalue().expandtabs()
         # normal string output
         if repr_meth in ['__repr__', '__str__'] and last_repr:

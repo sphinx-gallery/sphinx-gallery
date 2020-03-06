@@ -40,7 +40,7 @@ file:
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
-- ``capture_repr`` (:ref:`capture_repr`)
+- ``capture_repr``, ``ignore_repr_types`` (:ref:`capture_repr`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -1070,10 +1070,10 @@ are:
 
 The default setting is::
 
-        sphinx_gallery_conf = {
-            ...
-            'capture_repr': ('_repr_html_', '__repr__'),
-        }
+    sphinx_gallery_conf = {
+        ...
+        'capture_repr': ('_repr_html_', '__repr__'),
+    }
 
 With the default setting Sphinx-Gallery would first attempt to capture the
 ``_repr_html_`` of the last statement of a code block, *if* it is an
@@ -1132,3 +1132,29 @@ The unwanted string output will not occur if ``'capture_repr'`` is an empty
 tuple or does not contain ``__repr__`` or ``__str__``.
 
 .. _regular expressions: https://docs.python.org/2/library/re.html
+
+Prevent capture of certain classes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you wish to capture a representation of the last expression of each code
+blocks **unless** the last expression is of a certain type, you can use
+``'ignore_repr_types'``. ``'ignore_repr_types'`` is by default an empty raw
+string (``r''``), meaning no types are ignored. To exclude specific type(s)
+from being captured, ``'ignore_repr_types'`` can be set to a regular
+expression matching the name(s) of the type(s) to be excluded.
+
+For example, the configuration below would capture the ``__repr__`` of the
+last expression of each code block unless the name of the ``type()`` of the last
+expression includes the string 'matplotlib.text' *or* 'matplotlib.axes'.
+This would prevent capturing of all subclasses of 'matplotlib.text', e.g.
+expressions of type 'matplotlib.text.Annotation', 'matplotlib.text.OffsetFrom'
+etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
+'matplotlib.axes.Axes.plot' etc.) will also not be captured.
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        ...
+        'capture_repr': ('__repr__'),
+        'ignore_repr_types': r'matplotlib.text|matplotlib.axes',
+    }
