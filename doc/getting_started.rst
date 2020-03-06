@@ -18,6 +18,10 @@ using the Sphinx extension Sphinx-Gallery, which will do the following:
   (such as `the one that scikit-learn
   <http://scikit-learn.org/stable/auto_examples/index.html>`_ uses)
 
+A `template repository <https://github.com/sphinx-gallery/sample-project>`_,
+with sample example galleries and basic configurations is also available to
+help you get started.
+
 .. _set_up_your_project:
 
 Overview your project files and folders
