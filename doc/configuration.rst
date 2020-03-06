@@ -40,7 +40,7 @@ file:
 - ``first_notebook_cell`` (:ref:`first_notebook_cell`)
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
-- ``capture_repr``, ``ignore_repr_classes`` (:ref:`capture_repr`)
+- ``capture_repr``, ``ignore_repr_types`` (:ref:`capture_repr`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -1137,18 +1137,24 @@ Prevent capture of certain classes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you wish to capture a representation of the last expression of each code
-blocks **unless** the last expression is of a certain class, you can use
-``'ignore_repr_classes'``. ``'ignore_repr_classes'`` is by default an empty raw
-string (``r''``), meaning no classes are ignored. To exclude specific class(es)
-from being captured, ``'ignore_repr_classes'`` can be set to a regular
-expression matching the name of the class to be excluded.
+blocks **unless** the last expression is of a certain type, you can use
+``'ignore_repr_types'``. ``'ignore_repr_types'`` is by default an empty raw
+string (``r''``), meaning no types are ignored. To exclude specific type(s)
+from being captured, ``'ignore_repr_types'`` can be set to a regular
+expression matching the name(s) of the type(s) to be excluded.
 
-For example, the following configuration would capture the ``__repr__`` of the
-last expression of each code block unless the last expression is of the class,
-or a subclass of, 'matplotlib.text' *or* 'matplotlib.axes'::
+For example, the configuration below would capture the ``__repr__`` of the
+last expression of each code block unless the name of the ``type()`` of the last
+expression includes the string 'matplotlib.text' *or* 'matplotlib.axes'.
+This would prevent capturing of all subclasses of 'matplotlib.text', e.g.
+expressions of type 'matplotlib.text.Annotation', 'matplotlib.text.OffsetFrom'
+etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
+'matplotlib.axes.Axes.plot' etc.) will also not be captured.
+
+.. code-block:: python
 
     sphinx_gallery_conf = {
         ...
         'capture_repr': ('__repr__'),
-        'ignore_repr_classes': r'matplotlib.text|matplotlib.axes',
+        'ignore_repr_types': r'matplotlib.text|matplotlib.axes',
     }

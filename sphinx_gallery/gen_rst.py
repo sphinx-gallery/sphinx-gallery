@@ -569,9 +569,9 @@ def execute_code_block(compiler, block, example_globals,
         last_repr = None
         repr_meth = None
         if is_last_expr:
-            if gallery_conf['ignore_repr_classes']:
+            if gallery_conf['ignore_repr_types']:
                 ignore_repr = re.search(
-                    gallery_conf['ignore_repr_classes'], str(type(___))
+                    gallery_conf['ignore_repr_types'], str(type(___))
                 )
             else:
                 ignore_repr = False

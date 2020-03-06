@@ -68,7 +68,7 @@ DEFAULT_GALLERY_CONF = {
     'junit': '',
     'log_level': {'backreference_missing': 'warning'},
     'inspect_global_variables': True,
-    'ignore_repr_classes': r'',
+    'ignore_repr_types': r'',
     'css': _KNOWN_CSS,
 }
 
