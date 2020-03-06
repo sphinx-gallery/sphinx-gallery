@@ -731,8 +731,6 @@ def test_ignore_repr_classes(gallery_conf, req_mpl, req_pil, script_vars):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
     code_block = ('code', 'a=2\na', 1)
-    print(gallery_conf['capture_repr'])
-    # gallery_conf['capture_repr'] = ('__repr__')
     gallery_conf['ignore_repr_classes'] = r'int'
     output = sg.execute_code_block(
         compiler, code_block, None, script_vars, gallery_conf
