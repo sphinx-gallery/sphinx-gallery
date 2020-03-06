@@ -77,11 +77,12 @@ The ``#%%`` and ``# %%`` syntax is consistent with the 'code block' (or
 <https://nteract.gitbooks.io/hydrogen/>`_ and `Spyder
 <https://docs.spyder-ide.org/editor.html>`_. Note that although the
 documentation may only mention one of ``#%%`` or ``# %%``, in practice both
-work in these editors. In these IDEs (with these IDE plugins), ``#%%`` or
-``# %%`` at the start of a line signifies the start of a code block.
-Code within a code block can be easily executed all at once. This
-functionality can be helpful when writing a Sphinx-Gallery ``.py`` script as
-it allows you to create pairs of subsequent Sphinx-Gallery text and code blocks.
+work in these editors. In these IDEs (or with these IDE plugins), ``#%%`` or
+``# %%`` at the start of a line signifies the start of a new code block.
+Code within a code block can be easily executed together, at the same time. This
+functionality can be helpful when writing a Sphinx-Gallery ``.py`` example as
+the blocks allow you to easily create pairs of subsequent Sphinx-Gallery text
+and code blocks.
 
 Here are the contents of an example Python file using the 'code block'
 functionality::
