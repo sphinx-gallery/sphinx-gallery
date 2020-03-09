@@ -11,36 +11,32 @@
   'edge cases. It was designed to be compared with the\n'
   ':download:`source Python script <plot_parse.py>`.',
   1),
- ('text',
+('text',
   'This is the first text block and directly follows the header docstring '
   'above.\n',
   14),
- ('code', '\nimport numpy as np\n\n', 15),
- ('code',
+('code', '\nimport numpy as np\n\n', 15),
+('code',
   '\n'
-  "# a block separator (line of #'s) allows you to create two separate code "
-  'blocks\n'
+  "# You can separate code blocks using either a single line of ``#``'s\n"
+  '# (>=20 columns), ``#%%``, or ``# %%``. For consistency, it is recommend '
+  'that\n'
+  "# you use only one of the above three 'block splitter' options in your "
+  'project.\n'
   'A = 1\n'
   '\n'
   'import matplotlib.pyplot as plt\n'
   '\n',
   19),
- ('text',
-  'You can easily alternate between code and text blocks **and** separate\n'
-  'sequential blocks of code (above) and text (below). Note that separated\n'
-  'text blocks only shows as a new lines between text, in the rendered '
+('text',
+  'Block splitters allow you alternate between code and text blocks **and**\n'
+  'separate sequential blocks of code (above) and text (below). Note that\n'
+  'separated text blocks only shows as a new lines between text, in the '
+  'rendered\n'
   'output.\n',
-  26),
- ('text',
-  "You can separate blocks using either a single line of ``#``'s (>=20 "
-  'columns),\n'
-  '``#%%``, or ``# %%``. For consistency, it is recommend that you use '
-  'only one\n'
-  "of the above three options in your project. All future 'block "
-  "splitters' used\n"
-  "in the sphinx-gallery source ``.py`` documents will be ``#%%``.\n",
-  31),
- ('code',
+  28),
+('text', "A line of ``#``'s also works for separating blocks (above).\n", 34),
+('code',
   '\n'
   'def dummy():\n'
   '    """This should not be part of a \'text\' block\'"""\n'
@@ -52,14 +48,14 @@
   "# this should not be part of a 'text' block\n"
   '\n',
   35),
- ('text',
+('text',
   '####################################################################\n'
   '\n'
   'The above syntax makes a line cut in Sphinx. Note the space between the '
   'first\n'
   "``#`` and the line of ``#``'s.\n",
   46),
- ('text',
+('text',
   '.. warning::\n'
   '    The next kind of comments are not supported and become too hard to '
   'escape\n'
@@ -68,7 +64,7 @@
   '        def dummy2():\n'
   '            """Function docstring"""\n'
   '        ####################################\n'
-  '        # This comment \n'
+  '        # This comment\n'
   '        #%%\n'
   '        # and this comment inside python indentation\n'
   '        # breaks the block structure and is not\n'
@@ -76,13 +72,13 @@
   '            dummy2\n'
   '\n',
   53),
- ('code',
+('code',
   '\n'
   '"""Free strings are not supported. They will be rendered as a code '
   'block"""\n'
   '\n',
   67),
- ('text',
+('text',
   'New lines can be included in your text block and the parser\n'
   'is capable of retaining this important whitespace to work with Sphinx.\n'
   'Everything after a block splitter and starting with ``#`` then one space,\n'
@@ -92,9 +88,11 @@
   'rST header within text block\n'
   '^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
   71),
- ('code', "\nprint('one')\n\n", 79),
- ('code', '\n# another way to separate code blocks shown above\nB = 1\n\n', 84),
- ('text',
+('code', "\nprint('one')\n\n", 79),
+('code',
+  '\n# another way to separate code blocks shown above\nB = 1\n\n',
+  84),
+('text',
   'Last text block.\n'
   '\n'
   "That's all folks !\n"

@@ -43,16 +43,16 @@ be rendered in-line with the Python code and its outputs, similar to how
 Jupyter Notebooks are structured (in fact, Sphinx-Gallery also **creates** a
 Jupyter Notebook for each example that is built).
 
-You can embed rST in your Python examples by including a line of >= 20 ``#`` 
+You can embed rST in your Python examples by including a line of >= 20 ``#``
 symbols, ``#%%``, or ``# %%``. For consistency, it is recommended that you use
-only one of the above three options in your project. If using ``#``'s, we
-recommend using 79 ``#``'s, like this::
+only one of the above three 'block splitter' options in your project. If using
+``#``'s, we recommend using 79 ``#``'s, like this::
 
   ###############################################################################
 
-Any commented lines (a line beginning with ``#`` and a space so they are
-PEP8-compliant) that immediately follow will be rendered as rST in the built
-gallery examples. For example::
+Any commented lines (a line beginning with ``#`` followed by a space, to be
+PEP8-compliant) that immediately follow a block splitter will be rendered as
+rST in the built gallery examples. For example::
 
   # This is commented python
   myvariable = 2
@@ -68,19 +68,23 @@ gallery examples. For example::
   # commented rST block. Instead, they'll resolve as regular Python comments.
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
-The ``#%%`` syntax is consistent with the 'code block' (or 'code cell')
-syntax in `Jupyter VSCode plugin
-<https://code.visualstudio.com/docs/python/jupyter-support>`_, `Jupytext
+The ``#%%`` and ``# %%`` syntax is consistent with the 'code block' (or
+'code cell') separator syntax in `Jupyter VSCode plugin
+<https://code.visualstudio.com/docs/python/jupyter-support-py>`_, `Jupytext
 <https://jupytext.readthedocs.io/en/latest/introduction.html>`_, `Pycharm
-<https://www.jetbrains.com/help/pycharm/running-jupyter-notebook-cells.html>`_, 
+<https://www.jetbrains.com/help/pycharm/running-jupyter-notebook-cells.html>`_,
 `Hydrogen plugin (for Atom)
 <https://nteract.gitbooks.io/hydrogen/>`_ and `Spyder
-<https://docs.spyder-ide.org/editor.html>`_. In these IDEs/with these IDE 
-plugins, ``#%%`` at the start of a line signifies the start of a code block. 
-The code within a code block can be easily executed all at once. This 
-functionality can be helpful when writing a Sphinx-Gallery ``.py`` script.
+<https://docs.spyder-ide.org/editor.html>`_. Note that although the
+documentation may only mention one of ``#%%`` or ``# %%``, in practice both
+work in these editors. In these IDEs (or with these IDE plugins), ``#%%`` or
+``# %%`` at the start of a line signifies the start of a new code block.
+Code within a code block can be easily executed together, at the same time. This
+functionality can be helpful when writing a Sphinx-Gallery ``.py`` example as
+the blocks allow you to easily create pairs of subsequent Sphinx-Gallery text
+and code blocks.
 
-Here are the contents of an example Python file using the 'code block' 
+Here are the contents of an example Python file using the 'code block'
 functionality::
 
   """
@@ -95,7 +99,7 @@ functionality::
   # ------------------------
   # This is the first section!
   # The `#%%` signifies to Sphinx-Gallery that this text should be rendered as
-  # rST and if using one of the above IDE/plugin's, also signifies the start of a 
+  # rST and if using one of the above IDE/plugin's, also signifies the start of a
   # 'code block'.
 
   # This line won't be rendered as rST because there's a space after the last block.
