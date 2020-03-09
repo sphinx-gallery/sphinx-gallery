@@ -98,8 +98,14 @@ Write a custom image scraper
 
 By default, Sphinx-gallery supports image scrapers for Matplotlib
 (:func:`~sphinx_gallery.scrapers.matplotlib_scraper`) and Mayavi
-(:func:`~sphinx_gallery.scrapers.mayavi_scraper`). You can also write a custom
-scraper for other python packages. This section describes how to do so.
+(:func:`~sphinx_gallery.scrapers.mayavi_scraper`). If you wish to capture
+output from other python packages, first determine if the object you wish to
+capture has a ``_repr_html_`` method. If so, you can use the configuration
+``capture_repr`` (:ref:`capture_repr`) to control the display of the object,
+without the need to write a custom scraper. This configuration allows capture
+of the raw html output, in a process similar to other html-based displays such
+as `jupyter <https://jupyter.org/>`_. If the first option does not work,
+this section describes how to write a custom scraper.
 
 Image scrapers are functions (or callable class instances) that do two things:
 
