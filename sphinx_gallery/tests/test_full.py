@@ -216,7 +216,12 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'warnings.html#warnings.warn' in lines
     assert 'itertools.html#itertools.compress' in lines
     assert 'numpy.ndarray.html' in lines
-    assert 'sphinx_gallery.backreferences.html#sphinx_gallery.backreferences.identify_names' in lines  # noqa: E501
+    # see issue 617
+    id_names_link = re.search(
+        'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-]identify[_,-]names', # noqa: E501
+        lines
+    )
+    assert id_names_link is not None
     # instances have an extra CSS class
     assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a>' in lines  # noqa: E501
     assert 'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class"><span class="n">Figure</span></a>' in lines  # noqa: E501
