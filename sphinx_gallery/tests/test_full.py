@@ -236,26 +236,26 @@ def test_embed_links_and_styles(sphinx_app):
     # gh-587: methods of classes in the module currently being documented
     # issue 617 (regex '-'s)
     # instance
-    dummy_class1 = re.search(
+    dummy_class_inst = re.search(
         r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>', # noqa: E501
         lines
     )
-    assert dummy_class1 is not None
+    assert dummy_class_inst is not None
     # class
-    dummy_class2 = re.search(
+    dummy_class_class = re.search(
         r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">DummyClass</span>', # noqa: E501
         lines
     )
-    assert dummy_class2 is not None
+    assert dummy_class_class is not None
     # method
-    dummy_class3 = re.search(
+    dummy_class_meth = re.search(
         r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]run" title="sphinx_gallery.backreferences.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>', # noqa: E501
         lines
     )
-    assert dummy_class3 is not None
+    assert dummy_class_meth is not None
     # property (Sphinx 2+ calls it a method rather than attribute, so regex)
-    dummy_class4 = re.compile(r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-(attribute|method)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>') # noqa: E501
-    assert dummy_class4.search(lines) is not None
+    dummy_class_prop = re.compile(r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-(attribute|method)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>') # noqa: E501
+    assert dummy_class_prop.search(lines) is not None
 
     try:
         import memory_profiler  # noqa, analysis:ignore
