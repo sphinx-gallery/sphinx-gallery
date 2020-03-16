@@ -431,6 +431,13 @@ def test_download_link_note_only_html(gallery_conf, req_pil):
     assert download_link_note in rst
 
 
+def test_download_link_classes(gallery_conf):
+    """Test classes for download links."""
+    rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
+    for kind in ('python', 'jupyter'):
+        assert 'sphx-glr-download sphx-glr-download-' + kind in rst
+
+
 @pytest.mark.parametrize('ext', ('.txt', '.rst', '.bad'))
 def test_gen_dir_rst(gallery_conf, fakesphinxapp, ext):
     """Test gen_dir_rst."""

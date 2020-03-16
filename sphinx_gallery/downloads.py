@@ -23,11 +23,11 @@ CODE_DOWNLOAD = """
     :class: sphx-glr-footer-example
 
 {2}
-\n  .. container:: sphx-glr-download
+\n  .. container:: sphx-glr-download sphx-glr-download-python
 
      :download:`Download Python source code: {0} <{0}>`\n
 
-\n  .. container:: sphx-glr-download
+\n  .. container:: sphx-glr-download sphx-glr-download-jupyter
 
      :download:`Download Jupyter notebook: {1} <{1}>`\n"""
 
@@ -37,11 +37,11 @@ CODE_ZIP_DOWNLOAD = """
  .. container:: sphx-glr-footer
     :class: sphx-glr-footer-gallery
 
-\n  .. container:: sphx-glr-download
+\n  .. container:: sphx-glr-download sphx-glr-download-python
 
     :download:`Download all examples in Python source code: {0} </{1}>`\n
 
-\n  .. container:: sphx-glr-download
+\n  .. container:: sphx-glr-download sphx-glr-download-jupyter
 
     :download:`Download all examples in Jupyter notebooks: {2} </{3}>`\n"""
 

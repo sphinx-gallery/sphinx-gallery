@@ -267,6 +267,8 @@ def test_embed_links_and_styles(sphinx_app):
     # CSS styles
     assert 'class="sphx-glr-signature"' in lines
     assert 'class="sphx-glr-timing"' in lines
+    for kind in ('python', 'jupyter'):
+        assert 'class="sphx-glr-download sphx-glr-download-%s"' % kind in lines
 
     # highlight language
     fname = op.join(src_dir, 'auto_examples', 'plot_numpy_matplotlib.rst')
