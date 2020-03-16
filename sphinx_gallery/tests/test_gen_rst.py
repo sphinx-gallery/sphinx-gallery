@@ -431,7 +431,7 @@ def test_download_link_note_only_html(gallery_conf, req_pil):
     assert download_link_note in rst
 
 
-def test_download_link_classes(gallery_conf):
+def test_download_link_classes(gallery_conf, req_pil):
     """Test classes for download links."""
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     for kind in ('python', 'jupyter'):
