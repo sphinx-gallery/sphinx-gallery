@@ -31,10 +31,10 @@ b   # this is an expression
 # is the first 'representation' method in the ``capture_repr`` tuple. As this
 # method does not exist for ``b``, Sphinx-Gallery moves on and tries to capture
 # the ``__repr__`` method, which is second in the tuple. This does exist for
-# ``b`` so it is captured and the output is seen above. 
-# 
+# ``b`` so it is captured and the output is seen above.
+#
 # A pandas dataframe is used in the code block below to provide an example of
-# an expression with a ``_repr_html_`` method. 
+# an expression with a ``_repr_html_`` method.
 
 # example 3
 import pandas as pd
@@ -59,10 +59,10 @@ a + b
 # string ``'Hello world'`` is thus captured. A 'representation' of the last
 # expression is also captured. Again, since this expression ``a + b`` does not
 # have a ``_repr_html_`` method, the ``__repr__`` method is captured.
-# 
+#
 # Matplotlib output
 # ##################
-# 
+#
 # Matplotlib function calls generally return a Matplotlib object as well as
 # outputting the figure. For code blocks where the last statement is a
 # Matplotlib expression, a 'representation' of the object will be captured, as
@@ -107,7 +107,7 @@ plt.show()
 # captured for example 2 as ``b`` does not have a ``_repr_html_``.
 # You can change the 'representations' in the ``capture_repr`` tuple to finely
 # tune what is captured in your example ``.py`` files.
-# 
+#
 # To only capture data directed to standard output you can set ``capture_repr``
 # to be an empty tuple: ``capture_repr: ()``. With this setting, only data
 # directed to standard output is captured. For the examples above, output would

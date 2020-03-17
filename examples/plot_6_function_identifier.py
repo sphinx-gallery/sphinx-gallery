@@ -22,7 +22,7 @@ figheight = len(names) + .5
 
 fontsize = 12.5
 
-###############################################################################
+# %%
 # Sphinx-Gallery examines both the executed code itself, as well as the
 # documentation blocks (such as this one, or the top-level one),
 # to find backreferences. This means that by writing :obj:`numpy.sin`

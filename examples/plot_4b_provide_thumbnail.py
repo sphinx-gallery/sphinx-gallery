@@ -13,13 +13,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 # sphinx_gallery_thumbnail_path = '_static/demo.png'
 
-###############################################################################
+# %%
 
 x = np.linspace(0, 4*np.pi, 301)
 y1 = np.sin(x)
 y2 = np.cos(x)
 
-###############################################################################
+# %%
 # Plot 1
 # ------
 
@@ -29,7 +29,7 @@ plt.plot(x, y2, label='cos')
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Plot 2
 # ------
 
