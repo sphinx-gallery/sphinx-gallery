@@ -357,7 +357,6 @@ def test_backreferences_dir_config(sphinx_app_wrapper):
     with pytest.raises(ValueError,
                        match="The 'backreferences_dir' parameter must be of"):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
-    assert False
 
 
 def test_write_computation_times_noop():
