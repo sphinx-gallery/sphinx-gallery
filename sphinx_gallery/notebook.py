@@ -112,10 +112,13 @@ def jupyter_notebook(script_blocks, gallery_conf):
         The sphinx-gallery configuration dictionary.
     """
     first_cell = gallery_conf.get("first_notebook_cell", "%matplotlib inline")
+    last_cell = gallery_conf.get("last_notebook_cell", None)
     work_notebook = jupyter_notebook_skeleton()
     if first_cell is not None:
         add_code_cell(work_notebook, first_cell)
     fill_notebook(work_notebook, script_blocks)
+    if last_cell is not None:
+        add_code_cell(work_notebook, last_cell)
 
     return work_notebook
 
