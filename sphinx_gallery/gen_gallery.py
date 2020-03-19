@@ -198,13 +198,11 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     if (not isinstance(first_cell, str)) and (first_cell is not None):
         raise ValueError("The 'first_notebook_cell' parameter must be type str"
                          "or None, found type %s" % type(first_cell))
-    gallery_conf['first_notebook_cell'] = first_cell
     # Ensure the last cell text is a string if we have it
     last_cell = gallery_conf.get("last_notebook_cell")
     if (not isinstance(last_cell, str)) and (last_cell is not None):
         raise ValueError("The 'last_notebook_cell' parameter must be type str"
                          "or None, found type %s" % type(last_cell))
-    gallery_conf['last_notebook_cell'] = last_cell
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
     gallery_conf['titles'] = {}
