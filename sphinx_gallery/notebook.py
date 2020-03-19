@@ -111,8 +111,8 @@ def jupyter_notebook(script_blocks, gallery_conf):
     gallery_conf : dict
         The sphinx-gallery configuration dictionary.
     """
-    first_cell = gallery_conf.get("first_notebook_cell", "%matplotlib inline")
-    last_cell = gallery_conf.get("last_notebook_cell", None)
+    first_cell = gallery_conf["first_notebook_cell"]
+    last_cell = gallery_conf["last_notebook_cell"]
     work_notebook = jupyter_notebook_skeleton()
     if first_cell is not None:
         add_code_cell(work_notebook, first_cell)
