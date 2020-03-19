@@ -37,10 +37,10 @@ file:
 - ``min_reported_time`` (:ref:`min_reported_time`)
 - ``show_memory`` (:ref:`show_memory`)
 - ``binder`` (:ref:`binder_links`)
-- ``first_notebook_cell`` (:ref:`first_notebook_cell`)
+- ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
-- ``capture_repr``, ``ignore_repr_types`` (:ref:`capture_repr`)
+- ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -545,22 +545,26 @@ To remove the comment from the rendered example set the option::
         'remove_config_comments': True,
     }
 
-.. _first_notebook_cell:
+.. _own_notebook_cell:
 
-Add your own first notebook cell
-================================
+Add your own first and last notebook cell
+=========================================
 
-Sphinx-Gallery adds an extra cell to the beginning of every generated notebook.
-This is often for adding code that is required to run properly in the notebook,
-but not in a ``.py`` file. By default, this text is
+Sphinx-Gallery allows you to add your own first and/or last cell to *every*
+generated notebook. Adding a first cell can be useful for including code that
+is required to run properly in the notebook, but not in a ``.py`` file. By
+default, the following first cell is added to each notebook::
 
 .. code-block:: ipython
 
    %matplotlib inline
 
+Adding a last cell can be useful for performing a desired action such as
+reporting on the user's evironment. By default no last cell is added.
+
 You can choose whatever text you like by modifying the ``first_notebook_cell``
-configuration parameter. For example, the gallery of this documentation
-displays a comment along-side each the code shown above.
+and ``last_notebook_cell`` configuration parameters. For example, the gallery
+of this documentation adds the following first cell::
 
 .. code-block:: ipython
 
@@ -577,8 +581,19 @@ Which is achieved by the following configuration::
                                 "%matplotlib inline")
     }
 
-If the value of ``first_notebook_cell`` is set to ``None``, then no extra first
-cell will be added to the notebook.
+A last cell may be added similarly by setting the ``last_notebook_cell``
+parameter::
+
+    sphinx_gallery_conf = {
+        ...
+        'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+                                "# It can be customized to whatever you like\n"
+                                "%matplotlib inline"),
+        'last_notebook_cell': "# This is the last cell",
+    }
+
+If the value of ``first_notebook_cell`` or ``last_notebook_cell`` is set to
+``None``, then no extra first or last cell will be added to the notebook.
 
 
 .. _junit_xml:

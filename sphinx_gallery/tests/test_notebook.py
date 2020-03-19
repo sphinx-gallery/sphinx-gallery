@@ -101,6 +101,19 @@ def test_jupyter_notebook(gallery_conf):
     cell_src = example_nb.get('cells')[0]['source'][0]
     assert cell_src.startswith('\nAlternating text and code')
 
+    # Test custom last cell text
+    test_text = '# testing last cell'
+    gallery_conf['last_notebook_cell'] = test_text
+    example_nb = jupyter_notebook(blocks, gallery_conf)
+    assert example_nb.get('cells')[-1]['source'][0] == test_text
+
+    # Test empty first cell text
+    test_text = None
+    gallery_conf['last_notebook_cell'] = test_text
+    example_nb = jupyter_notebook(blocks, gallery_conf)
+    cell_src = example_nb.get('cells')[-1]['source'][0]
+    assert cell_src.startswith("Last text block.\n\nThat's all folks !")
+
 ###############################################################################
 # Notebook shell utility
 
