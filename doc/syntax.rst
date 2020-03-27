@@ -58,7 +58,7 @@ rST in the built gallery examples. For example::
   myvariable = 2
   print("my variable is {}".format(myvariable))
 
-  ###############################################################################
+  # %%
   # This is a section header
   # ------------------------
   #
@@ -94,7 +94,7 @@ functionality::
   This example doesn't do much, it just makes a simple plot
   """
 
-  #%%
+  # %%
   # This is a section header
   # ------------------------
   # This is the first section!
@@ -108,7 +108,7 @@ functionality::
   # This is the end of the 'code block' (if using an above IDE). All code within
   # this block can be easily executed all at once.
 
-  #%%
+  # %%
   # This is another section header
   # ------------------------------
   #

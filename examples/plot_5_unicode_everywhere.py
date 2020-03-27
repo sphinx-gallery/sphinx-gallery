@@ -35,6 +35,6 @@ print('Std out capture 😎')
 # To avoid matplotlib text output
 plt.show()
 
-###########################################################################
+# %%
 # Debug fonts
 print(plt.rcParams)

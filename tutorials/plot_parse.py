@@ -26,21 +26,22 @@ import matplotlib.pyplot as plt
 
 # %%
 # Block splitters allow you alternate between code and text blocks **and**
-# separate sequential blocks of code (above) and text (below). Note that
-# separated text blocks only shows as a new lines between text, in the rendered
-# output.
+# separate sequential blocks of code (above) and text (below).
 
 ##############################################################################
-# A line of ``#``'s also works for separating blocks (above).
+# A line of ``#``'s also works for separating blocks. The above line of ``#``'s
+# separates the text block above from this text block. Notice however, that
+# separated text blocks only shows as a new lines between text, in the rendered
+# output.
 
 def dummy():
     """This should not be part of a 'text' block'"""
 
-    #############################################
-    # Comment inside code to remain in code block
+    # %%
+    # This comment inside a code block will remain in the code block
     pass
 
-# this should not be part of a 'text' block
+# this line should not be part of a 'text' block
 
 # %%
 #
@@ -51,14 +52,15 @@ def dummy():
 
 # %%
 # .. warning::
-#     The next kind of comments are not supported and become too hard to escape
-#     so just don't code like this::
+#     The next kind of comments are not supported (notice the line of ``#``'s
+#     and the ``# %%`` start at the margin instead of being indented like
+#     above) and become too hard to escape so just don't use code like this::
 #
 #         def dummy2():
 #             """Function docstring"""
 #         ####################################
 #         # This comment
-#         #%%
+#         # %%
 #         # and this comment inside python indentation
 #         # breaks the block structure and is not
 #         # supported

@@ -30,54 +30,60 @@
   19),
 ('text',
   'Block splitters allow you alternate between code and text blocks **and**\n'
-  'separate sequential blocks of code (above) and text (below). Note that\n'
+  'separate sequential blocks of code (above) and text (below).\n',
+  28),
+('text',
+  "A line of ``#``'s also works for separating blocks. The above line of "
+  "``#``'s\n"
+  'separates the text block above from this text block. Notice however, that\n'
   'separated text blocks only shows as a new lines between text, in the '
   'rendered\n'
   'output.\n',
-  28),
-('text', "A line of ``#``'s also works for separating blocks (above).\n", 34),
+  32),
 ('code',
   '\n'
   'def dummy():\n'
   '    """This should not be part of a \'text\' block\'"""\n'
   '\n'
-  '    #############################################\n'
-  '    # Comment inside code to remain in code block\n'
+  '    # %%\n'
+  '    # This comment inside a code block will remain in the code block\n'
   '    pass\n'
   '\n'
-  "# this should not be part of a 'text' block\n"
+  "# this line should not be part of a 'text' block\n"
   '\n',
-  35),
+  36),
 ('text',
   '####################################################################\n'
   '\n'
   'The above syntax makes a line cut in Sphinx. Note the space between the '
   'first\n'
   "``#`` and the line of ``#``'s.\n",
-  46),
+  47),
 ('text',
   '.. warning::\n'
-  '    The next kind of comments are not supported and become too hard to '
-  'escape\n'
-  "    so just don't code like this::\n"
+  '    The next kind of comments are not supported (notice the line of '
+  "``#``'s\n"
+  '    and the ``# %%`` start at the margin instead of being indented like\n'
+  "    above) and become too hard to escape so just don't use code like "
+  'this::\n'
   '\n'
   '        def dummy2():\n'
   '            """Function docstring"""\n'
   '        ####################################\n'
   '        # This comment\n'
-  '        #%%\n'
+  '        # %%\n'
   '        # and this comment inside python indentation\n'
   '        # breaks the block structure and is not\n'
   '        # supported\n'
   '            dummy2\n'
   '\n',
-  53),
+  54),
 ('code',
   '\n'
   '"""Free strings are not supported. They will be rendered as a code '
   'block"""\n'
   '\n',
-  67),
+  69),
 ('text',
   'New lines can be included in your text block and the parser\n'
   'is capable of retaining this important whitespace to work with Sphinx.\n'
@@ -87,11 +93,11 @@
   '\n'
   'rST header within text block\n'
   '^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
-  71),
-('code', "\nprint('one')\n\n", 79),
+  73),
+('code', "\nprint('one')\n\n", 81),
 ('code',
   '\n# another way to separate code blocks shown above\nB = 1\n\n',
-  84),
+  86),
 ('text',
   'Last text block.\n'
   '\n'
@@ -100,4 +106,4 @@
   '.. literalinclude:: plot_parse.py\n'
   '\n'
   '\n',
-  89)]
+  91)]
