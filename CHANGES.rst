@@ -1,8 +1,89 @@
 Change Log
 ==========
 
+v0.6.0
+------
+
+Developer changes
+'''''''''''''''''
+
+- Reduced number of hard dependencies and added `dev-requirements.txt`.
+- AppVeyor bumped from Python 3.6 to 3.7.
+- Split CSS and create sub-extension that loads CSS.
+
+**Implemented enhancements:**
+
+-  ENH Add last cell config `#625 <https://github.com/sphinx-gallery/sphinx-gallery/pull/625>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Add sub-classes for download links `#623 <https://github.com/sphinx-gallery/sphinx-gallery/pull/623>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: New file-based conf-parameter thumbnail_path `#609 <https://github.com/sphinx-gallery/sphinx-gallery/pull/609>`__ (`prisae <https://github.com/prisae>`__)
+-  MRG, ENH: Provide sub-extension sphinx_gallery.load_style `#601 <https://github.com/sphinx-gallery/sphinx-gallery/pull/601>`__ (`mgeier <https://github.com/mgeier>`__)
+-  [DOC] Minor amendments to CSS config part `#594 <https://github.com/sphinx-gallery/sphinx-gallery/pull/594>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [MRG] [ENH] Add css for pandas df `#590 <https://github.com/sphinx-gallery/sphinx-gallery/pull/590>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Add CSS classes for backrefs `#581 <https://github.com/sphinx-gallery/sphinx-gallery/pull/581>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Add ability to ignore repr of specific types `#577 <https://github.com/sphinx-gallery/sphinx-gallery/pull/577>`__ (`banesullivan <https://github.com/banesullivan>`__)
+
+**Fixed bugs:**
+
+-  BUG: Longer timeout on macOS `#629 <https://github.com/sphinx-gallery/sphinx-gallery/pull/629>`__ (`larsoner <https://github.com/larsoner>`__)
+-  BUG Fix test for new sphinx `#619 <https://github.com/sphinx-gallery/sphinx-gallery/pull/619>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MRG, FIX: Allow pickling `#604 <https://github.com/sphinx-gallery/sphinx-gallery/pull/604>`__ (`larsoner <https://github.com/larsoner>`__)
+-  CSS: Restrict thumbnail height to 112 px `#595 <https://github.com/sphinx-gallery/sphinx-gallery/pull/595>`__ (`mgeier <https://github.com/mgeier>`__)
+-  MRG, FIX: Link to RandomState properly `#593 <https://github.com/sphinx-gallery/sphinx-gallery/pull/593>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MRG, FIX: Fix backref styling `#591 <https://github.com/sphinx-gallery/sphinx-gallery/pull/591>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Update checks for PIL/JPEG `#586 <https://github.com/sphinx-gallery/sphinx-gallery/pull/586>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC: Fix code block language `#585 <https://github.com/sphinx-gallery/sphinx-gallery/pull/585>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [MRG] Fix backreferences for functions not directly imported `#584 <https://github.com/sphinx-gallery/sphinx-gallery/pull/584>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG: Fix repr None `#578 <https://github.com/sphinx-gallery/sphinx-gallery/pull/578>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [MRG] Add ignore pattern to check dups `#574 <https://github.com/sphinx-gallery/sphinx-gallery/pull/574>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [MRG] Check backreferences_dir config `#571 <https://github.com/sphinx-gallery/sphinx-gallery/pull/571>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  URLError `#569 <https://github.com/sphinx-gallery/sphinx-gallery/pull/569>`__ (`EtienneCmb <https://github.com/EtienneCmb>`__)
+-  MRG Remove last/first_notebook_cell redundancy `#626 <https://github.com/sphinx-gallery/sphinx-gallery/pull/626>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Remove duplicate doc_solver entry in the API reference structure `#589 <https://github.com/sphinx-gallery/sphinx-gallery/pull/589>`__ (`kanderso-nrel <https://github.com/kanderso-nrel>`__)
+
+**Closed issues:**
+
+-  Allow removal of “download jupyter notebook” link `#622 <https://github.com/sphinx-gallery/sphinx-gallery/issues/622>`__
+-  thumbnails from loaded figures `#607 <https://github.com/sphinx-gallery/sphinx-gallery/issues/607>`__
+-  last_notebook_cell `#605 <https://github.com/sphinx-gallery/sphinx-gallery/issues/605>`__
+-  Building fails with pickling error `#602 <https://github.com/sphinx-gallery/sphinx-gallery/issues/602>`__
+-  BUG: Bugs with backref links `#587 <https://github.com/sphinx-gallery/sphinx-gallery/issues/587>`__
+-  BUG backreferences not working for functions if not imported directly `#583 <https://github.com/sphinx-gallery/sphinx-gallery/issues/583>`__
+-  AttributeError: ‘URLError’ object has no attribute ‘url’ `#568 <https://github.com/sphinx-gallery/sphinx-gallery/issues/568>`__
+-  BUG Check “backreferences_dir” is str or None `#567 <https://github.com/sphinx-gallery/sphinx-gallery/issues/567>`__
+-  check_duplicated does not respect the ignore_pattern `#474 <https://github.com/sphinx-gallery/sphinx-gallery/issues/474>`__
+-  Sphinx-Gallery Binder links: environment.yml does not get “installed” `#628 <https://github.com/sphinx-gallery/sphinx-gallery/issues/628>`__
+-  Another place to replace “######” separators by “# %%” `#620 <https://github.com/sphinx-gallery/sphinx-gallery/issues/620>`__
+-  How to prevent output to stderr from being captured. `#618 <https://github.com/sphinx-gallery/sphinx-gallery/issues/618>`__
+-  Master failing with sphinx dev `#617 <https://github.com/sphinx-gallery/sphinx-gallery/issues/617>`__
+-  Mention the support for \_repr_html\_ on custom scraper doc `#614 <https://github.com/sphinx-gallery/sphinx-gallery/issues/614>`__
+-  Mention the multiple possible separators in the notebook-style example `#611 <https://github.com/sphinx-gallery/sphinx-gallery/issues/611>`__
+-  Cell marker causes pycodestyle error `#608 <https://github.com/sphinx-gallery/sphinx-gallery/issues/608>`__
+-  Reduce the amount of hard dependencies? `#597 <https://github.com/sphinx-gallery/sphinx-gallery/issues/597>`__
+-  instances not getting correct CSS classes `#588 <https://github.com/sphinx-gallery/sphinx-gallery/issues/588>`__
+-  greedy backreferences `#580 <https://github.com/sphinx-gallery/sphinx-gallery/issues/580>`__
+-  Error when using two image scrappers together `#579 <https://github.com/sphinx-gallery/sphinx-gallery/issues/579>`__
+-  Improve the junit xml `#576 <https://github.com/sphinx-gallery/sphinx-gallery/issues/576>`__
+-  Remove the note linking to the download section at the beginning of the example from latex/pdf output `#572 <https://github.com/sphinx-gallery/sphinx-gallery/issues/572>`__
+-  typing.TYPE_CHECKING is True at runtime in executed .py files `#570 <https://github.com/sphinx-gallery/sphinx-gallery/issues/570>`__
+-  How best to handle data files? `#565 <https://github.com/sphinx-gallery/sphinx-gallery/issues/565>`__
+-  ENH Add CSS for pandas dataframe `#544 <https://github.com/sphinx-gallery/sphinx-gallery/issues/544>`__
+
+**Merged pull requests:**
+
+-  DOC use # %% `#624 <https://github.com/sphinx-gallery/sphinx-gallery/pull/624>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC capture repr in scraper section `#616 <https://github.com/sphinx-gallery/sphinx-gallery/pull/616>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [MRG+1] DOC Improve doc of splitters and use in IDE `#615 <https://github.com/sphinx-gallery/sphinx-gallery/pull/615>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC mention template `#613 <https://github.com/sphinx-gallery/sphinx-gallery/pull/613>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  recommend consistent use of one block splitter `#610 <https://github.com/sphinx-gallery/sphinx-gallery/pull/610>`__ (`mikofski <https://github.com/mikofski>`__)
+-  MRG, MAINT: Split CSS and add control `#599 <https://github.com/sphinx-gallery/sphinx-gallery/pull/599>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MRG, MAINT: Update deps `#598 <https://github.com/sphinx-gallery/sphinx-gallery/pull/598>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MRG, ENH: Link to methods and properties properly `#596 <https://github.com/sphinx-gallery/sphinx-gallery/pull/596>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Try to get nightly working `#592 <https://github.com/sphinx-gallery/sphinx-gallery/pull/592>`__ (`larsoner <https://github.com/larsoner>`__)
+-  mention literalinclude in the doc `#582 <https://github.com/sphinx-gallery/sphinx-gallery/pull/582>`__ (`emmanuelle <https://github.com/emmanuelle>`__)
+-  MAINT: Bump AppVeyor to 3.7 `#575 <https://github.com/sphinx-gallery/sphinx-gallery/pull/575>`__ (`larsoner <https://github.com/larsoner>`__)
+
 v0.5.0
----------------
+------
 
 Developer changes
 '''''''''''''''''
@@ -16,7 +97,7 @@ Incompatible changes
 
 - Dropped support for Sphinx < 1.8.3.
 - Dropped support for Python < 3.5.
-- Added ``capture_repr`` configuration with the default setting 
+- Added ``capture_repr`` configuration with the default setting
   ``('_repr_html_', __repr__')``. This may result the capturing of unwanted output
   in existing projects. Set ``capture_repr: ()`` to return to behaviour prior
   to this release.
