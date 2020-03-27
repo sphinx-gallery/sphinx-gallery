@@ -9,7 +9,7 @@ Developer changes
 
 - Reduced number of hard dependencies and added `dev-requirements.txt`.
 - AppVeyor bumped from Python 3.6 to 3.7.
-- Split CSS and create sub-extension that loads CSS
+- Split CSS and create sub-extension that loads CSS.
 
 **Implemented enhancements:**
 
