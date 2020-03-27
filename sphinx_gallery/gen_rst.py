@@ -464,7 +464,7 @@ def _memory_usage(func, gallery_conf):
 
 def _get_memory_base(gallery_conf):
     """Get the base amount of memory used by running a Python process."""
-    if not gallery_conf['show_memory']:
+    if not gallery_conf['show_memory'] or not gallery_conf['plot_gallery']:
         memory_base = 0
     else:
         # There might be a cleaner way to do this at some point
