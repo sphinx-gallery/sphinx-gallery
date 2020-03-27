@@ -464,12 +464,15 @@ def _memory_usage(func, gallery_conf):
 
 def _get_memory_base(gallery_conf):
     """Get the base amount of memory used by running a Python process."""
-    if not gallery_conf['show_memory']:
+    if not gallery_conf['show_memory'] or not gallery_conf['plot_gallery']:
         memory_base = 0
     else:
         # There might be a cleaner way to do this at some point
         from memory_profiler import memory_usage
-        sleep, timeout = (1, 2) if sys.platform == 'win32' else (0.5, 1)
+        if sys.platform in ('win32', 'darwin'):
+            sleep, timeout = (1, 2)
+        else:
+            sleep, timeout = (0.5, 1)
         proc = subprocess.Popen(
             [sys.executable, '-c',
              'import time, sys; time.sleep(%s); sys.exit(0)' % sleep],
