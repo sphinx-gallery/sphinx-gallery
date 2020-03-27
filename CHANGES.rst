@@ -39,7 +39,6 @@ Developer changes
 -  URLError `#569 <https://github.com/sphinx-gallery/sphinx-gallery/pull/569>`__ (`EtienneCmb <https://github.com/EtienneCmb>`__)
 -  MRG Remove last/first_notebook_cell redundancy `#626 <https://github.com/sphinx-gallery/sphinx-gallery/pull/626>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  Remove duplicate doc_solver entry in the API reference structure `#589 <https://github.com/sphinx-gallery/sphinx-gallery/pull/589>`__ (`kanderso-nrel <https://github.com/kanderso-nrel>`__)
--  Remove the note link to downloads from pdf output `#573 <https://github.com/sphinx-gallery/sphinx-gallery/pull/573>`__ (`benvial <https://github.com/benvial>`__)
 
 **Closed issues:**
 
