@@ -37,6 +37,9 @@ Developer changes
 -  [MRG] Add ignore pattern to check dups `#574 <https://github.com/sphinx-gallery/sphinx-gallery/pull/574>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  [MRG] Check backreferences_dir config `#571 <https://github.com/sphinx-gallery/sphinx-gallery/pull/571>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  URLError `#569 <https://github.com/sphinx-gallery/sphinx-gallery/pull/569>`__ (`EtienneCmb <https://github.com/EtienneCmb>`__)
+-  MRG Remove last/first_notebook_cell redundancy `#626 <https://github.com/sphinx-gallery/sphinx-gallery/pull/626>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Remove duplicate doc_solver entry in the API reference structure `#589 <https://github.com/sphinx-gallery/sphinx-gallery/pull/589>`__ (`kanderso-nrel <https://github.com/kanderso-nrel>`__)
+-  Remove the note link to downloads from pdf output `#573 <https://github.com/sphinx-gallery/sphinx-gallery/pull/573>`__ (`benvial <https://github.com/benvial>`__)
 
 **Closed issues:**
 
@@ -68,7 +71,6 @@ Developer changes
 
 **Merged pull requests:**
 
--  MRG Remove last/first_notebook_cell redundancy `#626 <https://github.com/sphinx-gallery/sphinx-gallery/pull/626>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  DOC use # %% `#624 <https://github.com/sphinx-gallery/sphinx-gallery/pull/624>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  DOC capture repr in scraper section `#616 <https://github.com/sphinx-gallery/sphinx-gallery/pull/616>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  [MRG+1] DOC Improve doc of splitters and use in IDE `#615 <https://github.com/sphinx-gallery/sphinx-gallery/pull/615>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
@@ -78,10 +80,8 @@ Developer changes
 -  MRG, MAINT: Update deps `#598 <https://github.com/sphinx-gallery/sphinx-gallery/pull/598>`__ (`larsoner <https://github.com/larsoner>`__)
 -  MRG, ENH: Link to methods and properties properly `#596 <https://github.com/sphinx-gallery/sphinx-gallery/pull/596>`__ (`larsoner <https://github.com/larsoner>`__)
 -  MAINT: Try to get nightly working `#592 <https://github.com/sphinx-gallery/sphinx-gallery/pull/592>`__ (`larsoner <https://github.com/larsoner>`__)
--  Remove duplicate doc_solver entry in the API reference structure `#589 <https://github.com/sphinx-gallery/sphinx-gallery/pull/589>`__ (`kanderso-nrel <https://github.com/kanderso-nrel>`__)
 -  mention literalinclude in the doc `#582 <https://github.com/sphinx-gallery/sphinx-gallery/pull/582>`__ (`emmanuelle <https://github.com/emmanuelle>`__)
 -  MAINT: Bump AppVeyor to 3.7 `#575 <https://github.com/sphinx-gallery/sphinx-gallery/pull/575>`__ (`larsoner <https://github.com/larsoner>`__)
--  Remove the note link to downloads from pdf output `#573 <https://github.com/sphinx-gallery/sphinx-gallery/pull/573>`__ (`benvial <https://github.com/benvial>`__)
 
 v0.5.0
 ------
