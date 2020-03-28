@@ -209,7 +209,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # Ensure 'backreferences_dir' is str or Noe
     backref = gallery_conf['backreferences_dir']
     if (not isinstance(backref, str)) and (backref is not None):
-        raise ValueError("The 'backreferences_dir' parameter must be of type"
+        raise ValueError("The 'backreferences_dir' parameter must be of type "
                          "str or None, found type %s" % type(backref))
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
