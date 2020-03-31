@@ -196,17 +196,17 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # Ensure the first cell text is a string if we have it
     first_cell = gallery_conf.get("first_notebook_cell")
     if (not isinstance(first_cell, str)) and (first_cell is not None):
-        raise ValueError("The 'first_notebook_cell' parameter must be type str"
+        raise ValueError("The 'first_notebook_cell' parameter must be type str "
                          "or None, found type %s" % type(first_cell))
     # Ensure the last cell text is a string if we have it
     last_cell = gallery_conf.get("last_notebook_cell")
     if (not isinstance(last_cell, str)) and (last_cell is not None):
-        raise ValueError("The 'last_notebook_cell' parameter must be type str"
+        raise ValueError("The 'last_notebook_cell' parameter must be type str "
                          "or None, found type %s" % type(last_cell))
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
     gallery_conf['titles'] = {}
-    # Ensure 'backreferences_dir' is str or Noe
+    # Ensure 'backreferences_dir' is str or None
     backref = gallery_conf['backreferences_dir']
     if (not isinstance(backref, str)) and (backref is not None):
         raise ValueError("The 'backreferences_dir' parameter must be of type "
@@ -294,6 +294,7 @@ def generate_gallery_rst(app):
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
     files = collect_gallery_files(examples_dirs, gallery_conf)
     check_duplicate_filenames(files)
+    check_spaces_in_filenames(files)
 
     for examples_dir, gallery_dir in workdirs:
 
@@ -611,8 +612,20 @@ def check_duplicate_filenames(files):
 
     if len(dup_names) > 0:
         logger.warning(
-            'Duplicate file name(s) found. Having duplicate file names will '
-            'break some links. List of files: {}'.format(sorted(dup_names),))
+            'Duplicate example file name(s) found. Having duplicate file '
+            'names will break some links. '
+            'List of files: {}'.format(sorted(dup_names),))
+
+
+def check_spaces_in_filenames(files):
+    """Check for spaces in filenames across example directories."""
+    regex = re.compile(r'[\s]')
+    files_with_space = list(filter(regex.search, files))
+    if files_with_space:
+        logger.warning(
+            'Example file name(s) with space(s) found. Having space(s) in '
+            'file names will break some links. '
+            'List of files: {}'.format(sorted(files_with_space),))
 
 
 def get_default_config_value(key):

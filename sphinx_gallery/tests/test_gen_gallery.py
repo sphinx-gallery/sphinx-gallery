@@ -16,6 +16,7 @@ import pytest
 
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
+                                        check_spaces_in_filenames,
                                         collect_gallery_files,
                                         write_computation_times)
 
@@ -125,7 +126,7 @@ def test_duplicate_files_warn(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
     files = ['./a/file1.py', './a/file2.py', 'a/file3.py', './b/file1.py']
-    msg = ("Duplicate file name(s) found. Having duplicate file names "
+    msg = ("Duplicate example file name(s) found. Having duplicate file names "
            "will break some links. List of files: {}")
     m = "['./b/file1.py']" if sys.version_info[0] >= 3 else "[u'./b/file1.py']"
 
@@ -136,6 +137,27 @@ def test_duplicate_files_warn(sphinx_app_wrapper):
 
     # Warning because last file is named the same
     check_duplicate_filenames(files)
+    build_warn = sphinx_app._warning.getvalue()
+    assert msg.format(m) in build_warn
+
+
+def test_spaces_in_files_warn(sphinx_app_wrapper):
+    """Test for a exception when an example filename has a space in it."""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
+    files = ['./a/file1.py', './a/file2.py', './a/file 3.py']
+    msg = ("Example file name(s) with space(s) found. Having space(s) in "
+           "file names will break some links. "
+           "List of files: {}")
+    m = "['./a/file 3.py']" if sys.version_info[0] >= 3 else "[u'./a/file 3.py']"
+
+    # No warning because no filename with space
+    check_spaces_in_filenames(files[:-1])
+    build_warn = sphinx_app._warning.getvalue()
+    assert build_warn == ''
+
+    # Warning because last file has space
+    check_spaces_in_filenames(files)
     build_warn = sphinx_app._warning.getvalue()
     assert msg.format(m) in build_warn
 
