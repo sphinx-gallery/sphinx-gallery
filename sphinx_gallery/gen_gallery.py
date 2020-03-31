@@ -206,7 +206,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
     gallery_conf['titles'] = {}
-    # Ensure 'backreferences_dir' is str or Noe
+    # Ensure 'backreferences_dir' is str or None
     backref = gallery_conf['backreferences_dir']
     if (not isinstance(backref, str)) and (backref is not None):
         raise ValueError("The 'backreferences_dir' parameter must be of type"
