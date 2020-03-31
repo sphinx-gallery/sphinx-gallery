@@ -145,7 +145,7 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
     """Test for a exception when an example filename has a space in it."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
-    files = ['./a/file1.py', './a/file2.py', 'a/file 3.py']
+    files = ['./a/file1.py', './a/file2.py', './a/file 3.py']
     msg = ("Example file name(s) with space(s) found. Having space(s) in "
            "file names will break some links. "
            "List of files: {}")
