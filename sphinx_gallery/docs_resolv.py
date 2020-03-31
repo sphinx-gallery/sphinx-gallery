@@ -331,12 +331,16 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             example_code_obj = pickle.load(fid)
         # generate replacement strings with the links
         str_repl = {}
+        assert isinstance(example_code_obj, dict), type(example_code_obj)
         for name in sorted(example_code_obj):
+            assert isinstance(name, str), type(name)
             cobjs = example_code_obj[name]
+            assert isinstance(cobjs, list), type(cobjs)
             # possible names from identify_names, which in turn gets
             # possibilites from NameFinder.get_mapping
             link = type_ = None
             for cobj in cobjs:
+                assert isinstance(cobj, dict), type(cobj)
                 for modname in (cobj['module_short'], cobj['module']):
                     this_module = modname.split('.')[0]
                     cname = cobj['name']

@@ -229,6 +229,11 @@ def identify_names(script_blocks, global_variables=None, node=''):
         cobj = {'name': attribute, 'module': module,
                 'module_short': module_short or module, 'is_class': is_class}
         example_code_obj[name].append(cobj)
+    assert isinstance(example_code_obj, dict), type(example_code_obj)
+    for val in example_code_obj.values():
+        assert isinstance(val, list), type(val)
+        for v in val:
+            assert isinstance(v, dict), type(v)
     return example_code_obj
 
 
