@@ -16,6 +16,7 @@ import pytest
 
 from sphinx.errors import ExtensionError
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
+                                        check_spaces_in_filenames,
                                         collect_gallery_files,
                                         write_computation_times)
 
@@ -125,7 +126,7 @@ def test_duplicate_files_warn(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
     files = ['./a/file1.py', './a/file2.py', 'a/file3.py', './b/file1.py']
-    msg = ("Duplicate file name(s) found. Having duplicate file names "
+    msg = ("Duplicate example file name(s) found. Having duplicate file names "
            "will break some links. List of files: {}")
     m = "['./b/file1.py']" if sys.version_info[0] >= 3 else "[u'./b/file1.py']"
 
