@@ -207,12 +207,15 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
     gallery_conf['titles'] = {}
-    # Ensure 'backreferences_dir' is str or None
+    # Ensure 'backreferences_dir' is str, pathlib.Path or None
     backref = gallery_conf['backreferences_dir']
     if (not isinstance(backref, (str, pathlib.Path))) and (backref is not None):
         raise ValueError("The 'backreferences_dir' parameter must be of type "
                          "str, pathlib.Path or None, "
                          "found type %s" % type(backref))
+    # if 'backreferences_dir' is pathlib.Path, make str for Python <=3.5
+    if isinstance(backref, pathlib.Path):
+        gallery_conf['backreferences_dir'] = str(backref)
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise TypeError('gallery_conf["css"] must be list or tuple, got %r'
