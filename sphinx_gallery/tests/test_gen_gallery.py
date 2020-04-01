@@ -11,6 +11,7 @@ import codecs
 import os
 import sys
 import re
+import pathlib
 
 import pytest
 
@@ -379,6 +380,18 @@ def test_backreferences_dir_config(sphinx_app_wrapper):
     with pytest.raises(ValueError,
                        match="The 'backreferences_dir' parameter must be of"):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
+
+
+@pytest.mark.conf_file(content="""
+import pathlib
+
+sphinx_gallery_conf = {
+    'backreferences_dir': pathlib.Path('.'),
+}""")
+def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
+    """Tests pathlib.Path does not raise exception."""
+    from sphinx_gallery.gen_gallery import parse_config
+    parse_config(sphinx_app_wrapper.create_sphinx_app())
 
 
 def test_write_computation_times_noop():
