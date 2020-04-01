@@ -214,6 +214,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                          "str, pathlib.Path or None, "
                          "found type %s" % type(backref))
     # if 'backreferences_dir' is pathlib.Path, make str for Python <=3.5
+    # compatibility
     if isinstance(backref, pathlib.Path):
         gallery_conf['backreferences_dir'] = str(backref)
 
