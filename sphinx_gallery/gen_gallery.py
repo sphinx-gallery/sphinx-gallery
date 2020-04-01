@@ -17,6 +17,7 @@ from datetime import timedelta, datetime
 from importlib import import_module
 import re
 import os
+import pathlib
 from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.util.console import red
@@ -208,9 +209,10 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf['titles'] = {}
     # Ensure 'backreferences_dir' is str or None
     backref = gallery_conf['backreferences_dir']
-    if (not isinstance(backref, str)) and (backref is not None):
+    if (not isinstance(backref, (str, pathlib.Path))) and (backref is not None):
         raise ValueError("The 'backreferences_dir' parameter must be of type "
-                         "str or None, found type %s" % type(backref))
+                         "str, pathlib.Path or None, "
+                         "found type %s" % type(backref))
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise TypeError('gallery_conf["css"] must be list or tuple, got %r'

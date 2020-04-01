@@ -331,9 +331,9 @@ The path you specify in ``backreferences_dir`` (here we choose
 ``gen_modules/backreferences``) will be populated with
 ReStructuredText files. Each will contain a reduced version of the
 gallery specific to every function used across all the examples
-galleries and belonging to the modules listed in ``doc_module``. Keep
-in mind that the path set in ``backreferences_dir`` is **relative** to the
-``conf.py`` file.
+galleries and belonging to the modules listed in ``doc_module``.
+``backreferences_dir` should be a string or ``pathlib.Path`` object that is
+**relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
 Then within your sphinx documentation ``.rst`` files you write these
 lines to include this reduced version of the Gallery, which has
