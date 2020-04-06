@@ -42,11 +42,15 @@ Prepare for release
        <https://github.com/skywinder/github-changelog-generator#installation>`_ to
        gather all merged pull requests and closed issues during the development
        cycle. You will likely need to `generate a Github token <https://github.com/settings/tokens/new?description=GitHub%20Changelog%20Generator%20token>`_
-       as Github only allows 50 unauthenticated requests per hour. We do this
-       because our failing discipline of writing in the CHANGES.rst all relevant
-       changes, this helps our memory. ::
+       as Github only allows 50 unauthenticated requests per hour. In the
+       command below ``<version>`` is the current (not development) version of
+       the package, e.g., ``0.6.0``. We do this because our failing discipline
+       of writing in the CHANGES.rst all relevant changes, this helps our
+       memory. It is a good idea to add appropriate labels (e.g., 'BUG') to
+       issues and pull requests so they are categorized correctly in the
+       CHANGES.rst generated. ::
 
-          github_changelog_generator -u sphinx-gallery -p sphinx-gallery --since-tag=v0.<latest version>.0 --token <your-40-digit-token>
+          github_changelog_generator -u sphinx-gallery -p sphinx-gallery --since-tag=v<version> --token <your-40-digit-token>
 
     2. Edit CHANGELOG.md to look reasonable (it will be used later). It's a
        good idea to add labels to issues and pull requests so
@@ -89,11 +93,15 @@ Finalize the release
 
    * Check the release::
 
-        twine check dist/sphinx-gallery-0.4.0.tar.gz
+        twine check dist/sphinx-gallery-<version>.tar.gz
+
+     ``<version>`` should be the release version, e.g., ``0.7.0``.
 
    * Upload to PyPI::
 
         twine upload dist/sphinx-gallery-<version>.tar.gz
+
+     Again, ``<version>`` should be the release version, e.g., ``0.7.0``.
 
    * Confirm that the new version of Sphinx Gallery
      `is posted to pypi <https://pypi.org/project/sphinx-gallery/>`_.
@@ -101,7 +109,7 @@ Finalize the release
 2. Create a new release on GitHub
 
    * Go to the `Draft a new release <https://github.com/sphinx-gallery/sphinx-gallery/releases/new>`_ page.
-   * The **tag version** is whatever the version is in ``__init__.py`` prepended with ``v``. E.g., ``v0.3.0``.
+   * The **tag version** is whatever the version is in ``__init__.py`` prepended with ``v``. E.g., ``v0.7.0``.
    * The **release title** is ``Release <tag-version>``.
    * The **description** should contain the markdown changelog
      you generated above (in the ``CHANGELOG.md`` file).
