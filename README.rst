@@ -8,6 +8,9 @@ Sphinx-Gallery
 .. image::     https://ci.appveyor.com/api/projects/status/github/sphinx-gallery/sphinx-gallery?branch=master&svg=true
     :target: https://ci.appveyor.com/project/sphinx-gallery/sphinx-gallery/history
 
+.. image:: https://zenodo.org/badge/25860190.svg
+    :target: https://zenodo.org/badge/latestdoi/25860190
+
 
 A Sphinx extension that builds an HTML version of any Python
 script and puts it into an examples gallery.
@@ -83,4 +86,3 @@ you can do:
     $ pip install -e .
 
 .. installation-end-content
-
