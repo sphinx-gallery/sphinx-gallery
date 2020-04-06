@@ -1,6 +1,35 @@
 Change Log
 ==========
 
+v0.6.1
+------
+
+Developer changes
+'''''''''''''''''
+
+- Added Zenodo integration. This release is for Zenodo to pick it up.
+
+**Implemented enhancements:**
+
+-  Allow pathlib.Path to backreferences_dir option `#635 <https://github.com/sphinx-gallery/sphinx-gallery/issues/635>`__
+-  ENH Allow backrefences_dir to be pathlib object `#638 <https://github.com/sphinx-gallery/sphinx-gallery/pull/638>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Fixed bugs:**
+
+-  TypeError when creating links from gallery to documentation `#634 <https://github.com/sphinx-gallery/sphinx-gallery/issues/634>`__
+-  BUG Checks if filenames have space `#636 <https://github.com/sphinx-gallery/sphinx-gallery/pull/636>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Fix missing space in error message. `#632 <https://github.com/sphinx-gallery/sphinx-gallery/pull/632>`__ (`anntzer <https://github.com/anntzer>`__)
+-  BUG: Spaces in example filenames break image linking `#440 <https://github.com/sphinx-gallery/sphinx-gallery/issues/440>`__
+
+**Closed issues:**
+
+-  New release? `#627 <https://github.com/sphinx-gallery/sphinx-gallery/issues/627>`__
+
+**Merged pull requests:**
+
+-  DOC minor update to release guide `#633 <https://github.com/sphinx-gallery/sphinx-gallery/pull/633>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Bump release version `#631 <https://github.com/sphinx-gallery/sphinx-gallery/pull/631>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.6.0
 ------
 
