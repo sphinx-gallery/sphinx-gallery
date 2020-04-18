@@ -45,7 +45,7 @@ DEFAULT_GALLERY_CONF = {
     'backreferences_dir': None,
     'doc_module': (),
     'reference_url': {},
-    'capture_repr': ('_repr_html_','__repr__'),
+    'capture_repr': ('_repr_html_', '__repr__'),
     # Build options
     # -------------
     # We use a string for 'plot_gallery' rather than simply the Python boolean
@@ -197,8 +197,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # Ensure the first cell text is a string if we have it
     first_cell = gallery_conf.get("first_notebook_cell")
     if (not isinstance(first_cell, str)) and (first_cell is not None):
-        raise ValueError("The 'first_notebook_cell' parameter must be type str "
-                         "or None, found type %s" % type(first_cell))
+        raise ValueError("The 'first_notebook_cell' parameter must be type "
+                         "str or None, found type %s" % type(first_cell))
     # Ensure the last cell text is a string if we have it
     last_cell = gallery_conf.get("last_notebook_cell")
     if (not isinstance(last_cell, str)) and (last_cell is not None):
@@ -209,7 +209,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf['titles'] = {}
     # Ensure 'backreferences_dir' is str, pathlib.Path or None
     backref = gallery_conf['backreferences_dir']
-    if (not isinstance(backref, (str, pathlib.Path))) and (backref is not None):
+    if (not isinstance(backref, (str, pathlib.Path))) and \
+            (backref is not None):
         raise ValueError("The 'backreferences_dir' parameter must be of type "
                          "str, pathlib.Path or None, "
                          "found type %s" % type(backref))

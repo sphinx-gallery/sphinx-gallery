@@ -8,8 +8,7 @@ from __future__ import division, absolute_import, print_function
 
 import pytest
 import sphinx_gallery.backreferences as sg
-from sphinx_gallery.py_source_parser import (split_code_and_text_blocks,
-                                             parse_source_file)
+from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.gen_rst import _sanitize_rst
 
 

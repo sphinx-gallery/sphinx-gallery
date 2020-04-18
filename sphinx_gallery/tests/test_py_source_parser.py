@@ -56,7 +56,6 @@ def test_extract_file_config(content, file_conf, log_collector):
         assert len(log_collector.calls['warning']) == 0
 
 
-
 @pytest.mark.parametrize('contents, result', [
     ("No config\nin here.",
      "No config\nin here."),

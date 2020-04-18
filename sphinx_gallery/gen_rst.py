@@ -439,7 +439,7 @@ class _exec_once(object):
             with patch_warnings():
                 sys.modules['__main__'] = self.fake_main
                 try:
-                        exec(self.code, self.fake_main.__dict__)
+                    exec(self.code, self.fake_main.__dict__)
                 finally:
                     if old_main is not None:
                         sys.modules['__main__'] = old_main

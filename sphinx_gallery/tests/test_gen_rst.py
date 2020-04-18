@@ -272,7 +272,7 @@ def test_extract_intro_and_title():
 
     # Title with punctuation (gh-517)
     intro, title = sg.extract_intro_and_title('<string>',
-                                              '    ------------\n"-`Header"-with:; `punct` mark\'s\n----------------')
+                                              '    ------------\n"-`Header"-with:; `punct` mark\'s\n----------------')  # noqa: E501
     assert title == '"-`Header"-with:; `punct` mark\'s'
 
     # Long intro paragraph gets shortened
@@ -686,7 +686,7 @@ def _clean_output(output):
         return output_test_string.strip()
     elif is_text:
         output_test_string = "\n".join(
-        [line[4:] for line in output.strip().split("\n")[6:]])
+            [line[4:] for line in output.strip().split("\n")[6:]])
         return output_test_string.strip()
     elif is_html:
         output_test_string = "\n".join(output.strip().split("\n"))
@@ -694,17 +694,18 @@ def _clean_output(output):
 
 
 @pytest.mark.parametrize('capture_repr, code, expected_out', [
-    pytest.param(tuple(), 'a=2\nb=3', '', id='assign,()' ),
-    pytest.param(tuple(), 'a=2\na', '', id='var,()' ),
+    pytest.param(tuple(), 'a=2\nb=3', '', id='assign,()'),
+    pytest.param(tuple(), 'a=2\na', '', id='var,()'),
     pytest.param(tuple(), 'a=2\nprint(a)', '2',  id='print(var),()'),
-    pytest.param(tuple(), 'print("hello")\na=2\na', 'hello', id='print+var,()'),
-    pytest.param(('__repr__',), 'a=2\nb=3', '', id='assign,(repr)' ),
-    pytest.param(('__repr__',), 'a=2\na', '2', id='var,(repr)' ),
+    pytest.param(tuple(), 'print("hello")\na=2\na', 'hello',
+                 id='print+var,()'),
+    pytest.param(('__repr__',), 'a=2\nb=3', '', id='assign,(repr)'),
+    pytest.param(('__repr__',), 'a=2\na', '2', id='var,(repr)'),
     pytest.param(('__repr__',), 'a=2\nprint(a)', '2', id='print(var),(repr)'),
     pytest.param(('__repr__',), 'print("hello")\na=2\na', 'hello\n\n2',
                  id='print+var,(repr)'),
     pytest.param(('__repr__',), code_repr_and_html, 'This is the __repr__',
-                 id='repr_and_html,(repr)' ),
+                 id='repr_and_html,(repr)'),
     pytest.param(('__repr__',), code_print_and_repr_and_html,
                  'print statement\n\nThis is the __repr__',
                  id='print and repr_and_html,(repr)'),
@@ -715,7 +716,7 @@ def _clean_output(output):
                  ''.join([text_above_html, html_out]),
                  id='print and repr_and_html,(html)'),
     pytest.param(('_repr_html_', '__repr__'), code_repr_and_html, html_out,
-                 id='repr_and_html,(html,repr)' ),
+                 id='repr_and_html,(html,repr)'),
     pytest.param(('__repr__', '_repr_html_'), code_repr_and_html,
                  'This is the __repr__', id='repr_and_html,(repr,html)'),
     pytest.param(('_repr_html_', '__repr__'), code_repr_only,
