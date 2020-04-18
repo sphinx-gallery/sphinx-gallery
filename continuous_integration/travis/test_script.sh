@@ -7,6 +7,7 @@
 set -e
 
 pytest sphinx_gallery -vv  --tb=short
+check-manifest -v --ignore doc*,examples*,tutorials*,mayavi_examples*,sphinx_gallery/tests*,.circleci*,continuous_integration*,appveyor.yml,RELEASES.md,dev-requirements.txt,sphinx_gallery/_static/broken_stamp.svg
 cd doc
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
     make SPHINXOPTS= html-noplot
