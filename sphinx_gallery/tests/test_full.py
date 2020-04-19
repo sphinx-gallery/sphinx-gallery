@@ -218,7 +218,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'numpy.ndarray.html' in lines
     # see issue 617
     id_names = re.search(
-        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-]identify[_,-]names', # noqa: E501
+        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-]identify[_,-]names',  # noqa: E501
         lines
     )
     assert id_names is not None
@@ -237,24 +237,24 @@ def test_embed_links_and_styles(sphinx_app):
     # issue 617 (regex '-'s)
     # instance
     dummy_class_inst = re.search(
-        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>', # noqa: E501
+        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>',  # noqa: E501
         lines
     )
     assert dummy_class_inst is not None
     # class
     dummy_class_class = re.search(
-        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">DummyClass</span>', # noqa: E501
+        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">DummyClass</span>',  # noqa: E501
         lines
     )
     assert dummy_class_class is not None
     # method
     dummy_class_meth = re.search(
-        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]run" title="sphinx_gallery.backreferences.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>', # noqa: E501
+        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]run" title="sphinx_gallery.backreferences.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>',  # noqa: E501
         lines
     )
     assert dummy_class_meth is not None
     # property (Sphinx 2+ calls it a method rather than attribute, so regex)
-    dummy_class_prop = re.compile(r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-(attribute|method)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>') # noqa: E501
+    dummy_class_prop = re.compile(r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-(attribute|method)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>')  # noqa: E501
     assert dummy_class_prop.search(lines) is not None
 
     try:
@@ -308,8 +308,10 @@ def test_backreferences(sphinx_app):
 
 
 @pytest.mark.parametrize('rst_file, example_used_in', [
-    ('sphinx_gallery.backreferences.identify_names.examples', 'plot_numpy_matplotlib'),
-    ('sphinx_gallery.sorting.ExplicitOrder.examples', 'plot_second_future_imports'),
+    ('sphinx_gallery.backreferences.identify_names.examples',
+     'plot_numpy_matplotlib'),
+    ('sphinx_gallery.sorting.ExplicitOrder.examples',
+     'plot_second_future_imports'),
 ])
 def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
     """Test linking to mini-galleries using backreferences_dir."""

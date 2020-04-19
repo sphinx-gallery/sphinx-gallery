@@ -9,9 +9,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 import codecs
 import os
-import sys
 import re
-import pathlib
 
 import pytest
 
@@ -129,7 +127,7 @@ def test_duplicate_files_warn(sphinx_app_wrapper):
     files = ['./a/file1.py', './a/file2.py', 'a/file3.py', './b/file1.py']
     msg = ("Duplicate example file name(s) found. Having duplicate file names "
            "will break some links. List of files: {}")
-    m = "['./b/file1.py']" if sys.version_info[0] >= 3 else "[u'./b/file1.py']"
+    m = "['./b/file1.py']"
 
     # No warning because no overlapping names
     check_duplicate_filenames(files[:-1])
@@ -150,7 +148,7 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
     msg = ("Example file name(s) with space(s) found. Having space(s) in "
            "file names will break some links. "
            "List of files: {}")
-    m = "['./a/file 3.py']" if sys.version_info[0] >= 3 else "[u'./a/file 3.py']"
+    m = "['./a/file 3.py']"
 
     # No warning because no filename with space
     check_spaces_in_filenames(files[:-1])

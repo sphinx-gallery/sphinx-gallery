@@ -9,7 +9,7 @@
 set -e
 
 if [ "$DISTRIB" == "conda" ]; then
-    export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn joblib flake8 ${CONDA_PKGS}"
+    export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn joblib flake8 check-manifest ${CONDA_PKGS}"
     export PIP_DEPENDENCIES="sphinx_rtd_theme"
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
         export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk mayavi ipython"
