@@ -1,6 +1,32 @@
 Change Log
 ==========
 
+v0.6.2
+------
+
+- Patch release due to missing CSS files in v0.6.1. Manifest check added to CI.
+
+Developer changes
+'''''''''''''''''
+
+**Implemented enhancements:**
+
+-  How do I best cite sphinx-gallery? `#639 <https://github.com/sphinx-gallery/sphinx-gallery/issues/639>`__
+-  MRG, ENH: Add Zenodo badge `#641 <https://github.com/sphinx-gallery/sphinx-gallery/pull/641>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Fixed bugs:**
+
+-  BUG Wrong pandas intersphinx URL `#646 <https://github.com/sphinx-gallery/sphinx-gallery/issues/646>`__
+-  css not included in wheels? `#644 <https://github.com/sphinx-gallery/sphinx-gallery/issues/644>`__
+-  BUG: Fix CSS includes and add manifest check in CI `#648 <https://github.com/sphinx-gallery/sphinx-gallery/pull/648>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Update pandas intersphinx url `#647 <https://github.com/sphinx-gallery/sphinx-gallery/pull/647>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Merged pull requests:**
+
+-  Update maintainers url in RELEASES.md `#649 <https://github.com/sphinx-gallery/sphinx-gallery/pull/649>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Amend maintainers `#643 <https://github.com/sphinx-gallery/sphinx-gallery/pull/643>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Change version back to 0.7.0.dev0 `#642 <https://github.com/sphinx-gallery/sphinx-gallery/pull/642>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.6.1
 ------
 
