@@ -306,7 +306,7 @@ intersphinx_mapping = {
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
-    'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
 }
 
 examples_dirs = ['../examples', '../tutorials']
