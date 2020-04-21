@@ -23,7 +23,7 @@ To create a new release of Sphinx Gallery, you need to do these things:
 You should double-check a few things to make sure that you can create
 a new release for Sphinx Gallery.
 
-1. Ensure that you **registered an acccount** on `the PyPI index <https://pypi.org/account/register/>`_.
+1. Ensure that you **registered an account** on `the PyPI index <https://pypi.org/account/register/>`_.
 2. Ensure you have **push access** to the
    `Sphinx Gallery pypi repository <https://pypi.org/project/sphinx-gallery/>`_.
    Ask one of the Sphinx Gallery core developers if you do not.

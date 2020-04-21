@@ -114,7 +114,7 @@ entries, which have the default values::
 
 To omit some files from the gallery entirely (i.e., not execute, parse, or
 add them), you can change the ``ignore_pattern`` option.
-To choose which of the parsed and added Python scripts are actualy
+To choose which of the parsed and added Python scripts are actually
 executed, you can modify ``filename_pattern``. For example::
 
     sphinx_gallery_conf = {
@@ -560,7 +560,7 @@ default, the following first cell is added to each notebook::
    %matplotlib inline
 
 Adding a last cell can be useful for performing a desired action such as
-reporting on the user's evironment. By default no last cell is added.
+reporting on the user's environment. By default no last cell is added.
 
 You can choose whatever text you like by modifying the ``first_notebook_cell``
 and ``last_notebook_cell`` configuration parameters. For example, the gallery
@@ -855,7 +855,7 @@ to scrape both matplotlib and Mayavi images you can do::
       }
 
 The default value is ``'image_scrapers': ('matplotlib',)`` which only scrapes
-Matplotlib images. Note that this includes any images produced by pacakges that
+Matplotlib images. Note that this includes any images produced by packages that
 are based on Matplotlib, for example Seaborn or Yellowbrick.
 
 The following scrapers are supported:

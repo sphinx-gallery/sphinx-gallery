@@ -48,10 +48,10 @@ Know your Gallery files
 
 The Gallery has been built, now you and all of your project's users
 can already start enjoying it. All the temporary files needed to
-generate the gallery(rst files, images, chache objects, etc) are
+generate the gallery (rst files, images, cache objects, etc) are
 stored where you configured in ``gallery_dirs``. The final files that go
 into the HTML version of your documentation have a particular
-namespace, to avoid colisions with your own files and images.
+namespace, to avoid collisions with your own files and images.
 
 Our namespace convention is to prefix everything with ``sphx_glr`` and
 change path separators with underscores. This is valid for
@@ -154,7 +154,7 @@ index page thumbnails. PNG images are scaled using Pillow, and
 SVG images are copied.
 
 .. warning:: SVG images do not work with ``latex`` build modes, thus will not
-             work while building a PDF vesion of your documentation.
+             work while building a PDF version of your documentation.
 
 Example 1: a Matplotlib and Mayavi-style scraper
 ------------------------------------------------
