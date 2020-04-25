@@ -2,11 +2,11 @@ version: 2
 jobs:
   build_docs:
     docker:
-      - image: circleci/python:3.6-stretch
+      - image: circleci/python:3.7.7-buster
     steps:
       # Get our data and merge with upstream
       - run: sudo apt-get update
-      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk
+      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk libxkbcommon-x11-0
       - checkout
       - run: echo $(git log -1 --pretty=%B) | tee gitlog.txt
       - run: echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
@@ -24,9 +24,7 @@ jobs:
       - restore_cache:
           keys:
             - cache-pip
-      # PyQt5 5.12 causes problems with libxcb
-      # We use a specific commit of sphinx to get --keep-going support in setup.py build (as of 2019/05/31, it's not released)
-      - run: pip install --user numpy matplotlib "pyqt5<5.12" seaborn sphinx_rtd_theme pillow joblib https://api.github.com/repos/sphinx-doc/sphinx/zipball/925bc187eacbc0fbdd2c56f360a040a23cb13145 pytest vtk traits traitsui pyface mayavi memory_profiler ipython pandas
+      - run: pip install --user numpy matplotlib pyqt5 seaborn sphinx_rtd_theme pillow joblib sphinx pytest vtk traits traitsui pyface mayavi memory_profiler ipython pandas
       - save_cache:
           key: cache-pip
           paths:
