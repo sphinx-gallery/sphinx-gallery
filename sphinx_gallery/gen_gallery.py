@@ -22,7 +22,7 @@ from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5
+from .utils import _replace_md5, _has_optipng
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
@@ -63,6 +63,7 @@ DEFAULT_GALLERY_CONF = {
     'min_reported_time': 0,
     'binder': {},
     'image_scrapers': ('matplotlib',),
+    'optimize_images': (),
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'last_notebook_cell': None,
@@ -194,6 +195,33 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         _import_matplotlib()
     except (ImportError, ValueError):
         pass
+
+    # optimize_images
+    optimize_images = gallery_conf['optimize_images']
+    if isinstance(optimize_images, str):
+        optimize_images = [optimize_images]
+    elif not isinstance(optimize_images, (tuple, list)):
+        raise TypeError('optimize_images must be a tuple, list, or str, got %s'
+                        % (type(optimize_images),))
+    optimize_images = list(optimize_images)
+    allowed_values = ('images', 'thumbnails')
+    pops = list()
+    for ki, kind in enumerate(optimize_images):
+        if kind not in allowed_values:
+            if kind.startswith('-'):
+                pops.append(ki)
+                continue
+            raise TypeError('All entries in optimize_images must be one of %s '
+                            'or a command-line switch starting with "-", '
+                            'got %r' % (allowed_values, kind))
+    optimize_images_args = [optimize_images.pop(p) for p in pops[::-1]]
+    if len(optimize_images) and not _has_optipng():
+        logger.warning(
+            'optipng binaries not found, PNG %s will not be optimized'
+            % (' and '.join(optimize_images),))
+        optimize_images = ()
+    gallery_conf['optimize_images'] = optimize_images
+    gallery_conf['optimize_images_args'] = optimize_images_args
 
     # deal with resetters
     resetters = gallery_conf['reset_modules']

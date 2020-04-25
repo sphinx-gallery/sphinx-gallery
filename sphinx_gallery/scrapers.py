@@ -16,7 +16,7 @@ import sys
 import re
 from textwrap import indent
 
-from .utils import scale_image
+from .utils import scale_image, optipng
 
 __all__ = ['save_figures', 'figure_rst', 'ImagePathIterator', 'clean_modules',
            'matplotlib_scraper', 'mayavi_scraper']
@@ -141,6 +141,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
                     attr not in kwargs:
                 these_kwargs[attr] = fig_attr
         fig.savefig(image_path, **these_kwargs)
+        if 'images' in gallery_conf['optimize_images']:
+            optipng(image_path, gallery_conf['optimize_images_args'])
         image_rsts.append(
             figure_rst([image_path], gallery_conf['src_dir'], fig_titles))
     plt.close('all')
@@ -206,6 +208,8 @@ def mayavi_scraper(block, block_vars, gallery_conf):
         mlab.savefig(image_path, figure=scene)
         # make sure the image is not too large
         scale_image(image_path, image_path, 850, 999)
+        if 'images' in gallery_conf['optimize_images']:
+            optipng(image_path, gallery_conf['optimize_images_args'])
         image_paths.append(image_path)
     mlab.close(all=True)
     return figure_rst(image_paths, gallery_conf['src_dir'])

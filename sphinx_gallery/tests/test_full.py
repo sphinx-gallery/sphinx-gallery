@@ -20,7 +20,7 @@ from numpy.testing import assert_allclose
 
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
-from sphinx_gallery.utils import _get_image, scale_image
+from sphinx_gallery.utils import _get_image, scale_image, _has_optipng
 
 import pytest
 
@@ -82,6 +82,18 @@ def test_timings(sphinx_app):
     status = sphinx_app._status.getvalue()
     fname = op.join('examples', 'plot_numpy_matplotlib.py')
     assert ('- %s: ' % fname) in status
+
+
+def test_optipng(sphinx_app):
+    """Test that optipng is detected."""
+    status = sphinx_app._status.getvalue()
+    w = sphinx_app._warning.getvalue()
+    substr = 'will not be optimized'
+    if _has_optipng():
+        assert substr not in w
+    else:
+        assert substr in w
+    assert 'optipng version' not in status.lower()  # catch the --version
 
 
 def test_junit(sphinx_app, tmpdir):
@@ -158,8 +170,9 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     Image = _get_image()
     orig = np.asarray(Image.open(fname_thumb))
     new = np.asarray(Image.open(fname_new))
-    assert new.shape == orig.shape
-    corr = np.corrcoef(new.ravel(), orig.ravel())[0, 1]
+    assert new.shape[:2] == orig.shape[:2]
+    assert new.shape[2] in (3, 4)  # optipng can strip the alpha channel
+    corr = np.corrcoef(new[..., :3].ravel(), orig[..., :3].ravel())[0, 1]
     assert corr > 0.99
 
 

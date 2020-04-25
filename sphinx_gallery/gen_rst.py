@@ -35,7 +35,8 @@ import codeop
 
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
-from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
+from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
+                    optipng)
 from . import glr_path_static
 from . import sphinx_compatibility
 from .backreferences import (_write_backreferences, _thumbnail_div,
@@ -305,6 +306,8 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         copyfile(img, thumb_file)
     else:
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
+        if 'thumbnails' in gallery_conf['optimize_images']:
+            optipng(thumb_file, gallery_conf['optimize_images_args'])
 
 
 def _get_readme(dir_, gallery_conf, raise_error=True):

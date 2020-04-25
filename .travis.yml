@@ -1,15 +1,14 @@
 language: python
 
+os: linux
 dist: xenial
 sudo: false
-
 services:
   - xvfb # For mayavi headless
 
 matrix:
   include:
-    - os: linux
-      env: DISTRIB="ubuntu" PYTHON_VERSION="3.6" SPHINXOPTS=""
+    - env: DISTRIB="ubuntu" PYTHON_VERSION="3.6" SPHINXOPTS=""
       addons:
         apt:
           packages:
@@ -17,28 +16,28 @@ matrix:
             - python3-matplotlib
             - python3-pip
             - python3-coverage
-    - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="==1.8.3"
-    - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.6"
-    - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
-    - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.7" LOCALE=C
+            - optipng
+    - env: DISTRIB="conda" PYTHON_VERSION="3.5" SPHINX_VERSION="==1.8.3"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.6"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.6" LOCALE=C
+    - env: DISTRIB="conda" PYTHON_VERSION="3.7" LOCALE=C
            SPHINXOPTS="-nWT --keep-going"
-    - os: linux
-      env: DISTRIB="conda" PYTHON_VERSION="3.7" SPHINX_VERSION="dev"
+      addons:
+        apt:
+          packages:
+            - optipng
+    - env: DISTRIB="conda" PYTHON_VERSION="3.7" SPHINX_VERSION="dev"
     - python: 3.7
       env: DISTRIB="minimal"
     - python: "nightly"
       env: PYTHON_VERSION="nightly"
-      os: linux
       addons:
         apt:
           packages:
-            libblas-dev
-            liblapack-dev
-            gfortran
+            - libblas-dev
+            - liblapack-dev
+            - gfortran
+            - optipng
 
 before_install:
   # Make sure that things work even if the locale is set to C (which
