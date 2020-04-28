@@ -119,8 +119,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     if len(image_rsts) == 1:
         rst = image_rsts[0]
     else:
-        image_rsts = [re.sub(r'sphx-glr-single-img',
-                             'sphx-glr-multi-img',
+        image_rsts = [re.sub(r':class: sphx-glr-single-img',
+                             ':class: sphx-glr-multi-img',
                              image) for image in image_rsts]
         image_rsts = [HLIST_IMAGE_MATPLOTLIB + indent(image, u' ' * 6)
                       for image in image_rsts]
