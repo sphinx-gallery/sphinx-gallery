@@ -553,6 +553,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
 
 def test_alt_text(sphinx_app):
     """Test alt text"""
+    src_dir = sphinx_app.srcdir
     fname = op.join(src_dir, 'auto_examples', 'plot_matplotlib_alt.rst')
     assert op.isfile(fname)
     with codecs.open(fname, 'r', 'utf-8') as fid:
