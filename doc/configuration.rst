@@ -329,15 +329,15 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
 
 The path you specify in ``backreferences_dir`` (here we choose
 ``gen_modules/backreferences``) will be populated with
-ReStructuredText files. Each will contain a reduced version of the
-gallery specific to every function used across all the examples
-galleries and belonging to the modules listed in ``doc_module``.
-``backreferences_dir` should be a string or ``pathlib.Path`` object that is
+ReStructuredText files. Each .rst file will contain a reduced version of the
+gallery specific to each function that is used across all the examples
+and belonging to the modules listed in ``doc_module``.
+``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
-Then within your sphinx documentation ``.rst`` files you write these
-lines to include this reduced version of the Gallery, which has
-examples in use of a specific function, in this case ``numpy.exp``::
+Then, within your sphinx documentation ``.rst`` files you can use the
+following to include this reduced version of the Gallery, which has
+examples which use a specific function, in this case ``numpy.exp``::
 
     .. include:: gen_modules/backreferences/numpy.exp.examples
     .. raw:: html
@@ -1063,7 +1063,7 @@ Controlling what output is captured
 
 .. note::
 
-    Configure ``capture_repr`` to be an empty tuple (i.e.,``capture_repr: ()``)
+    Configure ``capture_repr`` to be an empty tuple (i.e., `capture_repr: ()`)
     to return to the output capturing behaviour prior to release v0.5.0.
 
 The ``capture_repr`` configuration allows the user to control what output
@@ -1171,5 +1171,5 @@ etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
     sphinx_gallery_conf = {
         ...
         'capture_repr': ('__repr__'),
-        'ignore_repr_types': r'matplotlib.text|matplotlib.axes',
+        'ignore_repr_types': r'matplotlib[text, axes]',
     }
