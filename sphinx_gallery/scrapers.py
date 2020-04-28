@@ -99,7 +99,6 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         fig = plt.figure(fig_num)
-        print(fig_titles)
         # get fig titles
         fig_titles = _matplotlib_fig_titles(fig)
         to_rgba = matplotlib.colors.colorConverter.to_rgba
