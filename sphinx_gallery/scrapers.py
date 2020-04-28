@@ -13,6 +13,7 @@ live in modules that will support them (e.g., PyVista, Plotly).
 
 import os
 import sys
+import re
 
 from .utils import scale_image
 
@@ -47,6 +48,22 @@ def _import_matplotlib():
     return matplotlib, plt
 
 
+def _matplotlib_fig_titles(fig):
+    titles = []
+    # get supertitle if exists
+    if fig._suptitle:
+        titles.append(fig._suptitle.get_text())
+    # get titles from all axes, for all locs
+    title_locs = ['left', 'center', 'right']
+    for ax in fig.axes:
+        for loc in title_locs:
+            text = ax.get_title(loc=loc)
+            if text:
+                titles.append(text)
+    fig_titles = ', '.join(titles)
+    return fig_titles
+
+
 def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     """Scrape Matplotlib images.
 
@@ -74,6 +91,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     matplotlib, plt = _import_matplotlib()
     image_path_iterator = block_vars['image_path_iterator']
     image_paths = list()
+    fig_titles = ''
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         if 'format' in kwargs:
             image_path = '%s.%s' % (os.path.splitext(image_path)[0],
@@ -81,8 +99,9 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         fig = plt.figure(fig_num)
-        print(fig.axes)
-        print(fig.gca().get_title())
+        print(fig_titles)
+        # get fig titles
+        fig_titles = _matplotlib_fig_titles(fig)
         to_rgba = matplotlib.colors.colorConverter.to_rgba
         # shallow copy should be fine here, just want to avoid changing
         # "kwargs" for subsequent figures processed by the loop
@@ -96,7 +115,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         fig.savefig(image_path, **these_kwargs)
         image_paths.append(image_path)
     plt.close('all')
-    return figure_rst(image_paths, gallery_conf['src_dir'])
+    return figure_rst(image_paths, gallery_conf['src_dir'], fig_titles)
 
 
 def mayavi_scraper(block, block_vars, gallery_conf):
@@ -244,7 +263,7 @@ def save_figures(block, block_vars, gallery_conf):
     return all_rst
 
 
-def figure_rst(figure_list, sources_dir):
+def figure_rst(figure_list, sources_dir, fig_titles=''):
     """Generate RST for a list of image filenames.
 
     Depending on whether we have one or more figures, we use a
@@ -256,6 +275,9 @@ def figure_rst(figure_list, sources_dir):
         List of strings of the figures' absolute paths.
     sources_dir : str
         absolute path of Sphinx documentation sources
+    fig_titles : str
+        Titles of figures, empty string if no titles found. Currently
+        only supported for matplotlib figures, default = ''.
 
     Returns
     -------
@@ -266,14 +288,26 @@ def figure_rst(figure_list, sources_dir):
     figure_paths = [os.path.relpath(figure_path, sources_dir)
                     .replace(os.sep, '/').lstrip('/')
                     for figure_path in figure_list]
+    # Get alt text
+    alt = ''
+    if fig_titles:
+        alt = fig_titles
+    elif figure_list:
+        file_name = os.path.split(figure_list[0])[1]
+        # remove ext & 'sphx_glr_' from start & n#'s from end
+        file_name_noext = os.path.splitext(file_name)[0][9:-4]
+        # replace - & _ with \s
+        file_name_final = re.sub(r'[-,_]', ' ', file_name_noext)
+        alt = file_name_final
+
     images_rst = ""
     if len(figure_paths) == 1:
         figure_name = figure_paths[0]
-        images_rst = SINGLE_IMAGE % figure_name
+        images_rst = SINGLE_IMAGE % (figure_name, alt)
     elif len(figure_paths) > 1:
         images_rst = HLIST_HEADER
         for figure_name in figure_paths:
-            images_rst += HLIST_IMAGE_TEMPLATE % figure_name
+            images_rst += HLIST_IMAGE_TEMPLATE % (figure_name, alt)
 
     return images_rst
 
@@ -290,11 +324,13 @@ HLIST_IMAGE_TEMPLATE = """
     *
 
       .. image:: /%s
+            :alt: %s
             :class: sphx-glr-multi-img
 """
 
 SINGLE_IMAGE = """
 .. image:: /%s
+    :alt: %s
     :class: sphx-glr-single-img
 """
 
