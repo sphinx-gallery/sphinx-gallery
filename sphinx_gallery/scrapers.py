@@ -116,9 +116,10 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         image_rsts.append(
             figure_rst([image_path], gallery_conf['src_dir'], fig_titles))
     plt.close('all')
+    rst = ''
     if len(image_rsts) == 1:
         rst = image_rsts[0]
-    else:
+    elif len(image_rsts) > 1:
         image_rsts = [re.sub(r':class: sphx-glr-single-img',
                              ':class: sphx-glr-multi-img',
                              image) for image in image_rsts]
@@ -318,7 +319,6 @@ def figure_rst(figure_list, sources_dir, fig_titles=''):
         images_rst = HLIST_HEADER
         for figure_name in figure_paths:
             images_rst += HLIST_IMAGE_TEMPLATE % (figure_name, alt)
-
     return images_rst
 
 
