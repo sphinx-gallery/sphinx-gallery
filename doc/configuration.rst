@@ -1090,12 +1090,7 @@ are:
   mime-bundle, Sphinx-Gallery will try to capture other representation types
   in the ``capture_repr`` tuple. If none exist, nothing will be captured.
 
-Sphinx-Gallery will attempt to capture representation types in the order they
-appear in the ``capture_repr`` tuple. The first representation type in the
-tuple will be attempted to be captured first. If not present Sphinx-Gallery
-will move on and try to capture the next representation type. If no
-representation types exist for a last statement, nothing would be captured.
-For example, the default setting is::
+The default setting is::
 
     sphinx_gallery_conf = {
         ...
