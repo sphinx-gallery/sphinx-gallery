@@ -571,6 +571,7 @@ def execute_code_block(compiler, block, example_globals,
 
         last_repr = None
         repr_meth = None
+        unsupported_mime = False
         if is_last_expr:
             if gallery_conf['ignore_repr_types']:
                 ignore_repr = re.search(
@@ -582,7 +583,7 @@ def execute_code_block(compiler, block, example_globals,
                 for meth in gallery_conf['capture_repr']:
                     try:
                         last_repr = getattr(___, meth)()
-                        # for case when last statement is print()
+                        # for when repr is None & last statement is print()
                         if last_repr is None or last_repr == 'None':
                             repr_meth = None
                         else:
@@ -590,11 +591,34 @@ def execute_code_block(compiler, block, example_globals,
                     except Exception:
                         pass
                     else:
-                        if isinstance(last_repr, str):
+                        # stop if supported mime captured
+                        if repr_meth == '_repr_mimebundle_':
+                            supported_mimes = ['text/html', 'text/plain']
+                            if bool(set(supported_mimes) & set(last_repr.keys())): # noqa E501
+                                break
+                            else:
+                                unsupported_mime = True
+                        # stop once first repr type in 'capture_repr' captured
+                        elif (repr_meth != '_repr_mimebundle_' and \
+                              isinstance(last_repr, str)):
                             break
         captured_std = captured_std.getvalue().expandtabs()
-        # normal string output
-        if repr_meth in ['__repr__', '__str__'] and last_repr:
+        # _repr_mimebundle_
+        mime_format = None
+        if repr_meth == '_repr_mimebundle_':
+            # if mime unsupported and no other reprs captured
+            if unsupported_mime:
+                last_repr = ''
+            elif 'text/html' in last_repr.keys():
+                mime_format = 'html'
+                last_repr = last_repr['text/html']
+            elif 'text/plain' in last_repr.keys():
+                mime_format = 'plain'
+                last_repr = last_repr['text/plain']
+        # plain text output
+        is_meth_plain = \
+            (repr_meth in ['__repr__', '__str__'] or mime_format == 'plain')
+        if is_meth_plain and last_repr:
             captured_std = u"{0}\n{1}".format(captured_std, last_repr)
         if captured_std and not captured_std.isspace():
             captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
@@ -602,10 +626,11 @@ def execute_code_block(compiler, block, example_globals,
             captured_std = ''
         images_rst = save_figures(block, script_vars, gallery_conf)
         # give html output its own header
-        if repr_meth == '_repr_html_':
+        if (repr_meth == '_repr_html_' or mime_format == 'html'):
             captured_html = html_header.format(indent(last_repr, u' ' * 8))
         else:
             captured_html = ''
+        # final output
         code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(
             images_rst, captured_std, captured_html)
 
