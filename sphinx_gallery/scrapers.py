@@ -81,6 +81,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         fig = plt.figure(fig_num)
+        print(fig.axes)
+        print(fig.gca().get_title())
         to_rgba = matplotlib.colors.colorConverter.to_rgba
         # shallow copy should be fine here, just want to avoid changing
         # "kwargs" for subsequent figures processed by the loop
