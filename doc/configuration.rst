@@ -1067,7 +1067,7 @@ Controlling what output is captured
     to return to the output capturing behaviour prior to release v0.5.0.
 
 The ``capture_repr`` configuration allows the user to control what output
-is captured, while executing the example ``.py`` files, and subsequently
+is captured while executing the example ``.py`` files and thus subsequently
 incorporated into the built documentation. Data directed to standard output
 is always captured. The value of the last statement of *each* code block, *if*
 it is an expression, can also be captured. This can be done by providing
@@ -1081,9 +1081,21 @@ are:
   of an object. This is what is used when you ``print()`` an object or pass it
   to ``format()``.
 * ``_repr_html_`` - returns a HTML version of the object. This method is only
-  present in some objects, for example, pandas dataframes.
+  present in some objects, for example, the :class:`pandas.DataFrame`.
+* ``_repr_mimebundle_`` - returns mime-bundle data consisting of a dictionary
+  of the structure; 'file format': 'format contents'. Currently the file
+  formats supported are: 'text/html' and 'text/plain'. If both supported file
+  formats are present in a mime-bundle, 'text/html' is used in preference to
+  'text/plain'. If only unsupported file formats are present in the
+  mime-bundle, Sphinx-Gallery will try to capture other representation types
+  in the ``capture_repr`` tuple. If none exist, nothing will be captured.
 
-The default setting is::
+Sphinx-Gallery will attempt to capture representation types in the order they
+appear in the ``capture_repr`` tuple. The first representation type in the
+tuple will be attempted to be captured first. If not present Sphinx-Gallery
+will move on and try to capture the next representation type. If no
+representation types exist for a last statement, nothing would be captured.
+For example, the default setting is::
 
     sphinx_gallery_conf = {
         ...
