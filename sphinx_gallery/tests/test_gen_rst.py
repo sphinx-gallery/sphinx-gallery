@@ -649,6 +649,52 @@ class_inst = repr_and_html_class()
 class_inst
 """
 
+code_mime_plain = """
+class mime_plain():
+    def __init__(self):
+        pass
+
+    def _repr_mimebundle_(self):
+        return {
+            "text/plain": "This is mime plain"
+        }
+
+class_inst = mime_plain()
+class_inst
+"""
+
+code_mime_html_plain = """
+class mime_html_plain():
+    def __init__(self):
+        pass
+
+    def _repr_mimebundle_(self):
+        return {
+            "text/html": "<div> This is the _repr_html_ div </div>",
+            "text/plain": "This is mime plain"
+        }
+
+class_inst = mime_html_plain()
+class_inst
+"""
+
+code_mime_unsupported = """
+class mime_unsupported():
+    def __init__(self):
+        pass
+
+    def _repr_mimebundle_(self):
+        return {
+            "json": {"name": "This is not supported"}
+        }
+
+    def __repr__(self):
+        return "This is the __repr__"
+
+class_inst = mime_unsupported()
+class_inst
+"""
+
 code_plt = """
 import matplotlib.pyplot as plt
 fig = plt.figure()
@@ -722,6 +768,14 @@ def _clean_output(output):
     pytest.param(('_repr_html_', '__repr__'), code_repr_only,
                  'This is the __repr__', id='repr_only,(html,repr)'),
     pytest.param(('_repr_html_',), code_plt, '', id='html_none'),
+    pytest.param(('_repr_mimebundle_',), code_mime_plain, 'This is mime plain',
+                 id='plain,(mime)'),
+    pytest.param(('_repr_mimebundle_',), code_mime_html_plain, html_out,
+                 id='html,(mime)'),
+    pytest.param(('_repr_mimebundle_', '__repr__'), code_mime_unsupported,
+                 'This is the __repr__', id='unsupported,(mime,repr)'),
+    pytest.param(('_repr_mimebundle_',), code_mime_unsupported, '',
+                 id='unsupported,(mime)'),
 ])
 def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
                       req_mpl, req_pil, script_vars):
