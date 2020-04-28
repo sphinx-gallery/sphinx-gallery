@@ -336,7 +336,7 @@ and belonging to the modules listed in ``doc_module``.
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
 Then, within your sphinx documentation ``.rst`` files you can use the
-following to include this reduced version of the Gallery, which has
+following rst to include this reduced version of the Gallery, which has
 examples which use a specific function, in this case ``numpy.exp``::
 
     .. include:: gen_modules/backreferences/numpy.exp.examples
