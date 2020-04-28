@@ -14,6 +14,7 @@ live in modules that will support them (e.g., PyVista, Plotly).
 import os
 import sys
 import re
+from textwrap import indent
 
 from .utils import scale_image
 
@@ -90,8 +91,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     """
     matplotlib, plt = _import_matplotlib()
     image_path_iterator = block_vars['image_path_iterator']
-    image_paths = list()
     fig_titles = ''
+    image_rsts = []
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         if 'format' in kwargs:
             image_path = '%s.%s' % (os.path.splitext(image_path)[0],
@@ -112,9 +113,19 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
                     attr not in kwargs:
                 these_kwargs[attr] = fig_attr
         fig.savefig(image_path, **these_kwargs)
-        image_paths.append(image_path)
+        image_rsts.append(
+            figure_rst([image_path], gallery_conf['src_dir'], fig_titles))
     plt.close('all')
-    return figure_rst(image_paths, gallery_conf['src_dir'], fig_titles)
+    if len(image_rsts) == 1:
+        rst = image_rsts[0]
+    else:
+        image_rsts = [re.sub(r'sphx-glr-single-img',
+                             'sphx-glr-multi-img',
+                             image) for image in image_rsts]
+        image_rsts = [HLIST_IMAGE_MATPLOTLIB + indent(image, u' ' * 6)
+                      for image in image_rsts]
+        rst = HLIST_HEADER + ''.join(image_rsts)
+    return rst
 
 
 def mayavi_scraper(block, block_vars, gallery_conf):
@@ -319,12 +330,16 @@ HLIST_HEADER = """
 
 """
 
+HLIST_IMAGE_MATPLOTLIB = """
+    *
+"""
+
 HLIST_IMAGE_TEMPLATE = """
     *
 
       .. image:: /%s
-            :alt: %s
-            :class: sphx-glr-multi-img
+          :alt: %s
+          :class: sphx-glr-multi-img
 """
 
 SINGLE_IMAGE = """
