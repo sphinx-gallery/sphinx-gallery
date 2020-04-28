@@ -320,24 +320,25 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
 
     sphinx_gallery_conf = {
         ...
-        # directory where function granular galleries are stored
+        # directory where function/class granular galleries are stored
         'backreferences_dir'  : 'gen_modules/backreferences',
 
-        # Modules for which function level galleries are created.  In
+        # Modules for which function/class level galleries are created. In
         # this case sphinx_gallery and numpy in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
 The path you specify in ``backreferences_dir`` (here we choose
 ``gen_modules/backreferences``) will be populated with
 ReStructuredText files. Each .rst file will contain a reduced version of the
-gallery specific to each function that is used across all the examples
+gallery specific to every function/class that is used across all the examples
 and belonging to the modules listed in ``doc_module``.
 ``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
-Then, within your sphinx documentation ``.rst`` files you can use the
-following rst to include this reduced version of the Gallery, which has
-examples which use a specific function, in this case ``numpy.exp``::
+Within your sphinx documentation ``.rst`` files, you can use easily
+add this reduced version of the Gallery. For example, the rst below adds
+the reduced version of the Gallery for ``numpy.exp``, which includes all
+examples that use the specific function ``numpy.exp``::
 
     .. include:: gen_modules/backreferences/numpy.exp.examples
     .. raw:: html
