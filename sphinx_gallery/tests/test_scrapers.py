@@ -204,7 +204,7 @@ def test_figure_rst(ext):
     local_img = [os.path.join(os.getcwd(), 'third.' + ext)]
     image_rst = figure_rst(local_img, '.')
 
-    single_image = SINGLE_IMAGE % ("third." + ext)
+    single_image = SINGLE_IMAGE % ("third." + ext, '')
     assert image_rst == single_image
 
 
