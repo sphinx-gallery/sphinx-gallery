@@ -599,7 +599,7 @@ def execute_code_block(compiler, block, example_globals,
                             else:
                                 unsupported_mime = True
                         # stop once first repr type in 'capture_repr' captured
-                        elif (repr_meth != '_repr_mimebundle_' and \
+                        elif (repr_meth != '_repr_mimebundle_' and
                               isinstance(last_repr, str)):
                             break
         captured_std = captured_std.getvalue().expandtabs()
