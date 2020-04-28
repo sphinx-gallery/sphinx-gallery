@@ -603,7 +603,7 @@ def execute_code_block(compiler, block, example_globals,
                               isinstance(last_repr, str)):
                             break
         captured_std = captured_std.getvalue().expandtabs()
-        # _repr_mimebundle_
+        # manage supported mime-bundles
         mime_format = None
         if repr_meth == '_repr_mimebundle_':
             # if mime unsupported and no other reprs captured
