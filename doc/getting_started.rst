@@ -130,7 +130,7 @@ simply set the minimal required configurations. We must set the location of
 the 'examples' directory (containing the gallery header file and our example
 Python scripts) and the
 directory to place the output files generated. The path to both of these
-directories should be relative to the 'doc/conf.py' file.
+directories should be relative to the ``doc/conf.py`` file.
 
 The following configuration declares the location of the 'examples' directory
 (``'example_dirs'``) to be ``../examples`` and the 'output' directory
