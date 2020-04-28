@@ -732,8 +732,7 @@ def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
     output = sg.execute_code_block(
         compiler, code_block, None, script_vars, gallery_conf
     )
-    print(_clean_output(output))
-    # assert _clean_output(output) == expected_out
+    assert _clean_output(output) == expected_out
 
 
 def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
