@@ -551,6 +551,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         _assert_mtimes(copied_ipy_0, copied_ipy_1,
                        different=('plot_numpy_matplotlib.ipynb'))
 
+
 def test_alt_text(sphinx_app):
     """Test alt text"""
     src_dir = sphinx_app.srcdir
