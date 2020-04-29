@@ -29,11 +29,13 @@ def main():
     plt.plot(x, y)
     plt.xlabel('$x$')
     plt.ylabel('$\exp(x)$')
+    plt.title('Exponential function')
 
     plt.figure()
     plt.plot(x, -np.exp(-x))
     plt.xlabel('$x$')
     plt.ylabel('$-\exp(-x)$')
+    plt.title('Negative exponential function')
     # To avoid matplotlib text output
     plt.show()
 
