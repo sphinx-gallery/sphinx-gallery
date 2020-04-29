@@ -52,8 +52,9 @@ def _import_matplotlib():
 def _matplotlib_fig_titles(fig):
     titles = []
     # get supertitle if exists
-    if fig._suptitle:
-        titles.append(fig._suptitle.get_text())
+    suptitle = getattr(fig, "_suptitle", None)
+    if suptitle is not None:
+        titles.append(suptitle.get_text())
     # get titles from all axes, for all locs
     title_locs = ['left', 'center', 'right']
     for ax in fig.axes:
@@ -91,7 +92,6 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     """
     matplotlib, plt = _import_matplotlib()
     image_path_iterator = block_vars['image_path_iterator']
-    fig_titles = ''
     image_rsts = []
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         if 'format' in kwargs:
