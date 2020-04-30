@@ -175,6 +175,7 @@ def test_figure_rst(ext):
     image_rst = figure_rst(figure_list, '.')
     single_image = """
 .. image:: /sphx_glr_plot_1.{ext}
+    :alt: pl
     :class: sphx-glr-single-img
 """.format(ext=ext)
     assert image_rst == single_image
@@ -188,12 +189,14 @@ def test_figure_rst(ext):
     *
 
       .. image:: /sphx_glr_plot_1.{ext}
-            :class: sphx-glr-multi-img
+          :alt: pl
+          :class: sphx-glr-multi-img
 
     *
 
       .. image:: /second.{ext}
-            :class: sphx-glr-multi-img
+          :alt: pl
+          :class: sphx-glr-multi-img
 """.format(ext=ext)
     assert image_rst == image_list_rst
 
@@ -201,7 +204,7 @@ def test_figure_rst(ext):
     local_img = [os.path.join(os.getcwd(), 'third.' + ext)]
     image_rst = figure_rst(local_img, '.')
 
-    single_image = SINGLE_IMAGE % ("third." + ext)
+    single_image = SINGLE_IMAGE % ("third." + ext, '')
     assert image_rst == single_image
 
 
