@@ -336,6 +336,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
     for fname in iterator:
+        print('for {} generate file run'.format(fname))
         intro, title, cost = generate_file_rst(
             fname, target_dir, src_dir, gallery_conf, seen_backrefs)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
@@ -756,7 +757,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     if md5sum_is_current(target_file):
         if executable:
             gallery_conf['stale_examples'].append(target_file)
-        return intro, (0, 0)
+        return intro, title, (0, 0)
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
