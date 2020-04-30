@@ -71,7 +71,7 @@ For example::
 
   # These lines won't be rendered as rST because there is a gap after the last
   # commented rST block. Instead, they'll resolve as regular Python comments.
-  # Normal Python code can follow.
+  # Normal Python code can follow these comments.
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
 The ``#%%`` and ``# %%`` syntax is consistent with the 'code block' (or
