@@ -599,4 +599,4 @@ def test_alt_text_thumbnail(sphinx_app):
                                        'index.rst')
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         rst = fid.read()
-    assert ':alt: Trivial module to provide a value for plot_numpy_matplotlib.py' in rst # noqa: E501
+    assert ':alt: Trivial module to provide a value for plot_numpy_matplotlib.py' in rst  # noqa: E501
