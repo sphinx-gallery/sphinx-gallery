@@ -14,7 +14,7 @@ axs[0].plot([1, 2, 3])
 axs[0].set_title('subplot 1')
 axs[0].set_xlabel('x label')
 axs[0].set_ylabel('y lab')
-fig.suptitle('This is a sup title')
+fig.suptitle('This is a\nsup title')
 
 axs[1].plot([2, 3, 4])
 axs[1].set_title('subplot 2')

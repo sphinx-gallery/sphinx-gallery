@@ -310,6 +310,7 @@ def figure_rst(figure_list, sources_dir, fig_titles=''):
         # replace - & _ with \s
         file_name_final = re.sub(r'[-,_]', ' ', file_name_noext)
         alt = file_name_final
+    alt = _single_line_sanitize(alt)
 
     images_rst = ""
     if len(figure_paths) == 1:
@@ -320,6 +321,13 @@ def figure_rst(figure_list, sources_dir, fig_titles=''):
         for figure_name in figure_paths:
             images_rst += HLIST_IMAGE_TEMPLATE % (figure_name, alt)
     return images_rst
+
+
+def _single_line_sanitize(s):
+    """Remove problematic newlines."""
+    # For example, when setting a :alt: for an image, it shouldn't have \n
+    # This is a function in case we end up finding other things to replace
+    return s.replace('\n', ' ')
 
 
 # The following strings are used when we have several pictures: we use
