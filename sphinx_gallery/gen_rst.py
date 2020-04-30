@@ -336,7 +336,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
     for fname in iterator:
-        print('for {} generate file run'.format(fname))
         intro, title, cost = generate_file_rst(
             fname, target_dir, src_dir, gallery_conf, seen_backrefs)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
