@@ -50,7 +50,7 @@ only one of the above three 'block splitter' options in your project. If using
 
   ###############################################################################
 
-Any commented lines (line beginning with ``# ``, hash followed by a space, to
+Any commented lines (line beginning with ``#\ ``, hash followed by a space, to
 be PEP8-compliant) that immediately follow a block splitter will be rendered as
 rST in the built gallery examples. To switch back to writing code, either
 stop starting lines with ``# `` or leave an empty line before writing
