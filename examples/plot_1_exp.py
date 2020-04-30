@@ -35,7 +35,7 @@ def main():
     plt.plot(x, -np.exp(-x))
     plt.xlabel('$x$')
     plt.ylabel('$-\exp(-x)$')
-    plt.title('Negative exponential function')
+    plt.title('Negative exponential\nfunction')
     # To avoid matplotlib text output
     plt.show()
 
