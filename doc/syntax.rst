@@ -46,14 +46,14 @@ Jupyter Notebook for each example that is built).
 You can embed rST in your Python examples by including a line of >= 20 ``#``
 symbols, ``#%%``, or ``# %%``. For consistency, it is recommended that you use
 only one of the above three 'block splitter' options in your project. If using
-``#``'s, we recommend using 79 ``#``'s, like this::
+a line of ``#``'s, we recommend using 79 ``#``'s, like this::
 
   ###############################################################################
 
-Any commented lines (line beginning with ``#\ ``, hash followed by a space, to
+Any commented lines (line beginning with ``#`` followed by a space, to
 be PEP8-compliant) that immediately follow a block splitter will be rendered as
 rST in the built gallery examples. To switch back to writing code, either
-stop starting lines with ``# `` or leave an empty line before writing
+stop starting lines with ``#`` and a space or leave an empty line before writing
 code comments. You can thus easily alternate between text and code 'blocks'.
 For example::
 
