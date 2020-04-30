@@ -556,7 +556,7 @@ def test_alt_text_image(sphinx_app):
     """Test alt text for matplotlib images in html and rst"""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
-    # alt text in rst
+    # alt text is fig titles, rst
     example_rst = op.join(src_dir, 'auto_examples', 'plot_matplotlib_alt.rst')
     with codecs.open(example_rst, 'r', 'utf-8') as fid:
         rst = fid.read()
