@@ -24,7 +24,7 @@ from sphinx_gallery.utils import _get_image, scale_image
 
 import pytest
 
-N_TOT = 6
+N_TOT = 7
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 14 + N_TOT
@@ -550,3 +550,23 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # mtimes for .ipynb files
         _assert_mtimes(copied_ipy_0, copied_ipy_1,
                        different=('plot_numpy_matplotlib.ipynb'))
+
+
+def test_alt_text(sphinx_app):
+    """Test alt text"""
+    src_dir = sphinx_app.srcdir
+    fname = op.join(src_dir, 'auto_examples', 'plot_matplotlib_alt.rst')
+    assert op.isfile(fname)
+    with codecs.open(fname, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    # suptitle and axes titles
+    assert ':alt: This is a sup title, subplot 1, subplot 2' in rst
+    # multiple titles
+    assert ':alt: Left Title, Center Title, Right Title' in rst
+
+    fname = op.join(src_dir, 'auto_examples', 'plot_numpy_matplotlib.rst')
+    assert op.isfile(fname)
+    with codecs.open(fname, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    # file name when no fig title
+    assert 'plot numpy matplotlib' in rst

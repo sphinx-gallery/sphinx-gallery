@@ -69,18 +69,26 @@ rST in the built gallery examples. For example::
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
 The ``#%%`` and ``# %%`` syntax is consistent with the 'code block' (or
-'code cell') separator syntax in `Jupyter VSCode plugin
-<https://code.visualstudio.com/docs/python/jupyter-support-py>`_, `Jupytext
-<https://jupytext.readthedocs.io/en/latest/introduction.html>`_, `Pycharm
+'code cell') separator syntax in `Visual Studio Code Python extension
+<https://code.visualstudio.com/docs/python/jupyter-support-py#_jupyter-code-cells>`_,
+`Visual Studio Python Tools
+<https://docs.microsoft.com/en-us/visualstudio/python/python-interactive-repl-in-visual-studio?view=vs-2019#work-with-code-cells>`_,
+`Jupytext
+<https://jupytext.readthedocs.io/en/latest/formats.html#the-percent-format>`_,
+`Pycharm Professional
 <https://www.jetbrains.com/help/pycharm/running-jupyter-notebook-cells.html>`_,
 `Hydrogen plugin (for Atom)
-<https://nteract.gitbooks.io/hydrogen/>`_ and `Spyder
-<https://docs.spyder-ide.org/editor.html>`_. Note that although the
+<https://nteract.gitbooks.io/hydrogen/docs/Usage/Cells.html#example-definitions>`_
+and `Spyder
+<https://docs.spyder-ide.org/editor.html#defining-code-cells>`_.
+Note that although the
 documentation may only mention one of ``#%%`` or ``# %%``, in practice both
-work in these editors. In these IDEs (or with these IDE plugins), ``#%%`` or
+work. With these editors/IDEs, ``#%%`` or
 ``# %%`` at the start of a line signifies the start of a new code block.
-Code within a code block can be easily executed together, at the same time. This
-functionality can be helpful when writing a Sphinx-Gallery ``.py`` example as
+Code blocks allow you to separate your code into chunks, like in Jupyter
+Notebooks. All the code within a code block can be easily executed together.
+This functionality can be helpful when writing a Sphinx-Gallery ``.py``
+example as
 the blocks allow you to easily create pairs of subsequent Sphinx-Gallery text
 and code blocks.
 

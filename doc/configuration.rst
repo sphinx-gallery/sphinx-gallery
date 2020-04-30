@@ -546,6 +546,10 @@ To remove the comment from the rendered example set the option::
         'remove_config_comments': True,
     }
 
+This only removes configuration comments from code blocks, not from text
+blocks. However, note that technically, configuration comments will work when
+put in either code blocks or text blocks.
+
 .. _own_notebook_cell:
 
 Add your own first and last notebook cell
