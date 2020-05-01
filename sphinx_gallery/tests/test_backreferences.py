@@ -20,6 +20,7 @@ REFERENCE = r"""
 .. only:: html
 
  .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
+     :alt: test title
 
      :ref:`sphx_glr_fake_dir_test_file.py`
 
@@ -46,10 +47,12 @@ def test_thumbnail_div(content, tooltip, is_backref):
     """Test if the thumbnail div generates the correct string."""
     with pytest.raises(RuntimeError, match='internal sphinx-gallery thumb'):
         html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
-                                     '<"test">')
+                                     '<"test">', '<"title">')
     content = _sanitize_rst(content)
+    title = 'test title'
     html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
-                                 content, is_backref=is_backref, check=False)
+                                 content, title, is_backref=is_backref,
+                                 check=False)
     if is_backref:
         extra = """
 

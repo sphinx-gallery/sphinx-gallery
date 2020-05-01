@@ -336,12 +336,12 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
     for fname in iterator:
-        intro, cost = generate_file_rst(
+        intro, title, cost = generate_file_rst(
             fname, target_dir, src_dir, gallery_conf, seen_backrefs)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append((cost, src_file))
         this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
-                                    fname, intro) + """
+                                    fname, intro, title) + """
 
 .. toctree::
    :hidden:
@@ -756,7 +756,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     if md5sum_is_current(target_file):
         if executable:
             gallery_conf['stale_examples'].append(target_file)
-        return intro, (0, 0)
+        return intro, title, (0, 0)
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
@@ -818,9 +818,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
                    if cobj['module'].startswith(gallery_conf['doc_module']))
     # Write backreferences
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
-                          fname, intro)
+                          fname, intro, title)
 
-    return intro, (time_elapsed, memory_used)
+    return intro, title, (time_elapsed, memory_used)
 
 
 def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
