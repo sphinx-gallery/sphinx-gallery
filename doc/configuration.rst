@@ -1060,6 +1060,21 @@ you can do::
         'show_memory': True,
     }
 
+It's also possible to use your own custom memory reporter, for example
+if you would rather see the GPU memory. In that case, ``show_memory`` must
+be a callable that takes a single function to call (i.e., one generated
+internally to run an individual script code block), and returns a two-element
+tuple containing:
+
+1. The memory used in MiB while running the function, and
+2. The function output
+
+A version of this that always reported no memory used would be:
+
+    sphinx_gallery_conf = {
+        ...
+        'show_memory': lambda func: (0., func()),
+    }
 
 .. _capture_repr:
 

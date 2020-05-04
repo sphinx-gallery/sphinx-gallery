@@ -128,14 +128,33 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             type=DeprecationWarning)
 
     # deal with show_memory
+    gallery_conf['memory_base'] = 0.
     if gallery_conf['show_memory']:
-        try:
-            from memory_profiler import memory_usage  # noqa, analysis:ignore
-        except ImportError:
-            logger.warning("Please install 'memory_profiler' to enable peak "
-                           "memory measurements.")
-            gallery_conf['show_memory'] = False
-    gallery_conf['memory_base'] = _get_memory_base(gallery_conf)
+        if not callable(gallery_conf['show_memory']):  # True-like
+            try:
+                from memory_profiler import memory_usage  # noqa
+            except ImportError:
+                logger.warning("Please install 'memory_profiler' to enable "
+                               "peak memory measurements.")
+                gallery_conf['show_memory'] = False
+            else:
+                def call_memory(func):
+                    mem, out = memory_usage(func, max_usage=True, retval=True,
+                                            multiprocess=True)
+                    try:
+                        mem = mem[0]  # old MP always returned a list
+                    except TypeError:  # 'float' object is not subscriptable
+                        pass
+                    return mem, out
+                gallery_conf['call_memory'] = call_memory
+                gallery_conf['memory_base'] = _get_memory_base(gallery_conf)
+        else:
+            gallery_conf['call_memory'] = gallery_conf['show_memory']
+    if not gallery_conf['show_memory']:  # can be set to False above
+        def call_memory(func):
+            return 0., func()
+        gallery_conf['call_memory'] = call_memory
+    assert callable(gallery_conf['call_memory'])
 
     # deal with scrapers
     scrapers = gallery_conf['image_scrapers']
