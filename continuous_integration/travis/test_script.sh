@@ -13,5 +13,5 @@ if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
     make SPHINXOPTS=${SPHINXOPTS} html -j 2
     cd ..
     flake8 sphinx_gallery
-    check-manifest -u -v
+    check-manifest
 fi
