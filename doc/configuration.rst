@@ -1069,7 +1069,7 @@ tuple containing:
 1. The memory used in MiB while running the function, and
 2. The function output
 
-A version of this that always reported no memory used would be:
+A version of this that always reported no memory used would be::
 
     sphinx_gallery_conf = {
         ...
