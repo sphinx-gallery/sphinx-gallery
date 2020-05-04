@@ -23,6 +23,7 @@ exclude dev-requirements.txt
 recursive-exclude .circleci *
 exclude .circleci
 recursive-exclude */__pycache__ *
+recursive-exclude */__pycache__
 exclude __pycache__
 recursive-exclude */gen_modules *
 exclude gen_modules

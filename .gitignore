@@ -1,6 +1,5 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-sphinx_gallery/tests/testconfs/src/__pycache__/*
 *.py[cod]
 .coverage*
 
