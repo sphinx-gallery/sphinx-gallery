@@ -305,7 +305,7 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/', None),
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
-    'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
+    'sphinx': ('https://www.sphinx-doc.org/en/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
 }
 
