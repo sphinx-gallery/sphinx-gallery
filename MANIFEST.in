@@ -18,7 +18,7 @@ exclude continuous_integration
 recursive-exclude doc *
 exclude doc
 exclude *.yml
-global-exclude *.pyc
+exclude *.pyc
 exclude dev-requirements.txt
 recursive-exclude .circleci *
 exclude .circleci
