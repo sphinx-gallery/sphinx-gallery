@@ -53,18 +53,30 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 ###############################################################################
 
 
-class LoggingTee(object):
-    """A tee object to redirect streams to the logger"""
+class _LoggingTee(object):
+    """A tee object to redirect streams to the logger."""
 
-    def __init__(self, output_file, logger, src_filename):
-        self.output_file = output_file
+    def __init__(self, src_filename):
         self.logger = logger
         self.src_filename = src_filename
-        self.first_write = True
         self.logger_buffer = ''
+        self.set_std_and_reset_position()
+
+    def set_std_and_reset_position(self):
+        if not isinstance(sys.stdout, _LoggingTee):
+            self.origs = (sys.stdout, sys.stderr)
+        sys.stdout = sys.stderr = self
+        self.first_write = True
+        self.output = StringIO()
+        return self
+
+    def restore_std(self):
+        sys.stdout.flush()
+        sys.stderr.flush()
+        sys.stdout, sys.stderr = self.origs
 
     def write(self, data):
-        self.output_file.write(data)
+        self.output.write(data)
 
         if self.first_write:
             self.logger.verbose('Output from %s', self.src_filename,
@@ -85,14 +97,21 @@ class LoggingTee(object):
             self.logger.verbose('%s', line)
 
     def flush(self):
-        self.output_file.flush()
+        self.output.flush()
         if self.logger_buffer:
             self.logger.verbose('%s', self.logger_buffer)
             self.logger_buffer = ''
 
     # When called from a local terminal seaborn needs it in Python3
     def isatty(self):
-        return self.output_file.isatty()
+        return self.output.isatty()
+
+    # When called in gen_rst, conveniently use context managing
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type_, value, tb):
+        self.restore_std()
 
 
 ###############################################################################
@@ -480,18 +499,18 @@ def execute_code_block(compiler, block, example_globals,
 
     cwd = os.getcwd()
     # Redirect output to stdout and
-    orig_stdout, orig_stderr = sys.stdout, sys.stderr
+
     src_file = script_vars['src_file']
+    logging_tee = _check_reset_logging_tee(src_file)
+    assert isinstance(logging_tee, _LoggingTee)
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
 
-    captured_std = StringIO()
     os.chdir(os.path.dirname(src_file))
 
     sys_path = copy.deepcopy(sys.path)
     sys.path.append(os.getcwd())
-    sys.stdout = sys.stderr = LoggingTee(captured_std, logger, src_file)
 
     try:
         dont_inherit = 1
@@ -532,9 +551,7 @@ def execute_code_block(compiler, block, example_globals,
                     script_vars['fake_main']))
         script_vars['memory_delta'].append(mem_max)
     except Exception:
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.stdout, sys.stderr = orig_stdout, orig_stderr
+        logging_tee.restore_std()
         except_rst = handle_exception(sys.exc_info(), src_file, script_vars,
                                       gallery_conf)
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
@@ -542,9 +559,7 @@ def execute_code_block(compiler, block, example_globals,
         # figures are closed
         save_figures(block, script_vars, gallery_conf)
     else:
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.stdout, orig_stderr = orig_stdout, orig_stderr
+        logging_tee.restore_std()
         sys.path = sys_path
         os.chdir(cwd)
 
@@ -571,7 +586,7 @@ def execute_code_block(compiler, block, example_globals,
                     else:
                         if isinstance(last_repr, str):
                             break
-        captured_std = captured_std.getvalue().expandtabs()
+        captured_std = logging_tee.output.getvalue().expandtabs()
         # normal string output
         if repr_meth in ['__repr__', '__str__'] and last_repr:
             captured_std = u"{0}\n{1}".format(captured_std, last_repr)
@@ -591,9 +606,20 @@ def execute_code_block(compiler, block, example_globals,
     finally:
         os.chdir(cwd)
         sys.path = sys_path
-        sys.stdout, sys.stderr = orig_stdout, orig_stderr
+        logging_tee.restore_std()
 
     return code_output
+
+
+def _check_reset_logging_tee(src_file):
+    # Helper to deal with our tests not necessarily calling execute_script
+    # but rather execute_code_block directly
+    if isinstance(sys.stdout, _LoggingTee):
+        logging_tee = sys.stdout
+    else:
+        logging_tee = _LoggingTee(src_file)
+    logging_tee.set_std_and_reset_position()
+    return logging_tee
 
 
 def executable_script(src_file, gallery_conf):
@@ -678,10 +704,12 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     # include at least one entry to avoid max() ever failing
     script_vars['memory_delta'] = [memory_start]
     script_vars['fake_main'] = fake_main
-    output_blocks = [execute_code_block(compiler, block,
-                                        example_globals,
-                                        script_vars, gallery_conf)
-                     for block in script_blocks]
+    output_blocks = list()
+    with _LoggingTee(script_vars.get('src_file', '')) as logging_tee:
+        for block in script_blocks:
+            logging_tee.set_std_and_reset_position()
+            output_blocks.append(execute_code_block(
+                compiler, block, example_globals, script_vars, gallery_conf))
     time_elapsed = time() - t_start
     sys.argv = argv_orig
     script_vars['memory_delta'] = max(script_vars['memory_delta'])
