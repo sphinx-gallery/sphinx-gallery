@@ -1,9 +1,10 @@
 """
-============
-SVG graphics
-============
+==================
+"SVG":-`graphics_`
+==================
 
 Make sure we can embed SVG graphics.
+Use title that has punctuation marks.
 """
 
 import numpy as np

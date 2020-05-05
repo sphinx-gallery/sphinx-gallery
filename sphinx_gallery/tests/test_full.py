@@ -587,7 +587,7 @@ def test_alt_text_thumbnail(sphinx_app):
     generated_examples_index = op.join(out_dir, 'auto_examples', 'index.html')
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         html = fid.read()
-    assert 'alt="SVG graphics"' in html
+    assert 'alt="&quot;SVG&quot;:-`graphics_`"' in html
     # check backreferences thumbnail, html
     backref_html = op.join(out_dir, 'gen_modules',
                            'sphinx_gallery.backreferences.html')
