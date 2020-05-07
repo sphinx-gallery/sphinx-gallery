@@ -16,6 +16,8 @@
 
    .. autofunction:: {{ item }}
 
+   .. _sphx_glr_backref_{{fullname}}.{{item}}:
+
    .. include:: backreferences/{{fullname}}.{{item}}.examples
 
    .. raw:: html

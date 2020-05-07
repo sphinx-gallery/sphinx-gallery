@@ -393,14 +393,22 @@ document, in this case all modules of Sphinx-Gallery.
 The template file ``module.rst`` for the ``autosummary`` directive has
 to be saved in the path ``_templates/module.rst``. We present our
 configuration in the following block. The most relevant part is the
-loop defined between lines **12-22** that parses all the functions of
-the module. There we have included the snippet introduced in the
+loop defined between lines **12-22** that parses all the functions/classes
+of the module. There we have included the snippet introduced in the
 previous section. Keep in mind that the include directive is
 **relative** to the file location, and module documentation files are
 saved in the directory we specified in the *toctree* option of the
 ``autosummary`` directive used before in the ``reference.rst`` file.
 The files we are including are from the ``backreferences_dir``
 configuration option setup for Sphinx-Gallery.
+
+We also add a cross referencing label (on line 19) before including the
+examples mini-gallery. This enables you to reference the mini-gallery for
+all functions/classes of the module using
+``:ref:`sphx_glr_backref_<fun/class>```, where '<fun/class>' is the full path
+to the function/class using dot notation (e.g.,
+``sphinx_gallery.backreferences.identify_names``). For example, see:
+:ref:`sphx_glr_backref_sphinx_gallery.backreferences.identify_names`.
 
 .. literalinclude:: _templates/module.rst
     :language: rst

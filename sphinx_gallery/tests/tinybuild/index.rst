@@ -29,6 +29,9 @@ every module. Examples `here <auto_examples/index.html>`_.
 Examples
 --------
 
+This tests that mini-gallery reference labels work:
+:ref:`sphx_glr_backref_sphinx_gallery.backreferences.identify_names`.
+
 .. toctree::
    :maxdepth: 2
 
