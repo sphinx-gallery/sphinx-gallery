@@ -600,3 +600,22 @@ def test_alt_text_thumbnail(sphinx_app):
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         rst = fid.read()
     assert ':alt: Trivial module to provide a value for plot_numpy_matplotlib.py' in rst  # noqa: E501
+
+
+def test_backreference_labels(sphinx_app):
+    """Tests that backreference labels work."""
+    src_dir = sphinx_app.srcdir
+    out_dir = sphinx_app.outdir
+    # Test backreference label
+    backref_rst = op.join(src_dir, 'gen_modules',
+                          'sphinx_gallery.backreferences.rst')
+    with codecs.open(backref_rst, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    label = '.. _sphx_glr_backref_sphinx_gallery.backreferences.identify_names:'  # noqa: E501
+    assert label in rst
+    # Test html link
+    index_html = op.join(out_dir, 'index.html')
+    with codecs.open(index_html, 'r', 'utf-8') as fid:
+        html = fid.read()
+    link = 'href="gen_modules/sphinx_gallery.backreferences.html#sphx-glr-backref-sphinx-gallery-backreferences-identify-names">'  # noqa: E501
+    assert link in html
