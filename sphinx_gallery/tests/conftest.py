@@ -240,4 +240,5 @@ project = u'Sphinx-Gallery <Tests>'\n\n
 
     return SphinxAppWrapper(
         srcdir, srcdir, os.path.join(srcdir, "_build"),
-        os.path.join(srcdir, "_build", "toctree"), "html", warning=StringIO())
+        os.path.join(srcdir, "_build", "toctree"), "html", warning=StringIO(),
+        status=StringIO())

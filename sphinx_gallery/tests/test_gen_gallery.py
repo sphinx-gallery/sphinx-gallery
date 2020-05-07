@@ -348,6 +348,17 @@ def test_examples_not_expected_to_pass(sphinx_app_wrapper):
 
 @pytest.mark.conf_file(content="""
 sphinx_gallery_conf = {
+    'show_memory': lambda func: (0., func()),
+    'gallery_dirs': 'ex',
+}""")
+def test_show_memory_callable(sphinx_app_wrapper):
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+    status = sphinx_app._status.getvalue()
+    assert "0.0 MB" in status
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
     'first_notebook_cell': 2,
 }""")
 def test_first_notebook_cell_config(sphinx_app_wrapper):

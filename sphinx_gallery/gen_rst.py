@@ -445,50 +445,32 @@ class _exec_once(object):
                         sys.modules['__main__'] = old_main
 
 
-def _memory_usage(func, gallery_conf):
-    """Get memory usage of a function call."""
-    if gallery_conf['show_memory']:
-        from memory_profiler import memory_usage
-        assert callable(func)
-        mem, out = memory_usage(func, max_usage=True, retval=True,
-                                multiprocess=True)
-        try:
-            mem = mem[0]  # old MP always returned a list
-        except TypeError:  # 'float' object is not subscriptable
-            pass
-    else:
-        out = func()
-        mem = 0
-    return out, mem
-
-
 def _get_memory_base(gallery_conf):
     """Get the base amount of memory used by running a Python process."""
-    if not gallery_conf['show_memory'] or not gallery_conf['plot_gallery']:
-        memory_base = 0
+    if not gallery_conf['plot_gallery']:
+        return 0.
+    # There might be a cleaner way to do this at some point
+    from memory_profiler import memory_usage
+    if sys.platform in ('win32', 'darwin'):
+        sleep, timeout = (1, 2)
     else:
-        # There might be a cleaner way to do this at some point
-        from memory_profiler import memory_usage
-        if sys.platform in ('win32', 'darwin'):
-            sleep, timeout = (1, 2)
-        else:
-            sleep, timeout = (0.5, 1)
-        proc = subprocess.Popen(
-            [sys.executable, '-c',
-             'import time, sys; time.sleep(%s); sys.exit(0)' % sleep],
-            close_fds=True)
-        memories = memory_usage(proc, interval=1e-3, timeout=timeout)
-        kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
-        proc.communicate(**kwargs)
-        # On OSX sometimes the last entry can be None
-        memories = [mem for mem in memories if mem is not None] + [0.]
-        memory_base = max(memories)
+        sleep, timeout = (0.5, 1)
+    proc = subprocess.Popen(
+        [sys.executable, '-c',
+            'import time, sys; time.sleep(%s); sys.exit(0)' % sleep],
+        close_fds=True)
+    memories = memory_usage(proc, interval=1e-3, timeout=timeout)
+    kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
+    proc.communicate(**kwargs)
+    # On OSX sometimes the last entry can be None
+    memories = [mem for mem in memories if mem is not None] + [0.]
+    memory_base = max(memories)
     return memory_base
 
 
 def execute_code_block(compiler, block, example_globals,
                        script_vars, gallery_conf):
-    """Executes the code block of the example file"""
+    """Execute the code block of the example file."""
     if example_globals is None:  # testing shortcut
         example_globals = script_vars['fake_main'].__dict__
     blabel, bcontent, lineno = block
@@ -527,30 +509,27 @@ def execute_code_block(compiler, block, example_globals,
             is_last_expr = True
             last_val = code_ast.body.pop().value
             # exec body minus last expression
-            _, mem_body = _memory_usage(
+            mem_body, _ = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']),
-                gallery_conf)
+                    script_vars['fake_main']))
             # exec last expression, made into assignment
             body = [ast.Assign(
                 targets=[ast.Name(id='___', ctx=ast.Store())], value=last_val)]
             last_val_ast = ast_Module(body=body)
             ast.fix_missing_locations(last_val_ast)
-            _, mem_last = _memory_usage(
+            mem_last, _ = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(last_val_ast, src_file, 'exec'),
-                    script_vars['fake_main']),
-                gallery_conf)
+                    script_vars['fake_main']))
             # capture the assigned variable
             ___ = example_globals['___']
             mem_max = max(mem_body, mem_last)
         else:
-            _, mem_max = _memory_usage(
+            mem_max, _ = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']),
-                gallery_conf)
+                    script_vars['fake_main']))
         script_vars['memory_delta'].append(mem_max)
     except Exception:
         sys.stdout.flush()
@@ -690,7 +669,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         sys.argv[0] = script_vars['src_file']
         sys.argv[1:] = []
         gc.collect()
-        _, memory_start = _memory_usage(lambda: None, gallery_conf)
+        memory_start, _ = gallery_conf['call_memory'](lambda: None)
     else:
         memory_start = 0.
 
