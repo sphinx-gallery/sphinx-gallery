@@ -231,8 +231,8 @@ def test_embed_links_and_styles(sphinx_app):
     # gh-587: np.random.RandomState links properly
     # NumPy has had this linked as numpy.random.RandomState and
     # numpy.random.mtrand.RandomState so we need regex...
-    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class"><span class="n">np</span>', lines) is not None  # noqa: E501
-    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>', lines) is not None  # noqa: E501
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)?RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?)? sphx-glr-backref-type-py-class"><span class="n">np</span>', lines) is not None  # noqa: E501
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)?RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?)? sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>', lines) is not None  # noqa: E501
     # gh-587: methods of classes in the module currently being documented
     # issue 617 (regex '-'s)
     # instance
