@@ -439,7 +439,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
                   .format(_sec_to_readable(total_time), target_dir_clean))
         lines, lens = _format_for_writing(costs, target_dir_clean)
         del costs
-        hline = ''.join(('+' + '-' * (l + 2)) for l in lens) + '+\n'
+        hline = ''.join(('+' + '-' * (length + 2)) for length in lens) + '+\n'
         fid.write(hline)
         format_str = ''.join('| {%s} ' % (ii,)
                              for ii in range(len(lines[0]))) + '|\n'
