@@ -188,7 +188,7 @@ _regex = re.compile(r':(?:'
                     r'meth(?:od)?|'
                     r'attr(?:ibute)?|'
                     r'obj(?:ect)?|'
-                    r'class):`(\S*)`'
+                    r'class):`~?(\S*)`'
                     )
 
 
