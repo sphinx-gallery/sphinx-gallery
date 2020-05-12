@@ -420,7 +420,8 @@ def _format_for_writing(costs, path, kind='rst'):
             t = '%0.2f sec' % (cost[0][0],)
         m = '{0:.1f} MB'.format(cost[0][1])
         lines.append([name, t, m])
-    lens = [max(x) for x in zip(*[[len(l) for l in ll] for ll in lines])]
+    lens = [max(x) for x in zip(*[[len(item) for item in cost]
+                                  for cost in lines])]
     return lines, lens
 
 
