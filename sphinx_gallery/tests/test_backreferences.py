@@ -137,7 +137,7 @@ h.i.j()
         }],
     }
 
-    fname = tmpdir.join("indentify_names.py")
+    fname = tmpdir.join("identify_names.py")
     fname.write(code_str, 'wb')
 
     _, script_blocks = split_code_and_text_blocks(fname.strpath)
@@ -150,13 +150,15 @@ h.i.j()
 Title
 -----
 
-This example uses :func:`k.l`.
+This example uses :func:`k.l` and :meth:`~m.n`.
 '''
 """ + code_str.split(b"'''")[-1]
     expected['k.l'] = [{u'module': u'k', u'module_short': u'k', u'name': u'l',
                         'is_class': False}]
+    expected['m.n'] = [{u'module': u'm', u'module_short': u'm', u'name': u'n',
+                        'is_class': False}]
 
-    fname = tmpdir.join("indentify_names.py")
+    fname = tmpdir.join("identify_names.py")
     fname.write(code_str, 'wb')
     _, script_blocks = split_code_and_text_blocks(fname.strpath)
     res = sg.identify_names(script_blocks)
