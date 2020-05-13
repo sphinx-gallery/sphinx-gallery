@@ -31,6 +31,7 @@ from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
 from .binder import copy_binder_files
+from .directives import MiniGallery
 
 
 _KNOWN_CSS = ('gallery', 'gallery-binder', 'gallery-dataframe')
@@ -671,6 +672,9 @@ def setup(app):
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
+
+    # Add the custom directive
+    app.add_directive('minigallery', MiniGallery)
 
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)
