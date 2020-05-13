@@ -282,7 +282,7 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         img = gallery_conf.get("default_thumb_file", img)
     else:
         return
-    if ext == 'svg':
+    if ext in ('svg', 'gif'):
         copyfile(img, thumb_file)
     else:
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])

@@ -359,6 +359,7 @@ sphinx_gallery_conf = {
     # capture raw HTML or, if not present, __repr__ of last expression in
     # each code block
     'capture_repr': ('_repr_html_', '__repr__'),
+    'matplotlib_animations': True,
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show

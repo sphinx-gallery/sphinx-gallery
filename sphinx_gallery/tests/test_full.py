@@ -24,7 +24,7 @@ from sphinx_gallery.utils import _get_image, scale_image
 
 import pytest
 
-N_TOT = 7
+N_TOT = 8
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 14 + N_TOT
@@ -170,22 +170,33 @@ def test_image_formats(sphinx_app):
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         html = fid.read()
     thumb_fnames = ['../_images/sphx_glr_plot_svg_thumb.svg',
-                    '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png']
+                    '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png',
+                    '../_images/sphx_glr_plot_animation_thumb.gif',
+                    ]
     for thumb_fname in thumb_fnames:
         file_fname = op.join(generated_examples_dir, thumb_fname)
-        assert op.isfile(file_fname)
+        assert op.isfile(file_fname), file_fname
         want_html = 'src="%s"' % (thumb_fname,)
         assert want_html in html
-    for ex, ext in (('plot_svg', 'svg'),
-                    ('plot_numpy_matplotlib', 'png'),
-                    ):
+    # the original GIF does not get copied because it's not used in the
+    # RST/HTML, so can't add it to this check
+    for ex, ext, extra in (
+            ('plot_svg', 'svg', None),
+            ('plot_numpy_matplotlib', 'png', None),
+            ('plot_animation', 'gif', 'function Animation')):
         html_fname = op.join(generated_examples_dir, '%s.html' % ex)
         with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
         img_fname = '../_images/sphx_glr_%s_001.%s' % (ex, ext)
         file_fname = op.join(generated_examples_dir, img_fname)
-        assert op.isfile(file_fname)
-        want_html = 'src="%s"' % (img_fname,)
+        if ext == 'gif':
+            assert not op.isfile(file_fname), file_fname
+            assert extra is not None
+            want_html = extra
+        else:
+            assert op.isfile(file_fname), file_fname
+            assert extra is None
+            want_html = 'src="%s"' % (img_fname,)
         assert want_html in html
 
 

@@ -66,6 +66,17 @@ def _matplotlib_fig_titles(fig):
     return fig_titles
 
 
+_ANIMATION_RST = '''
+.. only:: builder_html
+
+    .. raw:: html
+
+        <div class="sphx-glr-animation">
+        {0}
+        </div>
+'''
+
+
 def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     """Scrape Matplotlib images.
 
@@ -91,8 +102,37 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         the images. This is often produced by :func:`figure_rst`.
     """
     matplotlib, plt = _import_matplotlib()
+    from matplotlib.animation import FuncAnimation, ImageMagickWriter
     image_path_iterator = block_vars['image_path_iterator']
     image_rsts = []
+    # Animations first
+    if gallery_conf.get('matplotlib_animations', False):
+        for ani in block_vars['example_globals'].values():
+            if isinstance(ani, FuncAnimation) and \
+                    not hasattr(ani, '_sg_scraped'):
+                ani._sg_scraped = True  # ugly monkeypatch, but should work
+                # output the thumbnail as the image, as it will just be copied
+                # if it's the file thumbnail
+                fig = ani._fig
+                image_path_iterator = block_vars['image_path_iterator']
+                img_fname = next(image_path_iterator).replace('.png', '.gif')
+                fig_size = fig.get_size_inches()
+                thumb_size = gallery_conf['thumbnail_size']
+                use_dpi = round(
+                    min(t / x for t, x in zip(thumb_size, fig_size)))
+                # FFmpeg is buggy for GIFs
+                if ImageMagickWriter.isAvailable():
+                    writer = 'imagemagick'
+                else:
+                    writer = None
+                ani.save(img_fname, writer=writer, dpi=use_dpi)
+                html = ani._repr_html_()
+                if html is None:  # plt.rcParams['animation.html'] == 'none'
+                    html = ani.to_jshtml()
+                html = indent(html, '         ')
+                image_rsts.append(_ANIMATION_RST.format(html))
+                plt.close(fig)
+    # Then standard images
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         if 'format' in kwargs:
             image_path = '%s.%s' % (os.path.splitext(image_path)[0],
@@ -222,7 +262,7 @@ class ImagePathIterator(object):
 
 
 # For now, these are what we support
-_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg')  # XXX add gif next
+_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg', 'gif')
 
 
 def _find_image_ext(path):
