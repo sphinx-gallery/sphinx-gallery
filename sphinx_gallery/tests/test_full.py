@@ -24,7 +24,7 @@ from sphinx_gallery.utils import _get_image, scale_image
 
 import pytest
 
-N_TOT = 8
+N_TOT = 9
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 15 + N_TOT
@@ -329,6 +329,16 @@ def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
     with codecs.open(examples_rst, 'r', 'utf-8') as fid:
         lines = fid.read()
     assert example_used_in in lines
+
+
+def test_logging_std_nested(sphinx_app):
+    """Test that nested stdout/stderr uses within a given script work."""
+    log_rst = op.join(
+        sphinx_app.srcdir, 'auto_examples', 'plot_log.rst')
+    with codecs.open(log_rst, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert '.. code-block:: none\n\n    is in the same cell' in lines
+    assert '.. code-block:: none\n\n    is not in the same cell' in lines
 
 
 def _assert_mtimes(list_orig, list_new, different=(), ignore=()):

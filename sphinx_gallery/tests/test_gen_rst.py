@@ -9,7 +9,6 @@ from __future__ import (division, absolute_import, print_function,
 import ast
 import codecs
 import importlib
-import io
 import tempfile
 import re
 import os
@@ -748,10 +747,9 @@ def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
 
 class TestLoggingTee:
     def setup(self):
-        self.output_file = io.StringIO()
         self.src_filename = 'source file name'
-        self.tee = sg.LoggingTee(self.output_file, sg.logger,
-                                 self.src_filename)
+        self.tee = sg._LoggingTee(self.src_filename)
+        self.output_file = self.tee.output
 
     def test_full_line(self, log_collector):
         # A full line is output immediately.
@@ -802,7 +800,7 @@ class TestLoggingTee:
     def test_isatty(self, monkeypatch):
         assert not self.tee.isatty()
 
-        monkeypatch.setattr(self.tee.output_file, 'isatty', lambda: True)
+        monkeypatch.setattr(self.tee.output, 'isatty', lambda: True)
         assert self.tee.isatty()
 
 
