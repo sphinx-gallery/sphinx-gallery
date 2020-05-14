@@ -24,7 +24,7 @@ from sphinx_gallery.utils import _get_image, scale_image
 
 import pytest
 
-N_TOT = 7
+N_TOT = 8
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 15 + N_TOT
@@ -170,23 +170,31 @@ def test_image_formats(sphinx_app):
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         html = fid.read()
     thumb_fnames = ['../_images/sphx_glr_plot_svg_thumb.svg',
-                    '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png']
+                    '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png',
+                    '../_images/sphx_glr_plot_animation_thumb.gif',
+                    ]
     for thumb_fname in thumb_fnames:
         file_fname = op.join(generated_examples_dir, thumb_fname)
-        assert op.isfile(file_fname)
+        assert op.isfile(file_fname), file_fname
         want_html = 'src="%s"' % (thumb_fname,)
         assert want_html in html
-    for ex, ext in (('plot_svg', 'svg'),
-                    ('plot_numpy_matplotlib', 'png'),
-                    ):
+    # the original GIF does not get copied because it's not used in the
+    # RST/HTML, so can't add it to this check
+    for ex, ext, nums, extra in (
+            ('plot_svg', 'svg', [1], None),
+            ('plot_numpy_matplotlib', 'png', [1], None),
+            ('plot_animation', 'png', [1, 3], 'function Animation')):
         html_fname = op.join(generated_examples_dir, '%s.html' % ex)
         with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
-        img_fname = '../_images/sphx_glr_%s_001.%s' % (ex, ext)
-        file_fname = op.join(generated_examples_dir, img_fname)
-        assert op.isfile(file_fname)
-        want_html = 'src="%s"' % (img_fname,)
-        assert want_html in html
+        for num in nums:
+            img_fname = '../_images/sphx_glr_%s_%03d.%s' % (ex, num, ext)
+            file_fname = op.join(generated_examples_dir, img_fname)
+            assert op.isfile(file_fname), file_fname
+            want_html = 'src="%s"' % (img_fname,)
+            assert want_html in html
+        if extra is not None:
+            assert extra in html
 
 
 def test_embed_links_and_styles(sphinx_app):

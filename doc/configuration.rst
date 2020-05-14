@@ -874,7 +874,24 @@ to scrape both matplotlib and Mayavi images you can do::
 
 The default value is ``'image_scrapers': ('matplotlib',)`` which only scrapes
 Matplotlib images. Note that this includes any images produced by packages that
-are based on Matplotlib, for example Seaborn or Yellowbrick.
+are based on Matplotlib, for example Seaborn or Yellowbrick. If you want
+to embed :class:`matplotlib.animation.FuncAnimation`\s as animations rather
+than a single static image of the animation figure, you should add::
+
+      sphinx_gallery_conf = {
+          ...
+          'matplotlib_animations': True,
+      }
+
+HTML embedding options can be changed by setting ``rcParams['animation.html']``
+and related options in your
+:ref:`matplotlib rcParams <matplotlib:matplotlib-rcparams>`.
+It's also recommended to ensure that "imagemagick" is available as a
+``writer``, which you can check with
+:class:`matplotlib.animation.ImageMagickWriter.isAvailable()
+<matplotlib.animation.ImageMagickWriter>`.
+The FFmpeg writer in some light testing did not work as well for
+creating GIF thumbnails for the gallery pages.
 
 The following scrapers are supported:
 

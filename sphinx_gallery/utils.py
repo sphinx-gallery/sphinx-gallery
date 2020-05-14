@@ -36,6 +36,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     # local import to avoid testing dependency on PIL:
     Image = _get_image()
     img = Image.open(in_fname)
+    # XXX someday we should just try img.thumbnail((max_width, max_height)) ...
     width_in, height_in = img.size
     scale_w = max_width / float(width_in)
     scale_h = max_height / float(height_in)

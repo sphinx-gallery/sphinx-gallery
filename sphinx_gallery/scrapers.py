@@ -66,6 +66,17 @@ def _matplotlib_fig_titles(fig):
     return fig_titles
 
 
+_ANIMATION_RST = '''
+.. only:: builder_html
+
+    .. container:: sphx-glr-animation
+
+        .. raw:: html
+
+            {0}
+'''
+
+
 def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     """Scrape Matplotlib images.
 
@@ -91,8 +102,16 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         the images. This is often produced by :func:`figure_rst`.
     """
     matplotlib, plt = _import_matplotlib()
+    from matplotlib.animation import FuncAnimation
     image_path_iterator = block_vars['image_path_iterator']
     image_rsts = []
+    # Check for animations
+    anims = list()
+    if gallery_conf.get('matplotlib_animations', False):
+        for ani in block_vars['example_globals'].values():
+            if isinstance(ani, FuncAnimation):
+                anims.append(ani)
+    # Then standard images
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         if 'format' in kwargs:
             image_path = '%s.%s' % (os.path.splitext(image_path)[0],
@@ -100,6 +119,15 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         fig = plt.figure(fig_num)
+        # Deal with animations
+        cont = False
+        for anim in anims:
+            if anim._fig is fig:
+                image_rsts.append(_anim_rst(anim, image_path, gallery_conf))
+                cont = True
+                break
+        if cont:
+            continue
         # get fig titles
         fig_titles = _matplotlib_fig_titles(fig)
         to_rgba = matplotlib.colors.colorConverter.to_rgba
@@ -127,6 +155,29 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
                       for image in image_rsts]
         rst = HLIST_HEADER + ''.join(image_rsts)
     return rst
+
+
+def _anim_rst(anim, image_path, gallery_conf):
+    from matplotlib.animation import ImageMagickWriter
+    # output the thumbnail as the image, as it will just be copied
+    # if it's the file thumbnail
+    fig = anim._fig
+    image_path = image_path.replace('.png', '.gif')
+    fig_size = fig.get_size_inches()
+    thumb_size = gallery_conf['thumbnail_size']
+    use_dpi = round(
+        min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
+    # FFmpeg is buggy for GIFs
+    if ImageMagickWriter.isAvailable():
+        writer = 'imagemagick'
+    else:
+        writer = None
+    anim.save(image_path, writer=writer, dpi=use_dpi)
+    html = anim._repr_html_()
+    if html is None:  # plt.rcParams['animation.html'] == 'none'
+        html = anim.to_jshtml()
+    html = indent(html, '         ')
+    return _ANIMATION_RST.format(html)
 
 
 def mayavi_scraper(block, block_vars, gallery_conf):
@@ -222,7 +273,7 @@ class ImagePathIterator(object):
 
 
 # For now, these are what we support
-_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg')  # XXX add gif next
+_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg', 'gif')
 
 
 def _find_image_ext(path):

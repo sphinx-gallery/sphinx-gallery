@@ -48,6 +48,7 @@ sphinx_gallery_conf = {
     'expected_failing_examples': ['examples/future/plot_future_imports_broken.py'],  # noqa
     'show_memory': True,
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
+    'matplotlib_animations': True,
 }
 nitpicky = True
 highlight_language = 'python3'
