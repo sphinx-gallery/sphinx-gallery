@@ -18,11 +18,8 @@
 
    .. _sphx_glr_backref_{{fullname}}.{{item}}:
 
-   .. include:: backreferences/{{fullname}}.{{item}}.examples
-
-   .. raw:: html
-
-	       <div class="sphx-glr-clear"></div>
+   .. minigallery:: {{fullname}}.{{item}}
+       :add-heading:
 
    {%- endfor %}
    {% endif %}
@@ -38,11 +35,8 @@
    .. autoclass:: {{ item }}
       :members:
 
-   .. include:: backreferences/{{fullname}}.{{item}}.examples
-
-   .. raw:: html
-
-      <div class="sphx-glr-clear"></div>
+   .. minigallery:: {{fullname}}.{{item}}
+       :add-heading:
 
    {%- endfor %}
    {% endif %}

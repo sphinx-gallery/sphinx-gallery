@@ -310,10 +310,8 @@ within function calls).
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
 
-.. include:: gen_modules/backreferences/numpy.exp.examples
-.. raw:: html
-
-        <div class="sphx-glr-clear"></div>
+.. minigallery:: numpy.exp
+    :add-heading:
 
 For such behavior to be available, you have to activate it in
 your Sphinx-Gallery configuration ``conf.py`` file with::
@@ -338,18 +336,30 @@ and belonging to the modules listed in ``doc_module``.
 Within your sphinx documentation ``.rst`` files, you can use easily
 add this reduced version of the Gallery. For example, the rst below adds
 the reduced version of the Gallery for ``numpy.exp``, which includes all
-examples that use the specific function ``numpy.exp``::
+examples that use the specific function ``numpy.exp``:
 
-    .. include:: gen_modules/backreferences/numpy.exp.examples
-    .. raw:: html
+.. code-block:: rst
 
-        <div class="sphx-glr-clear"></div>
+    .. minigallery:: numpy.exp
+        :add-heading:
 
-The ``include`` directive takes a path **relative** to the ``rst``
-file it is called from. In the case of this documentation file (which
-is in the same directory as ``conf.py``) we directly use the path
-declared in ``backreferences_dir`` followed by the function whose
-examples we want to show and the file has the ``.examples`` extension.
+The ``add-heading`` option adds a heading for the mini-gallery, which will be a
+default generated message if no string is provided as an argument.  The example
+mini-gallery shown above uses the default heading.  The level of the heading
+defaults to ``^``, but can be changed using the ``heading-level`` option, which
+accepts a single character (e.g., ``-``).
+
+You can also list multiple items, separated by spaces, which will merge all
+examples into a single mini-gallery, e.g.:
+
+.. code-block:: rst
+
+    .. minigallery:: numpy.exp numpy.sin
+        :add-heading: Mini-gallery using ``numpy.exp`` or ``numpy.sin``
+        :heading-level: -
+
+For such a mini-gallery, specifying a custom heading message is recommended
+because the default message is vague: "Examples of one of multiple objects".
 
 Auto-documenting your API with links to examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -393,16 +403,11 @@ document, in this case all modules of Sphinx-Gallery.
 The template file ``module.rst`` for the ``autosummary`` directive has
 to be saved in the path ``_templates/module.rst``. We present our
 configuration in the following block. The most relevant part is the
-loop defined between lines **12-22** that parses all the functions/classes
-of the module. There we have included the snippet introduced in the
-previous section. Keep in mind that the include directive is
-**relative** to the file location, and module documentation files are
-saved in the directory we specified in the *toctree* option of the
-``autosummary`` directive used before in the ``reference.rst`` file.
-The files we are including are from the ``backreferences_dir``
-configuration option setup for Sphinx-Gallery.
+loop defined between lines **12-21** that parses all the functions/classes
+of the module. There we have used the ``minigallery`` directive introduced in
+the previous section.
 
-We also add a cross referencing label (on line 19) before including the
+We also add a cross referencing label (on line 16) before including the
 examples mini-gallery. This enables you to reference the mini-gallery for
 all functions/classes of the module using
 ``:ref:`sphx_glr_backref_<fun/class>```, where '<fun/class>' is the full path
@@ -413,7 +418,7 @@ to the function/class using dot notation (e.g.,
 .. literalinclude:: _templates/module.rst
     :language: rst
     :lines: 3-
-    :emphasize-lines: 12-22, 32-42
+    :emphasize-lines: 12-21, 31-38
     :linenos:
 
 Toggling global variable inspection

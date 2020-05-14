@@ -293,6 +293,8 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
         with codecs.open(include_path, 'a' if seen else 'w',
                          encoding='utf-8') as ex_file:
             if not seen:
+                # Be aware that if the number of lines of this heading changes,
+                #   the minigallery directive should be modified accordingly
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write('\n\n' + heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')

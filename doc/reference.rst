@@ -29,3 +29,4 @@ every module.
    downloads
    sorting
    binder
+   directives
