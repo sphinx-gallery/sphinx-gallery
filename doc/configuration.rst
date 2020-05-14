@@ -878,11 +878,15 @@ than a single static image of the animation figure, you should add::
           'matplotlib_animations': True,
       }
 
-It's also recommended to ensure that "imagemagick" is available as a ``writer``
-on the doc build platform, as the FFmpeg writer does not work as well for
-creating GIF thumbnails for the gallery pages. The embedding can be changed by
-setting ``rcParams['animation.html']`` and related options in your
+HTML embedding options can be changed by setting ``rcParams['animation.html']``
+and related options in your
 :ref:`matplotlib rcParams <matplotlib:matplotlib-rcparams>`.
+It's also recommended to ensure that "imagemagick" is available as a
+``writer``, which you can check with
+:class:`matplotlib.animation.ImageMagickWriter.isAvailable()
+<matplotlib.animation.ImageMagickWriter>`.
+The FFmpeg writer in some light testing did not work as well for
+creating GIF thumbnails for the gallery pages.
 
 The following scrapers are supported:
 

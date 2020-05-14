@@ -180,24 +180,21 @@ def test_image_formats(sphinx_app):
         assert want_html in html
     # the original GIF does not get copied because it's not used in the
     # RST/HTML, so can't add it to this check
-    for ex, ext, extra in (
-            ('plot_svg', 'svg', None),
-            ('plot_numpy_matplotlib', 'png', None),
-            ('plot_animation', 'gif', 'function Animation')):
+    for ex, ext, nums, extra in (
+            ('plot_svg', 'svg', [1], None),
+            ('plot_numpy_matplotlib', 'png', [1], None),
+            ('plot_animation', 'png', [1, 3], 'function Animation')):
         html_fname = op.join(generated_examples_dir, '%s.html' % ex)
         with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
-        img_fname = '../_images/sphx_glr_%s_001.%s' % (ex, ext)
-        file_fname = op.join(generated_examples_dir, img_fname)
-        if ext == 'gif':
-            assert not op.isfile(file_fname), file_fname
-            assert extra is not None
-            want_html = extra
-        else:
+        for num in nums:
+            img_fname = '../_images/sphx_glr_%s_%03d.%s' % (ex, num, ext)
+            file_fname = op.join(generated_examples_dir, img_fname)
             assert op.isfile(file_fname), file_fname
-            assert extra is None
             want_html = 'src="%s"' % (img_fname,)
-        assert want_html in html
+            assert want_html in html
+        if extra is not None:
+            assert extra in html
 
 
 def test_embed_links_and_styles(sphinx_app):
