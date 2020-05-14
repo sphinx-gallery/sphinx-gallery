@@ -35,6 +35,8 @@
    .. autoclass:: {{ item }}
       :members:
 
+   .. _sphx_glr_backref_{{fullname}}.{{item}}:
+
    .. minigallery:: {{fullname}}.{{item}}
        :add-heading:
 
