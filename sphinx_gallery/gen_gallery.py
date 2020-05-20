@@ -20,6 +20,7 @@ import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
 
+from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5, _has_optipng
@@ -175,11 +176,11 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                     scraper = getattr(scraper, '_get_sg_image_scraper')
                     scraper = scraper()
                 except Exception as exp:
-                    raise ValueError('Unknown image scraper %r, got:\n%s'
-                                     % (orig_scraper, exp))
+                    raise ConfigError('Unknown image scraper %r, got:\n%s'
+                                      % (orig_scraper, exp))
             scrapers[si] = scraper
         if not callable(scraper):
-            raise ValueError('Scraper %r was not callable' % (scraper,))
+            raise ConfigError('Scraper %r was not callable' % (scraper,))
     gallery_conf['image_scrapers'] = tuple(scrapers)
     del scrapers
     # Here we try to set up matplotlib but don't raise an error,
@@ -231,12 +232,12 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     for ri, resetter in enumerate(resetters):
         if isinstance(resetter, str):
             if resetter not in _reset_dict:
-                raise ValueError('Unknown module resetter named %r'
-                                 % (resetter,))
+                raise ConfigError('Unknown module resetter named %r'
+                                  % (resetter,))
             resetters[ri] = _reset_dict[resetter]
         elif not callable(resetter):
-            raise ValueError('Module resetter %r was not callable'
-                             % (resetter,))
+            raise ConfigError('Module resetter %r was not callable'
+                              % (resetter,))
     gallery_conf['reset_modules'] = tuple(resetters)
 
     lang = lang if lang in ('python', 'python3', 'default') else 'python'
@@ -246,13 +247,13 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # Ensure the first cell text is a string if we have it
     first_cell = gallery_conf.get("first_notebook_cell")
     if (not isinstance(first_cell, str)) and (first_cell is not None):
-        raise ValueError("The 'first_notebook_cell' parameter must be type "
-                         "str or None, found type %s" % type(first_cell))
+        raise ConfigError("The 'first_notebook_cell' parameter must be type "
+                          "str or None, found type %s" % type(first_cell))
     # Ensure the last cell text is a string if we have it
     last_cell = gallery_conf.get("last_notebook_cell")
     if (not isinstance(last_cell, str)) and (last_cell is not None):
-        raise ValueError("The 'last_notebook_cell' parameter must be type str "
-                         "or None, found type %s" % type(last_cell))
+        raise ConfigError("The 'last_notebook_cell' parameter must be type str"
+                          " or None, found type %s" % type(last_cell))
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
     gallery_conf['titles'] = {}
@@ -260,21 +261,21 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     backref = gallery_conf['backreferences_dir']
     if (not isinstance(backref, (str, pathlib.Path))) and \
             (backref is not None):
-        raise ValueError("The 'backreferences_dir' parameter must be of type "
-                         "str, pathlib.Path or None, "
-                         "found type %s" % type(backref))
+        raise ConfigError("The 'backreferences_dir' parameter must be of type "
+                          "str, pathlib.Path or None, "
+                          "found type %s" % type(backref))
     # if 'backreferences_dir' is pathlib.Path, make str for Python <=3.5
     # compatibility
     if isinstance(backref, pathlib.Path):
         gallery_conf['backreferences_dir'] = str(backref)
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
-        raise TypeError('gallery_conf["css"] must be list or tuple, got %r'
-                        % (gallery_conf['css'],))
+        raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'
+                          % (gallery_conf['css'],))
     for css in gallery_conf['css']:
         if css not in _KNOWN_CSS:
-            raise ValueError('Unknown css %r, must be one of %r'
-                             % (css, _KNOWN_CSS))
+            raise ConfigError('Unknown css %r, must be one of %r'
+                              % (css, _KNOWN_CSS))
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
@@ -636,9 +637,10 @@ def summarize_failing_examples(app, exception):
                 color='brown')
 
     if fail_msgs:
-        raise ValueError("Here is a summary of the problems encountered when "
-                         "running the examples\n\n" + "\n".join(fail_msgs) +
-                         "\n" + "-" * 79)
+        raise ExtensionError(
+            "Here is a summary of the problems encountered "
+            "when running the examples\n\n" + "\n".join(fail_msgs) +
+            "\n" + "-" * 79)
 
 
 def collect_gallery_files(examples_dirs, gallery_conf):

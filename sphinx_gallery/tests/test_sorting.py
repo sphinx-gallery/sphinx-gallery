@@ -11,6 +11,7 @@ from __future__ import division, absolute_import, print_function
 import os.path as op
 import pytest
 
+from sphinx.errors import ConfigError
 from sphinx_gallery.sorting import (ExplicitOrder, NumberOfCodeLinesSortKey,
                                     FileNameSortKey, FileSizeSortKey,
                                     ExampleTitleSortKey)
@@ -26,12 +27,12 @@ def test_ExplicitOrder_sorting_key():
     assert sorted_folders == explicit_folders
 
     # Test fails on wrong input
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ConfigError) as excinfo:
         ExplicitOrder('nope')
     excinfo.match("ExplicitOrder sorting key takes a list")
 
     # Test missing folder
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ConfigError) as excinfo:
         sorted_folders = sorted(all_folders, key=key)
     excinfo.match('If you use an explicit folder ordering')
 

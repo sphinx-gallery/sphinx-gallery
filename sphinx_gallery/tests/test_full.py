@@ -19,6 +19,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from sphinx.application import Sphinx
+from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import _get_image, scale_image, _has_optipng
 
@@ -127,7 +128,7 @@ def test_junit(sphinx_app, tmpdir):
                      buildername='html', status=StringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
-        with pytest.raises(ValueError, match='Here is a summary of the '):
+        with pytest.raises(ExtensionError, match='Here is a summary of the '):
             app.build(False, [])
     junit_file = op.join(new_out_dir, 'sphinx-gallery', 'junit-results.xml')
     assert op.isfile(junit_file)

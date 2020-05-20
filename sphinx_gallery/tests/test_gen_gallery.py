@@ -13,7 +13,7 @@ import re
 
 import pytest
 
-from sphinx.errors import ExtensionError
+from sphinx.errors import ConfigError, ExtensionError
 from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
                                         check_spaces_in_filenames,
                                         collect_gallery_files,
@@ -51,12 +51,14 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     assert build_warn == ''
 
 
+# This changed from passing the ValueError directly to
+# raising "sphinx.errors.ConfigError" with "threw an exception"
 @pytest.mark.parametrize('err_class, err_match', [
-    pytest.param(ValueError, 'Unknown module resetter',
+    pytest.param(ConfigError, 'Unknown module resetter',
                  id='Resetter unknown',
                  marks=pytest.mark.conf_file(
                      content="sphinx_gallery_conf={'reset_modules': ('f',)}")),
-    pytest.param(ValueError, 'Module resetter .* was not callab',
+    pytest.param(ConfigError, 'Module resetter .* was not callab',
                  id='Resetter not callable',
                  marks=pytest.mark.conf_file(
                      content="sphinx_gallery_conf={'reset_modules': (1.,),}")),
@@ -67,10 +69,10 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
 
 
 @pytest.mark.parametrize('err_class, err_match', [
-    pytest.param(ValueError, 'Unknown css', id='CSS str error',
+    pytest.param(ConfigError, 'Unknown css', id='CSS str error',
                  marks=pytest.mark.conf_file(
                      content="sphinx_gallery_conf={'css': ('foo',)}")),
-    pytest.param(TypeError, 'must be list or tuple', id="CSS type error",
+    pytest.param(ConfigError, 'must be list or tuple', id="CSS type error",
                  marks=pytest.mark.conf_file(
                      content="sphinx_gallery_conf={'css': 1.}")),
 ])
@@ -315,7 +317,7 @@ def test_failing_examples_raise_exception(sphinx_app_wrapper):
     with codecs.open(os.path.join(example_dir, 'plot_3.py'), 'a',
                      encoding='utf-8') as fid:
         fid.write('raise SyntaxError')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ExtensionError) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
     assert "Unexpected failing examples" in str(excinfo.value)
 
@@ -341,7 +343,7 @@ sphinx_gallery_conf = {
     'expected_failing_examples' :['src/plot_2.py'],
 }""")
 def test_examples_not_expected_to_pass(sphinx_app_wrapper):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ExtensionError) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
     assert "expected to fail, but not failing" in str(excinfo.value)
 
@@ -364,7 +366,7 @@ sphinx_gallery_conf = {
 def test_first_notebook_cell_config(sphinx_app_wrapper):
     from sphinx_gallery.gen_gallery import parse_config
     # First cell must be str
-    with pytest.raises(ValueError):
+    with pytest.raises(ConfigError):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
 
 
@@ -375,7 +377,7 @@ sphinx_gallery_conf = {
 def test_last_notebook_cell_config(sphinx_app_wrapper):
     from sphinx_gallery.gen_gallery import parse_config
     # First cell must be str
-    with pytest.raises(ValueError):
+    with pytest.raises(ConfigError):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
 
 
@@ -386,7 +388,7 @@ sphinx_gallery_conf = {
 def test_backreferences_dir_config(sphinx_app_wrapper):
     """Tests 'backreferences_dir' type checking."""
     from sphinx_gallery.gen_gallery import parse_config
-    with pytest.raises(ValueError,
+    with pytest.raises(ConfigError,
                        match="The 'backreferences_dir' parameter must be of"):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
 

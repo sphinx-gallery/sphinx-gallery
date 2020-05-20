@@ -17,6 +17,7 @@ import sys
 import tokenize
 from textwrap import dedent
 
+from sphinx.errors import ExtensionError
 from .sphinx_compatibility import getLogger
 
 logger = getLogger('sphinx-gallery')
@@ -90,14 +91,16 @@ def _get_docstring_and_rest(filename):
         return SYNTAX_ERROR_DOCSTRING, content, 1, node
 
     if not isinstance(node, ast.Module):
-        raise TypeError("This function only supports modules. "
-                        "You provided {0}".format(node.__class__.__name__))
+        raise ExtensionError("This function only supports modules. "
+                             "You provided {0}"
+                             .format(node.__class__.__name__))
     if not (node.body and isinstance(node.body[0], ast.Expr) and
             isinstance(node.body[0].value, ast.Str)):
-        raise ValueError(('Could not find docstring in file "{0}". '
-                          'A docstring is required by sphinx-gallery '
-                          'unless the file is ignored by "ignore_pattern"')
-                         .format(filename))
+        raise ExtensionError(
+            'Could not find docstring in file "{0}". '
+            'A docstring is required by sphinx-gallery '
+            'unless the file is ignored by "ignore_pattern"'
+            .format(filename))
 
     if LooseVersion(sys.version) >= LooseVersion('3.7'):
         docstring = ast.get_docstring(node)

@@ -18,6 +18,7 @@ import codeop
 
 import pytest
 
+from sphinx.errors import ExtensionError
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst
@@ -285,9 +286,9 @@ def test_extract_intro_and_title():
     assert intro_paragraph.replace('\n', ' ')[:95] == intro[:95]
 
     # Errors
-    with pytest.raises(ValueError, match='should have a header'):
+    with pytest.raises(ExtensionError, match='should have a header'):
         sg.extract_intro_and_title('<string>', '')  # no title
-    with pytest.raises(ValueError, match='Could not find a title'):
+    with pytest.raises(ExtensionError, match='Could not find a title'):
         sg.extract_intro_and_title('<string>', '=====')  # no real title
 
 
@@ -450,7 +451,7 @@ def test_gen_dir_rst(gallery_conf, fakesphinxapp, ext):
     args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
             gallery_conf, [])
     if ext == '.bad':  # not found with correct ext
-        with pytest.raises(FileNotFoundError, match='does not have a README'):
+        with pytest.raises(ExtensionError, match='does not have a README'):
             generate_dir_rst(*args)
     else:
         out = generate_dir_rst(*args)
