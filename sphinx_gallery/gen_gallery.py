@@ -22,7 +22,7 @@ from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5
+from .utils import _replace_md5, _has_optipng
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
@@ -63,6 +63,7 @@ DEFAULT_GALLERY_CONF = {
     'min_reported_time': 0,
     'binder': {},
     'image_scrapers': ('matplotlib',),
+    'compress_images': (),
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'last_notebook_cell': None,
@@ -194,6 +195,33 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         _import_matplotlib()
     except (ImportError, ValueError):
         pass
+
+    # compress_images
+    compress_images = gallery_conf['compress_images']
+    if isinstance(compress_images, str):
+        compress_images = [compress_images]
+    elif not isinstance(compress_images, (tuple, list)):
+        raise TypeError('compress_images must be a tuple, list, or str, got %s'
+                        % (type(compress_images),))
+    compress_images = list(compress_images)
+    allowed_values = ('images', 'thumbnails')
+    pops = list()
+    for ki, kind in enumerate(compress_images):
+        if kind not in allowed_values:
+            if kind.startswith('-'):
+                pops.append(ki)
+                continue
+            raise TypeError('All entries in compress_images must be one of %s '
+                            'or a command-line switch starting with "-", '
+                            'got %r' % (allowed_values, kind))
+    compress_images_args = [compress_images.pop(p) for p in pops[::-1]]
+    if len(compress_images) and not _has_optipng():
+        logger.warning(
+            'optipng binaries not found, PNG %s will not be optimized'
+            % (' and '.join(compress_images),))
+        compress_images = ()
+    gallery_conf['compress_images'] = compress_images
+    gallery_conf['compress_images_args'] = compress_images_args
 
     # deal with resetters
     resetters = gallery_conf['reset_modules']

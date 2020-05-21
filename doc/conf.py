@@ -337,10 +337,11 @@ sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery', 'numpy'),
     'reference_url': {
         'sphinx_gallery': None,
-        },
+    },
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'image_scrapers': image_scrapers,
+    'compress_images': ('images', 'thumbnails'),
     # specify the order of examples to be according to filename
     'within_subsection_order': FileNameSortKey,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',

@@ -31,6 +31,7 @@ file:
 - ``plot_gallery`` (:ref:`without_execution`)
 - ``image_scrapers`` (and the deprecated ``find_mayavi_figures``)
   (:ref:`image_scrapers`)
+- ``compress_images`` (:ref:`compress_images`)
 - ``reset_modules`` (:ref:`reset_modules`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
@@ -854,6 +855,36 @@ a default::
 
 The highest precedence is always given to the `-D` flag of the
 ``sphinx-build`` command.
+
+
+.. _compress_images:
+
+Compressing images
+==================
+
+When writing PNG files (the default scraper format), sphinx-gallery can be
+configured to use ``optipng`` to optimize the PNG file sizes. Typically this
+yields roughly a 50% reduction in file sizes, thus reducing the loading time
+of galleries. However, it can increase build
+time. The allowed values are ``'images'`` and ``'thumbnails'``, or a
+tuple/list (to optimize both), such as::
+
+    sphinx_gallery_conf = {
+        ...
+        'compress_images': ('images', 'thumbnails'),
+    }
+
+The default is ``()`` (no optimization) and a warning will be emitted if
+optimization is requested but ``optipng`` is not available. You can also pass
+additional command-line options (starting with ``'-'``), for example to
+optimize less but speed up the build time you could do::
+
+    sphinx_gallery_conf = {
+        ...
+        'compress_images': ('images', 'thumbnails', '-o1'),
+    }
+
+See ``$ optipng --help`` for a complete list of options.
 
 
 .. _image_scrapers:

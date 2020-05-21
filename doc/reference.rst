@@ -30,3 +30,17 @@ every module.
    sorting
    binder
    directives
+
+.. currentmodule:: sphinx_gallery.utils
+
+.. automodule:: sphinx_gallery.utils
+   :no-members:
+   :no-inherited-members:
+
+:py:mod:`sphinx_gallery.utils`:
+
+.. autosummary::
+   :toctree: gen_modules/
+   :template: module.rst
+
+   optipng

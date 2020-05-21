@@ -68,7 +68,9 @@ Sphinx-Gallery has also support for packages like:
 * Seaborn
 * Mayavi
 
-For much of this functionality, you will need `pillow`.
+For much of this functionality, you will need ``pillow``. We also recommend
+installing system ``optipng`` binaries to reduce the file sizes of the
+generated PNG files.
 
 Install as a Sphinx-gallery developer
 -------------------------------------
