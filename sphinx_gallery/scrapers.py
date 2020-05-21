@@ -16,6 +16,7 @@ import sys
 import re
 from textwrap import indent
 
+from sphinx.errors import ExtensionError
 from .utils import scale_image, optipng
 
 __all__ = ['save_figures', 'figure_rst', 'ImagePathIterator', 'clean_modules',
@@ -34,7 +35,7 @@ def _import_matplotlib():
     matplotlib_backend = matplotlib.get_backend().lower()
 
     if matplotlib_backend != 'agg':
-        raise ValueError(
+        raise ExtensionError(
             "Sphinx-Gallery relies on the matplotlib 'agg' backend to "
             "render figures and write them to files. You are "
             "currently using the {} backend. Sphinx-Gallery will "
@@ -264,7 +265,7 @@ class ImagePathIterator(object):
         for ii in range(self._stop):
             yield self.next()
         else:
-            raise RuntimeError('Generated over %s images' % (self._stop,))
+            raise ExtensionError('Generated over %s images' % (self._stop,))
 
     def next(self):
         return self.__next__()
@@ -315,16 +316,17 @@ def save_figures(block, block_vars, gallery_conf):
     for scraper in gallery_conf['image_scrapers']:
         rst = scraper(block, block_vars, gallery_conf)
         if not isinstance(rst, str):
-            raise TypeError('rst from scraper %r was not a string, '
-                            'got type %s:\n%r'
-                            % (scraper, type(rst), rst))
+            raise ExtensionError('rst from scraper %r was not a string, '
+                                 'got type %s:\n%r'
+                                 % (scraper, type(rst), rst))
         n_new = len(image_path_iterator) - prev_count
         for ii in range(n_new):
             current_path, _ = _find_image_ext(
                 image_path_iterator.paths[prev_count + ii])
             if not os.path.isfile(current_path):
-                raise RuntimeError('Scraper %s did not produce expected image:'
-                                   '\n%s' % (scraper, current_path))
+                raise ExtensionError(
+                    'Scraper %s did not produce expected image:'
+                    '\n%s' % (scraper, current_path))
         all_rst += rst
     return all_rst
 

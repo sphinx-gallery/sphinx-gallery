@@ -15,6 +15,8 @@ import os
 from shutil import move, copyfile
 import subprocess
 
+from sphinx.errors import ExtensionError
+
 
 def _get_image():
     try:
@@ -23,9 +25,9 @@ def _get_image():
         try:
             import Image
         except ImportError:
-            raise RuntimeError('Could not import pillow, which is required '
-                               'to rescale images (e.g., for thumbnails): %s'
-                               % (exc,))
+            raise ExtensionError(
+                'Could not import pillow, which is required '
+                'to rescale images (e.g., for thumbnails): %s' % (exc,))
     return Image
 
 

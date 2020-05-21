@@ -13,6 +13,8 @@ from __future__ import division, absolute_import, print_function
 import os
 import types
 
+from sphinx.errors import ConfigError
+
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
 
@@ -35,9 +37,9 @@ class ExplicitOrder(object):
 
     def __init__(self, ordered_list):
         if not isinstance(ordered_list, (list, tuple, types.GeneratorType)):
-            raise ValueError("ExplicitOrder sorting key takes a list, "
-                             "tuple or Generator, which hold"
-                             "the paths of each gallery subfolder")
+            raise ConfigError("ExplicitOrder sorting key takes a list, "
+                              "tuple or Generator, which hold"
+                              "the paths of each gallery subfolder")
 
         self.ordered_list = list(os.path.normpath(path)
                                  for path in ordered_list)
@@ -46,9 +48,9 @@ class ExplicitOrder(object):
         if item in self.ordered_list:
             return self.ordered_list.index(item)
         else:
-            raise ValueError('If you use an explicit folder ordering, you '
-                             'must specify all folders. Explicit order not '
-                             'found for {}'.format(item))
+            raise ConfigError('If you use an explicit folder ordering, you '
+                              'must specify all folders. Explicit order not '
+                              'found for {}'.format(item))
 
     def __repr__(self):
         return '<%s : %s>' % (self.__class__.__name__, self.ordered_list)

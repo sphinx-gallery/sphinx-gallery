@@ -12,6 +12,7 @@ from __future__ import division, absolute_import, print_function
 
 import os.path as op
 import pytest
+from sphinx.errors import ExtensionError
 import sphinx_gallery.py_source_parser as sg
 
 
@@ -23,13 +24,13 @@ def test_get_docstring_and_rest(unicode_sample, tmpdir, monkeypatch):
     fname = op.join(str(tmpdir), 'temp')
     with open(fname, 'w') as fid:
         fid.write('print("hello")\n')
-    with pytest.raises(ValueError, match='Could not find docstring'):
+    with pytest.raises(ExtensionError, match='Could not find docstring'):
         sg._get_docstring_and_rest(fname)
     with open(fname, 'w') as fid:
         fid.write('print hello\n')
     assert sg._get_docstring_and_rest(fname)[0] == sg.SYNTAX_ERROR_DOCSTRING
     monkeypatch.setattr(sg, 'parse_source_file', lambda x: ('', None))
-    with pytest.raises(TypeError, match='only supports modules'):
+    with pytest.raises(ExtensionError, match='only supports modules'):
         sg._get_docstring_and_rest('')
 
 

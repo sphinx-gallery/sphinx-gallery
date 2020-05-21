@@ -19,6 +19,7 @@ import urllib.request as urllib_request
 import urllib.parse as urllib_parse
 from urllib.error import HTTPError, URLError
 
+from sphinx.errors import ExtensionError
 from sphinx.search import js_index
 
 from . import sphinx_compatibility
@@ -39,7 +40,7 @@ def _get_data(url):
         if encoding == 'gzip':
             data = gzip.GzipFile(fileobj=BytesIO(data)).read()
         elif encoding != 'plain':
-            raise RuntimeError('unknown encoding %r' % (encoding,))
+            raise ExtensionError('unknown encoding %r' % (encoding,))
         data = data.decode('utf-8')
     else:
         with codecs.open(url, mode='r', encoding='utf-8') as fid:
@@ -83,13 +84,16 @@ def parse_sphinx_docopts(index):
 
     pos = index.find('var DOCUMENTATION_OPTIONS')
     if pos < 0:
-        raise ValueError('Documentation options could not be found in index.')
+        raise ExtensionError(
+            'Documentation options could not be found in index.')
     pos = index.find('{', pos)
     if pos < 0:
-        raise ValueError('Documentation options could not be found in index.')
+        raise ExtensionError(
+            'Documentation options could not be found in index.')
     endpos = index.find('};', pos)
     if endpos < 0:
-        raise ValueError('Documentation options could not be found in index.')
+        raise ExtensionError(
+            'Documentation options could not be found in index.')
     block = index[pos + 1:endpos].strip()
     docopts = {}
     for line in block.splitlines():
@@ -140,8 +144,9 @@ class SphinxDocLinkResolver(object):
 
         if doc_url.startswith(('http://', 'https://')):
             if relative:
-                raise ValueError('Relative links are only supported for local '
-                                 'URLs (doc_url cannot be absolute)')
+                raise ExtensionError(
+                    'Relative links are only supported for local '
+                    'URLs (doc_url cannot be absolute)')
             index_url = doc_url + '/'
             searchindex_url = doc_url + '/searchindex.js'
             docopts_url = doc_url + '_static/documentation_options.js'
@@ -155,8 +160,9 @@ class SphinxDocLinkResolver(object):
         if (os.name.lower() == 'nt' and
                 not doc_url.startswith(('http://', 'https://'))):
             if not relative:
-                raise ValueError('You have to use relative=True for the local'
-                                 ' package on a Windows system.')
+                raise ExtensionError(
+                    'You have to use relative=True for the local'
+                    ' package on a Windows system.')
             self._is_windows = True
         else:
             self._is_windows = False

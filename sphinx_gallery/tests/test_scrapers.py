@@ -3,6 +3,7 @@ import os
 import pytest
 import numpy as np
 
+from sphinx.errors import ConfigError, ExtensionError
 import sphinx_gallery
 from sphinx_gallery.gen_gallery import _complete_gallery_conf
 from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SINGLE_IMAGE,
@@ -135,13 +136,13 @@ def test_custom_scraper(gallery_conf, monkeypatch):
     # without the monkey patch to add sphinx_gallery._get_sg_image_scraper,
     # we should get an error
     gallery_conf.update(image_scrapers=['sphinx_gallery'])
-    with pytest.raises(ValueError,
+    with pytest.raises(ConfigError,
                        match="has no attribute '_get_sg_image_scraper'"):
         _complete_gallery_conf(*complete_args)
 
     # other degenerate conditions
     gallery_conf.update(image_scrapers=['foo'])
-    with pytest.raises(ValueError, match='Unknown image scraper'):
+    with pytest.raises(ConfigError, match='Unknown image scraper'):
         _complete_gallery_conf(*complete_args)
     gallery_conf.update(image_scrapers=[_custom_func])
     fname_template = os.path.join(gallery_conf['gallery_dir'],
@@ -149,22 +150,22 @@ def test_custom_scraper(gallery_conf, monkeypatch):
     image_path_iterator = ImagePathIterator(fname_template)
     block = ('',) * 3
     block_vars = dict(image_path_iterator=image_path_iterator)
-    with pytest.raises(RuntimeError, match='did not produce expected image'):
+    with pytest.raises(ExtensionError, match='did not produce expected image'):
         save_figures(block, block_vars, gallery_conf)
     gallery_conf.update(image_scrapers=[lambda x, y, z: 1.])
-    with pytest.raises(TypeError, match='was not a string'):
+    with pytest.raises(ExtensionError, match='was not a string'):
         save_figures(block, block_vars, gallery_conf)
     # degenerate string interface
     gallery_conf.update(image_scrapers=['sphinx_gallery'])
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, '_get_sg_image_scraper', 'foo',
                   raising=False)
-        with pytest.raises(ValueError, match='^Unknown image.*\n.*callable'):
+        with pytest.raises(ConfigError, match='^Unknown image.*\n.*callable'):
             _complete_gallery_conf(*complete_args)
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, '_get_sg_image_scraper', lambda: 'foo',
                   raising=False)
-        with pytest.raises(ValueError, match='^Scraper.*was not callable'):
+        with pytest.raises(ConfigError, match='^Scraper.*was not callable'):
             _complete_gallery_conf(*complete_args)
 
 
@@ -212,6 +213,6 @@ def test_iterator():
     """Test ImagePathIterator."""
     ipi = ImagePathIterator('foo{0}')
     ipi._stop = 10
-    with pytest.raises(RuntimeError, match='10 images'):
+    with pytest.raises(ExtensionError, match='10 images'):
         for ii in ipi:
             pass

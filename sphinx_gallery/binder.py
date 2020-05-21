@@ -18,6 +18,8 @@ change in the future.
 import shutil
 import os
 
+from sphinx.errors import ConfigError
+
 from .utils import replace_py_ipynb
 from . import sphinx_compatibility
 
@@ -134,9 +136,10 @@ def _copy_binder_reqs(app, binder_conf):
     path_reqs = binder_conf.get('dependencies')
     for path in path_reqs:
         if not os.path.exists(os.path.join(app.srcdir, path)):
-            raise ValueError(("Couldn't find the Binder requirements file: {},"
-                              " did you specify the path correctly?"
-                              .format(path)))
+            raise ConfigError(
+                "Couldn't find the Binder requirements file: {}, "
+                "did you specify the path correctly?"
+                .format(path))
 
     binder_folder = os.path.join(app.outdir, 'binder')
     if not os.path.isdir(binder_folder):
@@ -196,7 +199,7 @@ def check_binder_conf(binder_conf):
     # Grab the configuration and return None if it's not configured
     binder_conf = {} if binder_conf is None else binder_conf
     if not isinstance(binder_conf, dict):
-        raise ValueError('`binder_conf` must be a dictionary or None.')
+        raise ConfigError('`binder_conf` must be a dictionary or None.')
     if len(binder_conf) == 0:
         return binder_conf
 
@@ -209,19 +212,19 @@ def check_binder_conf(binder_conf):
             missing_values.append(val)
 
     if len(missing_values) > 0:
-        raise ValueError('binder_conf is missing values for: {}'.format(
+        raise ConfigError('binder_conf is missing values for: {}'.format(
             missing_values))
 
     for key in binder_conf.keys():
         if key not in (req_values + optional_values):
-            raise ValueError("Unknown Binder config key: {}".format(key))
+            raise ConfigError("Unknown Binder config key: {}".format(key))
 
     # Ensure we have http in the URL
     if not any(binder_conf['binderhub_url'].startswith(ii)
                for ii in ['http://', 'https://']):
-        raise ValueError('did not supply a valid url, '
-                         'gave binderhub_url: {}'
-                         .format(binder_conf['binderhub_url']))
+        raise ConfigError('did not supply a valid url, '
+                          'gave binderhub_url: {}'
+                          .format(binder_conf['binderhub_url']))
 
     # Ensure we have at least one dependency file
     # Need at least one of these three files
@@ -231,14 +234,14 @@ def check_binder_conf(binder_conf):
         path_reqs = [path_reqs]
         binder_conf['dependencies'] = path_reqs
     elif not isinstance(path_reqs, (list, tuple)):
-        raise ValueError("`dependencies` value should be a list of strings. "
-                         "Got type {}.".format(type(path_reqs)))
+        raise ConfigError("`dependencies` value should be a list of strings. "
+                          "Got type {}.".format(type(path_reqs)))
 
     binder_conf['notebooks_dir'] = binder_conf.get('notebooks_dir',
                                                    'notebooks')
     path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
     if not any(ii in path_reqs_filenames for ii in required_reqs_files):
-        raise ValueError(
+        raise ConfigError(
             'Did not find one of `requirements.txt` or `environment.yml` '
             'in the "dependencies" section of the binder configuration '
             'for sphinx-gallery. A path to at least one of these files '

@@ -33,6 +33,8 @@ import sys
 import traceback
 import codeop
 
+from sphinx.errors import ExtensionError
+
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
 from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
@@ -212,7 +214,7 @@ def extract_intro_and_title(filename, docstring):
     paragraphs = [p for p in paragraphs
                   if not p.startswith('.. ') and len(p) > 0]
     if len(paragraphs) == 0:
-        raise ValueError(
+        raise ExtensionError(
             "Example docstring should have a header for the example title. "
             "Please check the example file:\n {}\n".format(filename))
     # Title is the first paragraph with any ReSTructuredText title chars
@@ -224,7 +226,7 @@ def extract_intro_and_title(filename, docstring):
                       re.MULTILINE)
 
     if match is None:
-        raise ValueError(
+        raise ExtensionError(
             'Could not find a title in first paragraph:\n{}'.format(
                 title_paragraph))
     title = match.group(0).strip()
@@ -281,7 +283,7 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         image_path = os.path.join(gallery_conf['src_dir'], thumbnail_path)
     else:
         if not isinstance(thumbnail_number, int):
-            raise TypeError(
+            raise ExtensionError(
                 'sphinx_gallery_thumbnail_number setting is not a number, '
                 'got %r' % (thumbnail_number,))
         image_path = image_path_template.format(thumbnail_number)
@@ -318,7 +320,7 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
             if os.path.isfile(fpth):
                 return fpth
     if raise_error:
-        raise FileNotFoundError(
+        raise ExtensionError(
             "Example directory {0} does not have a README file with one "
             "of the expected file extensions {1}. Please write one to "
             "introduce your gallery.".format(dir_, extensions))
