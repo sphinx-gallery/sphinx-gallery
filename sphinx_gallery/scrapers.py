@@ -103,14 +103,14 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         the images. This is often produced by :func:`figure_rst`.
     """
     matplotlib, plt = _import_matplotlib()
-    from matplotlib.animation import FuncAnimation
+    from matplotlib.animation import Animation
     image_path_iterator = block_vars['image_path_iterator']
     image_rsts = []
     # Check for animations
     anims = list()
     if gallery_conf.get('matplotlib_animations', False):
         for ani in block_vars['example_globals'].values():
-            if isinstance(ani, FuncAnimation):
+            if isinstance(ani, Animation):
                 anims.append(ani)
     # Then standard images
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):

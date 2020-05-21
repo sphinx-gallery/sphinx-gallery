@@ -906,7 +906,7 @@ to scrape both matplotlib and Mayavi images you can do::
 The default value is ``'image_scrapers': ('matplotlib',)`` which only scrapes
 Matplotlib images. Note that this includes any images produced by packages that
 are based on Matplotlib, for example Seaborn or Yellowbrick. If you want
-to embed :class:`matplotlib.animation.FuncAnimation`\s as animations rather
+to embed :class:`matplotlib.animation.Animation`\s as animations rather
 than a single static image of the animation figure, you should add::
 
       sphinx_gallery_conf = {
