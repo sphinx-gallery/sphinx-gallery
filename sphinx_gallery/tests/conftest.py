@@ -14,7 +14,7 @@ import pytest
 
 import sphinx
 from sphinx.application import Sphinx
-from sphinx.error import ExtensionError
+from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
                             sphinx_compatibility, py_source_parser)
