@@ -867,7 +867,7 @@ configured to use ``optipng`` to optimize the PNG file sizes. Typically this
 yields roughly a 50% reduction in file sizes, thus reducing the loading time
 of galleries. However, it can increase build
 time. The allowed values are ``'images'`` and ``'thumbnails'``, or a
-tuple/list, such as (to optimize both)::
+tuple/list (to optimize both), such as::
 
     sphinx_gallery_conf = {
         ...
