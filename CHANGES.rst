@@ -1,13 +1,76 @@
 Change Log
 ==========
 
+v0.7.0
+------
+
+Developer changes
+'''''''''''''''''
+
+- Use Sphinx errors rather than built-in errors.
+
+**Implemented enhancements:**
+
+-  ENH: Use Sphinx errors `#690 <https://github.com/sphinx-gallery/sphinx-gallery/pull/690>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Add support for FuncAnimation `#687 <https://github.com/sphinx-gallery/sphinx-gallery/pull/687>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Sphinx directive to insert mini-galleries `#685 <https://github.com/sphinx-gallery/sphinx-gallery/pull/685>`__ (`ayshih <https://github.com/ayshih>`__)
+-  Provide a Sphinx directive to insert a mini-gallery `#683 <https://github.com/sphinx-gallery/sphinx-gallery/issues/683>`__
+-  ENH Add cross ref label to template module.rst `#680 <https://github.com/sphinx-gallery/sphinx-gallery/pull/680>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Add show_memory extension API `#677 <https://github.com/sphinx-gallery/sphinx-gallery/pull/677>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Support for GPU memory logging `#671 <https://github.com/sphinx-gallery/sphinx-gallery/issues/671>`__
+-  ENH Add alt attribute for thumbnails `#668 <https://github.com/sphinx-gallery/sphinx-gallery/pull/668>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH More informative ‘alt’ attribute for thumbnails in index `#664 <https://github.com/sphinx-gallery/sphinx-gallery/issues/664>`__
+-  ENH More informative ‘alt’ attribute for images `#663 <https://github.com/sphinx-gallery/sphinx-gallery/pull/663>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Use optipng when requested `#656 <https://github.com/sphinx-gallery/sphinx-gallery/pull/656>`__ (`larsoner <https://github.com/larsoner>`__)
+-  thumbnails cause heavy gallery pages and long loading time `#655 <https://github.com/sphinx-gallery/sphinx-gallery/issues/655>`__
+-  MAINT: Better error messages `#600 <https://github.com/sphinx-gallery/sphinx-gallery/issues/600>`__
+-  More informative “alt” attribute for image tags `#538 <https://github.com/sphinx-gallery/sphinx-gallery/issues/538>`__
+-  ENH: easy linking to “examples using my_function” `#496 <https://github.com/sphinx-gallery/sphinx-gallery/issues/496>`__
+-  sub-galleries should be generated with a separate “gallery rst” file `#413 <https://github.com/sphinx-gallery/sphinx-gallery/issues/413>`__
+-  matplotlib animations support `#150 <https://github.com/sphinx-gallery/sphinx-gallery/issues/150>`__
+
+**Fixed bugs:**
+
+-  Add backref label for classes in module.rst `#688 <https://github.com/sphinx-gallery/sphinx-gallery/pull/688>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Fixed backreference inspection to account for tilde use `#684 <https://github.com/sphinx-gallery/sphinx-gallery/pull/684>`__ (`ayshih <https://github.com/ayshih>`__)
+-  Fix regex for numpy RandomState in test_full `#682 <https://github.com/sphinx-gallery/sphinx-gallery/pull/682>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  fix tests regex to search for numpy data in html `#681 <https://github.com/sphinx-gallery/sphinx-gallery/issues/681>`__
+-  FIX: Fix sys.stdout patching `#678 <https://github.com/sphinx-gallery/sphinx-gallery/pull/678>`__ (`larsoner <https://github.com/larsoner>`__)
+-  check-manifest causing master to fail `#675 <https://github.com/sphinx-gallery/sphinx-gallery/issues/675>`__
+-  Output of logger is not captured if the logger is created in a different cell `#672 <https://github.com/sphinx-gallery/sphinx-gallery/issues/672>`__
+-  FIX: Remove newlines from title `#669 <https://github.com/sphinx-gallery/sphinx-gallery/pull/669>`__ (`larsoner <https://github.com/larsoner>`__)
+-  BUG Tinybuild autosummary links fail with Sphinx dev `#659 <https://github.com/sphinx-gallery/sphinx-gallery/issues/659>`__
+
+**Documentation:**
+
+-  DOC Update label to raw string in plot_0_sin.py `#674 <https://github.com/sphinx-gallery/sphinx-gallery/pull/674>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Update Sphinx url to https `#673 <https://github.com/sphinx-gallery/sphinx-gallery/pull/673>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Clarify syntax.rst `#670 <https://github.com/sphinx-gallery/sphinx-gallery/pull/670>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Note config comment removal in code only `#667 <https://github.com/sphinx-gallery/sphinx-gallery/pull/667>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Update links in syntax.rst `#666 <https://github.com/sphinx-gallery/sphinx-gallery/pull/666>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Fix typos, clarify `#662 <https://github.com/sphinx-gallery/sphinx-gallery/pull/662>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Update html-noplot `#658 <https://github.com/sphinx-gallery/sphinx-gallery/pull/658>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC: Fix PNGScraper example `#653 <https://github.com/sphinx-gallery/sphinx-gallery/pull/653>`__ (`denkii <https://github.com/denkii>`__)
+-  DOC: Fix typos in documentation files. `#652 <https://github.com/sphinx-gallery/sphinx-gallery/pull/652>`__ (`TomDonoghue <https://github.com/TomDonoghue>`__)
+-  Inconsistency with applying & removing sphinx gallery configs `#665 <https://github.com/sphinx-gallery/sphinx-gallery/issues/665>`__
+-  ``make html-noplot`` instructions outdated `#606 <https://github.com/sphinx-gallery/sphinx-gallery/issues/606>`__
+
+**Closed issues:**
+
+-  intersphinx links need backreferences_dir `#467 <https://github.com/sphinx-gallery/sphinx-gallery/issues/467>`__
+
+**Merged pull requests:**
+
+-  Fix lint in gen_gallery.py `#686 <https://github.com/sphinx-gallery/sphinx-gallery/pull/686>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Better alt thumbnail test for punctuation in title `#679 <https://github.com/sphinx-gallery/sphinx-gallery/pull/679>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Update manifest for changes to check-manifest `#676 <https://github.com/sphinx-gallery/sphinx-gallery/pull/676>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT: Update CircleCI `#657 <https://github.com/sphinx-gallery/sphinx-gallery/pull/657>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Bump version to 0.7.0.dev0 `#651 <https://github.com/sphinx-gallery/sphinx-gallery/pull/651>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.6.2
 ------
 
 - Patch release due to missing CSS files in v0.6.1. Manifest check added to CI.
-
-Developer changes
-'''''''''''''''''
 
 **Implemented enhancements:**
 
