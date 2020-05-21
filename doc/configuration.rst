@@ -864,7 +864,8 @@ Compressing images
 
 When writing PNG files (the default scraper format), sphinx-gallery can be
 configured to use ``optipng`` to optimize the PNG file sizes. Typically this
-yields roughly a 50% reduction in file sizes. However, it can increase build
+yields roughly a 50% reduction in file sizes, thus reducing the loading time
+of galleries. However, it can increase build
 time. The allowed values are ``'images'`` and ``'thumbnails'``, or a
 tuple/list, such as (to optimize both)::
 
@@ -874,9 +875,9 @@ tuple/list, such as (to optimize both)::
     }
 
 The default is ``()`` (no optimization) and a warning will be emitted if
-optimization is requested but not available. You can also pass additional
-command-line options (starting with ``'-'``), for example to optimize less
-but speed up the build time you could do::
+optimization is requested but ``optipng`` is not available. You can also pass
+additional command-line options (starting with ``'-'``), for example to
+optimize less but speed up the build time you could do::
 
     sphinx_gallery_conf = {
         ...
