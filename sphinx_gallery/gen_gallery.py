@@ -202,8 +202,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     if isinstance(compress_images, str):
         compress_images = [compress_images]
     elif not isinstance(compress_images, (tuple, list)):
-        raise TypeError('compress_images must be a tuple, list, or str, got %s'
-                        % (type(compress_images),))
+        raise ConfigError('compress_images must be a tuple, list, or str, '
+                          'got %s' % (type(compress_images),))
     compress_images = list(compress_images)
     allowed_values = ('images', 'thumbnails')
     pops = list()
@@ -212,9 +212,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             if kind.startswith('-'):
                 pops.append(ki)
                 continue
-            raise TypeError('All entries in compress_images must be one of %s '
-                            'or a command-line switch starting with "-", '
-                            'got %r' % (allowed_values, kind))
+            raise ConfigError('All entries in compress_images must be one of '
+                              '%s or a command-line switch starting with "-", '
+                              'got %r' % (allowed_values, kind))
     compress_images_args = [compress_images.pop(p) for p in pops[::-1]]
     if len(compress_images) and not _has_optipng():
         logger.warning(
