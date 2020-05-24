@@ -10,6 +10,7 @@ from copy import deepcopy
 
 import pytest
 
+from sphinx.errors import ConfigError
 from sphinx_gallery.binder import (gen_binder_url, check_binder_conf,
                                    _copy_binder_reqs)
 
@@ -43,7 +44,7 @@ def test_binder():
     # URL must have http
     conf2 = deepcopy(conf1)
     conf2['binderhub_url'] = 'test1.com'
-    with pytest.raises(ValueError, match='did not supply a valid url'):
+    with pytest.raises(ConfigError, match='did not supply a valid url'):
         url = check_binder_conf(conf2)
 
     # Assert missing params
@@ -52,7 +53,7 @@ def test_binder():
             continue
         conf3 = deepcopy(conf1)
         conf3.pop(key)
-        with pytest.raises(ValueError, match='binder_conf is missing values'):
+        with pytest.raises(ConfigError, match='binder_conf is missing values'):
             url = check_binder_conf(conf3)
 
     # Dependencies file
@@ -60,14 +61,14 @@ def test_binder():
     for ifile in dependency_file_tests:
         conf3 = deepcopy(conf1)
         conf3['dependencies'] = ifile
-        with pytest.raises(ValueError,
+        with pytest.raises(ConfigError,
                            match=r"Did not find one of `requirements.txt` "
                            "or `environment.yml`"):
             url = check_binder_conf(conf3)
 
     conf6 = deepcopy(conf1)
     conf6['dependencies'] = {'test': 'test'}
-    with pytest.raises(ValueError, match='`dependencies` value should be a '
+    with pytest.raises(ConfigError, match='`dependencies` value should be a '
                        'list of strings'):
         url = check_binder_conf(conf6)
 
@@ -80,7 +81,7 @@ def test_binder():
     def apptmp():
         pass
     apptmp.srcdir = '/'
-    with pytest.raises(ValueError, match="Couldn't find the Binder "
+    with pytest.raises(ConfigError, match="Couldn't find the Binder "
                        "requirements file"):
         url = _copy_binder_reqs(apptmp, conf7)
 
@@ -93,7 +94,7 @@ def test_binder():
     # Assert extra unkonwn params
     conf7 = deepcopy(conf1)
     conf7['foo'] = 'blah'
-    with pytest.raises(ValueError, match='Unknown Binder config key'):
+    with pytest.raises(ConfigError, match='Unknown Binder config key'):
         url = check_binder_conf(conf7)
 
     # Assert using lab correctly changes URL

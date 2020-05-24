@@ -18,6 +18,8 @@ import os
 import re
 import warnings
 
+from sphinx.errors import ExtensionError
+
 from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
@@ -188,7 +190,7 @@ _regex = re.compile(r':(?:'
                     r'meth(?:od)?|'
                     r'attr(?:ibute)?|'
                     r'obj(?:ect)?|'
-                    r'class):`(\S*)`'
+                    r'class):`~?(\S*)`'
                     )
 
 
@@ -240,6 +242,7 @@ THUMBNAIL_TEMPLATE = """
 .. only:: html
 
  .. figure:: /{thumbnail}
+     :alt: {title}
 
      :ref:`sphx_glr_{ref_name}`
 
@@ -255,16 +258,16 @@ BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
 """
 
 
-def _thumbnail_div(target_dir, src_dir, fname, snippet, is_backref=False,
-                   check=True):
+def _thumbnail_div(target_dir, src_dir, fname, snippet, title,
+                   is_backref=False, check=True):
     """Generate RST to place a thumbnail in a gallery."""
     thumb, _ = _find_image_ext(
         os.path.join(target_dir, 'images', 'thumb',
                      'sphx_glr_%s_thumb.png' % fname[:-3]))
     if check and not os.path.isfile(thumb):
         # This means we have done something wrong in creating our thumbnail!
-        raise RuntimeError('Could not find internal sphinx-gallery thumbnail '
-                           'file:\n%s' % (thumb,))
+        raise ExtensionError('Could not find internal sphinx-gallery thumbnail'
+                             ' file:\n%s' % (thumb,))
     thumb = os.path.relpath(thumb, src_dir)
     full_dir = os.path.relpath(target_dir, src_dir)
 
@@ -275,11 +278,11 @@ def _thumbnail_div(target_dir, src_dir, fname, snippet, is_backref=False,
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
     return template.format(snippet=escape(snippet),
-                           thumbnail=thumb, ref_name=ref_name)
+                           thumbnail=thumb, title=title, ref_name=ref_name)
 
 
 def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
-                          target_dir, fname, snippet):
+                          target_dir, fname, snippet, title):
     """Write backreference file including a thumbnail list of examples."""
     if gallery_conf['backreferences_dir'] is None:
         return
@@ -292,11 +295,14 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
         with codecs.open(include_path, 'a' if seen else 'w',
                          encoding='utf-8') as ex_file:
             if not seen:
+                # Be aware that if the number of lines of this heading changes,
+                #   the minigallery directive should be modified accordingly
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write('\n\n' + heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
             ex_file.write(_thumbnail_div(target_dir, gallery_conf['src_dir'],
-                                         fname, snippet, is_backref=True))
+                                         fname, snippet, title,
+                                         is_backref=True))
             seen_backrefs.add(backref)
 
 

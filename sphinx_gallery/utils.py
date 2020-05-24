@@ -13,6 +13,9 @@ from __future__ import division, absolute_import, print_function
 import hashlib
 import os
 from shutil import move, copyfile
+import subprocess
+
+from sphinx.errors import ExtensionError
 
 
 def _get_image():
@@ -22,9 +25,9 @@ def _get_image():
         try:
             import Image
         except ImportError:
-            raise RuntimeError('Could not import pillow, which is required '
-                               'to rescale images (e.g., for thumbnails): %s'
-                               % (exc,))
+            raise ExtensionError(
+                'Could not import pillow, which is required '
+                'to rescale images (e.g., for thumbnails): %s' % (exc,))
     return Image
 
 
@@ -36,6 +39,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     # local import to avoid testing dependency on PIL:
     Image = _get_image()
     img = Image.open(in_fname)
+    # XXX someday we should just try img.thumbnail((max_width, max_height)) ...
     width_in, height_in = img.size
     scale_w = max_width / float(width_in)
     scale_h = max_height / float(height_in)
@@ -68,6 +72,41 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     except IOError:
         # try again, without the alpha channel (e.g., for JPEG)
         thumb.convert('RGB').save(out_fname)
+
+
+def optipng(fname, args=()):
+    """Optimize a PNG in place.
+
+    Parameters
+    ----------
+    fname : str
+        The filename. If it ends with '.png', ``optipng -o7 fname`` will
+        be run. If it fails because the ``optipng`` executable is not found
+        or optipng fails, the function returns.
+    args : tuple
+        Extra command-line arguments, such as ``['-o7']``.
+    """
+    if fname.endswith('.png'):
+        # -o7 because this is what CPython used
+        # https://github.com/python/cpython/pull/8032
+        try:
+            subprocess.check_call(
+                ['optipng'] + list(args) + [fname],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+        except (subprocess.CalledProcessError, IOError):  # FileNotFoundError
+            pass
+
+
+def _has_optipng():
+    try:
+        subprocess.check_call(['optipng', '--version'],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+    except IOError:  # FileNotFoundError
+        return False
+    else:
+        return True
 
 
 def replace_py_ipynb(fname):

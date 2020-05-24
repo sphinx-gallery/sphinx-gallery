@@ -31,6 +31,7 @@ file:
 - ``plot_gallery`` (:ref:`without_execution`)
 - ``image_scrapers`` (and the deprecated ``find_mayavi_figures``)
   (:ref:`image_scrapers`)
+- ``compress_images`` (:ref:`compress_images`)
 - ``reset_modules`` (:ref:`reset_modules`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
@@ -310,45 +311,56 @@ within function calls).
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
 
-.. include:: gen_modules/backreferences/numpy.exp.examples
-.. raw:: html
-
-        <div class="sphx-glr-clear"></div>
+.. minigallery:: numpy.exp
+    :add-heading:
 
 For such behavior to be available, you have to activate it in
 your Sphinx-Gallery configuration ``conf.py`` file with::
 
     sphinx_gallery_conf = {
         ...
-        # directory where function granular galleries are stored
+        # directory where function/class granular galleries are stored
         'backreferences_dir'  : 'gen_modules/backreferences',
 
-        # Modules for which function level galleries are created.  In
+        # Modules for which function/class level galleries are created. In
         # this case sphinx_gallery and numpy in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy')}
 
 The path you specify in ``backreferences_dir`` (here we choose
 ``gen_modules/backreferences``) will be populated with
-ReStructuredText files. Each will contain a reduced version of the
-gallery specific to every function used across all the examples
-galleries and belonging to the modules listed in ``doc_module``.
-``backreferences_dir` should be a string or ``pathlib.Path`` object that is
+ReStructuredText files. Each .rst file will contain a reduced version of the
+gallery specific to every function/class that is used across all the examples
+and belonging to the modules listed in ``doc_module``.
+``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
-Then within your sphinx documentation ``.rst`` files you write these
-lines to include this reduced version of the Gallery, which has
-examples in use of a specific function, in this case ``numpy.exp``::
+Within your sphinx documentation ``.rst`` files, you can use easily
+add this reduced version of the Gallery. For example, the rst below adds
+the reduced version of the Gallery for ``numpy.exp``, which includes all
+examples that use the specific function ``numpy.exp``:
 
-    .. include:: gen_modules/backreferences/numpy.exp.examples
-    .. raw:: html
+.. code-block:: rst
 
-        <div class="sphx-glr-clear"></div>
+    .. minigallery:: numpy.exp
+        :add-heading:
 
-The ``include`` directive takes a path **relative** to the ``rst``
-file it is called from. In the case of this documentation file (which
-is in the same directory as ``conf.py``) we directly use the path
-declared in ``backreferences_dir`` followed by the function whose
-examples we want to show and the file has the ``.examples`` extension.
+The ``add-heading`` option adds a heading for the mini-gallery, which will be a
+default generated message if no string is provided as an argument.  The example
+mini-gallery shown above uses the default heading.  The level of the heading
+defaults to ``^``, but can be changed using the ``heading-level`` option, which
+accepts a single character (e.g., ``-``).
+
+You can also list multiple items, separated by spaces, which will merge all
+examples into a single mini-gallery, e.g.:
+
+.. code-block:: rst
+
+    .. minigallery:: numpy.exp numpy.sin
+        :add-heading: Mini-gallery using ``numpy.exp`` or ``numpy.sin``
+        :heading-level: -
+
+For such a mini-gallery, specifying a custom heading message is recommended
+because the default message is vague: "Examples of one of multiple objects".
 
 Auto-documenting your API with links to examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -392,19 +404,22 @@ document, in this case all modules of Sphinx-Gallery.
 The template file ``module.rst`` for the ``autosummary`` directive has
 to be saved in the path ``_templates/module.rst``. We present our
 configuration in the following block. The most relevant part is the
-loop defined between lines **12-22** that parses all the functions of
-the module. There we have included the snippet introduced in the
-previous section. Keep in mind that the include directive is
-**relative** to the file location, and module documentation files are
-saved in the directory we specified in the *toctree* option of the
-``autosummary`` directive used before in the ``reference.rst`` file.
-The files we are including are from the ``backreferences_dir``
-configuration option setup for Sphinx-Gallery.
+loop defined between lines **12-21** that parses all the functions/classes
+of the module. There we have used the ``minigallery`` directive introduced in
+the previous section.
+
+We also add a cross referencing label (on line 16) before including the
+examples mini-gallery. This enables you to reference the mini-gallery for
+all functions/classes of the module using
+``:ref:`sphx_glr_backref_<fun/class>```, where '<fun/class>' is the full path
+to the function/class using dot notation (e.g.,
+``sphinx_gallery.backreferences.identify_names``). For example, see:
+:ref:`sphx_glr_backref_sphinx_gallery.backreferences.identify_names`.
 
 .. literalinclude:: _templates/module.rst
     :language: rst
     :lines: 3-
-    :emphasize-lines: 12-22, 32-42
+    :emphasize-lines: 12-21, 31-38
     :linenos:
 
 Toggling global variable inspection
@@ -544,6 +559,10 @@ To remove the comment from the rendered example set the option::
         ...
         'remove_config_comments': True,
     }
+
+This only removes configuration comments from code blocks, not from text
+blocks. However, note that technically, configuration comments will work when
+put in either code blocks or text blocks.
 
 .. _own_notebook_cell:
 
@@ -818,7 +837,7 @@ your ``Makefile`` with:
 .. code-block:: Makefile
 
     html-noplot:
-        $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+        $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
         @echo
         @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
@@ -836,6 +855,36 @@ a default::
 
 The highest precedence is always given to the `-D` flag of the
 ``sphinx-build`` command.
+
+
+.. _compress_images:
+
+Compressing images
+==================
+
+When writing PNG files (the default scraper format), sphinx-gallery can be
+configured to use ``optipng`` to optimize the PNG file sizes. Typically this
+yields roughly a 50% reduction in file sizes, thus reducing the loading time
+of galleries. However, it can increase build
+time. The allowed values are ``'images'`` and ``'thumbnails'``, or a
+tuple/list (to optimize both), such as::
+
+    sphinx_gallery_conf = {
+        ...
+        'compress_images': ('images', 'thumbnails'),
+    }
+
+The default is ``()`` (no optimization) and a warning will be emitted if
+optimization is requested but ``optipng`` is not available. You can also pass
+additional command-line options (starting with ``'-'``), for example to
+optimize less but speed up the build time you could do::
+
+    sphinx_gallery_conf = {
+        ...
+        'compress_images': ('images', 'thumbnails', '-o1'),
+    }
+
+See ``$ optipng --help`` for a complete list of options.
 
 
 .. _image_scrapers:
@@ -856,7 +905,24 @@ to scrape both matplotlib and Mayavi images you can do::
 
 The default value is ``'image_scrapers': ('matplotlib',)`` which only scrapes
 Matplotlib images. Note that this includes any images produced by packages that
-are based on Matplotlib, for example Seaborn or Yellowbrick.
+are based on Matplotlib, for example Seaborn or Yellowbrick. If you want
+to embed :class:`matplotlib.animation.Animation`\s as animations rather
+than a single static image of the animation figure, you should add::
+
+      sphinx_gallery_conf = {
+          ...
+          'matplotlib_animations': True,
+      }
+
+HTML embedding options can be changed by setting ``rcParams['animation.html']``
+and related options in your
+:ref:`matplotlib rcParams <matplotlib:matplotlib-rcparams>`.
+It's also recommended to ensure that "imagemagick" is available as a
+``writer``, which you can check with
+:class:`matplotlib.animation.ImageMagickWriter.isAvailable()
+<matplotlib.animation.ImageMagickWriter>`.
+The FFmpeg writer in some light testing did not work as well for
+creating GIF thumbnails for the gallery pages.
 
 The following scrapers are supported:
 
@@ -1055,6 +1121,21 @@ you can do::
         'show_memory': True,
     }
 
+It's also possible to use your own custom memory reporter, for example
+if you would rather see the GPU memory. In that case, ``show_memory`` must
+be a callable that takes a single function to call (i.e., one generated
+internally to run an individual script code block), and returns a two-element
+tuple containing:
+
+1. The memory used in MiB while running the function, and
+2. The function output
+
+A version of this that would always report 0 memory used would be::
+
+    sphinx_gallery_conf = {
+        ...
+        'show_memory': lambda func: (0., func()),
+    }
 
 .. _capture_repr:
 
@@ -1063,7 +1144,7 @@ Controlling what output is captured
 
 .. note::
 
-    Configure ``capture_repr`` to be an empty tuple (i.e.,``capture_repr: ()``)
+    Configure ``capture_repr`` to be an empty tuple (i.e., `capture_repr: ()`)
     to return to the output capturing behaviour prior to release v0.5.0.
 
 The ``capture_repr`` configuration allows the user to control what output
@@ -1178,5 +1259,5 @@ etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
     sphinx_gallery_conf = {
         ...
         'capture_repr': ('__repr__'),
-        'ignore_repr_types': r'matplotlib.text|matplotlib.axes',
+        'ignore_repr_types': r'matplotlib[text, axes]',
     }

@@ -30,7 +30,7 @@ master_doc = 'index'
 exclude_patterns = ['_build']
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
     'matplotlib': ('https://matplotlib.org/', None),
     'joblib': ('https://joblib.readthedocs.io/en/latest', None),
 }
@@ -47,7 +47,9 @@ sphinx_gallery_conf = {
     'image_scrapers': (matplotlib_format_scraper(),),
     'expected_failing_examples': ['examples/future/plot_future_imports_broken.py'],  # noqa
     'show_memory': True,
+    'compress_images': ('images', 'thumbnails'),
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
+    'matplotlib_animations': True,
 }
 nitpicky = True
 highlight_language = 'python3'

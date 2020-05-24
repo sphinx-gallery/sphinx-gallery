@@ -10,7 +10,7 @@ environment:
     PIP_DEPENDENCIES: "ipython"
 
   matrix:
-    - PYTHON_VERSION: "3.5"
+    - PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "64"
     - PYTHON_VERSION: "3.7"
       PYTHON_ARCH: "64"

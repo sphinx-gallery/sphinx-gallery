@@ -16,7 +16,7 @@ using the Sphinx extension Sphinx-Gallery, which will do the following:
   download.
 * Create a gallery with thumbnails for each of these examples
   (such as `the one that scikit-learn
-  <http://scikit-learn.org/stable/auto_examples/index.html>`_ uses)
+  <http://scikit-learn.org/stable/auto_examples/index.html>`_ uses).
 
 A `template repository <https://github.com/sphinx-gallery/sample-project>`_,
 with sample example galleries and basic configurations is also available to
@@ -93,7 +93,7 @@ this folder must have the following things:
       <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ selected)
       output of the script. Files without that prefix will be only parsed and
       presented in a rich literate programming fashion, without any output. To
-      change the default pattern for execution and capture see
+      change the default file pattern for execution and capture see
       :ref:`build_pattern`.
     * The output that is captured while executing the ``.py`` files and
       subsequently incorporated into the built documentation can be finely
@@ -126,8 +126,9 @@ This loads Sphinx-Gallery as one of your extensions, the ellipsis
 ``...`` represents your other loaded extensions.
 
 Next, create your configuration dictionary for Sphinx-Gallery. Here we will
-simply tell Sphinx-Gallery the location of the 'examples' directory
-(containing the gallery header file and our example Python scripts) and the
+simply set the minimal required configurations. We must set the location of
+the 'examples' directory (containing the gallery header file and our example
+Python scripts) and the
 directory to place the output files generated. The path to both of these
 directories should be relative to the ``doc/conf.py`` file.
 
@@ -143,8 +144,8 @@ The following configuration declares the location of the 'examples' directory
 After building your documentation, ``gallery_dirs`` will contain the following
 files and directories:
 
-* ``index.rst`` - the master document of the gallery containing the Gallery
-  Header, table of contents tree and thumbnails for each example. It will serve
+* ``index.rst`` - the master document of the gallery containing the gallery
+  header, table of contents tree and thumbnails for each example. It will serve
   as the welcome page for that gallery.
 * ``sg_execution_times.rst`` - execution time of all example ``.py`` files,
   summarised in table format (`original pull request on GitHub
@@ -152,7 +153,7 @@ files and directories:
 * ``images`` - directory containing images produced during execution of the
   example ``.py`` files (more details in :ref:`image_scrapers`) and thumbnail
   images for the gallery.
-* A directory for each sub-directory in ``'example_dirs'``. Within each 
+* A directory for each sub-directory in ``'example_dirs'``. Within each
   directory will be the above and below listed files for that 'sub-gallery'.
 
 Additionally for **each** ``.py`` file, a file with the following suffix is

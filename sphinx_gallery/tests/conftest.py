@@ -14,6 +14,7 @@ import pytest
 
 import sphinx
 from sphinx.application import Sphinx
+from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
                             sphinx_compatibility, py_source_parser)
@@ -156,7 +157,7 @@ def req_mpl():
 def req_pil():
     try:
         _get_image()
-    except RuntimeError:
+    except ExtensionError:
         pytest.skip('Test requires pillow')
 
 
@@ -240,4 +241,5 @@ project = u'Sphinx-Gallery <Tests>'\n\n
 
     return SphinxAppWrapper(
         srcdir, srcdir, os.path.join(srcdir, "_build"),
-        os.path.join(srcdir, "_build", "toctree"), "html", warning=StringIO())
+        os.path.join(srcdir, "_build", "toctree"), "html", warning=StringIO(),
+        status=StringIO())

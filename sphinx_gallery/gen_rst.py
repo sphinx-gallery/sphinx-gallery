@@ -33,9 +33,12 @@ import sys
 import traceback
 import codeop
 
+from sphinx.errors import ExtensionError
+
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
-from .utils import replace_py_ipynb, scale_image, get_md5sum, _replace_md5
+from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
+                    optipng)
 from . import glr_path_static
 from . import sphinx_compatibility
 from .backreferences import (_write_backreferences, _thumbnail_div,
@@ -53,18 +56,30 @@ logger = sphinx_compatibility.getLogger('sphinx-gallery')
 ###############################################################################
 
 
-class LoggingTee(object):
-    """A tee object to redirect streams to the logger"""
+class _LoggingTee(object):
+    """A tee object to redirect streams to the logger."""
 
-    def __init__(self, output_file, logger, src_filename):
-        self.output_file = output_file
+    def __init__(self, src_filename):
         self.logger = logger
         self.src_filename = src_filename
-        self.first_write = True
         self.logger_buffer = ''
+        self.set_std_and_reset_position()
+
+    def set_std_and_reset_position(self):
+        if not isinstance(sys.stdout, _LoggingTee):
+            self.origs = (sys.stdout, sys.stderr)
+        sys.stdout = sys.stderr = self
+        self.first_write = True
+        self.output = StringIO()
+        return self
+
+    def restore_std(self):
+        sys.stdout.flush()
+        sys.stderr.flush()
+        sys.stdout, sys.stderr = self.origs
 
     def write(self, data):
-        self.output_file.write(data)
+        self.output.write(data)
 
         if self.first_write:
             self.logger.verbose('Output from %s', self.src_filename,
@@ -85,14 +100,21 @@ class LoggingTee(object):
             self.logger.verbose('%s', line)
 
     def flush(self):
-        self.output_file.flush()
+        self.output.flush()
         if self.logger_buffer:
             self.logger.verbose('%s', self.logger_buffer)
             self.logger_buffer = ''
 
     # When called from a local terminal seaborn needs it in Python3
     def isatty(self):
-        return self.output_file.isatty()
+        return self.output.isatty()
+
+    # When called in gen_rst, conveniently use context managing
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type_, value, tb):
+        self.restore_std()
 
 
 ###############################################################################
@@ -192,7 +214,7 @@ def extract_intro_and_title(filename, docstring):
     paragraphs = [p for p in paragraphs
                   if not p.startswith('.. ') and len(p) > 0]
     if len(paragraphs) == 0:
-        raise ValueError(
+        raise ExtensionError(
             "Example docstring should have a header for the example title. "
             "Please check the example file:\n {}\n".format(filename))
     # Title is the first paragraph with any ReSTructuredText title chars
@@ -204,7 +226,7 @@ def extract_intro_and_title(filename, docstring):
                       re.MULTILINE)
 
     if match is None:
-        raise ValueError(
+        raise ExtensionError(
             'Could not find a title in first paragraph:\n{}'.format(
                 title_paragraph))
     title = match.group(0).strip()
@@ -261,7 +283,7 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         image_path = os.path.join(gallery_conf['src_dir'], thumbnail_path)
     else:
         if not isinstance(thumbnail_number, int):
-            raise TypeError(
+            raise ExtensionError(
                 'sphinx_gallery_thumbnail_number setting is not a number, '
                 'got %r' % (thumbnail_number,))
         image_path = image_path_template.format(thumbnail_number)
@@ -282,10 +304,12 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         img = gallery_conf.get("default_thumb_file", img)
     else:
         return
-    if ext == 'svg':
+    if ext in ('svg', 'gif'):
         copyfile(img, thumb_file)
     else:
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
+        if 'thumbnails' in gallery_conf['compress_images']:
+            optipng(thumb_file, gallery_conf['compress_images_args'])
 
 
 def _get_readme(dir_, gallery_conf, raise_error=True):
@@ -296,7 +320,7 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
             if os.path.isfile(fpth):
                 return fpth
     if raise_error:
-        raise FileNotFoundError(
+        raise ExtensionError(
             "Example directory {0} does not have a README file with one "
             "of the expected file extensions {1}. Please write one to "
             "introduce your gallery.".format(dir_, extensions))
@@ -336,12 +360,12 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
     for fname in iterator:
-        intro, cost = generate_file_rst(
+        intro, title, cost = generate_file_rst(
             fname, target_dir, src_dir, gallery_conf, seen_backrefs)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append((cost, src_file))
         this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
-                                    fname, intro) + """
+                                    fname, intro, title) + """
 
 .. toctree::
    :hidden:
@@ -445,50 +469,32 @@ class _exec_once(object):
                         sys.modules['__main__'] = old_main
 
 
-def _memory_usage(func, gallery_conf):
-    """Get memory usage of a function call."""
-    if gallery_conf['show_memory']:
-        from memory_profiler import memory_usage
-        assert callable(func)
-        mem, out = memory_usage(func, max_usage=True, retval=True,
-                                multiprocess=True)
-        try:
-            mem = mem[0]  # old MP always returned a list
-        except TypeError:  # 'float' object is not subscriptable
-            pass
-    else:
-        out = func()
-        mem = 0
-    return out, mem
-
-
 def _get_memory_base(gallery_conf):
     """Get the base amount of memory used by running a Python process."""
-    if not gallery_conf['show_memory'] or not gallery_conf['plot_gallery']:
-        memory_base = 0
+    if not gallery_conf['plot_gallery']:
+        return 0.
+    # There might be a cleaner way to do this at some point
+    from memory_profiler import memory_usage
+    if sys.platform in ('win32', 'darwin'):
+        sleep, timeout = (1, 2)
     else:
-        # There might be a cleaner way to do this at some point
-        from memory_profiler import memory_usage
-        if sys.platform in ('win32', 'darwin'):
-            sleep, timeout = (1, 2)
-        else:
-            sleep, timeout = (0.5, 1)
-        proc = subprocess.Popen(
-            [sys.executable, '-c',
-             'import time, sys; time.sleep(%s); sys.exit(0)' % sleep],
-            close_fds=True)
-        memories = memory_usage(proc, interval=1e-3, timeout=timeout)
-        kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
-        proc.communicate(**kwargs)
-        # On OSX sometimes the last entry can be None
-        memories = [mem for mem in memories if mem is not None] + [0.]
-        memory_base = max(memories)
+        sleep, timeout = (0.5, 1)
+    proc = subprocess.Popen(
+        [sys.executable, '-c',
+            'import time, sys; time.sleep(%s); sys.exit(0)' % sleep],
+        close_fds=True)
+    memories = memory_usage(proc, interval=1e-3, timeout=timeout)
+    kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
+    proc.communicate(**kwargs)
+    # On OSX sometimes the last entry can be None
+    memories = [mem for mem in memories if mem is not None] + [0.]
+    memory_base = max(memories)
     return memory_base
 
 
 def execute_code_block(compiler, block, example_globals,
                        script_vars, gallery_conf):
-    """Executes the code block of the example file"""
+    """Execute the code block of the example file."""
     if example_globals is None:  # testing shortcut
         example_globals = script_vars['fake_main'].__dict__
     blabel, bcontent, lineno = block
@@ -498,18 +504,18 @@ def execute_code_block(compiler, block, example_globals,
 
     cwd = os.getcwd()
     # Redirect output to stdout and
-    orig_stdout, orig_stderr = sys.stdout, sys.stderr
+
     src_file = script_vars['src_file']
+    logging_tee = _check_reset_logging_tee(src_file)
+    assert isinstance(logging_tee, _LoggingTee)
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
 
-    captured_std = StringIO()
     os.chdir(os.path.dirname(src_file))
 
     sys_path = copy.deepcopy(sys.path)
     sys.path.append(os.getcwd())
-    sys.stdout = sys.stderr = LoggingTee(captured_std, logger, src_file)
 
     try:
         dont_inherit = 1
@@ -527,35 +533,30 @@ def execute_code_block(compiler, block, example_globals,
             is_last_expr = True
             last_val = code_ast.body.pop().value
             # exec body minus last expression
-            _, mem_body = _memory_usage(
+            mem_body, _ = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']),
-                gallery_conf)
+                    script_vars['fake_main']))
             # exec last expression, made into assignment
             body = [ast.Assign(
                 targets=[ast.Name(id='___', ctx=ast.Store())], value=last_val)]
             last_val_ast = ast_Module(body=body)
             ast.fix_missing_locations(last_val_ast)
-            _, mem_last = _memory_usage(
+            mem_last, _ = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(last_val_ast, src_file, 'exec'),
-                    script_vars['fake_main']),
-                gallery_conf)
+                    script_vars['fake_main']))
             # capture the assigned variable
             ___ = example_globals['___']
             mem_max = max(mem_body, mem_last)
         else:
-            _, mem_max = _memory_usage(
+            mem_max, _ = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']),
-                gallery_conf)
+                    script_vars['fake_main']))
         script_vars['memory_delta'].append(mem_max)
     except Exception:
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.stdout, sys.stderr = orig_stdout, orig_stderr
+        logging_tee.restore_std()
         except_rst = handle_exception(sys.exc_info(), src_file, script_vars,
                                       gallery_conf)
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
@@ -563,9 +564,7 @@ def execute_code_block(compiler, block, example_globals,
         # figures are closed
         save_figures(block, script_vars, gallery_conf)
     else:
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.stdout, orig_stderr = orig_stdout, orig_stderr
+        logging_tee.restore_std()
         sys.path = sys_path
         os.chdir(cwd)
 
@@ -602,7 +601,7 @@ def execute_code_block(compiler, block, example_globals,
                         elif (repr_meth != '_repr_mimebundle_' and
                               isinstance(last_repr, str)):
                             break
-        captured_std = captured_std.getvalue().expandtabs()
+        captured_std = logging_tee.output.getvalue().expandtabs()
         # manage supported mime-bundles
         mime_format = None
         if repr_meth == '_repr_mimebundle_':
@@ -637,9 +636,20 @@ def execute_code_block(compiler, block, example_globals,
     finally:
         os.chdir(cwd)
         sys.path = sys_path
-        sys.stdout, sys.stderr = orig_stdout, orig_stderr
+        logging_tee.restore_std()
 
     return code_output
+
+
+def _check_reset_logging_tee(src_file):
+    # Helper to deal with our tests not necessarily calling execute_script
+    # but rather execute_code_block directly
+    if isinstance(sys.stdout, _LoggingTee):
+        logging_tee = sys.stdout
+    else:
+        logging_tee = _LoggingTee(src_file)
+    logging_tee.set_std_and_reset_position()
+    return logging_tee
 
 
 def executable_script(src_file, gallery_conf):
@@ -715,7 +725,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         sys.argv[0] = script_vars['src_file']
         sys.argv[1:] = []
         gc.collect()
-        _, memory_start = _memory_usage(lambda: None, gallery_conf)
+        memory_start, _ = gallery_conf['call_memory'](lambda: None)
     else:
         memory_start = 0.
 
@@ -724,10 +734,12 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     # include at least one entry to avoid max() ever failing
     script_vars['memory_delta'] = [memory_start]
     script_vars['fake_main'] = fake_main
-    output_blocks = [execute_code_block(compiler, block,
-                                        example_globals,
-                                        script_vars, gallery_conf)
-                     for block in script_blocks]
+    output_blocks = list()
+    with _LoggingTee(script_vars.get('src_file', '')) as logging_tee:
+        for block in script_blocks:
+            logging_tee.set_std_and_reset_position()
+            output_blocks.append(execute_code_block(
+                compiler, block, example_globals, script_vars, gallery_conf))
     time_elapsed = time() - t_start
     sys.argv = argv_orig
     script_vars['memory_delta'] = max(script_vars['memory_delta'])
@@ -781,7 +793,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     if md5sum_is_current(target_file):
         if executable:
             gallery_conf['stale_examples'].append(target_file)
-        return intro, (0, 0)
+        return intro, title, (0, 0)
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
@@ -843,9 +855,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
                    if cobj['module'].startswith(gallery_conf['doc_module']))
     # Write backreferences
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
-                          fname, intro)
+                          fname, intro, title)
 
-    return intro, (time_elapsed, memory_used)
+    return intro, title, (time_elapsed, memory_used)
 
 
 def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):

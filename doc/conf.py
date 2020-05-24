@@ -301,11 +301,11 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
     'matplotlib': ('https://matplotlib.org/', None),
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
-    'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
+    'sphinx': ('https://www.sphinx-doc.org/en/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
 }
 
@@ -337,10 +337,11 @@ sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery', 'numpy'),
     'reference_url': {
         'sphinx_gallery': None,
-        },
+    },
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'image_scrapers': image_scrapers,
+    'compress_images': ('images', 'thumbnails'),
     # specify the order of examples to be according to filename
     'within_subsection_order': FileNameSortKey,
     'expected_failing_examples': ['../examples/no_output/plot_raise.py',
@@ -359,6 +360,7 @@ sphinx_gallery_conf = {
     # capture raw HTML or, if not present, __repr__ of last expression in
     # each code block
     'capture_repr': ('_repr_html_', '__repr__'),
+    'matplotlib_animations': True,
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show

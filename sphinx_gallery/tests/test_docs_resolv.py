@@ -11,6 +11,7 @@ import sys
 
 import pytest
 
+from sphinx.errors import ExtensionError
 import sphinx_gallery.docs_resolv as sg
 
 
@@ -86,11 +87,11 @@ def test_parse_sphinx_docopts():
         'SOURCELINK_SUFFIX': '.txt'
     }
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ExtensionError):
         sg.parse_sphinx_docopts('empty input')
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ExtensionError):
         sg.parse_sphinx_docopts('DOCUMENTATION_OPTIONS = ')
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ExtensionError):
         sg.parse_sphinx_docopts('DOCUMENTATION_OPTIONS = {')

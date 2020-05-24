@@ -29,3 +29,7 @@ a.sphx-glr-backref-module-sphinx_gallery {
     text-decoration: underline;
     background-color: #E6E6E6;
 }
+
+.anim-state label {
+    display: inline-block;
+}

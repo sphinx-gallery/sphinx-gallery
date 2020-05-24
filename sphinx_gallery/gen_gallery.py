@@ -20,9 +20,10 @@ import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
 
+from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5
+from .utils import _replace_md5, _has_optipng
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
@@ -31,6 +32,7 @@ from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
 from .binder import copy_binder_files
+from .directives import MiniGallery
 
 
 _KNOWN_CSS = ('gallery', 'gallery-binder', 'gallery-dataframe')
@@ -62,6 +64,7 @@ DEFAULT_GALLERY_CONF = {
     'min_reported_time': 0,
     'binder': {},
     'image_scrapers': ('matplotlib',),
+    'compress_images': (),
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'last_notebook_cell': None,
@@ -72,6 +75,7 @@ DEFAULT_GALLERY_CONF = {
     'inspect_global_variables': True,
     'ignore_repr_types': r'',
     'css': _KNOWN_CSS,
+    'matplotlib_animations': False,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -128,14 +132,33 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             type=DeprecationWarning)
 
     # deal with show_memory
+    gallery_conf['memory_base'] = 0.
     if gallery_conf['show_memory']:
-        try:
-            from memory_profiler import memory_usage  # noqa, analysis:ignore
-        except ImportError:
-            logger.warning("Please install 'memory_profiler' to enable peak "
-                           "memory measurements.")
-            gallery_conf['show_memory'] = False
-    gallery_conf['memory_base'] = _get_memory_base(gallery_conf)
+        if not callable(gallery_conf['show_memory']):  # True-like
+            try:
+                from memory_profiler import memory_usage  # noqa
+            except ImportError:
+                logger.warning("Please install 'memory_profiler' to enable "
+                               "peak memory measurements.")
+                gallery_conf['show_memory'] = False
+            else:
+                def call_memory(func):
+                    mem, out = memory_usage(func, max_usage=True, retval=True,
+                                            multiprocess=True)
+                    try:
+                        mem = mem[0]  # old MP always returned a list
+                    except TypeError:  # 'float' object is not subscriptable
+                        pass
+                    return mem, out
+                gallery_conf['call_memory'] = call_memory
+                gallery_conf['memory_base'] = _get_memory_base(gallery_conf)
+        else:
+            gallery_conf['call_memory'] = gallery_conf['show_memory']
+    if not gallery_conf['show_memory']:  # can be set to False above
+        def call_memory(func):
+            return 0., func()
+        gallery_conf['call_memory'] = call_memory
+    assert callable(gallery_conf['call_memory'])
 
     # deal with scrapers
     scrapers = gallery_conf['image_scrapers']
@@ -153,11 +176,11 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                     scraper = getattr(scraper, '_get_sg_image_scraper')
                     scraper = scraper()
                 except Exception as exp:
-                    raise ValueError('Unknown image scraper %r, got:\n%s'
-                                     % (orig_scraper, exp))
+                    raise ConfigError('Unknown image scraper %r, got:\n%s'
+                                      % (orig_scraper, exp))
             scrapers[si] = scraper
         if not callable(scraper):
-            raise ValueError('Scraper %r was not callable' % (scraper,))
+            raise ConfigError('Scraper %r was not callable' % (scraper,))
     gallery_conf['image_scrapers'] = tuple(scrapers)
     del scrapers
     # Here we try to set up matplotlib but don't raise an error,
@@ -174,6 +197,33 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     except (ImportError, ValueError):
         pass
 
+    # compress_images
+    compress_images = gallery_conf['compress_images']
+    if isinstance(compress_images, str):
+        compress_images = [compress_images]
+    elif not isinstance(compress_images, (tuple, list)):
+        raise ConfigError('compress_images must be a tuple, list, or str, '
+                          'got %s' % (type(compress_images),))
+    compress_images = list(compress_images)
+    allowed_values = ('images', 'thumbnails')
+    pops = list()
+    for ki, kind in enumerate(compress_images):
+        if kind not in allowed_values:
+            if kind.startswith('-'):
+                pops.append(ki)
+                continue
+            raise ConfigError('All entries in compress_images must be one of '
+                              '%s or a command-line switch starting with "-", '
+                              'got %r' % (allowed_values, kind))
+    compress_images_args = [compress_images.pop(p) for p in pops[::-1]]
+    if len(compress_images) and not _has_optipng():
+        logger.warning(
+            'optipng binaries not found, PNG %s will not be optimized'
+            % (' and '.join(compress_images),))
+        compress_images = ()
+    gallery_conf['compress_images'] = compress_images
+    gallery_conf['compress_images_args'] = compress_images_args
+
     # deal with resetters
     resetters = gallery_conf['reset_modules']
     if not isinstance(resetters, (tuple, list)):
@@ -182,12 +232,12 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     for ri, resetter in enumerate(resetters):
         if isinstance(resetter, str):
             if resetter not in _reset_dict:
-                raise ValueError('Unknown module resetter named %r'
-                                 % (resetter,))
+                raise ConfigError('Unknown module resetter named %r'
+                                  % (resetter,))
             resetters[ri] = _reset_dict[resetter]
         elif not callable(resetter):
-            raise ValueError('Module resetter %r was not callable'
-                             % (resetter,))
+            raise ConfigError('Module resetter %r was not callable'
+                              % (resetter,))
     gallery_conf['reset_modules'] = tuple(resetters)
 
     lang = lang if lang in ('python', 'python3', 'default') else 'python'
@@ -197,13 +247,13 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # Ensure the first cell text is a string if we have it
     first_cell = gallery_conf.get("first_notebook_cell")
     if (not isinstance(first_cell, str)) and (first_cell is not None):
-        raise ValueError("The 'first_notebook_cell' parameter must be type "
-                         "str or None, found type %s" % type(first_cell))
+        raise ConfigError("The 'first_notebook_cell' parameter must be type "
+                          "str or None, found type %s" % type(first_cell))
     # Ensure the last cell text is a string if we have it
     last_cell = gallery_conf.get("last_notebook_cell")
     if (not isinstance(last_cell, str)) and (last_cell is not None):
-        raise ValueError("The 'last_notebook_cell' parameter must be type str "
-                         "or None, found type %s" % type(last_cell))
+        raise ConfigError("The 'last_notebook_cell' parameter must be type str"
+                          " or None, found type %s" % type(last_cell))
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
     gallery_conf['titles'] = {}
@@ -211,21 +261,21 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     backref = gallery_conf['backreferences_dir']
     if (not isinstance(backref, (str, pathlib.Path))) and \
             (backref is not None):
-        raise ValueError("The 'backreferences_dir' parameter must be of type "
-                         "str, pathlib.Path or None, "
-                         "found type %s" % type(backref))
+        raise ConfigError("The 'backreferences_dir' parameter must be of type "
+                          "str, pathlib.Path or None, "
+                          "found type %s" % type(backref))
     # if 'backreferences_dir' is pathlib.Path, make str for Python <=3.5
     # compatibility
     if isinstance(backref, pathlib.Path):
         gallery_conf['backreferences_dir'] = str(backref)
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
-        raise TypeError('gallery_conf["css"] must be list or tuple, got %r'
-                        % (gallery_conf['css'],))
+        raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'
+                          % (gallery_conf['css'],))
     for css in gallery_conf['css']:
         if css not in _KNOWN_CSS:
-            raise ValueError('Unknown css %r, must be one of %r'
-                             % (css, _KNOWN_CSS))
+            raise ConfigError('Unknown css %r, must be one of %r'
+                              % (css, _KNOWN_CSS))
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
@@ -401,7 +451,8 @@ def _format_for_writing(costs, path, kind='rst'):
             t = '%0.2f sec' % (cost[0][0],)
         m = '{0:.1f} MB'.format(cost[0][1])
         lines.append([name, t, m])
-    lens = [max(x) for x in zip(*[[len(l) for l in ll] for ll in lines])]
+    lens = [max(x) for x in zip(*[[len(item) for item in cost]
+                                  for cost in lines])]
     return lines, lens
 
 
@@ -419,7 +470,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
                   .format(_sec_to_readable(total_time), target_dir_clean))
         lines, lens = _format_for_writing(costs, target_dir_clean)
         del costs
-        hline = ''.join(('+' + '-' * (l + 2)) for l in lens) + '+\n'
+        hline = ''.join(('+' + '-' * (length + 2)) for length in lens) + '+\n'
         fid.write(hline)
         format_str = ''.join('| {%s} ' % (ii,)
                              for ii in range(len(lines[0]))) + '|\n'
@@ -586,9 +637,10 @@ def summarize_failing_examples(app, exception):
                 color='brown')
 
     if fail_msgs:
-        raise ValueError("Here is a summary of the problems encountered when "
-                         "running the examples\n\n" + "\n".join(fail_msgs) +
-                         "\n" + "-" * 79)
+        raise ExtensionError(
+            "Here is a summary of the problems encountered "
+            "when running the examples\n\n" + "\n".join(fail_msgs) +
+            "\n" + "-" * 79)
 
 
 def collect_gallery_files(examples_dirs, gallery_conf):
@@ -651,6 +703,9 @@ def setup(app):
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
+
+    # Add the custom directive
+    app.add_directive('minigallery', MiniGallery)
 
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)

@@ -19,15 +19,16 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from sphinx.application import Sphinx
+from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
-from sphinx_gallery.utils import _get_image, scale_image
+from sphinx_gallery.utils import _get_image, scale_image, _has_optipng
 
 import pytest
 
-N_TOT = 6
+N_TOT = 9
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
-N_RST = 14 + N_TOT
+N_RST = 15 + N_TOT
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
@@ -84,6 +85,18 @@ def test_timings(sphinx_app):
     assert ('- %s: ' % fname) in status
 
 
+def test_optipng(sphinx_app):
+    """Test that optipng is detected."""
+    status = sphinx_app._status.getvalue()
+    w = sphinx_app._warning.getvalue()
+    substr = 'will not be optimized'
+    if _has_optipng():
+        assert substr not in w
+    else:
+        assert substr in w
+    assert 'optipng version' not in status.lower()  # catch the --version
+
+
 def test_junit(sphinx_app, tmpdir):
     out_dir = sphinx_app.outdir
     junit_file = op.join(out_dir, 'sphinx-gallery', 'junit-results.xml')
@@ -115,7 +128,7 @@ def test_junit(sphinx_app, tmpdir):
                      buildername='html', status=StringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
-        with pytest.raises(ValueError, match='Here is a summary of the '):
+        with pytest.raises(ExtensionError, match='Here is a summary of the '):
             app.build(False, [])
     junit_file = op.join(new_out_dir, 'sphinx-gallery', 'junit-results.xml')
     assert op.isfile(junit_file)
@@ -158,8 +171,9 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     Image = _get_image()
     orig = np.asarray(Image.open(fname_thumb))
     new = np.asarray(Image.open(fname_new))
-    assert new.shape == orig.shape
-    corr = np.corrcoef(new.ravel(), orig.ravel())[0, 1]
+    assert new.shape[:2] == orig.shape[:2]
+    assert new.shape[2] in (3, 4)  # optipng can strip the alpha channel
+    corr = np.corrcoef(new[..., :3].ravel(), orig[..., :3].ravel())[0, 1]
     assert corr > 0.99
 
 
@@ -170,23 +184,31 @@ def test_image_formats(sphinx_app):
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         html = fid.read()
     thumb_fnames = ['../_images/sphx_glr_plot_svg_thumb.svg',
-                    '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png']
+                    '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png',
+                    '../_images/sphx_glr_plot_animation_thumb.gif',
+                    ]
     for thumb_fname in thumb_fnames:
         file_fname = op.join(generated_examples_dir, thumb_fname)
-        assert op.isfile(file_fname)
+        assert op.isfile(file_fname), file_fname
         want_html = 'src="%s"' % (thumb_fname,)
         assert want_html in html
-    for ex, ext in (('plot_svg', 'svg'),
-                    ('plot_numpy_matplotlib', 'png'),
-                    ):
+    # the original GIF does not get copied because it's not used in the
+    # RST/HTML, so can't add it to this check
+    for ex, ext, nums, extra in (
+            ('plot_svg', 'svg', [1], None),
+            ('plot_numpy_matplotlib', 'png', [1], None),
+            ('plot_animation', 'png', [1, 3], 'function Animation')):
         html_fname = op.join(generated_examples_dir, '%s.html' % ex)
         with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
-        img_fname = '../_images/sphx_glr_%s_001.%s' % (ex, ext)
-        file_fname = op.join(generated_examples_dir, img_fname)
-        assert op.isfile(file_fname)
-        want_html = 'src="%s"' % (img_fname,)
-        assert want_html in html
+        for num in nums:
+            img_fname = '../_images/sphx_glr_%s_%03d.%s' % (ex, num, ext)
+            file_fname = op.join(generated_examples_dir, img_fname)
+            assert op.isfile(file_fname), file_fname
+            want_html = 'src="%s"' % (img_fname,)
+            assert want_html in html
+        if extra is not None:
+            assert extra in html
 
 
 def test_embed_links_and_styles(sphinx_app):
@@ -231,8 +253,8 @@ def test_embed_links_and_styles(sphinx_app):
     # gh-587: np.random.RandomState links properly
     # NumPy has had this linked as numpy.random.RandomState and
     # numpy.random.mtrand.RandomState so we need regex...
-    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class"><span class="n">np</span>', lines) is not None  # noqa: E501
-    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)RandomState" title="numpy\.random\.(mtrand\.?)RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?) sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>', lines) is not None  # noqa: E501
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)?RandomState" title="numpy\.random\.(mtrand\.?)?RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?)? sphx-glr-backref-type-py-class"><span class="n">np</span>', lines) is not None  # noqa: E501
+    assert re.search(r'\.html#numpy\.random\.(mtrand\.?)?RandomState" title="numpy\.random\.(mtrand\.?)?RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?)? sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>', lines) is not None  # noqa: E501
     # gh-587: methods of classes in the module currently being documented
     # issue 617 (regex '-'s)
     # instance
@@ -323,6 +345,16 @@ def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
     assert example_used_in in lines
 
 
+def test_logging_std_nested(sphinx_app):
+    """Test that nested stdout/stderr uses within a given script work."""
+    log_rst = op.join(
+        sphinx_app.srcdir, 'auto_examples', 'plot_log.rst')
+    with codecs.open(log_rst, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert '.. code-block:: none\n\n    is in the same cell' in lines
+    assert '.. code-block:: none\n\n    is not in the same cell' in lines
+
+
 def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
     assert ([op.basename(x) for x in list_orig] ==
             [op.basename(x) for x in list_new])
@@ -344,7 +376,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     lines = [line for line in status.split('\n') if 'removed' in line]
     want = '.*%s added, 0 changed, 0 removed.*' % (N_RST,)
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
-    want = '.*targets for 2 source files that are out of date$.*'
+    want = '.*targets for 3 source files that are out of date$.*'
     lines = [line for line in status.split('\n') if 'out of date' in line]
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     lines = [line for line in status.split('\n') if 'on MD5' in line]
@@ -550,3 +582,169 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # mtimes for .ipynb files
         _assert_mtimes(copied_ipy_0, copied_ipy_1,
                        different=('plot_numpy_matplotlib.ipynb'))
+
+
+def test_alt_text_image(sphinx_app):
+    """Test alt text for matplotlib images in html and rst"""
+    out_dir = sphinx_app.outdir
+    src_dir = sphinx_app.srcdir
+    # alt text is fig titles, rst
+    example_rst = op.join(src_dir, 'auto_examples', 'plot_matplotlib_alt.rst')
+    with codecs.open(example_rst, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    # suptitle and axes titles
+    assert ':alt: This is a sup title, subplot 1, subplot 2' in rst
+    # multiple titles
+    assert ':alt: Left Title, Center Title, Right Title' in rst
+
+    # no fig title - alt text is file name, rst
+    example_rst = op.join(src_dir, 'auto_examples',
+                          'plot_numpy_matplotlib.rst')
+    with codecs.open(example_rst, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    assert ':alt: plot numpy matplotlib' in rst
+    # html
+    example_html = op.join(out_dir, 'auto_examples',
+                           'plot_numpy_matplotlib.html')
+    with codecs.open(example_html, 'r', 'utf-8') as fid:
+        html = fid.read()
+    assert 'alt="plot numpy matplotlib"' in html
+
+
+def test_alt_text_thumbnail(sphinx_app):
+    """Test alt text for thumbnail in html and rst."""
+    out_dir = sphinx_app.outdir
+    src_dir = sphinx_app.srcdir
+    # check gallery index thumbnail, html
+    generated_examples_index = op.join(out_dir, 'auto_examples', 'index.html')
+    with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
+        html = fid.read()
+    assert 'alt="&quot;SVG&quot;:-`graphics_`"' in html
+    # check backreferences thumbnail, html
+    backref_html = op.join(out_dir, 'gen_modules',
+                           'sphinx_gallery.backreferences.html')
+    with codecs.open(backref_html, 'r', 'utf-8') as fid:
+        html = fid.read()
+    assert 'alt="Link to other packages"' in html
+    # check gallery index thumbnail, rst
+    generated_examples_index = op.join(src_dir, 'auto_examples',
+                                       'index.rst')
+    with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    assert ':alt: Trivial module to provide a value for plot_numpy_matplotlib.py' in rst  # noqa: E501
+
+
+def test_backreference_labels(sphinx_app):
+    """Tests that backreference labels work."""
+    src_dir = sphinx_app.srcdir
+    out_dir = sphinx_app.outdir
+    # Test backreference label
+    backref_rst = op.join(src_dir, 'gen_modules',
+                          'sphinx_gallery.backreferences.rst')
+    with codecs.open(backref_rst, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    label = '.. _sphx_glr_backref_sphinx_gallery.backreferences.identify_names:'  # noqa: E501
+    assert label in rst
+    # Test html link
+    index_html = op.join(out_dir, 'index.html')
+    with codecs.open(index_html, 'r', 'utf-8') as fid:
+        html = fid.read()
+    link = 'href="gen_modules/sphinx_gallery.backreferences.html#sphx-glr-backref-sphinx-gallery-backreferences-identify-names">'  # noqa: E501
+    assert link in html
+
+
+def test_minigallery_directive(sphinx_app):
+    """Tests the functionality of the minigallery directive."""
+    out_dir = sphinx_app.outdir
+    minigallery_html = op.join(out_dir, 'minigallery.html')
+    with codecs.open(minigallery_html, 'r', 'utf-8') as fid:
+        lines = fid.readlines()
+
+    # Regular expressions for matching
+    any_heading = re.compile(r'<h([1-6])>.+<\/h\1>')
+    explicitorder_example = re.compile(r'(?s)<img .+'
+                                       r'(plot_second_future_imports).+'
+                                       r'auto_examples\/\1\.html')
+    filenamesortkey_example = re.compile(r'(?s)<img .+'
+                                         r'(plot_numpy_matplotlib).+'
+                                         r'auto_examples\/\1\.html')
+
+    for i in range(len(lines)):
+        # Test 1-N (first example, no heading)
+        if "Test 1-N" in lines[i]:
+            text = ''.join(lines[i:i+6])
+
+            # Confirm there isn't a heading
+            assert any_heading.search(text) is None
+
+            # Check for examples
+            assert explicitorder_example.search(text) is not None
+            assert filenamesortkey_example.search(text) is None
+
+        # Test 1-D-D (first example, default heading, default level)
+        if "Test 1-D-D" in lines[i]:
+            text = ''.join(lines[i:i+8])
+
+            heading = re.compile(r'<h2>Examples using .+ExplicitOrder.+<\/h2>')
+            assert heading.search(text) is not None
+
+            # Check for examples
+            assert explicitorder_example.search(text) is not None
+            assert filenamesortkey_example.search(text) is None
+
+        # Test 1-D-C (first example, default heading, custom level)
+        if "Test 1-D-C" in lines[i]:
+            text = ''.join(lines[i:i+8])
+
+            heading = re.compile(r'<h3>Examples using .+ExplicitOrder.+<\/h3>')
+            assert heading.search(text) is not None
+
+            # Check for examples
+            assert explicitorder_example.search(text) is not None
+            assert filenamesortkey_example.search(text) is None
+
+        # Test 1-C-D (first example, custom heading, default level)
+        if "Test 1-C-D" in lines[i]:
+            text = ''.join(lines[i:i+8])
+
+            heading = re.compile(r'<h2>This is a custom heading.*<\/h2>')
+            assert heading.search(text) is not None
+
+            # Check for examples
+            assert explicitorder_example.search(text) is not None
+            assert filenamesortkey_example.search(text) is None
+
+        # Test 2-N (both examples, no heading)
+        if "Test 2-N" in lines[i]:
+            text = ''.join(lines[i:i+8])
+
+            # Confirm there isn't a heading
+            assert any_heading.search(text) is None
+
+            # Check for examples
+            assert explicitorder_example.search(text) is not None
+            assert filenamesortkey_example.search(text) is not None
+
+        # Test 2-D-D (both examples, default heading, default level)
+        if "Test 2-D-D" in lines[i]:
+            text = ''.join(lines[i:i+12])
+
+            heading = re.compile(r'<h2>Examples using one of multiple objects'
+                                 r'.*<\/h2>')
+            assert heading.search(text) is not None
+
+            # Check for examples
+            assert explicitorder_example.search(text) is not None
+            assert filenamesortkey_example.search(text) is not None
+
+        # Test 2-C-C (both examples, custom heading, custom level)
+        if "Test 2-C-C" in lines[i]:
+            text = ''.join(lines[i:i+12])
+
+            heading = re.compile(r'<h1>This is a different custom heading.*'
+                                 r'<\/h1>')
+            assert heading.search(text) is not None
+
+            # Check for examples
+            assert explicitorder_example.search(text) is not None
+            assert filenamesortkey_example.search(text) is not None

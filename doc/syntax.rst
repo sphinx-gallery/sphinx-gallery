@@ -46,13 +46,16 @@ Jupyter Notebook for each example that is built).
 You can embed rST in your Python examples by including a line of >= 20 ``#``
 symbols, ``#%%``, or ``# %%``. For consistency, it is recommended that you use
 only one of the above three 'block splitter' options in your project. If using
-``#``'s, we recommend using 79 ``#``'s, like this::
+a line of ``#``'s, we recommend using 79 ``#``'s, like this::
 
   ###############################################################################
 
-Any commented lines (a line beginning with ``#`` followed by a space, to be
-PEP8-compliant) that immediately follow a block splitter will be rendered as
-rST in the built gallery examples. For example::
+Any commented lines (line beginning with ``#`` followed by a space, to
+be PEP8-compliant) that immediately follow a block splitter will be rendered as
+rST in the built gallery examples. To switch back to writing code, either
+stop starting lines with ``#`` and a space or leave an empty line before writing
+code comments. You can thus easily alternate between text and code 'blocks'.
+For example::
 
   # This is commented python
   myvariable = 2
@@ -62,25 +65,36 @@ rST in the built gallery examples. For example::
   # This is a section header
   # ------------------------
   #
-  # In the built documentation, it will be rendered as rST.
+  # In the built documentation, it will be rendered as rST. All rST lines
+  # must begin with '# ' (note the space) including underlines below section
+  # headers.
 
   # These lines won't be rendered as rST because there is a gap after the last
   # commented rST block. Instead, they'll resolve as regular Python comments.
+  # Normal Python code can follow these comments.
   print('my variable plus 2 is {}'.format(myvariable + 2))
 
 The ``#%%`` and ``# %%`` syntax is consistent with the 'code block' (or
-'code cell') separator syntax in `Jupyter VSCode plugin
-<https://code.visualstudio.com/docs/python/jupyter-support-py>`_, `Jupytext
-<https://jupytext.readthedocs.io/en/latest/introduction.html>`_, `Pycharm
+'code cell') separator syntax in `Visual Studio Code Python extension
+<https://code.visualstudio.com/docs/python/jupyter-support-py#_jupyter-code-cells>`_,
+`Visual Studio Python Tools
+<https://docs.microsoft.com/en-us/visualstudio/python/python-interactive-repl-in-visual-studio?view=vs-2019#work-with-code-cells>`_,
+`Jupytext
+<https://jupytext.readthedocs.io/en/latest/formats.html#the-percent-format>`_,
+`Pycharm Professional
 <https://www.jetbrains.com/help/pycharm/running-jupyter-notebook-cells.html>`_,
 `Hydrogen plugin (for Atom)
-<https://nteract.gitbooks.io/hydrogen/>`_ and `Spyder
-<https://docs.spyder-ide.org/editor.html>`_. Note that although the
+<https://nteract.gitbooks.io/hydrogen/docs/Usage/Cells.html#example-definitions>`_
+and `Spyder
+<https://docs.spyder-ide.org/editor.html#defining-code-cells>`_.
+Note that although the
 documentation may only mention one of ``#%%`` or ``# %%``, in practice both
-work in these editors. In these IDEs (or with these IDE plugins), ``#%%`` or
+work. With these editors/IDEs, ``#%%`` or
 ``# %%`` at the start of a line signifies the start of a new code block.
-Code within a code block can be easily executed together, at the same time. This
-functionality can be helpful when writing a Sphinx-Gallery ``.py`` example as
+Code blocks allow you to separate your code into chunks, like in Jupyter
+Notebooks. All the code within a code block can be easily executed together.
+This functionality can be helpful when writing a Sphinx-Gallery ``.py``
+example as
 the blocks allow you to easily create pairs of subsequent Sphinx-Gallery text
 and code blocks.
 

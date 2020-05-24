@@ -9,7 +9,6 @@ from __future__ import (division, absolute_import, print_function,
 import ast
 import codecs
 import importlib
-import io
 import tempfile
 import re
 import os
@@ -19,6 +18,7 @@ import codeop
 
 import pytest
 
+from sphinx.errors import ExtensionError
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst
@@ -286,9 +286,9 @@ def test_extract_intro_and_title():
     assert intro_paragraph.replace('\n', ' ')[:95] == intro[:95]
 
     # Errors
-    with pytest.raises(ValueError, match='should have a header'):
+    with pytest.raises(ExtensionError, match='should have a header'):
         sg.extract_intro_and_title('<string>', '')  # no title
-    with pytest.raises(ValueError, match='Could not find a title'):
+    with pytest.raises(ExtensionError, match='Could not find a title'):
         sg.extract_intro_and_title('<string>', '=====')  # no real title
 
 
@@ -451,7 +451,7 @@ def test_gen_dir_rst(gallery_conf, fakesphinxapp, ext):
     args = (gallery_conf['src_dir'], gallery_conf['gallery_dir'],
             gallery_conf, [])
     if ext == '.bad':  # not found with correct ext
-        with pytest.raises(FileNotFoundError, match='does not have a README'):
+        with pytest.raises(ExtensionError, match='does not have a README'):
             generate_dir_rst(*args)
     else:
         out = generate_dir_rst(*args)
@@ -802,10 +802,9 @@ def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
 
 class TestLoggingTee:
     def setup(self):
-        self.output_file = io.StringIO()
         self.src_filename = 'source file name'
-        self.tee = sg.LoggingTee(self.output_file, sg.logger,
-                                 self.src_filename)
+        self.tee = sg._LoggingTee(self.src_filename)
+        self.output_file = self.tee.output
 
     def test_full_line(self, log_collector):
         # A full line is output immediately.
@@ -856,7 +855,7 @@ class TestLoggingTee:
     def test_isatty(self, monkeypatch):
         assert not self.tee.isatty()
 
-        monkeypatch.setattr(self.tee.output_file, 'isatty', lambda: True)
+        monkeypatch.setattr(self.tee.output, 'isatty', lambda: True)
         assert self.tee.isatty()
 
 
