@@ -604,8 +604,8 @@ def test_empty_output_box(gallery_conf, script_vars):
     assert output.isspace()
 
 
-code_repr_only = """
-class repr_only_class():
+CODE_REPR = """
+class ReprOnlyClass():
 
     def __init__(self):
         pass
@@ -613,12 +613,12 @@ class repr_only_class():
     def __repr__(self):
         return "This is the __repr__"
 
-class_inst = repr_only_class()
+class_inst = ReprOnlyClass()
 class_inst
 """
 
-code_repr_and_html = """
-class repr_and_html_class():
+CODE_REPR_HTML = """
+class ReprAndHtmlClass():
     def __init__(self):
         pass
 
@@ -628,14 +628,14 @@ class repr_and_html_class():
     def _repr_html_(self):
         return "<div> This is the _repr_html_ div </div>"
 
-class_inst = repr_and_html_class()
+class_inst = ReprAndHtmlClass()
 class_inst
 """
 
-code_print_and_repr_and_html = """
+CODE_PRINT_REPR_HTML = """
 print("print statement")
 
-class repr_and_html_class():
+class ReprAndHtmlClass():
     def __init__(self):
         pass
 
@@ -645,12 +645,12 @@ class repr_and_html_class():
     def _repr_html_(self):
         return "<div> This is the _repr_html_ div </div>"
 
-class_inst = repr_and_html_class()
+class_inst = ReprAndHtmlClass()
 class_inst
 """
 
-code_mime_plain = """
-class mime_plain():
+CODE_MIME_PLAIN = """
+class MimePlain():
     def __init__(self):
         pass
 
@@ -659,12 +659,12 @@ class mime_plain():
             "text/plain": "This is mime plain"
         }
 
-class_inst = mime_plain()
+class_inst = MimePlain()
 class_inst
 """
 
-code_mime_html_plain = """
-class mime_html_plain():
+CODE_MIME_HTML_PLAIN = """
+class MimeHtmlPlain():
     def __init__(self):
         pass
 
@@ -674,12 +674,12 @@ class mime_html_plain():
             "text/plain": "This is mime plain"
         }
 
-class_inst = mime_html_plain()
+class_inst = MimeHtmlPlain()
 class_inst
 """
 
-code_mime_unsupported = """
-class mime_unsupported():
+CODE_MIME_UNSUPPORTED = """
+class MimeUnsupported():
     def __init__(self):
         pass
 
@@ -691,18 +691,18 @@ class mime_unsupported():
     def __repr__(self):
         return "This is the __repr__"
 
-class_inst = mime_unsupported()
+class_inst = MimeUnsupported()
 class_inst
 """
 
-code_plt = """
+CODE_PLT = """
 import matplotlib.pyplot as plt
 fig = plt.figure()
 plt.close('all')
 fig
 """
 
-html_out = """.. only:: builder_html
+HTML_OUT = """.. only:: builder_html
 
     .. raw:: html
 
@@ -710,7 +710,7 @@ html_out = """.. only:: builder_html
         <br />
         <br />"""
 
-text_above_html = """Out:
+TEXT_ABOVE_HTML = """Out:
 
  .. code-block:: none
 
@@ -750,31 +750,31 @@ def _clean_output(output):
     pytest.param(('__repr__',), 'a=2\nprint(a)', '2', id='print(var),(repr)'),
     pytest.param(('__repr__',), 'print("hello")\na=2\na', 'hello\n\n2',
                  id='print+var,(repr)'),
-    pytest.param(('__repr__',), code_repr_and_html, 'This is the __repr__',
+    pytest.param(('__repr__',), CODE_REPR_HTML, 'This is the __repr__',
                  id='repr_and_html,(repr)'),
-    pytest.param(('__repr__',), code_print_and_repr_and_html,
+    pytest.param(('__repr__',), CODE_PRINT_REPR_HTML,
                  'print statement\n\nThis is the __repr__',
                  id='print and repr_and_html,(repr)'),
-    pytest.param(('_repr_html_',), code_repr_only, '', id='repr_only,(html)'),
-    pytest.param(('_repr_html_',), code_repr_and_html, html_out,
+    pytest.param(('_repr_html_',), CODE_REPR, '', id='repr_only,(html)'),
+    pytest.param(('_repr_html_',), CODE_REPR_HTML, HTML_OUT,
                  id='repr_and_html,(html)'),
-    pytest.param(('_repr_html_',), code_print_and_repr_and_html,
-                 ''.join([text_above_html, html_out]),
+    pytest.param(('_repr_html_',), CODE_PRINT_REPR_HTML,
+                 ''.join([TEXT_ABOVE_HTML, HTML_OUT]),
                  id='print and repr_and_html,(html)'),
-    pytest.param(('_repr_html_', '__repr__'), code_repr_and_html, html_out,
+    pytest.param(('_repr_html_', '__repr__'), CODE_REPR_HTML, HTML_OUT,
                  id='repr_and_html,(html,repr)'),
-    pytest.param(('__repr__', '_repr_html_'), code_repr_and_html,
+    pytest.param(('__repr__', '_repr_html_'), CODE_REPR_HTML,
                  'This is the __repr__', id='repr_and_html,(repr,html)'),
-    pytest.param(('_repr_html_', '__repr__'), code_repr_only,
+    pytest.param(('_repr_html_', '__repr__'), CODE_REPR,
                  'This is the __repr__', id='repr_only,(html,repr)'),
-    pytest.param(('_repr_html_',), code_plt, '', id='html_none'),
-    pytest.param(('_repr_mimebundle_',), code_mime_plain, 'This is mime plain',
+    pytest.param(('_repr_html_',), CODE_PLT, '', id='html_none'),
+    pytest.param(('_repr_mimebundle_',), CODE_MIME_PLAIN, 'This is mime plain',
                  id='plain,(mime)'),
-    pytest.param(('_repr_mimebundle_',), code_mime_html_plain, html_out,
+    pytest.param(('_repr_mimebundle_',), CODE_MIME_HTML_PLAIN, HTML_OUT,
                  id='html,(mime)'),
-    pytest.param(('_repr_mimebundle_', '__repr__'), code_mime_unsupported,
+    pytest.param(('_repr_mimebundle_', '__repr__'), CODE_MIME_UNSUPPORTED,
                  'This is the __repr__', id='unsupported,(mime,repr)'),
-    pytest.param(('_repr_mimebundle_',), code_mime_unsupported, '',
+    pytest.param(('_repr_mimebundle_',), CODE_MIME_UNSUPPORTED, '',
                  id='unsupported,(mime)'),
 ])
 def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
