@@ -199,3 +199,8 @@ In the future, only examples that have changed will be re-built.
 You should now have a gallery built from your example scripts! For more
 advanced usage and configuration, check out the :ref:`advanced_usage` page or
 the :ref:`configuration` reference.
+
+.. note::
+  Sphinx-Gallery may work for non-HTML Sphinx `builders
+  <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ but support
+  for this is mostly untested and results may vary.
