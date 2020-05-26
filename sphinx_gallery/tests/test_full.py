@@ -748,3 +748,14 @@ def test_minigallery_directive(sphinx_app):
             # Check for examples
             assert explicitorder_example.search(text) is not None
             assert filenamesortkey_example.search(text) is not None
+
+def test_matplotlib_warning_filter(sphinx_app):
+    """Test Matplotlib agg warning is removed."""
+    out_dir = sphinx_app.outdir
+    example_html = op.join(out_dir, 'auto_examples',
+                           'plot_matplotlib_alt.html')
+    with codecs.open(example_html, 'r', 'utf-8') as fid:
+        html = fid.read()
+    warning = ('Matplotlib is currently using agg, which is a'
+               ' non-GUI backend, so cannot show the figure.')
+    assert warning not in html
