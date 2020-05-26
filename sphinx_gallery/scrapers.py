@@ -15,6 +15,7 @@ import os
 import sys
 import re
 from textwrap import indent
+from warnings import filterwarnings
 
 from sphinx.errors import ExtensionError
 from .utils import scale_image, optipng
@@ -33,6 +34,10 @@ def _import_matplotlib():
     import matplotlib
     matplotlib.use('agg')
     matplotlib_backend = matplotlib.get_backend().lower()
+
+    filterwarnings("ignore", category=UserWarning,
+                   message='Matplotlib is currently using agg, which is a'
+                           ' non-GUI backend, so cannot show the figure.')
 
     if matplotlib_backend != 'agg':
         raise ExtensionError(
