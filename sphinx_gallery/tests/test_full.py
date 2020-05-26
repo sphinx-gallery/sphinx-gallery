@@ -749,6 +749,7 @@ def test_minigallery_directive(sphinx_app):
             assert explicitorder_example.search(text) is not None
             assert filenamesortkey_example.search(text) is not None
 
+
 def test_matplotlib_warning_filter(sphinx_app):
     """Test Matplotlib agg warning is removed."""
     out_dir = sphinx_app.outdir
