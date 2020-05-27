@@ -88,9 +88,7 @@ this folder must have the following things:
   :ref:`python_script_syntax`.
 
     * By default **only** files prefixed with ``plot_`` will be executed and
-      their outputs captured to incorporate them in the HTML (or another output
-      format depending on the `Sphinx 'builder'
-      <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ selected)
+      their outputs captured to incorporate them in the HTML
       output of the script. Files without that prefix will be only parsed and
       presented in a rich literate programming fashion, without any output. To
       change the default file pattern for execution and capture see
@@ -193,9 +191,7 @@ In your Sphinx source directory, (e.g., ``myproject/doc``) execute:
 
 This will start the build of your complete documentation. Both
 the Sphinx-Gallery output files described above and
-the Sphinx built HTML documentation (or another output format depending on the
-`Sphinx 'builder'
-<https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ selected) will
+the Sphinx built HTML documentation will
 be generated. Once a build is completed, all the outputs from your examples
 will be cached.
 In the future, only examples that have changed will be re-built.
@@ -203,3 +199,8 @@ In the future, only examples that have changed will be re-built.
 You should now have a gallery built from your example scripts! For more
 advanced usage and configuration, check out the :ref:`advanced_usage` page or
 the :ref:`configuration` reference.
+
+.. note::
+  Sphinx-Gallery may work for non-HTML Sphinx `builders
+  <https://www.sphinx-doc.org/en/master/man/sphinx-build.html>`_ but support
+  for this is mostly untested and results may vary.
