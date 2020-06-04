@@ -163,7 +163,7 @@ SPHX_GLR_SIG = """\n
 """
 
 # Header used to include raw html
-html_header = """.. only:: builder_html
+html_header = """.. only:: builder_html or readthedocs
 
     .. raw:: html
 
