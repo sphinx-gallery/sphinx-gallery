@@ -656,13 +656,11 @@ plt.close('all')
 fig
 """
 
-html_out = """.. only:: builder_html
+html_out = """.. raw:: html
 
-    .. raw:: html
-
-        <div> This is the _repr_html_ div </div>
-        <br />
-        <br />"""
+    <div> This is the _repr_html_ div </div>
+    <br />
+    <br />"""
 
 text_above_html = """Out:
 
@@ -677,7 +675,7 @@ text_above_html = """Out:
 def _clean_output(output):
     is_text = '.. rst-class:: sphx-glr-script-out' in output
 
-    is_html = '.. only:: builder_html' in output
+    is_html = '.. raw:: html' in output
 
     if output.isspace():
         return ''
