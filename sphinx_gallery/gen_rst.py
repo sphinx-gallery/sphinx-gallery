@@ -163,11 +163,9 @@ SPHX_GLR_SIG = """\n
 """
 
 # Header used to include raw html
-html_header = """.. only:: builder_html
+html_header = """.. raw:: html
 
-    .. raw:: html
-
-{0}\n        <br />\n        <br />"""
+{0}\n    <br />\n    <br />"""
 
 
 def codestr2rst(codestr, lang='python', lineno=None):
@@ -602,7 +600,7 @@ def execute_code_block(compiler, block, example_globals,
         images_rst = save_figures(block, script_vars, gallery_conf)
         # give html output its own header
         if repr_meth == '_repr_html_':
-            captured_html = html_header.format(indent(last_repr, u' ' * 8))
+            captured_html = html_header.format(indent(last_repr, u' ' * 4))
         else:
             captured_html = ''
         code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(
