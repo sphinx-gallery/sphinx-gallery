@@ -74,12 +74,12 @@ warning', you can add::
     import warnings
 
     warnings.filterwarnings("ignore", category=UserWarning,
-                            message='I don't want this warning.')
+                            message='Matplotlib is currently using agg, which is a'
+                                    ' non-GUI backend, so cannot show the figure.')
 
 to your ``conf.py`` file.
 
-Note that the Matplotlib warning: 'Matplotlib is currently using agg, which is
-a non-GUI backend, so cannot show the figure' is removed by default.
+Note that the above Matplotlib warning is removed by default.
 
 .. _multiple_galleries_config:
 
