@@ -68,8 +68,7 @@ Removing warnings
 
 To prevent warnings from being captured and included in your built
 documentation, you can use the package ``warnings`` in the ``conf.py`` file.
-For example, to remove the specific ``UserWarning``: 'I don't want this
-warning', you can add::
+For example, to remove the specific Matplotlib agg warning, you can add::
 
     import warnings
 
