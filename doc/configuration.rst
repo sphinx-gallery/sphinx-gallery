@@ -629,12 +629,16 @@ Using pypandoc to convert rST to markdown
 
 Sphinx-Gallery can use `pypandoc <https://github.com/bebraw/pypandoc>`_
 (if installed) to convert rST text blocks to markdown for the iPython
-notebooks (``.ipynb`` files) generated for each example. The Sphinx-Gallery
-rST to markdown converter is has limited support for more complex rST syntax.
-If your examples have more complex rST, pypandoc may produce better results
-for your notebooks. By default, pypandoc use is set to ``False``.
+notebooks (``.ipynb`` files) generated for each example. These are made
+available for download, along with the raw ``.py`` version, at the bottom
+of each example.
 
-To use `pypandoc` you can set::
+The Sphinx-Gallery rST to markdown converter has limited support for more
+complex rST syntax. If your examples have more complex rST, ``pypandoc`` may
+produce better results. By default, the 'pypandoc' configuration is set to
+``False`` and ``pypandoc`` is not used.
+
+To use ``pypandoc`` you can set::
 
     sphinx_gallery_conf = {
         ...
