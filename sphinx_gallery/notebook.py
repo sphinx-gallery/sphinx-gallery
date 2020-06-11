@@ -183,6 +183,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
     if gallery_conf["pypandoc"] or isinstance(gallery_conf["pypandoc"], dict):
         try:
             import pypandoc  # noqa
+            # Import error raised only when function called
             logger.info("pandoc version: %s"
                         % (pypandoc.get_pandoc_version(),))
         except (ImportError, OSError) as e:

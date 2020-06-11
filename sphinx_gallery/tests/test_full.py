@@ -774,6 +774,7 @@ def test_jupyter_notebook_pandoc(sphinx_app):
 
     try:
         import pypandoc  # noqa
+        # Import error raised only when function called
         pypandoc.get_pandoc_version()
     except (ImportError, OSError):
         assert md_sg in md
