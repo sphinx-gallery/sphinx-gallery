@@ -182,7 +182,7 @@ def fill_notebook(work_notebook, script_blocks):
         else:
             try:
                 import pypandoc  # noqa
-            except ImportError:
+            except ModuleNotFoundError:
                 logger.warning("pypandoc not available. Using Sphinx-Gallery "
                                "to convert rst text blocks to markdown for "
                                ".ipynb files.")
