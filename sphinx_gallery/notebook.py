@@ -188,7 +188,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
                            "convert rst text blocks to markdown for .ipynb "
                            "files.")
             if e:
-                logger.warning("Error: %s" % (e,))
+                logger.warning("pypandoc import error: %s" % (e,))
         else:
             pandoc = True
             if isinstance(gallery_conf["pypandoc"], dict):
