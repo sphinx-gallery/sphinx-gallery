@@ -260,14 +260,14 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         pypandoc = gallery_conf['pypandoc']
         if not isinstance(pypandoc, (bool, dict)):
             raise ConfigError("'pypandoc' must be a dict or bool, got: "
-                              f"{type(pypandoc)}.")
+                              "%s" % type(pypandoc))
         if isinstance(pypandoc, dict):
             accepted_keys = ('extra_args', 'filters')
             for key in pypandoc.keys():
                 if key not in accepted_keys:
                     raise ConfigError("'pypandoc' only accepts the following "
-                                      f"key values: {accepted_keys}, "
-                                      f"got: {key}.")
+                                      "key values: %s, got: %s."
+                                      % accepted_keys, key)
 
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
