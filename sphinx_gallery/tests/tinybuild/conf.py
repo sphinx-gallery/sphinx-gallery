@@ -50,6 +50,7 @@ sphinx_gallery_conf = {
     'compress_images': ('images', 'thumbnails'),
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
     'matplotlib_animations': True,
+    'pypandoc': True,
 }
 nitpicky = True
 highlight_language = 'python3'

@@ -760,3 +760,22 @@ def test_matplotlib_warning_filter(sphinx_app):
     warning = ('Matplotlib is currently using agg, which is a'
                ' non-GUI backend, so cannot show the figure.')
     assert warning not in html
+
+
+def test_jupyter_notebook_pandoc(sphinx_app):
+    """Test using pypandoc."""
+    src_dir = sphinx_app.srcdir
+    fname = op.join(src_dir, 'auto_examples', 'plot_numpy_matplotlib.ipynb')
+    with codecs.open(fname, 'r', 'utf-8') as fid:
+        md = fid.read()
+
+    print(md)
+    md_sg = r"Use :mod:`sphinx_gallery` to link to other packages, like\n:mod:`numpy`, :mod:`matplotlib.colors`, and :mod:`matplotlib.pyplot`."  # noqa
+    md_pandoc = r'Use `sphinx_gallery`{.interpreted-text role=\"mod\"} to link to other\npackages, like `numpy`{.interpreted-text role=\"mod\"},\n`matplotlib.colors`{.interpreted-text role=\"mod\"}, and\n`matplotlib.pyplot`{.interpreted-text role=\"mod\"}.'  # noqa
+
+    try:
+        import pypandoc
+    except ImportError:
+        assert md_sg in md
+    else:
+        assert md_pandoc in md
