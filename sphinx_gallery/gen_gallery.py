@@ -48,6 +48,7 @@ DEFAULT_GALLERY_CONF = {
     'doc_module': (),
     'reference_url': {},
     'capture_repr': ('_repr_html_', '__repr__'),
+    'ignore_repr_types': r'',
     # Build options
     # -------------
     # We use a string for 'plot_gallery' rather than simply the Python boolean
@@ -73,7 +74,6 @@ DEFAULT_GALLERY_CONF = {
     'junit': '',
     'log_level': {'backreference_missing': 'warning'},
     'inspect_global_variables': True,
-    'ignore_repr_types': r'',
     'css': _KNOWN_CSS,
     'matplotlib_animations': False,
 }
@@ -130,6 +130,22 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         logger.warning(
             backreferences_warning,
             type=DeprecationWarning)
+
+    # Check capture_repr
+    capture_repr = gallery_conf['capture_repr']
+    supported_reprs = ['__repr__', '__str__', '_repr_html_']
+    if isinstance(capture_repr, tuple):
+        for rep in capture_repr:
+            if rep not in supported_reprs:
+                raise ConfigError("All entries in 'capture_repr' must be one "
+                                  "of %s, got: %s" % (supported_reprs, rep))
+    else:
+        raise ConfigError("'capture_repr' must be a tuple, got: %s"
+                          % (type(capture_repr),))
+    # Check ignore_repr_types
+    if not isinstance(gallery_conf['ignore_repr_types'], str):
+        raise ConfigError("'ignore_repr_types' must be a string, got: %s"
+                          % (type(gallery_conf['ignore_repr_types']),))
 
     # deal with show_memory
     gallery_conf['memory_base'] = 0.
