@@ -183,7 +183,8 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
     if gallery_conf["pypandoc"] or isinstance(gallery_conf["pypandoc"], dict):
         try:
             import pypandoc  # noqa
-            logger.info(pypandoc.get_pandoc_version())
+            logger.info("pandoc version: %s"
+                        % (pypandoc.get_pandoc_version(),))
         except (ImportError, OSError) as e:
             logger.warning("'pypandoc' not available. Using Sphinx-Gallery to "
                            "convert rst text blocks to markdown for .ipynb "
