@@ -95,7 +95,7 @@ def list_downloadable_sources(target_dir):
             if fname.endswith('.py')]
 
 
-def generate_zipfiles(gallery_dir):
+def generate_zipfiles(gallery_dir, src_dir):
     """
     Collects all Python source files and Jupyter notebooks in
     gallery_dir and makes zipfiles of them
@@ -104,6 +104,8 @@ def generate_zipfiles(gallery_dir):
     ----------
     gallery_dir : str
         path of the gallery to collect downloadable sources
+    src_dir : str
+        The build source directory. Needed to make the RST paths relative.
 
     Return
     ------
@@ -121,6 +123,7 @@ def generate_zipfiles(gallery_dir):
     jy_zipfile = python_zip(listdir, gallery_dir, ".ipynb")
 
     def rst_path(filepath):
+        filepath = os.path.relpath(filepath, os.path.normpath(src_dir))
         return filepath.replace(os.sep, '/')
 
     dw_rst = CODE_ZIP_DOWNLOAD.format(os.path.basename(py_zipfile),
