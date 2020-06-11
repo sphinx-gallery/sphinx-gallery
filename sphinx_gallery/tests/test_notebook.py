@@ -114,6 +114,17 @@ def test_jupyter_notebook(gallery_conf):
     cell_src = example_nb.get('cells')[-1]['source'][0]
     assert cell_src.startswith("Last text block.\n\nThat's all folks !")
 
+    # Test using pypandoc
+    try:
+        import pypandoc
+    except ImportError:
+        pass
+    else:
+        example_nb = jupyter_notebook(blocks, gallery_conf)
+        md = pypandoc.convert_text(blocks[0][1], to='md', format='rst')
+        assert example_nb.get('cells')[1]['source'][0]
+
+
 ###############################################################################
 # Notebook shell utility
 

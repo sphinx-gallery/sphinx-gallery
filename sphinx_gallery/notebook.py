@@ -17,8 +17,11 @@ import re
 import sys
 import copy
 
+from . import sphinx_compatibility
 from .py_source_parser import split_code_and_text_blocks
 from .utils import replace_py_ipynb
+
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def jupyter_notebook_skeleton():
@@ -182,7 +185,7 @@ def fill_notebook(work_notebook, script_blocks):
         else:
             try:
                 import pypandoc  # noqa
-            except ModuleNotFoundError:
+            except ImportError:
                 logger.warning("pypandoc not available. Using Sphinx-Gallery "
                                "to convert rst text blocks to markdown for "
                                ".ipynb files.")
