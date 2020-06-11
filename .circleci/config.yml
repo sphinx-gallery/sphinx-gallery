@@ -24,7 +24,7 @@ jobs:
       - restore_cache:
           keys:
             - cache-pip
-      - run: pip install --user numpy matplotlib pyqt5 seaborn sphinx_rtd_theme pillow joblib sphinx pytest vtk traits traitsui pyface mayavi memory_profiler ipython pandas pypandoc
+      - run: pip install --user numpy matplotlib pyqt5 seaborn sphinx_rtd_theme pillow joblib sphinx pytest vtk traits traitsui pyface mayavi memory_profiler ipython pandas
       - save_cache:
           key: cache-pip
           paths:
