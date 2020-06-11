@@ -191,8 +191,8 @@ def fill_notebook(work_notebook, script_blocks):
                                ".ipynb files.")
                 add_markdown_cell(work_notebook, bcontent + '\n')
             else:
-                # pandoc automatically adds '\n' at end
                 md = pypandoc.convert_text(bcontent, to='md', format='rst')
+                # pandoc automatically adds '\n' at end
                 add_markdown_cell(work_notebook, md, pandoc=True)
 
 
