@@ -775,7 +775,7 @@ def test_jupyter_notebook_pandoc(sphinx_app):
 
     try:
         import pypandoc  # noqa
-    except ImportError:
+    except (ImportError, OSError):
         assert md_sg in md
     else:
         assert md_pandoc in md
