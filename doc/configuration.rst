@@ -632,7 +632,7 @@ Sphinx-Gallery can use `pypandoc <https://github.com/bebraw/pypandoc>`_
 notebooks (``.ipynb`` files) generated for each example. The Sphinx-Gallery
 rST to markdown converter is has limited support for more complex rST syntax.
 If your examples have more complex rST, pypandoc may produce better results
-for your notebooks.
+for your notebooks. By default, pypandoc use is set to ``False``.
 
 To use `pypandoc` you can set::
 
