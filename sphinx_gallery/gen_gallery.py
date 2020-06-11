@@ -384,7 +384,8 @@ def generate_gallery_rst(app):
                 write_computation_times(gallery_conf, target_dir, this_costs)
 
             if gallery_conf['download_all_examples']:
-                download_fhindex = generate_zipfiles(gallery_dir)
+                download_fhindex = generate_zipfiles(
+                    gallery_dir, app.builder.srcdir)
                 fhindex.write(download_fhindex)
 
             fhindex.write(SPHX_GLR_SIG)
