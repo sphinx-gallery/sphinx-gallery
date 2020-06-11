@@ -142,7 +142,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     else:
         raise ConfigError("'capture_repr' must be a tuple, got: %s"
                           % (type(capture_repr),))
-
+    # Check ignore_repr_types
     if not isinstance(gallery_conf['ignore_repr_types'], str):
         raise ConfigError("'ignore_repr_types' must be a string, got: %s"
                           % (type(gallery_conf['ignore_repr_types']),))
