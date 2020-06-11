@@ -197,14 +197,12 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
             add_code_cell(work_notebook, bcontent)
         else:
             if pandoc:
-                print('using pandoc')
                 md = pypandoc.convert_text(
                     bcontent, to='md', format='rst', **pandoc_kwargs
                 )
                 # pandoc automatically adds '\n' at end
                 add_markdown_cell(work_notebook, md, pandoc=True)
             else:
-                print('not using pypandoc')
                 add_markdown_cell(work_notebook, bcontent + '\n')
 
 
