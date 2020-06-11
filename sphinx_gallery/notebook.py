@@ -161,6 +161,8 @@ def add_markdown_cell(work_notebook, text):
 def fill_notebook(work_notebook, script_blocks):
     """Writes the Jupyter notebook cells
 
+    If available, uses pypandoc to convert rst to markdown.
+
     Parameters
     ----------
     script_blocks : list
@@ -171,7 +173,17 @@ def fill_notebook(work_notebook, script_blocks):
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
-            add_markdown_cell(work_notebook, bcontent + '\n')
+            try:
+                import pypandoc  # noqa
+            except ImportError:
+                logger.warning("pypandoc not available. Using Sphinx-Gallery "
+                               "to convert rst text blocks to markdown for "
+                               ".ipynb files.")
+                add_markdown_cell(work_notebook, bcontent + '\n')
+            else:
+                # pandoc automatically adds '\n' at end
+                md = pypandoc.convert_text(bcontent, to='md', format='rst')
+                add_markdown_cell(work_notebook, md)
 
 
 def save_notebook(work_notebook, write_file):
