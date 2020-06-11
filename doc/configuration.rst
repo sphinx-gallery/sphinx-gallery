@@ -643,7 +643,8 @@ To use `pypandoc` you can set::
 
 You can also use pandoc options by setting the ``pypandoc.convert_text()``
 parameters ``extra_args`` and ``filters``. To pass these parameters to
-``pypandoc.convert_text()`` set the 'pypandoc' configuration to a dictionary::
+``pypandoc.convert_text()`` set the 'pypandoc' configuration to be
+a dictionary::
 
     sphinx_gallery_conf = {
         ...
