@@ -122,7 +122,7 @@ def test_jupyter_notebook(gallery_conf):
     else:
         example_nb = jupyter_notebook(blocks, gallery_conf)
         md = pypandoc.convert_text(blocks[0][1], to='md', format='rst')
-        assert example_nb.get('cells')[1]['source'][0]
+        assert example_nb.get('cells')[1]['source'][0] == md
 
 
 ###############################################################################
