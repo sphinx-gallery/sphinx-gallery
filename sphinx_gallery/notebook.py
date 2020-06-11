@@ -119,7 +119,7 @@ def jupyter_notebook(script_blocks, gallery_conf):
     work_notebook = jupyter_notebook_skeleton()
     if first_cell is not None:
         add_code_cell(work_notebook, first_cell)
-    fill_notebook(work_notebook, script_blocks)
+    fill_notebook(work_notebook, script_blocks, gallery_conf)
     if last_cell is not None:
         add_code_cell(work_notebook, last_cell)
 
@@ -168,7 +168,7 @@ def add_markdown_cell(work_notebook, text, pandoc=False):
     work_notebook["cells"].append(markdown_cell)
 
 
-def fill_notebook(work_notebook, script_blocks):
+def fill_notebook(work_notebook, script_blocks, gallery_conf):
     """Writes the Jupyter notebook cells
 
     If available, uses pypandoc to convert rst to markdown.
@@ -178,22 +178,34 @@ def fill_notebook(work_notebook, script_blocks):
     script_blocks : list
         Each list element should be a tuple of (label, content, lineno).
     """
+    pandoc = False
+    pandoc_kwargs = {}
+    if gallery_conf["pypandoc"] or isinstance(gallery_conf["pypandoc"], dict):
+        try:
+            import pypandoc  # noqa
+        except ImportError:
+            logger.warning("'pypandoc' not available. Using Sphinx-Gallery to "
+                           "convert rst text blocks to markdown for .ipynb "
+                           "files.")
+        else:
+            pandoc = True
+            if isinstance(gallery_conf["pypandoc"], dict):
+                pandoc_kwargs = gallery_conf["pypandoc"]
 
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
-            try:
-                import pypandoc  # noqa
-            except ImportError:
-                logger.warning("pypandoc not available. Using Sphinx-Gallery "
-                               "to convert rst text blocks to markdown for "
-                               ".ipynb files.")
-                add_markdown_cell(work_notebook, bcontent + '\n')
-            else:
-                md = pypandoc.convert_text(bcontent, to='md', format='rst')
+            if pandoc:
+                print('using pandoc')
+                md = pypandoc.convert_text(
+                    bcontent, to='md', format='rst', **pandoc_kwargs
+                )
                 # pandoc automatically adds '\n' at end
                 add_markdown_cell(work_notebook, md, pandoc=True)
+            else:
+                print('not using pypandoc')
+                add_markdown_cell(work_notebook, bcontent + '\n')
 
 
 def save_notebook(work_notebook, write_file):

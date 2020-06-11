@@ -60,6 +60,7 @@ DEFAULT_GALLERY_CONF = {
     'passing_examples': [],
     'stale_examples': [],  # ones that did not need to be run due to md5sum
     'expected_failing_examples': set(),
+    'pypandoc': False,
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
@@ -130,6 +131,20 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         logger.warning(
             backreferences_warning,
             type=DeprecationWarning)
+
+    # Check pypandoc
+    if gallery_conf['pypandoc']:
+        pypandoc = gallery_conf['pypandoc']
+        if not isinstance(pypandoc, (bool, dict)):
+            raise ConfigError("'pypandoc' must be a dict or bool, got: "
+                              f"{type(pypandoc)}.")
+        if isinstance(pypandoc, dict):
+            accepted_keys = ('extra_args', 'filters')
+            for key in pypandoc.keys():
+                if key not in accepted_keys:
+                    raise ConfigError("'pypandoc' only accepts the following "
+                                      f"key values: {accepted_keys}, "
+                                      f"got: {key}.")
 
     # deal with show_memory
     gallery_conf['memory_base'] = 0.
