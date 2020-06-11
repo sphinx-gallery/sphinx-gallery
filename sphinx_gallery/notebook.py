@@ -142,7 +142,7 @@ def add_code_cell(work_notebook, code):
     work_notebook["cells"].append(code_cell)
 
 
-def add_markdown_cell(work_notebook, text):
+def add_markdown_cell(work_notebook, text, pandoc=False):
     """Add a markdown cell to the notebook
 
     Parameters
@@ -150,11 +150,18 @@ def add_markdown_cell(work_notebook, text):
     code : str
         Cell content
     """
-    markdown_cell = {
-        "cell_type": "markdown",
-        "metadata": {},
-        "source": [rst2md(text)]
-    }
+    if pandoc:
+        markdown_cell = {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [text]
+        }
+    else:
+        markdown_cell = {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [rst2md(text)]
+        }
     work_notebook["cells"].append(markdown_cell)
 
 
@@ -183,7 +190,7 @@ def fill_notebook(work_notebook, script_blocks):
             else:
                 # pandoc automatically adds '\n' at end
                 md = pypandoc.convert_text(bcontent, to='md', format='rst')
-                add_markdown_cell(work_notebook, md)
+                add_markdown_cell(work_notebook, md, pandoc=True)
 
 
 def save_notebook(work_notebook, write_file):
