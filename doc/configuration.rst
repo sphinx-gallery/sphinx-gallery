@@ -646,14 +646,14 @@ To use ``pypandoc`` you can set::
     }
 
 You can also use pandoc options by setting the ``pypandoc.convert_text()``
-parameters ``extra_args`` and ``filters``. To pass these parameters to
-``pypandoc.convert_text()`` set the 'pypandoc' configuration to be
-a dictionary::
+parameters ``extra_args`` and ``filters``. To use these parameters, set the
+'pypandoc' configuration to be a dictionary of keyword argument(s)::
 
     sphinx_gallery_conf = {
         ...
         'pypandoc': {'extra_args': ['--mathjax',],
-                     'filters': ['pandoc-citeproc',]},
+                     'filters': ['pandoc-citeproc',],
+    }
 
 .. warning::
 
