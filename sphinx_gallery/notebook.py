@@ -174,11 +174,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
     pandoc_convert = False
     if (isinstance(gallery_conf["pypandoc"], dict) and
         _has_pypandoc(raise_error=True)):
-
         pandoc_convert = True
-        pandoc_kwargs = {}
-        if isinstance(gallery_conf["pypandoc"], dict):
-            pandoc_kwargs = gallery_conf["pypandoc"]
 
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
@@ -187,7 +183,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
             if pandoc_convert:
                 # pandoc automatically addds \n to the end
                 markdown = pypandoc.convert_text(
-                    bcontent, to='md', format='rst', **pandoc_kwargs
+                    bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
                 )
             else:
                 markdown = rst2md(bcontent + '\n')
