@@ -19,7 +19,7 @@ import copy
 
 from . import sphinx_compatibility
 from .py_source_parser import split_code_and_text_blocks
-from .utils import replace_py_ipynb
+from .utils import replace_py_ipynb, _has_pypandoc
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
@@ -145,26 +145,19 @@ def add_code_cell(work_notebook, code):
     work_notebook["cells"].append(code_cell)
 
 
-def add_markdown_cell(work_notebook, text, pandoc=False):
+def add_markdown_cell(work_notebook, markdown):
     """Add a markdown cell to the notebook
 
     Parameters
     ----------
-    code : str
-        Cell content
+    markdown : str
+        Markdown cell content.
     """
-    if pandoc:
-        markdown_cell = {
-            "cell_type": "markdown",
-            "metadata": {},
-            "source": [text]
-        }
-    else:
-        markdown_cell = {
-            "cell_type": "markdown",
-            "metadata": {},
-            "source": [rst2md(text)]
-        }
+    markdown_cell = {
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": [markdown]
+    }
     work_notebook["cells"].append(markdown_cell)
 
 
@@ -178,37 +171,24 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
     script_blocks : list
         Each list element should be a tuple of (label, content, lineno).
     """
-    pandoc = False
-    pandoc_kwargs = {}
-    if gallery_conf["pypandoc"] or isinstance(gallery_conf["pypandoc"], dict):
-        try:
-            import pypandoc  # noqa
-            # Import error raised only when function called
-            logger.info("pandoc version: %s"
-                        % (pypandoc.get_pandoc_version(),))
-        except (ImportError, OSError) as e:
-            logger.warning("'pypandoc' not available. Using Sphinx-Gallery to "
-                           "convert rst text blocks to markdown for .ipynb "
-                           "files.")
-            if e:
-                logger.warning("pypandoc import error: %s" % (e,))
-        else:
-            pandoc = True
-            if isinstance(gallery_conf["pypandoc"], dict):
-                pandoc_kwargs = gallery_conf["pypandoc"]
+    use_pypandoc = \
+        gallery_conf["pypandoc"] or isinstance(gallery_conf["pypandoc"], dict)
+    if use_pypandoc and _has_pypandoc(raise_error=True):
+        pandoc_kwargs = {}
+        if isinstance(gallery_conf["pypandoc"], dict):
+            pandoc_kwargs = gallery_conf["pypandoc"]
+        # pandoc automatically addds \n to the end
+        markdown = pypandoc.convert_text(
+            bcontent, to='md', format='rst', **pandoc_kwargs
+        )
+    else:
+        markdown = rst2md(bcontent + '\n')
 
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
-            if pandoc:
-                md = pypandoc.convert_text(
-                    bcontent, to='md', format='rst', **pandoc_kwargs
-                )
-                # pandoc automatically adds '\n' at end
-                add_markdown_cell(work_notebook, md, pandoc=True)
-            else:
-                add_markdown_cell(work_notebook, bcontent + '\n')
+            add_markdown_cell(work_notebook, markdown)
 
 
 def save_notebook(work_notebook, write_file):

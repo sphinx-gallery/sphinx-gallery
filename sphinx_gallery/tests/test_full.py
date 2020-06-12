@@ -18,6 +18,7 @@ import time
 import numpy as np
 from numpy.testing import assert_allclose
 
+from sphinx.utils import _has_pypandoc
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
@@ -772,11 +773,7 @@ def test_jupyter_notebook_pandoc(sphinx_app):
     md_sg = r"Use :mod:`sphinx_gallery` to link to other packages, like\n:mod:`numpy`, :mod:`matplotlib.colors`, and :mod:`matplotlib.pyplot`."  # noqa
     md_pandoc = r'Use `sphinx_gallery`{.interpreted-text role=\"mod\"} to link to other\npackages, like `numpy`{.interpreted-text role=\"mod\"},\n`matplotlib.colors`{.interpreted-text role=\"mod\"}, and\n`matplotlib.pyplot`{.interpreted-text role=\"mod\"}.'  # noqa
 
-    try:
-        import pypandoc  # noqa
-        # Import error raised only when function called
-        pypandoc.get_pandoc_version()
-    except (ImportError, OSError):
+    if _has_pypandoc():
         assert md_sg in md
     else:
         assert md_pandoc in md
