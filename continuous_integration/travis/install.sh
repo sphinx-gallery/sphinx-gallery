@@ -28,9 +28,10 @@ elif [ "$PYTHON_VERSION" == "nightly" ]; then
     pip install --no-use-pep517 https://api.github.com/repos/numpy/numpy/zipball/master
     pip install . sphinx joblib pytest-cov
 elif [ "$DISTRIB" == "minimal" ]; then
-    pip install . pytest pytest-cov
+    pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install -r dev-requirements.txt | cat
+    pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
     pip install sphinx==1.8.3
     python setup.py install
