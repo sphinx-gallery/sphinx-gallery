@@ -176,7 +176,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
             add_code_cell(work_notebook, bcontent)
         else:
             if (isinstance(gallery_conf["pypandoc"], dict) and
-                _has_pypandoc(raise_error=True)):
+                    _has_pypandoc(raise_error=True)):
                 import pypandoc
                 # pandoc automatically addds \n to the end
                 markdown = pypandoc.convert_text(
