@@ -171,23 +171,27 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
     script_blocks : list
         Each list element should be a tuple of (label, content, lineno).
     """
+    pandoc_convert = False
     if (isinstance(gallery_conf["pypandoc"], dict) and
         _has_pypandoc(raise_error=True)):
 
+        pandoc_convert = True
         pandoc_kwargs = {}
         if isinstance(gallery_conf["pypandoc"], dict):
             pandoc_kwargs = gallery_conf["pypandoc"]
-        # pandoc automatically addds \n to the end
-        markdown = pypandoc.convert_text(
-            bcontent, to='md', format='rst', **pandoc_kwargs
-        )
-    else:
-        markdown = rst2md(bcontent + '\n')
 
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
+            if pandoc_convert:
+                # pandoc automatically addds \n to the end
+                markdown = pypandoc.convert_text(
+                    bcontent, to='md', format='rst', **pandoc_kwargs
+                )
+            else:
+                markdown = rst2md(bcontent + '\n')
+
             add_markdown_cell(work_notebook, markdown)
 
 
