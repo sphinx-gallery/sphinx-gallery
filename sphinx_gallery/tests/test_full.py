@@ -18,11 +18,11 @@ import time
 import numpy as np
 from numpy.testing import assert_allclose
 
-from sphinx.utils import _has_pypandoc
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
-from sphinx_gallery.utils import _get_image, scale_image, _has_optipng
+from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
+                                  _has_pypandoc)
 
 import pytest
 

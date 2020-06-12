@@ -171,9 +171,9 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
     script_blocks : list
         Each list element should be a tuple of (label, content, lineno).
     """
-    use_pypandoc = \
-        gallery_conf["pypandoc"] or isinstance(gallery_conf["pypandoc"], dict)
-    if use_pypandoc and _has_pypandoc(raise_error=True):
+    if (isinstance(gallery_conf["pypandoc"], dict) and
+        _has_pypandoc(raise_error=True)):
+
         pandoc_kwargs = {}
         if isinstance(gallery_conf["pypandoc"], dict):
             pandoc_kwargs = gallery_conf["pypandoc"]

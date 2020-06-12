@@ -256,18 +256,17 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         raise ConfigError("The 'last_notebook_cell' parameter must be type str"
                           " or None, found type %s" % type(last_cell))
     # Check pypandoc
-    if gallery_conf['pypandoc']:
-        pypandoc = gallery_conf['pypandoc']
-        if not isinstance(pypandoc, (bool, dict)):
-            raise ConfigError("'pypandoc' must be a dict or bool, got: "
-                              "%s" % type(pypandoc))
-        if isinstance(pypandoc, dict):
-            accepted_keys = ('extra_args', 'filters')
-            for key in pypandoc.keys():
-                if key not in accepted_keys:
-                    raise ConfigError("'pypandoc' only accepts the following "
-                                      "key values: %s, got: %s."
-                                      % accepted_keys, key)
+    gallery_conf['pypandoc'] = dict() if gallery_conf['pypandoc'] is True \
+        else gallery_conf['pypandoc']
+    if isinstance(gallery_conf['pypandoc'], dict):
+        accepted_keys = ('extra_args', 'filters')
+        for key in gallery_conf['pypandoc']:
+            if key not in accepted_keys:
+                raise ConfigError("'pypandoc' only accepts the following key "
+                                  "values: %s, got: %s." % accepted_keys, key)
+    else:
+        raise ConfigError("'pypandoc' must be a dict or bool, got: "
+                          "%s" % type(pypandoc))
 
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
