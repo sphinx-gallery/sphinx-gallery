@@ -261,7 +261,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     pypandoc = gallery_conf['pypandoc']
     if not isinstance(pypandoc, dict):
         raise ConfigError("'pypandoc' must be a dict or bool, got: "
-                          "%s" % type(pypandoc))
+                          "%s" % (type(pypandoc),))
     accepted_keys = ('extra_args', 'filters')
     for key in pypandoc:
         if key not in accepted_keys:
