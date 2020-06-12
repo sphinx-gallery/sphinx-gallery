@@ -723,7 +723,7 @@ the path to the figure you would like to use as the thumbnail. For example, the
 following defines that the figure ``demo.png`` in the folder ``_static/``
 should be used to create the thumbnail::
 
-    # sphinx_gallery_thumbnail_path = ``_static/demo.png``
+    # sphinx_gallery_thumbnail_path = '_static/demo.png'
 
 Note that ``sphinx_gallery_thumbnail_number`` overrules
 ``sphinx_gallery_thumbnail_path``. See
