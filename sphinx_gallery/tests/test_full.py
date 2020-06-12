@@ -774,6 +774,6 @@ def test_jupyter_notebook_pandoc(sphinx_app):
     md_pandoc = r'Use `sphinx_gallery`{.interpreted-text role=\"mod\"} to link to other\npackages, like `numpy`{.interpreted-text role=\"mod\"},\n`matplotlib.colors`{.interpreted-text role=\"mod\"}, and\n`matplotlib.pyplot`{.interpreted-text role=\"mod\"}.'  # noqa
 
     if _has_pypandoc():
-        assert md_sg in md
-    else:
         assert md_pandoc in md
+    else:
+        assert md_sg in md
