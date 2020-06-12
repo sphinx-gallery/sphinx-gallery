@@ -266,7 +266,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                                   "values: %s, got: %s." % accepted_keys, key)
     else:
         raise ConfigError("'pypandoc' must be a dict or bool, got: "
-                          "%s" % type(pypandoc))
+                          "%s" % type(gallery_conf['pypandoc']))
 
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
