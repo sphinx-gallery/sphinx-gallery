@@ -417,7 +417,8 @@ def test_pypandoc_config_list(sphinx_app_wrapper):
     """Tests 'pypandoc' type checking."""
     from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
-                       match="'pypandoc' must be a dict or bool"):
+                       match="'pypandoc' parameter must be of type bool or "
+                             "dict"):
         parse_config(sphinx_app_wrapper.create_sphinx_app())
 
 
