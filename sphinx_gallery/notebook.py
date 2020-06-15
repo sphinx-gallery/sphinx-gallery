@@ -175,7 +175,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
-            if isinstance(gallery_conf["pypandoc"] == False:
+            if gallery_conf["pypandoc"] == False:
                 markdown = rst2md(bcontent + '\n')
             else:
                 import pypandoc
