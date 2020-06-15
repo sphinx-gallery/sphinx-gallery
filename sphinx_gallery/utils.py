@@ -156,19 +156,13 @@ class Bunch(dict):
         self.__dict__ = self
 
 
-def _has_pypandoc(raise_error=False):
+def _has_pypandoc():
     """Check if pypandoc package available."""
     try:
         import pypandoc  # noqa
         # Import error raised only when function called
         version = pypandoc.get_pandoc_version()
-        if raise_error:
-            logger.info("pandoc version: %s" % (version,))
-    except (ImportError, OSError) as e:
-        if raise_error:
-            logger.warning("'pypandoc' not available - import error: %s. "
-                           "Using Sphinx-Gallery to convert rst text blocks "
-                           "to markdown for .ipynb files." % (e,))
-        return False
+    except (ImportError, OSError):
+        return None, None
     else:
-        return True
+        return True, version

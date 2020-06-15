@@ -175,17 +175,16 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
-            if (isinstance(gallery_conf["pypandoc"], dict) and
-                    _has_pypandoc(raise_error=True)):
+            if isinstance(gallery_conf["pypandoc"] == False:
+                markdown = rst2md(bcontent + '\n')
+            else:
                 import pypandoc
                 # pandoc automatically addds \n to the end
                 markdown = pypandoc.convert_text(
                     bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
                 )
-            else:
-                markdown = rst2md(bcontent + '\n')
 
-            add_markdown_cell(work_notebook, markdown)
+        add_markdown_cell(work_notebook, markdown)
 
 
 def save_notebook(work_notebook, write_file):
