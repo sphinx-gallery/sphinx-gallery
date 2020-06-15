@@ -19,7 +19,7 @@ import copy
 
 from . import sphinx_compatibility
 from .py_source_parser import split_code_and_text_blocks
-from .utils import replace_py_ipynb, _has_pypandoc
+from .utils import replace_py_ipynb
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
@@ -183,8 +183,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
                 markdown = pypandoc.convert_text(
                     bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
                 )
-
-        add_markdown_cell(work_notebook, markdown)
+            add_markdown_cell(work_notebook, markdown)
 
 
 def save_notebook(work_notebook, write_file):

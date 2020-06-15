@@ -262,7 +262,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                           "got: %s." % type(pypandoc))
     gallery_conf['pypandoc'] = dict() if pypandoc is True else pypandoc
     has_pypandoc, version = _has_pypandoc()
-    if isinstance(pypandoc, dict) and not has_pypandoc:
+    if isinstance(gallery_conf['pypandoc'], dict) and has_pypandoc is None:
         logger.warning("'pypandoc' not available. Using Sphinx-Gallery to "
                        "convert rst text blocks to markdown for .ipynb files.")
         gallery_conf['pypandoc'] = False
