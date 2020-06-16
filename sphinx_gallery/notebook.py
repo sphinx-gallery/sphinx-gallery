@@ -17,8 +17,11 @@ import re
 import sys
 import copy
 
+from . import sphinx_compatibility
 from .py_source_parser import split_code_and_text_blocks
 from .utils import replace_py_ipynb
+
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def jupyter_notebook_skeleton():
@@ -116,7 +119,7 @@ def jupyter_notebook(script_blocks, gallery_conf):
     work_notebook = jupyter_notebook_skeleton()
     if first_cell is not None:
         add_code_cell(work_notebook, first_cell)
-    fill_notebook(work_notebook, script_blocks)
+    fill_notebook(work_notebook, script_blocks, gallery_conf)
     if last_cell is not None:
         add_code_cell(work_notebook, last_cell)
 
@@ -142,36 +145,45 @@ def add_code_cell(work_notebook, code):
     work_notebook["cells"].append(code_cell)
 
 
-def add_markdown_cell(work_notebook, text):
+def add_markdown_cell(work_notebook, markdown):
     """Add a markdown cell to the notebook
 
     Parameters
     ----------
-    code : str
-        Cell content
+    markdown : str
+        Markdown cell content.
     """
     markdown_cell = {
         "cell_type": "markdown",
         "metadata": {},
-        "source": [rst2md(text)]
+        "source": [markdown]
     }
     work_notebook["cells"].append(markdown_cell)
 
 
-def fill_notebook(work_notebook, script_blocks):
+def fill_notebook(work_notebook, script_blocks, gallery_conf):
     """Writes the Jupyter notebook cells
+
+    If available, uses pypandoc to convert rst to markdown.
 
     Parameters
     ----------
     script_blocks : list
         Each list element should be a tuple of (label, content, lineno).
     """
-
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
-            add_markdown_cell(work_notebook, bcontent + '\n')
+            if gallery_conf["pypandoc"] is False:
+                markdown = rst2md(bcontent + '\n')
+            else:
+                import pypandoc
+                # pandoc automatically addds \n to the end
+                markdown = pypandoc.convert_text(
+                    bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
+                )
+            add_markdown_cell(work_notebook, markdown)
 
 
 def save_notebook(work_notebook, write_file):

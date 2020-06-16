@@ -15,7 +15,10 @@ import os
 from shutil import move, copyfile
 import subprocess
 
+from . import sphinx_compatibility
 from sphinx.errors import ExtensionError
+
+logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
 def _get_image():
@@ -151,3 +154,15 @@ class Bunch(dict):
     def __init__(self, **kwargs):  # noqa: D102
         dict.__init__(self, kwargs)
         self.__dict__ = self
+
+
+def _has_pypandoc():
+    """Check if pypandoc package available."""
+    try:
+        import pypandoc  # noqa
+        # Import error raised only when function called
+        version = pypandoc.get_pandoc_version()
+    except (ImportError, OSError):
+        return None, None
+    else:
+        return True, version

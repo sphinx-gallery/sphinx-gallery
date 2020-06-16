@@ -23,7 +23,7 @@ from xml.sax.saxutils import quoteattr, escape
 from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import red
 from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5, _has_optipng
+from .utils import _replace_md5, _has_optipng, _has_pypandoc
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
@@ -69,6 +69,7 @@ DEFAULT_GALLERY_CONF = {
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'last_notebook_cell': None,
+    'pypandoc': False,
     'remove_config_comments': False,
     'show_memory': False,
     'junit': '',
@@ -270,6 +271,28 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     if (not isinstance(last_cell, str)) and (last_cell is not None):
         raise ConfigError("The 'last_notebook_cell' parameter must be type str"
                           " or None, found type %s" % type(last_cell))
+    # Check pypandoc
+    pypandoc = gallery_conf['pypandoc']
+    if not isinstance(pypandoc, (dict, bool)):
+        raise ConfigError("'pypandoc' parameter must be of type bool or dict,"
+                          "got: %s." % type(pypandoc))
+    gallery_conf['pypandoc'] = dict() if pypandoc is True else pypandoc
+    has_pypandoc, version = _has_pypandoc()
+    if isinstance(gallery_conf['pypandoc'], dict) and has_pypandoc is None:
+        logger.warning("'pypandoc' not available. Using Sphinx-Gallery to "
+                       "convert rst text blocks to markdown for .ipynb files.")
+        gallery_conf['pypandoc'] = False
+    else:
+        logger.info("Using pandoc version: %s to convert rst text blocks to "
+                    "markdown for .ipynb files" % (version,))
+    if isinstance(pypandoc, dict):
+        accepted_keys = ('extra_args', 'filters')
+        for key in pypandoc:
+            if key not in accepted_keys:
+                raise ConfigError("'pypandoc' only accepts the following key "
+                                  "values: %s, got: %s."
+                                  % (accepted_keys, key))
+
     # Make it easy to know which builder we're in
     gallery_conf['builder_name'] = builder_name
     gallery_conf['titles'] = {}

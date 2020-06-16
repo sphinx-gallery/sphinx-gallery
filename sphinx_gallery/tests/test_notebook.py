@@ -10,6 +10,7 @@ import json
 import tempfile
 import os
 import pytest
+import re
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery.notebook import (rst2md, jupyter_notebook, save_notebook,
@@ -99,7 +100,7 @@ def test_jupyter_notebook(gallery_conf):
     gallery_conf['first_notebook_cell'] = test_text
     example_nb = jupyter_notebook(blocks, gallery_conf)
     cell_src = example_nb.get('cells')[0]['source'][0]
-    assert cell_src.startswith('\nAlternating text and code')
+    assert re.match('^[\n]?Alternating text and code', cell_src)
 
     # Test custom last cell text
     test_text = '# testing last cell'
@@ -112,7 +113,8 @@ def test_jupyter_notebook(gallery_conf):
     gallery_conf['last_notebook_cell'] = test_text
     example_nb = jupyter_notebook(blocks, gallery_conf)
     cell_src = example_nb.get('cells')[-1]['source'][0]
-    assert cell_src.startswith("Last text block.\n\nThat's all folks !")
+    assert re.match("^Last text block.\n\nThat[\\\\]?'s all folks !", cell_src)
+
 
 ###############################################################################
 # Notebook shell utility

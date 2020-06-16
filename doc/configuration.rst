@@ -39,6 +39,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``binder`` (:ref:`binder_links`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
+- ``pypandoc`` (:ref:`use_pypandoc`)
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
 - ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
@@ -621,6 +622,42 @@ parameter::
 If the value of ``first_notebook_cell`` or ``last_notebook_cell`` is set to
 ``None``, then no extra first or last cell will be added to the notebook.
 
+.. _use_pypandoc:
+
+Using pypandoc to convert rST to markdown
+=========================================
+
+Sphinx-Gallery can use `pypandoc <https://github.com/bebraw/pypandoc>`_
+(if installed) to convert rST text blocks to markdown for the iPython
+notebooks (``.ipynb`` files) generated for each example. These are made
+available for download, along with the raw ``.py`` version, at the bottom
+of each example.
+
+The Sphinx-Gallery rST to markdown converter has limited support for more
+complex rST syntax. If your examples have more complex rST, ``pypandoc`` may
+produce better results. By default, the 'pypandoc' configuration is set to
+``False`` and ``pypandoc`` is not used.
+
+To use ``pypandoc`` you can set::
+
+    sphinx_gallery_conf = {
+        ...
+        'pypandoc': True,
+    }
+
+You can also use pandoc options by setting the ``pypandoc.convert_text()``
+parameters ``extra_args`` and ``filters``. To use these parameters, set the
+'pypandoc' configuration to be a dictionary of keyword argument(s)::
+
+    sphinx_gallery_conf = {
+        ...
+        'pypandoc': {'extra_args': ['--mathjax',],
+                     'filters': ['pandoc-citeproc',],
+    }
+
+.. warning::
+
+    Certain pandoc options may result in undesirable effects. Use with caution.
 
 .. _junit_xml:
 

@@ -407,3 +407,29 @@ def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
 
 def test_write_computation_times_noop():
     write_computation_times(None, None, [[[0]]])
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'pypandoc': ['list',],
+}""")
+def test_pypandoc_config_list(sphinx_app_wrapper):
+    """Tests 'pypandoc' type checking."""
+    from sphinx_gallery.gen_gallery import parse_config
+    with pytest.raises(ConfigError,
+                       match="'pypandoc' parameter must be of type bool or "
+                             "dict"):
+        parse_config(sphinx_app_wrapper.create_sphinx_app())
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'pypandoc': {'bad key': 1},
+}""")
+def test_pypandoc_config_keys(sphinx_app_wrapper):
+    """Tests 'pypandoc' dictonary key checking."""
+    from sphinx_gallery.gen_gallery import parse_config
+    with pytest.raises(ConfigError,
+                       match="'pypandoc' only accepts the following key "
+                             "values:"):
+        parse_config(sphinx_app_wrapper.create_sphinx_app())
