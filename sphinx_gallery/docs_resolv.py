@@ -423,12 +423,7 @@ def embed_code_links(app, exception):
     if exception is not None:
         return
 
-    # No need to waste time embedding hyperlinks when not running the examples
-    # XXX: also at the time of writing this fixes make html-noplot
-    # for some reason I don't fully understand
     gallery_conf = app.config.sphinx_gallery_conf
-    if not gallery_conf['plot_gallery']:
-        return
 
     # XXX: Whitelist of builders for which it makes sense to embed
     # hyperlinks inside the example html. Note that the link embedding
