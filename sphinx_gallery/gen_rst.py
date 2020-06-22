@@ -170,6 +170,23 @@ html_header = """.. raw:: html
     <br />
     <br />"""
 
+# Elements for ThebeLab
+thebelab_badge = """\n
+  .. container:: sphx-glr-thebelab-badge
+
+    .. image:: {0}
+       :target: #
+       :width: 260px
+
+  .. raw:: html
+
+    <script>
+      $('.sphx-glr-thebelab-badge a').click(
+        function(){{thebelab.bootstrap(); return false;}}
+      );
+    </script>
+"""
+
 
 def codestr2rst(codestr, lang='python', lineno=None):
     """Return reStructuredText code block from code string."""
@@ -947,15 +964,20 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
 
             code_rst = codestr2rst(bcontent, lang=gallery_conf['lang'],
                                    lineno=lineno) + '\n'
+            example_rst += ".. container:: sphx-glr-code\n\n"
             if is_example_notebook_like:
-                example_rst += code_rst
-                example_rst += code_output
+                example_rst += indent(code_rst, ' '*4)
+                if code_output.strip():
+                    example_rst += "    .. container:: sphx-glr-output\n"
+                    example_rst += indent(code_output, ' '*8)
             else:
-                example_rst += code_output
+                if code_output.strip():
+                    example_rst += "\n    .. container:: sphx-glr-output\n"
+                    example_rst += indent(code_output, ' '*8)
                 if 'sphx-glr-script-out' in code_output:
                     # Add some vertical space after output
                     example_rst += "\n\n|\n\n"
-                example_rst += code_rst
+                example_rst += indent(code_rst, ' '*4)
         else:
             block_separator = '\n\n' if not bcontent.endswith('\n') else '\n'
             example_rst += bcontent + block_separator
@@ -997,16 +1019,21 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         example_rst += ("**Estimated memory usage:** {0: .0f} MB\n\n"
                         .format(memory_used))
 
-    # Generate a binder URL if specified
-    binder_badge_rst = ''
+    # Generate a binder or ThebeLab URL if specified/required
+    badge_rst = ''
+    if gallery_conf['thebelab'] and "sphx-glr-code" in example_rst:
+        badge_rel_path = os.path.relpath(
+            os.path.join(glr_path_static(), 'thebelab_badge.svg'),
+            gallery_conf['src_dir'])
+        badge_rst += thebelab_badge.format(
+            "/" + badge_rel_path.replace(os.path.sep, '/'))
     if len(binder_conf) > 0:
-        binder_badge_rst += gen_binder_rst(example_file, binder_conf,
-                                           gallery_conf)
+        badge_rst += gen_binder_rst(example_file, binder_conf, gallery_conf)
 
     fname = os.path.basename(example_file)
     example_rst += CODE_DOWNLOAD.format(fname,
                                         replace_py_ipynb(fname),
-                                        binder_badge_rst,
+                                        badge_rst,
                                         ref_fname)
     example_rst += SPHX_GLR_SIG
 

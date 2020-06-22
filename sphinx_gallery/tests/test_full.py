@@ -371,8 +371,10 @@ def test_logging_std_nested(sphinx_app):
         sphinx_app.srcdir, 'auto_examples', 'plot_log.rst')
     with codecs.open(log_rst, 'r', 'utf-8') as fid:
         lines = fid.read()
-    assert '.. code-block:: none\n\n    is in the same cell' in lines
-    assert '.. code-block:: none\n\n    is not in the same cell' in lines
+    assert '        .. code-block:: none\n\n'\
+           '            is in the same cell' in lines
+    assert '        .. code-block:: none\n\n'\
+           '            is not in the same cell' in lines
 
 
 def _assert_mtimes(list_orig, list_new, different=(), ignore=()):

@@ -368,6 +368,12 @@ sphinx_gallery_conf = {
     # each code block
     'capture_repr': ('_repr_html_', '__repr__'),
     'matplotlib_animations': True,
+    'thebelab': {
+        "requestKernel": True,
+        "binderOptions": {
+            "repo": "sphinx-gallery/sphinx-gallery.github.io",
+        },
+    },
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show

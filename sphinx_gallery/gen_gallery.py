@@ -19,6 +19,7 @@ import re
 import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
+import json
 
 from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import red
@@ -90,6 +91,7 @@ DEFAULT_GALLERY_CONF = {
     'inspect_global_variables': True,
     'css': _KNOWN_CSS,
     'matplotlib_animations': False,
+    'thebelab': None,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -336,6 +338,17 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                               % (css, _KNOWN_CSS))
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
+    if gallery_conf['thebelab'] is not None:
+        gallery_conf['thebelab']['selector'] = \
+            ".sphx-glr-code>:not(.sphx-glr-output)"
+        gallery_conf['thebelab']['outputSelector'] = ".sphx-glr-output"
+        gallery_conf['thebelab']['predefinedOutput'] = True
+        gallery_conf['app'].add_js_file(
+            None,
+            body=json.dumps(gallery_conf['thebelab']),
+            type="text/x-thebe-config")
+        gallery_conf['app'].add_js_file(
+            "https://unpkg.com/thebelab@latest/lib/index.js")
 
     return gallery_conf
 

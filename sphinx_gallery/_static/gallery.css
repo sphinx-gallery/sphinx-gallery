@@ -111,6 +111,11 @@ div.sphx-glr-footer {
     text-align: center;
 }
 
+div.sphx-glr-thebelab-badge {
+  margin: 1em auto;
+  vertical-align: middle;
+}
+
 div.sphx-glr-download {
   margin: 1em auto;
   vertical-align: middle;
