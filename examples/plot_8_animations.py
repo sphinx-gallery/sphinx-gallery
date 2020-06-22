@@ -1,8 +1,8 @@
 """
-Animation support
-=================
+Matplotlib animation support
+============================
 
-Show an animation, which should end up nicely embedded below.
+Show a Matplotlib animation, which should end up nicely embedded below.
 """
 
 import numpy as np
