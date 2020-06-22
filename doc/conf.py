@@ -329,8 +329,11 @@ else:
     mlab.options.offscreen = True
 
 # Set plotly renderer to capture _repr_html_ for sphinx-gallery
-import plotly.io as pio
-pio.renderers.default = 'sphinx_gallery'
+try:
+    import plotly.io as pio
+    pio.renderers.default = 'sphinx_gallery'
+except ImportError:
+    pass
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
