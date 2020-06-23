@@ -328,6 +328,13 @@ else:
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
 
+# Set plotly renderer to capture _repr_html_ for sphinx-gallery
+try:
+    import plotly.io as pio
+    pio.renderers.default = 'sphinx_gallery'
+except ImportError:
+    pass
+
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
     min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
