@@ -1137,7 +1137,7 @@ in your own site's CSS file:
     }
 
 .. note:: The default value of ``thumbnail_size`` will change from
-          ``(400, 280)`` to ``(160, 112)`` in version 0.8.0. This is to
+          ``(400, 280)`` to ``(160, 112)`` in version 0.9.0. This is to
           prevent over-sampling as CSS default is maximum 160x112px.
 
 .. _min_reported_time:
