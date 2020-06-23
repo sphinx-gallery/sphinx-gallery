@@ -4,9 +4,10 @@ Example with the plotly graphing library
 ========================================
 
 sphinx-gallery supports examples made with the
-`plotly library <https://plotly.com/python/>`_. sphinx-gallery captures the
-``_repr_html_`` of plotly figure objects. Therefore you should return a figure
-object to display the figure.
+`plotly library <https://plotly.com/python/>`_. sphinx-gallery is able to
+capture the ``_repr_html_`` of plotly figure objects (see :ref:`capture_repr`).
+To display the figure, the last line in your code block should therefore be
+the plotly figure object.
 
 In order to use plotly, the ``conf.py`` of the project should include the
 following lines to select the appropriate plotly renderer::
