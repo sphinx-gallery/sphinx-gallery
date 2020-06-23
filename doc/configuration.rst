@@ -1115,9 +1115,9 @@ maintaining the original aspect ratio. This size can be controlled with the
     }
 
 The gallery uses various CSS classes to display these thumbnails, which
-default to maximum 160x160px. To change this, e.g. to display the images
+default to maximum 160x112px. To change this, e.g. to display the images
 at 250x250px, you can modify the default CSS with something like the following
-in your own site's CSS file:
+in your ``gallery.css``` file:
 
 .. code-block:: css
 
@@ -1138,7 +1138,8 @@ in your own site's CSS file:
 
 .. note:: The default value of ``thumbnail_size`` will change from
           ``(400, 280)`` to ``(160, 112)`` in version 0.9.0. This is to
-          prevent over-sampling as CSS default is maximum 160x112px.
+          prevent over-sampling as default CSS sets thumbnail size to maximum
+          160x112px.
 
 .. _min_reported_time:
 
