@@ -14,7 +14,7 @@ following lines to select the appropriate plotly renderer::
     import plotly.io as pio
     pio.renderers.default = 'sphinx_gallery'
 
-**Optional**: the sphinx_gallery renderer of plotly will not generate png
+**Optional**: the ``sphinx_gallery`` renderer of plotly will not generate png
 thumbnails. For png thumbnails, you can use instead the ``sphinx_gallery_png``
 renderer, and add ``plotly.io._sg_scraper.plotly_sg_scraper`` to the list of
 :ref:`image_scrapers`. The scraper requires you to
