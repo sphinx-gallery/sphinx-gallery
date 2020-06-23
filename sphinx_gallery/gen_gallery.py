@@ -135,7 +135,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     if gallery_conf.get("thumbnail_size", False):
         thumbnail_warning = ("'thumbnail_size' configuration not set. The "
                              "default size will be changed from (400, 280) "
-                             "to (160, 112) in version 0.9.0."
+                             "to (160, 112) in version 0.9.0.")
         logger.warning(thumbnail_warning, type=DeprecationWarning)
 
     # Check capture_repr
