@@ -1105,7 +1105,7 @@ Setting gallery thumbnail size
 ==============================
 
 By default Sphinx-gallery will generate thumbnails at size ``(400, 280)``.
-The thumbnail image will then be scaled to the configuration
+The thumbnail image will then be scaled to the size specified by
 ``'thumbnail_size``, adding pillarboxes or letterboxes as necessary to
 maintain the original aspect ratio. The default ``thumbnail_size`` is
 ``(400, 280)`` (no scaling) and can be changed via the ``thumbnail_size``
