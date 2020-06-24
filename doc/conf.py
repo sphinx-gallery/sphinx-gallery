@@ -369,7 +369,6 @@ sphinx_gallery_conf = {
     'capture_repr': ('_repr_html_', '__repr__'),
     'matplotlib_animations': True,
     # To prevent depracation warning
-    'thumbnail_size': (160, 112),
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show
