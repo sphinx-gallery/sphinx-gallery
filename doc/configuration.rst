@@ -1139,7 +1139,8 @@ in your ``gallery.css``` file:
     }
 
 .. note:: The default value of ``thumbnail_size`` will change from
-          ``(400, 280)`` to ``(320, 224)`` in version 0.9.0. This is to
+          ``(400, 280)`` (2.5x maximum specified by CSS) to ``(320, 224)``
+          (2x maximum specified by CSS) in version 0.9.0. This is to
           prevent unnecessary over-sampling.
 
 .. _min_reported_time:
