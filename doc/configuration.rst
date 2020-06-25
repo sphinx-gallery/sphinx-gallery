@@ -1104,10 +1104,12 @@ the example script.
 Setting gallery thumbnail size
 ==============================
 
-By default Sphinx-gallery will generate thumbnails at size ``(400, 280)``,
-and add pillarboxes or letterboxes as necessary to scale the image while
-maintaining the original aspect ratio. This size can be controlled with the
-``thumbnail_size`` entry as, e.g.::
+By default Sphinx-gallery will generate thumbnails at size ``(400, 280)``.
+The thumbnail image will then be scaled to the size specified by
+``'thumbnail_size``, adding pillarboxes or letterboxes as necessary to
+maintain the original aspect ratio. The default ``thumbnail_size`` is
+``(400, 280)`` (no scaling) and can be changed via the ``thumbnail_size``
+configuration, e.g.::
 
     sphinx_gallery_conf = {
         ...
@@ -1115,9 +1117,9 @@ maintaining the original aspect ratio. This size can be controlled with the
     }
 
 The gallery uses various CSS classes to display these thumbnails, which
-default to maximum 160x160px. To change this, e.g. to display the images
+default to maximum 160x112px. To change this, e.g. to display the images
 at 250x250px, you can modify the default CSS with something like the following
-in your own site's CSS file:
+in your ``gallery.css``` file:
 
 .. code-block:: css
 
@@ -1136,6 +1138,10 @@ in your own site's CSS file:
         padding: 270px 10px 0 !important;
     }
 
+.. note:: The default value of ``thumbnail_size`` will change from
+          ``(400, 280)`` (2.5x maximum specified by CSS) to ``(320, 224)``
+          (2x maximum specified by CSS) in version 0.9.0. This is to
+          prevent unnecessary over-sampling.
 
 .. _min_reported_time:
 
