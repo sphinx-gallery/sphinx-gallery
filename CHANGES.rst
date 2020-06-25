@@ -5,8 +5,8 @@ v0.8.0
 ------
 
 The default for configuration `thumbnail_size` will change from `(400, 280)`
-to `(320, 224)` in version 0.9.0.
-
+(2.5x maximum size specified by CSS) to `(320, 224)` (2x maximum size specified
+by CSS) in version 0.9.0.
 
 v0.7.0
 ------
