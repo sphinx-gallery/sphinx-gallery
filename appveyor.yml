@@ -6,8 +6,8 @@ environment:
 
   global:
     PYTHON: "C:\\conda"
-    CONDA_DEPENDENCIES: numpy seaborn "matplotlib\!=3.2" sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
-    PIP_DEPENDENCIES: ipython
+    CONDA_DEPENDENCIES: numpy seaborn "matplotlib<3.2.2|>3.2.2" sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
+    PIP_DEPENDENCIES: ipython"
 
   matrix:
     - PYTHON_VERSION: "3.6"
