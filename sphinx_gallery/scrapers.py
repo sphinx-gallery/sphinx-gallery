@@ -177,7 +177,7 @@ def _anim_rst(anim, image_path, gallery_conf):
         min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
     # FFmpeg is buggy for GIFs
     if ImageMagickWriter.isAvailable():
-        writer = ImageMagickWriter
+        writer = 'imagemagick'
     else:
         writer = None
     anim.save(image_path, writer=writer, dpi=use_dpi)
