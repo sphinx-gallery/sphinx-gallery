@@ -40,6 +40,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``show_signature`` (:ref:`show_signature`)
 - ``binder`` (:ref:`binder_links`)
+- ``thebelab`` (:ref:`thebelab_support`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``notebook_images`` (:ref:`notebook_images`)
 - ``pypandoc`` (:ref:`use_pypandoc`)
@@ -970,6 +971,47 @@ Binder links will point to these notebooks.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the `public Binder server <http://mybinder.org>`_.
+
+.. _thebelab_support:
+
+ThebeLab Support
+=================
+
+Sphinx-Gallery can enable execution of code and displaying of outputs directly
+in documentation via use of `ThebeLab <https://thebelab.readthedocs.io/>`__. By
+default, this will use the `public Binder server`_.
+
+In order to enable ThebeLab with Sphinx-Gallery, a ThebeLab configuration is
+required in ``conf.py``. The configuration must be provide as a dictionary,
+which is serialised into JSON, for direct processing by ThebeLab. For specific
+configuration options, see `ThebeLab Configuration Reference <https://thebelab.readthedocs.io/en/latest/config_reference.html>`__.
+An example is given below::
+
+    sphinx_gallery_conf = {
+      ...
+      'thebelab': {
+          'requestKernel': True,
+          'binderOptions': {
+              'repo': "<github_org>/<github_repo>",
+          },
+          'kernelOptions': {
+              'path': "<path>"
+          }
+      },
+      ...
+    }
+
+For every page generated, the ``kernelOptions.path`` will be updated, having
+the path to the gallery directory appended to it. This is useful if your
+examples import local code or require access to files.
+
+.. warning::
+
+    The ``selector``, ``outputSelector`` and ``predefinedOutput`` values should
+    not be set in the ThebeLab configuration, as these are set by
+    Sphinx-Gallery to be compatible with the generated output. These can be
+    overridden by setting them in the configuration if required, but may break
+    support on Sphinx-Gallery generated pages.
 
 .. _without_execution:
 
