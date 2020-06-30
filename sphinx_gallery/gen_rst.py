@@ -32,6 +32,7 @@ import subprocess
 import sys
 import traceback
 import codeop
+import json
 
 from sphinx.errors import ExtensionError
 
@@ -180,6 +181,10 @@ thebelab_badge = """\n
 
   .. raw:: html
 
+    <script type="text/x-thebe-config">
+        {1}
+    </script>
+    <script src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
     <script>
       $('.sphx-glr-thebelab-badge a').click(
         function(){{thebelab.bootstrap(); return false;}}
@@ -1025,8 +1030,13 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         badge_rel_path = os.path.relpath(
             os.path.join(glr_path_static(), 'thebelab_badge.svg'),
             gallery_conf['src_dir'])
+        conf = copy.deepcopy(gallery_conf['thebelab'])
+        conf['kernelOptions']['path'] += '/' + os.path.relpath(
+            os.path.dirname(example_file),
+            gallery_conf['src_dir'])
         badge_rst += thebelab_badge.format(
-            "/" + badge_rel_path.replace(os.path.sep, '/'))
+            "/" + badge_rel_path.replace(os.path.sep, '/'),
+            json.dumps(conf))
     if len(binder_conf) > 0:
         badge_rst += gen_binder_rst(example_file, binder_conf, gallery_conf)
 

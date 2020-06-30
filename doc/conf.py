@@ -369,10 +369,13 @@ sphinx_gallery_conf = {
     'capture_repr': ('_repr_html_', '__repr__'),
     'matplotlib_animations': True,
     'thebelab': {
-        "requestKernel": True,
-        "binderOptions": {
-            "repo": "sphinx-gallery/sphinx-gallery.github.io",
+        'requestKernel': True,
+        'binderOptions': {
+            'repo': "sphinx-gallery/sphinx-gallery.github.io",
         },
+        'kernelOptions': {
+            'path': "./dev"
+        }
     },
 }
 
