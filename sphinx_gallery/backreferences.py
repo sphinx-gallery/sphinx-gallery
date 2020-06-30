@@ -317,7 +317,7 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
                             gallery_conf['backreferences_dir'],
                             '%s.examples.new' % backref)
         if os.path.isfile(path):
-            _replace_md5(path)
+            _replace_md5(path, mode='t')
         else:
             level = gallery_conf['log_level'].get('backreference_missing',
                                                   'warning')
