@@ -124,20 +124,32 @@ def replace_py_ipynb(fname):
     return '{}{}'.format(fname_prefix, new_extension)
 
 
-def get_md5sum(src_file):
-    """Returns md5sum of file"""
-    with open(src_file, 'rt', errors='surrogateescape') as src_data:
-        src_content = src_data.read().encode(errors='surrogateescape')
+def get_md5sum(src_file, mode='b'):
+    """Returns md5sum of file
+
+    Parameters
+    ----------
+    src_file : str
+        Filename to get md5sum for.
+    mode : 't' or 'b'
+        File mode to open file with. When in text mode, universal line endings
+        are used to ensure consitency in hashes between platforms.
+    """
+    errors = 'surrogateescape' if mode == 't' else None
+    with open(src_file, 'r' + mode, errors=errors) as src_data:
+        src_content = src_data.read()
+        if mode == 't':
+            src_content = src_content.encode(errors=errors)
         return hashlib.md5(src_content).hexdigest()
 
 
-def _replace_md5(fname_new, fname_old=None, method='move'):
+def _replace_md5(fname_new, fname_old=None, method='move', mode='b'):
     assert method in ('move', 'copy')
     if fname_old is None:
         assert fname_new.endswith('.new')
         fname_old = os.path.splitext(fname_new)[0]
-    if os.path.isfile(fname_old) and (get_md5sum(fname_old) ==
-                                      get_md5sum(fname_new)):
+    if os.path.isfile(fname_old) and (get_md5sum(fname_old, mode) ==
+                                      get_md5sum(fname_new, mode)):
         if method == 'move':
             os.remove(fname_new)
     else:

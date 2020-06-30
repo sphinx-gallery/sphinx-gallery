@@ -292,21 +292,26 @@ def test_extract_intro_and_title():
         sg.extract_intro_and_title('<string>', '=====')  # no real title
 
 
-def test_md5sums():
+@pytest.mark.parametrize(
+    'mode,expected_md5',
+    (['b', 'a546be453c8f436e744838a4801bd3a0'],
+     ['t', 'ea8a570e9f3afc0a7c3f2a17a48b8047']))
+def test_md5sums(mode, expected_md5):
     """Test md5sum check functions work on know file content."""
+    file_content = b'Local test\r\n'
     with tempfile.NamedTemporaryFile('wb', delete=False) as f:
-        f.write(b'Local test\n')
+        f.write(file_content)
     try:
-        file_md5 = sg.get_md5sum(f.name)
+        file_md5 = sg.get_md5sum(f.name, mode)
         # verify correct md5sum
-        assert 'ea8a570e9f3afc0a7c3f2a17a48b8047' == file_md5
+        assert file_md5 == expected_md5
         # False because is a new file
         assert not sg.md5sum_is_current(f.name)
         # Write md5sum to file to check is current
         with open(f.name + '.md5', 'w') as file_checksum:
             file_checksum.write(file_md5)
         try:
-            assert sg.md5sum_is_current(f.name)
+            assert sg.md5sum_is_current(f.name, mode)
         finally:
             os.remove(f.name + '.md5')
     finally:
