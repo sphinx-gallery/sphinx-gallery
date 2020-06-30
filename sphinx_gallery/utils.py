@@ -126,8 +126,8 @@ def replace_py_ipynb(fname):
 
 def get_md5sum(src_file):
     """Returns md5sum of file"""
-    with open(src_file, 'rb') as src_data:
-        src_content = src_data.read()
+    with open(src_file, 'rt', errors='surrogateescape') as src_data:
+        src_content = src_data.read().encode(errors='surrogateescape')
         return hashlib.md5(src_content).hexdigest()
 
 
