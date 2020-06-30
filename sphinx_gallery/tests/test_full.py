@@ -846,3 +846,24 @@ def test_binder_logo_exists(sphinx_app):
     assert 'binder_badge_logo' in img_fname  # can have numbers appended
     assert op.isfile(img_fname)
     assert 'https://mybinder.org/v2/gh/sphinx-gallery/sphinx-gallery.github.io/master?urlpath=lab/tree/notebooks/auto_examples/plot_svg.ipynb' in html  # noqa: E501
+
+
+def test_thebelab(sphinx_app):
+    src_dir = sphinx_app.srcdir
+    fname = op.join(src_dir, 'auto_examples', 'plot_numpy_matplotlib.rst')
+    with codecs.open(fname, 'r', 'utf-8') as fid:
+        lines = fid.read()
+
+    assert 'sphx-glr-thebelab-badge' in lines
+    assert 'sphinx_gallery/_static/thebelab_badge.svg' in lines
+    assert '<script type="text/x-thebe-config">' in lines
+
+    thebe_config = (
+        '"binderOptions": {"repo": "example/example-repo"}',
+        '"selector": ".sphx-glr-code>:not(.sphx-glr-output)"',
+        '"outputSelector": ".sphx-glr-output"',
+        '"predefinedOutput": true',
+        '"kernelOptions": {"path": "./auto_examples"}',
+    )
+    for option in thebe_config:
+        assert option in lines
