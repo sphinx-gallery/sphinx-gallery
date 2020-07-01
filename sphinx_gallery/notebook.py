@@ -10,7 +10,9 @@ Class that holds the Jupyter notebook information
 # License: 3-clause BSD
 
 from __future__ import division, absolute_import, print_function
+from collections import defaultdict
 from functools import partial
+from itertools import count
 import argparse
 import json
 import re
@@ -62,12 +64,36 @@ def directive_fun(match, directive):
                     match.group(1).strip()))
 
 
-def rst2md(text):
+def rst2md(text, heading_levels):
     """Converts the RST text from the examples docstrigs and comments
-    into markdown text for the Jupyter notebooks"""
+    into markdown text for the Jupyter notebooks
 
-    top_heading = re.compile(r'^=+$\s^([\w\s-]+)^=+$', flags=re.M)
-    text = re.sub(top_heading, r'# \1', text)
+    Parameters
+    ----------
+    text: str
+        RST input to be converted to MD
+    heading_levels: dict
+        Mapping of heading style ``(over_char, under_char)`` to heading level.
+        Note that ``over_char`` is `None` when only underline is present.
+    """
+
+    # Characters recommend for use with headings
+    # https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html#sections
+    adornment_characters = "=`:.'\"~^_*+#<>-"
+    headings = re.compile(
+        r'(?P<pre>\A|^\n)'  # Start of string or blank line above
+        r'(?:(?P<over>[{0}])(?P=over)*\n ?)?'  # Over, allowing heading space
+        r'(?P<heading>[^\n]+)\n'  # Heading itself
+        r'(?P<under>(?(over)(?P=over)|[{0}]))(?P=under)*$'  # if over make same
+        r''.format(adornment_characters),
+        flags=re.M)
+
+    text = re.sub(
+        headings,
+        lambda match: '{1}{0} {2}'.format(
+            '#'*heading_levels[match.group('over', 'under')],
+            *match.group('pre', 'heading')),
+        text)
 
     math_eq = re.compile(r'^\.\. math::((?:.+)?(?:\n+^  .+)*)', flags=re.M)
     text = re.sub(math_eq,
@@ -171,12 +197,14 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
     script_blocks : list
         Each list element should be a tuple of (label, content, lineno).
     """
+    heading_level_counter = count(start=1)
+    heading_levels = defaultdict(lambda: next(heading_level_counter))
     for blabel, bcontent, lineno in script_blocks:
         if blabel == 'code':
             add_code_cell(work_notebook, bcontent)
         else:
             if gallery_conf["pypandoc"] is False:
-                markdown = rst2md(bcontent + '\n')
+                markdown = rst2md(bcontent + '\n', heading_levels)
             else:
                 import pypandoc
                 # pandoc automatically addds \n to the end
