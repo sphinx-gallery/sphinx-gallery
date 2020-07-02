@@ -122,6 +122,20 @@ def test_headings():
     ------------------
     Not valid with no blank line above
 
+    =======================
+           Centered
+    =======================
+
+    ------------------------
+
+    ------------------------
+    Blank heading above.
+
+                
+    ====================
+      White space above
+    ====================
+
     """) # noqa
 
     heading_level_counter = count(start=1)
@@ -139,6 +153,9 @@ def test_headings():
     assert "\n###### A\n" in text
     assert "\n###### BC\n" in text
     assert "# And then a heading\n" not in text
+    assert "\n# Centered\n" in text
+    assert "#\nBlank heading above." not in text
+    assert "# White space above\n" in text
 
 
 def test_jupyter_notebook(gallery_conf):

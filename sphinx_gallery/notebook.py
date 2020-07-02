@@ -81,9 +81,9 @@ def rst2md(text, heading_levels):
     # https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html#sections
     adornment_characters = "=`:.'\"~^_*+#<>-"
     headings = re.compile(
-        r'(?P<pre>\A|^\n)'  # Start of string or blank line above
-        r'(?:(?P<over>[{0}])(?P=over)*\n ?)?'  # Over, allowing heading space
-        r'(?P<heading>[^\n]+)\n'  # Heading itself
+        r'(?P<pre>\A|^[ \t]*\n)'  # Start of string or blank line above
+        r'(?:(?P<over>[{0}])(?P=over)*\n[ \t]*)?'  # Over, allowing heading space
+        r'(?P<heading>\S[^\n]*)\n'  # Heading itself
         r'(?P<under>(?(over)(?P=over)|[{0}]))(?P=under)*$'  # if over make same
         r''.format(adornment_characters),
         flags=re.M)
