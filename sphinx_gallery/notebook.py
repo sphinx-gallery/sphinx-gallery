@@ -82,7 +82,7 @@ def rst2md(text, heading_levels):
     adornment_characters = "=`:.'\"~^_*+#<>-"
     headings = re.compile(
         r'(?P<pre>\A|^[ \t]*\n)'  # Start of string or blank line above
-        r'(?:(?P<over>[{0}])(?P=over)*\n[ \t]*)?'  # Over, allowing heading space
+        r'(?:(?P<over>[{0}])(?P=over)*\n[ \t]*)?'  # Over, with heading space
         r'(?P<heading>\S[^\n]*)\n'  # Heading itself
         r'(?P<under>(?(over)(?P=over)|[{0}]))(?P=under)*$'  # if over make same
         r''.format(adornment_characters),
