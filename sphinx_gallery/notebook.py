@@ -77,7 +77,7 @@ def rst2md(text, heading_levels):
         Note that ``over_char`` is `None` when only underline is present.
     """
 
-    # Characters recommend for use with headings
+    # Characters recommended for use with headings
     # https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html#sections
     adornment_characters = "=`:.'\"~^_*+#<>-"
     headings = re.compile(
