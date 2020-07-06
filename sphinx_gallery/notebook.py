@@ -81,10 +81,14 @@ def rst2md(text, heading_levels):
     # https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html#sections
     adornment_characters = "=`:.'\"~^_*+#<>-"
     headings = re.compile(
-        r'(?P<pre>\A|^[ \t]*\n)'  # Start of string or blank line above
-        r'(?:(?P<over>[{0}])(?P=over)*\n[ \t]*)?'  # Over, with heading space
-        r'(?P<heading>\S[^\n]*)\n'  # Heading itself
-        r'(?P<under>(?(over)(?P=over)|[{0}]))(?P=under)*$'  # if over make same
+        # Start of string or blank line
+        r'(?P<pre>\A|^[ \t]*\n)'
+        # Optional over characters, allowing leading space on heading text
+        r'(?:(?P<over>[{0}])(?P=over)*\n[ \t]*)?'
+        # The heading itself, with at least one non-white space character
+        r'(?P<heading>\S[^\n]*)\n'
+        # Under character, setting to same character if over present.
+        r'(?P<under>(?(over)(?P=over)|[{0}]))(?P=under)*$'
         r''.format(adornment_characters),
         flags=re.M)
 
