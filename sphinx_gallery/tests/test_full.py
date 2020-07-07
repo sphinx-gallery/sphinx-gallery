@@ -777,3 +777,13 @@ def test_jupyter_notebook_pandoc(sphinx_app):
         assert md_pandoc in md
     else:
         assert md_sg in md
+
+
+def test_md5_hash(sphinx_app):
+    src_dir = sphinx_app.srcdir
+    fname = op.join(src_dir, 'auto_examples', 'plot_log.py.md5')
+    expected_md5 = '0edc2de97f96f3b55f8b4a21994931a8'
+    with open(fname) as md5_file:
+        actual_md5 = md5_file.read()
+
+    assert actual_md5 == expected_md5

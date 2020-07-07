@@ -238,10 +238,10 @@ def extract_intro_and_title(filename, docstring):
     return intro, title
 
 
-def md5sum_is_current(src_file):
+def md5sum_is_current(src_file, mode='b'):
     """Checks whether src_file has the same md5 hash as the one on disk"""
 
-    src_md5 = get_md5sum(src_file)
+    src_md5 = get_md5sum(src_file, mode)
 
     src_md5_file = src_file + '.md5'
     if os.path.exists(src_md5_file):
@@ -721,7 +721,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         # Write md5 checksum if the example was meant to run (no-plot
         # shall not cache md5sum) and has built correctly
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
-            file_checksum.write(get_md5sum(script_vars['target_file']))
+            file_checksum.write(get_md5sum(script_vars['target_file'], 't'))
         gallery_conf['passing_examples'].append(script_vars['src_file'])
 
     return output_blocks, time_elapsed
@@ -754,7 +754,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     seen_backrefs = set() if seen_backrefs is None else seen_backrefs
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     target_file = os.path.join(target_dir, fname)
-    _replace_md5(src_file, target_file, 'copy')
+    _replace_md5(src_file, target_file, 'copy', mode='t')
 
     file_conf, script_blocks, node = split_code_and_text_blocks(
         src_file, return_node=True)
@@ -763,7 +763,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
 
     executable = executable_script(src_file, gallery_conf)
 
-    if md5sum_is_current(target_file):
+    if md5sum_is_current(target_file, mode='t'):
         if executable:
             gallery_conf['stale_examples'].append(target_file)
         return intro, title, (0, 0)
@@ -809,7 +809,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     example_nb = jupyter_notebook(script_blocks, gallery_conf)
     ipy_fname = replace_py_ipynb(target_file) + '.new'
     save_notebook(example_nb, ipy_fname)
-    _replace_md5(ipy_fname)
+    _replace_md5(ipy_fname, mode='t')
 
     # Write names
     if gallery_conf['inspect_global_variables']:
@@ -945,4 +945,4 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         f.write(example_rst)
     # in case it wasn't in our pattern, only replace the file if it's
     # still stale.
-    _replace_md5(write_file_new)
+    _replace_md5(write_file_new, mode='t')
