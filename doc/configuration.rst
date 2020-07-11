@@ -646,12 +646,14 @@ following configuration::
 
     sphinx_gallery_conf = {
         ...
+        'examples_dirs': ['../examples'],
+        'gallery_dirs': ['auto_examples'],
+        ...
         'notebook_images': 'https://project.example.com/en/latest/',
         ...
     }
 
-with an example `image` directive in an rST being output to gallery dir
-`auto_examples` (relative and absolute paths are supported):
+with an example `image` directive in an rST documentation block being:
 
 .. code-block:: rst
 
@@ -660,6 +662,9 @@ with an example `image` directive in an rST being output to gallery dir
 
 The image will be added to the generated notebook pointing to the source URL
 ``https://project.example.com/en/latest/_static/example.jpg``
+
+For the image path in rST, both relative and absolute (from source directory)
+paths are supported.
 
 Note that the prefix is applied directly, so a trailing ``/`` should be
 included in the prefix if it's required.

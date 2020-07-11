@@ -155,8 +155,9 @@ def generate_image_src(image_path, gallery_conf, target_dir):
     if not gallery_conf['notebook_images']:
         return "file://" + image_path.lstrip('/')
 
+    # If absolute path from source directory given
     if image_path.startswith('/'):
-        # Absolute path from source directory
+        # Path should now be relative to source dir, not target dir
         target_dir = gallery_conf['src_dir']
         image_path = image_path.lstrip('/')
     full_path = os.path.join(target_dir, image_path.replace('/', os.sep))
