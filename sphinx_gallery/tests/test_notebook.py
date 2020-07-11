@@ -161,55 +161,45 @@ def test_headings():
     assert "# White space above\n" in text
 
 
-def test_notebook_images(gallery_conf):
-    gallery_conf = gallery_conf.copy()
+@pytest.mark.parametrize(
+    'rst_path,md_path,prefix_enabled',
+    (('../_static/image.png', 'file://../_static/image.png', False),
+     ('/_static/image.png', 'file://_static/image.png', False),
+     ('../_static/image.png', 'https://example.com/_static/image.png', True),
+     ('/_static/image.png', 'https://example.com/_static/image.png', True),
+     ('https://example.com/image.png', 'https://example.com/image.png', False),
+     ('https://example.com/image.png', 'https://example.com/image.png', True)),
+    ids=('rel_no_prefix', 'abs_no_prefix', 'abs_prefix', 'rel_prefix',
+         'url_no_prefix', 'url_prefix'))
+def test_notebook_images_prefix(gallery_conf,
+                                rst_path, md_path, prefix_enabled):
+    if prefix_enabled:
+        gallery_conf = gallery_conf.copy()
+        gallery_conf['notebook_images'] = "https://example.com/"
     target_dir = os.path.join(
         gallery_conf['src_dir'], gallery_conf['gallery_dirs'])
 
     rst = textwrap.dedent("""\
-    .. image:: ../_static/image.png
-       :alt: My Image
-    """)
-    markdown = rst2md(rst, gallery_conf, target_dir, {})
-
-    assert 'src="file://../_static/image.png"' in markdown
-    assert 'alt="My Image"' in markdown
-
-    rst = textwrap.dedent("""\
-    .. image:: https://example.com/image.png
-       :alt: My Image
-    """)
-    gallery_conf['notebook_images'] = "https://example.com/my_project_docs/"
-    markdown = rst2md(rst, gallery_conf, target_dir, {})
-
-    assert 'src="https://example.com/image.png"' in markdown
-    assert 'alt="My Image"' in markdown
-
-    rst = textwrap.dedent("""\
-    .. image:: ../_static/image.png
+    .. image:: {}
        :alt: My Image
        :width: 100px
-    """)
-    gallery_conf['notebook_images'] = "https://example.com/my_project_docs/"
-    markdown = rst2md(rst, gallery_conf, target_dir, {})
-
-    assert 'src="https://example.com/my_project_docs/_static/image.png"' in markdown  # noqa: E501
-    assert 'width="100px"' in markdown
-    assert 'alt="My Image"' in markdown
-
-    rst = textwrap.dedent("""\
-    .. image:: /_static/image.png
-       :alt: My Image
        :height: 200px
        :class: image
-    """)
-    gallery_conf['notebook_images'] = "https://example.com/my_project_docs/"
+    """).format(rst_path)
     markdown = rst2md(rst, gallery_conf, target_dir, {})
 
-    assert 'src="https://example.com/my_project_docs/_static/image.png"' in markdown  # noqa: E501
-    assert 'height="200px"' in markdown
+    assert 'src="{}"'.format(md_path) in markdown
     assert 'alt="My Image"' in markdown
+    assert 'width="100px"' in markdown
+    assert 'height="200px"' in markdown
     assert 'class="image"' in markdown
+
+
+def test_notebook_images_data_uri(gallery_conf):
+    gallery_conf = gallery_conf.copy()
+    gallery_conf['notebook_images'] = True
+    target_dir = os.path.join(
+        gallery_conf['src_dir'], gallery_conf['gallery_dirs'])
 
     test_image = os.path.join(
         os.path.dirname(__file__), 'tinybuild', '_static', 'demo.png')
@@ -220,7 +210,6 @@ def test_notebook_images(gallery_conf):
     .. image:: {}
        :width: 100px
     """).format(test_image_abs)
-    gallery_conf['notebook_images'] = True
     markdown = rst2md(rst, gallery_conf, target_dir, {})
 
     assert 'data' in markdown
