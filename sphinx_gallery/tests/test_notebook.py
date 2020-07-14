@@ -169,7 +169,7 @@ def test_headings():
      ('/_static/image.png', 'https://example.com/_static/image.png', True),
      ('https://example.com/image.png', 'https://example.com/image.png', False),
      ('https://example.com/image.png', 'https://example.com/image.png', True)),
-    ids=('rel_no_prefix', 'abs_no_prefix', 'abs_prefix', 'rel_prefix',
+    ids=('rel_no_prefix', 'abs_no_prefix', 'rel_prefix', 'abs_prefix',
          'url_no_prefix', 'url_prefix'))
 def test_notebook_images_prefix(gallery_conf,
                                 rst_path, md_path, prefix_enabled):

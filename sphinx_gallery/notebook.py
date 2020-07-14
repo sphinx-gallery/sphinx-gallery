@@ -69,7 +69,7 @@ def directive_fun(match, directive):
 
 
 def rst2md(text, gallery_conf, target_dir, heading_levels):
-    """Converts the RST text from the examples docstrigs and comments
+    """Converts the RST text from the examples docstrings and comments
     into markdown text for the Jupyter notebooks
 
     Parameters
