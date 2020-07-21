@@ -14,10 +14,15 @@ from collections import defaultdict
 from functools import partial
 from itertools import count
 import argparse
+import base64
 import json
+import mimetypes
+import os
 import re
 import sys
 import copy
+
+from sphinx.errors import ExtensionError
 
 from . import sphinx_compatibility
 from .py_source_parser import split_code_and_text_blocks
@@ -64,7 +69,7 @@ def directive_fun(match, directive):
                     match.group(1).strip()))
 
 
-def rst2md(text, heading_levels):
+def rst2md(text, gallery_conf, target_dir, heading_levels):
     """Converts the RST text from the examples docstrings and comments
     into markdown text for the Jupyter notebooks
 
@@ -72,6 +77,11 @@ def rst2md(text, heading_levels):
     ----------
     text: str
         RST input to be converted to MD
+    gallery_conf : dict
+        The sphinx-gallery configuration dictionary.
+    target_dir : str
+        Path that notebook is intended for. Used where relative paths
+        may be required.
     heading_levels: dict
         Mapping of heading style ``(over_char, under_char)`` to heading level.
         Note that ``over_char`` is `None` when only underline is present.
@@ -125,16 +135,53 @@ def rst2md(text, heading_levels):
     text = re.sub(contents, '', text)
 
     images = re.compile(
-        r'^\.\. image::(.*$)(?:\n *:alt:(.*$)\n)?(?: +:\S+:.*$\n)*',
+        r'^\.\. image::(.*$)((?:\n +:\S+:.*$)*)\n',
         flags=re.M)
+    image_opts = re.compile(r'\n +:(\S+): +(.*)$', flags=re.M)
     text = re.sub(
-        images, lambda match: '![{1}]({0})\n'.format(
-            match.group(1).strip(), (match.group(2) or '').strip()), text)
+        images,
+        lambda match: '<img src="{}"{}>\n'.format(
+            generate_image_src(
+                match.group(1).strip(), gallery_conf, target_dir),
+            re.sub(image_opts, r' \1="\2"', match.group(2) or '')),
+        text)
 
     return text
 
 
-def jupyter_notebook(script_blocks, gallery_conf):
+def generate_image_src(image_path, gallery_conf, target_dir):
+    if re.match(r'https?://', image_path):
+        return image_path
+
+    if not gallery_conf['notebook_images']:
+        return "file://" + image_path.lstrip('/')
+
+    # If absolute path from source directory given
+    if image_path.startswith('/'):
+        # Path should now be relative to source dir, not target dir
+        target_dir = gallery_conf['src_dir']
+        image_path = image_path.lstrip('/')
+    full_path = os.path.join(target_dir, image_path.replace('/', os.sep))
+
+    if isinstance(gallery_conf['notebook_images'], str):
+        # Use as prefix e.g. URL
+        prefix = gallery_conf['notebook_images']
+        rel_path = os.path.relpath(full_path, gallery_conf['src_dir'])
+        return prefix + rel_path.replace(os.sep, '/')
+    else:
+        # True, but not string. Embed as data URI.
+        try:
+            with open(full_path, 'rb') as image_file:
+                data = base64.b64encode(image_file.read())
+        except OSError:
+            raise ExtensionError(
+                'Unable to open {} to generate notebook data URI'
+                ''.format(full_path))
+        mime_type = mimetypes.guess_type(full_path)
+        return 'data:{};base64,{}'.format(mime_type[0], data.decode('ascii'))
+
+
+def jupyter_notebook(script_blocks, gallery_conf, target_dir):
     """Generate a Jupyter notebook file cell-by-cell
 
     Parameters
@@ -143,13 +190,16 @@ def jupyter_notebook(script_blocks, gallery_conf):
         Script execution cells.
     gallery_conf : dict
         The sphinx-gallery configuration dictionary.
+    target_dir : str
+        Path that notebook is intended for. Used where relative paths
+        may be required.
     """
     first_cell = gallery_conf["first_notebook_cell"]
     last_cell = gallery_conf["last_notebook_cell"]
     work_notebook = jupyter_notebook_skeleton()
     if first_cell is not None:
         add_code_cell(work_notebook, first_cell)
-    fill_notebook(work_notebook, script_blocks, gallery_conf)
+    fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir)
     if last_cell is not None:
         add_code_cell(work_notebook, last_cell)
 
@@ -191,7 +241,7 @@ def add_markdown_cell(work_notebook, markdown):
     work_notebook["cells"].append(markdown_cell)
 
 
-def fill_notebook(work_notebook, script_blocks, gallery_conf):
+def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
     """Writes the Jupyter notebook cells
 
     If available, uses pypandoc to convert rst to markdown.
@@ -208,7 +258,8 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf):
             add_code_cell(work_notebook, bcontent)
         else:
             if gallery_conf["pypandoc"] is False:
-                markdown = rst2md(bcontent + '\n', heading_levels)
+                markdown = rst2md(
+                    bcontent + '\n', gallery_conf, target_dir, heading_levels)
             else:
                 import pypandoc
                 # pandoc automatically addds \n to the end
@@ -245,5 +296,6 @@ def python_to_jupyter_cli(args=None, namespace=None):
         file_conf, blocks = split_code_and_text_blocks(src_file)
         print('Converting {0}'.format(src_file))
         gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
-        example_nb = jupyter_notebook(blocks, gallery_conf)
+        target_dir = os.path.dirname(src_file)
+        example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
         save_notebook(example_nb, replace_py_ipynb(src_file))

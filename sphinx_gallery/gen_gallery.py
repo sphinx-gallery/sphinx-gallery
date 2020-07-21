@@ -69,6 +69,7 @@ DEFAULT_GALLERY_CONF = {
     'reset_modules': ('matplotlib', 'seaborn'),
     'first_notebook_cell': '%matplotlib inline',
     'last_notebook_cell': None,
+    'notebook_images': False,
     'pypandoc': False,
     'remove_config_comments': False,
     'show_memory': False,

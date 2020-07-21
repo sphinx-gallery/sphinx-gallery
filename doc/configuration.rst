@@ -39,6 +39,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``binder`` (:ref:`binder_links`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
+- ``notebook_images`` (:ref:`notebook_images`)
 - ``pypandoc`` (:ref:`use_pypandoc`)
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
@@ -621,6 +622,69 @@ parameter::
 
 If the value of ``first_notebook_cell`` or ``last_notebook_cell`` is set to
 ``None``, then no extra first or last cell will be added to the notebook.
+
+.. _notebook_images:
+
+Adding images to notebooks
+==========================
+
+When notebooks are produced, by default (``notebook_images = False``) image
+paths from the `image` directive in rST documentation blocks (not images
+generated fom code) are included in markdown using their original paths. This
+includes paths to images expected to be present on the local filesystem which
+is unlikely to be the case for those downloading the notebook.
+
+By setting ``notebook_images = True``, images will be embedded in the generated
+notebooks via Base64-encoded `data URIs <https://en.wikipedia.org/wiki/Data_URI_scheme>`_.
+As inclusion of images via data URIs can significantly increase size of the
+notebook, it's suggested this only be used when small images are used throughout
+galleries.
+
+An alternative is to instead provide a prefix string that'll be used for images
+e.g. the root URL of where your documentation is hosted. So for example the
+following configuration::
+
+    sphinx_gallery_conf = {
+        ...
+        'examples_dirs': ['../examples'],
+        'gallery_dirs': ['auto_examples'],
+        ...
+        'notebook_images': 'https://project.example.com/en/latest/',
+        ...
+    }
+
+with an example `image` directive in an rST documentation block being:
+
+.. code-block:: rst
+
+    .. image:: ../_static/example.jpg
+        :alt: An example image
+
+The image will be added to the generated notebook pointing to the source URL
+``https://project.example.com/en/latest/_static/example.jpg``. Note the image
+path in the rST examples above is a relative path, therefore the URL doesn't
+contain ``auto_examples`` as ``../`` moved up a directory to the documentation
+source directory. Both relative and absolute (from source directory) paths are
+supported; so in the example above ``/_static/example.jpg`` would have resulted
+in the same URL being produced.
+
+Note that the prefix is applied directly, so a trailing ``/`` should be
+included in the prefix if it's required.
+
+.. tip::
+
+    If building multiple versions of your documentation on a hosted service and
+    using prefix, consider using `sphinx build -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_
+    command line option to ensure links point to the correct version. For
+    example:
+
+    .. code-block:: sh
+
+        sphinx-build \
+            -b html \
+            -D sphinx_gallery_conf.notebook_images="https://project.example.com/docs/${VERSION}/" \
+            source_dir build_dir
+
 
 .. _use_pypandoc:
 

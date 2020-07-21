@@ -806,7 +806,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
-    example_nb = jupyter_notebook(script_blocks, gallery_conf)
+    example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
     ipy_fname = replace_py_ipynb(target_file) + '.new'
     save_notebook(example_nb, ipy_fname)
     _replace_md5(ipy_fname, mode='t')
