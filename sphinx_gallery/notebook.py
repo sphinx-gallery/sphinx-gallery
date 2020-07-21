@@ -21,7 +21,8 @@ import os
 import re
 import sys
 import copy
-import warnings
+
+from sphinx.errors import ExtensionError
 
 from . import sphinx_compatibility
 from .py_source_parser import split_code_and_text_blocks
@@ -173,10 +174,9 @@ def generate_image_src(image_path, gallery_conf, target_dir):
             with open(full_path, 'rb') as image_file:
                 data = base64.b64encode(image_file.read())
         except OSError:
-            warnings.warn(
+            raise ExtensionError(
                 'Unable to open {} to generate notebook data URI'
                 ''.format(full_path))
-            return "file://" + image_path.lstrip('/')
         mime_type = mimetypes.guess_type(full_path)
         return 'data:{};base64,{}'.format(mime_type[0], data.decode('ascii'))
 

@@ -16,6 +16,8 @@ import re
 import base64
 import textwrap
 
+from sphinx.errors import ExtensionError
+
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery.notebook import (rst2md, jupyter_notebook, save_notebook,
                                      python_to_jupyter_cli)
@@ -222,7 +224,7 @@ def test_notebook_images_data_uri(gallery_conf):
     .. image:: /this/image/is/missing.png
        :width: 500px
     """)
-    with pytest.warns(UserWarning):
+    with pytest.raises(ExtensionError):
         rst2md(rst, gallery_conf, target_dir, {})
 
 
