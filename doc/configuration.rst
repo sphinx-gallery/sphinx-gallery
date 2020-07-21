@@ -630,11 +630,11 @@ Adding images to notebooks
 
 When notebooks are produced, by default (``notebook_images = False``) image
 paths from the `image` directive in rST documentation blocks (not images
-generated fom code) are included in markdown in their original form. This
+generated fom code) are included in markdown using their original paths. This
 includes paths to images expected to be present on the local filesystem which
 is unlikely to be the case for those downloading the notebook.
 
-By setting ``notebook_images = True``, images will be included in the generated
+By setting ``notebook_images = True``, images will be embedded in the generated
 notebooks via Base64-encoded `data URIs <https://en.wikipedia.org/wiki/Data_URI_scheme>`_.
 As inclusion of images via data URIs can significantly increase size of the
 notebook, it's suggested this only be used when small images are used throughout
@@ -661,10 +661,12 @@ with an example `image` directive in an rST documentation block being:
         :alt: An example image
 
 The image will be added to the generated notebook pointing to the source URL
-``https://project.example.com/en/latest/_static/example.jpg``
-
-For the image path in rST, both relative and absolute (from source directory)
-paths are supported.
+``https://project.example.com/en/latest/_static/example.jpg``. Note the image
+path in the rST examples above is a relative path, therefore the URL doesn't
+contain ``auto_examples`` as ``../`` moved up a directory to the documentation
+source directory. Both relative and absolute (from source directory) paths are
+supported; so in the example above ``/_static/example.jpg`` would have resulted
+in the same URL being produced.
 
 Note that the prefix is applied directly, so a trailing ``/`` should be
 included in the prefix if it's required.
