@@ -22,6 +22,7 @@ install:
     - "git clone git://github.com/astropy/ci-helpers.git"
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
     - "conda activate test"
+    - "conda install -c conda-forge ffmpeg"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
