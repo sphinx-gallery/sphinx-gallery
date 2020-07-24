@@ -391,6 +391,23 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
         stack = stack[2:]
     else:
         stack = stack[1:]
+    start = 0
+    stop = len(stack)
+    root = os.path.dirname(__file__) + os.sep
+    for ii, s in enumerate(stack, 1):
+        # Trim our internal stack
+        if s.filename.startswith(root + 'gen_gallery.py') and \
+                s.name == 'call_memory':
+            start = max(ii, start)
+        elif s.filename.startswith(root + 'gen_rst.py') and \
+                s.name == '__call__':
+            start = max(ii, start)
+        # Trim our internal check for input()
+        elif s.filename.startswith(root + 'gen_rst.py') and \
+                s.name == '_check_input' and ii == len(stack):
+            stop = ii - 1
+    stack = stack[start:stop]
+
     formatted_exception = 'Traceback (most recent call last):\n' + ''.join(
         traceback.format_list(stack) +
         traceback.format_exception_only(etype, exc))
@@ -648,6 +665,11 @@ def executable_script(src_file, gallery_conf):
     return execute
 
 
+def _check_input(prompt=None):
+    raise ExtensionError(
+        'Cannot use input() builtin function in Sphinx-gallery examples')
+
+
 def execute_script(script_blocks, script_vars, gallery_conf):
     """Execute and capture output from python script already in block structure
 
@@ -687,6 +709,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         # want to print it
         '__doc__': '',
         # Don't ever support __file__: Issues #166 #212
+        # Don't let them use input()
+        'input': _check_input,
     })
     script_vars['example_globals'] = example_globals
 

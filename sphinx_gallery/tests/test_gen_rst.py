@@ -318,13 +318,17 @@ def test_md5sums(mode, expected_md5):
         os.remove(f.name)
 
 
-def test_fail_example(gallery_conf, log_collector, req_pil):
+@pytest.mark.parametrize('failing_code, want', [
+    (CONTENT + ['#' * 79, 'First_test_fail', '#' * 79, 'second_fail'],
+     'not defined'),
+    (CONTENT + ['#' * 79, 'input("foo")', '#' * 79, 'second_fail'],
+     'Cannot use input'),
+])
+def test_fail_example(gallery_conf, failing_code, want,
+                      log_collector, req_pil):
     """Test that failing examples are only executed until failing block."""
     gallery_conf.update(image_scrapers=(), reset_modules=())
     gallery_conf.update(filename_pattern='raise.py')
-
-    failing_code = CONTENT + ['#' * 79,
-                              'First_test_fail', '#' * 79, 'second_fail']
 
     with codecs.open(os.path.join(gallery_conf['examples_dir'], 'raise.py'),
                      mode='w', encoding='utf-8') as f:
@@ -333,17 +337,22 @@ def test_fail_example(gallery_conf, log_collector, req_pil):
     sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
                          gallery_conf['examples_dir'], gallery_conf)
     assert len(log_collector.calls['warning']) == 1
-    assert 'not defined' in log_collector.calls['warning'][0].args[2]
+    msg = log_collector.calls['warning'][0].args[2]
+    assert want in msg
+    assert 'gen_gallery' not in msg
+    # can only check that gen_rst is removed on non-input ones
+    if 'Cannot use input' not in msg:
+        assert 'gen_rst' not in msg
+    assert '_check_input' not in msg
 
     # read rst file and check if it contains traceback output
 
     with codecs.open(os.path.join(gallery_conf['gallery_dir'], 'raise.rst'),
                      mode='r', encoding='utf-8') as f:
         ex_failing_blocks = f.read().count('pytb')
-        if ex_failing_blocks == 0:
-            raise ValueError('Did not run into errors in bad code')
-        elif ex_failing_blocks > 1:
-            raise ValueError('Did not stop executing script after error')
+        assert ex_failing_blocks != 0, 'Did not run into errors in bad code'
+        assert ex_failing_blocks <= 1, \
+            'Did not stop executing script after error'
 
 
 def _generate_rst(gallery_conf, fname, content):
