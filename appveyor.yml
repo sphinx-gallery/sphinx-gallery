@@ -6,7 +6,7 @@ environment:
 
   global:
     PYTHON: "C:\\conda"
-    CONDA_DEPENDENCIES: numpy seaborn "matplotlib<3.2.2|>3.2.2" sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
+    CONDA_DEPENDENCIES: numpy seaborn "matplotlib>3.2.2" sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
     PIP_DEPENDENCIES: ipython"
 
   matrix:
@@ -22,7 +22,6 @@ install:
     - "git clone git://github.com/astropy/ci-helpers.git"
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
     - "conda activate test"
-    - "conda install -c conda-forge ffmpeg"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
