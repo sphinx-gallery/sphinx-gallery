@@ -382,15 +382,26 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):
+    """Trim and format exception, maybe raise error, etc."""
     from .gen_gallery import _expected_failing_examples
     etype, exc, tb = exc_info
     stack = traceback.extract_tb(tb)
-    # Remove our code from traceback:
-    if isinstance(exc, SyntaxError):
-        # Remove one extra level through ast.parse.
-        stack = stack[2:]
-    else:
-        stack = stack[1:]
+    # The full traceback will look something like:
+    #
+    #   File "/home/larsoner/python/sphinx-gallery/sphinx_gallery/gen_rst.py...
+    #     mem_max, _ = gallery_conf['call_memory'](
+    #   File "/home/larsoner/python/sphinx-gallery/sphinx_gallery/gen_galler...
+    #     mem, out = memory_usage(func, max_usage=True, retval=True,
+    #   File "/home/larsoner/.local/lib/python3.8/site-packages/memory_profi...
+    #     returned = f(*args, **kw)
+    #   File "/home/larsoner/python/sphinx-gallery/sphinx_gallery/gen_rst.py...
+    #     exec(self.code, self.fake_main.__dict__)
+    #   File "/home/larsoner/python/sphinx-gallery/sphinx_gallery/tests/tiny...
+    #     raise RuntimeError('some error')
+    # RuntimeError: some error
+    #
+    # But we should trim these to just the relevant trace at the user level,
+    # so we inspect the traceback to find the start and stop points.
     start = 0
     stop = len(stack)
     root = os.path.dirname(__file__) + os.sep
@@ -399,13 +410,16 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
         if s.filename.startswith(root + 'gen_gallery.py') and \
                 s.name == 'call_memory':
             start = max(ii, start)
-        elif s.filename.startswith(root + 'gen_rst.py') and \
-                s.name == '__call__':
-            start = max(ii, start)
-        # Trim our internal check for input()
-        elif s.filename.startswith(root + 'gen_rst.py') and \
-                s.name == '_check_input' and ii == len(stack):
-            stop = ii - 1
+        elif s.filename.startswith(root + 'gen_rst.py'):
+            # SyntaxError
+            if s.name == 'execute_code_block' and 'compile(' in s.line:
+                start = max(ii, start)
+            # Any other error
+            elif s.name == '__call__':
+                start = max(ii, start)
+            # Our internal input() check
+            elif s.name == '_check_input' and ii == len(stack):
+                stop = ii - 1
     stack = stack[start:stop]
 
     formatted_exception = 'Traceback (most recent call last):\n' + ''.join(

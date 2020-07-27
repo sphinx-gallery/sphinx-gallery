@@ -323,6 +323,8 @@ def test_md5sums(mode, expected_md5):
      'not defined'),
     (CONTENT + ['#' * 79, 'input("foo")', '#' * 79, 'second_fail'],
      'Cannot use input'),
+    (CONTENT + ['#' * 79, 'bad syntax', '#' * 79, 'second_fail'],
+     'invalid syntax'),
 ])
 def test_fail_example(gallery_conf, failing_code, want,
                       log_collector, req_pil):
