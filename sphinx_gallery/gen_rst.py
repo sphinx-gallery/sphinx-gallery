@@ -553,8 +553,8 @@ def execute_code_block(compiler, block, example_globals,
         else:
             ast_Module = ast.Module
         code_ast = ast_Module([bcontent])
-        code_ast = compile(bcontent, src_file, 'exec',
-                           ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
+        flags = ast.PyCF_ONLY_AST | compiler.flags
+        code_ast = compile(bcontent, src_file, 'exec', flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
         # capture output if last line is expression
         is_last_expr = False
