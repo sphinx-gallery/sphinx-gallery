@@ -203,7 +203,9 @@ Example 2: detecting image files on disk
 
 Here's another example that assumes that images have *already been written to
 disk*. In this case we won't *generate* any image files, we'll only generate
-the rST needed to embed them in the documentation.
+the rST needed to embed them in the documentation. Note that the example scripts
+will still need to be executed to scrape the files, but the images
+don't need to be produced during the execution.
 
 We'll use a callable class in this case, and assume it is defined within your
 package in a module called ``scraper``. Here is the scraper code::
