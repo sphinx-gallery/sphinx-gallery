@@ -382,15 +382,46 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):
+    """Trim and format exception, maybe raise error, etc."""
     from .gen_gallery import _expected_failing_examples
     etype, exc, tb = exc_info
     stack = traceback.extract_tb(tb)
-    # Remove our code from traceback:
-    if isinstance(exc, SyntaxError):
-        # Remove one extra level through ast.parse.
-        stack = stack[2:]
-    else:
-        stack = stack[1:]
+    # The full traceback will look something like:
+    #
+    #   File "/home/larsoner/python/sphinx-gallery/sphinx_gallery/gen_rst.py...
+    #     mem_max, _ = gallery_conf['call_memory'](
+    #   File "/home/larsoner/python/sphinx-gallery/sphinx_gallery/gen_galler...
+    #     mem, out = memory_usage(func, max_usage=True, retval=True,
+    #   File "/home/larsoner/.local/lib/python3.8/site-packages/memory_profi...
+    #     returned = f(*args, **kw)
+    #   File "/home/larsoner/python/sphinx-gallery/sphinx_gallery/gen_rst.py...
+    #     exec(self.code, self.fake_main.__dict__)
+    #   File "/home/larsoner/python/sphinx-gallery/sphinx_gallery/tests/tiny...
+    #     raise RuntimeError('some error')
+    # RuntimeError: some error
+    #
+    # But we should trim these to just the relevant trace at the user level,
+    # so we inspect the traceback to find the start and stop points.
+    start = 0
+    stop = len(stack)
+    root = os.path.dirname(__file__) + os.sep
+    for ii, s in enumerate(stack, 1):
+        # Trim our internal stack
+        if s.filename.startswith(root + 'gen_gallery.py') and \
+                s.name == 'call_memory':
+            start = max(ii, start)
+        elif s.filename.startswith(root + 'gen_rst.py'):
+            # SyntaxError
+            if s.name == 'execute_code_block' and 'compile(' in s.line:
+                start = max(ii, start)
+            # Any other error
+            elif s.name == '__call__':
+                start = max(ii, start)
+            # Our internal input() check
+            elif s.name == '_check_input' and ii == len(stack):
+                stop = ii - 1
+    stack = stack[start:stop]
+
     formatted_exception = 'Traceback (most recent call last):\n' + ''.join(
         traceback.format_list(stack) +
         traceback.format_exception_only(etype, exc))
@@ -522,8 +553,8 @@ def execute_code_block(compiler, block, example_globals,
         else:
             ast_Module = ast.Module
         code_ast = ast_Module([bcontent])
-        code_ast = compile(bcontent, src_file, 'exec',
-                           ast.PyCF_ONLY_AST | compiler.flags, dont_inherit)
+        flags = ast.PyCF_ONLY_AST | compiler.flags
+        code_ast = compile(bcontent, src_file, 'exec', flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
         # capture output if last line is expression
         is_last_expr = False
@@ -648,6 +679,11 @@ def executable_script(src_file, gallery_conf):
     return execute
 
 
+def _check_input(prompt=None):
+    raise ExtensionError(
+        'Cannot use input() builtin function in Sphinx-gallery examples')
+
+
 def execute_script(script_blocks, script_vars, gallery_conf):
     """Execute and capture output from python script already in block structure
 
@@ -687,6 +723,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         # want to print it
         '__doc__': '',
         # Don't ever support __file__: Issues #166 #212
+        # Don't let them use input()
+        'input': _check_input,
     })
     script_vars['example_globals'] = example_globals
 
