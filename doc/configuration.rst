@@ -190,9 +190,12 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
 Passing command line arguments to example scripts
 =================================================
 
-By default, Sphinx-Gallery will not pass any command line arguments to example scripts.
-By setting the ``reset_argv`` option, it is possible to change this behavior and pass command line arguments to example scripts.
-``reset_argv`` needs to be a Callable that accepts the ``gallery_conf`` and ``script_vars`` dictionaries and returns a list of strings that are passed as additional command line arguments to the interpreter.
+By default, Sphinx-Gallery will not pass any command line arguments to example
+scripts.  By setting the ``reset_argv`` option, it is possible to change this
+behavior and pass command line arguments to example scripts.  ``reset_argv``
+needs to be a Callable that accepts the ``gallery_conf`` and ``script_vars``
+dictionaries as input and returns a list of strings that are passed as
+additional command line arguments to the interpreter.
 
 An example could be::
 
@@ -201,6 +204,13 @@ An example could be::
 	    return ['-a', '1']
 	elif script_vars['src_file'] == 'example2.py':
 	    return ['-a', '2']
+
+which is included in the configuration dictionary as::
+
+    sphinx_gallery_conf = {
+        ...
+        'reset_argv': reset_argv,
+    }
 
 which is then used by Sphinx-Gallery as::
 
