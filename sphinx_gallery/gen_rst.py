@@ -734,7 +734,7 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         # https://github.com/sphinx-gallery/sphinx-gallery/pull/252
         # for more details.
         sys.argv[0] = script_vars['src_file']
-        sys.argv[1:] = []
+        sys.argv[1:] = gallery_conf['reset_argv'](gallery_conf, script_vars)
         gc.collect()
         memory_start, _ = gallery_conf['call_memory'](lambda: None)
     else:

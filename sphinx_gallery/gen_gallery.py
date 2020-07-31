@@ -41,6 +41,7 @@ DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'ignore_pattern': r'__init__\.py',
     'examples_dirs': os.path.join('..', 'examples'),
+    'reset_argv': lambda gallery_conf, script_vars: [],
     'subsection_order': None,
     'within_subsection_order': NumberOfCodeLinesSortKey,
     'gallery_dirs': 'auto_examples',
