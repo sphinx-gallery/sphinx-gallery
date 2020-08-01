@@ -199,17 +199,21 @@ additional command line arguments to the interpreter.
 
 An example could be::
 
-    def reset_argv(gallery_confg, script_vars):
-        if script_vars['src_file'] == 'example1.py':
-	    return ['-a', '1']
-	elif script_vars['src_file'] == 'example2.py':
-	    return ['-a', '2']
+    class ResetArgv:
+        def __repr__(self):
+	    return 'ResetArgv'
+
+	def __call__(self):
+            if script_vars['src_file'] == 'example1.py':
+	        return ['-a', '1']
+            elif script_vars['src_file'] == 'example2.py':
+	        return ['-a', '2']
 
 which is included in the configuration dictionary as::
 
     sphinx_gallery_conf = {
         ...
-        'reset_argv': reset_argv,
+        'reset_argv': ResetArgv(),
     }
 
 which is then used by Sphinx-Gallery as::
