@@ -26,7 +26,7 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 
 import pytest
 
-N_TOT = 9
+N_TOT = 10
 N_FAILING = 1
 N_GOOD = N_TOT - N_FAILING
 N_RST = 15 + N_TOT
@@ -177,6 +177,13 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     corr = np.corrcoef(new[..., :3].ravel(), orig[..., :3].ravel())[0, 1]
     assert corr > 0.99
 
+
+def test_command_line_args_img(sphinx_app):
+    generated_examples_dir = op.join(sphinx_app.outdir, 'auto_examples')
+    thumb_fname = '../_images/sphx_glr_plot_command_line_args_thumb.png'
+    file_fname = op.join(generated_examples_dir, thumb_fname)
+    assert op.isfile(file_fname), file_fname
+    
 
 def test_image_formats(sphinx_app):
     """Test Image format support."""
