@@ -178,7 +178,7 @@ def _anim_rst(anim, image_path, gallery_conf):
     use_dpi = round(
         min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
     # FFmpeg is buggy for GIFs before Matplotlib 3.3.1
-    if LooseVersion(matplotlib.__version__) >= LooseVersion('3.3.1')
+    if LooseVersion(matplotlib.__version__) >= LooseVersion('3.3.1') \
             and FFMpegWriter.isAvailable():
         writer = 'ffmpeg'
     elif ImageMagickWriter.isAvailable():
