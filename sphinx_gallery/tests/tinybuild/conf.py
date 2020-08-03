@@ -16,11 +16,15 @@ class matplotlib_format_scraper(object):
         return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
 
 
-def reset_argv(sphinx_gallery_conf, script_vars):
-    if 'plot_command_line_args.py' in script_vars['src_file']:
-        return ['plot']
-    else:
-        return []
+class ResetArgv:
+    def __repr__(self):
+        return "ResetArgv"
+
+    def __call__(self, sphinx_gallery_conf, script_vars):
+        if 'plot_command_line_args.py' in script_vars['src_file']:
+            return ['plot']
+        else:
+            return []
 
 
 extensions = [
@@ -48,7 +52,7 @@ sphinx_gallery_conf = {
         'scipy': 'http://docs.scipy.org/doc/scipy/wrong_url',  # bad one
     },
     'examples_dirs': ['examples/'],
-    'reset_argv': reset_argv,
+    'reset_argv': ResetArgv(),
     'gallery_dirs': ['auto_examples'],
     'backreferences_dir': 'gen_modules/backreferences',
     'within_section_order': FileNameSortKey,
