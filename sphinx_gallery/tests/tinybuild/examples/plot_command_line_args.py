@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 
 if len(sys.argv) > 1 and sys.argv[1] == 'plot':
     fig_0, ax_0 = plt.subplots(figsize=(5, 1))
-    
 
     x = np.arange(0, 10., 1)
     ax_0.plot(x, x**2)

@@ -183,7 +183,7 @@ def test_command_line_args_img(sphinx_app):
     thumb_fname = '../_images/sphx_glr_plot_command_line_args_thumb.png'
     file_fname = op.join(generated_examples_dir, thumb_fname)
     assert op.isfile(file_fname), file_fname
-    
+
 
 def test_image_formats(sphinx_app):
     """Test Image format support."""
