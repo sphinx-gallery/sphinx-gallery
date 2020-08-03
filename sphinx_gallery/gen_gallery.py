@@ -37,11 +37,20 @@ from .directives import MiniGallery
 
 _KNOWN_CSS = ('gallery', 'gallery-binder', 'gallery-dataframe')
 
+
+class DefaultResetArgv:
+    def __repr__(self):
+        return "DefaultResetArgv"
+
+    def __call__(self, gallery_conf, script_vars):
+        return []
+
+
 DEFAULT_GALLERY_CONF = {
     'filename_pattern': re.escape(os.sep) + 'plot',
     'ignore_pattern': r'__init__\.py',
     'examples_dirs': os.path.join('..', 'examples'),
-    'reset_argv': lambda gallery_conf, script_vars: [],
+    'reset_argv': DefaultResetArgv(),
     'subsection_order': None,
     'within_subsection_order': NumberOfCodeLinesSortKey,
     'gallery_dirs': 'auto_examples',
