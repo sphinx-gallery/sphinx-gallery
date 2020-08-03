@@ -19,6 +19,7 @@ file:
 
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
 - ``filename_pattern`` and ``ignore_pattern`` (:ref:`build_pattern`)
+- ``reset_argv`` (:ref:`reset_argv`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
 - ``reference_url`` (:ref:`link_to_documentation`)
@@ -184,6 +185,45 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
 
         $ sphinx-build -D sphinx_gallery_conf.filename_pattern=plot_specific_example\.py ...
 
+.. _reset_argv:
+
+Passing command line arguments to example scripts
+=================================================
+
+By default, Sphinx-Gallery will not pass any command line arguments to example
+scripts.  By setting the ``reset_argv`` option, it is possible to change this
+behavior and pass command line arguments to example scripts.  ``reset_argv``
+needs to be a Callable that accepts the ``gallery_conf`` and ``script_vars``
+dictionaries as input and returns a list of strings that are passed as
+additional command line arguments to the interpreter.
+
+An example could be::
+
+    class ResetArgv:
+        def __repr__(self):
+	    return 'ResetArgv'
+
+	def __call__(self, sphinx_gallery_conf, script_vars):
+            if script_vars['src_file'] == 'example1.py':
+	        return ['-a', '1']
+            elif script_vars['src_file'] == 'example2.py':
+	        return ['-a', '2']
+
+which is included in the configuration dictionary as::
+
+    sphinx_gallery_conf = {
+        ...
+        'reset_argv': ResetArgv(),
+    }
+
+which is then used by Sphinx-Gallery as::
+
+    import sys
+    sys.argv[0] = script_vars['src_file']
+    sys.argv[1:] = gallery_conf['reset_argv'](gallery_conf, script_vars)
+
+
+    
 .. _sub_gallery_order:
 
 Sorting gallery subsections
