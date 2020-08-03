@@ -203,7 +203,7 @@ An example could be::
         def __repr__(self):
 	    return 'ResetArgv'
 
-	def __call__(self):
+	def __call__(self, sphinx_gallery_conf, script_vars):
             if script_vars['src_file'] == 'example1.py':
 	        return ['-a', '1']
             elif script_vars['src_file'] == 'example2.py':
