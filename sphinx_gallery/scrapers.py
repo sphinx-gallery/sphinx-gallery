@@ -11,6 +11,7 @@ The only scrapers we support are Matplotlib and Mayavi, others should
 live in modules that will support them (e.g., PyVista, Plotly).
 """
 
+from logging.handlers import QueueHandler
 import os
 import sys
 import re
@@ -147,7 +148,10 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             if to_rgba(fig_attr) != to_rgba(default_attr) and \
                     attr not in kwargs:
                 these_kwargs[attr] = fig_attr
-        fig.savefig(image_path, **these_kwargs)
+        try:
+            fig.savefig(image_path, **these_kwargs)
+        finally:
+            plt.close(fig=fig)  # always close, even if error
         if 'images' in gallery_conf['compress_images']:
             optipng(image_path, gallery_conf['compress_images_args'])
         image_rsts.append(
