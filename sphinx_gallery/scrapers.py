@@ -150,8 +150,9 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
                 these_kwargs[attr] = fig_attr
         try:
             fig.savefig(image_path, **these_kwargs)
-        finally:
-            plt.close(fig=fig)  # always close, even if error
+        except Exception:
+            plt.close('all')
+            raise
         if 'images' in gallery_conf['compress_images']:
             optipng(image_path, gallery_conf['compress_images_args'])
         image_rsts.append(
@@ -222,8 +223,9 @@ def mayavi_scraper(block, block_vars, gallery_conf):
     for scene, image_path in zip(e.scenes, image_path_iterator):
         try:
             mlab.savefig(image_path, figure=scene)
-        finally:
-            mlab.close(scene=scene)
+        except Exception:
+            mlab.close(all=True)
+            raise
         # make sure the image is not too large
         scale_image(image_path, image_path, 850, 999)
         if 'images' in gallery_conf['compress_images']:
