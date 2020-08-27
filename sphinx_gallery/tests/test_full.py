@@ -523,7 +523,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
                          buildername='html', status=StringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    n = '[' + '|'.join(str(x + N_FAILING) for x in range(3)) + ']'
+    n = '[' + '|'.join(str(x + N_FAILING) for x in range(4)) + ']'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
     want = '.*targets for %s source files that are out of date$.*' % n
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
