@@ -11,7 +11,6 @@ The only scrapers we support are Matplotlib and Mayavi, others should
 live in modules that will support them (e.g., PyVista, Plotly).
 """
 
-from logging.handlers import QueueHandler
 import os
 import sys
 import re
