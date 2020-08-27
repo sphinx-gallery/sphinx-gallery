@@ -220,7 +220,10 @@ def mayavi_scraper(block, block_vars, gallery_conf):
     image_paths = list()
     e = mlab.get_engine()
     for scene, image_path in zip(e.scenes, image_path_iterator):
-        mlab.savefig(image_path, figure=scene)
+        try:
+            mlab.savefig(image_path, figure=scene)
+        finally:
+            mlab.close(scene=scene)
         # make sure the image is not too large
         scale_image(image_path, image_path, 850, 999)
         if 'images' in gallery_conf['compress_images']:
