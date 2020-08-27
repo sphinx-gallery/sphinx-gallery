@@ -412,7 +412,8 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
             start = max(ii, start)
         elif s.filename.startswith(root + 'gen_rst.py'):
             # SyntaxError
-            if s.name == 'execute_code_block' and 'compile(' in s.line:
+            if s.name == 'execute_code_block' and ('compile(' in s.line or
+                                                   'save_figures' in s.line):
                 start = max(ii, start)
             # Any other error
             elif s.name == '__call__':
@@ -545,7 +546,7 @@ def execute_code_block(compiler, block, example_globals,
 
     sys_path = copy.deepcopy(sys.path)
     sys.path.append(os.getcwd())
-
+    need_save_figures = True
     try:
         dont_inherit = 1
         if sys.version_info >= (3, 8):
@@ -584,6 +585,10 @@ def execute_code_block(compiler, block, example_globals,
                     compiler(code_ast, src_file, 'exec'),
                     script_vars['fake_main']))
         script_vars['memory_delta'].append(mem_max)
+        # This should be inside the try block, e.g., in case of a savefig error
+        logging_tee.restore_std()
+        need_save_figures = False
+        images_rst = save_figures(block, script_vars, gallery_conf)
     except Exception:
         logging_tee.restore_std()
         except_rst = handle_exception(sys.exc_info(), src_file, script_vars,
@@ -591,9 +596,9 @@ def execute_code_block(compiler, block, example_globals,
         code_output = u"\n{0}\n\n\n\n".format(except_rst)
         # still call this even though we won't use the images so that
         # figures are closed
-        save_figures(block, script_vars, gallery_conf)
+        if need_save_figures:
+            save_figures(block, script_vars, gallery_conf)
     else:
-        logging_tee.restore_std()
         sys.path = sys_path
         os.chdir(cwd)
 
@@ -628,7 +633,6 @@ def execute_code_block(compiler, block, example_globals,
             captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
         else:
             captured_std = ''
-        images_rst = save_figures(block, script_vars, gallery_conf)
         # give html output its own header
         if repr_meth == '_repr_html_':
             captured_html = html_header.format(indent(last_repr, u' ' * 4))

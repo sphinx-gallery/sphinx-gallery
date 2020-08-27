@@ -26,8 +26,8 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 
 import pytest
 
-N_TOT = 10
-N_FAILING = 1
+N_TOT = 11
+N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
 N_RST = 15 + N_TOT
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
@@ -136,7 +136,8 @@ def test_junit(sphinx_app, tmpdir):
     with codecs.open(junit_file, 'r', 'utf-8') as fid:
         contents = fid.read()
     assert 'errors="0" failures="2"' in contents
-    assert 'tests="2"' in contents  # this time we only ran the two stale files
+    # this time we only ran the stale files
+    assert 'tests="%s"' % (N_FAILING + 1,) in contents
     assert '<failure message="RuntimeError: Forcing' in contents
     assert 'Passed even though it was marked to fail' in contents
 
@@ -445,8 +446,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     lines = [line for line in status.split('\n') if '0 removed' in line]
     assert re.match('.*[0|1] added, [1-9] changed, 0 removed$.*',
                     status, re.MULTILINE | re.DOTALL) is not None, lines
-    want = ('.*executed 0 out of 1.*after excluding %s files.*based on MD5.*'
-            % (N_GOOD,))
+    want = ('.*executed 0 out of %s.*after excluding %s files.*based on MD5.*'
+            % (N_FAILING, N_GOOD))
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
     n_stale = len(new_app.config.sphinx_gallery_conf['stale_examples'])
     assert n_stale == N_GOOD
@@ -491,6 +492,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # on the one script that gets re-run (because it's a fail)...
         'sg_execution_times.rst',
         'plot_future_imports_broken.rst',
+        'plot_scraper_broken.rst'
     )
     _assert_mtimes(generated_rst_0, generated_rst_1, ignore=ignore)
 
@@ -521,12 +523,12 @@ def test_rebuild(tmpdir_factory, sphinx_app):
                          buildername='html', status=StringIO())
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    n = '[2|3|4]'
+    n = '[3|4|5]'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
     want = '.*targets for %s source files that are out of date$.*' % n
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
-    want = ('.*executed 1 out of 2.*after excluding %s files.*based on MD5.*'
-            % (N_GOOD - 1,))
+    want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
+            % (N_FAILING + 1, N_GOOD - 1,))
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
     n_stale = len(new_app.config.sphinx_gallery_conf['stale_examples'])
     assert n_stale == N_GOOD - 1
@@ -575,6 +577,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         'sg_execution_times.rst',
         # this one will not change even though it was retried
         'plot_future_imports_broken.rst',
+        'plot_scraper_broken.rst',
     )
     if not sys.platform.startswith('win'):  # not reliable on Windows
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
