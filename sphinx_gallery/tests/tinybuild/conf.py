@@ -1,4 +1,5 @@
 import os.path as op
+import numpy as np
 from sphinx_gallery.scrapers import matplotlib_scraper
 from sphinx_gallery.sorting import FileNameSortKey
 
@@ -27,6 +28,23 @@ class ResetArgv:
             return []
 
 
+class MockScrapeProblem:
+
+    def __init__(self):
+        from matplotlib.figure import Figure
+        self._orig_mpl = Figure.savefig
+
+    def __repr__(self):
+        return "MockScrapeProblem"
+
+    def __call__(self, gallery_conf, fname):
+        from matplotlib.figure import Figure
+        if 'scraper_broken' in fname:
+            Figure.savefig = lambda *args, **kwargs: np.min([])
+        else:
+            Figure.savefig = self._orig_mpl
+
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
@@ -53,11 +71,15 @@ sphinx_gallery_conf = {
     },
     'examples_dirs': ['examples/'],
     'reset_argv': ResetArgv(),
+    'reset_modules': (MockScrapeProblem(), 'matplotlib'),
     'gallery_dirs': ['auto_examples'],
     'backreferences_dir': 'gen_modules/backreferences',
     'within_section_order': FileNameSortKey,
     'image_scrapers': (matplotlib_format_scraper(),),
-    'expected_failing_examples': ['examples/future/plot_future_imports_broken.py'],  # noqa
+    'expected_failing_examples': [
+        'examples/future/plot_future_imports_broken.py',
+        'examples/plot_scraper_broken.py',
+    ],
     'show_memory': True,
     'compress_images': ('images', 'thumbnails'),
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),

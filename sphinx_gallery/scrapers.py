@@ -147,7 +147,11 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             if to_rgba(fig_attr) != to_rgba(default_attr) and \
                     attr not in kwargs:
                 these_kwargs[attr] = fig_attr
-        fig.savefig(image_path, **these_kwargs)
+        try:
+            fig.savefig(image_path, **these_kwargs)
+        except Exception:
+            plt.close('all')
+            raise
         if 'images' in gallery_conf['compress_images']:
             optipng(image_path, gallery_conf['compress_images_args'])
         image_rsts.append(
@@ -216,7 +220,11 @@ def mayavi_scraper(block, block_vars, gallery_conf):
     image_paths = list()
     e = mlab.get_engine()
     for scene, image_path in zip(e.scenes, image_path_iterator):
-        mlab.savefig(image_path, figure=scene)
+        try:
+            mlab.savefig(image_path, figure=scene)
+        except Exception:
+            mlab.close(all=True)
+            raise
         # make sure the image is not too large
         scale_image(image_path, image_path, 850, 999)
         if 'images' in gallery_conf['compress_images']:

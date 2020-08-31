@@ -1,3 +1,5 @@
+SPHINXOPTS=
+
 all: clean html show
 
 clean:
@@ -6,7 +8,7 @@ clean:
 	rm -rf gen_modules/
 
 html:
-	sphinx-build -b html -d _build/doctrees . _build/html
+	sphinx-build -b html -d _build/doctrees $(SPHINXOPTS) . _build/html
 
 latexpdf:
 	sphinx-build -b latex -d _build/doctrees . _build/latex
