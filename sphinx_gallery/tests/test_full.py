@@ -595,6 +595,21 @@ def test_rebuild(tmpdir_factory, sphinx_app):
                        different=('plot_numpy_matplotlib.ipynb'))
 
 
+@pytest.mark.parametrize('name, want', [
+    ('future/plot_future_imports_broken',
+     '.*RuntimeError.*Forcing this example to fail on Python 3.*'),
+    ('plot_scraper_broken',
+     '.*ValueError.*zero-size array to reduction.*'),
+])
+def test_error_messages(sphinx_app, name, want):
+    """Test that informative error messages are added."""
+    src_dir = sphinx_app.srcdir
+    example_rst = op.join(src_dir, 'auto_examples', name + '.rst')
+    with codecs.open(example_rst, 'r', 'utf-8') as fid:
+        rst = fid.read().replace('\n', ' ')
+    assert re.match(want, rst) is not None
+
+
 def test_alt_text_image(sphinx_app):
     """Test alt text for matplotlib images in html and rst"""
     out_dir = sphinx_app.outdir
