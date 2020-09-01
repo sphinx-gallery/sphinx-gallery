@@ -22,6 +22,7 @@ from sphinx.errors import ConfigError
 
 from .utils import replace_py_ipynb
 from . import sphinx_compatibility
+from . import glr_path_static
 
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -74,13 +75,14 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
     return binder_url
 
 
-def gen_binder_rst(fpath, binder_conf, gallery_conf):
+def gen_binder_rst(fpath, binder_conf, gallery_conf, target_dir):
     """Generate the RST + link for the Binder badge.
 
     Parameters
     ----------
     fpath: str
         The path to the `.py` file for which a Binder badge will be generated.
+
     binder_conf: dict or None
         If a dictionary it must have the following keys:
 
@@ -95,6 +97,12 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
         'dependencies'
             A list of paths to dependency files that match the Binderspec.
 
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary.
+
+    target_dir : str
+        Absolute path to directory in documentation where examples are saved.
+
     Returns
     -------
     rst : str
@@ -103,12 +111,22 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     binder_conf = check_binder_conf(binder_conf)
     binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
 
+    binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
+    binder_logo_full_path = os.path.join(
+        target_dir, 'images', 'binder_badge_logo.svg'
+    )
+    if not os.path.exists(binder_logo_full_path):
+        shutil.copyfile(binder_logo, binder_logo_full_path)
+    sources_dir = gallery_conf['src_dir']
+    binder_logo_rel_path = os.path.relpath(binder_logo_full_path, sources_dir)
+    binder_logo_rel_path = binder_logo_rel_path.replace(os.sep, '/')
+
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
-        "    .. image:: https://mybinder.org/badge_logo.svg\n"
+        "    .. image:: /{}\n"
         "      :target: {}\n"
-        "      :width: 150 px\n").format(binder_url)
+        "      :width: 150 px\n").format(binder_logo_rel_path, binder_url)
     return rst
 
 

@@ -44,6 +44,7 @@ setup(
         '_static/gallery-dataframe.css',
         '_static/no_image.png',
         '_static/broken_example.png',
+        '_static/binder_badge_logo.svg'
     ]},
     scripts=['bin/copy_sphinxgallery.sh', 'bin/sphx_glr_python_to_jupyter.py'],
     url="https://sphinx-gallery.github.io",

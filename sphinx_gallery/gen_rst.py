@@ -844,7 +844,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     if not executable:
         time_elapsed = memory_used = 0.  # don't let the output change
     save_rst_example(example_rst, target_file, time_elapsed, memory_used,
-                     gallery_conf)
+                     gallery_conf, target_dir)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
@@ -929,7 +929,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
 
 
 def save_rst_example(example_rst, example_file, time_elapsed,
-                     memory_used, gallery_conf):
+                     memory_used, gallery_conf, target_dir):
     """Saves the rst notebook to example_file including header & footer
 
     Parameters
@@ -944,6 +944,8 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         Additional memory used during the run.
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
+    target_dir : str
+        Absolute path to directory in documentation where examples are saved.
     """
 
     ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
@@ -973,7 +975,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     binder_badge_rst = ''
     if len(binder_conf) > 0:
         binder_badge_rst += gen_binder_rst(example_file, binder_conf,
-                                           gallery_conf)
+                                           gallery_conf, target_dir)
 
     fname = os.path.basename(example_file)
     example_rst += CODE_DOWNLOAD.format(fname,
