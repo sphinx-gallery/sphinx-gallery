@@ -8,6 +8,64 @@ The default for configuration `thumbnail_size` will change from `(400, 280)`
 (2.5x maximum size specified by CSS) to `(320, 224)` (2x maximum size specified
 by CSS) in version 0.9.0.
 
+**Implemented enhancements:**
+
+-  Pass command line arguments to examples `#731 <https://github.com/sphinx-gallery/sphinx-gallery/issues/731>`__
+-  Limited rst to md support in notebooks `#219 <https://github.com/sphinx-gallery/sphinx-gallery/issues/219>`__
+-  Enable ffmpeg for animations for newer matplotlib `#733 <https://github.com/sphinx-gallery/sphinx-gallery/pull/733>`__ (`dopplershift <https://github.com/dopplershift>`__)
+-  Implement option to pass command line args to example scripts `#732 <https://github.com/sphinx-gallery/sphinx-gallery/pull/732>`__ (`mschmidt87 <https://github.com/mschmidt87>`__)
+-  ENH: Dont allow input `#729 <https://github.com/sphinx-gallery/sphinx-gallery/pull/729>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Add support for image links and data URIs for notebooks `#724 <https://github.com/sphinx-gallery/sphinx-gallery/pull/724>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  Support headings in RST to MD `#723 <https://github.com/sphinx-gallery/sphinx-gallery/pull/723>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  ENH Support pypandoc to convert rst to md for ipynb `#705 <https://github.com/sphinx-gallery/sphinx-gallery/pull/705>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Use broader def of Animation `#693 <https://github.com/sphinx-gallery/sphinx-gallery/pull/693>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Fixed bugs:**
+
+-  \_repr_html\_ not shown on RTD `#736 <https://github.com/sphinx-gallery/sphinx-gallery/issues/736>`__
+-  Binder icon is hardcoded, which causes a loading failure with on some browsers `#735 <https://github.com/sphinx-gallery/sphinx-gallery/issues/735>`__
+-  How to scrape for images without executing example scripts `#728 <https://github.com/sphinx-gallery/sphinx-gallery/issues/728>`__
+-  sphinx-gallery/0.7.0: TypeError: ‘str’ object is not callable when building its documentation `#727 <https://github.com/sphinx-gallery/sphinx-gallery/issues/727>`__
+-  Thumbnail oversampling `#717 <https://github.com/sphinx-gallery/sphinx-gallery/issues/717>`__
+-  Working with pre-built galleries `#704 <https://github.com/sphinx-gallery/sphinx-gallery/issues/704>`__
+-  Calling “plt.show()” raises an ugly warning `#694 <https://github.com/sphinx-gallery/sphinx-gallery/issues/694>`__
+-  Searching in docs v0.6.2 stable does not work `#689 <https://github.com/sphinx-gallery/sphinx-gallery/issues/689>`__
+-  Fix logger message pypandoc `#741 <https://github.com/sphinx-gallery/sphinx-gallery/pull/741>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Use local binder logo svg `#738 <https://github.com/sphinx-gallery/sphinx-gallery/pull/738>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG: Fix handling of scraper error `#737 <https://github.com/sphinx-gallery/sphinx-gallery/pull/737>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Improve documentation of example for custom image scraper `#730 <https://github.com/sphinx-gallery/sphinx-gallery/pull/730>`__ (`mschmidt87 <https://github.com/mschmidt87>`__)
+-  Make md5 hash independent of platform line endings `#722 <https://github.com/sphinx-gallery/sphinx-gallery/pull/722>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  MAINT: Deal with mayavi `#720 <https://github.com/sphinx-gallery/sphinx-gallery/pull/720>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC Clarify thumbnail_size and note change in default `#719 <https://github.com/sphinx-gallery/sphinx-gallery/pull/719>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG: Always do linking `#714 <https://github.com/sphinx-gallery/sphinx-gallery/pull/714>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC: Correctly document option `#711 <https://github.com/sphinx-gallery/sphinx-gallery/pull/711>`__ (`larsoner <https://github.com/larsoner>`__)
+-  BUG Check ‘capture_repr’ and ‘ignore_repr_types’ `#709 <https://github.com/sphinx-gallery/sphinx-gallery/pull/709>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Update Sphinx url `#708 <https://github.com/sphinx-gallery/sphinx-gallery/pull/708>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG: Use relative paths for zip downloads `#706 <https://github.com/sphinx-gallery/sphinx-gallery/pull/706>`__ (`pmeier <https://github.com/pmeier>`__)
+-  FIX: Build on nightly using master `#703 <https://github.com/sphinx-gallery/sphinx-gallery/pull/703>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Fix CircleCI `#701 <https://github.com/sphinx-gallery/sphinx-gallery/pull/701>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Enable html to be rendered on readthedocs `#700 <https://github.com/sphinx-gallery/sphinx-gallery/pull/700>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  Remove matplotlib agg warning `#696 <https://github.com/sphinx-gallery/sphinx-gallery/pull/696>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Closed issues:**
+
+-  Reference :ref:``sphx\_glr\_auto\_examples`` goes to SciKit-Learn examples `#734 <https://github.com/sphinx-gallery/sphinx-gallery/issues/734>`__
+-  Q: how to have a couple of images with ``bbox\_inches='tight'``. `#726 <https://github.com/sphinx-gallery/sphinx-gallery/issues/726>`__
+-  filename_pattern still doesn’t work all that great for working on one tutorial `#721 <https://github.com/sphinx-gallery/sphinx-gallery/issues/721>`__
+-  Gallery example using plotly `#715 <https://github.com/sphinx-gallery/sphinx-gallery/issues/715>`__
+-  DOC Builder types clarification `#697 <https://github.com/sphinx-gallery/sphinx-gallery/issues/697>`__
+
+**Merged pull requests:**
+
+-  DOC add section on interpreting error/warnings `#740 <https://github.com/sphinx-gallery/sphinx-gallery/pull/740>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Add citation details to readme `#739 <https://github.com/sphinx-gallery/sphinx-gallery/pull/739>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Plotly example for the gallery `#718 <https://github.com/sphinx-gallery/sphinx-gallery/pull/718>`__ (`emmanuelle <https://github.com/emmanuelle>`__)
+-  DOC Specify matplotlib in animation example `#716 <https://github.com/sphinx-gallery/sphinx-gallery/pull/716>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT: Bump pytest versions in Travis runs `#712 <https://github.com/sphinx-gallery/sphinx-gallery/pull/712>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC Update warning section in configuration.rst `#702 <https://github.com/sphinx-gallery/sphinx-gallery/pull/702>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC remove mention of other builder types `#698 <https://github.com/sphinx-gallery/sphinx-gallery/pull/698>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Bumpversion `#692 <https://github.com/sphinx-gallery/sphinx-gallery/pull/692>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.7.0
 ------
 
