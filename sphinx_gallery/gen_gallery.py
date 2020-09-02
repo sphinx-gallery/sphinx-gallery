@@ -293,9 +293,12 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         logger.warning("'pypandoc' not available. Using Sphinx-Gallery to "
                        "convert rst text blocks to markdown for .ipynb files.")
         gallery_conf['pypandoc'] = False
-    else:
+    elif isinstance(gallery_conf['pypandoc'], dict):
         logger.info("Using pandoc version: %s to convert rst text blocks to "
                     "markdown for .ipynb files" % (version,))
+    else:
+        logger.info("Using Sphinx-Gallery to convert rst text blocks to "
+                    "markdown for .ipynb files.")
     if isinstance(pypandoc, dict):
         accepted_keys = ('extra_args', 'filters')
         for key in pypandoc:
