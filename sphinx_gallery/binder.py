@@ -124,7 +124,6 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf, target_dir):
     sources_dir = gallery_conf['src_dir']
     binder_logo_rel_path = os.path.relpath(binder_logo_full_path, sources_dir)
     binder_logo_rel_path = binder_logo_rel_path.replace(os.sep, '/')
-    print(f'sources dir {sources_dir}\nrel path {binder_logo_rel_path}\n full {binder_logo_full_path}')
 
     rst = (
         "\n"
