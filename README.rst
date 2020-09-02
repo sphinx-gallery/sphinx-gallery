@@ -88,3 +88,9 @@ you can do:
     $ pip install -e .
 
 .. installation-end-content
+
+Citation
+========
+
+If you would like to cite Sphinx-Gallery you can do so using our `Zenodo
+deposit <https://zenodo.org/record/3838216>`_.
