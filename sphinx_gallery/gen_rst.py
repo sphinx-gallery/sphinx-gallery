@@ -975,7 +975,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     binder_badge_rst = ''
     if len(binder_conf) > 0:
         binder_badge_rst += gen_binder_rst(example_file, binder_conf,
-                                           gallery_conf, target_dir)
+                                           gallery_conf)
 
     fname = os.path.basename(example_file)
     example_rst += CODE_DOWNLOAD.format(fname,

@@ -6,10 +6,12 @@ Testing the binder badge functionality
 """
 from __future__ import division, absolute_import, print_function
 
+import os
 from copy import deepcopy
 
 import pytest
 
+from sphinx_gallery.__init__ import glr_path_static
 from sphinx.errors import ConfigError
 from sphinx_gallery.binder import (gen_binder_url, check_binder_conf,
                                    _copy_binder_reqs, gen_binder_rst)
@@ -117,15 +119,16 @@ def test_binder():
 
 def test_gen_binder_rst():
     """Check binder rst generated correctly."""
-    gallery_conf_base = {'gallery_dirs': None, 'src_dir': 'blahblah'}
+    gallery_conf_base = {'gallery_dirs': 'mydir', 'src_dir': 'blahblah'}
     file_path = 'blahblah/mydir/myfile.py'
     conf_base = {'binderhub_url': 'http://test1.com', 'org': 'org',
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
-    target_dir = 'blahblah/mydir'
-    rst = gen_binder_rst(file_path, conf_base, gallery_conf_base, target_dir)
 
-    image_rst = ' .. image:: /mydir/images/binder_badge_logo.svg'
+    rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
+    binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
+
+    image_rst = (' .. image:: {}').format(binder_logo)
     target_rst = ':target: http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb'  # noqa E501
     assert image_rst in rst
     assert target_rst in rst
