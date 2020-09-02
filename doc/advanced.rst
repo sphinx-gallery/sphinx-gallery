@@ -107,8 +107,8 @@ error::
 
 Problems in the text (rST) blocks of the gallery Python files will result
 in warnings or errors when Sphinx is converting the generated ``.rst`` files
-to HTML. These will also be printed in pink, after code block errors, during
-building of the documentation. In this case, the ``.rst`` file path and
+to HTML. These will be printed by Sphinx in pink, after code block errors,
+during building of the documentation. In this case, the ``.rst`` file path and
 ``.rst`` file line number will be printed. To fix the problem, you will need
 to amend the original ``.py`` file, **not** the generated ``.rst`` file.
 To figure out where the problem is, you will need to match the content of the
@@ -118,8 +118,11 @@ Example ``.rst`` warning::
 
     <full_path>/auto_examples/plot_example.rst:19: WARNING: Explicit markup ends without a blank line; unexpected unindent.
 
-The warning above was occurred in line 19 in ``plot_example.rst``. The
-original ``plot_example.py`` file will need to be amended to fix.
+The warning above occurred due to line 19 in ``plot_example.rst``. The
+original ``plot_example.py`` file will need to be amended to fix it.
+Sphinx-Gallery only (re)builds new, modified or failed examples, so
+re-running the documentation build should rebuild just the modified example,
+allowing for quick iteration.
 
 .. _custom_scraper:
 
