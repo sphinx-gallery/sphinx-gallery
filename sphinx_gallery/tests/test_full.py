@@ -817,7 +817,8 @@ def test_md5_hash(sphinx_app):
 
 def test_binder_logo_exists(sphinx_app):
     """Check that the binder logo path is correct."""
-    binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
     src_dir = sphinx_app.srcdir
+    binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
     binder_logo_path = os.path.relpath(binder_logo, src_dir)
-    assert op.isfile(binder_logo_path)
+
+    assert op.isfile('/{}'.format(binder_logo_path))
