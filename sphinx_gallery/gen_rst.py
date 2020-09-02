@@ -844,7 +844,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     if not executable:
         time_elapsed = memory_used = 0.  # don't let the output change
     save_rst_example(example_rst, target_file, time_elapsed, memory_used,
-                     gallery_conf, target_dir)
+                     gallery_conf)
 
     save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
 
