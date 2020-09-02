@@ -40,9 +40,9 @@ value, the representation of that value will be captured as well.
 
 To prevent Matplotlib function calls from outputting text as well as the figure,
 you can assign the last plotting function to a temporary variable (e.g.
-``_ = p``) or add
-``matplotlib.show()`` to the end of your code block (see :ref:`capture_repr`).
+``_ = matplotlib.pyploy.plot()``) or add ``matplotlib.pyplot.show()`` to the
+end of your code block (see :ref:`capture_repr`).
 Alternatively, you can set ``capture_repr`` to be an empty tuple
-(``'capture_repr': ()``), which will imitate the behaviour of Sphinx-Gallery
+(``'capture_repr': ()``), which will imitate the behavior of Sphinx-Gallery
 prior to v0.5.0. This will also prevent you from getting any other unwanted
 output that did not occur prior to v0.5.0.

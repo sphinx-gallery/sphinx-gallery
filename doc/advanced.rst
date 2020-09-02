@@ -91,6 +91,10 @@ The above directive inserts the following block:
 
 .. _custom_scraper:
 
+Understanding error outputs
+===========================
+
+
 Write a custom image scraper
 ============================
 
