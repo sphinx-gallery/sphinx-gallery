@@ -38,8 +38,10 @@ For a quick reference have a look at the example
 Embed rST in your example Python files
 ======================================
 
-Additionally, you may embed rST syntax within your Python scripts. This will
-be rendered in-line with the Python code and its outputs, similar to how
+Additionally, you may embed rST syntax within your Python scripts. rST
+allows you to easily add formatted text, math equations and reference links,
+including :ref:`cross referencing other examples <cross_ref_example>`. This
+will be rendered in-line with the Python code and its outputs, similar to how
 Jupyter Notebooks are structured (in fact, Sphinx-Gallery also **creates** a
 Jupyter Notebook for each example that is built).
 

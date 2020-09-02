@@ -66,6 +66,8 @@ print('This example shows a sin plot!')
 # .. math::
 #    \sin
 #
+# .. _cross_ref_example:
+#
 # Cross referencing
 # ^^^^^^^^^^^^^^^^^
 #
@@ -73,7 +75,7 @@ print('This example shows a sin plot!')
 # including from other examples. Sphinx-Gallery automatically creates reference
 # labels for each example. The label consists of the ``.py`` file name,
 # prefixed with ``sphx_glr_`` and the name of the
-# folder(s) the example is in. In this case, the example we want to
+# folder(s) the example is in. Below, the example we want to
 # cross-reference is in ``auto_examples`` (the ``gallery_dirs``; see
 # :ref:`configure_and_use_sphinx_gallery`), then the subdirectory ``no_output``
 # (since the example is within a sub-gallery). The file name of the example is
@@ -82,7 +84,7 @@ print('This example shows a sin plot!')
 # ``:ref:`sphx_glr_auto_examples_no_output_plot_syntaxerror.py```.
 #
 # .. seealso::
-#     :ref:`sphx_glr_auto_examples_no_output_plot_syntaxerror.py` for a
+#     See :ref:`sphx_glr_auto_examples_no_output_plot_syntaxerror.py` for
 #     an example with an error.
 #
 # .. |docstring| replace:: """
