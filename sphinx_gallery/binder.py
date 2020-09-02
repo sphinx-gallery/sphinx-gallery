@@ -109,13 +109,14 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
 
     binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
+    binder_logo_path = os.path.relpath(binder_logo, gallery_conf['src_dir'])
 
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
-        "    .. image:: {}\n"
+        "    .. image:: /{}\n"
         "      :target: {}\n"
-        "      :width: 150 px\n").format(binder_logo, binder_url)
+        "      :width: 150 px\n").format(binder_logo_path, binder_url)
     return rst
 
 

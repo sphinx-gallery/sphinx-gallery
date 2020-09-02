@@ -127,8 +127,9 @@ def test_gen_binder_rst():
 
     rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
     binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
+    binder_logo_path = os.path.relpath(binder_logo, 'blahblah')
 
-    image_rst = (' .. image:: {}').format(binder_logo)
+    image_rst = (' .. image:: /{}').format(binder_logo_path)
     target_rst = ':target: http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb'  # noqa E501
     assert image_rst in rst
     assert target_rst in rst
