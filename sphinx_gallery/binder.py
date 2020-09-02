@@ -115,11 +115,16 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf, target_dir):
     binder_logo_full_path = os.path.join(
         target_dir, 'images', 'binder_badge_logo.svg'
     )
-    if not os.path.exists(binder_logo_full_path):
-        shutil.copyfile(binder_logo, binder_logo_full_path)
+    if gallery_conf['gallery_dirs'] is None:
+        # Avoid copying file when testing
+        pass
+    else:
+        if not os.path.exists(binder_logo_full_path):
+            shutil.copyfile(binder_logo, binder_logo_full_path)
     sources_dir = gallery_conf['src_dir']
     binder_logo_rel_path = os.path.relpath(binder_logo_full_path, sources_dir)
     binder_logo_rel_path = binder_logo_rel_path.replace(os.sep, '/')
+    print(f'sources dir {sources_dir}\nrel path {binder_logo_rel_path}\n full {binder_logo_full_path}')
 
     rst = (
         "\n"
