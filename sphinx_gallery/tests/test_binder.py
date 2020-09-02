@@ -120,8 +120,8 @@ def test_gen_binder_rst():
     gallery_conf_base = {'gallery_dirs': None, 'src_dir': 'blahblah'}
     file_path = 'blahblah/mydir/myfile.py'
     conf_base = {'binderhub_url': 'http://test1.com', 'org': 'org',
-                'repo': 'repo', 'branch': 'branch',
-                'dependencies': '../requirements.txt'}
+                 'repo': 'repo', 'branch': 'branch',
+                 'dependencies': '../requirements.txt'}
     target_dir = 'blahblah/mydir'
     rst = gen_binder_rst(file_path, conf_base, gallery_conf_base, target_dir)
 
