@@ -87,8 +87,8 @@ The ``#%%`` and ``# %%`` syntax is consistent with the 'code block' (or
 <https://nteract.gitbooks.io/hydrogen/docs/Usage/Cells.html#example-definitions>`_
 and `Spyder
 <https://docs.spyder-ide.org/editor.html#defining-code-cells>`_.
-Note that although the
-documentation may only mention one of ``#%%`` or ``# %%``, in practice both
+Note that although the documentation of these editors/IDEs
+may only mention one of ``#%%`` or ``# %%``, in practice both
 work. With these editors/IDEs, ``#%%`` or
 ``# %%`` at the start of a line signifies the start of a new code block.
 Code blocks allow you to separate your code into chunks, like in Jupyter

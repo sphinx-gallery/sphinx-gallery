@@ -89,6 +89,41 @@ The above directive inserts the following block:
    and  ``end-before``). Use with caution: linking directly to examples is
    a more robust alternative.
 
+.. _warning_errors:
+
+Understanding warning and error outputs
+=======================================
+
+Any warnings or errors that occur when executing code blocks in the gallery
+Python files will be printed in pink during building of the documentation. The
+``.py`` file path and the line number that the error occurred in will also be
+printed. For example, the example
+:ref:`sphx_glr_auto_examples_no_output_plot_raise.py` will raise the following
+error::
+
+    File "<full_path>/examples/no_output/plot_raise.py", line 27, in <module>
+        iae
+    NameError: name 'iae' is not defined
+
+Problems in the text (rST) blocks of the gallery Python files will result
+in warnings or errors when Sphinx is converting the generated ``.rst`` files
+to HTML. These will be printed by Sphinx in pink, after code block errors,
+during building of the documentation. In this case, the ``.rst`` file path and
+``.rst`` file line number will be printed. To fix the problem, you will need
+to amend the original ``.py`` file, **not** the generated ``.rst`` file.
+To figure out where the problem is, you will need to match the content of the
+``.rst`` file at the line number printed to the original ``.py`` file.
+
+Example ``.rst`` warning::
+
+    <full_path>/auto_examples/plot_example.rst:19: WARNING: Explicit markup ends without a blank line; unexpected unindent.
+
+The warning above occurred due to line 19 in ``plot_example.rst``. The
+original ``plot_example.py`` file will need to be amended to fix it.
+Sphinx-Gallery only (re)builds new, modified or failed examples, so
+re-running the documentation build should rebuild just the modified example,
+allowing for quick iteration.
+
 .. _custom_scraper:
 
 Write a custom image scraper
