@@ -119,28 +119,15 @@ def test_binder():
 
 def test_gen_binder_rst():
     """Check binder rst generated correctly."""
-<<<<<<< HEAD
     gallery_conf_base = {'gallery_dirs': None, 'src_dir': 'blahblah'}
-=======
-    gallery_conf_base = {'gallery_dirs': 'mydir', 'src_dir': 'blahblah'}
->>>>>>> master
     file_path = 'blahblah/mydir/myfile.py'
     conf_base = {'binderhub_url': 'http://test1.com', 'org': 'org',
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
-<<<<<<< HEAD
     target_dir = 'blahblah/mydir'
     rst = gen_binder_rst(file_path, conf_base, gallery_conf_base, target_dir)
 
     image_rst = ' .. image:: /mydir/images/binder_badge_logo.svg'
-=======
-
-    rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
-    binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
-    binder_logo_path = os.path.relpath(binder_logo, 'blahblah')
-
-    image_rst = (' .. image:: /{}').format(binder_logo_path)
->>>>>>> master
     target_rst = ':target: http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb'  # noqa E501
     assert image_rst in rst
     assert target_rst in rst
