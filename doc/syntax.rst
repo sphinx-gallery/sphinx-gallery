@@ -38,8 +38,10 @@ For a quick reference have a look at the example
 Embed rST in your example Python files
 ======================================
 
-Additionally, you may embed rST syntax within your Python scripts. This will
-be rendered in-line with the Python code and its outputs, similar to how
+Additionally, you may embed rST syntax within your Python scripts. rST
+allows you to easily add formatted text, math equations and reference links,
+including :ref:`cross referencing other examples <cross_ref_example>`. This
+will be rendered in-line with the Python code and its outputs, similar to how
 Jupyter Notebooks are structured (in fact, Sphinx-Gallery also **creates** a
 Jupyter Notebook for each example that is built).
 
@@ -87,8 +89,8 @@ The ``#%%`` and ``# %%`` syntax is consistent with the 'code block' (or
 <https://nteract.gitbooks.io/hydrogen/docs/Usage/Cells.html#example-definitions>`_
 and `Spyder
 <https://docs.spyder-ide.org/editor.html#defining-code-cells>`_.
-Note that although the
-documentation may only mention one of ``#%%`` or ``# %%``, in practice both
+Note that although the documentation of these editors/IDEs
+may only mention one of ``#%%`` or ``# %%``, in practice both
 work. With these editors/IDEs, ``#%%`` or
 ``# %%`` at the start of a line signifies the start of a new code block.
 Code blocks allow you to separate your code into chunks, like in Jupyter

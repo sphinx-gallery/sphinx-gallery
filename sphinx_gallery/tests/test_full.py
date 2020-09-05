@@ -18,6 +18,7 @@ import time
 import numpy as np
 from numpy.testing import assert_allclose
 
+from sphinx_gallery.__init__ import glr_path_static
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
@@ -812,3 +813,12 @@ def test_md5_hash(sphinx_app):
         actual_md5 = md5_file.read()
 
     assert actual_md5 == expected_md5
+
+
+def test_binder_logo_exists(sphinx_app):
+    """Check that the binder logo path is correct."""
+    src_dir = sphinx_app.srcdir
+    binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
+    binder_logo_path = os.path.relpath(binder_logo, src_dir)
+
+    assert op.isfile('/{}'.format(binder_logo_path))

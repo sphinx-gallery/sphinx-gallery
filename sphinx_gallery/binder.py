@@ -100,9 +100,12 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf, target_dir):
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary.
 
+<<<<<<< HEAD
     target_dir : str
         Absolute path to directory in documentation where examples are saved.
 
+=======
+>>>>>>> master
     Returns
     -------
     rst : str
@@ -112,6 +115,7 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf, target_dir):
     binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
 
     binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
+<<<<<<< HEAD
     binder_logo_full_path = os.path.join(
         target_dir, 'images', 'binder_badge_logo.svg'
     )
@@ -124,13 +128,20 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf, target_dir):
     sources_dir = gallery_conf['src_dir']
     binder_logo_rel_path = os.path.relpath(binder_logo_full_path, sources_dir)
     binder_logo_rel_path = binder_logo_rel_path.replace(os.sep, '/')
+=======
+    binder_logo_path = os.path.relpath(binder_logo, gallery_conf['src_dir'])
+>>>>>>> master
 
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
         "    .. image:: /{}\n"
         "      :target: {}\n"
+<<<<<<< HEAD
         "      :width: 150 px\n").format(binder_logo_rel_path, binder_url)
+=======
+        "      :width: 150 px\n").format(binder_logo_path, binder_url)
+>>>>>>> master
     return rst
 
 
