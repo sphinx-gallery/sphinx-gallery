@@ -136,7 +136,7 @@ def test_headings():
     ------------------------
     Blank heading above.
 
-                
+
     ====================
       White space above
     ====================
@@ -204,7 +204,8 @@ def test_notebook_images_data_uri(gallery_conf):
         gallery_conf['src_dir'], gallery_conf['gallery_dirs'])
 
     test_image = os.path.join(
-        os.path.dirname(__file__), 'tinybuild', '_static', 'demo.png')
+        os.path.dirname(__file__), 'tinybuild',
+        '_static_nonstandard', 'demo.png')
     # Make into "absolute" path from source directory
     test_image_rel = os.path.relpath(test_image, gallery_conf['src_dir'])
     test_image_abs = '/' + test_image_rel.replace(os.sep, '/')

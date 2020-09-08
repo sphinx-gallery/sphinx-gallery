@@ -31,7 +31,7 @@ from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .binder import copy_binder_files
+from .binder import copy_binder_files, check_binder_conf
 from .directives import MiniGallery
 
 
@@ -321,6 +321,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # compatibility
     if isinstance(backref, pathlib.Path):
         gallery_conf['backreferences_dir'] = str(backref)
+
+    # binder
+    gallery_conf['binder'] = check_binder_conf(gallery_conf['binder'])
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'

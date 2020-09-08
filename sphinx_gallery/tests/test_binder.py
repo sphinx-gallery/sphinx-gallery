@@ -6,12 +6,10 @@ Testing the binder badge functionality
 """
 from __future__ import division, absolute_import, print_function
 
-import os
 from copy import deepcopy
 
 import pytest
 
-from sphinx_gallery.__init__ import glr_path_static
 from sphinx.errors import ConfigError
 from sphinx_gallery.binder import (gen_binder_url, check_binder_conf,
                                    _copy_binder_reqs, gen_binder_rst)
@@ -124,10 +122,12 @@ def test_gen_binder_rst():
     conf_base = {'binderhub_url': 'http://test1.com', 'org': 'org',
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
-    target_dir = 'blahblah/mydir'
-    rst = gen_binder_rst(file_path, conf_base, gallery_conf_base, target_dir)
+    conf_base = check_binder_conf(conf_base)
+    rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
 
-    image_rst = ' .. image:: /mydir/images/binder_badge_logo.svg'
+    image_rst = ' .. image:: ../../_static/binder_badge_logo.svg'
     target_rst = ':target: http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb'  # noqa E501
+    alt_rst = ':alt: Launch binder'
     assert image_rst in rst
     assert target_rst in rst
+    assert alt_rst in rst

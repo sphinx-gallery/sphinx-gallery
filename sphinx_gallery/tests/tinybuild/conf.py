@@ -69,6 +69,14 @@ sphinx_gallery_conf = {
         'sphinx_gallery': None,
         'scipy': 'http://docs.scipy.org/doc/scipy/wrong_url',  # bad one
     },
+    'binder': {'org': 'sphinx-gallery',
+               'repo': 'sphinx-gallery.github.io',
+               'branch': 'master',
+               'binderhub_url': 'https://mybinder.org',
+               'dependencies': './binder/requirements.txt',
+               'notebooks_dir': 'notebooks',
+               'use_jupyter_lab': True,
+               },
     'examples_dirs': ['examples/'],
     'reset_argv': ResetArgv(),
     'reset_modules': (MockScrapeProblem(), 'matplotlib'),
@@ -88,4 +96,4 @@ sphinx_gallery_conf = {
 }
 nitpicky = True
 highlight_language = 'python3'
-html_static_path = ['_static']
+html_static_path = ['_static_nonstandard']
