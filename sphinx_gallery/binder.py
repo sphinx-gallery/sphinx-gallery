@@ -99,21 +99,18 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary.
 
-    target_dir : str
-        Absolute path to directory in documentation where examples are saved.
-
     Returns
     -------
     rst : str
         The reStructuredText for the Binder badge that links to this file.
     """
     binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
-    binder_logo_path = '/'.join([''] + list(os.path.split(glr_path_static())) +
+    binder_logo_path = '/'.join(list(os.path.split(glr_path_static())) +
                                 ['binder_badge_logo.svg'])
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
-        "    .. image:: {}\n"
+        "    .. image:: /{}\n"
         "      :target: {}\n"
         "      :alt: Launch binder\n"
         "      :width: 150 px\n").format(binder_logo_path, binder_url)
