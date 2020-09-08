@@ -548,7 +548,6 @@ def test_zip_notebooks(gallery_conf):
 
 def test_rst_example(gallery_conf):
     """Test generated rst file includes the correct paths for binder."""
-    target_dir = gallery_conf['gallery_dir']
     gallery_conf.update(binder={'org': 'sphinx-gallery',
                                 'repo': 'sphinx-gallery.github.io',
                                 'binderhub_url': 'https://mybinder.org',
@@ -559,10 +558,8 @@ def test_rst_example(gallery_conf):
                                 },
                         gallery_dirs=None)
 
-    example_file = os.path.join(target_dir, "plot.py")
-    sg.save_rst_example(
-        "example_rst", example_file, 0, 0, gallery_conf, target_dir
-    )
+    example_file = os.path.join(gallery_conf['gallery_dir'], "plot.py")
+    sg.save_rst_example("example_rst", example_file, 0, 0, gallery_conf)
 
     test_file = re.sub(r'\.py$', '.rst', example_file)
     with codecs.open(test_file) as f:
