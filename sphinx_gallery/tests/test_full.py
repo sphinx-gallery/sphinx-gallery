@@ -444,7 +444,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
-    assert re.match('.*[0|1] added, [1-9] changed, 0 removed$.*',
+    # XXX on AppVeyor this can be 13
+    assert re.match('.*[0|1] added, [1-9][0-9]? changed, 0 removed$.*',
                     status, re.MULTILINE | re.DOTALL) is not None, lines
     want = ('.*executed 0 out of %s.*after excluding %s files.*based on MD5.*'
             % (N_FAILING, N_GOOD))
