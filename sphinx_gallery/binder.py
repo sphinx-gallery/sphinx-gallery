@@ -21,7 +21,7 @@ import os
 from sphinx.errors import ConfigError
 
 from .utils import replace_py_ipynb
-from . import sphinx_compatibility
+from . import sphinx_compatibility, glr_path_static
 
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -108,9 +108,8 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
         The reStructuredText for the Binder badge that links to this file.
     """
     binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
-    binder_logo_path = '/'.join([
-        os.path.relpath(gallery_conf['src_dir'], fpath),
-        '_static', 'binder_badge_logo.svg'])
+    binder_logo_path = '/'.join([''] + list(os.path.split(glr_path_static())) +
+                                ['binder_badge_logo.svg'])
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"

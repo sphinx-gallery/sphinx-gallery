@@ -444,8 +444,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
-    # XXX adding ``binder`` to conf.py made this go up to 15, not sure why...
-    assert re.match('.*[0|1] added, [1-9][0-9]? changed, 0 removed$.*',
+    assert re.match('.*[0|1] added, [1-9] changed, 0 removed$.*',
                     status, re.MULTILINE | re.DOTALL) is not None, lines
     want = ('.*executed 0 out of %s.*after excluding %s files.*based on MD5.*'
             % (N_FAILING, N_GOOD))
@@ -825,6 +824,6 @@ def test_binder_logo_exists(sphinx_app):
     assert path is not None
     path = path.groups()[0]
     img_fname = op.abspath(op.join(root, path))
-    assert '/_static/' in img_fname
+    assert '/_images/binder_badge_logo.svg' in img_fname  # where Sphinx copies
     assert op.isfile(img_fname)
     assert 'https://mybinder.org/v2/gh/sphinx-gallery/sphinx-gallery.github.io/master?urlpath=lab/tree/notebooks/auto_examples/plot_svg.ipynb' in html  # noqa: E501
