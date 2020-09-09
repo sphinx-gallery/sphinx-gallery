@@ -818,7 +818,7 @@ def test_md5_hash(sphinx_app):
 def test_binder_logo_exists(sphinx_app):
     """Test that the binder logo path is correct."""
     root = op.join(sphinx_app.outdir, 'auto_examples')
-    with open(op.join(root, 'plot_svg.html'), 'r') as fid:
+    with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
         html = fid.read()
     path = re.match(r'.*<img alt="Launch binder" src="(.*)" width=.*\/>.*',
                     html, re.DOTALL)
