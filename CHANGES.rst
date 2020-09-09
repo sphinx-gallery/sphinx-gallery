@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+v0.8.1
+------
+
+Fix Binder logo image file for Windows paths.
+
+**Fixed bugs:**
+
+-  sphinx_gallery/tests/test_full.py::test_binder_logo_exists fails (path is clearly wrong) `#746 <https://github.com/sphinx-gallery/sphinx-gallery/issues/746>`__
+-  BUG Windows relative path error with \_static Binder logo `#744 <https://github.com/sphinx-gallery/sphinx-gallery/issues/744>`__
+-  BUG Copy Binder logo to avoid Window drive rel path error `#745 <https://github.com/sphinx-gallery/sphinx-gallery/pull/745>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Merged pull requests:**
+
+-  DOC Add link to cross referencing example `#743 <https://github.com/sphinx-gallery/sphinx-gallery/pull/743>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.8.0
 ------
 
