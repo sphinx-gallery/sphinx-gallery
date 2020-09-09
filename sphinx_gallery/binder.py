@@ -110,8 +110,8 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     # paths can be used and they work, but this does not seem to be
     # documented behavior:
     #     https://github.com/sphinx-doc/sphinx/issues/7772
-    # And in any case, it does not work on Windows, so here we just for each
-    # gallery copy the SVG to `images` and link to it there. This will make
+    # And in any case, it does not work on Windows, so here we copy the SVG to
+    # `images` for each gallery and link to it there. This will make
     # a few copies, and there will be an extra in `_static` at the end of the
     # build, but it at least works...
     physical_path = os.path.join(
