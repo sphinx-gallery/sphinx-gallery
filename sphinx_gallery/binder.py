@@ -15,14 +15,13 @@ change in the future.
 
 """
 
-import shutil
 import os
+import shutil
 
 from sphinx.errors import ConfigError
 
 from .utils import replace_py_ipynb
-from . import sphinx_compatibility
-from . import glr_path_static
+from . import sphinx_compatibility, glr_path_static
 
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -105,18 +104,30 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     rst : str
         The reStructuredText for the Binder badge that links to this file.
     """
-    binder_conf = check_binder_conf(binder_conf)
     binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
-
-    binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
-    binder_logo_path = os.path.relpath(binder_logo, gallery_conf['src_dir'])
-
+    # In theory we should be able to use glr_path_static for this, but Sphinx
+    # only allows paths to be relative to the build root. On Linux, absolute
+    # paths can be used and they work, but this does not seem to be
+    # documented behavior:
+    #     https://github.com/sphinx-doc/sphinx/issues/7772
+    # And in any case, it does not work on Windows, so here we copy the SVG to
+    # `images` for each gallery and link to it there. This will make
+    # a few copies, and there will be an extra in `_static` at the end of the
+    # build, but it at least works...
+    physical_path = os.path.join(
+        os.path.dirname(fpath), 'images', 'binder_badge_logo.svg')
+    os.makedirs(os.path.dirname(physical_path), exist_ok=True)
+    if not os.path.isfile(physical_path):
+        shutil.copyfile(
+            os.path.join(glr_path_static(), 'binder_badge_logo.svg'),
+            physical_path)
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
-        "    .. image:: /{}\n"
+        "    .. image:: images/binder_badge_logo.svg\n"
         "      :target: {}\n"
-        "      :width: 150 px\n").format(binder_logo_path, binder_url)
+        "      :alt: Launch binder\n"
+        "      :width: 150 px\n").format(binder_url)
     return rst
 
 
@@ -129,7 +140,7 @@ def copy_binder_files(app, exception):
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
+    binder_conf = gallery_conf['binder']
 
     if not len(binder_conf) > 0:
         return

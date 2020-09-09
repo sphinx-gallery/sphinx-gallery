@@ -18,7 +18,6 @@ import time
 import numpy as np
 from numpy.testing import assert_allclose
 
-from sphinx_gallery.__init__ import glr_path_static
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
@@ -164,7 +163,7 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     """Test sphinx_gallery_thumbnail_path."""
     # Make sure our thumbnail matches what it should be
     fname_orig = op.join(
-        sphinx_app.srcdir, '_static', 'demo.png')
+        sphinx_app.srcdir, '_static_nonstandard', 'demo.png')
     fname_thumb = op.join(
         sphinx_app.outdir, '_images',
         'sphx_glr_plot_second_future_imports_thumb.png')
@@ -445,8 +444,13 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if '0 removed' in line]
-    assert re.match('.*[0|1] added, [1-9] changed, 0 removed$.*',
-                    status, re.MULTILINE | re.DOTALL) is not None, lines
+    # XXX on AppVeyor this can be 13
+    if sys.platform.startswith('win'):
+        assert re.match('.*[0|1] added, [1-9][0-3]? changed, 0 removed$.*',
+                        status, re.MULTILINE | re.DOTALL) is not None, lines
+    else:
+        assert re.match('.*[0|1] added, [1-9] changed, 0 removed$.*',
+                        status, re.MULTILINE | re.DOTALL) is not None, lines
     want = ('.*executed 0 out of %s.*after excluding %s files.*based on MD5.*'
             % (N_FAILING, N_GOOD))
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
@@ -806,6 +810,7 @@ def test_jupyter_notebook_pandoc(sphinx_app):
 
 
 def test_md5_hash(sphinx_app):
+    """Test MD5 hashing."""
     src_dir = sphinx_app.srcdir
     fname = op.join(src_dir, 'auto_examples', 'plot_log.py.md5')
     expected_md5 = '0edc2de97f96f3b55f8b4a21994931a8'
@@ -816,9 +821,15 @@ def test_md5_hash(sphinx_app):
 
 
 def test_binder_logo_exists(sphinx_app):
-    """Check that the binder logo path is correct."""
-    src_dir = sphinx_app.srcdir
-    binder_logo = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
-    binder_logo_path = os.path.relpath(binder_logo, src_dir)
-
-    assert op.isfile('/{}'.format(binder_logo_path))
+    """Test that the binder logo path is correct."""
+    root = op.join(sphinx_app.outdir, 'auto_examples')
+    with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
+        html = fid.read()
+    path = re.match(r'.*<img alt="Launch binder" src="(.*)" width=.*\/>.*',
+                    html, re.DOTALL)
+    assert path is not None
+    path = path.groups()[0]
+    img_fname = op.abspath(op.join(root, path))
+    assert 'binder_badge_logo' in img_fname  # can have numbers appended
+    assert op.isfile(img_fname)
+    assert 'https://mybinder.org/v2/gh/sphinx-gallery/sphinx-gallery.github.io/master?urlpath=lab/tree/notebooks/auto_examples/plot_svg.ipynb' in html  # noqa: E501
