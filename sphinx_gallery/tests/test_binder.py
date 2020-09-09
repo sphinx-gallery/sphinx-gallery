@@ -7,6 +7,7 @@ Testing the binder badge functionality
 from __future__ import division, absolute_import, print_function
 
 from copy import deepcopy
+import os
 
 import pytest
 
@@ -115,9 +116,10 @@ def test_binder():
     assert url == expected
 
 
-def test_gen_binder_rst():
+def test_gen_binder_rst(tmpdir):
     """Check binder rst generated correctly."""
     gallery_conf_base = {'gallery_dirs': None, 'src_dir': 'blahblah'}
+    os.chdir(tmpdir)
     file_path = 'blahblah/mydir/myfile.py'
     conf_base = {'binderhub_url': 'http://test1.com', 'org': 'org',
                  'repo': 'repo', 'branch': 'branch',
@@ -130,3 +132,6 @@ def test_gen_binder_rst():
     assert image_rst in rst
     assert target_rst in rst
     assert alt_rst in rst
+    image_fname = os.path.join(
+        os.path.dirname(file_path), 'images', 'binder_badge_logo.svg')
+    assert os.path.isfile(image_fname)
