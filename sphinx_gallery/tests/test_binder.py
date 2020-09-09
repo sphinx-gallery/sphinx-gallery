@@ -125,7 +125,7 @@ def test_gen_binder_rst(tmpdir):
                  'dependencies': '../requirements.txt'}
     conf_base = check_binder_conf(conf_base)
     orig_dir = os.getcwd()
-    os.chdir(tmpdir)
+    os.chdir(str(tmpdir))
     try:
         rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
     finally:
