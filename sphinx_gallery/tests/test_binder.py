@@ -118,14 +118,18 @@ def test_binder():
 
 def test_gen_binder_rst(tmpdir):
     """Check binder rst generated correctly."""
-    gallery_conf_base = {'gallery_dirs': None, 'src_dir': 'blahblah'}
-    os.chdir(tmpdir)
-    file_path = 'blahblah/mydir/myfile.py'
+    gallery_conf_base = {'gallery_dirs': [str(tmpdir)], 'src_dir': 'blahblah'}
+    file_path = tmpdir.join('blahblah', 'mydir', 'myfile.py')
     conf_base = {'binderhub_url': 'http://test1.com', 'org': 'org',
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
     conf_base = check_binder_conf(conf_base)
-    rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
+    orig_dir = os.getcwd()
+    os.chdir(tmpdir)
+    try:
+        rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
+    finally:
+        os.chdir(orig_dir)
     image_rst = ' .. image:: images/binder_badge_logo.svg'
     target_rst = ':target: http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb'  # noqa E501
     alt_rst = ':alt: Launch binder'
