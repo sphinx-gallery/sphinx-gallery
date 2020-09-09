@@ -825,6 +825,6 @@ def test_binder_logo_exists(sphinx_app):
     assert path is not None
     path = path.groups()[0]
     img_fname = op.abspath(op.join(root, path))
-    assert '/_images/binder_badge_logo.svg' in img_fname  # where Sphinx copies
+    assert img_fname.endswith('binder_badge_logo.svg')
     assert op.isfile(img_fname)
     assert 'https://mybinder.org/v2/gh/sphinx-gallery/sphinx-gallery.github.io/master?urlpath=lab/tree/notebooks/auto_examples/plot_svg.ipynb' in html  # noqa: E501
