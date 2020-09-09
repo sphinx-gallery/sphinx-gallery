@@ -119,7 +119,7 @@ def test_binder():
 def test_gen_binder_rst(tmpdir):
     """Check binder rst generated correctly."""
     gallery_conf_base = {'gallery_dirs': [str(tmpdir)], 'src_dir': 'blahblah'}
-    file_path = tmpdir.join('blahblah', 'mydir', 'myfile.py')
+    file_path = str(tmpdir.join('blahblah', 'mydir', 'myfile.py'))
     conf_base = {'binderhub_url': 'http://test1.com', 'org': 'org',
                  'repo': 'repo', 'branch': 'branch',
                  'dependencies': '../requirements.txt'}
