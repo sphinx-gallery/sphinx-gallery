@@ -17,7 +17,6 @@ change in the future.
 
 import os
 import shutil
-import sys
 
 from sphinx.errors import ConfigError
 
@@ -106,17 +105,29 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
         The reStructuredText for the Binder badge that links to this file.
     """
     binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
-    binder_logo_path = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
-    # deal with Windows / Unix weirdness for absolute paths
-    if sys.platform != 'win32':
-        binder_logo_path = '/' + binder_logo_path
+    # In theory we should be able to use glr_path_static for this, but Sphinx
+    # only allows paths to be relative to the build root. On Linux, absolute
+    # paths can be used and they work, but this does not seem to be
+    # documented behavior:
+    #     https://github.com/sphinx-doc/sphinx/issues/7772
+    # And in any case, it does not work on Windows, so here we just for each
+    # gallery copy the SVG to `images` and link to it there. This will make
+    # a few copies, and there will be an extra in `_static` at the end of the
+    # build, but it at least works...
+    physical_path = os.path.join(
+        os.path.dirname(fpath), 'images', 'binder_badge_logo.svg')
+    os.makedirs(os.path.dirname(physical_path), exist_ok=True)
+    if not os.path.isfile(physical_path):
+        shutil.copyfile(
+            os.path.join(glr_path_static(), 'binder_badge_logo.svg'),
+            physical_path)
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
-        "    .. image:: {}\n"
+        "    .. image:: images/binder_badge_logo.svg\n"
         "      :target: {}\n"
         "      :alt: Launch binder\n"
-        "      :width: 150 px\n").format(binder_logo_path, binder_url)
+        "      :width: 150 px\n").format(binder_url)
     return rst
 
 
