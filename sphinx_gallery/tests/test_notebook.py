@@ -136,7 +136,7 @@ def test_headings():
     ------------------------
     Blank heading above.
 
-
+                
     ====================
       White space above
     ====================
