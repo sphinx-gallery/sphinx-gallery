@@ -15,8 +15,9 @@ change in the future.
 
 """
 
-import shutil
 import os
+import shutil
+import sys
 
 from sphinx.errors import ConfigError
 
@@ -105,12 +106,14 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
         The reStructuredText for the Binder badge that links to this file.
     """
     binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
-    binder_logo_path = '/'.join(list(os.path.split(glr_path_static())) +
-                                ['binder_badge_logo.svg'])
+    binder_logo_path = os.path.join(glr_path_static(), 'binder_badge_logo.svg')
+    # deal with Windows / Unix weirdness for absolute paths
+    if sys.platform != 'win32':
+        binder_logo_path = '/' + binder_logo_path
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
-        "    .. image:: /{}\n"
+        "    .. image:: {}\n"
         "      :target: {}\n"
         "      :alt: Launch binder\n"
         "      :width: 150 px\n").format(binder_logo_path, binder_url)
