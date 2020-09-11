@@ -74,13 +74,11 @@ def _matplotlib_fig_titles(fig):
 
 
 _ANIMATION_RST = '''
-.. only:: builder_html
+.. container:: sphx-glr-animation
 
-    .. container:: sphx-glr-animation
+    .. raw:: html
 
-        .. raw:: html
-
-            {0}
+        {0}
 '''
 
 
@@ -193,7 +191,7 @@ def _anim_rst(anim, image_path, gallery_conf):
     html = anim._repr_html_()
     if html is None:  # plt.rcParams['animation.html'] == 'none'
         html = anim.to_jshtml()
-    html = indent(html, '         ')
+    html = indent(html, '     ')
     return _ANIMATION_RST.format(html)
 
 
