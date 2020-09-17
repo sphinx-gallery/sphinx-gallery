@@ -83,6 +83,7 @@ DEFAULT_GALLERY_CONF = {
     'pypandoc': False,
     'remove_config_comments': False,
     'show_memory': False,
+    'print_memory_residuals': False,
     'junit': '',
     'log_level': {'backreference_missing': 'warning'},
     'inspect_global_variables': True,
@@ -452,15 +453,18 @@ def generate_gallery_rst(app):
         logger.info("computation time summary:", color='white')
         lines, lens = _format_for_writing(
             costs, os.path.normpath(gallery_conf['src_dir']), kind='console')
-        for name, t, m in lines:
-            text = ('    - %s:   ' % (name,)).ljust(lens[0] + 10)
+        for line in lines:
+            text = ('    - %s:   ' % (line[0],)).ljust(lens[0] + 10)
+            t = line[1]
             if t is None:
                 text += '(not run)'
                 logger.info(text)
             else:
                 t_float = float(t.split()[0])
                 if t_float >= gallery_conf['min_reported_time']:
-                    text += t.rjust(lens[1]) + '   ' + m.rjust(lens[2])
+                    text += t.rjust(lens[1])
+                    for ii in range(2, len(line)):
+                        text += '   ' + line[ii].rjust(lens[ii])
                     logger.info(text)
         # Also create a junit.xml file, useful e.g. on CircleCI
         write_junit_xml(gallery_conf, app.builder.outdir, costs)
@@ -506,8 +510,11 @@ def _format_for_writing(costs, path, kind='rst'):
             assert kind == 'console'
             name = os.path.relpath(cost[1], path)
             t = '%0.2f sec' % (cost[0][0],)
-        m = '{0:.1f} MB'.format(cost[0][1])
-        lines.append([name, t, m])
+        line = [name, t]
+        line.append('{0:.1f} MB'.format(cost[0][1]))
+        if len(cost[0]) > 2:
+            line.append('({0:0.1f} MB residual)'.format(cost[0][2]))
+        lines.append(line)
     lens = [max(x) for x in zip(*[[len(item) for item in cost]
                                   for cost in lines])]
     return lines, lens
@@ -551,7 +558,8 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     src_dir = gallery_conf['src_dir']
     output = ''
     for cost in costs:
-        (t, _), fname = cost
+        t = cost[0][0]
+        fname = cost[1]
         if not any(fname in x for x in (gallery_conf['passing_examples'],
                                         failing_unexpectedly,
                                         failing_as_expected,

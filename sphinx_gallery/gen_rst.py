@@ -563,27 +563,27 @@ def execute_code_block(compiler, block, example_globals,
             is_last_expr = True
             last_val = code_ast.body.pop().value
             # exec body minus last expression
-            mem_body, _ = gallery_conf['call_memory'](
+            mem_body = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
+                    script_vars['fake_main']))[0]
             # exec last expression, made into assignment
             body = [ast.Assign(
                 targets=[ast.Name(id='___', ctx=ast.Store())], value=last_val)]
             last_val_ast = ast_Module(body=body)
             ast.fix_missing_locations(last_val_ast)
-            mem_last, _ = gallery_conf['call_memory'](
+            mem_last = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(last_val_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
+                    script_vars['fake_main']))[0]
             # capture the assigned variable
             ___ = example_globals['___']
             mem_max = max(mem_body, mem_last)
         else:
-            mem_max, _ = gallery_conf['call_memory'](
+            mem_max = gallery_conf['call_memory'](
                 _exec_once(
                     compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
+                    script_vars['fake_main']))[0]
         script_vars['memory_delta'].append(mem_max)
         # This should be inside the try block, e.g., in case of a savefig error
         logging_tee.restore_std()
@@ -755,11 +755,19 @@ def execute_script(script_blocks, script_vars, gallery_conf):
             logging_tee.set_std_and_reset_position()
             output_blocks.append(execute_code_block(
                 compiler, block, example_globals, script_vars, gallery_conf))
+    del example_globals
+    del fake_main
+    del script_vars['fake_main']
     time_elapsed = time() - t_start
     sys.argv = argv_orig
-    script_vars['memory_delta'] = max(script_vars['memory_delta'])
+    script_vars['memory_delta'] = (max(script_vars['memory_delta']) -
+                                   memory_start)
     if script_vars['execute_script']:
-        script_vars['memory_delta'] -= memory_start
+        if gallery_conf['print_memory_residuals']:
+            gc.collect()
+            gc.collect()
+            script_vars['memory_residual'] = max(
+                gallery_conf['call_memory'](lambda: None)[0] - memory_start, 0)
         # Write md5 checksum if the example was meant to run (no-plot
         # shall not cache md5sum) and has built correctly
         with open(script_vars['target_file'] + '.md5', 'w') as file_checksum:
@@ -791,7 +799,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     intro: str
         The introduction of the example
     cost : tuple
-        A tuple containing the ``(time, memory)`` required to run the script.
+        A tuple containing the ``(time, memory, memory_uncollected)`` required
+        to run the script.
     """
     seen_backrefs = set() if seen_backrefs is None else seen_backrefs
     src_file = os.path.normpath(os.path.join(src_dir, fname))
@@ -805,10 +814,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
 
     executable = executable_script(src_file, gallery_conf)
 
+    cost = (0, 0)
+    if gallery_conf['print_memory_residuals']:
+        cost = cost + (0,)
     if md5sum_is_current(target_file, mode='t'):
         if executable:
             gallery_conf['stale_examples'].append(target_file)
-        return intro, title, (0, 0)
+        return intro, title, cost
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):
@@ -854,11 +866,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     _replace_md5(ipy_fname, mode='t')
 
     # Write names
-    if gallery_conf['inspect_global_variables']:
-        global_variables = script_vars['example_globals']
-    else:
-        global_variables = None
+    global_variables = script_vars.pop('example_globals', None)
     example_code_obj = identify_names(script_blocks, global_variables, node)
+    del global_variables  # make sure we don't keep them around
     if example_code_obj:
         codeobj_fname = target_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:
@@ -872,11 +882,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
                           fname, intro, title)
 
-    return intro, title, (time_elapsed, memory_used)
+    cost = (time_elapsed, memory_used)
+    if gallery_conf['print_memory_residuals']:
+        cost = cost + (script_vars.get('memory_residual', 0.),)
+    return intro, title, cost
 
 
 def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
-    """Generates the rst string containing the script prose, code and output
+    """Generates the rst string containing the script prose, code and output.
 
     Parameters
     ----------
