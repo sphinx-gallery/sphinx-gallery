@@ -157,13 +157,16 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
 Docstring
 
 .. GENERATED FROM PYTHON SOURCE LINES 3-5
+
 Paragraph 1
 is long.
 
 .. GENERATED FROM PYTHON SOURCE LINES 7-8
+
 Paragraph 2
 
 .. GENERATED FROM PYTHON SOURCE LINES 10-11
+
 Paragraph 3
 
 """
@@ -201,9 +204,11 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
 Docstring
 
 .. GENERATED FROM PYTHON SOURCE LINES 3-4
+
 Paragraph 1
 
 .. GENERATED FROM PYTHON SOURCE LINES 4-5
+
 .. code-block:: python
 
 
