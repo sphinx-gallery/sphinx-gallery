@@ -130,6 +130,7 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
         f.write('\n'.join(['"Docstring"',
                            '####################',
                            '# Paragraph 1',
+                           '# is long.',
                            '',
                            '#%%',
                            '# Paragraph 2',
@@ -152,16 +153,24 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
         blocks, script_vars, gallery_conf)
 
     example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
-    assert example_rst == '\n'.join([
-        'Docstring',
-        '',
-        'Paragraph 1',
-        '',
-        'Paragraph 2',
-        '',
-        'Paragraph 3',
-        '',
-        ''])
+    want_rst = """\
+Docstring
+
+.. GENERATED FROM PYTHON SOURCE LINES 3-5
+
+Paragraph 1
+is long.
+
+.. GENERATED FROM PYTHON SOURCE LINES 7-8
+
+Paragraph 2
+
+.. GENERATED FROM PYTHON SOURCE LINES 10-11
+
+Paragraph 3
+
+"""
+    assert example_rst == want_rst
 
 
 def test_rst_empty_code_block(gallery_conf, tmpdir):
@@ -191,15 +200,20 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
         blocks, script_vars, gallery_conf)
 
     example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
-    assert example_rst.rstrip('\n') == """Docstring
+    want_rst = """\
+Docstring
+
+.. GENERATED FROM PYTHON SOURCE LINES 3-4
 
 Paragraph 1
 
+.. GENERATED FROM PYTHON SOURCE LINES 4-5
 
 .. code-block:: python
 
 
     # just a comment"""
+    assert example_rst.rstrip('\n') == want_rst
 
 
 def test_script_vars_globals(gallery_conf, tmpdir):
@@ -235,7 +249,7 @@ b = 'foo'
 def test_codestr2rst():
     """Test the correct translation of a code block into rst."""
     output = sg.codestr2rst('print("hello world")')
-    reference = """
+    reference = """\
 .. code-block:: python
 
     print("hello world")"""
