@@ -689,7 +689,9 @@ fig
 
 html_out = """.. raw:: html
 
+    <div class="output_subarea output_html rendered_html output_result">
     <div> This is the _repr_html_ div </div>
+    </div>
     <br />
     <br />"""
 

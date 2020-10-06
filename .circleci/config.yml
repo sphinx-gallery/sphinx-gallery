@@ -24,7 +24,7 @@ jobs:
       - restore_cache:
           keys:
             - cache-pip
-      - run: pip install --user numpy matplotlib pyqt5 seaborn sphinx_rtd_theme pillow joblib sphinx pytest vtk traits traitsui pyface https://github.com/enthought/mayavi/zipball/master memory_profiler ipython plotly
+      - run: pip install --user numpy matplotlib pyqt5 seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest vtk traits traitsui pyface https://github.com/enthought/mayavi/zipball/master memory_profiler ipython plotly
       - save_cache:
           key: cache-pip
           paths:

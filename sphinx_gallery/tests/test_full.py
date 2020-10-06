@@ -26,7 +26,8 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 
 import pytest
 
-N_TOT = 11
+N_TOT = 12
+
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
 N_RST = 15 + N_TOT
@@ -218,6 +219,16 @@ def test_image_formats(sphinx_app):
             assert want_html in html
         if extra is not None:
             assert extra in html
+
+
+def test_repr_html_classes(sphinx_app):
+    """Test appropriate _repr_html_ classes."""
+    example_file = op.join(
+        sphinx_app.outdir, 'auto_examples', 'plot_repr.html')
+    with codecs.open(example_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'div class="output_subarea output_html rendered_html output_result"' in lines  # noqa: E501
+    assert 'gallery-rendered-html.css' in lines
 
 
 def test_embed_links_and_styles(sphinx_app):

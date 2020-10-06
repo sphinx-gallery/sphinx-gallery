@@ -35,7 +35,8 @@ from .binder import copy_binder_files, check_binder_conf
 from .directives import MiniGallery
 
 
-_KNOWN_CSS = ('gallery', 'gallery-binder', 'gallery-dataframe')
+_KNOWN_CSS = ('gallery', 'gallery-binder', 'gallery-dataframe',
+              'gallery-rendered-html')
 
 
 class DefaultResetArgv:
