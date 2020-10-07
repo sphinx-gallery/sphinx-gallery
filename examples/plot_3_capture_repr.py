@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-r"""
+"""
+.. _capture_repr_examples:
+
 Capturing output representations
 ================================
 
@@ -53,6 +55,14 @@ df
 # example 4
 print('Hello world')
 a + b
+
+#%%
+# Statsmodels tables should also be styled appropriately:
+
+# example 5
+import numpy as np
+import statsmodels.iolib.table
+statsmodels.iolib.table.SimpleTable(np.zeros((3, 3)))
 
 #%%
 # ``print()`` outputs to standard output, which is always captured. The

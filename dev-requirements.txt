@@ -6,6 +6,7 @@ numpy
 matplotlib
 pillow
 seaborn
+statsmodels
 joblib
 flake8
 check-manifest

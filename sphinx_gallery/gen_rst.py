@@ -164,11 +164,15 @@ SPHX_GLR_SIG = """\n
 # Header used to include raw html
 html_header = """.. raw:: html
 
-{0}\n    <br />\n    <br />"""
+    <div class="output_subarea output_html rendered_html output_result">
+{0}
+    </div>
+    <br />
+    <br />"""
 
 
 def codestr2rst(codestr, lang='python', lineno=None):
-    """Return reStructuredText code block from code string"""
+    """Return reStructuredText code block from code string."""
     if lineno is not None:
         # Sphinx only starts numbering from the first non-empty line.
         blank_lines = codestr.count('\n', 0, -len(codestr.lstrip()))
