@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-.. _capture-repr-examples:
+.. _capture_repr_examples:
 
 Capturing output representations
 ================================

@@ -1331,7 +1331,7 @@ expression. If this method does not exist for the expression, the second
 'representation' method in the tuple, ``__repr__``, would be captured. If the
 ``__repr__`` also does not exist (unlikely for non-user defined objects),
 nothing would be captured. Data directed to standard output is **always**
-captured. For several examples, see :ref:`capture-repr-examples`.
+captured. For several examples, see :ref:`capture_repr_examples`.
 
 To capture only data directed to standard output, configure ``'capture_repr'``
 to be an empty tuple: ``'capture_repr': ()``. This will imitate the behaviour
