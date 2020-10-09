@@ -84,6 +84,7 @@ DEFAULT_GALLERY_CONF = {
     'pypandoc': False,
     'remove_config_comments': False,
     'show_memory': False,
+    'show_signature': True,
     'junit': '',
     'log_level': {'backreference_missing': 'warning'},
     'inspect_global_variables': True,
@@ -445,7 +446,8 @@ def generate_gallery_rst(app):
                     gallery_dir, app.builder.srcdir)
                 fhindex.write(download_fhindex)
 
-            fhindex.write(SPHX_GLR_SIG)
+            if (app.config.sphinx_gallery_conf['show_signature']):
+                fhindex.write(SPHX_GLR_SIG)
         _replace_md5(index_rst_new, mode='t')
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
