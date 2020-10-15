@@ -885,7 +885,7 @@ EXAMPLE_HEADER = """
 .. "{0}"
 .. LINE NUMBERS ARE GIVEN BELOW.
 
-.. only:: html
+.. only:: {3}
 
     .. note::
         :class: sphx-glr-download-link-note
@@ -987,8 +987,9 @@ def save_rst_example(example_rst, example_file, time_elapsed,
 
     binder_text = (" or to run this example in your browser via Binder"
                    if len(binder_conf) else "")
+    dl_note_tag = "html" if gallery_conf['show_download_note'] else "hide"
     example_rst = EXAMPLE_HEADER.format(
-        example_fname, ref_fname, binder_text) + example_rst
+        example_fname, ref_fname, binder_text, dl_note_tag) + example_rst
 
     if time_elapsed >= gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)

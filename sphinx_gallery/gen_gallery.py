@@ -85,6 +85,7 @@ DEFAULT_GALLERY_CONF = {
     'remove_config_comments': False,
     'show_memory': False,
     'show_signature': True,
+    'show_download_note': True,
     'junit': '',
     'log_level': {'backreference_missing': 'warning'},
     'inspect_global_variables': True,
