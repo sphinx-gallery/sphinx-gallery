@@ -551,14 +551,12 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
                 if 'FYI this' in line:
                     line = 'A ' + line
                 fid.write(line)
-        n_ch = '9'
         out_of, excluding = N_FAILING + 1, N_GOOD - 1
         n_stale = N_GOOD - 1
     else:
         assert how == 'run_stale'
         confoverrides['sphinx_gallery_conf.run_stale_examples'] = 'True'
         confoverrides['sphinx_gallery_conf.filename_pattern'] = 'plot_numpy_ma'
-        n_ch = '[8|9]'
         out_of, excluding = 1, 0
         n_stale = 0
     with docutils_namespace():
@@ -576,6 +574,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # ... but then later detects that only two have changed
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
+    n_ch = '[8|9]'
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
