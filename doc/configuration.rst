@@ -184,7 +184,7 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
 
         $ sphinx-build -D sphinx_gallery_conf.filename_pattern=plot_specific_example\.py ...
 
-.. _run_stale_examples::
+.. _run_stale_examples:
 
 Rerunning stale examples
 ========================
