@@ -809,9 +809,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     executable = executable_script(src_file, gallery_conf)
 
     if md5sum_is_current(target_file, mode='t'):
+        do_return = True
         if executable:
-            gallery_conf['stale_examples'].append(target_file)
-        return intro, title, (0, 0)
+            if gallery_conf['run_stale_examples']:
+                do_return = False
+            else:
+                gallery_conf['stale_examples'].append(target_file)
+        if do_return:
+            return intro, title, (0, 0)
 
     image_dir = os.path.join(target_dir, 'images')
     if not os.path.exists(image_dir):

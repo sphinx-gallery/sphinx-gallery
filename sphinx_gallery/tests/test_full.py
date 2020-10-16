@@ -379,11 +379,15 @@ def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
     assert ([op.basename(x) for x in list_orig] ==
             [op.basename(x) for x in list_new])
     for orig, new in zip(list_orig, list_new):
-        if op.basename(orig) in different:
+        check_name = op.splitext(op.basename(orig))[0]
+        if check_name.endswith('_codeobj'):
+            check_name = check_name[:-8]
+        if check_name in different:
             assert np.abs(op.getmtime(orig) - op.getmtime(new)) > 0.1
-        elif op.basename(orig) not in ignore:
+        elif check_name not in ignore:
             assert_allclose(op.getmtime(orig), op.getmtime(new),
-                            atol=1e-3, rtol=1e-20, err_msg=op.basename(orig))
+                            atol=1e-3, rtol=1e-20,
+                            err_msg=op.basename(orig))
 
 
 def test_rebuild(tmpdir_factory, sphinx_app):
@@ -506,9 +510,9 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # these two should almost always be different, but in case we
         # get extremely unlucky and have identical run times
         # on the one script that gets re-run (because it's a fail)...
-        'sg_execution_times.rst',
-        'plot_future_imports_broken.rst',
-        'plot_scraper_broken.rst'
+        'sg_execution_times',
+        'plot_future_imports_broken',
+        'plot_scraper_broken'
     )
     _assert_mtimes(generated_rst_0, generated_rst_1, ignore=ignore)
 
@@ -522,32 +526,62 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     _assert_mtimes(copied_ipy_0, copied_ipy_1)
 
     #
-    # run a third time, changing one file
+    # run a third and a fourth time, changing one file or running one stale
     #
 
+    for how in ('run_stale', 'modify'):
+        # modify must be last so that it actually tries to run the
+        # broken example (subsequent tests depend on it)
+        _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
+               generated_modules_0, generated_backrefs_0, generated_rst_0,
+               generated_pickle_0, copied_py_0, copied_ipy_0)
+
+
+def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
+           generated_modules_0, generated_backrefs_0, generated_rst_0,
+           generated_pickle_0, copied_py_0, copied_ipy_0):
     time.sleep(0.1)
-    fname = op.join(src_dir, 'examples', 'plot_numpy_matplotlib.py')
-    with codecs.open(fname, 'r', 'utf-8') as fid:
-        lines = fid.readlines()
-    with codecs.open(fname, 'w', 'utf-8') as fid:
-        for line in lines:
-            if line.startswith('FYI this'):
-                line = 'A ' + line
-            fid.write(line)
+    confoverrides = dict()
+    if how == 'modify':
+        fname = op.join(src_dir, 'examples', 'plot_numpy_matplotlib.py')
+        with codecs.open(fname, 'r', 'utf-8') as fid:
+            lines = fid.readlines()
+        with codecs.open(fname, 'w', 'utf-8') as fid:
+            for line in lines:
+                if 'FYI this' in line:
+                    line = 'A ' + line
+                fid.write(line)
+        n_ch = '9'
+        out_of, excluding = N_FAILING + 1, N_GOOD - 1
+        n_stale = N_GOOD - 1
+    else:
+        assert how == 'run_stale'
+        confoverrides['sphinx_gallery_conf.run_stale_examples'] = 'True'
+        confoverrides['sphinx_gallery_conf.filename_pattern'] = 'plot_numpy_ma'
+        n_ch = '8'
+        out_of, excluding = 1, 0
+        n_stale = 0
     with docutils_namespace():
         new_app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                         buildername='html', status=StringIO())
+                         buildername='html', status=StringIO(),
+                         confoverrides=confoverrides)
         new_app.build(False, [])
     status = new_app._status.getvalue()
     n = '[' + '|'.join(str(x + N_FAILING) for x in range(4)) + ']'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
-    want = '.*targets for %s source files that are out of date$.*' % n
-    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
+    flags = re.MULTILINE | re.DOTALL
+    if how == 'run_stale':  # confoverrides shows them as out of date...
+        want = '.*targets for %s source files that are out of date$.*' % N_RST
+        assert re.match(want, status, flags) is not None, lines
+    # ... but then later detects that only two have changed
+    lines = [line for line in status.split('\n') if 'changed,' in line]
+    want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
+    assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
-            % (N_FAILING + 1, N_GOOD - 1,))
-    assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
-    n_stale = len(new_app.config.sphinx_gallery_conf['stale_examples'])
-    assert n_stale == N_GOOD - 1
+            % (out_of, excluding))
+    assert re.match(want, status, flags) is not None
+    got_stale = len(new_app.config.sphinx_gallery_conf['stale_examples'])
+    assert got_stale == n_stale
     assert op.isfile(op.join(new_app.outdir, '_images',
                              'sphx_glr_plot_numpy_matplotlib_001.png'))
 
@@ -590,25 +624,24 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # this one should almost always be different, but in case we
         # get extremely unlucky and have identical run times
         # on the one script above that changes...
-        'sg_execution_times.rst',
+        'sg_execution_times',
         # this one will not change even though it was retried
-        'plot_future_imports_broken.rst',
-        'plot_scraper_broken.rst',
+        'plot_future_imports_broken',
+        'plot_scraper_broken',
     )
+    different = ('plot_numpy_matplotlib',)
     if not sys.platform.startswith('win'):  # not reliable on Windows
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
 
         # mtimes for pickles
-        _assert_mtimes(generated_pickle_0, generated_pickle_1,
-                       different=('plot_numpy_matplotlib.codeobj.pickle'))
+        use_different = () if how == 'run_stale' else different
+        _assert_mtimes(generated_pickle_0, generated_pickle_1, ignore=ignore)
 
         # mtimes for .py files (gh-395)
-        _assert_mtimes(copied_py_0, copied_py_1,
-                       different=('plot_numpy_matplotlib.py'))
+        _assert_mtimes(copied_py_0, copied_py_1, different=use_different)
 
         # mtimes for .ipynb files
-        _assert_mtimes(copied_ipy_0, copied_ipy_1,
-                       different=('plot_numpy_matplotlib.ipynb'))
+        _assert_mtimes(copied_ipy_0, copied_ipy_1, different=use_different)
 
 
 @pytest.mark.parametrize('name, want', [
