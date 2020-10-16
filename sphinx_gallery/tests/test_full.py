@@ -567,7 +567,6 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
                          confoverrides=confoverrides)
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    n = '[' + '|'.join(str(x + N_FAILING) for x in range(4)) + ']'
     lines = [line for line in status.split('\n') if 'source files tha' in line]
     flags = re.MULTILINE | re.DOTALL
     if how == 'run_stale':  # confoverrides shows them as out of date...
