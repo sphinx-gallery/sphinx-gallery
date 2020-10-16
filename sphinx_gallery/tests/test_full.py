@@ -558,7 +558,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
         assert how == 'run_stale'
         confoverrides['sphinx_gallery_conf.run_stale_examples'] = 'True'
         confoverrides['sphinx_gallery_conf.filename_pattern'] = 'plot_numpy_ma'
-        n_ch = '8'
+        n_ch = '[8|9]'
         out_of, excluding = 1, 0
         n_stale = 0
     with docutils_namespace():
@@ -568,12 +568,14 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split('\n') if 'source files tha' in line]
+    lines = '\n'.join([how] + lines)
     flags = re.MULTILINE | re.DOTALL
     if how == 'run_stale':  # confoverrides shows them as out of date...
         want = '.*targets for %s source files that are out of date$.*' % N_RST
         assert re.match(want, status, flags) is not None, lines
     # ... but then later detects that only two have changed
     lines = [line for line in status.split('\n') if 'changed,' in line]
+    lines = '\n'.join([how] + lines)
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
