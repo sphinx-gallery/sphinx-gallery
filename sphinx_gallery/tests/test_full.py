@@ -376,6 +376,7 @@ def test_logging_std_nested(sphinx_app):
 
 
 def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
+    """Assert that the correct set of files were changed based on mtime."""
     assert ([op.basename(x) for x in list_orig] ==
             [op.basename(x) for x in list_new])
     for orig, new in zip(list_orig, list_new):
@@ -530,7 +531,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     #
 
     for how in ('run_stale', 'modify'):
-        # modify must be last so that it actually tries to run the
+        # modify must be last as this rerun setting tries to run the
         # broken example (subsequent tests depend on it)
         _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
                generated_modules_0, generated_backrefs_0, generated_rst_0,
@@ -540,6 +541,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
 def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
            generated_modules_0, generated_backrefs_0, generated_rst_0,
            generated_pickle_0, copied_py_0, copied_ipy_0):
+    """Rerun the sphinx build and check that the right files were changed."""
     time.sleep(0.1)
     confoverrides = dict()
     if how == 'modify':
@@ -568,10 +570,14 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     lines = [line for line in status.split('\n') if 'source files tha' in line]
     lines = '\n'.join([how] + lines)
     flags = re.MULTILINE | re.DOTALL
-    if how == 'run_stale':  # confoverrides shows them as out of date...
+    # for some reason, setting "confoverrides" above causes Sphinx to show
+    # all targets out of date, even though they haven't been modified...
+    if how == 'run_stale':
         want = '.*targets for %s source files that are out of date$.*' % N_RST
         assert re.match(want, status, flags) is not None, lines
-    # ... but then later detects that only two have changed
+    # ... but then later detects that only some have actually changed
+    # (sometimes this is 8, other times 9, depending on Windows/Linux for some
+    # unknown reason)
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
     n_ch = '[8|9]'
@@ -617,9 +623,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
 
     # generated RST files
-    different = (
-        'plot_numpy_matplotlib.rst',
-    )
+    different = ('plot_numpy_matplotlib',)
     ignore = (
         # this one should almost always be different, but in case we
         # get extremely unlucky and have identical run times
@@ -629,7 +633,6 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
         'plot_future_imports_broken',
         'plot_scraper_broken',
     )
-    different = ('plot_numpy_matplotlib',)
     if not sys.platform.startswith('win'):  # not reliable on Windows
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
 

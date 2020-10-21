@@ -189,23 +189,23 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
 Rerunning stale examples
 ========================
 By default, sphinx-gallery only rebuilds examples that have changed.
-For example, starting from a clean ``doc/`` directory, running your HTML build
-once will result in Sphinx-gallery executing all examples that match your given
-filename / ignore patterns. Then, running
+For example, when starting from a clean ``doc/`` directory, running your HTML
+build once will result in Sphinx-gallery executing all examples that match your
+given :ref:`filename/ignore patterns <build pattern>`. Then, running
 the exact same command a second time *should not run any examples*, because the
 MD5 hash of each example will be checked against the MD5 hash (saved to disk
 as ``<filename>.md5`` in the generated directory) that the example file had
-during the first build, they will match and thus the example will be determined
-to be "stale", and it will not be rebuilt by Sphinx-gallery.
+during the first build. These will match and thus the example will be
+determined to be "stale", and it will not be rebuilt by Sphinx-gallery.
 This design feature allows for more rapid documentation iteration by only
 rebuilding examples when they change.
 
 However, this presents a problem during some modes of debugging and
 iteration. Let's say that you have one particular
 example that you want to rebuild repeatedly while modifying some function in
-your underlying library, while leaving the example file contents themselves
-fixed. To do this, you'd either need to make some change (e.g., add/delete a
-newline) to your example or delete the ``.md5`` file to force Sphinx-gallery
+your underlying library but do not want to change the example file contents
+themselves. To do this, you'd either need to make some change (e.g., add/delete
+a newline) to your example or delete the ``.md5`` file to force Sphinx-gallery
 to rebuild the example. Instead, you can use the configuration value::
 
     sphinx_gallery_conf = = {
@@ -213,15 +213,18 @@ to rebuild the example. Instead, you can use the configuration value::
         'run_stale_examples': True,
     }
 
-This can be combined with other options to repeatedly rerun a single example
-from the command line for example by doing some variant of:
+With this configuration, all examples matching the filename/ignore pattern will
+be rebuilt, even if their MD5 hash shows that the example did not change.
+You can combine this with :ref:`filename/ignore patterns <build_pattern>`
+to repeatedly rerun a single example.
+This could be done from the command line, for example:
 
 .. code-block:: console
 
     $ make html SPHINXOPTS='-D sphinx_gallery_conf.run_stale_examples=True' -Dsphinx_gallery_conf.filename_pattern='my_example_name'``
 
-This will cause any examples matching the filename/ignore patterns to be
-rebuilt, regardless of their MD5 hashes.
+This command will cause any examples matching the filename pattern
+``'my_example_name'`` to be rebuilt, regardless of their MD5 hashes.
 
 
 .. _reset_argv:
