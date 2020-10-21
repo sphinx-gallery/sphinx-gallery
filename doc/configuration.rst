@@ -191,7 +191,7 @@ Rerunning stale examples
 By default, sphinx-gallery only rebuilds examples that have changed.
 For example, when starting from a clean ``doc/`` directory, running your HTML
 build once will result in Sphinx-gallery executing all examples that match your
-given :ref:`filename/ignore patterns <build pattern>`. Then, running
+given :ref:`filename/ignore patterns <build_pattern>`. Then, running
 the exact same command a second time *should not run any examples*, because the
 MD5 hash of each example will be checked against the MD5 hash (saved to disk
 as ``<filename>.md5`` in the generated directory) that the example file had
