@@ -572,9 +572,8 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     flags = re.MULTILINE | re.DOTALL
     # for some reason, setting "confoverrides" above causes Sphinx to show
     # all targets out of date, even though they haven't been modified...
-    if how == 'run_stale':
-        want = '.*targets for %s source files that are out of date$.*' % N_RST
-        assert re.match(want, status, flags) is not None, lines
+    want = '.*targets for %s source files that are out of date$.*' % N_RST
+    assert re.match(want, status, flags) is not None, lines
     # ... but then later detects that only some have actually changed
     # (sometimes this is 8, other times 9, depending on Windows/Linux for some
     # unknown reason)
