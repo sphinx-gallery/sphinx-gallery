@@ -574,15 +574,12 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # all targets out of date, even though they haven't been modified...
     want = '.*targets for %s source files that are out of date$.*' % N_RST
     assert re.match(want, status, flags) is not None, lines
-    # ... but then later detects that only some have actually changed
-    # (sometimes this is 8, other times 9, depending on Windows/Linux for some
-    # unknown reason)
+    # ... but then later detects that only some have actually changed:
+    # Linux: 8 changed when how='run_stale', 9 when how='modify'.
+    # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    if how == 'run_stale':
-        n_ch = '8'
-    else:
-        n_ch = '9'
+    n_ch = '[8|9]'
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
