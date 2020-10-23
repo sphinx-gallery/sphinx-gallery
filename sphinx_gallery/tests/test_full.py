@@ -579,7 +579,10 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # unknown reason)
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '[8|9]'
+    if how == 'run_stale':
+        n_ch = '8'
+    else:
+        n_ch = '9'
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
