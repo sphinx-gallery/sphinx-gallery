@@ -71,6 +71,7 @@ DEFAULT_GALLERY_CONF = {
     'failing_examples': {},
     'passing_examples': [],
     'stale_examples': [],  # ones that did not need to be run due to md5sum
+    'run_stale_examples': False,
     'expected_failing_examples': set(),
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
@@ -95,14 +96,21 @@ DEFAULT_GALLERY_CONF = {
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
 
+def _bool_eval(x):
+    if isinstance(x, str):
+        try:
+            x = eval(x)
+        except TypeError:
+            pass
+    return bool(x)
+
+
 def parse_config(app):
-    """Process the Sphinx Gallery configuration"""
-    try:
-        plot_gallery = eval(app.builder.config.plot_gallery)
-    except TypeError:
-        plot_gallery = bool(app.builder.config.plot_gallery)
+    """Process the Sphinx Gallery configuration."""
+    plot_gallery = _bool_eval(app.builder.config.plot_gallery)
     src_dir = app.builder.srcdir
-    abort_on_example_error = app.builder.config.abort_on_example_error
+    abort_on_example_error = _bool_eval(
+        app.builder.config.abort_on_example_error)
     lang = app.builder.config.highlight_language
     gallery_conf = _complete_gallery_conf(
         app.config.sphinx_gallery_conf, src_dir, plot_gallery,
@@ -128,6 +136,10 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         gallery_conf['image_scrapers'] += ('mayavi',)
     gallery_conf.update(plot_gallery=plot_gallery)
     gallery_conf.update(abort_on_example_error=abort_on_example_error)
+    # XXX anything that can only be a bool (rather than str) should probably be
+    # evaluated this way as it allows setting via -D on the command line
+    for key in ('run_stale_examples',):
+        gallery_conf[key] = _bool_eval(gallery_conf[key])
     gallery_conf['src_dir'] = src_dir
     gallery_conf['app'] = app
 

@@ -19,6 +19,7 @@ file:
 
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
 - ``filename_pattern`` and ``ignore_pattern`` (:ref:`build_pattern`)
+- ``run_stale_examples`` (:ref:`run_stale_examples`)
 - ``reset_argv`` (:ref:`reset_argv`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
@@ -155,10 +156,7 @@ one is targeting a specific file, it would match the dot in the filename even wi
 
 .. note::
     Sphinx-gallery only re-runs examples that have changed (according to their
-    md5 hash). You can delete the associated MD5 files (e.g.,
-    ``./auto_examples/plot_awesome_example.py.md5``) to force a rebuild if
-    you have not changed the example itself between subsequent ``sphinx``
-    calls.
+    md5 hash). See :ref:`run_stale_examples` below for information.
 
 Similarly, to build only examples in a specific directory, you can do::
 
@@ -185,6 +183,49 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
     .. code-block:: console
 
         $ sphinx-build -D sphinx_gallery_conf.filename_pattern=plot_specific_example\.py ...
+
+.. _run_stale_examples:
+
+Rerunning stale examples
+========================
+By default, sphinx-gallery only rebuilds examples that have changed.
+For example, when starting from a clean ``doc/`` directory, running your HTML
+build once will result in Sphinx-gallery executing all examples that match your
+given :ref:`filename/ignore patterns <build_pattern>`. Then, running
+the exact same command a second time *should not run any examples*, because the
+MD5 hash of each example will be checked against the MD5 hash (saved to disk
+as ``<filename>.md5`` in the generated directory) that the example file had
+during the first build. These will match and thus the example will be
+determined to be "stale", and it will not be rebuilt by Sphinx-gallery.
+This design feature allows for more rapid documentation iteration by only
+rebuilding examples when they change.
+
+However, this presents a problem during some modes of debugging and
+iteration. Let's say that you have one particular
+example that you want to rebuild repeatedly while modifying some function in
+your underlying library but do not want to change the example file contents
+themselves. To do this, you'd either need to make some change (e.g., add/delete
+a newline) to your example or delete the ``.md5`` file to force Sphinx-gallery
+to rebuild the example. Instead, you can use the configuration value::
+
+    sphinx_gallery_conf = = {
+        ...
+        'run_stale_examples': True,
+    }
+
+With this configuration, all examples matching the filename/ignore pattern will
+be rebuilt, even if their MD5 hash shows that the example did not change.
+You can combine this with :ref:`filename/ignore patterns <build_pattern>`
+to repeatedly rerun a single example.
+This could be done from the command line, for example:
+
+.. code-block:: console
+
+    $ make html SPHINXOPTS='-D sphinx_gallery_conf.run_stale_examples=True' -Dsphinx_gallery_conf.filename_pattern='my_example_name'``
+
+This command will cause any examples matching the filename pattern
+``'my_example_name'`` to be rebuilt, regardless of their MD5 hashes.
+
 
 .. _reset_argv:
 
