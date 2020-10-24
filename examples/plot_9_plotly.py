@@ -3,8 +3,8 @@
 Example with the plotly graphing library
 ========================================
 
-sphinx-gallery supports examples made with the
-`plotly library <https://plotly.com/python/>`_. sphinx-gallery is able to
+Sphinx-Gallery supports examples made with the
+`plotly library <https://plotly.com/python/>`_. Sphinx-Gallery is able to
 capture the ``_repr_html_`` of plotly figure objects (see :ref:`capture_repr`).
 To display the figure, the last line in your code block should therefore be
 the plotly figure object.

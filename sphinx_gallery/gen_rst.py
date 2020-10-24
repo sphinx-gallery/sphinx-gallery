@@ -688,7 +688,7 @@ def executable_script(src_file, gallery_conf):
 
 def _check_input(prompt=None):
     raise ExtensionError(
-        'Cannot use input() builtin function in Sphinx-gallery examples')
+        'Cannot use input() builtin function in Sphinx-Gallery examples')
 
 
 def execute_script(script_blocks, script_vars, gallery_conf):
