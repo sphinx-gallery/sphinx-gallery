@@ -46,7 +46,7 @@ REFERENCE = r"""
 ])
 def test_thumbnail_div(content, tooltip, is_backref):
     """Test if the thumbnail div generates the correct string."""
-    with pytest.raises(ExtensionError, match='internal sphinx-gallery thumb'):
+    with pytest.raises(ExtensionError, match='internal Sphinx-Gallery thumb'):
         html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
                                      '<"test">', '<"title">')
     content = _sanitize_rst(content)

@@ -405,7 +405,7 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText
 
-    Start the sphinx-gallery configuration and recursively scan the examples
+    Start the Sphinx-Gallery configuration and recursively scan the examples
     directories in order to populate the examples gallery
     """
     logger.info('generating gallery...', color='white')
@@ -660,7 +660,7 @@ def summarize_failing_examples(app, exception):
 
     # Under no-plot Examples are not run so nothing to summarize
     if not app.config.sphinx_gallery_conf['plot_gallery']:
-        logger.info('Sphinx-gallery gallery_conf["plot_gallery"] was '
+        logger.info('Sphinx-Gallery gallery_conf["plot_gallery"] was '
                     'False, so no examples were executed.', color='brown')
         return
 
@@ -695,7 +695,7 @@ def summarize_failing_examples(app, exception):
     n_good = len(gallery_conf['passing_examples'])
     n_tot = len(gallery_conf['failing_examples']) + n_good
     n_stale = len(gallery_conf['stale_examples'])
-    logger.info('\nSphinx-gallery successfully executed %d out of %d '
+    logger.info('\nSphinx-Gallery successfully executed %d out of %d '
                 'file%s subselected by:\n\n'
                 '    gallery_conf["filename_pattern"] = %r\n'
                 '    gallery_conf["ignore_pattern"]   = %r\n'
@@ -766,7 +766,7 @@ def get_default_config_value(key):
 
 
 def setup(app):
-    """Setup sphinx-gallery sphinx extension"""
+    """Setup Sphinx-Gallery sphinx extension"""
     sphinx_compatibility._app = app
 
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')

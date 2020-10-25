@@ -72,7 +72,7 @@ For much of this functionality, you will need ``pillow``. We also recommend
 installing system ``optipng`` binaries to reduce the file sizes of the
 generated PNG files.
 
-Install as a Sphinx-gallery developer
+Install as a Sphinx-Gallery developer
 -------------------------------------
 
 You can get the latest development source from our `Github repository

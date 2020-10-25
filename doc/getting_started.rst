@@ -109,7 +109,7 @@ this folder must have the following things:
 
 .. _configure_and_use_sphinx_gallery:
 
-Configure and use sphinx-gallery
+Configure and use Sphinx-Gallery
 --------------------------------
 
 After Sphinx-Gallery is installed, we must enable and configure it to build

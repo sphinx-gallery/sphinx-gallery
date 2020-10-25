@@ -131,7 +131,7 @@ Write a custom image scraper
 
 .. warning:: The API for custom scrapers is currently experimental.
 
-By default, Sphinx-gallery supports image scrapers for Matplotlib
+By default, Sphinx-Gallery supports image scrapers for Matplotlib
 (:func:`~sphinx_gallery.scrapers.matplotlib_scraper`) and Mayavi
 (:func:`~sphinx_gallery.scrapers.mayavi_scraper`). If you wish to capture
 output from other python packages, first determine if the object you wish to
@@ -184,7 +184,7 @@ the helper function :func:`sphinx_gallery.scrapers.figure_rst` to help generate
 rST (see below).
 
 This function will be called once for each code block of your examples.
-Sphinx-gallery will take care of scaling images for the gallery
+Sphinx-Gallery will take care of scaling images for the gallery
 index page thumbnails. PNG images are scaled using Pillow, and
 SVG images are copied.
 
@@ -205,8 +205,8 @@ to disk (e.g., PNG or JPEG), we recommend you use a similar approach. ::
        import mymodule
        # We use a list to collect references to image names
        image_names = list()
-       # The `image_path_iterator` is created by Sphinx-gallery, it will yield
-       # a path to a file name that adheres to Sphinx-gallery naming convention.
+       # The `image_path_iterator` is created by Sphinx-Gallery, it will yield
+       # a path to a file name that adheres to Sphinx-Gallery naming convention.
        image_path_iterator = block_vars['image_path_iterator']
 
        # Define a list of our already-created figure objects.
@@ -288,7 +288,7 @@ Example 3: matplotlib with SVG format
 -------------------------------------
 The :func:`sphinx_gallery.scrapers.matplotlib_scraper` supports ``**kwargs``
 to pass to :meth:`matplotlib.figure.Figure.savefig`, one of which is the
-``format`` argument. Currently sphinx-gallery supports PNG (default) and SVG
+``format`` argument. Currently Sphinx-Gallery supports PNG (default) and SVG
 output formats. To use SVG, you can do::
 
     from sphinx_gallery.scrapers import matplotlib_scraper
@@ -310,24 +310,24 @@ output formats. To use SVG, you can do::
 You can also use different formats on a per-image basis, but this requires
 writing a customized scraper class or function.
 
-Integrate custom scrapers with Sphinx-gallery
+Integrate custom scrapers with Sphinx-Gallery
 ---------------------------------------------
 
-Sphinx-gallery plans to internally maintain only two scrapers: matplotlib and
+Sphinx-Gallery plans to internally maintain only two scrapers: matplotlib and
 mayavi. If you have extended or fixed bugs with these scrapers, we welcome PRs
 to improve them!
 
 On the other hand, if you have developed a custom scraper for a different
 plotting library that would be useful to the broader community, we encourage
-you to get it working with Sphinx-gallery and then maintain it externally
+you to get it working with Sphinx-Gallery and then maintain it externally
 (probably in the package that it scrapes), and then integrate and advertise
-it with Sphinx-gallery. You can:
+it with Sphinx-Gallery. You can:
 
 1. Contribute it to the list of externally supported scrapers located in
    :ref:`reset_modules`.
 2. Optional: add a custom hook to your module root to simplify scraper use.
    Taking PyVista as an example, adding ``pyvista._get_sg_image_scraper()``
-   that returns the ``callable`` scraper to be used by Sphinx-gallery allows
+   that returns the ``callable`` scraper to be used by Sphinx-Gallery allows
    PyVista users to just use strings as they already can for
    ``'matplotlib'`` and ``'mayavi'``::
 
@@ -336,7 +336,7 @@ it with Sphinx-gallery. You can:
            'image_scrapers': ('pyvista',)
        }
 
-   Sphinx-gallery will look for this custom function and call it to get the
+   Sphinx-Gallery will look for this custom function and call it to get the
    PyVista image scraper to use before running any examples.
 
 .. _custom_reset:
@@ -344,13 +344,13 @@ it with Sphinx-gallery. You can:
 Define resetting behavior (e.g., for custom libraries)
 ======================================================
 
-Sphinx-gallery natively supports resetting ``matplotlib`` and ``seaborn``.
+Sphinx-Gallery natively supports resetting ``matplotlib`` and ``seaborn``.
 However, if you'd like to support resetting for other libraries (or would like
 to modify the resetting behavior for a natively-supported library), you can
 add a custom function to the resetting tuple defined in ``conf.py``.
 
 The function takes two variables: a dictionary called ``gallery_conf`` (which is
-your Sphinx-gallery configuration) and a string called ``fname`` (which is the
+your Sphinx-Gallery configuration) and a string called ``fname`` (which is the
 file name of the currently-executed Python script). These generally don't need
 to be used in order to perform whatever resetting behavior you want, but must
 be included in the function definition for compatibility reasons.
@@ -374,10 +374,10 @@ the ``reset_modules`` configuration key. For the function defined above::
           examples themselves is discouraged due to the inconsistency
           that results between the rendered examples and local outputs.
 
-Using (only) Sphinx-gallery styles
+Using (only) Sphinx-Gallery styles
 ==================================
 
-If you just want to make use of sphinx-gallery CSS files, instead of using
+If you just want to make use of sphinx-Gallery CSS files, instead of using
 the ``sphinx_gallery.gen_gallery`` extension, you can use in ``conf.py``::
 
     extensions = ['sphinx_gallery.load_style']

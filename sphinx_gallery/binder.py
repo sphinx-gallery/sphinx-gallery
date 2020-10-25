@@ -263,6 +263,6 @@ def check_binder_conf(binder_conf):
         raise ConfigError(
             'Did not find one of `requirements.txt` or `environment.yml` '
             'in the "dependencies" section of the binder configuration '
-            'for sphinx-gallery. A path to at least one of these files '
+            'for Sphinx-Gallery. A path to at least one of these files '
             'must exist in your Binder dependencies.')
     return binder_conf

@@ -9,4 +9,4 @@ Gallery of Examples using Mayavi
 Mayavi examples
 ---------------
 
-Examples from the sphinx-gallery using Mayavi for embedding 3d plots.
+Examples from the Sphinx-Gallery using Mayavi for embedding 3d plots.

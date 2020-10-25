@@ -4,7 +4,7 @@
 Configuration
 =============
 
-Configuration and customization of sphinx-gallery is done primarily with a
+Configuration and customization of Sphinx-Gallery is done primarily with a
 dictionary specified in your ``conf.py`` file. A list of the possible
 keys are listed :ref:`below <list_of_options>` and explained in
 greater detail in subsequent sections.
@@ -14,7 +14,7 @@ greater detail in subsequent sections.
 List of config options
 ======================
 
-Most sphinx-gallery configuration options are set in the Sphinx ``conf.py``
+Most Sphinx-Gallery configuration options are set in the Sphinx ``conf.py``
 file:
 
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
@@ -155,7 +155,7 @@ Here, one should escape the dot ``r'\.'`` as otherwise python `regular expressio
 one is targeting a specific file, it would match the dot in the filename even without this escape character.
 
 .. note::
-    Sphinx-gallery only re-runs examples that have changed (according to their
+    Sphinx-Gallery only re-runs examples that have changed (according to their
     md5 hash). See :ref:`run_stale_examples` below for information.
 
 Similarly, to build only examples in a specific directory, you can do::
@@ -188,15 +188,15 @@ As the patterns are parsed as `regular expressions`_, users are advised to consu
 
 Rerunning stale examples
 ========================
-By default, sphinx-gallery only rebuilds examples that have changed.
+By default, Sphinx-Gallery only rebuilds examples that have changed.
 For example, when starting from a clean ``doc/`` directory, running your HTML
-build once will result in Sphinx-gallery executing all examples that match your
+build once will result in Sphinx-Gallery executing all examples that match your
 given :ref:`filename/ignore patterns <build_pattern>`. Then, running
 the exact same command a second time *should not run any examples*, because the
 MD5 hash of each example will be checked against the MD5 hash (saved to disk
 as ``<filename>.md5`` in the generated directory) that the example file had
 during the first build. These will match and thus the example will be
-determined to be "stale", and it will not be rebuilt by Sphinx-gallery.
+determined to be "stale", and it will not be rebuilt by Sphinx-Gallery.
 This design feature allows for more rapid documentation iteration by only
 rebuilding examples when they change.
 
@@ -205,7 +205,7 @@ iteration. Let's say that you have one particular
 example that you want to rebuild repeatedly while modifying some function in
 your underlying library but do not want to change the example file contents
 themselves. To do this, you'd either need to make some change (e.g., add/delete
-a newline) to your example or delete the ``.md5`` file to force Sphinx-gallery
+a newline) to your example or delete the ``.md5`` file to force Sphinx-Gallery
 to rebuild the example. Instead, you can use the configuration value::
 
     sphinx_gallery_conf = = {
@@ -516,7 +516,7 @@ to the function/class using dot notation (e.g.,
 Toggling global variable inspection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default, Sphinx-gallery will inspect global variables (and code objects)
+By default, Sphinx-Gallery will inspect global variables (and code objects)
 at the end of each code block to try to find classes of variables and
 method calls. It also tries to find methods called on classes.
 For example, this code::
@@ -1052,7 +1052,7 @@ The highest precedence is always given to the `-D` flag of the
 Compressing images
 ==================
 
-When writing PNG files (the default scraper format), sphinx-gallery can be
+When writing PNG files (the default scraper format), Sphinx-Gallery can be
 configured to use ``optipng`` to optimize the PNG file sizes. Typically this
 yields roughly a 50% reduction in file sizes, thus reducing the loading time
 of galleries. However, it can increase build
@@ -1082,10 +1082,10 @@ See ``$ optipng --help`` for a complete list of options.
 Image scrapers
 ==============
 
-Image scrapers are plugins that allow Sphinx-gallery to detect images produced
+Image scrapers are plugins that allow Sphinx-Gallery to detect images produced
 during execution of your examples, and then embed them into documentation.
 Scrapers can be activated by appending scraper names to the
-``'image_scrapers'`` tuple in your Sphinx-gallery configuration. For example,
+``'image_scrapers'`` tuple in your Sphinx-Gallery configuration. For example,
 to scrape both matplotlib and Mayavi images you can do::
 
       sphinx_gallery_conf = {
@@ -1117,11 +1117,11 @@ creating GIF thumbnails for the gallery pages.
 The following scrapers are supported:
 
 - matplotlib
-    Sphinx-gallery maintains a scraper for
+    Sphinx-Gallery maintains a scraper for
     :mod:`matplotlib <matplotlib.pyplot>` figures via the string
     ``'matplotlib'``.
 - Mayavi
-    Sphinx-gallery maintains a scraper for
+    Sphinx-Gallery maintains a scraper for
     :mod:`Mayavi <mayavi.mlab>` figures via the string
     ``'mayavi'``.
 - PyVista
@@ -1149,7 +1149,7 @@ Often you wish to "reset" the behavior of your visualization packages in order
 to ensure that any changes made to plotting behavior in one example do not
 propagate to the other examples.
 
-By default, before each example file executes, Sphinx-gallery will
+By default, before each example file executes, Sphinx-Gallery will
 reset ``matplotlib`` (by using :func:`matplotlib.pyplot.rcdefaults`) and ``seaborn``
 (by trying to unload the module from ``sys.modules``). This is equivalent to the
 following configuration::
@@ -1159,7 +1159,7 @@ following configuration::
         'reset_modules': ('matplotlib', 'seaborn'),
     }
 
-Currently, Sphinx-gallery natively supports resetting ``matplotlib`` and
+Currently, Sphinx-Gallery natively supports resetting ``matplotlib`` and
 ``seaborn``. However, you can also add your own custom function to
 this tuple in order to define resetting behavior for other visualization libraries.
 
@@ -1170,7 +1170,7 @@ Dealing with failing Gallery example scripts
 ============================================
 
 As your project evolves some of your example scripts might stop
-executing properly. Sphinx-gallery will assist you in the discovery process
+executing properly. Sphinx-Gallery will assist you in the discovery process
 of those bugged examples. The default behavior is to replace the
 thumbnail of those examples in the gallery with the broken
 thumbnail. That allows you to find with a quick glance of the gallery
@@ -1241,7 +1241,7 @@ Here you list the examples you allow to fail during the build process,
 keep in mind to specify the full relative path from your `conf.py` to
 the example script.
 
-.. note:: If an example is expected to fail, sphinx-gallery will error if
+.. note:: If an example is expected to fail, Sphinx-Gallery will error if
           the example runs without error.
 
 
@@ -1250,7 +1250,7 @@ the example script.
 Setting gallery thumbnail size
 ==============================
 
-By default Sphinx-gallery will generate thumbnails at size ``(400, 280)``.
+By default Sphinx-Gallery will generate thumbnails at size ``(400, 280)``.
 The thumbnail image will then be scaled to the size specified by
 ``'thumbnail_size``, adding pillarboxes or letterboxes as necessary to
 maintain the original aspect ratio. The default ``thumbnail_size`` is
@@ -1294,7 +1294,7 @@ in your ``gallery.css``` file:
 Minimal reported time
 =====================
 
-By default, Sphinx-gallery logs and embeds in the html output the time it took
+By default, Sphinx-Gallery logs and embeds in the html output the time it took
 to run each script.  If the majority of your examples runs quickly, you may not
 need this information.
 
@@ -1338,7 +1338,7 @@ A version of this that would always report 0 memory used would be::
 Show signature
 ==============
 
-By default, Sphinx-gallery writes a **Generated by ...** notice in the
+By default, Sphinx-Gallery writes a **Generated by ...** notice in the
 generated output.
 
 The ``show_signature`` parameter can be used to disable it.

@@ -82,7 +82,7 @@ Sphinx-Gallery Show: :ref:`examples-index`
 
    reference
    changes
-   Fork sphinx-gallery on Github <https://github.com/sphinx-gallery/sphinx-gallery>
+   Fork Sphinx-Gallery on Github <https://github.com/sphinx-gallery/sphinx-gallery>
 
 
 Indices and tables
