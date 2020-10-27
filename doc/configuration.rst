@@ -897,14 +897,18 @@ of this functionality.
 
 .. _providing_thumbnail:
 
-Providing a figure for the thumbnail image
+Providing an image for the thumbnail image
 ==========================================
 
-An arbitrary image can be provided to serve as a thumbnail image. To provide a
-figure for the thumbnail image, add a comment to the example script to specify
-the path to the figure you would like to use as the thumbnail. For example, the
-following defines that the figure ``demo.png`` in the folder ``_static/``
-should be used to create the thumbnail::
+An arbitrary image can be used to serve as the thumbnail image for an example.
+To specify an image to serve as the thumbnail, add a comment to the example
+script specifying the path to the desired image. The path to the image should
+be relative to the ``conf.py`` file and the comment should be somewhere
+below the docstring (ideally in a code block, see
+:ref:`removing_config_comments`).
+
+For example, the following defines that the image ``demo.png`` in the folder
+``_static/`` should be used to create the thumbnail::
 
     # sphinx_gallery_thumbnail_path = '_static/demo.png'
 
