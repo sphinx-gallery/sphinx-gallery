@@ -221,7 +221,7 @@ This could be done from the command line, for example:
 
 .. code-block:: console
 
-    $ make html SPHINXOPTS='-D sphinx_gallery_conf.run_stale_examples=True' -Dsphinx_gallery_conf.filename_pattern='my_example_name'``
+    $ make html SPHINXOPTS="-D sphinx_gallery_conf.run_stale_examples=True -D sphinx_gallery_conf.filename_pattern='my_example_name'"
 
 This command will cause any examples matching the filename pattern
 ``'my_example_name'`` to be rebuilt, regardless of their MD5 hashes.
