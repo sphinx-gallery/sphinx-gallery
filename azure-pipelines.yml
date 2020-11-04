@@ -21,7 +21,7 @@ jobs:
         python.version: '3.8'
 
   steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts;$env:CONDA\Library\bin"
     displayName: Add conda to PATH
   - script: conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
     displayName: setup conda
