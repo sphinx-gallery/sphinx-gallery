@@ -14,6 +14,7 @@ import os
 import pytest
 import re
 import base64
+import shutil
 import textwrap
 
 from sphinx.errors import ExtensionError
@@ -136,7 +137,7 @@ def test_headings():
     ------------------------
     Blank heading above.
 
-                
+
     ====================
       White space above
     ====================
@@ -206,6 +207,11 @@ def test_notebook_images_data_uri(gallery_conf):
     test_image = os.path.join(
         os.path.dirname(__file__), 'tinybuild',
         '_static_nonstandard', 'demo.png')
+    # For windows we need to copy this to tmpdir because if tmpdir and this
+    # file are on different drives there is no relpath between them
+    dest_dir = os.path.join(gallery_conf['src_dir'], '_static_nonstandard')
+    os.mkdir(dest_dir)
+    shutil.copyfile(test_image, os.path.join(dest_dir, 'demo.png'))
     # Make into "absolute" path from source directory
     test_image_rel = os.path.relpath(test_image, gallery_conf['src_dir'])
     test_image_abs = '/' + test_image_rel.replace(os.sep, '/')
