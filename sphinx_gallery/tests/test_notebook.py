@@ -211,9 +211,10 @@ def test_notebook_images_data_uri(gallery_conf):
     # file are on different drives there is no relpath between them
     dest_dir = os.path.join(gallery_conf['src_dir'], '_static_nonstandard')
     os.mkdir(dest_dir)
-    shutil.copyfile(test_image, os.path.join(dest_dir, 'demo.png'))
+    dest_image = os.path.join(dest_dir, 'demo.png')
+    shutil.copyfile(test_image, dest_image)
     # Make into "absolute" path from source directory
-    test_image_rel = os.path.relpath(test_image, gallery_conf['src_dir'])
+    test_image_rel = os.path.relpath(dest_image, gallery_conf['src_dir'])
     test_image_abs = '/' + test_image_rel.replace(os.sep, '/')
     rst = textwrap.dedent("""\
     .. image:: {}
