@@ -31,12 +31,18 @@ jobs:
     displayName: Install sphinx-gallery
   - script: pytest --tb=short sphinx_gallery
     displayName: pytest
-  - bash: |
-      set -e
+  - script: |
       cd doc
-      make html-noplot
-      make html
-    displayName: make html(-noplot)
+      sphinx-build -D plot_gallery=0 -b html -d _build\doctrees . _build\html
+    displayName: make html-noplot
+  - bash: |
+      cd doc
+      make clean
+    displayName: make clean
+  - script: |
+      cd doc
+      sphinx-build -b html -d _build\doctrees . _build\html
+    displayName: make html
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: 'junit-*.xml'
