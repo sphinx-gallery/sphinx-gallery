@@ -21,18 +21,28 @@ jobs:
         python.version: '3.8'
 
   steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
+  - script: |
+      call "%CONDA%\Scripts\activate" base
+      echo "##vso[task.setvariable variable=PATH]%CONDA%\Scripts;%PATH%"
+    displayName: Add conda to PATH and activate conda base
   - script: conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
-    displayName: setup conda
+    displayName: Setup conda environment
   - script: python setup.py develop
+    displayName: Install sphinx-gallery
   - script: pytest --tb=short sphinx_gallery
-  - bash: |
-      set -e
+    displayName: pytest
+  - script: |
       cd doc
-      make html-noplot
-      make html
-    displayName: make html(-noplot)
+      sphinx-build -D plot_gallery=0 -b html -d _build\doctrees . _build\html
+    displayName: make html-noplot
+  - bash: |
+      cd doc
+      make clean
+    displayName: make clean
+  - script: |
+      cd doc
+      sphinx-build -b html -d _build\doctrees . _build\html
+    displayName: make html
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: 'junit-*.xml'

@@ -550,14 +550,17 @@ def test_thumbnail_path(test_str):
 
 def test_zip_notebooks(gallery_conf):
     """Test generated zipfiles are not corrupt."""
-    gallery_conf.update(examples_dir='examples')
+    gallery_conf.update(
+        examples_dir=os.path.join(gallery_conf['src_dir'], 'examples'))
+    shutil.copytree(
+        os.path.join(os.path.dirname(__file__), 'tinybuild', 'examples'),
+        gallery_conf['examples_dir'])
     examples = downloads.list_downloadable_sources(
         gallery_conf['examples_dir'])
     zipfilepath = downloads.python_zip(examples, gallery_conf['gallery_dir'])
     zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
-    if check:
-        raise OSError("Bad file in zipfile: {0}".format(check))
+    assert not check, "Bad file in zipfile: {0}".format(check)
 
 
 def test_rst_example(gallery_conf):
