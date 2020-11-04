@@ -1,0 +1,41 @@
+trigger:
+  batch: False
+  branches:
+    include:
+      - '*'
+pr:
+  branches:
+    include:
+      - '*'
+
+jobs:
+- job:
+  displayName: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+  - script: conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
+    displayName: setup conda
+  - script: python setup.py develop
+  - script: pytest --tb=short sphinx_gallery
+  - bash: |
+      set -e
+      cd doc
+      make html-noplot
+      make html
+    displayName: make html(-noplot)
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: 'junit-*.xml'
+      testRunTitle: 'Publish test results for $(Agent.JobName) $(TEST_MODE) $(PYTHON_VERSION)'
+      failTaskOnFailedTests: true
+    condition: succeededOrFailed()
