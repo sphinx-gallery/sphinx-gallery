@@ -137,14 +137,14 @@ def test_headings():
     ------------------------
     Blank heading above.
 
-                 
+    {0}
     ====================
       White space above
     ====================
 
-    """) # noqa
-    # note that the white space include a unicode em space character " " to
-    # avoid editors from automatically removing the whitespace on save
+    """).format('            ')
+    # add whitespace afterward to avoid editors from automatically
+    # removing the whitespace on save
 
     heading_level_counter = count(start=1)
     heading_levels = defaultdict(lambda: next(heading_level_counter))
