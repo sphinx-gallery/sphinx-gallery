@@ -1,6 +1,38 @@
 Change Log
 ==========
 
+v0.8.2
+------
+
+Enables HTML animations to be rendered on readthedocs.
+
+**Implemented enhancements:**
+
+-  DOC Expand on sphinx_gallery_thumbnail_path `#764 <https://github.com/sphinx-gallery/sphinx-gallery/pull/764>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Add run_stale_examples config var `#759 <https://github.com/sphinx-gallery/sphinx-gallery/pull/759>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Option to disable note in example header `#757 <https://github.com/sphinx-gallery/sphinx-gallery/issues/757>`__
+-  Add show_signature option `#756 <https://github.com/sphinx-gallery/sphinx-gallery/pull/756>`__ (`jschueller <https://github.com/jschueller>`__)
+-  ENH: Style HTML output like jupyter `#752 <https://github.com/sphinx-gallery/sphinx-gallery/pull/752>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Add RST comments, read-only `#750 <https://github.com/sphinx-gallery/sphinx-gallery/pull/750>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Relate warnings and errors on generated rst file back to source Python file / prevent accidental writing of generated files `#725 <https://github.com/sphinx-gallery/sphinx-gallery/issues/725>`__
+
+**Fixed bugs:**
+
+-  Example gallery is down `#753 <https://github.com/sphinx-gallery/sphinx-gallery/issues/753>`__
+-  DOC Amend run_stale_examples command in configuration.rst `#763 <https://github.com/sphinx-gallery/sphinx-gallery/pull/763>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC update link in projects_list `#754 <https://github.com/sphinx-gallery/sphinx-gallery/pull/754>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Enable animations HTML to be rendered on readthedocs `#748 <https://github.com/sphinx-gallery/sphinx-gallery/pull/748>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+
+**Closed issues:**
+
+-  MNT: Stop using ci-helpers in appveyor.yml `#766 <https://github.com/sphinx-gallery/sphinx-gallery/issues/766>`__
+
+**Merged pull requests:**
+
+-  FIX: Restore whitespace `#768 <https://github.com/sphinx-gallery/sphinx-gallery/pull/768>`__ (`larsoner <https://github.com/larsoner>`__)
+-  CI: Remove AppVeyor, work on Azure `#767 <https://github.com/sphinx-gallery/sphinx-gallery/pull/767>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC Standardise capitalisation of Sphinx-Gallery `#762 <https://github.com/sphinx-gallery/sphinx-gallery/pull/762>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.8.1
 ------
 
