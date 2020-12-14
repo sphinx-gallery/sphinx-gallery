@@ -7,7 +7,7 @@ jobs:
       # Get our data and merge with upstream
       - checkout
       - run:
-          name: Set update libraries
+          name: Update libraries
           command: |
             sudo apt-get --no-install-recommends install -yq \
               libosmesa6 libglx-mesa0 libopengl0 libglx0 libdbus-1-3 \
