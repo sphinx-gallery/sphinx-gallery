@@ -6,7 +6,10 @@ jobs:
     steps:
       # Get our data and merge with upstream
       - run: sudo apt-get update
-      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk libxkbcommon-x11-0 optipng libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 xcb libxcb-xfixes0 libxcb-xinerama0 libxcb-shape0
+      - run: sudo apt-get --no-install-recommends install -y \
+          libosmesa6 libglx-mesa0 libopengl0 libglx0 libdbus-1-3 \
+          libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 \
+          texlive texlive-latex-extra latexmk optipng
       - checkout
       - run: echo $(git log -1 --pretty=%B) | tee gitlog.txt
       - run: echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
