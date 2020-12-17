@@ -14,10 +14,19 @@ import re
 import pytest
 
 from sphinx.errors import ConfigError, ExtensionError
-from sphinx_gallery.gen_gallery import (check_duplicate_filenames,
-                                        check_spaces_in_filenames,
-                                        collect_gallery_files,
-                                        write_computation_times)
+from sphinx_gallery.gen_gallery import (
+    check_duplicate_filenames, check_spaces_in_filenames,
+    collect_gallery_files, write_computation_times, _complete_gallery_conf)
+
+
+def test_bad_config():
+    """Test that bad config values are caught."""
+    sphinx_gallery_conf = dict(example_dir='')
+    with pytest.raises(ConfigError, match="example_dir.*did you mean 'examples_dirs'?.*"):  # noqa: E501
+        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+    sphinx_gallery_conf = dict(n_subsection_order='')
+    with pytest.raises(ConfigError, match=r"did you mean one of \['subsection_order', 'within_.*"):  # noqa: E501
+        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
 
 
 def test_default_config(sphinx_app_wrapper):
@@ -79,30 +88,6 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
 def test_bad_css(sphinx_app_wrapper, err_class, err_match):
     with pytest.raises(err_class, match=err_match):
         sphinx_app_wrapper.create_sphinx_app()
-
-
-@pytest.mark.conf_file(content="""
-sphinx_gallery_conf = {
-    'mod_example_dir' : os.path.join('modules', 'gen'),
-    'examples_dirs': 'src',
-    'gallery_dirs': 'ex',
-}""")
-def test_config_old_backreferences_conf(sphinx_app_wrapper):
-    """Testing Deprecation warning message against old backreference config
-
-    In this case the user is required to update the mod_example_dir config
-    variable Sphinx-Gallery should notify the user and also silently update
-    the old config to the new one. """
-    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    cfg = sphinx_app.config
-    assert cfg.project == "Sphinx-Gallery <Tests>"
-    assert cfg.sphinx_gallery_conf['backreferences_dir'] == os.path.join(
-        'modules', 'gen')
-    build_warn = sphinx_app._warning.getvalue()
-
-    assert "WARNING:" in build_warn
-    assert "deprecated" in build_warn
-    assert "Support for 'mod_example_dir' will be removed" in build_warn
 
 
 @pytest.mark.conf_file(content="""
@@ -367,7 +352,7 @@ def test_first_notebook_cell_config(sphinx_app_wrapper):
     from sphinx_gallery.gen_gallery import parse_config
     # First cell must be str
     with pytest.raises(ConfigError):
-        parse_config(sphinx_app_wrapper.create_sphinx_app())
+        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
 
 
 @pytest.mark.conf_file(content="""
@@ -378,7 +363,7 @@ def test_last_notebook_cell_config(sphinx_app_wrapper):
     from sphinx_gallery.gen_gallery import parse_config
     # First cell must be str
     with pytest.raises(ConfigError):
-        parse_config(sphinx_app_wrapper.create_sphinx_app())
+        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
 
 
 @pytest.mark.conf_file(content="""
@@ -390,7 +375,7 @@ def test_backreferences_dir_config(sphinx_app_wrapper):
     from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
                        match="The 'backreferences_dir' parameter must be of"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app())
+        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
 
 
 @pytest.mark.conf_file(content="""
@@ -402,7 +387,7 @@ sphinx_gallery_conf = {
 def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     """Tests pathlib.Path does not raise exception."""
     from sphinx_gallery.gen_gallery import parse_config
-    parse_config(sphinx_app_wrapper.create_sphinx_app())
+    parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
 
 
 def test_write_computation_times_noop():
@@ -419,7 +404,7 @@ def test_pypandoc_config_list(sphinx_app_wrapper):
     with pytest.raises(ConfigError,
                        match="'pypandoc' parameter must be of type bool or "
                              "dict"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app())
+        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
 
 
 @pytest.mark.conf_file(content="""
@@ -432,4 +417,4 @@ def test_pypandoc_config_keys(sphinx_app_wrapper):
     with pytest.raises(ConfigError,
                        match="'pypandoc' only accepts the following key "
                              "values:"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app())
+        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)

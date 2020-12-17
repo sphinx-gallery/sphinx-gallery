@@ -82,7 +82,7 @@ sphinx_gallery_conf = {
     'reset_modules': (MockScrapeProblem(), 'matplotlib'),
     'gallery_dirs': ['auto_examples'],
     'backreferences_dir': 'gen_modules/backreferences',
-    'within_section_order': FileNameSortKey,
+    'within_subsection_order': FileNameSortKey,
     'image_scrapers': (matplotlib_format_scraper(),),
     'expected_failing_examples': [
         'examples/future/plot_future_imports_broken.py',
