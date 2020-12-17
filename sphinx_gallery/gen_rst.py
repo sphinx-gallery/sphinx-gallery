@@ -301,8 +301,9 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         img = thumbnail_image_path
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        img = os.path.join(glr_path_static(), 'no_image.png')
-        img = gallery_conf.get("default_thumb_file", img)
+        img = gallery_conf.get("default_thumb_file")
+        if img is None:
+            img = os.path.join(glr_path_static(), 'no_image.png')
     else:
         return
     if ext in ('svg', 'gif'):

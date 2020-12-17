@@ -92,6 +92,8 @@ DEFAULT_GALLERY_CONF = {
     'inspect_global_variables': True,
     'css': _KNOWN_CSS,
     'matplotlib_animations': False,
+    'default_thumb_file': None,
+    'line_numbers': False,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
