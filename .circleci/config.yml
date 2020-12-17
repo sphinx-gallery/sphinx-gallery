@@ -2,29 +2,41 @@ version: 2
 jobs:
   build_docs:
     docker:
-      - image: circleci/python:3.7.7-buster
+      - image: circleci/python:3.8.5-buster
     steps:
       # Get our data and merge with upstream
-      - run: sudo apt-get update
-      - run: sudo apt-get --no-install-recommends install -y texlive texlive-latex-extra latexmk libxkbcommon-x11-0 optipng libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 xcb libxcb-xfixes0 libxcb-xinerama0 libxcb-shape0
       - checkout
-      - run: echo $(git log -1 --pretty=%B) | tee gitlog.txt
-      - run: echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
       - run:
-         command: |
-           if [[ $(cat merge.txt) != "" ]] && [[ $(cat gitlog.txt) != *"[circle nomerge]"*  ]]; then
-             echo "Merging $(cat merge.txt)";
-             git pull --ff-only origin "refs/pull/$(cat merge.txt)/merge";
-           fi
+          name: Update libraries
+          command: |
+            sudo apt-get --no-install-recommends install -yq \
+              libosmesa6 libglx-mesa0 libopengl0 libglx0 libdbus-1-3 \
+              libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 \
+              texlive texlive-latex-extra latexmk optipng
+      - run:
+          name: Merge with upstream
+          command: |
+            echo $(git log -1 --pretty=%B) | tee gitlog.txt
+            echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
+            if [[ $(cat merge.txt) != "" ]] && [[ $(cat gitlog.txt) != *"[circle nomerge]"*  ]]; then
+              echo "Merging $(cat merge.txt)";
+              git pull --ff-only origin "refs/pull/$(cat merge.txt)/merge";
+            fi
       # Python env
-      - run: echo "export PATH=~/.local/bin:$PATH" >> $BASH_ENV
-      - run: echo "export DISPLAY=:99" >> $BASH_ENV
-      - run: /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
+      - run:
+          name: Set up Xvfb
+          command: |
+            echo "export PATH=~/.local/bin:$PATH" >> $BASH_ENV
+            echo "export DISPLAY=:99" >> $BASH_ENV
+            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
 
       - restore_cache:
           keys:
             - cache-pip
-      - run: pip install --user numpy matplotlib pyqt5 seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest vtk traits traitsui pyface https://github.com/enthought/mayavi/zipball/master memory_profiler ipython plotly
+      - run:
+          name: Pip
+          command: |
+            pip install -q --user numpy matplotlib "pyqt5!=5.15.2" seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest vtk traits traitsui pyface mayavi memory_profiler ipython plotly
       - save_cache:
           key: cache-pip
           paths:
@@ -32,9 +44,14 @@ jobs:
 
       # Fix libgcc_s.so.1 pthread_cancel bug:
       # https://github.com/ContinuumIO/anaconda-issues/issues/9190#issuecomment-386508136
-      - run: sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
-      - run: python -c "from mayavi import mlab; import matplotlib.pyplot as plt; mlab.figure(); plt.figure()"
-      - run: python setup.py develop --user
+      - run:
+          name: Test libs
+          command: |
+            python -c "from mayavi import mlab; import matplotlib.pyplot as plt; mlab.figure(); plt.figure()"
+      - run:
+          name: Install
+          command: |
+            python setup.py develop --user
 
       - run: python setup.py build_sphinx -nW --keep-going
       - store_artifacts:
@@ -48,7 +65,10 @@ jobs:
           path: tiny_html
           destination: tiny_html
 
-      - run: cd sphinx_gallery/tests/tinybuild/ && make clean && make latexpdf
+      - run:
+          name: latexpdf
+          command: |
+            cd sphinx_gallery/tests/tinybuild/ && make clean && make latexpdf
       - store_artifacts:
           path: sphinx_gallery/tests/tinybuild/_build/latex/
           destination: latex
