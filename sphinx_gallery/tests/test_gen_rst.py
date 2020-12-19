@@ -209,10 +209,12 @@ Paragraph 1
 
 .. GENERATED FROM PYTHON SOURCE LINES 4-5
 
-.. code-block:: python
+.. container:: sphx-glr-code
+
+    .. code-block:: python
 
 
-    # just a comment"""
+        # just a comment"""
     assert example_rst.rstrip('\n') == want_rst
 
 
@@ -493,11 +495,12 @@ def test_pattern_matching(gallery_conf, log_collector, req_pil):
     gallery_conf.update(image_scrapers=(), reset_modules=())
     gallery_conf.update(filename_pattern=re.escape(os.sep) + 'plot_0')
 
-    code_output = ('\n Out:\n\n .. code-block:: none\n'
+    code_output = ('\n         Out:\n\n'
+                   '         .. code-block:: none\n'
                    '\n'
-                   '    Óscar output\n'
-                   '    log:Óscar\n'
-                   '    $\\langle n_\\uparrow n_\\downarrow \\rangle$'
+                   '            Óscar output\n'
+                   '            log:Óscar\n'
+                   '            $\\langle n_\\uparrow n_\\downarrow \\rangle$'
                    )
     warn_output = 'RuntimeWarning: WarningsAbound'
     # create three files in tempdir (only one matches the pattern)

@@ -19,6 +19,7 @@ import re
 import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
+import warnings
 
 from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import red
@@ -91,6 +92,7 @@ DEFAULT_GALLERY_CONF = {
     'inspect_global_variables': True,
     'css': _KNOWN_CSS,
     'matplotlib_animations': False,
+    'thebelab': None,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -348,6 +350,31 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                               % (css, _KNOWN_CSS))
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
+    if gallery_conf['thebelab'] is not None:
+        thebelab = gallery_conf['thebelab']
+        if not isinstance(thebelab, (dict, bool)):
+            raise ConfigError(
+                "'thebelab' parameter must be of type bool or dict,"
+                "got: %s." % type(thebelab))
+        if thebelab is True:
+            thebelab = gallery_conf['thebelab'] = dict()
+
+        selector = ".sphx-glr-code>:not(.sphx-glr-output)"
+        if thebelab.setdefault('selector', selector) != selector:
+            warnings.warn(
+                "thebe 'selector' may be incompatible with sphinx-gallery")
+        output_selector = ".sphx-glr-output"
+        if thebelab.setdefault(
+                'outputSelector', output_selector) != output_selector:
+            warnings.warn(
+                "thebe config 'ouputSelector' may be incompatible with "
+                "sphinx-gallery")
+        if not thebelab.setdefault('predefinedOutput', True):
+            warnings.warn(
+                "thebe config 'predefinedOutput' may be incompatible with "
+                "sphinx-gallery")
+        if 'path' not in thebelab.setdefault('kernelOptions', {}):
+            thebelab['kernelOptions']['path'] = "."
 
     return gallery_conf
 

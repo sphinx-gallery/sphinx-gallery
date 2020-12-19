@@ -93,6 +93,11 @@ sphinx_gallery_conf = {
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
     'matplotlib_animations': True,
     'pypandoc': True,
+    'thebelab': {
+        'binderOptions': {
+            'repo': "example/example-repo",
+        },
+    },
 }
 nitpicky = True
 highlight_language = 'python3'
