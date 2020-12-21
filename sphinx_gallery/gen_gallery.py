@@ -14,6 +14,7 @@ from __future__ import division, print_function, absolute_import
 import codecs
 import copy
 from datetime import timedelta, datetime
+from difflib import get_close_matches
 from importlib import import_module
 import re
 import os
@@ -91,6 +92,8 @@ DEFAULT_GALLERY_CONF = {
     'inspect_global_variables': True,
     'css': _KNOWN_CSS,
     'matplotlib_animations': False,
+    'default_thumb_file': None,
+    'line_numbers': False,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -105,7 +108,7 @@ def _bool_eval(x):
     return bool(x)
 
 
-def parse_config(app):
+def parse_config(app, check_keys=True):
     """Process the Sphinx Gallery configuration."""
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
     src_dir = app.builder.srcdir
@@ -114,7 +117,8 @@ def parse_config(app):
     lang = app.builder.config.highlight_language
     gallery_conf = _complete_gallery_conf(
         app.config.sphinx_gallery_conf, src_dir, plot_gallery,
-        abort_on_example_error, lang, app.builder.name, app)
+        abort_on_example_error, lang, app.builder.name, app,
+        check_keys)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
@@ -124,8 +128,21 @@ def parse_config(app):
 
 def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                            abort_on_example_error, lang='python',
-                           builder_name='html', app=None):
+                           builder_name='html', app=None, check_keys=True):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
+    options = sorted(gallery_conf)
+    extra_keys = sorted(set(sphinx_gallery_conf) - set(options))
+    if extra_keys and check_keys:
+        msg = 'Unknown key(s) in sphinx_gallery_conf:\n'
+        for key in extra_keys:
+            options = get_close_matches(key, options, cutoff=0.66)
+            msg += repr(key)
+            if len(options) == 1:
+                msg += ', did you mean %r?' % (options[0],)
+            elif len(options) > 1:
+                msg += ', did you mean one of %r?' % (options,)
+            msg += '\n'
+        raise ConfigError(msg.strip())
     gallery_conf.update(sphinx_gallery_conf)
     if sphinx_gallery_conf.get('find_mayavi_figures', False):
         logger.warning(
@@ -142,20 +159,6 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         gallery_conf[key] = _bool_eval(gallery_conf[key])
     gallery_conf['src_dir'] = src_dir
     gallery_conf['app'] = app
-
-    if gallery_conf.get("mod_example_dir", False):
-        backreferences_warning = """\n========
-        Sphinx-Gallery found the configuration key 'mod_example_dir'. This
-        is deprecated, and you should now use the key 'backreferences_dir'
-        instead. Support for 'mod_example_dir' will be removed in a subsequent
-        version of Sphinx-Gallery. For more details, see the backreferences
-        documentation:
-
-        https://sphinx-gallery.github.io/configuration.html#references-to-examples"""  # noqa: E501
-        gallery_conf['backreferences_dir'] = gallery_conf['mod_example_dir']
-        logger.warning(
-            backreferences_warning,
-            type=DeprecationWarning)
 
     # Check capture_repr
     capture_repr = gallery_conf['capture_repr']
