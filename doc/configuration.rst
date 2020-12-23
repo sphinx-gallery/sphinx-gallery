@@ -1437,7 +1437,7 @@ method which would thus be captured. You can prevent this by:
 The unwanted string output will not occur if ``'capture_repr'`` is an empty
 tuple or does not contain ``__repr__`` or ``__str__``.
 
-.. _regular expressions: https://docs.python.org/2/library/re.html
+.. _regular expressions: https://docs.python.org/library/re.html
 
 Prevent capture of certain classes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
