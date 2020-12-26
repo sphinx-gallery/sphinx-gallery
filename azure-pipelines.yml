@@ -98,7 +98,7 @@ jobs:
           export LC_ALL=C
           export LANG=C
       fi
-      echo $(LC_CTYPE)
+      echo $LC_CTYPE
     displayName: Set locale
     # Make sure that things work even if the locale is set to C (which
     # effectively means ASCII). Some of the input rst files have unicode
