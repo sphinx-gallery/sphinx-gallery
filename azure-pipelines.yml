@@ -56,40 +56,35 @@ jobs:
     vmImage: 'ubuntu-18.04'
   strategy:
     matrix:
-      # ubuntu_python36:
-      #   DISTRIB: 'ubuntu'
-      #   PYTHON_VERSION: '3.6'
-      #   SPHINX_VERSION: ''
-      # conda_python35:
-      #   DISTRIB: 'conda'
-      #   PYTHON_VERSION: '3.5'
-      #   SPHINX_VERSION: '1.8.3'
+      ubuntu_python36:
+        DISTRIB: 'ubuntu'
+        PYTHON_VERSION: '3.6'
+      conda_python35:
+        DISTRIB: 'conda'
+        PYTHON_VERSION: '3.5'
+        SPHINX_VERSION: '1.8.3'
       conda_python36:
         DISTRIB: 'conda'
         PYTHON_VERSION: '3.6'
       conda_python36_localeC:
         DISTRIB: 'conda'
         PYTHON_VERSION: '3.6'
-        SPHINX_VERSION: ''
         LOCALE: C
       conda_python37_localeC:
         DISTRIB: 'conda'
         PYTHON_VERSION: '3.7'
-        SPHINX_VERSION: ''
         LOCALE: C
         SPHINXOPTS: '-nWT --keep-going'
-      # conda_python38_sphinxDev:
-      #   DISTRIB: 'conda'
-      #   PYTHON_VERSION: '3.8'
-      #   SPHINX_VERSION: 'dev'
-      # python37_minimal:
-      #   DISTRIB: 'minimal'
-      #   PYTHON_VERSION: '3.7'
-      #   SPHINX_VERSION: ''
-      # pythonNightly:
-      #   DISTRIB: ''
-      #   PYTHON_VERSION: '3.8'
-      #   SPHINX_VERSION: ''
+      conda_python38_sphinxDev:
+        DISTRIB: 'conda'
+        PYTHON_VERSION: '3.8'
+        SPHINX_VERSION: 'dev'
+      python37_minimal:
+        DISTRIB: 'minimal'
+        PYTHON_VERSION: '3.7'
+      pythonNightly:
+        DISTRIB: 'Nightly'
+        PYTHON_VERSION: '3.8'
 
   steps:
   - bash: |
@@ -98,8 +93,15 @@ jobs:
           export LC_ALL=C
           export LANG=C
       fi
-      echo $LC_CTYPE
     displayName: Set locale
     # Make sure that things work even if the locale is set to C (which
     # effectively means ASCII). Some of the input rst files have unicode
     # characters and we need to deal with this gracefully.
+  - bash: |
+      sudo apt install python3-numpy python3-matplotlib python3-pip python3-coverage optipng
+      echo $DISTRIB
+    displayName: Install ubuntu python packages
+    condition: eq('${{ variables.DISTRIB }}', 'ubuntu')
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+    condition: eq('${{ variables.DISTRIB }}', 'conda')
