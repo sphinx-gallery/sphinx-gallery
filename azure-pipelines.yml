@@ -101,7 +101,7 @@ jobs:
       sudo apt install python3-numpy python3-matplotlib python3-pip python3-coverage optipng
       echo $DISTRIB
     displayName: Install ubuntu python packages
-    condition: eq('${{ variables.DISTRIB }}', 'ubuntu')
+    condition: eq(variables['variables.DISTRIB'], 'ubuntu')
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
     condition: eq('${{ variables.DISTRIB }}', 'conda')
