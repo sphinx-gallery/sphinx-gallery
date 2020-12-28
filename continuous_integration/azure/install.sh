@@ -16,11 +16,11 @@ make_conda() {
 
 if [ "$DISTRIB" == "conda" ]; then
     CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8"
-    PIP_DEPENDENCIES="sphinx_rtd_theme check-manifest"
+    PIP_DEPENDENCIES="$@"
+    PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
     fi
-    echo $SPHINX_VERSION
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
