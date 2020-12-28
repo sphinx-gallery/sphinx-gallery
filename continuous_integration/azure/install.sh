@@ -8,8 +8,14 @@
 
 set -e
 
+make_conda() {
+    CONDA_TO_INSTALL="$@"
+    conda create -n testev --yes $CONDA_TO_INSTALL
+    source activate testev
+}
+
 if [ "$DISTRIB" == "conda" ]; then
-    CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 check-manifest"
+    CONDA_TO_INSTALL="$TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 check-manifest"
     PIP_DEPENDENCIES="sphinx_rtd_theme"
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
@@ -19,8 +25,7 @@ if [ "$DISTRIB" == "conda" ]; then
     else
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
-    conda create -n testenv --yes python=$PYTHON_VERSION "$CONDA_DEPENDENCIES"
-    source activate testenv
+    make_conda $CONDA_TO_INSTALL
     python -m pip install "$PIP_DEPENDENCIES"
     python setup.py install
 # elif [ "$PYTHON_VERSION" == "nightly" ]; then
