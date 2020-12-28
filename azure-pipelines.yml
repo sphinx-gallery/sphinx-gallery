@@ -114,5 +114,5 @@ jobs:
     displayName: Run install.sh
   - task: Bash@3
     inputs:
-      filePath: continuous_integration/azure/test.sh
-    displayName: Run test.sh
+      filePath: continuous_integration/azure/test_script.sh
+    displayName: Run test_script.sh
