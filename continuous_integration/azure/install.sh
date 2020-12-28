@@ -8,7 +8,7 @@
 
 set -e
 
-echo ${Build.SourceVersionMessage}
+echo $(Build.SourceVersionMessage)
 
 # if [[ ! -z $(echo $ | grep -E "${DOCS_ONLY}") ]]; then
 #     if [[ ! $SETUP_CMD =~ build_docs|build_sphinx|pycodestyle|pylint|flake8|pep8 ]] && [[ ! $MAIN_CMD =~ pycodestyle|pylint|flake8|pep8 ]]; then
