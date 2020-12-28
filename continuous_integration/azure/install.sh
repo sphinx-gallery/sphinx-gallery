@@ -8,14 +8,14 @@
 
 set -e
 
-if [[ "$DISTRIB" == "conda" ]]; then
+if [ "$DISTRIB" == "conda" ]; then
     echo "distrib var worked"
     export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 check-manifest ${CONDA_PKGS}"
     export PIP_DEPENDENCIES="sphinx_rtd_theme"
-    # if [[ "$PYTHON_VERSION" != "3.5" ]] && [[ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]]; then
-    #     export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
-    # fi
-    if [[ "$SPHINX_VERSION" != "dev" ]]; then
+    if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
+        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
+    fi
+    if [ "$SPHINX_VERSION" != "dev" ]; then
         export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx${SPHINX_VERSION}"
     else
         export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
@@ -28,9 +28,9 @@ if [[ "$DISTRIB" == "conda" ]]; then
 #     pip install https://api.github.com/repos/cython/cython/zipball/master
 #     pip install --no-use-pep517 https://api.github.com/repos/numpy/numpy/zipball/master
 #     pip install . sphinx joblib pytest-cov
-elif [[ "$DISTRIB" == "minimal" ]]; then
+elif [ "$DISTRIB" == "minimal" ]; then
     pip install --upgrade . pytest pytest-cov coverage
-elif [[ "$DISTRIB" == "ubuntu" ]]; then
+elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install -r dev-requirements.txt | cat
     pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
