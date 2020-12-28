@@ -84,7 +84,7 @@ jobs:
         DISTRIB: 'minimal'
         PYTHON_VERSION: '3.7'
       # pythonNightly:
-      #   DISTRIB: 'Nightly' 
+      #   DISTRIB: 'Nightly'
   condition: not(contains(variables['Build.SourceVersionMessage'], '[doc only]'))
 
   steps:
