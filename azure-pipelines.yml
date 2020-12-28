@@ -87,6 +87,11 @@ jobs:
         PYTHON_VERSION: '3.8'
 
   steps:
+  - task: UsePythonVersion@0
+    displayName: Specify Python version for minimal
+    inputs:
+      versionSpec: $(PYTHON_VERSION)
+    condition: eq(variables['DISTRIB'], 'minimal')
   - bash: |
       if [[ $LOCALE == C ]]; then
           export LC_CTYPE=C
@@ -98,10 +103,9 @@ jobs:
     # effectively means ASCII). Some of the input rst files have unicode
     # characters and we need to deal with this gracefully.
   - bash: |
-      sudo apt install python3-numpy python3-matplotlib python3-pip python3-coverage optipng
-      echo $DISTRIB
+      sudo apt-get install python3-numpy python3-matplotlib python3-pip python3-coverage optipng
     displayName: Install ubuntu python packages
     condition: eq(variables['DISTRIB'], 'ubuntu')
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
-    condition: eq('${{ variables.DISTRIB }}', 'conda')
+    condition: eq(variables['DISTRIB'], 'conda')
