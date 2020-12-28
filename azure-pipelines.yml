@@ -107,3 +107,7 @@ jobs:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
     condition: eq(variables['DISTRIB'], 'conda')
+  - task: Bash@3
+    inputs:
+      filePath: continuous_integration/azure/install.sh
+    displayName: Run install.sh
