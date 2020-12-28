@@ -8,17 +8,6 @@
 
 set -e
 
-echo $(Build.SourceVersionMessage)
-
-# if [[ ! -z $(echo $ | grep -E "${DOCS_ONLY}") ]]; then
-#     if [[ ! $SETUP_CMD =~ build_docs|build_sphinx|pycodestyle|pylint|flake8|pep8 ]] && [[ ! $MAIN_CMD =~ pycodestyle|pylint|flake8|pep8 ]]; then
-#         # we also allow the style checkers to run here
-#         echo "Only docs build was requested by the commit message, exiting."
-#         travis_terminate 0
-#     fi
-# fi
-
-
 make_conda() {
     CONDA_TO_INSTALL="$@"
     conda create -n testev --yes $CONDA_TO_INSTALL
@@ -41,7 +30,7 @@ if [ "$DISTRIB" == "conda" ]; then
     fi
     make_conda $CONDA_TO_INSTALL
     python -m pip install -U pip
-    python -m pip install "$PIP_DEPENDENCIES"
+    python -m pip install --find-links "$PIP_DEPENDENCIES"
     python setup.py install
 # elif [ "$PYTHON_VERSION" == "nightly" ]; then
 #     # Python nightly requires to use the virtual env provided by travis.
