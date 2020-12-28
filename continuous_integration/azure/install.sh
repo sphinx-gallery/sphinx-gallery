@@ -30,7 +30,7 @@ if [ "$DISTRIB" == "conda" ]; then
     fi
     make_conda $CONDA_TO_INSTALL
     python -m pip install -U pip
-    python -m pip install --find-links "$PIP_DEPENDENCIES"
+    python -m pip install "$PIP_DEPENDENCIES"
     python setup.py install
 # elif [ "$PYTHON_VERSION" == "nightly" ]; then
 #     # Python nightly requires to use the virtual env provided by travis.
