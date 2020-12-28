@@ -8,7 +8,7 @@
 
 set -e
 
-echo "$Build.SourceVersionMessage"
+echo ${Build.SourceVersionMessage}
 
 # if [[ ! -z $(echo $ | grep -E "${DOCS_ONLY}") ]]; then
 #     if [[ ! $SETUP_CMD =~ build_docs|build_sphinx|pycodestyle|pylint|flake8|pep8 ]] && [[ ! $MAIN_CMD =~ pycodestyle|pylint|flake8|pep8 ]]; then
@@ -31,10 +31,13 @@ if [ "$DISTRIB" == "conda" ]; then
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
     fi
-    if [ "$SPHINX_VERSION" != "dev" ]; then
+    echo $SPHINX_VERSION
+    if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
-    else
+    elif [ "$SPHINX_VERSION" == "dev" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
+    else
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
     fi
     make_conda $CONDA_TO_INSTALL
     python -m pip install -U pip
@@ -46,12 +49,12 @@ if [ "$DISTRIB" == "conda" ]; then
 #     pip install --no-use-pep517 https://api.github.com/repos/numpy/numpy/zipball/master
 #     pip install . sphinx joblib pytest-cov
 elif [ "$DISTRIB" == "minimal" ]; then
-    pip install --upgrade . pytest pytest-cov coverage
+    python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    pip install -r dev-requirements.txt | cat
-    pip install --upgrade pytest pytest-cov coverage
+    python -m pip install -r dev-requirements.txt | cat
+    python -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install sphinx==1.8.3
+    python -m pip install sphinx==1.8.3
     python setup.py install
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
