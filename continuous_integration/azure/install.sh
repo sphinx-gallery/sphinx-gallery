@@ -33,11 +33,11 @@ if [ "$DISTRIB" == "conda" ]; then
     fi
     echo $SPHINX_VERSION
     if [ "$SPHINX_VERSION" == "" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     else
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
     make_conda $CONDA_TO_INSTALL
     python -m pip install -U pip
