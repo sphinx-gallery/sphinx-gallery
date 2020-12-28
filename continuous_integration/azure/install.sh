@@ -29,6 +29,7 @@ if [ "$DISTRIB" == "conda" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
     make_conda $CONDA_TO_INSTALL
+    conda list
     # python -m pip install -U pip
     python -m pip install $PIP_DEPENDENCIES
     python setup.py install
