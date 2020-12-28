@@ -59,6 +59,7 @@ jobs:
       ubuntu_python36:
         DISTRIB: 'ubuntu'
         PYTHON_VERSION: '3.6'
+        SPHINXOPTS: ''
       conda_python35:
         DISTRIB: 'conda'
         PYTHON_VERSION: '3.5'
@@ -111,3 +112,7 @@ jobs:
     inputs:
       filePath: continuous_integration/azure/install.sh
     displayName: Run install.sh
+  - task: Bash@3
+    inputs:
+      filePath: continuous_integration/azure/test.sh
+    displayName: Run test.sh

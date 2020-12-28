@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script is meant to be called by the "" step defined in
+# This script is meant to be called by the "Run install.sh" step defined in
 # azure-pipelines.yml.
 # The behavior of the script is controlled by environment variables defined
 # in the azure-pipelines.yml in the top level folder of the project.
@@ -9,7 +9,6 @@
 set -e
 
 if [ "$DISTRIB" == "conda" ]; then
-    echo "distrib var worked"
     export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 check-manifest ${CONDA_PKGS}"
     export PIP_DEPENDENCIES="sphinx_rtd_theme"
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
@@ -20,9 +19,10 @@ if [ "$DISTRIB" == "conda" ]; then
     else
         export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
-    # git clone git://github.com/astropy/ci-helpers.git --depth=1
-    # source ci-helpers/travis/setup_conda.sh
-    # python setup.py install
+    conda create -n testenv --yes python=$PYTHON_VERSION "$CONDA_DEPENDENCIES"
+    source activate testenv
+    python -m pip install "$PIP_DEPENDENCIES"
+    python setup.py install
 # elif [ "$PYTHON_VERSION" == "nightly" ]; then
 #     # Python nightly requires to use the virtual env provided by travis.
 #     pip install https://api.github.com/repos/cython/cython/zipball/master
