@@ -9,17 +9,15 @@
 set -e
 
 if [ "$DISTRIB" == "conda" ]; then
-    export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 check-manifest"
-    echo $CONDA_DEPENDENCIES
-    echo "$CONDA_DEPENDENCIES"
-    export PIP_DEPENDENCIES="sphinx_rtd_theme"
+    CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 check-manifest"
+    PIP_DEPENDENCIES="sphinx_rtd_theme"
     if [ "$PYTHON_VERSION" != "3.5" ] && [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
-        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
-        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx${SPHINX_VERSION}"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx${SPHINX_VERSION}"
     else
-        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
     conda create -n testenv --yes python=$PYTHON_VERSION "$CONDA_DEPENDENCIES"
     source activate testenv
