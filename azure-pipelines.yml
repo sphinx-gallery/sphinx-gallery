@@ -69,11 +69,11 @@ jobs:
       conda_python36_localeC:
         DISTRIB: 'conda'
         PYTHON_VERSION: '3.6'
-        LOCALE: C
+        LOCALE: 'C'
       conda_python37_localeC:
         DISTRIB: 'conda'
         PYTHON_VERSION: '3.7'
-        LOCALE: C
+        LOCALE: 'C'
         SPHINXOPTS: '-nWT --keep-going'
       conda_python38_sphinxDev:
         DISTRIB: 'conda'
@@ -96,7 +96,7 @@ jobs:
       export LC_ALL=C
       export LANG=C
     displayName: Set locale
-    condition: eq(variables['LOCALE'], C)
+    condition: eq(variables['LOCALE'], 'C')
     # Make sure that things work even if the locale is set to C (which
     # effectively means ASCII). Some of the input rst files have unicode
     # characters and we need to deal with this gracefully.
