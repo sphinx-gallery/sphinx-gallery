@@ -29,7 +29,7 @@ if [ "$DISTRIB" == "conda" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
     make_conda $CONDA_TO_INSTALL
-    python -m pip install -U pip
+    # python -m pip install -U pip
     python -m pip install "$PIP_DEPENDENCIES"
     python setup.py install
 # elif [ "$PYTHON_VERSION" == "nightly" ]; then
