@@ -12,9 +12,9 @@ if [[ "$DISTRIB" == "conda" ]]; then
     echo "distrib var worked"
     export CONDA_DEPENDENCIES="pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 check-manifest ${CONDA_PKGS}"
     export PIP_DEPENDENCIES="sphinx_rtd_theme"
-    if [[ "$PYTHON_VERSION" != "3.5" ]] && [[ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]]; then
-        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
-    fi
+    # if [[ "$PYTHON_VERSION" != "3.5" ]] && [[ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]]; then
+    #     export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
+    # fi
     if [[ "$SPHINX_VERSION" != "dev" ]]; then
         export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx${SPHINX_VERSION}"
     else
