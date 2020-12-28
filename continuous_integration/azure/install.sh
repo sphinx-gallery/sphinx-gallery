@@ -30,7 +30,7 @@ if [ "$DISTRIB" == "conda" ]; then
     fi
     make_conda $CONDA_TO_INSTALL
     # python -m pip install -U pip
-    python -m pip install sphinx_rtd_theme check-manifest sphinx
+    python -m pip $PIP_DEPENDENCIES
     python setup.py install
 # elif [ "$PYTHON_VERSION" == "nightly" ]; then
 #     # Python nightly requires to use the virtual env provided by travis.
