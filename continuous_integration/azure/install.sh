@@ -21,11 +21,12 @@ if [ "$DISTRIB" == "conda" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
     fi
     if [ "$SPHINX_VERSION" != "dev" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx${SPHINX_VERSION}"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     else
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     fi
     make_conda $CONDA_TO_INSTALL
+    python pip install --upgrade pip
     python -m pip install "$PIP_DEPENDENCIES"
     python setup.py install
 # elif [ "$PYTHON_VERSION" == "nightly" ]; then
