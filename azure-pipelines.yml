@@ -82,9 +82,8 @@ jobs:
       python37_minimal:
         DISTRIB: 'minimal'
         PYTHON_VERSION: '3.7'
-      pythonNightly:
-        DISTRIB: 'Nightly'
-        PYTHON_VERSION: '3.8'
+      # pythonNightly:
+      #   DISTRIB: 'Nightly'
 
   steps:
   - task: UsePythonVersion@0
@@ -93,18 +92,17 @@ jobs:
       versionSpec: $(PYTHON_VERSION)
     condition: eq(variables['DISTRIB'], 'minimal')
   - bash: |
-      if [[ $LOCALE == C ]]; then
-          export LC_CTYPE=C
-          export LC_ALL=C
-          export LANG=C
-      fi
+      export LC_CTYPE=C
+      export LC_ALL=C
+      export LANG=C
     displayName: Set locale
+    condition: eq(variables['LOCALE'], C)
     # Make sure that things work even if the locale is set to C (which
     # effectively means ASCII). Some of the input rst files have unicode
     # characters and we need to deal with this gracefully.
   - bash: |
       sudo apt-get install python3-numpy python3-matplotlib python3-pip python3-coverage optipng
-    displayName: Install ubuntu python packages
+    displayName: Install ubuntu python for ubuntu
     condition: eq(variables['DISTRIB'], 'ubuntu')
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
