@@ -123,4 +123,3 @@ jobs:
     inputs:
       filePath: continuous_integration/azure/test_script.sh
     displayName: Run test_script.sh
-
