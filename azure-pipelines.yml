@@ -106,6 +106,12 @@ jobs:
       sudo apt-get install python3-numpy python3-matplotlib python3-pip python3-coverage optipng
     displayName: Install ubuntu python for ubuntu
     condition: eq(variables['DISTRIB'], 'ubuntu')
+  - bash: |
+      sudo apt-get install xvfb
+      /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
+    displayName: Install and spin up xvfb
+    condition: eq(variables['DISTRIB'], 'conda')
+    # for mayavi
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
     condition: eq(variables['DISTRIB'], 'conda')

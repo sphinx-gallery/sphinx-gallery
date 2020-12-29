@@ -29,10 +29,8 @@ if [ "$DISTRIB" == "conda" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
     make_conda $CONDA_TO_INSTALL
-    conda list
-    # python -m pip install -U pip
     python -m pip install $PIP_DEPENDENCIES
-    python setup.py install
+    python setup.py install --user
 # elif [ "$PYTHON_VERSION" == "nightly" ]; then
 #     # Python nightly requires to use the virtual env provided by travis.
 #     pip install https://api.github.com/repos/cython/cython/zipball/master
