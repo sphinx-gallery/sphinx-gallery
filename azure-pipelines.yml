@@ -85,7 +85,6 @@ jobs:
         PYTHON_VERSION: '3.7'
       # pythonNightly:
       #   DISTRIB: 'Nightly'
-  condition: not(contains(variables['Build.SourceVersionMessage'], '[doc only]'))
 
   steps:
   - task: UsePythonVersion@0
@@ -108,7 +107,7 @@ jobs:
     condition: eq(variables['DISTRIB'], 'ubuntu')
   - bash: |
       sudo apt-get install xvfb
-      /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
+      xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' yarn cover
     displayName: Install and spin up xvfb
     condition: eq(variables['DISTRIB'], 'conda')
     # for mayavi
