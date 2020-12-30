@@ -54,6 +54,8 @@ jobs:
   displayName: Linux
   pool:
     vmImage: 'ubuntu-18.04'
+  variables:
+    DISPLAY: ':99'
   strategy:
     matrix:
       ubuntu_python36:
