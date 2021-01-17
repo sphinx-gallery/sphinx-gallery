@@ -35,8 +35,6 @@ N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 def sphinx_app(tmpdir_factory, req_mpl, req_pil):
     # Skip if numpy not installed
     pytest.importorskip("numpy")
-
-    import numpy as np
     from numpy.testing import assert_allclose
 
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath

@@ -16,7 +16,6 @@ def gallery_conf(tmpdir):
     """Sets up a test sphinx-gallery configuration"""
     # Skip if numpy not installed
     pytest.importorskip("numpy")
-    import numpy as np
 
     gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False)
     gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
