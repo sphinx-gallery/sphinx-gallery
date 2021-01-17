@@ -11,7 +11,6 @@ set -e
 make_conda() {
     CONDA_TO_INSTALL="$@"
     conda create -n testev --yes $CONDA_TO_INSTALL
-    source activate testev
 }
 
 if [ "$DISTRIB" == "conda" ]; then
