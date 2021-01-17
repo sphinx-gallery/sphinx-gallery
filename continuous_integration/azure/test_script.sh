@@ -6,6 +6,10 @@
 
 set -e
 
+if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
+    conda list
+fi
+
 pytest sphinx_gallery -vv  --tb=short
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
     cd doc
