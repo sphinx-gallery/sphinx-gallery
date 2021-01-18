@@ -13,7 +13,7 @@ if [ "$DISTRIB" == "conda" ]; then
     # bash miniconda.sh -b -p ~/miniconda
     # source ~/miniconda/etc/profile.d/conda.sh
     CONDA_TO_INSTALL="$@"
-    CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8"
+    CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 wheel"
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
     if [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then

@@ -7,6 +7,7 @@
 set -e
 
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
+    conda info --envs
     source activate testev
 fi
 
