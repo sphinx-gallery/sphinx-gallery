@@ -36,7 +36,7 @@ if [ "$DISTRIB" == "conda" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    python -m pip install --upgrade pip setuptools
+    python3 -m pip install --upgrade pip setuptools
     python3 -m pip install -r dev-requirements.txt | cat
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
