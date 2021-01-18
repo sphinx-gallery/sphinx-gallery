@@ -6,11 +6,6 @@
 
 set -e
 
-if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
-    conda info --envs
-    source activate base
-fi
-
 pytest sphinx_gallery -vv  --tb=short
 
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
