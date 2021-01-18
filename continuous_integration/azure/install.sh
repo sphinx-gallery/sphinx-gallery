@@ -24,7 +24,7 @@ if [ "$DISTRIB" == "conda" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
     conda create -n testev --yes $CONDA_TO_INSTALL
-    conda activate testenv
+    source activate testenv
     pytest --version
     python -m pip install $PIP_DEPENDENCIES
     python setup.py install --user
