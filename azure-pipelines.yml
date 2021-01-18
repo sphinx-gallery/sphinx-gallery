@@ -113,9 +113,9 @@ jobs:
       /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
     displayName: Install and spin up xvfb
     condition: eq(variables['DISTRIB'], 'conda')
-  # - bash: echo "##vso[task.prependpath]$CONDA/bin"
-  #   displayName: Add conda to PATH
-  #   condition: eq(variables['DISTRIB'], 'conda')
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+    condition: eq(variables['DISTRIB'], 'conda')
   - task: Bash@3
     inputs:
       filePath: continuous_integration/azure/install.sh

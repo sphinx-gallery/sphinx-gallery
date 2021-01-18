@@ -9,9 +9,9 @@
 set -e
 
 if [ "$DISTRIB" == "conda" ]; then
-    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh --progress=dot:mega
-    bash miniconda.sh -b -p ~/miniconda
-    source ~/miniconda/etc/profile.d/conda.sh
+    # wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh --progress=dot:mega
+    # bash miniconda.sh -b -p ~/miniconda
+    # source ~/miniconda/etc/profile.d/conda.sh
     CONDA_TO_INSTALL="$@"
     CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8"
     PIP_DEPENDENCIES="$@"
@@ -26,9 +26,9 @@ if [ "$DISTRIB" == "conda" ]; then
     else
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
-    conda create -n testev --yes $CONDA_TO_INSTALL
+    source activate base
+    conda install --yes $CONDA_TO_INSTALL
     conda info --envs
-    conda activate testenv
     pytest --version
     python -m pip install $PIP_DEPENDENCIES
     python setup.py install --user
