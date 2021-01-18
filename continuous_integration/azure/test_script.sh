@@ -6,11 +6,11 @@
 
 set -e
 
-if [ "$DISTRIB" == "conda" ]; then
-    conda info --envs
+if [ "$DISTRIB" == "ubuntu" ]; then
+    python3 -m pytest sphinx_gallery -vv  --tb=short
+else
+    pytest sphinx_gallery -vv  --tb=short
 fi
-
-pytest sphinx_gallery -vv  --tb=short
 
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
     cd doc
