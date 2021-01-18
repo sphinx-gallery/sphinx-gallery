@@ -45,7 +45,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
     pip install sphinx==1.8.3
-    setup.py install --user
+    python3 setup.py install --user
     pip list
     which python
 else
