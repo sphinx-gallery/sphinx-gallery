@@ -14,7 +14,7 @@ if [ "$DISTRIB" == "conda" ]; then
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
     if [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
-        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
@@ -40,8 +40,8 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     python3 -m pip install -r dev-requirements.txt | cat
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    pip install sphinx==1.8.3
-    python setup.py install
+    python3 -m pip install sphinx==1.8.3
+    python3 setup.py install --user
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
