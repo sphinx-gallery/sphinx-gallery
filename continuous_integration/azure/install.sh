@@ -16,14 +16,18 @@ if [ "$DISTRIB" == "conda" ]; then
     if [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
         export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
     fi
-    if [ "$SPHINX_VERSION" != "dev" ]; then
-        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx${SPHINX_VERSION}"
+    if [ "$SPHINX_VERSION" == "" ]; then
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
+    elif [ "$SPHINX_VERSION" == "dev" ]; then
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     else
-        export PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
-    git clone git://github.com/astropy/ci-helpers.git --depth=1
-    source ci-helpers/travis/setup_conda.sh
-    python setup.py install
+    conda create -n testev --yes $CONDA_TO_INSTALL
+    conda activate testenv
+    pytest --version
+    python -m pip install $PIP_DEPENDENCIES
+    python setup.py install --user
 elif [ "$PYTHON_VERSION" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
     pip install https://api.github.com/repos/cython/cython/zipball/master
