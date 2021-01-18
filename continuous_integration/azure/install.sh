@@ -28,7 +28,7 @@ if [ "$DISTRIB" == "conda" ]; then
     fi
     conda create -n testev --yes $CONDA_TO_INSTALL
     conda info --envs
-    source activate testenv
+    conda activate testenv
     pytest --version
     python -m pip install $PIP_DEPENDENCIES
     python setup.py install --user

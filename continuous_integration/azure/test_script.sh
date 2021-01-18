@@ -7,7 +7,7 @@
 set -e
 
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
-    source activate testev
+    conda activate testev
 fi
 
 pytest sphinx_gallery -vv  --tb=short
