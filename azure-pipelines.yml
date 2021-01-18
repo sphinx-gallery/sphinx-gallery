@@ -90,10 +90,10 @@ jobs:
 
   steps:
   - task: UsePythonVersion@0
-    displayName: Specify Python version for minimal
+    displayName: Specify Python version for minimal and ubuntu
     inputs:
       versionSpec: $(PYTHON_VERSION)
-    condition: eq(variables['DISTRIB'], 'minimal')
+    condition: or(eq(variables['DISTRIB'], 'minimal'), eq(variables['DISTRIB'], 'ubuntu'))
   - bash: |
       export LC_CTYPE=C
       export LC_ALL=C
