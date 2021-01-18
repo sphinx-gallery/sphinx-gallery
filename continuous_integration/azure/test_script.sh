@@ -10,7 +10,7 @@ if [ "$DISTRIB" == "conda" ]; then
     conda info --envs
 fi
 
-python3 pytest sphinx_gallery -vv  --tb=short
+pytest sphinx_gallery -vv  --tb=short
 
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
     cd doc

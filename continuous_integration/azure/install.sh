@@ -40,13 +40,14 @@ if [ "$DISTRIB" == "conda" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    python3 -m pip install --upgrade pip setuptools
-    python3 -m pip install -r dev-requirements.txt | cat
-    python3 -m pip install --upgrade pytest pytest-cov coverage
+    pip install --upgrade pip setuptools
+    pip install -r dev-requirements.txt | cat
+    pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    python3 -m pip install sphinx==1.8.3
-    python3 setup.py install --user
-    python3 -m pip list
+    pip install sphinx==1.8.3
+    setup.py install --user
+    pip list
+    which python
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
