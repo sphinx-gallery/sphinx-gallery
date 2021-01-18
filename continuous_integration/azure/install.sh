@@ -46,6 +46,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     # test show_memory=True without memory_profiler by not installing it (not in req)
     python3 -m pip install sphinx==1.8.3
     python3 setup.py install --user
+    python -m pip list
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
