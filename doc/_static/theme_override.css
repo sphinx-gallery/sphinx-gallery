@@ -33,3 +33,17 @@ a.sphx-glr-backref-module-sphinx_gallery {
 .anim-state label {
     display: inline-block;
 }
+
+/* Override thumbnail to make it transparent */
+.sphx-glr-thumbcontainer {
+  background-color: transparent !important;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  box-shadow: none;
+  float: left;
+  margin: 5px;
+  min-height: 230px;
+  padding-top: 5px;
+  position: relative;
+}
