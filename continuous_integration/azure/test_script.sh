@@ -20,4 +20,3 @@ if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
     flake8 sphinx_gallery
     check-manifest
 fi
-#test
