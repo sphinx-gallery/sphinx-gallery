@@ -39,6 +39,7 @@ elif [ "$DISTRIB" == "nightly" ]; then
     echo "##vso[task.prependpath]${HOME}/.local/bin"
     export PATH=~/.local/bin:${PATH}
     sudo apt-get install python${PYTHON_VERSION}
+    mkdir -p ~/.local/bin
     ln -s /usr/bin/python${PYTHON_VERSION} ~/.local/bin/python
     python -m pip install --upgrade --user pip wheel
     pip install https://api.github.com/repos/cython/cython/zipball/master
