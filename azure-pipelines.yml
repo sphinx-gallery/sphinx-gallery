@@ -111,7 +111,7 @@ stages:
           PYTHON_VERSION: '3.7'
         pythonNightly:
           DISTRIB: 'nightly'
-          PYTHON_VERSION: '3.9'
+          PYTHON_VERSION: '3.10'
 
     steps:
     - task: UsePythonVersion@0
@@ -129,7 +129,7 @@ stages:
       displayName: Set locale
       condition: eq(variables['LOCALE'], 'C')
     - bash: |
-        sudo add-apt-repository ppa:deadsnakes/nightly
+        sudo add-apt-repository ppa:deadsnakes/ppa
       condition: eq(variables['DISTRIB'], 'nightly')
       displayName: Add deadsnakes PPA
     - bash: |

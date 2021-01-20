@@ -42,7 +42,7 @@ elif [ "$DISTRIB" == "nightly" ]; then
     mkdir -p ~/.local/bin
     ln -s /usr/bin/python${PYTHON_VERSION} ~/.local/bin/python
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    python get-pip.py --user
+    python3.10 get-pip.py --user
     pip install https://api.github.com/repos/cython/cython/zipball/master
     pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
     pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
