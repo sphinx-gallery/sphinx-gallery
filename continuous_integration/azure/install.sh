@@ -12,6 +12,8 @@ if [ "$DISTRIB" == "conda" ]; then
     # wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh --progress=dot:mega
     # bash miniconda.sh -b -p ~/miniconda
     # source ~/miniconda/etc/profile.d/conda.sh
+    echo "##vso[task.prependpath]$CONDA/bin"
+    export PATH=${CONDA}/bin:${PATH}
     CONDA_TO_INSTALL="$@"
     CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib flake8 wheel"
     PIP_DEPENDENCIES="$@"
@@ -32,14 +34,22 @@ if [ "$DISTRIB" == "conda" ]; then
     pytest --version
     python -m pip install $PIP_DEPENDENCIES
     python setup.py install --user
-# elif [ "$PYTHON_VERSION" == "nightly" ]; then
-#     # Python nightly requires to use the virtual env provided by travis.
-#     pip install https://api.github.com/repos/cython/cython/zipball/master
-#     pip install --no-use-pep517 https://api.github.com/repos/numpy/numpy/zipball/master
-#     pip install . sphinx joblib pytest-cov
+elif [ "$PYTHON_VERSION" == "nightly" ]; then
+    # Python nightly requires to use the virtual env provided by travis.
+    echo "##vso[task.prependpath]${HOME}/.local/bin"
+    export PATH=~/.local/bin:${PATH}
+    sudo apt-get install python${PYTHON_VERSION}
+    ln -s /usr/bin/python${PYTHON_VERSION} ~/.local/bin/python
+    python -m pip install --upgrade --user pip wheel
+    pip install https://api.github.com/repos/cython/cython/zipball/master
+    pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
+    pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
+    pip install -q sphinx joblib pytest-cov
+    pip install -q .
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
+    sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng
     python3 -m pip install --upgrade pip setuptools
     python3 -m pip install -r dev-requirements.txt | cat
     python3 -m pip install --upgrade pytest pytest-cov coverage

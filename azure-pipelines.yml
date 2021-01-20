@@ -109,8 +109,9 @@ stages:
         python37_minimal:
           DISTRIB: 'minimal'
           PYTHON_VERSION: '3.7'
-        # pythonNightly:
-        #   DISTRIB: 'Nightly'
+        pythonNightly:
+          DISTRIB: 'nightly'
+          PYTHON_VERSION: '3.10'
 
     steps:
     - task: UsePythonVersion@0
@@ -128,24 +129,14 @@ stages:
       displayName: Set locale
       condition: eq(variables['LOCALE'], 'C')
     - bash: |
-        sudo apt-get update
-        sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
-      displayName: Install Ubuntu dependencies
-      condition: eq(variables['DISTRIB'], 'conda')
+        sudo add-apt-repository ppa:deadsnakes/nightly
+      condition: eq(variables['DISTRIB'], 'nightly')
+      displayName: Add deadsnakes PPA
     - bash: |
         sudo apt-get update
-        sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng
-      displayName: Install Ubuntu python packages
-      condition: eq(variables['DISTRIB'], 'ubuntu')
-    # for mayavi
-    - bash: |
-        sudo apt-get install xvfb
+        sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 optipng xvfb
         /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
-      displayName: Install and spin up xvfb
-      condition: eq(variables['DISTRIB'], 'conda')
-    - bash: echo "##vso[task.prependpath]$CONDA/bin"
-      displayName: Add conda to PATH
-      condition: eq(variables['DISTRIB'], 'conda')
+      displayName: Install Ubuntu dependencies and start Xvfb
     - task: Bash@3
       inputs:
         filePath: continuous_integration/azure/install.sh
