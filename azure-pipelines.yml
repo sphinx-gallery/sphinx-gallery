@@ -129,7 +129,8 @@ stages:
       condition: eq(variables['LOCALE'], 'C')
     - bash: |
         sudo apt-get update
-        sudo apt-get install libgcc1-dbg
+        sudo apt-get install glibc
+      # libgcc1-dbg
       displayName: Install Ubuntu dependencies
       condition: eq(variables['DISTRIB'], 'conda')
     - bash: |
