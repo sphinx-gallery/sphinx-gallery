@@ -47,7 +47,7 @@ elif [ "$DISTRIB" == "nightly" ]; then
     # This should work but doesn't (version parsing problem):
     # pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
     git clone https://github.com/numpy/numpy.git --depth=1
-    cd numpy && python setup.py install && cd .. && rm -Rf numpy
+    cd numpy && pip install . && cd .. && rm -Rf numpy
     pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
     pip install -q sphinx joblib pytest-cov
     pip install -q .
