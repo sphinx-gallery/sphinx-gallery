@@ -13,6 +13,8 @@ else
 fi
 
 if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
+    which gcc
+    gcc --version
     cd doc
     make SPHINXOPTS= html-noplot
     make SPHINXOPTS=${SPHINXOPTS} html -j 2
