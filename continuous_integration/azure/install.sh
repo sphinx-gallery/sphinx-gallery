@@ -38,12 +38,15 @@ elif [ "$DISTRIB" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
     echo "##vso[task.prependpath]${HOME}/.local/bin"
     export PATH=~/.local/bin:${PATH}
-    sudo apt-get install python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev
+    sudo apt-get install python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev libopenblas-dev
     mkdir -p ~/.local/bin
     ln -s /usr/bin/python${PYTHON_VERSION} ~/.local/bin/python
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     python get-pip.py --user
-    pip install -v https://api.github.com/repos/numpy/numpy/zipball/master
+    # This should work but doesn't (version parsing problem):
+    # pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
+    git clone https://github.com/numpy/numpy.git --depth=1
+    cd numpy && python setup.py install && cd ..
     pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
     pip install -q sphinx joblib pytest-cov
     pip install -q .
