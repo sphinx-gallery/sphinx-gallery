@@ -109,9 +109,10 @@ stages:
         python37_minimal:
           DISTRIB: 'minimal'
           PYTHON_VERSION: '3.7'
+        # stuck on 3.9 until https://github.com/pypa/pip/issues/9479 is resolved
         pythonNightly:
           DISTRIB: 'nightly'
-          PYTHON_VERSION: '3.10'
+          PYTHON_VERSION: '3.9'
 
     steps:
     - task: UsePythonVersion@0

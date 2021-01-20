@@ -42,12 +42,16 @@ elif [ "$DISTRIB" == "nightly" ]; then
     mkdir -p ~/.local/bin
     ln -s /usr/bin/python${PYTHON_VERSION} ~/.local/bin/python
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    python3.10 get-pip.py --user
-    pip install https://api.github.com/repos/cython/cython/zipball/master
-    pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
-    pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
-    pip install -q sphinx joblib pytest-cov
-    pip install -q .
+    which python
+    which pip
+    python get-pip.py --user
+    which pip
+    ls ~/.local/bin
+    python -m pip install https://api.github.com/repos/cython/cython/zipball/master
+    python -m pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
+    python -m pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
+    python -m pip install -q sphinx joblib pytest-cov
+    python -m pip install -q .
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
