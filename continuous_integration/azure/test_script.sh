@@ -12,7 +12,7 @@ else
     pytest sphinx_gallery -v --tb=short
 fi
 
-if [ "$DISTRIB" != "minimal" ] && [ "$PYTHON_VERSION" != "nightly" ]; then
+if [ "$DISTRIB" != "minimal" ] && [ "$DISTRIB" != "nightly" ]; then
     which gcc
     gcc --version
     cd doc
