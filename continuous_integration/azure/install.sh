@@ -34,7 +34,7 @@ if [ "$DISTRIB" == "conda" ]; then
     pytest --version
     python -m pip install $PIP_DEPENDENCIES
     python setup.py install --user
-elif [ "$PYTHON_VERSION" == "nightly" ]; then
+elif [ "$DISTRIB" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
     echo "##vso[task.prependpath]${HOME}/.local/bin"
     export PATH=~/.local/bin:${PATH}
