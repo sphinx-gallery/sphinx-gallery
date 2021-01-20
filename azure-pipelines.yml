@@ -127,13 +127,13 @@ stages:
         export LANG=C
       displayName: Set locale
       condition: eq(variables['LOCALE'], 'C')
-    - bash: |
-        sudo apt-get install libgcc
-      displayName: Install Ubuntu dependencies
-      condition: eq(variables['DISTRIB'], 'conda')
+    # - bash: |
+    #     sudo apt-get install libgcc
+    #   displayName: Install Ubuntu dependencies
+    #   condition: eq(variables['DISTRIB'], 'conda')
     - bash: |
         sudo apt-get install python3-numpy python3-matplotlib python3-pip python3-coverage optipng
-      displayName: Install ubuntu python packages
+      displayName: Install Ubuntu python packages
       condition: eq(variables['DISTRIB'], 'ubuntu')
     # for mayavi
     - bash: |
