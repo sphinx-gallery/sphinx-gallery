@@ -43,6 +43,7 @@ elif [ "$DISTRIB" == "nightly" ]; then
     ln -s /usr/bin/python${PYTHON_VERSION} ~/.local/bin/python
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     python get-pip.py --user
+    pip install --no-use-pep517 cython
     # This should work but doesn't (version parsing problem):
     # pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
     git clone https://github.com/numpy/numpy.git --depth=1
