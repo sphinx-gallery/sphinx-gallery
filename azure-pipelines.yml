@@ -127,10 +127,10 @@ stages:
         export LANG=C
       displayName: Set locale
       condition: eq(variables['LOCALE'], 'C')
-    # - bash: |
-    #     sudo apt-get install libgcc
-    #   displayName: Install Ubuntu dependencies
-    #   condition: eq(variables['DISTRIB'], 'conda')
+    - bash: |
+        sudo apt-get install gcc-multilib
+      displayName: Install Ubuntu dependencies
+      condition: eq(variables['DISTRIB'], 'conda')
     - bash: |
         sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng
       displayName: Install Ubuntu python packages
