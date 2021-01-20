@@ -118,20 +118,24 @@ stages:
       inputs:
         versionSpec: $(PYTHON_VERSION)
       condition: or(eq(variables['DISTRIB'], 'minimal'), eq(variables['DISTRIB'], 'ubuntu'))
+    # Make sure that things work even if the locale is set to C (which
+    # effectively means ASCII). Some of the input rst files have unicode
+    # characters and we need to deal with this gracefully.
     - bash: |
         export LC_CTYPE=C
         export LC_ALL=C
         export LANG=C
       displayName: Set locale
       condition: eq(variables['LOCALE'], 'C')
-      # Make sure that things work even if the locale is set to C (which
-      # effectively means ASCII). Some of the input rst files have unicode
-      # characters and we need to deal with this gracefully.
+    - bash: |
+        sudo apt install libxkbcommon-x11-0 xvfb tcsh libxcb*
+      displayName: 'Install Ubuntu dependencies'
+      condition: eq(variables['DISTRIB'], 'conda')
     - bash: |
         sudo apt-get install python3-numpy python3-matplotlib python3-pip python3-coverage optipng
-      displayName: Install ubuntu python for ubuntu
+      displayName: Install ubuntu python packages
       condition: eq(variables['DISTRIB'], 'ubuntu')
-      # for mayavi
+    # for mayavi
     - bash: |
         sudo apt-get install xvfb
         /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
