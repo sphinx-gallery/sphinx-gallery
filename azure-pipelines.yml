@@ -111,7 +111,7 @@ stages:
           PYTHON_VERSION: '3.7'
         pythonNightly:
           DISTRIB: 'nightly'
-          PYTHON_VERSION: '3.10'
+          PYTHON_VERSION: '3.9'
 
     steps:
     - task: UsePythonVersion@0
