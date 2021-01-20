@@ -41,7 +41,9 @@ elif [ "$DISTRIB" == "nightly" ]; then
     sudo apt-get install python${PYTHON_VERSION}
     mkdir -p ~/.local/bin
     ln -s /usr/bin/python${PYTHON_VERSION} ~/.local/bin/python
-    python -m pip install --upgrade --user pip wheel
+    sudo apt-get remove python3-wheel
+    python -m pip install --upgrade --user pip
+    python -m pip install --upgrade --user wheel
     pip install https://api.github.com/repos/cython/cython/zipball/master
     pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
     pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
