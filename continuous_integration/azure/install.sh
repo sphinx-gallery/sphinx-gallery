@@ -45,10 +45,16 @@ elif [ "$DISTRIB" == "nightly" ]; then
     python get-pip.py --user
     pip install --no-use-pep517 cython
     # This should work but doesn't (version parsing problem):
+    #
     # pip install --no-use-pep517 -q https://api.github.com/repos/numpy/numpy/zipball/master
-    git clone https://github.com/numpy/numpy.git --depth=1
-    cd numpy && pip install --no-use-pep517 . && cd .. && rm -Rf numpy
-    pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
+    #
+    # And this does work, but it super slow (> 10 min):
+    #
+    # git clone https://github.com/numpy/numpy.git --depth=1
+    # cd numpy && pip install --no-use-pep517 . && cd .. && rm -Rf numpy
+    # pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
+    #
+    # So for now we'll just live without NumPy.
     pip install -q sphinx joblib pytest-cov
     pip install -q .
 elif [ "$DISTRIB" == "minimal" ]; then
