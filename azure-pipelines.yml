@@ -112,7 +112,7 @@ stages:
         # stuck on 3.9 until https://github.com/pypa/pip/issues/9479 is resolved
         pythonNightly:
           DISTRIB: 'nightly'
-          PYTHON_VERSION: '3.9'
+          PYTHON_VERSION: '3.10'
 
     steps:
     - task: UsePythonVersion@0

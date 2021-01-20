@@ -38,7 +38,7 @@ elif [ "$DISTRIB" == "nightly" ]; then
     # Python nightly requires to use the virtual env provided by travis.
     echo "##vso[task.prependpath]${HOME}/.local/bin"
     export PATH=~/.local/bin:${PATH}
-    sudo apt-get install python${PYTHON_VERSION}
+    sudo apt-get install python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev
     mkdir -p ~/.local/bin
     ln -s /usr/bin/python${PYTHON_VERSION} ~/.local/bin/python
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
