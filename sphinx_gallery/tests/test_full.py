@@ -636,7 +636,9 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
         'plot_future_imports_broken',
         'plot_scraper_broken',
     )
-    if not sys.platform.startswith('win'):  # not reliable on Windows
+    # not reliable on Windows and one Ubuntu run
+    bad = sys.platform.startswith('win') or os.getenv('BAD_MTIME', '0') == '1'
+    if not bad:
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
 
         # mtimes for pickles
