@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.9.0
+------
+
+Support for Python 3.5 dropped in this release. You now need Python >=3.6.
+
 v0.8.2
 ------
 

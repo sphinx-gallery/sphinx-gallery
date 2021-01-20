@@ -1,7 +1,6 @@
 import os
 
 import pytest
-import numpy as np
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx_gallery
@@ -15,6 +14,9 @@ from sphinx_gallery.utils import _get_image
 @pytest.fixture(scope='function')
 def gallery_conf(tmpdir):
     """Sets up a test sphinx-gallery configuration"""
+    # Skip if numpy not installed
+    pytest.importorskip("numpy")
+
     gallery_conf = _complete_gallery_conf({}, str(tmpdir), True, False)
     gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
     return gallery_conf
@@ -64,6 +66,7 @@ def test_save_matplotlib_figures(gallery_conf, ext, req_mpl, req_pil):
 
 def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     """Test file naming when saving figures. Requires mayavi."""
+    import numpy as np
     Image = _get_image()
     try:
         from mayavi import mlab

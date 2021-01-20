@@ -15,9 +15,6 @@ import shutil
 import sys
 import time
 
-import numpy as np
-from numpy.testing import assert_allclose
-
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
@@ -36,6 +33,9 @@ N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory, req_mpl, req_pil):
+    # Skip if numpy not installed
+    pytest.importorskip("numpy")
+
     temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
@@ -162,6 +162,7 @@ def test_run_sphinx(sphinx_app):
 
 def test_thumbnail_path(sphinx_app, tmpdir):
     """Test sphinx_gallery_thumbnail_path."""
+    import numpy as np
     # Make sure our thumbnail matches what it should be
     fname_orig = op.join(
         sphinx_app.srcdir, '_static_nonstandard', 'demo.png')
@@ -377,6 +378,9 @@ def test_logging_std_nested(sphinx_app):
 
 def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
     """Assert that the correct set of files were changed based on mtime."""
+    import numpy as np
+    from numpy.testing import assert_allclose
+
     assert ([op.basename(x) for x in list_orig] ==
             [op.basename(x) for x in list_new])
     for orig, new in zip(list_orig, list_new):
@@ -632,7 +636,9 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
         'plot_future_imports_broken',
         'plot_scraper_broken',
     )
-    if not sys.platform.startswith('win'):  # not reliable on Windows
+    # not reliable on Windows and one Ubuntu run
+    bad = sys.platform.startswith('win') or os.getenv('BAD_MTIME', '0') == '1'
+    if not bad:
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
 
         # mtimes for pickles

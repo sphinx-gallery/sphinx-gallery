@@ -8,44 +8,133 @@ pr:
     include:
       - '*'
 
-jobs:
-- job:
-  displayName: Windows
-  pool:
-    vmImage: 'vs2017-win2016'
-  strategy:
-    matrix:
-      Python36:
-        python.version: '3.6'
-      Python38:
-        python.version: '3.8'
+stages:
 
-  steps:
-  - script: |
-      call "%CONDA%\Scripts\activate" base
-      echo "##vso[task.setvariable variable=PATH]%CONDA%\Scripts;%PATH%"
-    displayName: Add conda to PATH and activate conda base
-  - script: conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
-    displayName: Setup conda environment
-  - script: python setup.py develop
-    displayName: Install sphinx-gallery
-  - script: pytest --tb=short sphinx_gallery
-    displayName: pytest
-  - script: |
-      cd doc
-      sphinx-build -D plot_gallery=0 -b html -d _build\doctrees . _build\html
-    displayName: make html-noplot
-  - bash: |
-      cd doc
-      make clean
-    displayName: make clean
-  - script: |
-      cd doc
-      sphinx-build -b html -d _build\doctrees . _build\html
-    displayName: make html
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFiles: 'junit-*.xml'
-      testRunTitle: 'Publish test results for $(Agent.JobName) $(TEST_MODE) $(PYTHON_VERSION)'
-      failTaskOnFailedTests: true
-    condition: succeededOrFailed()
+- stage: Check
+  jobs:
+    - job: Skip
+      pool:
+        vmImage: 'ubuntu-18.04'
+      variables:
+        RET: 'true'
+      steps:
+      - bash: |
+          git_log=`git log --max-count=1 --skip=1 --pretty=format:"%s"`
+          echo "##vso[task.setvariable variable=log]$git_log"
+      - bash: echo "##vso[task.setvariable variable=RET]false"
+        condition: or(contains(variables.log, '[skip azp]'), contains(variables.log, '[azp skip]'), contains(variables.log, '[skip ci]'), contains(variables.log, '[ci skip]'))
+      - bash: echo "##vso[task.setvariable variable=start_main;isOutput=true]$RET"
+        name: result
+
+- stage: Main
+  condition: and(succeeded(), eq(dependencies.Check.outputs['Skip.result.start_main'], 'true'))
+  dependsOn: Check
+  variables:
+    AZURE_CI: 'true'
+
+  jobs:
+  - job:
+    displayName: Windows
+    pool:
+      vmImage: 'vs2017-win2016'
+    strategy:
+      matrix:
+        Python36:
+          python.version: '3.6'
+        Python38:
+          python.version: '3.8'
+
+    steps:
+    - script: |
+        call "%CONDA%\Scripts\activate" base
+        echo "##vso[task.setvariable variable=PATH]%CONDA%\Scripts;%PATH%"
+      displayName: Add conda to PATH and activate conda base
+    - script: conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
+      displayName: Setup conda environment
+    - script: python setup.py develop
+      displayName: Install sphinx-gallery
+    - script: pytest --tb=short sphinx_gallery
+      displayName: pytest
+    - script: |
+        cd doc
+        sphinx-build -D plot_gallery=0 -b html -d _build\doctrees . _build\html
+      displayName: make html-noplot
+    - bash: |
+        cd doc
+        make clean
+      displayName: make clean
+    - script: |
+        cd doc
+        sphinx-build -b html -d _build\doctrees . _build\html
+      displayName: make html
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: 'junit-*.xml'
+        testRunTitle: 'Publish test results for $(Agent.JobName) $(TEST_MODE) $(PYTHON_VERSION)'
+        failTaskOnFailedTests: true
+      condition: succeededOrFailed()
+
+  - job:
+    displayName: Linux
+    pool:
+      vmImage: 'ubuntu-18.04'
+    variables:
+      DISPLAY: ':99'
+    strategy:
+      matrix:
+        ubuntu_python36:
+          DISTRIB: 'ubuntu'
+          PYTHON_VERSION: '3.6'
+          SPHINXOPTS: ''
+        conda_python36_sphinx183:
+          DISTRIB: 'conda'
+          PYTHON_VERSION: '3.6'
+          SPHINX_VERSION: '1.8.3'
+        conda_python36_localeC:
+          DISTRIB: 'conda'
+          PYTHON_VERSION: '3.6'
+          LOCALE: 'C'
+          BAD_MTIME: '1'  # not clear why, maybe some specific Sphinx version?
+        conda_python38_sphinxDev:
+          DISTRIB: 'conda'
+          PYTHON_VERSION: '3.8'
+          SPHINX_VERSION: 'dev'
+        python37_minimal:
+          DISTRIB: 'minimal'
+          PYTHON_VERSION: '3.7'
+        pythonNightly:
+          DISTRIB: 'nightly'
+          PYTHON_VERSION: '3.10'
+
+    steps:
+    - task: UsePythonVersion@0
+      displayName: Specify Python version for minimal and ubuntu
+      inputs:
+        versionSpec: $(PYTHON_VERSION)
+      condition: or(eq(variables['DISTRIB'], 'minimal'), eq(variables['DISTRIB'], 'ubuntu'))
+    # Make sure that things work even if the locale is set to C (which
+    # effectively means ASCII). Some of the input rst files have unicode
+    # characters and we need to deal with this gracefully.
+    - bash: |
+        export LC_CTYPE=C
+        export LC_ALL=C
+        export LANG=C
+      displayName: Set locale
+      condition: eq(variables['LOCALE'], 'C')
+    - bash: |
+        sudo add-apt-repository ppa:deadsnakes/ppa
+      condition: eq(variables['DISTRIB'], 'nightly')
+      displayName: Add deadsnakes PPA
+    - bash: |
+        sudo apt-get update
+        sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 optipng xvfb
+        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
+      displayName: Install Ubuntu dependencies and start Xvfb
+    - task: Bash@3
+      inputs:
+        filePath: continuous_integration/azure/install.sh
+      displayName: Run install.sh
+    - task: Bash@3
+      inputs:
+        filePath: continuous_integration/azure/test_script.sh
+      displayName: Run test_script.sh
