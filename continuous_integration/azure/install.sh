@@ -35,7 +35,6 @@ if [ "$DISTRIB" == "conda" ]; then
     python -m pip install $PIP_DEPENDENCIES
     python setup.py install --user
 elif [ "$DISTRIB" == "nightly" ]; then
-    # Python nightly requires to use the virtual env provided by travis.
     echo "##vso[task.prependpath]${HOME}/.local/bin"
     export PATH=~/.local/bin:${PATH}
     sudo apt-get install python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev libopenblas-dev
