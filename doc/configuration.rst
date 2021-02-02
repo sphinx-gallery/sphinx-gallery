@@ -890,7 +890,9 @@ to use the 2nd figure created as the thumbnail::
 
     # sphinx_gallery_thumbnail_number = 2
 
-To use the last figure created as the thumbnail::
+You can also use negative numbers, which counts from the last figure.
+For example -1 means using the last figure created in the example
+as the thumbnail::
 
     # sphinx_gallery_thumbnail_number = -1
 
