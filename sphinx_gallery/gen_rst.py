@@ -256,7 +256,8 @@ def md5sum_is_current(src_file, mode='b'):
     return False
 
 
-def save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf):
+def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
+                   gallery_conf):
     """Generate and Save the thumbnail image
 
     Parameters
@@ -292,7 +293,8 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
             raise ExtensionError(
                 'sphinx_gallery_thumbnail_number setting is not a number, '
                 'got %r' % (thumbnail_number,))
-        if thumbnail_number < 0:  # negative index means counting from the last one
+        # negative index means counting from the last one
+        if thumbnail_number < 0:
             thumbnail_number += len(script_vars["image_path_iterator"]) + 1
         image_path = image_path_template.format(thumbnail_number)
     del thumbnail_number, thumbnail_path, image_path_template
@@ -862,7 +864,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     save_rst_example(example_rst, target_file, time_elapsed, memory_used,
                      gallery_conf)
 
-    save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
+    save_thumbnail(image_path_template, src_file, script_vars, file_conf,
+                   gallery_conf)
 
     example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
     ipy_fname = replace_py_ipynb(target_file) + '.new'
