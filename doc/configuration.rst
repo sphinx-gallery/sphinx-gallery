@@ -663,24 +663,24 @@ Add your own first and last notebook cell
 Sphinx-Gallery allows you to add your own first and/or last cell to *every*
 generated notebook. Adding a first cell can be useful for including code that
 is required to run properly in the notebook, but not in a ``.py`` file. By
-default, the following first cell is added to each notebook::
+default, the following first cell is added to each notebook:
 
 .. code-block:: ipython
 
-   %matplotlib inline
+    %matplotlib inline
 
 Adding a last cell can be useful for performing a desired action such as
 reporting on the user's environment. By default no last cell is added.
 
 You can choose whatever text you like by modifying the ``first_notebook_cell``
 and ``last_notebook_cell`` configuration parameters. For example, the gallery
-of this documentation adds the following first cell::
+of this documentation adds the following first cell:
 
 .. code-block:: ipython
 
-  # This cell is added by sphinx-gallery
-  # It can be customized to whatever you like
-  %matplotlib inline
+    # This cell is added by sphinx-gallery
+    # It can be customized to whatever you like
+    %matplotlib inline
 
 Which is achieved by the following configuration::
 
@@ -1256,7 +1256,7 @@ Setting gallery thumbnail size
 
 By default Sphinx-Gallery will generate thumbnails at size ``(400, 280)``.
 The thumbnail image will then be scaled to the size specified by
-``'thumbnail_size``, adding pillarboxes or letterboxes as necessary to
+``thumbnail_size``, adding pillarboxes or letterboxes as necessary to
 maintain the original aspect ratio. The default ``thumbnail_size`` is
 ``(400, 280)`` (no scaling) and can be changed via the ``thumbnail_size``
 configuration, e.g.::
@@ -1269,7 +1269,7 @@ configuration, e.g.::
 The gallery uses various CSS classes to display these thumbnails, which
 default to maximum 160x112px. To change this, e.g. to display the images
 at 250x250px, you can modify the default CSS with something like the following
-in your ``gallery.css``` file:
+in your ``gallery.css`` file:
 
 .. code-block:: css
 
