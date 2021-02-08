@@ -546,6 +546,8 @@ key::
         'inspect_global_variables'  : False,
     }
 
+.. _stylizing_code_links:
+
 Stylizing code links using CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
