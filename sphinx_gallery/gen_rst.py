@@ -839,6 +839,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             for label, content, line_number in script_blocks
         ]
 
+    # Remove final empty block, which can occur after config comments
+    # are removed
+    if script_blocks[-1][1].isspace():
+        script_blocks = script_blocks[:-1]
+
     if executable:
         clean_modules(gallery_conf, fname)
     output_blocks, time_elapsed = execute_script(script_blocks,
