@@ -383,15 +383,3 @@ the ``sphinx_gallery.gen_gallery`` extension, you can use in ``conf.py``::
     extensions = ['sphinx_gallery.load_style']
 
 This will only cause the ``gallery.css`` file to be added to your build.
-
-Add your own CSS styling
-========================
-
-To alter the appearance of your examples gallery you can add your own CSS file
-using the Sphinx configuration :confval:`sphinx:html_static_path`.
-The CSS files included by Sphinx-Gallery can be found `on GitHub
-<https://github.com/sphinx-gallery/sphinx-gallery/tree/master/sphinx_gallery/_static>`_.
-You can override CSS classes in the Sphinx-Gallery CSS files in your own CSS
-file. For more details on altering thumbnail appearance see
-:ref:`custom_default_thumb` and :ref:`stylizing_code_links` for more on
-altering code link appearance.
