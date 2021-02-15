@@ -69,6 +69,7 @@ DEFAULT_GALLERY_CONF = {
     'plot_gallery': 'True',
     'download_all_examples': True,
     'abort_on_example_error': False,
+    'only_warn_on_example_error': False,
     'failing_examples': {},
     'passing_examples': [],
     'stale_examples': [],  # ones that did not need to be run due to md5sum
@@ -712,10 +713,13 @@ def summarize_failing_examples(app, exception):
                 color='brown')
 
     if fail_msgs:
-        raise ExtensionError(
-            "Here is a summary of the problems encountered "
-            "when running the examples\n\n" + "\n".join(fail_msgs) +
-            "\n" + "-" * 79)
+        fail_message = ("Here is a summary of the problems encountered "
+                        "when running the examples\n\n" + "\n".join(fail_msgs) +
+                        "\n" + "-" * 79)
+        if gallery_conf['only_warn_on_example_error']:
+            logger.warning(fail_message)
+        else:
+            raise ExtensionError(fail_message)
 
 
 def collect_gallery_files(examples_dirs, gallery_conf):
