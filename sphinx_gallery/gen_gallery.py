@@ -714,8 +714,8 @@ def summarize_failing_examples(app, exception):
 
     if fail_msgs:
         fail_message = ("Here is a summary of the problems encountered "
-                        "when running the examples\n\n" + "\n".join(fail_msgs) +
-                        "\n" + "-" * 79)
+                        "when running the examples\n\n" +
+                        "\n".join(fail_msgs) + "\n" + "-" * 79)
         if gallery_conf['only_warn_on_example_error']:
             logger.warning(fail_message)
         else:
