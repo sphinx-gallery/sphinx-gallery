@@ -27,6 +27,8 @@ plt.show()
 # %%
 # Several titles.
 
+# sphinx_gallery_thumbnail_number = -1
+
 plt.plot(range(10))
 
 plt.title('Center Title')
