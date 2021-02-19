@@ -890,6 +890,12 @@ to use the 2nd figure created as the thumbnail::
 
     # sphinx_gallery_thumbnail_number = 2
 
+You can also use negative numbers, which counts from the last figure.
+For example -1 means using the last figure created in the example
+as the thumbnail::
+
+    # sphinx_gallery_thumbnail_number = -1
+
 The default behavior is ``sphinx_gallery_thumbnail_number = 1``. See
 :ref:`sphx_glr_auto_examples_plot_4_choose_thumbnail.py` for an example
 of this functionality.
