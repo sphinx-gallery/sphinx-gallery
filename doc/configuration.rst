@@ -36,7 +36,7 @@ file:
 - ``compress_images`` (:ref:`compress_images`)
 - ``reset_modules`` (:ref:`reset_modules`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
-- ``only_warning_on_example_error`` (:ref:`warning_on_error`)
+- ``only_warn_on_example_error`` (:ref:`warning_on_error`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
 - ``show_memory`` (:ref:`show_memory`)
@@ -1257,7 +1257,7 @@ the example script.
 
 .. _warning_on_error:
 
-Never Fail the build on error
+Never fail the build on error
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sphinx-Gallery can be configured to only log warnings when examples fail. This means that sphinx will only exit with a non-zero exit code if the ``-W`` flag is passed to ``sphinx-build``. This can be enabled by setting::
