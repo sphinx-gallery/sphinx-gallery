@@ -35,7 +35,6 @@ if [ "$DISTRIB" == "conda" ]; then
     python -m pip install $PIP_DEPENDENCIES
     python setup.py install --user
 elif [ "$DISTRIB" == "nightly" ]; then
-    # Python nightly requires to use the virtual env provided by travis.
     echo "##vso[task.prependpath]${HOME}/.local/bin"
     export PATH=~/.local/bin:${PATH}
     sudo apt-get install python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev libopenblas-dev
@@ -55,7 +54,7 @@ elif [ "$DISTRIB" == "nightly" ]; then
     # pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
     #
     # So for now we'll just live without NumPy.
-    pip install -q --upgrade --pre sphinx joblib pytest-cov pygments colorama
+    pip install -q --upgrade --pre sphinx joblib pytest-cov pygments colorama jinja2>=2.3
     pip install -q .
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage

@@ -181,6 +181,29 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     assert corr > 0.99
 
 
+def test_negative_thumbnail_config(sphinx_app, tmpdir):
+    """Test 'sphinx_gallery_thumbnail_number' config works correctly for
+    negative numbers."""
+    import numpy as np
+    # Make sure our thumbnail is the 2nd (last) image
+    fname_orig = op.join(
+        sphinx_app.outdir, '_images',
+        'sphx_glr_plot_matplotlib_alt_002.png')
+    fname_thumb = op.join(
+        sphinx_app.outdir, '_images',
+        'sphx_glr_plot_matplotlib_alt_thumb.png')
+    fname_new = str(tmpdir.join('new.png'))
+    scale_image(fname_orig, fname_new,
+                *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"])
+    Image = _get_image()
+    orig = np.asarray(Image.open(fname_thumb))
+    new = np.asarray(Image.open(fname_new))
+    assert new.shape[:2] == orig.shape[:2]
+    assert new.shape[2] in (3, 4)  # optipng can strip the alpha channel
+    corr = np.corrcoef(new[..., :3].ravel(), orig[..., :3].ravel())[0, 1]
+    assert corr > 0.99
+
+
 def test_command_line_args_img(sphinx_app):
     generated_examples_dir = op.join(sphinx_app.outdir, 'auto_examples')
     thumb_fname = '../_images/sphx_glr_plot_command_line_args_thumb.png'

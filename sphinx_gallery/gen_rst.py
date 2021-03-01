@@ -256,7 +256,8 @@ def md5sum_is_current(src_file, mode='b'):
     return False
 
 
-def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
+def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
+                   gallery_conf):
     """Generate and Save the thumbnail image
 
     Parameters
@@ -265,6 +266,11 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
         holds the template where to save and how to name the image
     src_file : str
         path to source python file
+    script_vars : dict
+        Configuration and run time variables
+    file_conf : dict
+        File-specific settings given in source file comments as:
+        ``# sphinx_gallery_<name> = <value>``
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
@@ -287,6 +293,9 @@ def save_thumbnail(image_path_template, src_file, file_conf, gallery_conf):
             raise ExtensionError(
                 'sphinx_gallery_thumbnail_number setting is not a number, '
                 'got %r' % (thumbnail_number,))
+        # negative index means counting from the last one
+        if thumbnail_number < 0:
+            thumbnail_number += len(script_vars["image_path_iterator"]) + 1
         image_path = image_path_template.format(thumbnail_number)
     del thumbnail_number, thumbnail_path, image_path_template
     thumbnail_image_path, ext = _find_image_ext(image_path)
@@ -839,6 +848,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             for label, content, line_number in script_blocks
         ]
 
+    # Remove final empty block, which can occur after config comments
+    # are removed
+    if script_blocks[-1][1].isspace():
+        script_blocks = script_blocks[:-1]
+
     if executable:
         clean_modules(gallery_conf, fname)
     output_blocks, time_elapsed = execute_script(script_blocks,
@@ -855,7 +869,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     save_rst_example(example_rst, target_file, time_elapsed, memory_used,
                      gallery_conf)
 
-    save_thumbnail(image_path_template, src_file, file_conf, gallery_conf)
+    save_thumbnail(image_path_template, src_file, script_vars, file_conf,
+                   gallery_conf)
 
     example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
     ipy_fname = replace_py_ipynb(target_file) + '.new'
