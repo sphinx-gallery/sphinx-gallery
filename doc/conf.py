@@ -137,7 +137,9 @@ if html_theme == 'rtd':
 def setup(app):
     """Sphinx setup function."""
     app.add_css_file('theme_override.css')
-
+    app.add_object_type('confval', 'confval',
+                        objname='configuration value',
+                        indextemplate='pair: %s; configuration value')
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

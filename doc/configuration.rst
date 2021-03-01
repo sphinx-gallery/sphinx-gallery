@@ -547,6 +547,8 @@ key::
         'inspect_global_variables'  : False,
     }
 
+.. _stylizing_code_links:
+
 Stylizing code links using CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -600,6 +602,11 @@ following css prevents any module except for matplotlib from being decorated:
 
 There are likely elements other than ``text-decoration`` that might be worth
 setting, as well.
+
+You can add these CSS classes by including your own CSS file via the Sphinx
+configuration :confval:`sphinx:html_static_path`, which will override the
+default CSS classes in `Sphinx-Gallery CSS files
+<https://github.com/sphinx-gallery/sphinx-gallery/tree/master/sphinx_gallery/_static>`_.
 
 .. _custom_default_thumb:
 
@@ -1286,9 +1293,13 @@ configuration, e.g.::
     }
 
 The gallery uses various CSS classes to display these thumbnails, which
-default to maximum 160x112px. To change this, e.g. to display the images
-at 250x250px, you can modify the default CSS with something like the following
-in your ``gallery.css`` file:
+default to maximum 160x112px. To change this you can modify the default CSS by
+including your own CSS file via the Sphinx configuration
+:confval:`sphinx:html_static_path` (which will override default CSS classes
+in `Sphinx-Gallery CSS files
+<https://github.com/sphinx-gallery/sphinx-gallery/tree/master/sphinx_gallery/_static>`_).
+The following CSS would display the images at 250x250px instead of the default
+160x112px:
 
 .. code-block:: css
 
