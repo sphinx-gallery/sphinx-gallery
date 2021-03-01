@@ -336,7 +336,7 @@ def test_only_warn_on_example_error(sphinx_app_wrapper):
 
     build_warn = sphinx_app._warning.getvalue()
     assert 'plot_3.py failed to execute correctly' in build_warn
-    assert 'WARNING: Here is a summary of the problems encountered when running the examples' in build_warn
+    assert 'WARNING: Here is a summary of the problems' in build_warn
 
 
 @pytest.mark.conf_file(content="""
