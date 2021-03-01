@@ -4,16 +4,14 @@
 r"""
 Test Sphinx-Gallery
 """
-
-from __future__ import (division, absolute_import, print_function,
-                        unicode_literals)
 import codecs
 import os
 import re
+from pathlib import Path
 
 import pytest
 
-from sphinx.errors import ConfigError, ExtensionError
+from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
     collect_gallery_files, write_computation_times, _complete_gallery_conf)
@@ -319,6 +317,45 @@ def test_expected_failing_examples_were_executed(sphinx_app_wrapper):
     See #335 for more details.
     """
     sphinx_app_wrapper.build_sphinx_app()
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'only_warn_on_example_error': True,
+}""")
+def test_only_warn_on_example_error(sphinx_app_wrapper):
+    """
+    Test behaviour of only_warn_on_example_error flag.
+    """
+    example_dir = Path(sphinx_app_wrapper.srcdir) / 'src'
+    with codecs.open(example_dir / 'plot_3.py', 'a', encoding='utf-8') as fid:
+        fid.write('raise ValueError')
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+
+    build_warn = sphinx_app._warning.getvalue()
+    assert 'plot_3.py failed to execute correctly' in build_warn
+    assert 'WARNING: Here is a summary of the problems' in build_warn
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'only_warn_on_example_error': True,
+}""")
+def test_only_warn_on_example_error_sphinx_warning(sphinx_app_wrapper):
+    """
+    Test behaviour of only_warn_on_example_error flag.
+    """
+    sphinx_app_wrapper.kwargs['warningiserror'] = True
+    example_dir = Path(sphinx_app_wrapper.srcdir) / 'src'
+    with codecs.open(example_dir / 'plot_3.py', 'a', encoding='utf-8') as fid:
+        fid.write('raise ValueError')
+    with pytest.raises(SphinxWarning) as excinfo:
+        sphinx_app_wrapper.build_sphinx_app()
+    assert "plot_3.py failed to execute" in str(excinfo.value)
 
 
 @pytest.mark.conf_file(content="""

@@ -36,6 +36,7 @@ file:
 - ``compress_images`` (:ref:`compress_images`)
 - ``reset_modules`` (:ref:`reset_modules`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
+- ``only_warn_on_example_error`` (:ref:`warning_on_error`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
 - ``show_memory`` (:ref:`show_memory`)
@@ -1233,8 +1234,8 @@ the ``sphinx-build`` command.
 
 .. _dont_fail_exit:
 
-Don't fail the build on exit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Don't fail the build if specific examples error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It might be the case that you want to keep the gallery even with
 failed examples. Thus you can configure Sphinx-Gallery to allow
@@ -1253,6 +1254,18 @@ the example script.
 
 .. note:: If an example is expected to fail, Sphinx-Gallery will error if
           the example runs without error.
+
+.. _warning_on_error:
+
+Never fail the build on error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sphinx-Gallery can be configured to only log warnings when examples fail. This means that sphinx will only exit with a non-zero exit code if the ``-W`` flag is passed to ``sphinx-build``. This can be enabled by setting::
+
+    sphinx_gallery_conf = {
+        ...
+        'only_warn_on_example_error': True
+    }
 
 
 .. _setting_thumbnail_size:
