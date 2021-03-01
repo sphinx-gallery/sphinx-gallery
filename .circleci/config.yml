@@ -38,7 +38,8 @@ jobs:
           name: Pip
           command: |
             pip uninstall -yq PyQt5 PyQt5-Qt
-            pip install -q --user numpy matplotlib pyqt5 seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest vtk traits traitsui pyface mayavi memory_profiler ipython plotly
+            pip install --only-binary ":all:" numpy matplotlib pyqt5 vtk
+            pip install -q --user seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest traits traitsui pyface mayavi memory_profiler ipython plotly
       - save_cache:
           key: cache-pip
           paths:
