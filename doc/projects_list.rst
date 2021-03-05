@@ -24,4 +24,5 @@ Here is a list of projects using `sphinx-gallery`.
 * `PlasmaPy <http://docs.plasmapy.org/en/latest/auto_examples/>`_
 * `Fury <http://fury.gl/latest/auto_examples/index.html>`_
 * `NetworkX <https://networkx.github.io/documentation/stable/auto_examples/index.html>`_
+* `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 

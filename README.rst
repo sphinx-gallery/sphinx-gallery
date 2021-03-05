@@ -41,6 +41,7 @@ Who uses Sphinx-Gallery
 * `SimPEG <http://docs.simpeg.xyz/content/examples/>`_
 * `PlasmaPy <http://docs.plasmapy.org/en/latest/auto_examples/>`_
 * `Fury <http://fury.gl/latest/auto_examples/index.html>`_
+* `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 
 .. installation-begin-content
 
