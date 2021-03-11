@@ -30,6 +30,9 @@ to your Sphinx ``Makefile``:
             rm -rf $(BUILDDIR)/*
             rm -rf auto_examples/
 
+You need to adapt the second ``rm`` command if you have changed the
+``gallery_dirs`` config variable.
+
 Build the gallery without running any examples
 ----------------------------------------------
 
