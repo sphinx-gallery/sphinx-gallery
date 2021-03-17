@@ -11,6 +11,49 @@ to use Sphinx-Gallery more deeply.
     :local:
     :depth: 2
 
+Using multiple code blocks to create a single figure
+====================================================
+
+By default, images are scraped following each code block in an example.  Thus,
+the following produces two plots, with one plot per code block::
+
+  # %%
+  # This first code block produces a plot with two lines
+
+  import matplotlib.pyplot as plt
+  plt.plot([1, 0])
+  plt.plot([0, 1])
+
+  # %%
+  # This second code block produces a plot with one line
+
+  plt.plot([2, 2])
+  plt.show()
+
+However, sometimes it can be useful to use multiple code blocks to create a
+single figure, particularly if the figure takes a large number commands that
+would benefit from being interleaved with text blocks.  The optional flag
+``sphinx_gallery_defer_figures`` can be inserted as a comment anywhere in a code
+block to defer the scraping of images to the next code block (where it can be
+further deferred, if desired).  The following produces only one plot::
+
+  # %%
+  # This first code block does not produce any plot
+
+  import matplotlib.pyplot as plt
+  plt.plot([1, 0])
+  plt.plot([0, 1])
+  # sphinx_gallery_defer_figures
+
+  # %%
+  # This second code block produces a plot with three lines
+
+  plt.plot([2, 2])
+  plt.show()
+
+If config comments are requested to be removed from rendered output (see
+:ref:`removing_config_comments`), these flag comments will be removed as well.
+
 Extend your Makefile for Sphinx-Gallery
 =======================================
 
