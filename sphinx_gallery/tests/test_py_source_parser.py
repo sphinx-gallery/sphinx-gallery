@@ -45,7 +45,10 @@ def test_get_docstring_and_rest(unicode_sample, tmpdir, monkeypatch):
      {'line_numbers': True}),
     ("#sphinx_gallery_thumbnail_number\n=\n5",
      {'thumbnail_number': 5}),
-    ('#sphinx_gallery_thumbnail_number=1foo', None),
+    ("#sphinx_gallery_thumbnail_number=1foo",
+     None),
+    ("# sphinx_gallery_defer_figures",
+     {}),
 ])
 def test_extract_file_config(content, file_conf, log_collector):
     if file_conf is None:
@@ -74,6 +77,8 @@ def test_extract_file_config(content, file_conf, log_collector):
      "a = 1\n\n\nb = 1"),
     ("# comment\n# sphinx_gallery_line_numbers = True\n# commment 2",
      "# comment\n# commment 2"),
+    ("# sphinx_gallery_defer_figures",
+     ""),
 ])
 def test_remove_config_comments(contents, result):
     assert sg.remove_config_comments(contents) == result

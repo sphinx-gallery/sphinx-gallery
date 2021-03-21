@@ -40,7 +40,7 @@ Example script with invalid Python syntax
 #
 #     b = 2
 INFILE_CONFIG_PATTERN = re.compile(
-    r"^[\ \t]*#\s*sphinx_gallery_([A-Za-z0-9_]+)\s*=\s*(.+)[\ \t]*\n?",
+    r"^[\ \t]*#\s*sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?",
     re.MULTILINE)
 
 
@@ -137,7 +137,9 @@ def extract_file_config(content):
     file_conf = {}
     for match in re.finditer(INFILE_CONFIG_PATTERN, content):
         name = match.group(1)
-        value = match.group(2)
+        value = match.group(3)
+        if value is None:  # a flag rather than a config setting
+            continue
         try:
             value = ast.literal_eval(value)
         except (SyntaxError, ValueError):

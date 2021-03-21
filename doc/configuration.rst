@@ -55,8 +55,12 @@ Some options can also be set or overridden on a file-by-file basis:
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
 - ``# sphinx_gallery_thumbnail_path`` (:ref:`providing_thumbnail`)
 
-See also :ref:`removing_config_comments` to hide these comments from the
-rendered examples.
+Some options can be set on a per-code-block basis in a file:
+
+- ``# sphinx_gallery_defer_figures`` (:ref:`defer_figures`)
+
+See also :ref:`removing_config_comments` to hide config comments in files from
+the rendered examples.
 
 Some options can be set during the build execution step, e.g. using a Makefile:
 
@@ -647,8 +651,8 @@ setting::
 Removing config comments
 ========================
 
-Some configurations can be done on a file-by-file basis by adding a special
-comment with the pattern :samp:`# sphinx_gallery_{config} = {value}` to the
+Some configurations can be specified within a file by adding a special
+comment with the pattern :samp:`# sphinx_gallery_{config} [= {value}]` to the
 example source files. By default, the source files are parsed as is and thus
 the comment will appear in the example.
 
@@ -660,8 +664,8 @@ To remove the comment from the rendered example set the option::
     }
 
 This only removes configuration comments from code blocks, not from text
-blocks. However, note that technically, configuration comments will work when
-put in either code blocks or text blocks.
+blocks. However, note that technically, file-level configuration comments will
+work when put in either code blocks or text blocks.
 
 .. _own_notebook_cell:
 
@@ -1094,7 +1098,6 @@ optimize less but speed up the build time you could do::
 
 See ``$ optipng --help`` for a complete list of options.
 
-
 .. _image_scrapers:
 
 Image scrapers
@@ -1157,6 +1160,48 @@ images produced by an arbitrary package. For instructions, see
 useful for general use (e.g., a custom scraper for a plotting library)
 feel free to add it to the list above (see discussion
 `here <https://github.com/sphinx-gallery/sphinx-gallery/issues/441#issuecomment-493782430>`__)!
+
+.. _defer_figures:
+
+Using multiple code blocks to create a single figure
+====================================================
+
+By default, images are scraped following each code block in an example.  Thus,
+the following produces two plots, with one plot per code block::
+
+  # %%
+  # This first code block produces a plot with two lines
+
+  import matplotlib.pyplot as plt
+  plt.plot([1, 0])
+  plt.plot([0, 1])
+
+  # %%
+  # This second code block produces a plot with one line
+
+  plt.plot([2, 2])
+  plt.show()
+
+However, sometimes it can be useful to use multiple code blocks to create a
+single figure, particularly if the figure takes a large number commands that
+would benefit from being interleaved with text blocks.  The optional flag
+``sphinx_gallery_defer_figures`` can be inserted as a comment anywhere in a code
+block to defer the scraping of images to the next code block (where it can be
+further deferred, if desired).  The following produces only one plot::
+
+  # %%
+  # This first code block does not produce any plot
+
+  import matplotlib.pyplot as plt
+  plt.plot([1, 0])
+  plt.plot([0, 1])
+  # sphinx_gallery_defer_figures
+
+  # %%
+  # This second code block produces a plot with three lines
+
+  plt.plot([2, 2])
+  plt.show()
 
 .. _reset_modules:
 

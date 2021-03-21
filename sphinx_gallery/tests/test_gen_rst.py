@@ -37,7 +37,8 @@ CONTENT = [
     'And this is a second paragraph',
     '"""',
     '',
-    '# sphinx_gallery_thumbnail_number = 1'
+    '# sphinx_gallery_thumbnail_number = 1',
+    '# sphinx_gallery_defer_figures',
     '# and now comes the module code',
     'import logging',
     'import sys',
@@ -445,10 +446,12 @@ def test_remove_config_comments(gallery_conf, req_pil):
     """Test the gallery_conf['remove_config_comments'] setting."""
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     assert '# sphinx_gallery_thumbnail_number = 1' in rst
+    assert '# sphinx_gallery_defer_figures' in rst
 
     gallery_conf['remove_config_comments'] = True
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     assert '# sphinx_gallery_thumbnail_number = 1' not in rst
+    assert '# sphinx_gallery_defer_figures' not in rst
 
 
 def test_final_empty_block(gallery_conf, req_pil):

@@ -23,7 +23,7 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 
 import pytest
 
-N_TOT = 12
+N_TOT = 13
 
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
@@ -908,3 +908,17 @@ def test_binder_logo_exists(sphinx_app):
     assert 'binder_badge_logo' in img_fname  # can have numbers appended
     assert op.isfile(img_fname)
     assert 'https://mybinder.org/v2/gh/sphinx-gallery/sphinx-gallery.github.io/master?urlpath=lab/tree/notebooks/auto_examples/plot_svg.ipynb' in html  # noqa: E501
+
+
+def test_defer_figures(sphinx_app):
+    """Test the deferring of figures."""
+    root = op.join(sphinx_app.outdir, 'auto_examples')
+    fname = op.join(root, 'plot_defer_figures.html')
+    with codecs.open(fname, 'r', 'utf-8') as fid:
+        html = fid.read()
+
+    # The example has two code blocks with plotting commands, but the first
+    # block has the flag ``sphinx_gallery_defer_figures``.  Thus, there should
+    # be only one image, not two, in the output.
+    assert '../_images/sphx_glr_plot_defer_figures_001.png' in html
+    assert '../_images/sphx_glr_plot_defer_figures_002.png' not in html

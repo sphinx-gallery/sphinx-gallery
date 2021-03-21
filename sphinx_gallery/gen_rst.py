@@ -559,7 +559,12 @@ def execute_code_block(compiler, block, example_globals,
 
     sys_path = copy.deepcopy(sys.path)
     sys.path.append(os.getcwd())
-    need_save_figures = True
+
+    # Save figures unless there is a `sphinx_gallery_defer_figures` flag
+    match = re.search(r'^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?',
+                      bcontent, re.MULTILINE)
+    need_save_figures = match is None
+
     try:
         dont_inherit = 1
         if sys.version_info >= (3, 8):
@@ -600,8 +605,11 @@ def execute_code_block(compiler, block, example_globals,
         script_vars['memory_delta'].append(mem_max)
         # This should be inside the try block, e.g., in case of a savefig error
         logging_tee.restore_std()
-        need_save_figures = False
-        images_rst = save_figures(block, script_vars, gallery_conf)
+        if need_save_figures:
+            need_save_figures = False
+            images_rst = save_figures(block, script_vars, gallery_conf)
+        else:
+            images_rst = u''
     except Exception:
         logging_tee.restore_std()
         except_rst = handle_exception(sys.exc_info(), src_file, script_vars,
@@ -842,6 +850,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         'src_file': src_file,
         'target_file': target_file}
 
+    if executable:
+        clean_modules(gallery_conf, fname)
+    output_blocks, time_elapsed = execute_script(script_blocks,
+                                                 script_vars,
+                                                 gallery_conf)
+
+    logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
+
     if gallery_conf['remove_config_comments']:
         script_blocks = [
             (label, remove_config_comments(content), line_number)
@@ -852,14 +868,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     # are removed
     if script_blocks[-1][1].isspace():
         script_blocks = script_blocks[:-1]
-
-    if executable:
-        clean_modules(gallery_conf, fname)
-    output_blocks, time_elapsed = execute_script(script_blocks,
-                                                 script_vars,
-                                                 gallery_conf)
-
-    logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
+        output_blocks = output_blocks[:-1]
 
     example_rst = rst_blocks(script_blocks, output_blocks,
                              file_conf, gallery_conf)
