@@ -57,12 +57,15 @@ into the HTML version of your documentation have a particular
 namespace, to avoid collisions with your own files and images.
 
 Our namespace convention is to prefix everything with ``sphx_glr`` and
-change path separators with underscores. This is valid for
-cross-references labels, and images.
+change path separators with underscores. 
 
-So for example if we want to reference the example
-:ref:`sphx_glr_auto_examples_plot_0_sin.py`, we just call
-its reference
+Referencing Examples
+--------------------
+
+The namespace convention mentioned in the paragraph above is valid for
+cross-references labels, and images. So for example if we want to 
+reference the example :ref:`sphx_glr_auto_examples_plot_0_sin.py`, 
+we just call its reference 
 ``:ref:`sphx_glr_auto_examples_plot_0_sin.py```. The image
 it generated has the name ``sphx_glr_plot_0_sin_001.png``
 and its thumbnail is ``sphx_glr_plot_0_sin_thumb.png``
