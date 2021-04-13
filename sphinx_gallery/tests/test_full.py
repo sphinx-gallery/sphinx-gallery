@@ -275,7 +275,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function">' in lines  # noqa: E501
     assert '#module-matplotlib.pyplot' in lines
     assert 'pyplot.html' in lines
-    assert 'matplotlib.figure.Figure.html#matplotlib.figure.Figure.tight_layout' in lines  # noqa: E501
+    assert '.html#matplotlib.figure.Figure.tight_layout' in lines
     assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
     assert 'matplotlib_configuration_api.html#matplotlib.RcParams' in lines
     assert 'stdtypes.html#list' in lines
