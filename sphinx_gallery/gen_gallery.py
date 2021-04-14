@@ -33,7 +33,7 @@ from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
 from .binder import copy_binder_files, check_binder_conf
-from .directives import MiniGallery
+from .directives import MiniGallery, ImageSg, imagesg_addnode
 
 
 _KNOWN_CSS = ('gallery', 'gallery-binder', 'gallery-dataframe',
@@ -93,6 +93,7 @@ DEFAULT_GALLERY_CONF = {
     'inspect_global_variables': True,
     'css': _KNOWN_CSS,
     'matplotlib_animations': False,
+    'image_srcset': [""],
     'default_thumb_file': None,
     'line_numbers': False,
 }
@@ -785,6 +786,9 @@ def setup(app):
 
     # Add the custom directive
     app.add_directive('minigallery', MiniGallery)
+    app.add_directive("image-sg", ImageSg)
+
+    imagesg_addnode(app)
 
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)

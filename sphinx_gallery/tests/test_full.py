@@ -236,11 +236,20 @@ def test_image_formats(sphinx_app):
         with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
         for num in nums:
-            img_fname = '../_images/sphx_glr_%s_%03d.%s' % (ex, num, ext)
-            file_fname = op.join(generated_examples_dir, img_fname)
+            img_fname0 = '../_images/sphx_glr_%s_%03d.%s' % (ex, num, ext)
+            file_fname = op.join(generated_examples_dir, img_fname0)
             assert op.isfile(file_fname), file_fname
-            want_html = 'src="%s"' % (img_fname,)
+            want_html = 'src="%s"' % (img_fname0,)
             assert want_html in html
+            if ext in ('png', 'jpg'):  # check 2.0x file.  tests the directive
+                img_fname2 = ('../_images/sphx_glr_%s_%03d_2_0x.%s' %
+                              (ex, num, ext))
+                file_fname2 = op.join(generated_examples_dir, img_fname2)
+                assert op.isfile(file_fname2), file_fname2
+
+                want_html = 'srcset="%s, %s 2.0x"' % (img_fname0, img_fname2)
+                assert want_html in html
+
         if extra is not None:
             assert extra in html
 
