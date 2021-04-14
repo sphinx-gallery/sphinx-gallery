@@ -57,13 +57,10 @@ into the HTML version of your documentation have a particular
 namespace, to avoid collisions with your own files and images.
 
 Our namespace convention is to prefix everything with ``sphx_glr`` and
-change path separators with underscores. 
+change path separators with underscores. This is valid for
+cross-references labels, and images.
 
-Referencing Examples
---------------------
-
-The namespace convention mentioned in the paragraph above is valid for
-cross-references labels, and images. So for example if we want to 
+So for example if we want to 
 reference the example :ref:`sphx_glr_auto_examples_plot_0_sin.py`, 
 we just call its reference 
 ``:ref:`sphx_glr_auto_examples_plot_0_sin.py```. The image
@@ -94,6 +91,15 @@ The above directive inserts the following block:
    changed (all the more when line numbers are used instead of ``start-after``
    and  ``end-before``). Use with caution: linking directly to examples is
    a more robust alternative.
+
+Cross referencing
+----------------- 
+You can also cross reference an example using similar naming convention. For example 
+if we want to reference the example :ref:`sphx_glr_auto_examples_plot_0_sin.py`, 
+we just call its reference ``:ref:`sphx_glr_auto_examples_plot_0_sin.py```. 
+Note that we have included the path to the example file (relative to 
+the ``conf.py`` file) after ``sphx_glr``. Path separators are replaced with 
+underscores.
 
 .. _warning_errors:
 
