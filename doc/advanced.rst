@@ -89,13 +89,13 @@ The above directive inserts the following block:
    a more robust alternative.
 
 Cross referencing
------------------ 
+-----------------
 You can also cross reference an example using similar naming convention. For
 example if we want to reference the example
 :ref:`sphx_glr_auto_examples_plot_0_sin.py`, we just call its reference
 ``:ref:`sphx_glr_auto_examples_plot_0_sin.py```.
-Note that we have included the path to the example file (relative to 
-the ``conf.py`` file) after ``sphx_glr_``. Path separators are replaced with 
+Note that we have included the path to the example file (relative to
+the ``conf.py`` file) after ``sphx_glr_``. Path separators are replaced with
 underscores.
 
 .. _warning_errors:
