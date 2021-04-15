@@ -60,7 +60,8 @@ class MiniGallery(Directive):
 
         def has_backrefs(obj):
             src_dir = config.sphinx_gallery_conf['src_dir']
-            path = os.path.join(src_dir, backreferences_dir, '{}.examples'.format(obj))
+            path = os.path.join(src_dir, backreferences_dir,
+                                '{}.examples'.format(obj))
             return os.path.isfile(path) and os.path.getsize(path) > 0
 
         if not any(has_backrefs(obj) for obj in obj_list):
