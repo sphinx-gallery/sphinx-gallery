@@ -58,6 +58,14 @@ class MiniGallery(Directive):
             heading_level = self.options.get('heading-level', '^')
             lines.append(heading_level * len(heading))
 
+        def should_show(obj):
+            # TODO: get the path in a cleaner and more robust way
+            path = os.path.abspath(os.path.join("source", backreferences_dir, '{}.examples'.format(obj)))
+            return os.path.isfile(path) and os.path.getsize(path) > 0
+
+        if not any(should_show(obj) for obj in obj_list):
+            return []
+
         # Insert the backreferences file(s) using the `include` directive
         for obj in obj_list:
             path = os.path.join('/',  # Sphinx treats this as the source dir
