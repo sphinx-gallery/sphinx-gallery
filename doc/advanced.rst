@@ -42,7 +42,7 @@ example takes a long time to run), add the following to your ``Makefile``.
 .. code-block:: bash
 
     html-noplot:
-            $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+            $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
             @echo
             @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
