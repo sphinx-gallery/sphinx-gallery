@@ -445,7 +445,7 @@ default generated message if no string is provided as an argument.  The example
 mini-gallery shown above uses the default heading.  The level of the heading
 defaults to ``^``, but can be changed using the ``heading-level`` option, which
 accepts a single character (e.g., ``-``). The mini-gallery will only be shown
-if the item (here ``numpy.exp``) is actually used in an example.
+if the item (here ``numpy.exp``) is actually used or referred to in an example.
 
 You can also list multiple items, separated by spaces, which will merge all
 examples into a single mini-gallery, e.g.:
