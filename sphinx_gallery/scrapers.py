@@ -114,15 +114,19 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     image_path_iterator = block_vars['image_path_iterator']
     image_rsts = []
     # Check for srcset hidpi images
-    srcset = gallery_conf.get('image_srcset', [""])
-    srcset_mult_facs = []
+    srcset = gallery_conf.get('image_srcset', [])
+    srcset_mult_facs = [1]  # one is always supplied...
     for st in srcset:
         if (len(st) > 0) and (st[-1] == 'x'):
             # "2x" = "2.0"
             srcset_mult_facs += [float(st[:-1])]
+        elif st == "":
+            pass
         else:
-            # "" = "1"
-            srcset_mult_facs += [1]
+            raise ExtensionError(
+                f'Invalid value for image_srcset parameter: "{st}". '
+                'Must be a list of strings with the multiplicative '
+                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]')
 
     # Check for animations
     anims = list()
@@ -524,6 +528,13 @@ SG_IMAGE = """
    :alt: %s
    :srcset: %s
    :class: sphx-glr-single-img
+"""
+
+# keep around for back-compat:
+SINGLE_IMAGE = """
+ .. image:: /%s
+     :alt: %s
+     :class: sphx-glr-single-img
 """
 
 ###############################################################################

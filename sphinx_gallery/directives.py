@@ -11,6 +11,8 @@ from docutils import statemachine
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.directives import images
 
+from sphinx.errors import ExtensionError
+
 
 class MiniGallery(Directive):
     """
@@ -164,6 +166,8 @@ def _parse_srcset(st):
         elif len(spl) == 2:
             mult = spl[1][:-1]
             srcset[float(mult)] = spl[0]
+        else:
+            raise ExtensionError('srcset argument "{entry}" is invalid.')
     return srcset
 
 

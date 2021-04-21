@@ -1107,17 +1107,18 @@ Multi-resolution images
 Web browsers allow a ``srcset`` parameter to the ``<img>`` tag that 
 allows the browser to support `responsive resolution images 
 <https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images>`__
-for hi-dpi/retina displays. Sphinx Gallery supports this via the ``image_srcset`` parameter::
+for hi-dpi/retina displays. Sphinx Gallery supports this via the 
+``image_srcset`` parameter::
 
     sphinx_gallery_conf = {
         ...
-        'image_srcset': ["", "2x"],
+        'image_srcset': ["2x"],
     }
 
 that saves a 1x image at the normal figure dpi (usually 100 dpi) and a 2x 
 version at twice the density (e.g. 200 dpi).  The default is no extra images 
-(``'image_srcset': [""]``), and you can specify other resolutions if desired (e.g.
-``"1.5x"``).
+(``'image_srcset': []``), and you can specify other resolutions if desired as a 
+list: ``["2x", "1.5x"]``.
 
 The matplotlib scraper creates a custom image directive, ``image-sg`` in the 
 rst file::
@@ -1127,13 +1128,13 @@ rst file::
         :srcset: /examples/images/sphx_glr_test_001.png, /examples/images/sphx_glr_test_001_2_0x.png 2.0x
         :class: sphx-glr-single-img
 
-Which is converted to html by the custom directive as::
+This is converted to html by the custom directive as::
 
     .. <img src="../_images/sphx_glr_test_001.png" alt="test", class="sphx-glr-single-img", 
         srcset="../_images/sphx_glr_test_001.png, ../_images/sphx_glr_test_001_2_0x.png 2.0x>
 
-This leads to a larger website, but responsive images will only serve the appropriate-sized 
-images to website visitors.
+This leads to a larger website, but clients that support the ``srcset`` tag will only 
+download the appropriate-sized images.
 
 Note that the ``.. image-sg`` directive currently ignores other ``.. image`` directive 
 tags like ``width``, ``height``, and ``align``.  It also only works with the *html* and 

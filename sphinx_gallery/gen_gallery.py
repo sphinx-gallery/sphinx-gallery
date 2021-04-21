@@ -93,7 +93,7 @@ DEFAULT_GALLERY_CONF = {
     'inspect_global_variables': True,
     'css': _KNOWN_CSS,
     'matplotlib_animations': False,
-    'image_srcset': [""],
+    'image_srcset': [],
     'default_thumb_file': None,
     'line_numbers': False,
 }
