@@ -5,7 +5,7 @@ Welcome to Sphinx-Gallery's documentation!
 .. image:: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_apis/build/status/sphinx-gallery.sphinx-gallery?branchName=master
     :target: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_build/latest?definitionId=1&branchName=master
 
-.. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=svg
+.. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
     :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
 
 ``Sphinx-Gallery`` is a `Sphinx <http://sphinx-doc.org/>`_ extension that builds an HTML
