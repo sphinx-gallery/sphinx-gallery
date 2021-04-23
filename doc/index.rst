@@ -5,8 +5,8 @@ Welcome to Sphinx-Gallery's documentation!
 .. image:: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_apis/build/status/sphinx-gallery.sphinx-gallery?branchName=master
     :target: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_build/latest?definitionId=1&branchName=master
 
-.. image::     https://ci.appveyor.com/api/projects/status/github/sphinx-gallery/sphinx-gallery?branch=master&svg=true
-    :target: https://ci.appveyor.com/project/sphinx-gallery/sphinx-gallery/history
+.. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
+    :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
 
 ``Sphinx-Gallery`` is a `Sphinx <http://sphinx-doc.org/>`_ extension that builds an HTML
 gallery of examples from any set of Python scripts.
