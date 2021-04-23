@@ -5,7 +5,7 @@ Who uses Sphinx-Gallery
 Here is a list of projects using `sphinx-gallery`.
 
 * :ref:`Sphinx-Gallery <sphx_glr_auto_examples>`
-* `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
+* :doc:`Scikit-learn <sklearn:auto_examples/index>`
 * `Nilearn <https://nilearn.github.io/auto_examples/index.html>`_
 * `MNE-python <https://www.martinos.org/mne/stable/auto_examples/index.html>`_
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
@@ -16,7 +16,7 @@ Here is a list of projects using `sphinx-gallery`.
 * `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
 * `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
 * `PySurfer <https://pysurfer.github.io/>`_
-* `Matplotlib <https://matplotlib.org/index.html>`_ `Examples <https://matplotlib.org/gallery/index.html>`_ and `Tutorials  <https://matplotlib.org/tutorials/index.html>`__
+* :doc:`Matplotlib <matplotlib:index>`: :doc:`Examples <matplotlib:gallery/index>` and :doc:`Tutorials <matplotlib:tutorials/index>`
 * `PyTorch tutorials <http://pytorch.org/tutorials>`_
 * `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
