@@ -383,6 +383,36 @@ the ``reset_modules`` configuration key. For the function defined above::
           examples themselves is discouraged due to the inconsistency
           that results between the rendered examples and local outputs.
 
+Altering Sphinx-Gallery CSS
+===========================
+
+The Sphinx-Gallery `.css` files that control the appearance of your example
+gallery can be found `here
+<https://github.com/sphinx-gallery/sphinx-gallery/tree/master/sphinx_gallery/_static>`_.
+These default `.css` files are added to you build, in `_build/html/_static/`
+directory of your `gallery_dir`. You can add your own custom `.css` files by
+listing any path(s) that contain static files, using the key `html_static_path`,
+in your `conf.py` file. E.g.,::
+
+    html_static_path = ['_static']
+
+You can also directly overwrite the default static files. The static files in
+the path(s) listed will be copied over after the builtin Sphinx-Gallery files,
+so if you have a file named "gallery.css", it will overwrite the builtin
+"gallery.css".
+
+The appearance of :ref:`code links <stylizing_code_links> and
+:ref:`thumbnail size <setting_thumbnail_size>` can be altered via addition
+of your own CSS. Can also do things like hide the download buttons in the
+example headers using:
+
+```css
+div.sphx-glr-download-link-note {
+  height: 0px;
+  visibility: hidden;
+}
+```
+
 Using (only) Sphinx-Gallery styles
 ==================================
 
