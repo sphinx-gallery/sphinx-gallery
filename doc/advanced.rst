@@ -391,7 +391,7 @@ gallery can be found `here
 <https://github.com/sphinx-gallery/sphinx-gallery/tree/master/sphinx_gallery/_static>`_.
 These default ``.css`` files are added to your build. Specifically, they are
 copied into ``_build/html/_static/`` of your ``gallery_dir``. You can add your
-own custom ``.css`` files by using the :ref:`Sphinx configuration
+own custom ``.css`` files by using the :doc:`Sphinx configuration
 <sphinx:usage/configuration>` ``html_static_path``. For example,
 list any path(s) that contain your custom static files, using the
 ``html_static_path`` configuration, in your ``conf.py`` file::
