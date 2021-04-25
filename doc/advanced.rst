@@ -411,8 +411,8 @@ example headers using:
 .. code-block:: css
 
     div.sphx-glr-download-link-note {
-    height: 0px;
-    visibility: hidden;
+        height: 0px;
+        visibility: hidden;
     }
 
 Using (only) Sphinx-Gallery styles
