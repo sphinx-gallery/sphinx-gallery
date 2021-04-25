@@ -4,7 +4,65 @@ Change Log
 v0.9.0
 ------
 
-Support for Python 3.5 dropped in this release. You now need Python >=3.6.
+Support for Python 3.5 dropped in this release. Requirement is Python >=3.6.
+
+**Implemented enhancements:**
+
+-  Add a mode which “skips” an example if it fails `#789 <https://github.com/sphinx-gallery/sphinx-gallery/issues/789>`__
+-  Can sphinx_gallery_thumbnail_number support negative indexes? `#785 <https://github.com/sphinx-gallery/sphinx-gallery/issues/785>`__
+-  Configure thumbnail style `#780 <https://github.com/sphinx-gallery/sphinx-gallery/issues/780>`__
+-  ENH: Check for invalid sphinx_gallery_conf keys `#774 <https://github.com/sphinx-gallery/sphinx-gallery/issues/774>`__
+-  DOC Document how to hide download link note `#760 <https://github.com/sphinx-gallery/sphinx-gallery/issues/760>`__
+-  DOC use intersphinx references in projects_list.rst `#755 <https://github.com/sphinx-gallery/sphinx-gallery/issues/755>`__
+-  Delay output capturing to a further code block `#363 <https://github.com/sphinx-gallery/sphinx-gallery/issues/363>`__
+-  ENH: Only add minigallery if there’s something to show `#813 <https://github.com/sphinx-gallery/sphinx-gallery/pull/813>`__ (`NicolasHug <https://github.com/NicolasHug>`__)
+-  Optional flag to defer figure scraping to the next code block `#801 <https://github.com/sphinx-gallery/sphinx-gallery/pull/801>`__ (`ayshih <https://github.com/ayshih>`__)
+-  ENH: PyQt5 `#794 <https://github.com/sphinx-gallery/sphinx-gallery/pull/794>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Add a configuration to warn on error not fail `#792 <https://github.com/sphinx-gallery/sphinx-gallery/pull/792>`__ (`Cadair <https://github.com/Cadair>`__)
+-  Let sphinx_gallery_thumbnail_number support negative indexes `#786 <https://github.com/sphinx-gallery/sphinx-gallery/pull/786>`__ (`seisman <https://github.com/seisman>`__)
+-  Make any borders introduced when rescaling images to thumbnails transparent `#781 <https://github.com/sphinx-gallery/sphinx-gallery/pull/781>`__ (`rossbar <https://github.com/rossbar>`__)
+-  MAINT: Move travis CI jobs to Azure `#779 <https://github.com/sphinx-gallery/sphinx-gallery/pull/779>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH, DEP: Check for invalid keys, remove ancient key `#775 <https://github.com/sphinx-gallery/sphinx-gallery/pull/775>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Fixed bugs:**
+
+-  Custom CSS for space above title target conflicts with pydata-sphinx-theme `#815 <https://github.com/sphinx-gallery/sphinx-gallery/issues/815>`__
+-  Minigalleries are generated even for objects without examples `#812 <https://github.com/sphinx-gallery/sphinx-gallery/issues/812>`__
+-  Python nightly failing due to Jinja2 import from collections.abc `#790 <https://github.com/sphinx-gallery/sphinx-gallery/issues/790>`__
+-  test_rebuild and test_error_messages failing on travis `#777 <https://github.com/sphinx-gallery/sphinx-gallery/issues/777>`__
+-  Animation not show on Read the Docs `#772 <https://github.com/sphinx-gallery/sphinx-gallery/issues/772>`__
+-  BUG: Empty code block output `#765 <https://github.com/sphinx-gallery/sphinx-gallery/issues/765>`__
+-  BUG: Fix CSS selector `#816 <https://github.com/sphinx-gallery/sphinx-gallery/pull/816>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Fix test for links `#811 <https://github.com/sphinx-gallery/sphinx-gallery/pull/811>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Fix SVG default thumbnail support `#810 <https://github.com/sphinx-gallery/sphinx-gallery/pull/810>`__ (`jacobolofsson <https://github.com/jacobolofsson>`__)
+-  Clarify clean docs for custom gallery_dirs `#798 <https://github.com/sphinx-gallery/sphinx-gallery/pull/798>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MAINT Specify Jinja2 version in azure Python nightly `#793 <https://github.com/sphinx-gallery/sphinx-gallery/pull/793>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG Remove if final block empty `#791 <https://github.com/sphinx-gallery/sphinx-gallery/pull/791>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Replace Travis CI badge with Azure Badge in README `#783 <https://github.com/sphinx-gallery/sphinx-gallery/pull/783>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  Point to up-to-date re documentation `#778 <https://github.com/sphinx-gallery/sphinx-gallery/pull/778>`__ (`dstansby <https://github.com/dstansby>`__)
+
+**Closed issues:**
+
+-  Generating the output notebooks together with data (folders) used for generating… `#809 <https://github.com/sphinx-gallery/sphinx-gallery/issues/809>`__
+-  How to link from one example to another? `#805 <https://github.com/sphinx-gallery/sphinx-gallery/issues/805>`__
+-  Incompatibility with matplotlib 3.4.0 ? `#802 <https://github.com/sphinx-gallery/sphinx-gallery/issues/802>`__
+-  Pandas \_repr_html\_ not captured in PDF output `#799 <https://github.com/sphinx-gallery/sphinx-gallery/issues/799>`__
+-  Optuna project Uses Sphinx-Gallery `#795 <https://github.com/sphinx-gallery/sphinx-gallery/issues/795>`__
+-  Adding an extended README `#771 <https://github.com/sphinx-gallery/sphinx-gallery/issues/771>`__
+
+**Merged pull requests:**
+
+-  DOC Add section on altering CSS `#820 <https://github.com/sphinx-gallery/sphinx-gallery/pull/820>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Use intersphinx references in projects_list.rst `#819 <https://github.com/sphinx-gallery/sphinx-gallery/pull/819>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Update CI badge `#818 <https://github.com/sphinx-gallery/sphinx-gallery/pull/818>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Include SOURCEDIR in Makefile `#814 <https://github.com/sphinx-gallery/sphinx-gallery/pull/814>`__ (`NicolasHug <https://github.com/NicolasHug>`__)
+-  DOC: add 2 projects using sphinx gallery `#807 <https://github.com/sphinx-gallery/sphinx-gallery/pull/807>`__ (`mfeurer <https://github.com/mfeurer>`__)
+-  DOC: clarify advanced doc wrt referencing examples `#806 <https://github.com/sphinx-gallery/sphinx-gallery/pull/806>`__ (`mfeurer <https://github.com/mfeurer>`__)
+-  MAINT: Add link `#800 <https://github.com/sphinx-gallery/sphinx-gallery/pull/800>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Add Optuna to “Who uses Optuna” `#796 <https://github.com/sphinx-gallery/sphinx-gallery/pull/796>`__ (`crcrpar <https://github.com/crcrpar>`__)
+-  DOC Add segment on CSS styling `#788 <https://github.com/sphinx-gallery/sphinx-gallery/pull/788>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC minor doc typo fixes `#787 <https://github.com/sphinx-gallery/sphinx-gallery/pull/787>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Update CI links in index.rst `#784 <https://github.com/sphinx-gallery/sphinx-gallery/pull/784>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 
 v0.8.2
 ------
