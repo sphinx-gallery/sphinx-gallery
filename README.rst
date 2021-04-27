@@ -42,6 +42,7 @@ Who uses Sphinx-Gallery
 * `PlasmaPy <http://docs.plasmapy.org/en/latest/auto_examples/>`_
 * `Fury <http://fury.gl/latest/auto_examples/index.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
+* `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
 
 .. installation-begin-content
 
