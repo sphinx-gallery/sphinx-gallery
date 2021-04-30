@@ -9,7 +9,7 @@ Sphinx-Gallery
     :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4718153.svg
-   :target: https://doi.org/10.5281/zenodo.4718153
+    :target: https://doi.org/10.5281/zenodo.4718153
 
 
 A Sphinx extension that builds an HTML version of any Python
