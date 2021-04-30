@@ -8,8 +8,8 @@ Sphinx-Gallery
 .. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
     :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
 
-.. image:: https://zenodo.org/badge/25860190.svg
-    :target: https://zenodo.org/badge/latestdoi/25860190
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4718153.svg
+    :target: https://doi.org/10.5281/zenodo.4718153
 
 
 A Sphinx extension that builds an HTML version of any Python
@@ -43,8 +43,12 @@ Who uses Sphinx-Gallery
 * `Fury <http://fury.gl/latest/auto_examples/index.html>`_
 * `NetworkX <https://networkx.github.io/documentation/stable/auto_examples/index.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
+<<<<<<< HEAD
 * `Auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
 * `OpenML-Python <https://openml.github.io/openml-python/master/examples/index.html>`_
+=======
+* `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
+>>>>>>> master
 
 .. installation-begin-content
 
