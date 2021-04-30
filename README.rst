@@ -8,8 +8,8 @@ Sphinx-Gallery
 .. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
     :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
 
-.. image:: https://zenodo.org/badge/25860190.svg
-    :target: https://zenodo.org/badge/latestdoi/25860190
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4718153.svg
+   :target: https://doi.org/10.5281/zenodo.4718153
 
 
 A Sphinx extension that builds an HTML version of any Python
