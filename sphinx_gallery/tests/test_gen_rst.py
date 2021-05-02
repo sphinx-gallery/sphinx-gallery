@@ -454,6 +454,15 @@ def test_remove_config_comments(gallery_conf, req_pil):
     assert '# sphinx_gallery_defer_figures' not in rst
 
 
+def test_dummy_image_error(gallery_conf, req_pil):
+    """Test correct error is raised if int not provided to
+    sphinx_gallery_dummy_image."""
+    CONTENT.extend(("# sphinx_gallery_dummy_image=False",))
+    msg = "sphinx_gallery_dummy_image setting is not a number"
+    with pytest.raises(ExtensionError, match=msg):
+        _generate_rst(gallery_conf, 'test.py', CONTENT)
+
+
 def test_final_empty_block(gallery_conf, req_pil):
     """Test empty final block is removed. Empty final block can occur after
     sole config comment is removed from final block."""
