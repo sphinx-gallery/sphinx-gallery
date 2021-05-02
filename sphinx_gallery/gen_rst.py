@@ -876,8 +876,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         image_path_iterator = script_vars['image_path_iterator']
         stock_img = os.path.join(glr_path_static(), 'no_image.png')
         for _, path in zip(range(dummy_image), image_path_iterator):
-            print(f'_ {_}')
-            print(f'path {path}')
             copyfile(stock_img, path)
 
     if gallery_conf['remove_config_comments']:
