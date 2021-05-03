@@ -34,6 +34,7 @@ file:
 - ``image_scrapers`` (and the deprecated ``find_mayavi_figures``)
   (:ref:`image_scrapers`)
 - ``compress_images`` (:ref:`compress_images`)
+- ``image_srcset`` (:ref:`image_srcset`)
 - ``reset_modules`` (:ref:`reset_modules`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``only_warn_on_example_error`` (:ref:`warning_on_error`)
@@ -1098,6 +1099,47 @@ optimize less but speed up the build time you could do::
     }
 
 See ``$ optipng --help`` for a complete list of options.
+
+.. _image_srcset:
+
+Multi-resolution images
+=======================
+
+Web browsers allow a ``srcset`` parameter to the ``<img>`` tag that 
+allows the browser to support `responsive resolution images 
+<https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images>`__
+for hi-dpi/retina displays. Sphinx Gallery supports this via the 
+``image_srcset`` parameter::
+
+    sphinx_gallery_conf = {
+        ...
+        'image_srcset': ["2x"],
+    }
+
+that saves a 1x image at the normal figure dpi (usually 100 dpi) and a 2x 
+version at twice the density (e.g. 200 dpi).  The default is no extra images 
+(``'image_srcset': []``), and you can specify other resolutions if desired as a 
+list: ``["2x", "1.5x"]``.
+
+The matplotlib scraper creates a custom image directive, ``image-sg`` in the 
+rst file::
+
+    .. image-sg:: /examples/images/sphx_glr_test_001.png
+        :alt: test
+        :srcset: /examples/images/sphx_glr_test_001.png, /examples/images/sphx_glr_test_001_2_0x.png 2.0x
+        :class: sphx-glr-single-img
+
+This is converted to html by the custom directive as::
+
+    .. <img src="../_images/sphx_glr_test_001.png" alt="test", class="sphx-glr-single-img", 
+        srcset="../_images/sphx_glr_test_001.png, ../_images/sphx_glr_test_001_2_0x.png 2.0x>
+
+This leads to a larger website, but clients that support the ``srcset`` tag will only 
+download the appropriate-sized images.
+
+Note that the ``.. image-sg`` directive currently ignores other ``.. image`` directive 
+tags like ``width``, ``height``, and ``align``.  It also only works with the *html* and 
+*latex*  builders.  
 
 .. _image_scrapers:
 
