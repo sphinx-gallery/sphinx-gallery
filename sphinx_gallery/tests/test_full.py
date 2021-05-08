@@ -924,11 +924,12 @@ def test_defer_figures(sphinx_app):
     assert '../_images/sphx_glr_plot_defer_figures_002.png' not in html
 
 
-def test_dummy_image(sphinx_app):
-    """Test that sphinx_gallery_dummy_image is created."""
+def test_no_dummy_image(sphinx_app):
+    """Test that sphinx_gallery_dummy_image is NOT created (when executable
+    is True)."""
     img1 = op.join(sphinx_app.srcdir, 'auto_examples', 'images',
                    'sphx_glr_plot_repr_001.png')
     img2 = op.join(sphinx_app.srcdir, 'auto_examples', 'images',
                    'sphx_glr_plot_repr_002.png')
-    assert op.isfile(img1)
-    assert op.isfile(img2)
+    assert not op.isfile(img1)
+    assert not op.isfile(img2)
