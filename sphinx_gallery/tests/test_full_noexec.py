@@ -40,7 +40,7 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
 
 
 def test_dummy_image(sphinx_app):
-    """Test that sphinx_gallery_dummy_image is created."""
+    """Test that sphinx_gallery_dummy_images are created."""
     img1 = op.join(sphinx_app.srcdir, 'auto_examples', 'images',
                    'sphx_glr_plot_repr_001.png')
     img2 = op.join(sphinx_app.srcdir, 'auto_examples', 'images',

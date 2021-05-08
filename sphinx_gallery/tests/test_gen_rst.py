@@ -456,9 +456,9 @@ def test_remove_config_comments(gallery_conf, req_pil):
 
 def test_dummy_image_error(gallery_conf, req_pil):
     """Test correct error is raised if int not provided to
-    sphinx_gallery_dummy_image."""
-    content_image = CONTENT + ["# sphinx_gallery_dummy_image=False", ]
-    msg = "sphinx_gallery_dummy_image setting is not a number"
+    sphinx_gallery_dummy_images."""
+    content_image = CONTENT + ["# sphinx_gallery_dummy_images=False", ]
+    msg = "sphinx_gallery_dummy_images setting is not a number"
     with pytest.raises(ExtensionError, match=msg):
         _generate_rst(gallery_conf, 'test.py', content_image)
 

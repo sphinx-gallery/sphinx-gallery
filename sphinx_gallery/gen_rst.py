@@ -867,11 +867,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
 
     # Create dummy images
     if not executable:
-        dummy_image = file_conf.get('dummy_image', None)
+        dummy_image = file_conf.get('dummy_images', None)
         if dummy_image is not None:
             if type(dummy_image) is not int:
                 raise ExtensionError(
-                    'sphinx_gallery_dummy_image setting is not a number, '
+                    'sphinx_gallery_dummy_images setting is not a number, '
                     'got %r' % (dummy_image,))
 
             image_path_iterator = script_vars['image_path_iterator']

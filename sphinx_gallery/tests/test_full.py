@@ -925,7 +925,7 @@ def test_defer_figures(sphinx_app):
 
 
 def test_no_dummy_image(sphinx_app):
-    """Test that sphinx_gallery_dummy_image is NOT created (when executable
+    """Test that sphinx_gallery_dummy_images are NOT created (when executable
     is True)."""
     img1 = op.join(sphinx_app.srcdir, 'auto_examples', 'images',
                    'sphx_glr_plot_repr_001.png')

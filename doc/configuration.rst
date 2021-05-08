@@ -54,7 +54,7 @@ Some options can also be set or overridden on a file-by-file basis:
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
 - ``# sphinx_gallery_thumbnail_path`` (:ref:`providing_thumbnail`)
-- ``# sphinx_gallery_dummy_image`` (:ref:`dummy_images`)
+- ``# sphinx_gallery_dummy_images`` (:ref:`dummy_images`)
 
 Some options can be set on a per-code-block basis in a file:
 
@@ -1233,7 +1233,7 @@ which you then reference manually elsewhere, e.g.,:
 To prevent missing image file warnings when building without executing, you
 can add the following to the example file::
 
-    # sphinx_gallery_dummy_image=2
+    # sphinx_gallery_dummy_images=2
 
 This will cause Sphinx-Gallery to generate 2 dummy images with the same
 naming convention and stored in the same location as images that would be
@@ -1241,7 +1241,7 @@ generated when building with execution.
 
 .. note::
     This configuration **only** works when ``plot_gallery`` is False. This
-    means that you will not need to remove any ``sphinx_gallery_dummy_image``
+    means that you will not need to remove any ``sphinx_gallery_dummy_images``
     lines in your examples when you switch to building your gallery with
     execution.
 
