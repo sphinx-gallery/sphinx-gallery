@@ -13,7 +13,7 @@ import pytest
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory, req_mpl, req_pil):
 
-    temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
+    temp_dir = (tmpdir_factory.getbasetemp() / 'root_nonexec').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
     def ignore(src, names):
