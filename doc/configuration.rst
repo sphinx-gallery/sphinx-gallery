@@ -1211,11 +1211,12 @@ Generating dummy images
 =======================
 
 For quick visualization of your gallery, especially during the writing process,
-Sphinx-Gallery allows you to build your gallery without executing any of the
-code (see :ref:`without_execution`). This however, can cause warnings about
-missing image files if you have manually written links to automatically
-generated images. To prevent these warnings you can tell Sphinx-Gallery to
-create a number of dummy images for an example.
+Sphinx-Gallery allows you to build your gallery without executing the
+code (see :ref:`without_execution` and
+:ref:`filename/ignore patterns <build_pattern>`). This however,
+can cause warnings about missing image files if you have manually written
+links to automatically generated images. To prevent these warnings you can
+tell Sphinx-Gallery to create a number of dummy images for an example.
 
 For example, you may have an example ('my_example.py') that generates 2 figures,
 which you then reference manually elsewhere, e.g.,:
@@ -1240,10 +1241,12 @@ naming convention and stored in the same location as images that would be
 generated when building with execution.
 
 .. note::
-    This configuration **only** works when ``plot_gallery`` is False. This
-    means that you will not need to remove any ``sphinx_gallery_dummy_images``
-    lines in your examples when you switch to building your gallery with
-    execution.
+    This configuration **only** works when the example is set to not execute
+    (i.e., the ``plot_gallery`` is False, the example is in `ignore_pattern`
+    or the example is not in `filename_pattern - see
+    :ref:`filename/ignore patterns <build_pattern>`). This means that you will
+    not need to remove any ``sphinx_gallery_dummy_images`` lines in your
+    examples when you switch to building your gallery with execution.
 
 .. _reset_modules:
 
