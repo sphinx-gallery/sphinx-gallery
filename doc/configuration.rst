@@ -1238,7 +1238,9 @@ can add the following to the example file::
 
 This will cause Sphinx-Gallery to generate 2 dummy images with the same
 naming convention and stored in the same location as images that would be
-generated when building with execution.
+generated when building with execution. No dummy images will be generated
+if there are existing images (e.g., from a previous run of the build),
+so they will not be overwritten.
 
 .. note::
     This configuration **only** works when the example is set to not execute
