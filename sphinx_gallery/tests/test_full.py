@@ -823,6 +823,7 @@ def test_minigallery_directive(sphinx_app):
         # Test 2-N (both examples, no heading)
         if "Test 2-N" in lines[i]:
             text = ''.join(lines[i:i+8])
+            print(f'Text: {text}')
 
             # Confirm there isn't a heading
             assert any_heading.search(text) is None
