@@ -783,7 +783,8 @@ def test_backreference_labels(sphinx_app):
         ('Test 2-D-D', 12, True),
         # both examples, custom heading, custom level
         ('Test 2-C-C', 12, True),
-])
+    ]
+)
 def test_minigallery_directive(sphinx_app, test, nlines, filenamesortkey):
     """Tests the functionality of the minigallery directive."""
     out_dir = sphinx_app.outdir
