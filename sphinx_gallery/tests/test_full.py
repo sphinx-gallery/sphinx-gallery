@@ -767,7 +767,25 @@ def test_backreference_labels(sphinx_app):
     assert link in html
 
 
-def test_minigallery_directive(sphinx_app):
+@pytest.mark.parametrize(
+    'test, nlines, filenamesortkey', [
+        # first example, no heading
+        ('Test 1-N', 6, False),
+        # first example, default heading, default level
+        ('Test 1-D-D', 8, False),
+        # first example, default heading, custom level
+        ('Test 1-D-C', 8, False),
+        # first example, custom heading, default level
+        ('Test 1-C-D', 9, False),
+        # both examples, no heading
+        ('Test 2-N', 11, True),
+        # both examples, default heading, default level
+        ('Test 2-D-D', 14, True),
+        # both examples, custom heading, custom level
+        ('Test 2-C-C', 15, True),
+    ]
+)
+def test_minigallery_directive(sphinx_app, test, nlines, filenamesortkey):
     """Tests the functionality of the minigallery directive."""
     out_dir = sphinx_app.outdir
     minigallery_html = op.join(out_dir, 'minigallery.html')
@@ -782,89 +800,35 @@ def test_minigallery_directive(sphinx_app):
     filenamesortkey_example = re.compile(r'(?s)<img .+'
                                          r'(plot_numpy_matplotlib).+'
                                          r'auto_examples\/\1\.html')
+    # Heading strings
+    heading_str = {
+        "Test 1-N": None,
+        "Test 1-D-D": r'<h2>Examples using .+ExplicitOrder.+<\/h2>',
+        "Test 1-D-C": r'<h3>Examples using .+ExplicitOrder.+<\/h3>',
+        "Test 1-C-D": r'<h2>This is a custom heading.*<\/h2>',
+        "Test 2-N": None,
+        "Test 2-D-D": r'<h2>Examples using one of multiple objects.*<\/h2>',
+        "Test 2-C-C": r'<h1>This is a different custom heading.*<\/h1>'
+    }
 
     for i in range(len(lines)):
-        # Test 1-N (first example, no heading)
-        if "Test 1-N" in lines[i]:
-            text = ''.join(lines[i:i+6])
-            print(f'Text: {text}')
-
-            # Confirm there isn't a heading
-            assert any_heading.search(text) is None
-
-            # Check for examples
-            assert explicitorder_example.search(text) is not None
-            assert filenamesortkey_example.search(text) is None
-
-        # Test 1-D-D (first example, default heading, default level)
-        if "Test 1-D-D" in lines[i]:
-            text = ''.join(lines[i:i+8])
-            print(f'Text: {text}')
-
-            heading = re.compile(r'<h2>Examples using .+ExplicitOrder.+<\/h2>')
-            assert heading.search(text) is not None
+        if test in lines[i]:
+            text = ''.join(lines[i:i+nlines])
+            print(f'{test}: {text}')
+            # Check headings
+            if heading_str[test]:
+                heading = re.compile(heading_str[test])
+                assert heading.search(text) is not None
+            else:
+                # Confirm there isn't a heading
+                assert any_heading.search(text) is None
 
             # Check for examples
             assert explicitorder_example.search(text) is not None
-            assert filenamesortkey_example.search(text) is None
-
-        # Test 1-D-C (first example, default heading, custom level)
-        if "Test 1-D-C" in lines[i]:
-            text = ''.join(lines[i:i+8])
-
-            heading = re.compile(r'<h3>Examples using .+ExplicitOrder.+<\/h3>')
-            assert heading.search(text) is not None
-
-            # Check for examples
-            assert explicitorder_example.search(text) is not None
-            assert filenamesortkey_example.search(text) is None
-
-        # Test 1-C-D (first example, custom heading, default level)
-        if "Test 1-C-D" in lines[i]:
-            text = ''.join(lines[i:i+8])
-
-            heading = re.compile(r'<h2>This is a custom heading.*<\/h2>')
-            assert heading.search(text) is not None
-
-            # Check for examples
-            assert explicitorder_example.search(text) is not None
-            assert filenamesortkey_example.search(text) is None
-
-        # Test 2-N (both examples, no heading)
-        if "Test 2-N" in lines[i]:
-            text = ''.join(lines[i:i+8])
-            print(f'Text: {text}')
-
-            # Confirm there isn't a heading
-            assert any_heading.search(text) is None
-
-            # Check for examples
-            assert explicitorder_example.search(text) is not None
-            assert filenamesortkey_example.search(text) is not None
-
-        # Test 2-D-D (both examples, default heading, default level)
-        if "Test 2-D-D" in lines[i]:
-            text = ''.join(lines[i:i+12])
-
-            heading = re.compile(r'<h2>Examples using one of multiple objects'
-                                 r'.*<\/h2>')
-            assert heading.search(text) is not None
-
-            # Check for examples
-            assert explicitorder_example.search(text) is not None
-            assert filenamesortkey_example.search(text) is not None
-
-        # Test 2-C-C (both examples, custom heading, custom level)
-        if "Test 2-C-C" in lines[i]:
-            text = ''.join(lines[i:i+12])
-
-            heading = re.compile(r'<h1>This is a different custom heading.*'
-                                 r'<\/h1>')
-            assert heading.search(text) is not None
-
-            # Check for examples
-            assert explicitorder_example.search(text) is not None
-            assert filenamesortkey_example.search(text) is not None
+            if filenamesortkey:
+                assert filenamesortkey_example.search(text) is not None
+            else:
+                assert filenamesortkey_example.search(text) is None
 
 
 def test_matplotlib_warning_filter(sphinx_app):
