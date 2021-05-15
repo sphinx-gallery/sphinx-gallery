@@ -8,7 +8,9 @@ Scrapers for embedding images
 Collect images that have been produced by code blocks.
 
 The only scrapers we support are Matplotlib and Mayavi, others should
-live in modules that will support them (e.g., PyVista, Plotly).
+live in modules that will support them (e.g., PyVista, Plotly).  Scraped
+images are injected as rst ``image-sg`` directives into the ``.rst``
+file generated for each example script.
 """
 
 import os
@@ -16,6 +18,7 @@ import sys
 import re
 from distutils.version import LooseVersion
 from textwrap import indent
+from pathlib import PurePosixPath
 from warnings import filterwarnings
 
 from sphinx.errors import ExtensionError
@@ -110,6 +113,21 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     from matplotlib.animation import Animation
     image_path_iterator = block_vars['image_path_iterator']
     image_rsts = []
+    # Check for srcset hidpi images
+    srcset = gallery_conf.get('image_srcset', [])
+    srcset_mult_facs = [1]  # one is always supplied...
+    for st in srcset:
+        if (len(st) > 0) and (st[-1] == 'x'):
+            # "2x" = "2.0"
+            srcset_mult_facs += [float(st[:-1])]
+        elif st == "":
+            pass
+        else:
+            raise ExtensionError(
+                f'Invalid value for image_srcset parameter: "{st}". '
+                'Must be a list of strings with the multiplicative '
+                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]')
+
     # Check for animations
     anims = list()
     if gallery_conf.get('matplotlib_animations', False):
@@ -118,9 +136,9 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
                 anims.append(ani)
     # Then standard images
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
+        image_path = PurePosixPath(image_path)
         if 'format' in kwargs:
-            image_path = '%s.%s' % (os.path.splitext(image_path)[0],
-                                    kwargs['format'])
+            image_path = image_path.with_suffix('.' + kwargs['format'])
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         fig = plt.figure(fig_num)
@@ -128,7 +146,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         cont = False
         for anim in anims:
             if anim._fig is fig:
-                image_rsts.append(_anim_rst(anim, image_path, gallery_conf))
+                image_rsts.append(_anim_rst(anim,
+                                            str(image_path), gallery_conf))
                 cont = True
                 break
         if cont:
@@ -145,15 +164,40 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             if to_rgba(fig_attr) != to_rgba(default_attr) and \
                     attr not in kwargs:
                 these_kwargs[attr] = fig_attr
+
+        # save the figures, and populate the srcsetpaths
         try:
             fig.savefig(image_path, **these_kwargs)
+            dpi0 = matplotlib.rcParams['savefig.dpi']
+            if dpi0 == 'figure':
+                dpi0 = fig.dpi
+            dpi0 = these_kwargs.get('dpi', dpi0)
+            srcsetpaths = {0: image_path}
+
+            # save other srcset paths, keyed by multiplication factor:
+            for mult in srcset_mult_facs:
+                if not (mult == 1):
+                    multst = f'{mult}'.replace('.', '_')
+                    name = f"{image_path.stem}_{multst}x{image_path.suffix}"
+                    hipath = image_path.parent / PurePosixPath(name)
+                    hikwargs = these_kwargs.copy()
+                    hikwargs['dpi'] = mult * dpi0
+                    fig.savefig(hipath, **hikwargs)
+                    srcsetpaths[mult] = hipath
+            srcsetpaths = [srcsetpaths]
         except Exception:
             plt.close('all')
             raise
+
         if 'images' in gallery_conf['compress_images']:
-            optipng(image_path, gallery_conf['compress_images_args'])
+            optipng(str(image_path), gallery_conf['compress_images_args'])
+            for hipath in srcsetpaths[0].items():
+                optipng(str(hipath), gallery_conf['compress_images_args'])
+
         image_rsts.append(
-            figure_rst([image_path], gallery_conf['src_dir'], fig_titles))
+            figure_rst([image_path], gallery_conf['src_dir'], fig_titles,
+                       srcsetpaths=srcsetpaths))
+
     plt.close('all')
     rst = ''
     if len(image_rsts) == 1:
@@ -347,7 +391,7 @@ def save_figures(block, block_vars, gallery_conf):
     return all_rst
 
 
-def figure_rst(figure_list, sources_dir, fig_titles=''):
+def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None):
     """Generate RST for a list of image filenames.
 
     Depending on whether we have one or more figures, we use a
@@ -362,16 +406,36 @@ def figure_rst(figure_list, sources_dir, fig_titles=''):
     fig_titles : str
         Titles of figures, empty string if no titles found. Currently
         only supported for matplotlib figures, default = ''.
+    srcsetpaths : list or None
+        List of dictionaries containing absolute paths.  If
+        empty, then srcset field is populated with the figure path.
+        (see ``image_srcset`` configuration option).  Otherwise,
+        each dict is of the form
+        {0: /images/image.png, 2.0: /images/image_2_0x.png}
+        where the key is the multiplication factor and the contents
+        the path to the image created above.
 
     Returns
     -------
     images_rst : str
         rst code to embed the images in the document
+
+    The rst code will have a custom ``image-sg`` directive that allows
+    multiple resolution images to be served e.g.:
+    ``:srcset: /plot_types/imgs/img_001.png,
+      /plot_types/imgs/img_2_0x.png 2.0x``
+
     """
+
+    if srcsetpaths is None:
+        # this should never happen, but figure_rst is public, so
+        # this has to be a kwarg...
+        srcsetpaths = [{0: fl} for fl in figure_list]
 
     figure_paths = [os.path.relpath(figure_path, sources_dir)
                     .replace(os.sep, '/').lstrip('/')
                     for figure_path in figure_list]
+
     # Get alt text
     alt = ''
     if fig_titles:
@@ -388,12 +452,47 @@ def figure_rst(figure_list, sources_dir, fig_titles=''):
     images_rst = ""
     if len(figure_paths) == 1:
         figure_name = figure_paths[0]
-        images_rst = SINGLE_IMAGE % (figure_name, alt)
+        hinames = srcsetpaths[0]
+        srcset = _get_srcset_st(sources_dir, hinames)
+        images_rst = SG_IMAGE % (figure_name, alt, srcset)
+
     elif len(figure_paths) > 1:
         images_rst = HLIST_HEADER
-        for figure_name in figure_paths:
-            images_rst += HLIST_IMAGE_TEMPLATE % (figure_name, alt)
+        for nn, figure_name in enumerate(figure_paths):
+            hinames = srcsetpaths[nn]
+            srcset = _get_srcset_st(sources_dir, hinames)
+
+            images_rst += (HLIST_SG_TEMPLATE %
+                           (figure_name, alt, srcset))
+
     return images_rst
+
+
+def _get_srcset_st(sources_dir, hinames):
+    """
+    Create the srcset string for including on the rst line.
+    ie. sources_dir might be /home/sample-proj/source,
+    hinames posix paths to
+    0: /home/sample-proj/source/plot_types/images/img1.png,
+    2.0: /home/sample-proj/source/plot_types/images/img1_2_0x.png,
+    The result will be:
+    '/plot_types/basic/images/sphx_glr_pie_001.png,
+    /plot_types/basic/images/sphx_glr_pie_001_2_0x.png 2.0x'
+    """
+    srcst = ''
+    for k in hinames.keys():
+        path = os.path.relpath(hinames[k],
+                               sources_dir).replace(os.sep, '/').lstrip('/')
+        srcst += '/' + path
+        if k == 0:
+            srcst += ', '
+        else:
+            srcst += f' {k:1.1f}x, '
+    if srcst[-2:] == ', ':
+        srcst = srcst[:-2]
+    srcst += ''
+
+    return srcst
 
 
 def _single_line_sanitize(s):
@@ -415,23 +514,32 @@ HLIST_IMAGE_MATPLOTLIB = """
     *
 """
 
-HLIST_IMAGE_TEMPLATE = """
+HLIST_SG_TEMPLATE = """
     *
 
-      .. image:: /%s
+      .. image-sg:: /%s
           :alt: %s
+          :srcset: %s
           :class: sphx-glr-multi-img
 """
 
-SINGLE_IMAGE = """
-.. image:: /%s
-    :alt: %s
-    :class: sphx-glr-single-img
+SG_IMAGE = """
+.. image-sg:: /%s
+   :alt: %s
+   :srcset: %s
+   :class: sphx-glr-single-img
 """
 
+# keep around for back-compat:
+SINGLE_IMAGE = """
+ .. image:: /%s
+     :alt: %s
+     :class: sphx-glr-single-img
+"""
 
 ###############################################################################
 # Module resetting
+
 
 def _reset_matplotlib(gallery_conf, fname):
     """Reset matplotlib."""
