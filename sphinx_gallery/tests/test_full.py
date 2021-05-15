@@ -780,7 +780,7 @@ def test_backreference_labels(sphinx_app):
         # both examples, no heading
         ('Test 2-N', 8, True),
         # both examples, default heading, default level
-        ('Test 2-D-D', 13, True),
+        ('Test 2-D-D', 15, True),
         # both examples, custom heading, custom level
         ('Test 2-C-C', 12, True),
     ]
