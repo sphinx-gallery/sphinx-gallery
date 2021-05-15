@@ -814,7 +814,7 @@ def test_minigallery_directive(sphinx_app, test, nlines, filenamesortkey):
             text = ''.join(lines[i:i+nlines])
             # Check headings
             if heading_str[test]:
-                heading = re.compile(heading_str[test]):
+                heading = re.compile(heading_str[test])
                 assert heading.search(text) is not None
             else:
                 # Confirm there isn't a heading
