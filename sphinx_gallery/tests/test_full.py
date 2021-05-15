@@ -779,6 +779,7 @@ def test_minigallery_directive(sphinx_app):
         # Test 1-N (first example, no heading)
         if "Test 1-N" in lines[i]:
             text = ''.join(lines[i:i+6])
+            print(f'Text: {text}')
 
             # Confirm there isn't a heading
             assert any_heading.search(text) is None
@@ -790,6 +791,7 @@ def test_minigallery_directive(sphinx_app):
         # Test 1-D-D (first example, default heading, default level)
         if "Test 1-D-D" in lines[i]:
             text = ''.join(lines[i:i+8])
+            print(f'Text: {text}')
 
             heading = re.compile(r'<h2>Examples using .+ExplicitOrder.+<\/h2>')
             assert heading.search(text) is not None
