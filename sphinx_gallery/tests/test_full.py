@@ -766,23 +766,24 @@ def test_backreference_labels(sphinx_app):
     link = 'href="gen_modules/sphinx_gallery.backreferences.html#sphx-glr-backref-sphinx-gallery-backreferences-identify-names">'  # noqa: E501
     assert link in html
 
+
 @pytest.mark.parametrize(
-    'test, nlines, filenamesortkey',
-    (# first example, no heading
-     ['Test 1-N', 6, False],
-     # first example, default heading, default level
-     ['Test 1-D-D', 8, False],
-     # first example, default heading, custom level
-     ['Test 1-D-C', 8, False],
-     # first example, custom heading, default level
-     ['Test 1-C-D', 8, False],
-     # both examples, no heading
-     ['Test 2-N', 8, True],
-     # both examples, default heading, default level
-     ['Test 2-D-D', 12, True],
-     # both examples, custom heading, custom level
-     ['Test 2-C-C', 12, True])
-)
+    'test, nlines, filenamesortkey', [
+        # first example, no heading
+        ('Test 1-N', 6, False),
+        # first example, default heading, default level
+        ('Test 1-D-D', 8, False),
+        # first example, default heading, custom level
+        ('Test 1-D-C', 8, False),
+        # first example, custom heading, default level
+        ('Test 1-C-D', 8, False),
+        # both examples, no heading
+        ('Test 2-N', 8, True),
+        # both examples, default heading, default level
+        ('Test 2-D-D', 12, True),
+        # both examples, custom heading, custom level
+        ('Test 2-C-C', 12, True),
+])
 def test_minigallery_directive(sphinx_app, test, nlines, filenamesortkey):
     """Tests the functionality of the minigallery directive."""
     out_dir = sphinx_app.outdir
