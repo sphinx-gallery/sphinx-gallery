@@ -814,6 +814,7 @@ def test_minigallery_directive(sphinx_app, test, nlines, filenamesortkey):
     for i in range(len(lines)):
         if test in lines[i]:
             text = ''.join(lines[i:i+nlines])
+            print(f'{test}: {text}')
             # Check headings
             if heading_str[test]:
                 heading = re.compile(heading_str[test])
