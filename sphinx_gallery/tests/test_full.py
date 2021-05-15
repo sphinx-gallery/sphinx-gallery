@@ -776,13 +776,13 @@ def test_backreference_labels(sphinx_app):
         # first example, default heading, custom level
         ('Test 1-D-C', 8, False),
         # first example, custom heading, default level
-        ('Test 1-C-D', 8, False),
+        ('Test 1-C-D', 9, False),
         # both examples, no heading
-        ('Test 2-N', 10, True),
+        ('Test 2-N', 11, True),
         # both examples, default heading, default level
-        ('Test 2-D-D', 13, True),
+        ('Test 2-D-D', 14, True),
         # both examples, custom heading, custom level
-        ('Test 2-C-C', 14, True),
+        ('Test 2-C-C', 15, True),
     ]
 )
 def test_minigallery_directive(sphinx_app, test, nlines, filenamesortkey):
