@@ -54,8 +54,9 @@ elif [ "$DISTRIB" == "nightly" ]; then
     # pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
     #
     # So for now we'll just live without NumPy.
-    pip install -q --upgrade --pre sphinx joblib pytest-cov pygments colorama jinja2>=2.3
+    pip install -q --upgrade --pre sphinx joblib pytest-cov pygments colorama jinja2>=2.3 markupsafe>=1.1
     pip install -q .
+    pip list
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
