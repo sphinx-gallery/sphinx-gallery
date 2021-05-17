@@ -454,14 +454,22 @@ def test_remove_config_comments(gallery_conf, req_pil):
     assert '# sphinx_gallery_defer_figures' not in rst
 
 
+def test_dummy_image_error(gallery_conf, req_pil):
+    """Test correct error is raised if int not provided to
+    sphinx_gallery_dummy_images."""
+    content_image = CONTENT + ["# sphinx_gallery_dummy_images=False", ]
+    msg = "sphinx_gallery_dummy_images setting is not a number"
+    with pytest.raises(ExtensionError, match=msg):
+        _generate_rst(gallery_conf, 'test.py', content_image)
+
+
 def test_final_empty_block(gallery_conf, req_pil):
     """Test empty final block is removed. Empty final block can occur after
     sole config comment is removed from final block."""
-    CONTENT.extend(
-        ('# %%', '', '# sphinx_gallery_line_numbers = True')
-    )
+    content_block = \
+        CONTENT + ['# %%', '', '# sphinx_gallery_line_numbers = True']
     gallery_conf['remove_config_comments'] = True
-    rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
+    rst = _generate_rst(gallery_conf, 'test.py', content_block)
     want = "RuntimeWarning)\n\n\n.. rst-class:: sphx-glr-timing"
     assert want in rst
 

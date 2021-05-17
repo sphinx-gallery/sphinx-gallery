@@ -865,6 +865,21 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
 
+    # Create dummy images
+    if not executable:
+        dummy_image = file_conf.get('dummy_images', None)
+        if dummy_image is not None:
+            if type(dummy_image) is not int:
+                raise ExtensionError(
+                    'sphinx_gallery_dummy_images setting is not a number, '
+                    'got %r' % (dummy_image,))
+
+            image_path_iterator = script_vars['image_path_iterator']
+            stock_img = os.path.join(glr_path_static(), 'no_image.png')
+            for _, path in zip(range(dummy_image), image_path_iterator):
+                if not os.path.isfile(path):
+                    copyfile(stock_img, path)
+
     if gallery_conf['remove_config_comments']:
         script_blocks = [
             (label, remove_config_comments(content), line_number)

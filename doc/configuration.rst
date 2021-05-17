@@ -55,6 +55,7 @@ Some options can also be set or overridden on a file-by-file basis:
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
 - ``# sphinx_gallery_thumbnail_path`` (:ref:`providing_thumbnail`)
+- ``# sphinx_gallery_dummy_images`` (:ref:`dummy_images`)
 
 Some options can be set on a per-code-block basis in a file:
 
@@ -1245,6 +1246,51 @@ further deferred, if desired).  The following produces only one plot::
 
   plt.plot([2, 2])
   plt.show()
+
+.. _dummy_images:
+
+Generating dummy images
+=======================
+
+For quick visualization of your gallery, especially during the writing process,
+Sphinx-Gallery allows you to build your gallery without executing the
+code (see :ref:`without_execution` and
+:ref:`filename/ignore patterns <build_pattern>`). This however,
+can cause warnings about missing image files if you have manually written
+links to automatically generated images. To prevent these warnings you can
+tell Sphinx-Gallery to create a number of dummy images for an example.
+
+For example, you may have an example ('my_example.py') that generates 2 figures,
+which you then reference manually elsewhere, e.g.,:
+
+.. code-block:: rst
+
+    Below is a great figure:
+
+    .. figure:: ../auto_examples/images/sphx_glr_my_example_001.png
+
+    Here is another one:
+
+    .. figure:: ../auto_examples/images/sphx_glr_my_example_002.png
+
+To prevent missing image file warnings when building without executing, you
+can add the following to the example file::
+
+    # sphinx_gallery_dummy_images=2
+
+This will cause Sphinx-Gallery to generate 2 dummy images with the same
+naming convention and stored in the same location as images that would be
+generated when building with execution. No dummy images will be generated
+if there are existing images (e.g., from a previous run of the build),
+so they will not be overwritten.
+
+.. note::
+    This configuration **only** works when the example is set to not execute
+    (i.e., the ``plot_gallery`` is False, the example is in `ignore_pattern`
+    or the example is not in `filename_pattern - see
+    :ref:`filename/ignore patterns <build_pattern>`). This means that you will
+    not need to remove any ``sphinx_gallery_dummy_images`` lines in your
+    examples when you switch to building your gallery with execution.
 
 .. _reset_modules:
 
