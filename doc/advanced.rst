@@ -180,7 +180,9 @@ The function should take the following inputs (in this order):
    and the image file name is ``'sphx_glr_'`` followed by the name of the
    source ``.py`` file then a number, which starts at 1 and increases by 1 at
    each iteration. The default file format is ``.'png'``. For example:
-   ``'home/user/Documents/module/auto_examples/images/sphx_glr_plot_mymodule_001.png'``
+   ``'home/user/Documents/module/auto_examples/images/sphx_glr_plot_mymodule_001.png'``.
+   The scraper is responsible for replacing the `.png` extension with a supported
+   image extension (see above) for it to then be picked up by Sphinx-Gallery.
 
 3. ``gallery_conf`` - dictionary containing the configuration of Sphinx-Gallery,
    set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
@@ -210,7 +212,7 @@ use the helper function :func:`sphinx_gallery.scrapers.figure_rst` to
 create the standardized rST. If your package will be used to write an image file
 to disk (e.g., PNG or JPEG), we recommend you use a similar approach. ::
 
-   def my_module_scraper(block, block_vars, gallery_conf)
+   def my_module_scraper(block, block_vars, gallery_conf):
        import mymodule
        # We use a list to collect references to image names
        image_names = list()
@@ -345,8 +347,8 @@ it with Sphinx-Gallery. You can:
            'image_scrapers': ('pyvista',)
        }
 
-   Sphinx-Gallery will look for this custom function and call it to get the
-   PyVista image scraper to use before running any examples.
+   Sphinx-Gallery will import the named module (here, ``pyvista``) and use the
+   ``_get_sg_image_scraper`` function defined there as a scraper.
 
 .. _custom_reset:
 
