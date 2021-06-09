@@ -154,7 +154,7 @@ this section describes how to write a custom scraper.
 Image scrapers are functions (or callable class instances) that do two things:
 
 1. Collect a list of images created in the latest execution of code.
-2. Write these images to disk in PNG, JPEG, SVG, or GIP format (with .png,
+2. Write these images to disk in PNG, JPEG, SVG, or GIF format (with .png,
    .jpg, .svg, or .gif extensions, respectively)
 3. Return rST that embeds these figures in the built documentation.
 
