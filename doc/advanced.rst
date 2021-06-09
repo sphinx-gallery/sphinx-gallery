@@ -348,7 +348,7 @@ it with Sphinx-Gallery. You can:
        }
 
    Sphinx-Gallery will import the named module (here, ``pyvista``) and use the
-   `_get_sg_image_scraper` function defined there as a scraper.
+   ``_get_sg_image_scraper`` function defined there as a scraper.
 
 .. _custom_reset:
 
