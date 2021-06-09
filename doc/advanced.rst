@@ -154,8 +154,8 @@ this section describes how to write a custom scraper.
 Image scrapers are functions (or callable class instances) that do two things:
 
 1. Collect a list of images created in the latest execution of code.
-2. Write these images to disk in PNG, JPEG, or SVG format (with .png, .jpg, or
-   .svg extensions, respectively)
+2. Write these images to disk in PNG, JPEG, SVG, or GIP format (with .png,
+   .jpg, .svg, or .gif extensions, respectively)
 3. Return rST that embeds these figures in the built documentation.
 
 The function should take the following inputs (in this order):
@@ -174,15 +174,16 @@ The function should take the following inputs (in this order):
 
 2. ``block_vars`` - dictionary of configuration and runtime variables. Of
    interest for image scrapers is the element ``'image_path_iterator'`` which
-   is an iterable object which returns an absolute path to an image file name
+   is an iterable that returns an absolute path to an image file name
    adhering to Sphinx-Gallery naming convention. The path directs to the
    ``gallery_dirs/images`` directory (:ref:`configure_and_use_sphinx_gallery`)
    and the image file name is ``'sphx_glr_'`` followed by the name of the
    source ``.py`` file then a number, which starts at 1 and increases by 1 at
    each iteration. The default file format is ``.'png'``. For example:
    ``'home/user/Documents/module/auto_examples/images/sphx_glr_plot_mymodule_001.png'``.
-   The scraper is responsible for replacing the `.png` extension with a supported
-   image extension (see above) for it to then be picked up by Sphinx-Gallery.
+   If a different image extension is desired, the scraper is responsible for
+   replacing the default `.png` extension. Only supported image extensions
+   (see above) will enable the file to be picked up by Sphinx-Gallery.
 
 3. ``gallery_conf`` - dictionary containing the configuration of Sphinx-Gallery,
    set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
