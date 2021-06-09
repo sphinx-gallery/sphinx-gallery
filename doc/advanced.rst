@@ -182,7 +182,7 @@ The function should take the following inputs (in this order):
    each iteration. The default file format is ``.'png'``. For example:
    ``'home/user/Documents/module/auto_examples/images/sphx_glr_plot_mymodule_001.png'``.
    The scraper is responsible for replacing the `.png` extension with a supported
-   image extension for it to then be picked up by Sphinx-Gallery.
+   image extension (see above) for it to then be picked up by Sphinx-Gallery.
 
 3. ``gallery_conf`` - dictionary containing the configuration of Sphinx-Gallery,
    set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
