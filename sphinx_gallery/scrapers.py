@@ -24,7 +24,7 @@ from warnings import filterwarnings
 from sphinx.errors import ExtensionError
 from .utils import scale_image, optipng
 
-__all__ = ['save_figures', 'figure_rst', 'ImagePathIterator', 'clean_modules',
+__all__ = ['save_figures', 'figure_rst', 'ArtifactList', 'clean_modules',
            'matplotlib_scraper', 'mayavi_scraper']
 
 
@@ -282,75 +282,46 @@ _scraper_dict = dict(
 )
 
 
-class ImagePathIterator(object):
-    """Iterate over image paths for a given example.
-
-    Parameters
-    ----------
-    image_path : str
-        The template image path.
-    """
-
-    def __init__(self, image_path):
-        self.image_path = image_path
-        self.paths = list()
+class ArtifactList(list):
+    def __init__(self, path_template):
+        self.path_template = path_template
         self._stop = 1000000
 
-    def __len__(self):
-        """Return the number of image paths used.
+    def filename_iterator(self, filenames):
+        for filename in filenames:
+            path = self.path_template.format(filename)
+            self.append(path)
+            yield path
 
-        Returns
-        -------
-        n_paths : int
-            The number of paths.
-        """
-        return len(self.paths)
+    def ordinal_path_iterator(self, ext=".png"):
+        def gen():
+            for _ in range(self._stop):
+                yield len(self)
+            else:
+                # we should really never have 1e6, let's prevent some user pain
+                raise ExtensionError('Generated over %s images'
+                                     % (self._stop,))
 
-    def __iter__(self):
-        """Iterate over paths.
-
-        Returns
-        -------
-        paths : iterable of str
-
-        This enables the use of this Python pattern::
-
-            >>> for epoch in epochs:  # doctest: +SKIP
-            >>>     print(epoch)  # doctest: +SKIP
-
-        Where ``epoch`` is given by successive outputs of
-        :func:`mne.Epochs.next`.
-        """
-        # we should really never have 1e6, let's prevent some user pain
-        for ii in range(self._stop):
-            yield self.next()
-        else:
-            raise ExtensionError('Generated over %s images' % (self._stop,))
-
-    def next(self):
-        return self.__next__()
-
-    def __next__(self):
-        # The +1 here is because we start image numbering at 1 in filenames
-        path = self.image_path.format(len(self) + 1)
-        self.paths.append(path)
-        return path
+        return self.filename_iterator("{0:03}{1}".format(n, ext)
+                                      for n in gen())
 
 
 # For now, these are what we support
 _KNOWN_IMG_EXTS = ('png', 'svg', 'jpg', 'gif')
 
 
-def _find_image_ext(path):
+def _find_image_ext(orig_path):
     """Find an image, tolerant of different file extensions."""
-    path = os.path.splitext(path)[0]
+    path, orig_ext = os.path.splitext(orig_path)
+
+    if os.path.isfile(orig_path):
+        return (orig_path, orig_ext)
+
     for ext in _KNOWN_IMG_EXTS:
         this_path = '%s.%s' % (path, ext)
         if os.path.isfile(this_path):
             break
-    else:
-        ext = 'png'
-    return ('%s.%s' % (path, ext), ext)
+    return (orig_path, orig_ext)
 
 
 def save_figures(block, block_vars, gallery_conf):
@@ -370,19 +341,19 @@ def save_figures(block, block_vars, gallery_conf):
     images_rst : str
         rst code to embed the images in the document.
     """
-    image_path_iterator = block_vars['image_path_iterator']
+    artifact_paths = block_vars['artifact_paths']
     all_rst = u''
-    prev_count = len(image_path_iterator)
+    prev_count = len(artifact_paths)
     for scraper in gallery_conf['image_scrapers']:
         rst = scraper(block, block_vars, gallery_conf)
         if not isinstance(rst, str):
             raise ExtensionError('rst from scraper %r was not a string, '
                                  'got type %s:\n%r'
                                  % (scraper, type(rst), rst))
-        n_new = len(image_path_iterator) - prev_count
+        n_new = len(artifact_paths) - prev_count
         for ii in range(n_new):
             current_path, _ = _find_image_ext(
-                image_path_iterator.paths[prev_count + ii])
+                artifact_paths[prev_count + ii])
             if not os.path.isfile(current_path):
                 raise ExtensionError(
                     'Scraper %s did not produce expected image:'

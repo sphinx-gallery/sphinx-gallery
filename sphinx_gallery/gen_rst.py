@@ -35,7 +35,7 @@ import codeop
 
 from sphinx.errors import ExtensionError
 
-from .scrapers import (save_figures, ImagePathIterator, clean_modules,
+from .scrapers import (save_figures, ArtifactList, clean_modules,
                        _find_image_ext)
 from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
                     optipng)
@@ -295,7 +295,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
                 'got %r' % (thumbnail_number,))
         # negative index means counting from the last one
         if thumbnail_number < 0:
-            thumbnail_number += len(script_vars["image_path_iterator"]) + 1
+            thumbnail_number += len(script_vars["artifact_paths"]) + 1
         image_path = image_path_template.format(thumbnail_number)
     del thumbnail_number, thumbnail_path, image_path_template
     thumbnail_image_path, ext = _find_image_ext(image_path)
@@ -322,7 +322,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
     # update extension, since gallery_conf setting can be different
     # from file_conf
     thumb_file = '%s.%s' % (os.path.splitext(thumb_file)[0], ext)
-    if ext in ('svg', 'gif'):
+    if ext not in ('png', 'jpg', 'jpeg'):
         copyfile(img, thumb_file)
     else:
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
@@ -848,12 +848,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         os.makedirs(image_dir)
 
     base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
+    image_fname = 'sphx_glr_' + base_image_name + '_{0}'
     image_path_template = os.path.join(image_dir, image_fname)
 
+    artifacts = ArtifactList(image_path_template)
     script_vars = {
         'execute_script': executable,
-        'image_path_iterator': ImagePathIterator(image_path_template),
+        'image_path_iterator': artifacts.ordinal_path_iterator(),
+        'artifact_paths': artifacts,
         'src_file': src_file,
         'target_file': target_file}
 
@@ -874,9 +876,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
                     'sphinx_gallery_dummy_images setting is not a number, '
                     'got %r' % (dummy_image,))
 
-            image_path_iterator = script_vars['image_path_iterator']
+            artifact_paths = script_vars['artifact_paths']
             stock_img = os.path.join(glr_path_static(), 'no_image.png')
-            for _, path in zip(range(dummy_image), image_path_iterator):
+            for _, path in zip(range(dummy_image), artifact_paths):
                 if not os.path.isfile(path):
                     copyfile(stock_img, path)
 

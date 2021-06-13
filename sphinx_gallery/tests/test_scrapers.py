@@ -6,7 +6,7 @@ from sphinx.errors import ConfigError, ExtensionError
 import sphinx_gallery
 from sphinx_gallery.gen_gallery import _complete_gallery_conf
 from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SG_IMAGE,
-                                     matplotlib_scraper, ImagePathIterator,
+                                     matplotlib_scraper, ArtifactList,
                                      save_figures, _KNOWN_IMG_EXTS)
 from sphinx_gallery.utils import _get_image
 
@@ -22,6 +22,19 @@ def gallery_conf(tmpdir):
     return gallery_conf
 
 
+@pytest.fixture(scope='function')
+def block_vars(gallery_conf):
+    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}')
+    artifact_paths = ArtifactList(fname_template)
+    return dict(artifact_paths=artifact_paths,
+                image_path_iterator=artifact_paths.ordinal_path_iterator())
+
+
+@pytest.fixture(scope='function')
+def block():
+    return ('',) * 3
+
+
 class matplotlib_svg_scraper():
 
     def __repr__(self):
@@ -32,18 +45,16 @@ class matplotlib_svg_scraper():
 
 
 @pytest.mark.parametrize('ext', ('png', 'svg'))
-def test_save_matplotlib_figures(gallery_conf, ext):
+def test_save_matplotlib_figures(block, block_vars, gallery_conf, ext):
     """Test matplotlib figure save."""
     if ext == 'svg':
         gallery_conf['image_scrapers'] = (matplotlib_svg_scraper(),)
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
     plt.plot(1, 1)
-    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_path_iterator = ImagePathIterator(fname_template)
-    block = ('',) * 3
-    block_vars = dict(image_path_iterator=image_path_iterator)
     image_rst = save_figures(block, block_vars, gallery_conf)
-    assert len(image_path_iterator) == 1
+    image_path_iterator = block_vars["image_path_iterator"]
+    artifact_paths = block_vars["artifact_paths"]
+    assert len(artifact_paths) == 1
     fname = '/image1.{0}'.format(ext)
     assert fname in image_rst
     fname = gallery_conf['gallery_dir'] + fname
@@ -56,7 +67,7 @@ def test_save_matplotlib_figures(gallery_conf, ext):
     plt.figure()
     plt.plot(1, 1)
     image_rst = save_figures(block, block_vars, gallery_conf)
-    assert len(image_path_iterator) == 5
+    assert len(artifact_paths) == 5
     for ii in range(4, 6):
         fname = '/image{0}.{1}'.format(ii, ext)
         assert fname in image_rst
@@ -64,24 +75,22 @@ def test_save_matplotlib_figures(gallery_conf, ext):
         assert os.path.isfile(fname)
 
 
-def test_save_matplotlib_figures_hidpi(gallery_conf):
+def test_save_matplotlib_figures_hidpi(block, block_vars, gallery_conf):
     """Test matplotlib hidpi figure save."""
     ext = 'png'
     gallery_conf['image_srcset'] = ["2x"]
 
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
     plt.plot(1, 1)
-    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_path_iterator = ImagePathIterator(fname_template)
-    block = ('',) * 3
-    block_vars = dict(image_path_iterator=image_path_iterator)
     image_rst = save_figures(block, block_vars, gallery_conf)
 
     fname = f'/image1.{ext}'
     assert fname in image_rst
     assert f'/image1_2_0x.{ext} 2.0x' in image_rst
 
-    assert len(image_path_iterator) == 1
+    image_path_iterator = block_vars["image_path_iterator"]
+    artifact_paths = block_vars["artifact_paths"]
+    assert len(artifact_paths) == 1
     fname = gallery_conf['gallery_dir'] + fname
     fnamehi = gallery_conf['gallery_dir'] + f'/image1_2_0x.{ext}'
 
@@ -95,7 +104,7 @@ def test_save_matplotlib_figures_hidpi(gallery_conf):
     plt.figure()
     plt.plot(1, 1)
     image_rst = save_figures(block, block_vars, gallery_conf)
-    assert len(image_path_iterator) == 5
+    assert len(artifact_paths) == 5
     for ii in range(4, 6):
         fname = f'/image{ii}.{ext}'
         assert fname in image_rst
@@ -108,7 +117,7 @@ def test_save_matplotlib_figures_hidpi(gallery_conf):
         assert os.path.isfile(fname)
 
 
-def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
+def test_save_mayavi_figures(block, block_vars, gallery_conf, req_mpl, req_pil):
     """Test file naming when saving figures. Requires mayavi."""
     import numpy as np
     Image = _get_image()
@@ -122,16 +131,15 @@ def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     gallery_conf.update(
         image_scrapers=(matplotlib_scraper, mayavi_scraper))
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_path_iterator = ImagePathIterator(fname_template)
-    block = ('',) * 3
-    block_vars = dict(image_path_iterator=image_path_iterator)
 
     plt.axes([-0.1, -0.1, 1.2, 1.2])
     plt.pcolor([[0]], cmap='Greens')
     mlab.test_plot3d()
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(plt.get_fignums()) == 0
-    assert len(image_path_iterator) == 2
+    image_path_iterator = block_vars["image_path_iterator"]
+    artifact_paths = block_vars["artifact_paths"]
+    assert len(artifact_paths) == 2
     assert '/image0.png' not in image_rst
     assert '/image1.png' in image_rst
     assert '/image2.png' in image_rst
@@ -169,7 +177,7 @@ def _custom_func(x, y, z):
     return y['image_path_iterator'].next()
 
 
-def test_custom_scraper(gallery_conf, monkeypatch):
+def test_custom_scraper(block, block_vars, gallery_conf, monkeypatch):
     """Test custom scrapers."""
     # Test the API contract for custom scrapers
     complete_args = (gallery_conf, gallery_conf['gallery_dir'], True, False)
@@ -193,11 +201,6 @@ def test_custom_scraper(gallery_conf, monkeypatch):
     with pytest.raises(ConfigError, match='Unknown image scraper'):
         _complete_gallery_conf(*complete_args, check_keys=False)
     gallery_conf.update(image_scrapers=[_custom_func])
-    fname_template = os.path.join(gallery_conf['gallery_dir'],
-                                  'image{0}.png')
-    image_path_iterator = ImagePathIterator(fname_template)
-    block = ('',) * 3
-    block_vars = dict(image_path_iterator=image_path_iterator)
     with pytest.raises(ExtensionError, match='did not produce expected image'):
         save_figures(block, block_vars, gallery_conf)
     gallery_conf.update(image_scrapers=[lambda x, y, z: 1.])
@@ -307,9 +310,9 @@ def test_figure_rst_srcset(ext):
 
 
 def test_iterator():
-    """Test ImagePathIterator."""
-    ipi = ImagePathIterator('foo{0}')
+    """Test ArtifactList.ordinal_path_iterator."""
+    ipi = ArtifactList('foo{0}')
     ipi._stop = 10
     with pytest.raises(ExtensionError, match='10 images'):
-        for ii in ipi:
+        for ii in ipi.ordinal_path_iterator():
             pass

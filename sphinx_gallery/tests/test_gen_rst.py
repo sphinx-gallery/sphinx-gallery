@@ -22,7 +22,7 @@ from sphinx.errors import ExtensionError
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst
-from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
+from sphinx_gallery.scrapers import ArtifactList, figure_rst
 
 CONTENT = [
     '"""',
@@ -617,9 +617,11 @@ def script_vars(tmpdir):
     fake_main = importlib.util.module_from_spec(
         importlib.util.spec_from_loader('__main__', None))
     fake_main.__dict__.update({'__doc__': ''})
+    artifact_paths = ArtifactList(str(tmpdir.join("temp.png")))
     script_vars = {
         "execute_script": True,
-        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
+        "image_path_iterator": artifact_paths.ordinal_path_iterator(),
+        "artifact_paths": artifact_paths,
         "src_file": __file__,
         "memory_delta": [],
         "fake_main": fake_main,
