@@ -283,8 +283,9 @@ _scraper_dict = dict(
 
 
 class ArtifactList(list):
-    def __init__(self, path_template):
+    def __init__(self, path_template, min_digits=3):
         self.path_template = path_template
+        self.min_digits = min_digits
         self._stop = 1000000
 
     def filename_iterator(self, filenames):
@@ -296,14 +297,16 @@ class ArtifactList(list):
     def ordinal_path_iterator(self, ext=".png"):
         def gen():
             for _ in range(self._stop):
-                yield len(self)
+                yield len(self) + 1
             else:
                 # we should really never have 1e6, let's prevent some user pain
                 raise ExtensionError('Generated over %s images'
                                      % (self._stop,))
 
-        return self.filename_iterator("{0:03}{1}".format(n, ext)
-                                      for n in gen())
+        return self.filename_iterator(
+            "{n:0{min_digits}}{ext}".format(n=n, ext=ext,
+                                            min_digits=self.min_digits)
+            for n in gen())
 
 
 # For now, these are what we support
@@ -313,6 +316,7 @@ _KNOWN_IMG_EXTS = ('png', 'svg', 'jpg', 'gif')
 def _find_image_ext(orig_path):
     """Find an image, tolerant of different file extensions."""
     path, orig_ext = os.path.splitext(orig_path)
+    orig_ext = orig_ext[1:]  # trim .
 
     if os.path.isfile(orig_path):
         return (orig_path, orig_ext)
@@ -320,8 +324,11 @@ def _find_image_ext(orig_path):
     for ext in _KNOWN_IMG_EXTS:
         this_path = '%s.%s' % (path, ext)
         if os.path.isfile(this_path):
-            break
-    return (orig_path, orig_ext)
+            return (this_path, ext)
+    if orig_ext:
+        return (orig_path, orig_ext)
+    else:
+        return (orig_path + 'png', 'png')
 
 
 def save_figures(block, block_vars, gallery_conf):

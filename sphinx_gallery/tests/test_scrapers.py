@@ -25,7 +25,7 @@ def gallery_conf(tmpdir):
 @pytest.fixture(scope='function')
 def block_vars(gallery_conf):
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}')
-    artifact_paths = ArtifactList(fname_template)
+    artifact_paths = ArtifactList(fname_template, min_digits=1)
     return dict(artifact_paths=artifact_paths,
                 image_path_iterator=artifact_paths.ordinal_path_iterator())
 
@@ -61,8 +61,8 @@ def test_save_matplotlib_figures(block, block_vars, gallery_conf, ext):
     assert os.path.isfile(fname)
 
     # Test capturing 2 images with shifted start number
-    image_path_iterator.next()
-    image_path_iterator.next()
+    next(image_path_iterator)
+    next(image_path_iterator)
     plt.plot(1, 1)
     plt.figure()
     plt.plot(1, 1)
@@ -98,8 +98,8 @@ def test_save_matplotlib_figures_hidpi(block, block_vars, gallery_conf):
     assert os.path.isfile(fnamehi)
 
     # Test capturing 2 images with shifted start number
-    image_path_iterator.next()
-    image_path_iterator.next()
+    next(image_path_iterator)
+    next(image_path_iterator)
     plt.plot(1, 1)
     plt.figure()
     plt.plot(1, 1)
@@ -159,7 +159,7 @@ def test_save_mayavi_figures(block, block_vars, gallery_conf, req_mpl, req_pil):
     plt.pcolor([[0]], cmap='Reds')
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(plt.get_fignums()) == 0
-    assert len(image_path_iterator) == 3
+    assert len(artifact_paths) == 3
     assert '/image1.png' not in image_rst
     assert '/image2.png' not in image_rst
     assert '/image3.png' in image_rst
@@ -174,7 +174,7 @@ def test_save_mayavi_figures(block, block_vars, gallery_conf, req_mpl, req_pil):
 
 
 def _custom_func(x, y, z):
-    return y['image_path_iterator'].next()
+    return next(y['image_path_iterator'])
 
 
 def test_custom_scraper(block, block_vars, gallery_conf, monkeypatch):

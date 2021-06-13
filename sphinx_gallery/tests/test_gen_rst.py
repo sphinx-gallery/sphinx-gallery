@@ -195,7 +195,8 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
 
     gallery_conf['abort_on_example_error'] = True
     script_vars = dict(execute_script=True, src_file=filename,
-                       image_path_iterator=[], target_file=filename)
+                       image_path_iterator=[], artifact_paths=[],
+                       target_file=filename)
 
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf)
@@ -239,6 +240,7 @@ b = 'foo'
     assert file_conf == {}
     script_vars = {'execute_script': True, 'src_file': filename,
                    'image_path_iterator': [],
+                   'artifact_paths': [],
                    'target_file': filename}
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf)

@@ -296,7 +296,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         # negative index means counting from the last one
         if thumbnail_number < 0:
             thumbnail_number += len(script_vars["artifact_paths"]) + 1
-        image_path = image_path_template.format(thumbnail_number)
+        image_path = image_path_template.format("%03d" % thumbnail_number)
     del thumbnail_number, thumbnail_path, image_path_template
     thumbnail_image_path, ext = _find_image_ext(image_path)
 
