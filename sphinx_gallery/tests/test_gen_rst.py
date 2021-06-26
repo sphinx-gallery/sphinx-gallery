@@ -648,6 +648,26 @@ def test_output_indentation(gallery_conf, script_vars):
     assert output_test_string == test_string.replace(r"\n", "\n")
 
 
+def test_output_no_ansi(gallery_conf, script_vars):
+    """Test ANSI characters are removed.
+
+    See: https://en.wikipedia.org/wiki/ANSI_escape_code)
+    """
+    gallery_conf.update(image_scrapers=())
+    compiler = codeop.Compile()
+
+    code = 'print("\033[94m0.25")'
+    code_block = ("code", code, 1)
+    output = sg.execute_code_block(
+        compiler, code_block, None, script_vars, gallery_conf
+    )
+    output_test_string = "\n".join(
+        [line[4:] for line in output.strip().split("\n")[-3:]]
+    )
+
+    assert output_test_string.split('\n')[-1] == "0.25"
+
+
 def test_empty_output_box(gallery_conf, script_vars):
     """Tests that `print(__doc__)` doesn't produce an empty output box."""
     gallery_conf.update(image_scrapers=())
