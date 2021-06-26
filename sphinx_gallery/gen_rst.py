@@ -162,7 +162,7 @@ SPHX_GLR_SIG = """\n
 """
 
 # Header used to include raw html
-html_header = """.. raw:: html
+HTML_HEADER = """.. raw:: html
 
     <div class="output_subarea output_html rendered_html output_result">
 {0}
@@ -542,6 +542,79 @@ def _get_memory_base(gallery_conf):
     return memory_base
 
 
+def _exec_and_get_memory(code_ast, gallery_conf, src_file, script_vars):
+    """Execute ast, capturing output if last line is expression and get max
+    memory usage."""
+    # capture output if last line is expression
+    is_last_expr = False
+    if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
+        is_last_expr = True
+        last_val = code_ast.body.pop().value
+        # exec body minus last expression
+        mem_body, _ = gallery_conf['call_memory'](
+            _exec_once(
+                compiler(code_ast, src_file, 'exec'),
+                script_vars['fake_main']))
+        # exec last expression, made into assignment
+        body = [ast.Assign(
+            targets=[ast.Name(id='___', ctx=ast.Store())], value=last_val)]
+        last_val_ast = ast_Module(body=body)
+        ast.fix_missing_locations(last_val_ast)
+        mem_last, _ = gallery_conf['call_memory'](
+            _exec_once(
+                compiler(last_val_ast, src_file, 'exec'),
+                script_vars['fake_main']))
+        # capture the assigned variable
+        ___ = example_globals['___']
+        mem_max = max(mem_body, mem_last)
+    else:
+        mem_max, _ = gallery_conf['call_memory'](
+            _exec_once(
+                compiler(code_ast, src_file, 'exec'),
+                script_vars['fake_main']))
+    return is_last_expr, mem_max
+
+
+def _get_stdout_html(is_last_expr, gallery_conf):
+    """"""
+    last_repr = None
+    repr_meth = None
+    if is_last_expr:
+        ignore_repr = False
+        if gallery_conf['ignore_repr_types']:
+            ignore_repr = re.search(
+                gallery_conf['ignore_repr_types'], str(type(___))
+            )
+        if gallery_conf['capture_repr'] != () and not ignore_repr:
+            for meth in gallery_conf['capture_repr']:
+                try:
+                    last_repr = getattr(___, meth)()
+                    # for case when last statement is print()
+                    if last_repr is None or last_repr == 'None':
+                        repr_meth = None
+                    else:
+                        repr_meth = meth
+                except Exception:
+                    pass
+                else:
+                    if isinstance(last_repr, str):
+                        break
+    captured_std = logging_tee.output.getvalue().expandtabs()
+    # normal string output
+    if repr_meth in ['__repr__', '__str__'] and last_repr:
+        captured_std = u"{0}\n{1}".format(captured_std, last_repr)
+    if captured_std and not captured_std.isspace():
+        captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
+    else:
+        captured_std = ''
+    # give html output its own header
+    if repr_meth == '_repr_html_':
+        captured_html = HTML_HEADER.format(indent(last_repr, u' ' * 4))
+    else:
+        captured_html = ''
+    return captured_std, captured_html
+
+
 def execute_code_block(compiler, block, example_globals,
                        script_vars, gallery_conf):
     """Execute the code block of the example file."""
@@ -561,7 +634,6 @@ def execute_code_block(compiler, block, example_globals,
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
-
     os.chdir(os.path.dirname(src_file))
 
     sys_path = copy.deepcopy(sys.path)
@@ -582,33 +654,10 @@ def execute_code_block(compiler, block, example_globals,
         flags = ast.PyCF_ONLY_AST | compiler.flags
         code_ast = compile(bcontent, src_file, 'exec', flags, dont_inherit)
         ast.increment_lineno(code_ast, lineno - 1)
-        # capture output if last line is expression
-        is_last_expr = False
-        if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
-            is_last_expr = True
-            last_val = code_ast.body.pop().value
-            # exec body minus last expression
-            mem_body, _ = gallery_conf['call_memory'](
-                _exec_once(
-                    compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
-            # exec last expression, made into assignment
-            body = [ast.Assign(
-                targets=[ast.Name(id='___', ctx=ast.Store())], value=last_val)]
-            last_val_ast = ast_Module(body=body)
-            ast.fix_missing_locations(last_val_ast)
-            mem_last, _ = gallery_conf['call_memory'](
-                _exec_once(
-                    compiler(last_val_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
-            # capture the assigned variable
-            ___ = example_globals['___']
-            mem_max = max(mem_body, mem_last)
-        else:
-            mem_max, _ = gallery_conf['call_memory'](
-                _exec_once(
-                    compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
+
+        is_last_expr, max_mem = _exec_and_get_memory(
+            code_ast, gallery_conf, src_file, script_vars
+        )
         script_vars['memory_delta'].append(mem_max)
         # This should be inside the try block, e.g., in case of a savefig error
         logging_tee.restore_std()
@@ -630,45 +679,9 @@ def execute_code_block(compiler, block, example_globals,
         sys.path = sys_path
         os.chdir(cwd)
 
-        last_repr = None
-        repr_meth = None
-        if is_last_expr:
-            if gallery_conf['ignore_repr_types']:
-                ignore_repr = re.search(
-                    gallery_conf['ignore_repr_types'], str(type(___))
-                )
-            else:
-                ignore_repr = False
-            if gallery_conf['capture_repr'] != () and not ignore_repr:
-                for meth in gallery_conf['capture_repr']:
-                    try:
-                        last_repr = getattr(___, meth)()
-                        # for case when last statement is print()
-                        if last_repr is None or last_repr == 'None':
-                            repr_meth = None
-                        else:
-                            repr_meth = meth
-                    except Exception:
-                        pass
-                    else:
-                        if isinstance(last_repr, str):
-                            break
-        captured_std = logging_tee.output.getvalue().expandtabs()
-        # normal string output
-        if repr_meth in ['__repr__', '__str__'] and last_repr:
-            captured_std = u"{0}\n{1}".format(captured_std, last_repr)
-        if captured_std and not captured_std.isspace():
-            captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
-        else:
-            captured_std = ''
-        # give html output its own header
-        if repr_meth == '_repr_html_':
-            captured_html = html_header.format(indent(last_repr, u' ' * 4))
-        else:
-            captured_html = ''
+        captured_std, captured_html = _get_stdout_html()
         code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(
             images_rst, captured_std, captured_html)
-
     finally:
         os.chdir(cwd)
         sys.path = sys_path
