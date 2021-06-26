@@ -651,7 +651,7 @@ def test_output_indentation(gallery_conf, script_vars):
 def test_output_no_ansi(gallery_conf, script_vars):
     """Test ANSI characters are removed.
 
-    See: https://en.wikipedia.org/wiki/ANSI_escape_code)
+    See: https://en.wikipedia.org/wiki/ANSI_escape_code
     """
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
