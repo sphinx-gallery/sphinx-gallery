@@ -674,6 +674,10 @@ def execute_code_block(compiler, block, example_globals,
         sys.path = sys_path
         logging_tee.restore_std()
 
+    # Sanitize ANSI escape characters from RST output
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    code_output = ansi_escape.sub('', code_output)
+
     return code_output
 
 
@@ -1011,6 +1015,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
         else:
             block_separator = '\n\n' if not bcontent.endswith('\n') else '\n'
             example_rst += bcontent + block_separator
+
     return example_rst
 
 

@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Latest
+------
+
+**Fixed bugs:**
+
+-  Remove `ANSI characters <https://en.wikipedia.org/wiki/ANSI_escape_code>`_ from HTML output `#838 <https://github.com/sphinx-gallery/sphinx-gallery/pull/838>`__ (`agramfort <https://github.com/agramfort>`__)
+
+
 v0.9.0
 ------
 
