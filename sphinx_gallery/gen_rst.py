@@ -653,7 +653,7 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
 
 
 def _reset_cwd_syspath(cwd, sys_path):
-    """Reset cwd and sys.path to that before execution."""
+    """Reset cwd and sys.path."""
     os.chdir(cwd)
     sys.path = sys_path
 
