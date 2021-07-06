@@ -406,6 +406,20 @@ the path(s) listed will be copied over after the builtin Sphinx-Gallery files,
 so if you have a file named "gallery.css", it will overwrite the builtin
 "gallery.css".
 
+To complete the process though, you need to register the stylesheet
+as mentioned in the `sphinx documentation 
+<https://www.sphinx-doc.org/en/master/extdev/appapi.html#sphinx.application.Sphinx.add_css_file>`_ .
+
+A quick recipe you can do if you find that the files are not getting copied over 
+is adding the following to your ``conf.py`` file:
+
+.. code-block:: python
+
+    def setup(app):
+        app.connect('builder-inited', lambda app: app.config.html_static_path.append('_static'))
+        app.add_css_file('gallery.css')
+
+
 The appearance of :ref:`code links <stylizing_code_links>` and
 :ref:`thumbnail size <setting_thumbnail_size>` can be altered via addition
 of your own CSS. Can also do things like hide the download buttons in the
