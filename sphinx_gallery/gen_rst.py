@@ -162,7 +162,7 @@ SPHX_GLR_SIG = """\n
 """
 
 # Header used to include raw html
-html_header = """.. raw:: html
+HTML_HEADER = """.. raw:: html
 
     <div class="output_subarea output_html rendered_html output_result">
 {0}
@@ -542,143 +542,14 @@ def _get_memory_base(gallery_conf):
     return memory_base
 
 
-def execute_code_block(compiler, block, example_globals,
-                       script_vars, gallery_conf):
-    """Execute the code block of the example file."""
-    if example_globals is None:  # testing shortcut
-        example_globals = script_vars['fake_main'].__dict__
-    blabel, bcontent, lineno = block
-    # If example is not suitable to run, skip executing its blocks
-    if not script_vars['execute_script'] or blabel == 'text':
-        return ''
-
-    cwd = os.getcwd()
-    # Redirect output to stdout and
-
-    src_file = script_vars['src_file']
-    logging_tee = _check_reset_logging_tee(src_file)
-    assert isinstance(logging_tee, _LoggingTee)
-
-    # First cd in the original example dir, so that any file
-    # created by the example get created in this directory
-
-    os.chdir(os.path.dirname(src_file))
-
-    sys_path = copy.deepcopy(sys.path)
-    sys.path.append(os.getcwd())
-
-    # Save figures unless there is a `sphinx_gallery_defer_figures` flag
-    match = re.search(r'^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?',
-                      bcontent, re.MULTILINE)
-    need_save_figures = match is None
-
-    try:
-        dont_inherit = 1
-        if sys.version_info >= (3, 8):
-            ast_Module = partial(ast.Module, type_ignores=[])
-        else:
-            ast_Module = ast.Module
-        code_ast = ast_Module([bcontent])
-        flags = ast.PyCF_ONLY_AST | compiler.flags
-        code_ast = compile(bcontent, src_file, 'exec', flags, dont_inherit)
-        ast.increment_lineno(code_ast, lineno - 1)
-        # capture output if last line is expression
-        is_last_expr = False
-        if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
-            is_last_expr = True
-            last_val = code_ast.body.pop().value
-            # exec body minus last expression
-            mem_body, _ = gallery_conf['call_memory'](
-                _exec_once(
-                    compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
-            # exec last expression, made into assignment
-            body = [ast.Assign(
-                targets=[ast.Name(id='___', ctx=ast.Store())], value=last_val)]
-            last_val_ast = ast_Module(body=body)
-            ast.fix_missing_locations(last_val_ast)
-            mem_last, _ = gallery_conf['call_memory'](
-                _exec_once(
-                    compiler(last_val_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
-            # capture the assigned variable
-            ___ = example_globals['___']
-            mem_max = max(mem_body, mem_last)
-        else:
-            mem_max, _ = gallery_conf['call_memory'](
-                _exec_once(
-                    compiler(code_ast, src_file, 'exec'),
-                    script_vars['fake_main']))
-        script_vars['memory_delta'].append(mem_max)
-        # This should be inside the try block, e.g., in case of a savefig error
-        logging_tee.restore_std()
-        if need_save_figures:
-            need_save_figures = False
-            images_rst = save_figures(block, script_vars, gallery_conf)
-        else:
-            images_rst = u''
-    except Exception:
-        logging_tee.restore_std()
-        except_rst = handle_exception(sys.exc_info(), src_file, script_vars,
-                                      gallery_conf)
-        code_output = u"\n{0}\n\n\n\n".format(except_rst)
-        # still call this even though we won't use the images so that
-        # figures are closed
-        if need_save_figures:
-            save_figures(block, script_vars, gallery_conf)
+def _ast_module():
+    """Get ast.Module function, dealing with:
+    https://bugs.python.org/issue35894"""
+    if sys.version_info >= (3, 8):
+        ast_Module = partial(ast.Module, type_ignores=[])
     else:
-        sys.path = sys_path
-        os.chdir(cwd)
-
-        last_repr = None
-        repr_meth = None
-        if is_last_expr:
-            if gallery_conf['ignore_repr_types']:
-                ignore_repr = re.search(
-                    gallery_conf['ignore_repr_types'], str(type(___))
-                )
-            else:
-                ignore_repr = False
-            if gallery_conf['capture_repr'] != () and not ignore_repr:
-                for meth in gallery_conf['capture_repr']:
-                    try:
-                        last_repr = getattr(___, meth)()
-                        # for case when last statement is print()
-                        if last_repr is None or last_repr == 'None':
-                            repr_meth = None
-                        else:
-                            repr_meth = meth
-                    except Exception:
-                        pass
-                    else:
-                        if isinstance(last_repr, str):
-                            break
-        captured_std = logging_tee.output.getvalue().expandtabs()
-        # normal string output
-        if repr_meth in ['__repr__', '__str__'] and last_repr:
-            captured_std = u"{0}\n{1}".format(captured_std, last_repr)
-        if captured_std and not captured_std.isspace():
-            captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
-        else:
-            captured_std = ''
-        # give html output its own header
-        if repr_meth == '_repr_html_':
-            captured_html = html_header.format(indent(last_repr, u' ' * 4))
-        else:
-            captured_html = ''
-        code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(
-            images_rst, captured_std, captured_html)
-
-    finally:
-        os.chdir(cwd)
-        sys.path = sys_path
-        logging_tee.restore_std()
-
-    # Sanitize ANSI escape characters from RST output
-    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-    code_output = ansi_escape.sub('', code_output)
-
-    return code_output
+        ast_Module = ast.Module
+    return ast_Module
 
 
 def _check_reset_logging_tee(src_file):
@@ -690,6 +561,199 @@ def _check_reset_logging_tee(src_file):
         logging_tee = _LoggingTee(src_file)
     logging_tee.set_std_and_reset_position()
     return logging_tee
+
+
+def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf,
+                         script_vars):
+    """Execute ast, capturing output if last line is expression and get max
+    memory usage."""
+    src_file = script_vars['src_file']
+    # capture output if last line is expression
+    is_last_expr = False
+    if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
+        is_last_expr = True
+        last_val = code_ast.body.pop().value
+        # exec body minus last expression
+        mem_body, _ = gallery_conf['call_memory'](
+            _exec_once(
+                compiler(code_ast, src_file, 'exec'),
+                script_vars['fake_main']))
+        # exec last expression, made into assignment
+        body = [ast.Assign(
+            targets=[ast.Name(id='___', ctx=ast.Store())], value=last_val)]
+        last_val_ast = ast_Module(body=body)
+        ast.fix_missing_locations(last_val_ast)
+        mem_last, _ = gallery_conf['call_memory'](
+            _exec_once(
+                compiler(last_val_ast, src_file, 'exec'),
+                script_vars['fake_main']))
+        mem_max = max(mem_body, mem_last)
+    else:
+        mem_max, _ = gallery_conf['call_memory'](
+            _exec_once(
+                compiler(code_ast, src_file, 'exec'),
+                script_vars['fake_main']))
+    return is_last_expr, mem_max
+
+
+def _get_last_repr(gallery_conf, ___):
+    """Get a repr of the last expression, using first method in 'capture_repr'
+    available for the last expression."""
+    for meth in gallery_conf['capture_repr']:
+        try:
+            last_repr = getattr(___, meth)()
+            # for case when last statement is print()
+            if last_repr is None or last_repr == 'None':
+                repr_meth = None
+            else:
+                repr_meth = meth
+        except Exception:
+            last_repr = None
+            repr_meth = None
+        else:
+            if isinstance(last_repr, str):
+                break
+    return last_repr, repr_meth
+
+
+def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
+                     images_rst):
+    """Obtain standard output and html output in rST."""
+    last_repr = None
+    repr_meth = None
+    if is_last_expr:
+        # capture the last repr variable
+        ___ = example_globals['___']
+        ignore_repr = False
+        if gallery_conf['ignore_repr_types']:
+            ignore_repr = re.search(
+                gallery_conf['ignore_repr_types'], str(type(___))
+            )
+        if gallery_conf['capture_repr'] != () and not ignore_repr:
+            last_repr, repr_meth = _get_last_repr(gallery_conf, ___)
+
+    captured_std = logging_tee.output.getvalue().expandtabs()
+    # normal string output
+    if repr_meth in ['__repr__', '__str__'] and last_repr:
+        captured_std = u"{0}\n{1}".format(captured_std, last_repr)
+    if captured_std and not captured_std.isspace():
+        captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
+    else:
+        captured_std = ''
+    # give html output its own header
+    if repr_meth == '_repr_html_':
+        captured_html = HTML_HEADER.format(indent(last_repr, u' ' * 4))
+    else:
+        captured_html = ''
+
+    code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(
+        images_rst, captured_std, captured_html
+    )
+    return code_output
+
+
+def _reset_cwd_syspath(cwd, sys_path):
+    """Reset cwd and sys.path."""
+    os.chdir(cwd)
+    sys.path = sys_path
+
+
+def execute_code_block(compiler, block, example_globals, script_vars,
+                       gallery_conf):
+    """Execute the code block of the example file.
+
+    Parameters
+    ----------
+    compiler : codeop.Compile
+        Compiler to compile AST of code block.
+
+    block : List[Tuple[str, str, int]]
+        List of Tuples, each Tuple contains label ('text' or 'code'),
+        the corresponding content string of block and the leading line number.
+
+    example_globals: Dict[str, Any]
+        Global variables for examples.
+
+    script_vars : Dict[str, Any]
+        Configuration and runtime variables.
+
+    gallery_conf : Dict[str, Any]
+        Gallery configurations.
+
+    Returns
+    -------
+    code_output : str
+        Output of executing code in rST.
+    """
+    if example_globals is None:  # testing shortcut
+        example_globals = script_vars['fake_main'].__dict__
+    blabel, bcontent, lineno = block
+    # If example is not suitable to run, skip executing its blocks
+    if not script_vars['execute_script'] or blabel == 'text':
+        return ''
+
+    cwd = os.getcwd()
+    # Redirect output to stdout
+    src_file = script_vars['src_file']
+    logging_tee = _check_reset_logging_tee(src_file)
+    assert isinstance(logging_tee, _LoggingTee)
+
+    # First cd in the original example dir, so that any file
+    # created by the example get created in this directory
+    os.chdir(os.path.dirname(src_file))
+
+    sys_path = copy.deepcopy(sys.path)
+    sys.path.append(os.getcwd())
+
+    # Save figures unless there is a `sphinx_gallery_defer_figures` flag
+    match = re.search(r'^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?',
+                      bcontent, re.MULTILINE)
+    need_save_figures = match is None
+
+    try:
+        ast_Module = _ast_module()
+        code_ast = ast_Module([bcontent])
+        flags = ast.PyCF_ONLY_AST | compiler.flags
+        code_ast = compile(bcontent, src_file, 'exec', flags, dont_inherit=1)
+        ast.increment_lineno(code_ast, lineno - 1)
+
+        is_last_expr, mem_max = _exec_and_get_memory(
+            compiler, ast_Module, code_ast, gallery_conf, script_vars
+        )
+        script_vars['memory_delta'].append(mem_max)
+        # This should be inside the try block, e.g., in case of a savefig error
+        logging_tee.restore_std()
+        if need_save_figures:
+            need_save_figures = False
+            images_rst = save_figures(block, script_vars, gallery_conf)
+        else:
+            images_rst = u''
+    except Exception:
+        logging_tee.restore_std()
+        except_rst = handle_exception(
+            sys.exc_info(), src_file, script_vars, gallery_conf
+        )
+        code_output = u"\n{0}\n\n\n\n".format(except_rst)
+        # still call this even though we won't use the images so that
+        # figures are closed
+        if need_save_figures:
+            save_figures(block, script_vars, gallery_conf)
+    else:
+        _reset_cwd_syspath(cwd, sys_path)
+
+        code_output = _get_code_output(
+            is_last_expr, example_globals, gallery_conf, logging_tee,
+            images_rst
+        )
+    finally:
+        _reset_cwd_syspath(cwd, sys_path)
+        logging_tee.restore_std()
+
+    # Sanitize ANSI escape characters from RST output
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    code_output = ansi_escape.sub('', code_output)
+
+    return code_output
 
 
 def executable_script(src_file, gallery_conf):
