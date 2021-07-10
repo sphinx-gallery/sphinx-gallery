@@ -39,7 +39,7 @@ jobs:
       - run:
           name: Pip
           command: |
-            pip install --progress-bar off --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3" vtk<=9.0.1
+            pip install --progress-bar off --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3" "vtk<=9.0.1"
             pip install --progress-bar off --user seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest traits traitsui pyface mayavi memory_profiler ipython plotly
       - save_cache:
           key: cache-pip
