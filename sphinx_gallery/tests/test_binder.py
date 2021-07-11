@@ -30,6 +30,15 @@ def test_binder():
                 'branch?filepath=notebooks/mydir/myfile.ipynb')
     assert url == expected
 
+    # Assert url quoted correctly
+    conf0 = deepcopy(conf_base)
+    special_file_path = "blahblah/mydir/files_&_stuff.py"
+    conf0['branch'] = '100%_tested'
+    url = gen_binder_url(special_file_path, conf0, gallery_conf_base)
+    expected = ('http://test1.com/v2/gh/org/repo/'
+                '100%25_tested?filepath=notebooks/mydir/files_%26_stuff.ipynb')
+    assert url == expected
+
     # Assert filepath prefix is added
     prefix = 'my_prefix/foo'
     conf1 = deepcopy(conf_base)

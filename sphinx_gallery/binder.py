@@ -17,6 +17,7 @@ change in the future.
 
 import os
 import shutil
+from urllib.parse import quote
 
 from sphinx.errors import ConfigError
 
@@ -60,17 +61,16 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
     path_link = path_link.replace(os.path.sep, '/')
 
     # Create the URL
-    binder_url = binder_conf['binderhub_url']
     binder_url = '/'.join([binder_conf['binderhub_url'],
                            'v2', 'gh',
                            binder_conf['org'],
                            binder_conf['repo'],
-                           binder_conf['branch']])
+                           quote(binder_conf['branch'])])
 
     if binder_conf.get('use_jupyter_lab', False) is True:
-        binder_url += '?urlpath=lab/tree/{}'.format(path_link)
+        binder_url += '?urlpath=lab/tree/{}'.format(quote(path_link))
     else:
-        binder_url += '?filepath={}'.format(path_link)
+        binder_url += '?filepath={}'.format(quote(path_link))
     return binder_url
 
 
