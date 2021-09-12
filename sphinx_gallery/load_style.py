@@ -12,7 +12,7 @@ def config_inited(app, config):
     path = glr_path_static()
     if path not in config.html_static_path:
         config.html_static_path.append(path)
-    app.add_css_file('gallery.css')
+    app.add_css_file('sg_gallery.css')
 
 
 def setup(app):

@@ -39,7 +39,7 @@ setup(
     version=sphinx_gallery.__version__,
     packages=find_packages(),
     package_data={'sphinx_gallery': [
-        '_static/gallery*.css',
+        '_static/sg_gallery*.css',
         '_static/no_image.png',
         '_static/broken_example.png',
         '_static/binder_badge_logo.svg'
