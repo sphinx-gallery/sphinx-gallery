@@ -2,7 +2,7 @@ Change Log
 ==========
 
 v0.10.0
-------
+-------
 
 In this version the default Sphinx-Gallery `.css` filenames have been
 updated to be prepended with 'sg\_'. For more details see `#845 <https://github.com/sphinx-gallery/sphinx-gallery/pull/845#issuecomment-913130302>`_.
