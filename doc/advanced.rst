@@ -406,7 +406,7 @@ The default Sphinx-Gallery ``.css`` files are copied to your build **after**
 files in your ``html_static_path`` config. This means that any files in your
 ``html_static_path`` that are named the same as Sphinx-Gallery ``.css`` files
 will be over-written. You can easily be avoided as all Sphinx-Gallery ``.css``
-files are prepended with 'sg_' (e.g., 'sg_gallery.css'). More details on
+files are prepended with 'sg\_' (e.g., 'sg_gallery.css'). More details on
 this can be found in `PR #845
 <https://github.com/sphinx-gallery/sphinx-gallery/pull/845>`_.
 
