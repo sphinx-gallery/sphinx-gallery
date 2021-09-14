@@ -403,16 +403,16 @@ For example, list any path(s) that contain your custom static files, using the
     html_static_path = ['_static']
 
 The default Sphinx-Gallery ``.css`` files are copied to your build **after**
-files in your ``html_static_path`` config. This means that any files in your
+files in your ``html_static_path`` config. This means that files in your
 ``html_static_path`` that are named the same as Sphinx-Gallery ``.css`` files
-will be over-written. You can easily be avoided as all Sphinx-Gallery ``.css``
+will be over-written. You can easily avoid this as all Sphinx-Gallery ``.css``
 files are prepended with 'sg\_' (e.g., 'sg_gallery.css'). More details on
 this can be found in `PR #845
 <https://github.com/sphinx-gallery/sphinx-gallery/pull/845>`_.
 
 Custom css can be used to alter the appearance of
 :ref:`code links <stylizing_code_links>` and
-:ref:`thumbnail size <setting_thumbnail_size>`. Can also do things like hide
+:ref:`thumbnail size <setting_thumbnail_size>`. You can also do things like hide
 the download buttons in the example headers, e.g., using:
 
 .. code-block:: css
