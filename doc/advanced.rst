@@ -393,23 +393,27 @@ The Sphinx-Gallery ``.css`` files that control the appearance of your example
 gallery can be found `here
 <https://github.com/sphinx-gallery/sphinx-gallery/tree/master/sphinx_gallery/_static>`_.
 These default ``.css`` files are added to your build. Specifically, they are
-copied into ``_build/html/_static/`` of your ``gallery_dir``. You can add your
-own custom ``.css`` files by using the :doc:`Sphinx configuration
-<sphinx:usage/configuration>` ``html_static_path``. For example,
-list any path(s) that contain your custom static files, using the
+copied into ``_build/html/_static/`` of your ``gallery_dir``.
+
+You can add your own custom ``.css`` files by using the
+:doc:`Sphinx configuration <sphinx:usage/configuration>` ``html_static_path``.
+For example, list any path(s) that contain your custom static files, using the
 ``html_static_path`` configuration, in your ``conf.py`` file::
 
     html_static_path = ['_static']
 
-You can also directly overwrite the default static files. The static files in
-the path(s) listed will be copied over after the builtin Sphinx-Gallery files,
-so if you have a file named "gallery.css", it will overwrite the builtin
-"gallery.css".
+The default Sphinx-Gallery ``.css`` files are copied to your build **after**
+files in your ``html_static_path`` config. This means that files in your
+``html_static_path`` that are named the same as Sphinx-Gallery ``.css`` files
+will be over-written. You can easily avoid this as all Sphinx-Gallery ``.css``
+files are prepended with 'sg\_' (e.g., 'sg_gallery.css'). More details on
+this can be found in `PR #845
+<https://github.com/sphinx-gallery/sphinx-gallery/pull/845>`_.
 
-The appearance of :ref:`code links <stylizing_code_links>` and
-:ref:`thumbnail size <setting_thumbnail_size>` can be altered via addition
-of your own CSS. Can also do things like hide the download buttons in the
-example headers using:
+Custom css can be used to alter the appearance of
+:ref:`code links <stylizing_code_links>` and
+:ref:`thumbnail size <setting_thumbnail_size>`. You can also do things like hide
+the download buttons in the example headers, e.g., using:
 
 .. code-block:: css
 
