@@ -5,7 +5,8 @@ Matplotlib animation support
 Show a Matplotlib animation, which should end up nicely embedded below.
 
 In order to enable support for animations ``'matplotlib_animations'``
-must be set to ``True`` in the sphinx gallery configuration.
+must be set to ``True`` in the sphinx gallery
+:ref:`configuration <image_scrapers>`.
 """
 
 import numpy as np
