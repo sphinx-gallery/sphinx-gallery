@@ -353,15 +353,19 @@ it with Sphinx-Gallery. You can:
 
 .. _custom_reset:
 
-Define resetting behavior (e.g., for custom libraries)
-======================================================
+Resetting before each example
+=============================
 
-Sphinx-Gallery natively supports resetting ``matplotlib`` and ``seaborn``.
-However, if you'd like to support resetting for other libraries (or would like
-to modify the resetting behavior for a natively-supported library), you can
-add a custom function to the resetting tuple defined in ``conf.py``.
+Sphinx-Gallery supports 'resetting' via a prolog that is run before each
+example script is executed. This is used natively in Sphinx-Gallery to 'reset'
+the behavior of the visualization packages ``matplotlib`` and ``seaborn``
+(:ref:`reset_modules`). However, this functionality could be used to reset other
+libraries, modify the resetting behavior for a natively-reset library or run
+an arbitrary custom function at the start of each script.
 
-The function takes two variables: a dictionary called ``gallery_conf`` (which is
+This is done by adding a custom function to the resetting tuple defined in
+``conf.py``. The function should take two variables: a dictionary called
+``gallery_conf`` (which is
 your Sphinx-Gallery configuration) and a string called ``fname`` (which is the
 file name of the currently-executed Python script). These generally don't need
 to be used in order to perform whatever resetting behavior you want, but must
@@ -374,12 +378,15 @@ For example, to reset matplotlib to always use the ``ggplot`` style, you could d
        style.use('ggplot')
 
 Any custom functions can be defined (or imported) in ``conf.py`` and given to
-the ``reset_modules`` configuration key. For the function defined above::
+the ``reset_modules`` configuration key. To add the function defined above::
 
    sphinx_gallery_conf = {
        ...
        'reset_modules': (reset_mpl, 'seaborn'),
    }
+
+In the config above ``'seaborn'`` refers to the native seaborn resetting
+function (see :ref:`reset_modules`).
 
 .. note:: Using resetters such as ``reset_mpl`` that deviate from the
           standard behavior that users will experience when manually running
