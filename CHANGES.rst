@@ -4,13 +4,50 @@ Change Log
 v0.10.0
 -------
 
-In this version the default Sphinx-Gallery `.css` filenames have been
-updated to be prepended with 'sg\_'. For more details see `#845 <https://github.com/sphinx-gallery/sphinx-gallery/pull/845#issuecomment-913130302>`_.
+In this version, the default Sphinx-Gallery `.css` files have been
+updated so their names are all prepended with 'sg\_'.
+For more details see `#845 <https://github.com/sphinx-gallery/sphinx-gallery/pull/845#issuecomment-913130302>`_.
+
+**Implemented enhancements:**
+
+-  Generalising image_scrapers facility for non-images `#833 <https://github.com/sphinx-gallery/sphinx-gallery/issues/833>`__
+-  Add a mode that fails only for rst warnings and does not run examples `#751 <https://github.com/sphinx-gallery/sphinx-gallery/issues/751>`__
+-  Add a “template”, to make it easy to get started `#555 <https://github.com/sphinx-gallery/sphinx-gallery/issues/555>`__
+-  ENH Add config that generates dummy images to prevent missing image warnings `#828 <https://github.com/sphinx-gallery/sphinx-gallery/pull/828>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: add hidpi option to matplotlib_scraper and directive `#808 <https://github.com/sphinx-gallery/sphinx-gallery/pull/808>`__ (`jklymak <https://github.com/jklymak>`__)
 
 **Fixed bugs:**
 
--  Remove `ANSI characters <https://en.wikipedia.org/wiki/ANSI_escape_code>`_ from HTML output `#838 <https://github.com/sphinx-gallery/sphinx-gallery/pull/838>`__ (`agramfort <https://github.com/agramfort>`__)
+-  BUG URL quote branch names and filepaths in Binder URLs `#844 <https://github.com/sphinx-gallery/sphinx-gallery/pull/844>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  Sanitize ANSI characters from generated RST: Remove `ANSI characters <https://en.wikipedia.org/wiki/ANSI_escape_code>`_ from HTML output `#838 <https://github.com/sphinx-gallery/sphinx-gallery/pull/838>`__ (`agramfort <https://github.com/agramfort>`__)
+-  Bug Pin markupsafe version in Python nightly `#831 <https://github.com/sphinx-gallery/sphinx-gallery/pull/831>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG Fix test_minigallery_directive failing on Windows `#830 <https://github.com/sphinx-gallery/sphinx-gallery/pull/830>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  BUG Fix LaTeX Error: File \`tgtermes.sty’ not found in CI `#829 <https://github.com/sphinx-gallery/sphinx-gallery/pull/829>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 
+**Closed issues:**
+
+-  Galleries using bokeh `#841 <https://github.com/sphinx-gallery/sphinx-gallery/issues/841>`__
+-  TorchIO now uses sphinx-gallery `#823 <https://github.com/sphinx-gallery/sphinx-gallery/issues/823>`__
+-  New release `#817 <https://github.com/sphinx-gallery/sphinx-gallery/issues/817>`__
+-  Change DPI? `#804 <https://github.com/sphinx-gallery/sphinx-gallery/issues/804>`__
+-  Multiple images in horizontal list are not clickable (cannot zoom in) `#429 <https://github.com/sphinx-gallery/sphinx-gallery/issues/429>`__
+-  Notebook style issues with indentation `#342 <https://github.com/sphinx-gallery/sphinx-gallery/issues/342>`__
+
+**Merged pull requests:**
+
+-  DOC Update reset_modules documentation `#861 <https://github.com/sphinx-gallery/sphinx-gallery/pull/861>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Remove trailing whitespace `#859 <https://github.com/sphinx-gallery/sphinx-gallery/pull/859>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Add info on enabling animation support to example `#858 <https://github.com/sphinx-gallery/sphinx-gallery/pull/858>`__ (`dstansby <https://github.com/dstansby>`__)
+-  Update css file names, fix documentation `#857 <https://github.com/sphinx-gallery/sphinx-gallery/pull/857>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT: Fix mayavi build hang circleci `#850 <https://github.com/sphinx-gallery/sphinx-gallery/pull/850>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT: Fix mayavi build hang azure CI `#848 <https://github.com/sphinx-gallery/sphinx-gallery/pull/848>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Refactor execute_code_block in gen_rst.py `#842 <https://github.com/sphinx-gallery/sphinx-gallery/pull/842>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [Maint] Remove travis `#840 <https://github.com/sphinx-gallery/sphinx-gallery/pull/840>`__ (`agramfort <https://github.com/agramfort>`__)
+-  DOC Add gif to supported image extensions `#836 <https://github.com/sphinx-gallery/sphinx-gallery/pull/836>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Clarifications and fixes to image_scrapers doc `#834 <https://github.com/sphinx-gallery/sphinx-gallery/pull/834>`__ (`jnothman <https://github.com/jnothman>`__)
+-  DOC Update projects list in readme.rst `#826 <https://github.com/sphinx-gallery/sphinx-gallery/pull/826>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Fix zenodo badge link `#825 <https://github.com/sphinx-gallery/sphinx-gallery/pull/825>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Add TorchIO to users list `#824 <https://github.com/sphinx-gallery/sphinx-gallery/pull/824>`__ (`fepegar <https://github.com/fepegar>`__)
 
 v0.9.0
 ------
