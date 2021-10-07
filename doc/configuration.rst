@@ -1065,7 +1065,7 @@ a default::
 
     sphinx_gallery_conf = {
         ...
-        'plot_gallery': 'False',
+        'plot_gallery': False,
     }
 
 The highest precedence is always given to the `-D` flag of the
