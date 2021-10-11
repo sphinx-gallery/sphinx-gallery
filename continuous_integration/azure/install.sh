@@ -19,7 +19,7 @@ if [ "$DISTRIB" == "conda" ]; then
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
     if [ "$PYTHON_VERSION" != "3.6" -o "$LOCALE" != "C" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk<=9.0.1 'traits<6.3.0' https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk<=9.0.1 \"traits<6.3.0\" https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
