@@ -185,21 +185,37 @@ class SphinxDocLinkResolver(object):
         sindex = get_data(searchindex_url, gallery_dir)
         self._searchindex = js_index.loads(sindex)
 
+    def _get_index_match(self, first, second):
+        try:
+            match = self._searchindex['objects'][first]
+        except KeyError:
+            return None
+        else:
+            if isinstance(match, dict):
+                try:
+                    match = match[second]
+                except KeyError:
+                    return None
+            elif isinstance(match, (list, tuple)):  # Sphinx 5.0.0 dev
+                try:
+                    for item in match:
+                        if item[4] == second:
+                            match = item[:4]
+                            break
+                    else:
+                        return None
+                except Exception:
+                    return None
+        return match
+
     def _get_link_type(self, cobj):
         """Get a valid link and type_, False if not found."""
         first, second = cobj['module_short'], cobj['name']
-        match = None
-        try:
-            match = self._searchindex['objects'][first][second]
-        except KeyError:
-            pass
+        match = self._get_index_match(first, second)
         if match is None and '.' in second:  # possible class attribute
             first, second = second.split('.', 1)
             first = '.'.join([cobj['module_short'], first])
-            try:
-                match = self._searchindex['objects'][first][second]
-            except KeyError:
-                pass
+            match = self._get_index_match(first, second)
         if match is None:
             link = type_ = None
         else:
