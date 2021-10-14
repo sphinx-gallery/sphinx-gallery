@@ -565,7 +565,7 @@ _reset_dict = {
 
 
 def clean_modules(gallery_conf, fname):
-    """Remove, unload, or reset modules after running each example.
+    """Remove, unload, or reset modules.
 
     After a script is executed it can load a variety of settings that one
     does not want to influence in other examples in the gallery.

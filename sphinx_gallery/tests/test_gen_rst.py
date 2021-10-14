@@ -13,6 +13,7 @@ import tempfile
 import re
 import os
 import shutil
+from unittest.mock import Mock
 import zipfile
 import codeop
 
@@ -821,6 +822,16 @@ def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
         compiler, code_block, None, script_vars, gallery_conf
     )
     assert _clean_output(output) == ''
+
+
+@pytest.mark.parametrize(('order', 'call_count'), [('before', 1), ('after', 1), ('both', 2)])
+def test_reset_module_order(gallery_conf, order, call_count):
+    """Test that module order is maintained."""
+    mock_reset_module = Mock()
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = order
+    rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
+    assert mock_reset_module.call_count == call_count
 
 
 class TestLoggingTee:
