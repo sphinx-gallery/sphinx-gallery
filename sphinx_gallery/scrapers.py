@@ -13,6 +13,7 @@ images are injected as rst ``image-sg`` directives into the ``.rst``
 file generated for each example script.
 """
 
+import inspect
 import os
 import sys
 import re
@@ -564,7 +565,7 @@ _reset_dict = {
 }
 
 
-def clean_modules(gallery_conf, fname):
+def clean_modules(gallery_conf, fname, when):
     """Remove, unload, or reset modules.
 
     After a script is executed it can load a variety of settings that one
@@ -577,6 +578,15 @@ def clean_modules(gallery_conf, fname):
     fname : str or None
         The example being run. Will be None when this is called entering
         a directory of examples to be built.
+    when : {'before', 'after'}
+        Whether this module is run before or after examples.
+
+        This parameter is only forwarded when the callables accept 3 parameters.
     """
     for reset_module in gallery_conf['reset_modules']:
-        reset_module(gallery_conf, fname)
+
+        sig = inspect.signature(reset_module)
+        if len(sig.parameters) == 3:
+            reset_module(gallery_conf, fname, when)
+        else:
+            reset_module(gallery_conf, fname)

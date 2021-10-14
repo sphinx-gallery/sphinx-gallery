@@ -13,7 +13,7 @@ import tempfile
 import re
 import os
 import shutil
-from unittest.mock import Mock
+from unittest import mock
 import zipfile
 import codeop
 
@@ -824,14 +824,45 @@ def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
     assert _clean_output(output) == ''
 
 
-@pytest.mark.parametrize(('order', 'call_count'), [('before', 1), ('after', 1), ('both', 2)])
-def test_reset_module_order(gallery_conf, order, call_count):
-    """Test that module order is maintained."""
-    mock_reset_module = Mock()
+@pytest.mark.parametrize(
+    ('order', 'call_count'), [('before', 1), ('after', 1), ('both', 2)]
+)
+def test_reset_module_order_2_param(gallery_conf, order, call_count):
+    """Test that reset module with 2 parameters."""
+
+    def cleanup_2_param(gallery_conf, fname):
+        pass
+
+    mock_reset_module = mock.create_autospec(cleanup_2_param)
     gallery_conf['reset_modules'] = (mock_reset_module,)
     gallery_conf['reset_modules_order'] = order
     rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
     assert mock_reset_module.call_count == call_count
+
+
+@pytest.mark.parametrize(
+    ('order', 'call_count', 'expected_call_order'),
+    [
+        ('before', 1, ('before',)), 
+        ('after', 1, ('after',)), 
+        ('both', 2, ('before', 'after'))
+    ]
+)
+def test_reset_module_order_3_param(gallery_conf, order, call_count,
+                                    expected_call_order):
+    """Test reset module with 3 parameters."""
+
+    def cleanup_3_param(gallery_conf, fname, when):
+        pass
+
+    mock_reset_module = mock.create_autospec(cleanup_3_param)
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = order
+    rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
+    assert mock_reset_module.call_count == call_count
+
+    expected_calls = [mock.call(mock.ANY, mock.ANY, order) for order in expected_call_order]
+    mock_reset_module.assert_has_calls(expected_calls)
 
 
 class TestLoggingTee:

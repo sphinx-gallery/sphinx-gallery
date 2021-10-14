@@ -926,7 +926,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         'target_file': target_file}
 
     if executable and gallery_conf['reset_modules_order'] in ['before', 'both']:
-        clean_modules(gallery_conf, fname)
+        clean_modules(gallery_conf, fname, 'before')
     output_blocks, time_elapsed = execute_script(script_blocks,
                                                  script_vars,
                                                  gallery_conf)
@@ -996,7 +996,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
                           fname, intro, title)
 
     if executable and gallery_conf['reset_modules_order'] in ['after', 'both']:
-        clean_modules(gallery_conf, fname)
+        clean_modules(gallery_conf, fname, 'after')
 
     return intro, title, (time_elapsed, memory_used)
 
