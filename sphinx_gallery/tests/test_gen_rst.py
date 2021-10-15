@@ -876,8 +876,9 @@ def test_reset_module_order_3_param_invalid_when(gallery_conf):
     mock_reset_module = mock.create_autospec(cleanup_3_param)
     gallery_conf['reset_modules'] = (mock_reset_module,)
     gallery_conf['reset_modules_order'] = 'before'
-    with pytest.raises(ValueError, match="3rd parameter in function signature must be 'when',"):
-        rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
+    with pytest.raises(ValueError, match=("3rd parameter in function"
+                                          "signature must be 'when',")):
+        _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
     assert mock_reset_module.call_count == 0
 
 

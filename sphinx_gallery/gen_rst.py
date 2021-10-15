@@ -926,7 +926,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         'target_file': target_file}
 
     if (
-        executable 
+        executable
         and gallery_conf['reset_modules_order'] in ['before', 'both']
     ):
         clean_modules(gallery_conf, fname, 'before')
