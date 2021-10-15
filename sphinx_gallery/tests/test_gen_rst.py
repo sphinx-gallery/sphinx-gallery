@@ -865,6 +865,20 @@ def test_reset_module_order_3_param(gallery_conf, order, call_count,
     mock_reset_module.assert_has_calls(expected_calls)
 
 
+def test_reset_module_order_3_param_invalid_when(gallery_conf):
+    """Test reset module with unknown 3rd parameter."""
+
+    def cleanup_3_param(gallery_conf, fname, invalid):
+        pass
+
+    mock_reset_module = mock.create_autospec(cleanup_3_param)
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = 'before'
+    with pytest.raises(ValueError, match="3rd parameter in function signature must be 'when',"):
+        rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
+    assert mock_reset_module.call_count == 0
+
+
 class TestLoggingTee:
     def setup(self):
         self.src_filename = 'source file name'
