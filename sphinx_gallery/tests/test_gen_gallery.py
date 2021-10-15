@@ -79,11 +79,13 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
     pytest.param(ConfigError, 'reset_modules_order must be a str',
                  id='Resetter unknown',
                  marks=pytest.mark.conf_file(
-                     content="sphinx_gallery_conf={'reset_modules_order': 1,}")),
+                     content=("sphinx_gallery_conf="
+                              "{'reset_modules_order': 1,}"))),
     pytest.param(ConfigError, "reset_modules_order must be in",
                  id='reset_modules_order not valid',
                  marks=pytest.mark.conf_file(
-                     content="sphinx_gallery_conf={'reset_modules_order': 'invalid',}")),
+                     content=("sphinx_gallery_conf="
+                              "{'reset_modules_order': 'invalid',}"))),
 ])
 def test_bad_reset_modules_order(sphinx_app_wrapper, err_class, err_match):
     with pytest.raises(err_class, match=err_match):

@@ -292,7 +292,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         raise ConfigError('reset_modules_order must be a str, '
                           'got %r' % gallery_conf['reset_modules_order'])
     if gallery_conf['reset_modules_order'] not in ['before', 'after', 'both']:
-        raise ConfigError("reset_modules_order must be in ['before', 'after', 'both'], "
+        raise ConfigError("reset_modules_order must be in"
+                          "['before', 'after', 'both'], "
                           'got %r' % gallery_conf['reset_modules_order'])
 
     lang = lang if lang in ('python', 'python3', 'default') else 'python'

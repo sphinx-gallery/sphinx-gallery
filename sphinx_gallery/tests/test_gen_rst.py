@@ -836,15 +836,15 @@ def test_reset_module_order_2_param(gallery_conf, order, call_count):
     mock_reset_module = mock.create_autospec(cleanup_2_param)
     gallery_conf['reset_modules'] = (mock_reset_module,)
     gallery_conf['reset_modules_order'] = order
-    rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
+    _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
     assert mock_reset_module.call_count == call_count
 
 
 @pytest.mark.parametrize(
     ('order', 'call_count', 'expected_call_order'),
     [
-        ('before', 1, ('before',)), 
-        ('after', 1, ('after',)), 
+        ('before', 1, ('before',)),
+        ('after', 1, ('after',)),
         ('both', 2, ('before', 'after'))
     ]
 )
@@ -858,10 +858,12 @@ def test_reset_module_order_3_param(gallery_conf, order, call_count,
     mock_reset_module = mock.create_autospec(cleanup_3_param)
     gallery_conf['reset_modules'] = (mock_reset_module,)
     gallery_conf['reset_modules_order'] = order
-    rst = _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
+    _generate_rst(gallery_conf, 'plot_test.py', ALPHA_CONTENT)
     assert mock_reset_module.call_count == call_count
 
-    expected_calls = [mock.call(mock.ANY, mock.ANY, order) for order in expected_call_order]
+    expected_calls = [
+        mock.call(mock.ANY, mock.ANY, order) for order in expected_call_order
+    ]
     mock_reset_module.assert_has_calls(expected_calls)
 
 
