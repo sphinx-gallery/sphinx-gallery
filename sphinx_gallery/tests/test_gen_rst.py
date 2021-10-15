@@ -827,7 +827,7 @@ def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
 @pytest.mark.parametrize(
     ('order', 'call_count'), [('before', 1), ('after', 1), ('both', 2)]
 )
-def test_reset_module_order_2_param(gallery_conf, order, call_count):
+def test_reset_module_order_2_param(gallery_conf, order, call_count, req_pil):
     """Test that reset module with 2 parameters."""
 
     def cleanup_2_param(gallery_conf, fname):
@@ -849,7 +849,7 @@ def test_reset_module_order_2_param(gallery_conf, order, call_count):
     ]
 )
 def test_reset_module_order_3_param(gallery_conf, order, call_count,
-                                    expected_call_order):
+                                    expected_call_order, req_pil):
     """Test reset module with 3 parameters."""
 
     def cleanup_3_param(gallery_conf, fname, when):
