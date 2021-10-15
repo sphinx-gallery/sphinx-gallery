@@ -334,7 +334,7 @@ else:
 try:
     import plotly.io as pio
     pio.renderers.default = 'sphinx_gallery'
-except ImportError:
+except (ImportError, AttributeError):
     pass
 
 min_reported_time = 0
