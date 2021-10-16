@@ -1287,7 +1287,7 @@ so they will not be overwritten.
 .. note::
     This configuration **only** works when the example is set to not execute
     (i.e., the ``plot_gallery`` is False, the example is in `ignore_pattern`
-    or the example is not in `filename_pattern - see
+    or the example is not in ``filename_pattern`` - see
     :ref:`filename/ignore patterns <build_pattern>`). This means that you will
     not need to remove any ``sphinx_gallery_dummy_images`` lines in your
     examples when you switch to building your gallery with execution.
