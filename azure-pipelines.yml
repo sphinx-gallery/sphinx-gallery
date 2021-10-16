@@ -56,6 +56,7 @@ stages:
     - script: pytest --tb=short sphinx_gallery
       displayName: pytest
     - script: |
+        pip install sphinxext-opengraph
         cd doc
         sphinx-build -D plot_gallery=0 -b html -d _build\doctrees . _build\html
       displayName: make html-noplot
