@@ -49,7 +49,7 @@ stages:
         call "%CONDA%\Scripts\activate" base
         echo "##vso[task.setvariable variable=PATH]%CONDA%\Scripts;%PATH%"
       displayName: Add conda to PATH and activate conda base
-    - script: conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly sphinxext-opengraph
+    - script: conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
       displayName: Setup conda environment
     - script: python setup.py develop
       displayName: Install sphinx-gallery
