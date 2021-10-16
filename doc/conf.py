@@ -44,6 +44,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
+    "sphinxext.opengraph",
     'sphinx_gallery.gen_gallery',
 ]
 
@@ -385,3 +386,6 @@ html_context = {
         ('stable', 'https://sphinx-gallery.github.io/stable'),
     )
 }
+
+# sphinxext-opengraph config, for adding OpenGraph metadata
+ogp_site_url = "https://sphinx-gallery.github.io/"

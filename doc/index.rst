@@ -57,6 +57,7 @@ Sphinx-Gallery Show: :ref:`examples-index`
    getting_started
    syntax
    configuration
+   related_projects
    projects_list
 
 .. toctree::
