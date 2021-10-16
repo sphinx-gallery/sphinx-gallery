@@ -2,7 +2,7 @@
 Related projects
 ================
 
-Useful related projects that Sphinx-Gallery uses may find interesting.
+Useful related projects that Sphinx-Gallery users may find interesting.
 
 sphinxext-opengraph
 ===================
