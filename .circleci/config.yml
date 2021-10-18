@@ -83,7 +83,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: circleci/python:3.6-stretch
+      - image: circleci/python:3.7-stretch
     steps:
       - checkout
       - add_ssh_keys:
@@ -95,7 +95,7 @@ jobs:
 
   deploy_stable:
     docker:
-      - image: circleci/python:3.6-stretch
+      - image: circleci/python:3.7-stretch
     steps:
       - checkout
       - add_ssh_keys:
