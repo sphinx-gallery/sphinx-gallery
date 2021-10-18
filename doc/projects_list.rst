@@ -28,3 +28,4 @@ Here is a list of projects using `sphinx-gallery`.
 * `Auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
 * `OpenML-Python <https://openml.github.io/openml-python/master/examples/index.html>`_
 * `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
+* `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
