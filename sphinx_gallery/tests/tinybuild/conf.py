@@ -1,5 +1,4 @@
 import os.path as op
-import numpy as np
 from sphinx_gallery.scrapers import matplotlib_scraper
 from sphinx_gallery.sorting import FileNameSortKey
 
