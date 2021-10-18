@@ -28,6 +28,11 @@ class ResetArgv:
             return []
 
 
+def _raise():
+    raise ValueError('zero-size array to reduction operation minimum which '
+                     'has no identity')
+
+
 class MockScrapeProblem:
 
     def __init__(self):
@@ -40,7 +45,7 @@ class MockScrapeProblem:
     def __call__(self, gallery_conf, fname):
         from matplotlib.figure import Figure
         if 'scraper_broken' in fname:
-            Figure.savefig = lambda *args, **kwargs: np.min([])
+            Figure.savefig = lambda *args, **kwargs: _raise()
         else:
             Figure.savefig = self._orig_mpl
 
