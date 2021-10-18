@@ -578,7 +578,7 @@ def clean_modules(gallery_conf, fname, when):
     fname : str or None
         The example being run. Will be None when this is called entering
         a directory of examples to be built.
-    when : {'before', 'after'}
+    when : str
         Whether this module is run before or after examples.
 
         This parameter is only forwarded when the callables accept 3
@@ -589,9 +589,9 @@ def clean_modules(gallery_conf, fname, when):
         sig = inspect.signature(reset_module)
         if len(sig.parameters) == 3:
             third_param = list(sig.parameters.keys())[2]
-            if not third_param == 'when':
+            if third_param != 'when':
                 raise ValueError("3rd parameter in function signature must "
                                  "be 'when', got %s" % third_param)
-            reset_module(gallery_conf, fname, when)
+            reset_module(gallery_conf, fname, when=when)
         else:
             reset_module(gallery_conf, fname)
