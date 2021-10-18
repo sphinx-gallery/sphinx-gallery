@@ -51,7 +51,7 @@ stages:
       displayName: Add conda to PATH and activate conda base
     - bash: |
         set -e
-        conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib
+        conda install python=${PYTHON_VERSION} ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib
         conda install "plotly>=4.0"
         conda info --envs
         conda list
