@@ -521,6 +521,9 @@ to the function/class using dot notation (e.g.,
     :emphasize-lines: 12-21, 31-38
     :linenos:
 
+If you wish to do the same for ordinary RST documentation,
+see :ref:`plain_rst`.
+
 Toggling global variable inspection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
