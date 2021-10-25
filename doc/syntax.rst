@@ -142,7 +142,7 @@ For a clear example refer to the rendered example
 Plain RST examples
 ==================
 
-Sphinx-Gallery generates examples from a set of Python scripts,
+Sphinx-Gallery generates examples from Python scripts,
 so parsing and executing examples in plain RST code blocks is not supported.
 If you're looking to generate links for code examples
 in ordinary RST documentation, you might find
