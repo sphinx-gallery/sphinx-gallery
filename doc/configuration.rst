@@ -388,6 +388,9 @@ If you do not use ``intersphinx``, then you should add entries that
 point to the directory containing ``searchindex.js``, such as
 ``'matplotlib': 'https://matplotlib.org'``.
 
+If you wish to do the same for ordinary RST documentation,
+see :ref:`plain_rst`.
+
 .. _references_to_examples:
 
 Add mini-galleries for API documentation
@@ -520,9 +523,6 @@ to the function/class using dot notation (e.g.,
     :lines: 3-
     :emphasize-lines: 12-21, 31-38
     :linenos:
-
-If you wish to do the same for ordinary RST documentation,
-see :ref:`plain_rst`.
 
 Toggling global variable inspection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
