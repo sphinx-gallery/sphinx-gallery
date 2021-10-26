@@ -136,3 +136,15 @@ functionality::
 For a clear example refer to the rendered example
 :ref:`sphx_glr_tutorials_plot_parse.py` and compare it to the generated
 :download:`original python script <tutorials/plot_parse.py>`
+
+.. _plain_rst:
+
+Plain RST examples
+==================
+
+Sphinx-Gallery generates examples from Python scripts,
+so examples written in plain .rst files is not supported.
+If you're looking to generate hyperlinks for functions (linking to their corresponding
+online documentation) in code blocks of ordinary RST documentation, you might
+find
+`sphinx-codeautolink <https://sphinx-codeautolink.rtfd.io>`_ helpful.
