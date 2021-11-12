@@ -6,6 +6,7 @@ This should not be used at the same time as sphinx_gallery.gen_gallery.
 
 """
 from . import __version__, glr_path_static
+from .directives import ImageSg, imagesg_addnode
 
 
 def config_inited(app, config):
@@ -18,6 +19,8 @@ def config_inited(app, config):
 def setup(app):
     app.require_sphinx('1.8')
     app.connect('config-inited', config_inited)
+    app.add_directive("image-sg", ImageSg)
+    imagesg_addnode(app)
     return {
         'parallel_read_safe': True,
         'version': __version__,
