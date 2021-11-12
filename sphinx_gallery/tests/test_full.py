@@ -694,7 +694,9 @@ def test_error_messages(sphinx_app, name, want):
     src_dir = sphinx_app.srcdir
     example_rst = op.join(src_dir, 'auto_examples', name + '.rst')
     with codecs.open(example_rst, 'r', 'utf-8') as fid:
-        rst = fid.read().replace('\n', ' ')
+        rst = fid.read()
+    print(rst)
+    rst = rst.replace('\n', ' ')
     assert re.match(want, rst) is not None
 
 

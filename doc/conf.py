@@ -332,10 +332,11 @@ else:
 
 # Set plotly renderer to capture _repr_html_ for sphinx-gallery
 try:
-    import plotly.io as pio
-    pio.renderers.default = 'sphinx_gallery'
+    import plotly.io.renderers
 except ImportError:
     pass
+else:
+    plotly.io.renderers.default = 'sphinx_gallery'
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:

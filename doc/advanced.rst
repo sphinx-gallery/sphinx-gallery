@@ -356,12 +356,12 @@ it with Sphinx-Gallery. You can:
 Resetting before each example
 =============================
 
-Sphinx-Gallery supports 'resetting' via a prolog that is run before each
-example script is executed. This is used natively in Sphinx-Gallery to 'reset'
+Sphinx-Gallery supports 'resetting' function(s) that are run before and/or after
+each example script is executed. This is used natively in Sphinx-Gallery to 'reset'
 the behavior of the visualization packages ``matplotlib`` and ``seaborn``
 (:ref:`reset_modules`). However, this functionality could be used to reset other
 libraries, modify the resetting behavior for a natively-reset library or run
-an arbitrary custom function at the start of each script.
+an arbitrary custom function at the start and/or end of each script.
 
 This is done by adding a custom function to the resetting tuple defined in
 ``conf.py``. The function should take two variables: a dictionary called
@@ -392,6 +392,22 @@ function (see :ref:`reset_modules`).
           standard behavior that users will experience when manually running
           examples themselves is discouraged due to the inconsistency
           that results between the rendered examples and local outputs.
+
+If the custom function needs to be aware of whether it is being run before or after
+an example, a function signature with three parameters can be used, where the third parameter
+is required to be named ``when``::
+
+    def reset_mpl(gallery_conf, fname, when):
+
+        import matplotlib as mpl
+        mpl.rcParams['lines.linewidth'] = 2
+        if when == 'after' and fname=='dashed_lines':
+            mpl.rcParams['lines.linestyle'] = '-'
+
+The value passed into ``when`` can be ``before`` or ``after``.
+If ``reset_modules_order`` in the :ref:`configuration <reset_modules_order>` is set to ``before`` or
+``after``, ``when`` will always be the same value.  This function signature
+is only useful when used in conjuction with ``reset_modules_order`` set to ``both``.
 
 Altering Sphinx-Gallery CSS
 ===========================

@@ -36,6 +36,7 @@ file:
 - ``compress_images`` (:ref:`compress_images`)
 - ``image_srcset`` (:ref:`image_srcset`)
 - ``reset_modules`` (:ref:`reset_modules`)
+- ``reset_modules_order`` (:ref:`reset_modules_order`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``only_warn_on_example_error`` (:ref:`warning_on_error`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
@@ -1320,6 +1321,26 @@ this tuple in order to define resetting behavior for other visualization librari
 
 To do so, follow the instructions in :ref:`custom_reset`.
 
+.. _reset_modules_order:
+
+Order of resetting modules
+==========================
+
+By default, Sphinx-Gallery will reset modules before each example is run.
+The choices for ``reset_modules_order`` are ``before`` (default), ``after``, and
+``both``. If the last example run in Sphinx-Gallery modifies a module, it is
+recommended to use ``after`` or ``both`` to avoid leaking out a modified module to
+other parts of the Sphinx build process.  For example, set ``reset_modules_order``
+to ``both`` in the configuration::
+
+    sphinx_gallery_conf = {
+        ...
+        'reset_modules_order': 'both',
+    }
+
+Custom functions can be constructed to have custom functionality depending on
+whether they are called before or after the examples.  See :ref:`custom_reset`
+for more information.
 
 Dealing with failing Gallery example scripts
 ============================================

@@ -13,6 +13,7 @@ import tempfile
 import re
 import os
 import shutil
+from unittest import mock
 import zipfile
 import codeop
 
@@ -821,6 +822,65 @@ def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
         compiler, code_block, None, script_vars, gallery_conf
     )
     assert _clean_output(output) == ''
+
+
+@pytest.mark.parametrize(
+    ('order', 'call_count'), [('before', 1), ('after', 1), ('both', 2)]
+)
+def test_reset_module_order_2_param(gallery_conf, order, call_count, req_pil):
+    """Test that reset module with 2 parameters."""
+
+    def cleanup_2_param(gallery_conf, fname):
+        pass
+
+    mock_reset_module = mock.create_autospec(cleanup_2_param)
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = order
+    _generate_rst(gallery_conf, 'plot_test.py', CONTENT)
+    assert mock_reset_module.call_count == call_count
+
+
+@pytest.mark.parametrize(
+    ('order', 'call_count', 'expected_call_order'),
+    [
+        ('before', 1, ('before',)),
+        ('after', 1, ('after',)),
+        ('both', 2, ('before', 'after'))
+    ]
+)
+def test_reset_module_order_3_param(gallery_conf, order, call_count,
+                                    expected_call_order, req_pil):
+    """Test reset module with 3 parameters."""
+
+    def cleanup_3_param(gallery_conf, fname, when):
+        pass
+
+    mock_reset_module = mock.create_autospec(cleanup_3_param)
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = order
+    _generate_rst(gallery_conf, 'plot_test.py', CONTENT)
+    assert mock_reset_module.call_count == call_count
+
+    expected_calls = [
+        mock.call(mock.ANY, mock.ANY, order) for order in expected_call_order
+    ]
+    mock_reset_module.assert_has_calls(expected_calls)
+
+
+def test_reset_module_order_3_param_invalid_when(gallery_conf):
+    """Test reset module with unknown 3rd parameter."""
+
+    def cleanup_3_param(gallery_conf, fname, invalid):
+        pass
+
+    mock_reset_module = mock.create_autospec(cleanup_3_param)
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = 'before'
+    with pytest.raises(ValueError,
+                       match=("3rd parameter in cleanup_3_param "
+                              "function signature must be 'when'")):
+        _generate_rst(gallery_conf, 'plot_test.py', CONTENT)
+    assert mock_reset_module.call_count == 0
 
 
 class TestLoggingTee:

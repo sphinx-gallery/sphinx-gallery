@@ -39,8 +39,8 @@ stages:
       vmImage: 'vs2017-win2016'
     strategy:
       matrix:
-        Python36:
-          python.version: '3.6'
+        Python37:
+          python.version: '3.7'
         Python38:
           python.version: '3.8'
 
@@ -49,7 +49,9 @@ stages:
         call "%CONDA%\Scripts\activate" base
         echo "##vso[task.setvariable variable=PATH]%CONDA%\Scripts;%PATH%"
       displayName: Add conda to PATH and activate conda base
-    - script: conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib plotly
+    - script: |
+        conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0"
+        conda list
       displayName: Setup conda environment
     - script: python setup.py develop
       displayName: Install sphinx-gallery
@@ -82,17 +84,17 @@ stages:
       DISPLAY: ':99'
     strategy:
       matrix:
-        ubuntu_python36:
+        ubuntu_python37:
           DISTRIB: 'ubuntu'
-          PYTHON_VERSION: '3.6'
+          PYTHON_VERSION: '3.7'
           SPHINXOPTS: ''
-        conda_python36_sphinx183:
+        conda_python37_sphinx183:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.6'
+          PYTHON_VERSION: '3.7'
           SPHINX_VERSION: '1.8.3'
-        conda_python36_localeC:
+        conda_python37_localeC:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.6'
+          PYTHON_VERSION: '3.7'
           LOCALE: 'C'
           BAD_MTIME: '1'  # not clear why, maybe some specific Sphinx version?
         conda_python38_sphinxDev:
