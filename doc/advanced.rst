@@ -401,7 +401,7 @@ is required to be named ``when``::
 
         import matplotlib as mpl
         mpl.rcParams['lines.linewidth'] = 2
-        if when == 'after' and fname=='dashed_lines'
+        if when == 'after' and fname=='dashed_lines':
             mpl.rcParams['lines.linestyle'] = '-'
 
 The value passed into ``when`` can be ``before`` or ``after``.
