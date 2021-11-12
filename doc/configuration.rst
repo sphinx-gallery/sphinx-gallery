@@ -1327,8 +1327,8 @@ By default, Sphinx-Gallery will reset modules before each example is run.
 The choices for ``reset_modules_order`` are ``before`` (default), ``after``, and
 ``both``. If the last example run in Sphinx-Gallery modifies a module, it is
 recommended to use ``after`` or ``both`` to avoid leaking out a modified module to
-other parts of the Sphinx build process.  For example, to use both use the following
-configuration::
+other parts of the Sphinx build process.  For example, set ``reset_modules_order``
+to ``both`` in the configuration::
 
     sphinx_gallery_conf = {
         ...
