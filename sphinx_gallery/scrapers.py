@@ -590,8 +590,8 @@ def clean_modules(gallery_conf, fname, when):
         if len(sig.parameters) == 3:
             third_param = list(sig.parameters.keys())[2]
             if third_param != 'when':
-                raise ValueError("3rd parameter in function signature must "
-                                 "be 'when', got %s" % third_param)
+                raise ValueError(f"3rd parameter in {reset_module.__name__} function"
+                                          signature must be 'when', got {third_param}")
             reset_module(gallery_conf, fname, when=when)
         else:
             reset_module(gallery_conf, fname)
