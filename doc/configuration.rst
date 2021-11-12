@@ -1323,7 +1323,7 @@ To do so, follow the instructions in :ref:`custom_reset`.
 Order of resetting modules
 ==========================
 
-By default, the Sphinx-Gallery will reset modules before each example is run.
+By default, Sphinx-Gallery will reset modules before each example is run.
 The choices for ``reset_modules_order`` are ``before`` (default), ``after``, and
 ``both``. If the last example run in Sphinx-Gallery modifies a module, it is
 recommended to use ``after`` or ``both`` to avoid leaking out a modified module to
