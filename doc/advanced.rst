@@ -356,7 +356,7 @@ it with Sphinx-Gallery. You can:
 Resetting before each example
 =============================
 
-Sphinx-Gallery supports 'resetting' function(s) that are run before and/or after 
+Sphinx-Gallery supports 'resetting' function(s) that are run before and/or after
 each example script is executed. This is used natively in Sphinx-Gallery to 'reset'
 the behavior of the visualization packages ``matplotlib`` and ``seaborn``
 (:ref:`reset_modules`). However, this functionality could be used to reset other
