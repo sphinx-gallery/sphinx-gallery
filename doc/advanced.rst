@@ -20,9 +20,9 @@ that are useful for Sphinx-Gallery.
 Cleaning the gallery files
 --------------------------
 
-Once your gallery is working you might need completely remove all generated files by
-Sphinx-Gallery to have a clean build. For this we recommend adding the following
-to your Sphinx ``Makefile``:
+Once your gallery is working you might need completely remove all generated
+files by Sphinx-Gallery to have a clean build. For this we recommend adding the
+following to your Sphinx ``Makefile``:
 
 .. code-block:: bash
 
@@ -393,9 +393,9 @@ function (see :ref:`reset_modules`).
           examples themselves is discouraged due to the inconsistency
           that results between the rendered examples and local outputs.
 
-If the custom function needs to be aware of whether it is being run before or after
-an example, a function signature with three parameters can be used, where the third parameter
-is required to be named ``when``::
+If the custom function needs to be aware of whether it is being run before or
+after an example, a function signature with three parameters can be used, where
+the third parameter is required to be named ``when``::
 
     def reset_mpl(gallery_conf, fname, when):
 
@@ -404,10 +404,12 @@ is required to be named ``when``::
         if when == 'after' and fname=='dashed_lines':
             mpl.rcParams['lines.linestyle'] = '-'
 
-The value passed into ``when`` can be ``before`` or ``after``.
-If ``reset_modules_order`` in the :ref:`configuration <reset_modules_order>` is set to ``before`` or
-``after``, ``when`` will always be the same value.  This function signature
-is only useful when used in conjuction with ``reset_modules_order`` set to ``both``.
+The value passed into ``when`` can be ``'before'`` or ``'after'``.
+If ``reset_modules_order`` in the :ref:`configuration <reset_modules_order>`
+is set to ``'before'`` or ``'after'``, ``when`` will always be the same value
+as what ``reset_modules_order`` is set to.
+This function signature is only useful when used in conjuction with
+``reset_modules_order`` set to ``'both'``.
 
 Altering Sphinx-Gallery CSS
 ===========================
