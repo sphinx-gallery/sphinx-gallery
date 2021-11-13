@@ -21,11 +21,11 @@ Here is a list of projects using `sphinx-gallery`.
 * `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
 * `SimPEG <http://docs.simpeg.xyz/content/examples/>`_
-* `PlasmaPy <http://docs.plasmapy.org/en/latest/auto_examples/>`_
+* `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
 * `Fury <http://fury.gl/latest/auto_examples/index.html>`_
 * `NetworkX <https://networkx.github.io/documentation/stable/auto_examples/index.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 * `Auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
-* `OpenML-Python <https://openml.github.io/openml-python/master/examples/index.html>`_
+* `OpenML-Python <https://openml.github.io/openml-python/main/examples/index.html>`_
 * `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
 * `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
