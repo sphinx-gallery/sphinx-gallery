@@ -1190,7 +1190,7 @@ than a single static image of the animation figure, you should add::
 
 HTML embedding options can be changed by setting ``rcParams['animation.html']``
 and related options in your
-:ref:`matplotlib rcParams <matplotlib:matplotlib-rcparams>`.
+`matplotlib rcParams <https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_.
 It's also recommended to ensure that "imagemagick" is available as a
 ``writer``, which you can check with
 :class:`matplotlib.animation.ImageMagickWriter.isAvailable()
