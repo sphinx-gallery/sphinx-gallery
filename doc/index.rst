@@ -75,6 +75,7 @@ Sphinx-Gallery Show: :ref:`examples-index`
    auto_examples/index
    tutorials/index
    auto_mayavi_examples/index
+   auto_pyvista_examples/index
 
 .. toctree::
    :maxdepth: 2
