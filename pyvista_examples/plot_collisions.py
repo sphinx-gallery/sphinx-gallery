@@ -5,9 +5,8 @@ Collision
 ~~~~~~~~~
 Perform a collision detection between two meshes.
 
-This example use the :class:`collision <pyvista.PolyDataFilters.collision>`
-filter to detect the faces from one sphere colliding with another
-sphere.
+This example use the ``collision`` filter to detect the faces from one sphere
+colliding with another sphere.
 
 .. note::
    Due to the nature of the `vtk.vtkCollisionDetectionFilter
