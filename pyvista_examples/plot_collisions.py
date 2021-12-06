@@ -35,7 +35,7 @@ pv.set_plot_theme("document")
 
 
 ###############################################################################
-# Create the main mesh and the secondary "moving" mesh
+# Create the main mesh and the secondary "moving" mesh.
 #
 # Collision faces will be plotted on this sphere, and to do so we
 # initialize an initial ``"collisions"`` mask.
