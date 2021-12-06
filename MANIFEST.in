@@ -7,6 +7,8 @@ recursive-include tutorials *.py
 recursive-include tutorials *.txt
 recursive-include mayavi_examples *.py
 recursive-include mayavi_examples *.rst
+recursive-include pyvista_examples *.py
+recursive-include pyvista_examples *.rst
 recursive-include sphinx_gallery *.py
 recursive-include sphinx_gallery/tests/testconfs *
 recursive-include sphinx_gallery/tests/tinybuild *

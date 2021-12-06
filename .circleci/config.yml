@@ -40,7 +40,7 @@ jobs:
           name: Pip
           command: |
             pip install --progress-bar off --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3" "vtk<=9.0.1"
-            pip install --progress-bar off --user seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest "traits<6.3.0" mayavi memory_profiler ipython plotly
+            pip install --progress-bar off --user seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest "traits<6.3.0" mayavi pyvista memory_profiler ipython plotly
       - save_cache:
           key: cache-pip
           paths:
@@ -52,6 +52,7 @@ jobs:
           name: Test libs
           command: |
             python -c "from mayavi import mlab; import matplotlib.pyplot as plt; mlab.figure(); plt.figure()"
+            python -c "import pyvista;print(pyvista.Report())"
       - run:
           name: Install
           command: |
