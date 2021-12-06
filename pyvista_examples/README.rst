@@ -14,5 +14,5 @@ Examples from the Sphinx-Gallery using PyVista for embedding 3D plots.
 `extensive examples gallery <https://docs.pyvista.org/examples/index.html>`_
 built with Sphinx-Gallery!
 
-Take a look at the :ref:`image_scrapers` section to learn more about using
-PyVista in your example gallery.
+Take a look at the :ref:`image_scrapers` section to learn more about how to
+enable and use PyVista in your example gallery.
