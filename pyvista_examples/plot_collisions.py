@@ -5,7 +5,7 @@ Collision
 ~~~~~~~~~
 Perform a collision detection between two meshes.
 
-This example use the ``collision`` filter to detect the faces from one sphere
+This example uses the ``collision`` filter to detect the faces from one sphere
 colliding with another sphere.
 
 .. note::
