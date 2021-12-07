@@ -142,9 +142,12 @@ CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
 
  Out:
 
+.. sphx-glr-output-block-{1:03}-start
  .. code-block:: none
 
-{0}\n"""
+{0}
+
+.. sphx-glr-output-block-{1:03}-end\n"""
 
 TIMING_CONTENT = """
 .. rst-class:: sphx-glr-timing
@@ -617,7 +620,7 @@ def _get_last_repr(gallery_conf, ___):
 
 
 def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
-                     images_rst):
+                     images_rst, block_index):
     """Obtain standard output and html output in rST."""
     last_repr = None
     repr_meth = None
@@ -637,7 +640,8 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
     if repr_meth in ['__repr__', '__str__'] and last_repr:
         captured_std = u"{0}\n{1}".format(captured_std, last_repr)
     if captured_std and not captured_std.isspace():
-        captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
+        captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4),
+                                          block_index)
     else:
         captured_std = ''
     # give html output its own header
@@ -658,14 +662,17 @@ def _reset_cwd_syspath(cwd, sys_path):
     sys.path = sys_path
 
 
-def execute_code_block(compiler, block, example_globals, script_vars,
-                       gallery_conf):
+def execute_code_block(compiler, block_index, block, example_globals,
+                       script_vars, gallery_conf):
     """Execute the code block of the example file.
 
     Parameters
     ----------
     compiler : codeop.Compile
         Compiler to compile AST of code block.
+
+    block_index : int
+        Block index.
 
     block : List[Tuple[str, str, int]]
         List of Tuples, each Tuple contains label ('text' or 'code'),
@@ -743,7 +750,7 @@ def execute_code_block(compiler, block, example_globals, script_vars,
 
         code_output = _get_code_output(
             is_last_expr, example_globals, gallery_conf, logging_tee,
-            images_rst
+            images_rst, block_index
         )
     finally:
         _reset_cwd_syspath(cwd, sys_path)
@@ -847,10 +854,11 @@ def execute_script(script_blocks, script_vars, gallery_conf):
     script_vars['fake_main'] = fake_main
     output_blocks = list()
     with _LoggingTee(script_vars.get('src_file', '')) as logging_tee:
-        for block in script_blocks:
+        for bi, block in enumerate(script_blocks):
             logging_tee.set_std_and_reset_position()
             output_blocks.append(execute_code_block(
-                compiler, block, example_globals, script_vars, gallery_conf))
+                compiler, bi, block, example_globals, script_vars,
+                gallery_conf))
     time_elapsed = time() - t_start
     sys.argv = argv_orig
     script_vars['memory_delta'] = max(script_vars['memory_delta'])
