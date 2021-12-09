@@ -150,9 +150,10 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
     assert blocks[3][0] == 'text'
 
     script_vars = {'execute_script': ''}
+    file_conf = {}
 
     output_blocks, time_elapsed = sg.execute_script(
-        blocks, script_vars, gallery_conf)
+        blocks, script_vars, gallery_conf, file_conf)
 
     example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
     want_rst = """\
@@ -199,7 +200,7 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
                        image_path_iterator=[], target_file=filename)
 
     output_blocks, time_elapsed = sg.execute_script(
-        blocks, script_vars, gallery_conf)
+        blocks, script_vars, gallery_conf, file_conf)
 
     example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
     want_rst = """\
@@ -242,7 +243,7 @@ b = 'foo'
                    'image_path_iterator': [],
                    'target_file': filename}
     output_blocks, time_elapsed = sg.execute_script(
-        blocks, script_vars, gallery_conf)
+        blocks, script_vars, gallery_conf, file_conf)
     assert 'example_globals' in script_vars
     assert script_vars['example_globals']['a'] == 1.
     assert script_vars['example_globals']['b'] == 'foo'
@@ -640,8 +641,9 @@ def test_output_indentation(gallery_conf, script_vars):
     ])
     code = "print('" + test_string + "')"
     code_block = ("code", code, 1)
+    file_conf = {}
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     output_test_string = "\n".join(
         [line[4:] for line in output.strip().split("\n")[-3:]]
@@ -659,8 +661,9 @@ def test_output_no_ansi(gallery_conf, script_vars):
 
     code = 'print("\033[94m0.25")'
     code_block = ("code", code, 1)
+    file_conf = {}
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     output_test_string = "\n".join(
         [line[4:] for line in output.strip().split("\n")[-3:]]
@@ -675,9 +678,10 @@ def test_empty_output_box(gallery_conf, script_vars):
     compiler = codeop.Compile()
 
     code_block = ("code", "print(__doc__)", 1)
+    file_conf = {}
 
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     assert output.isspace()
 
@@ -807,8 +811,26 @@ def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
     compiler = codeop.Compile()
     code_block = ('code', code, 1)
     gallery_conf['capture_repr'] = capture_repr
+    file_conf = {}
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
+    )
+    assert _clean_output(output) == expected_out
+
+
+@pytest.mark.parametrize('caprepr_gallery, caprepr_file, expected_out', [
+    pytest.param(tuple(), ('__repr__',), '2', id='() --> repr'),
+    pytest.param(('__repr__',), '()', '', id='repr --> ()'),
+])
+def test_per_file_capture_repr(gallery_conf, caprepr_gallery, caprepr_file,
+                               expected_out, req_mpl, req_pil, script_vars):
+    """Tests that per file capture_repr overrides gallery_conf."""
+    compiler = codeop.Compile()
+    code_block = ('code', 'a=2\n2', 1)
+    gallery_conf['capture_repr'] = caprepr_gallery
+    file_conf = {'capture_repr': caprepr_file}
+    output = sg.execute_code_block(
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     assert _clean_output(output) == expected_out
 
@@ -818,8 +840,9 @@ def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
     compiler = codeop.Compile()
     code_block = ('code', 'a=2\na', 1)
     gallery_conf['ignore_repr_types'] = r'int'
+    file_conf = {}
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     assert _clean_output(output) == ''
 

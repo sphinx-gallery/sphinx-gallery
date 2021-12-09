@@ -596,10 +596,10 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf,
     return is_last_expr, mem_max
 
 
-def _get_last_repr(gallery_conf, ___):
+def _get_last_repr(capture_repr, ___):
     """Get a repr of the last expression, using first method in 'capture_repr'
     available for the last expression."""
-    for meth in gallery_conf['capture_repr']:
+    for meth in capture_repr:
         try:
             last_repr = getattr(___, meth)()
             # for case when last statement is print()
@@ -617,7 +617,7 @@ def _get_last_repr(gallery_conf, ___):
 
 
 def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
-                     images_rst):
+                     images_rst, file_conf):
     """Obtain standard output and html output in rST."""
     last_repr = None
     repr_meth = None
@@ -629,8 +629,10 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
             ignore_repr = re.search(
                 gallery_conf['ignore_repr_types'], str(type(___))
             )
-        if gallery_conf['capture_repr'] != () and not ignore_repr:
-            last_repr, repr_meth = _get_last_repr(gallery_conf, ___)
+        capture_repr = file_conf.get('capture_repr',
+                                     gallery_conf['capture_repr'])
+        if capture_repr != () and not ignore_repr:
+            last_repr, repr_meth = _get_last_repr(capture_repr, ___)
 
     captured_std = logging_tee.output.getvalue().expandtabs()
     # normal string output
@@ -659,7 +661,7 @@ def _reset_cwd_syspath(cwd, sys_path):
 
 
 def execute_code_block(compiler, block, example_globals, script_vars,
-                       gallery_conf):
+                       gallery_conf, file_conf):
     """Execute the code block of the example file.
 
     Parameters
@@ -679,6 +681,10 @@ def execute_code_block(compiler, block, example_globals, script_vars,
 
     gallery_conf : Dict[str, Any]
         Gallery configurations.
+
+    file_conf : Dict[str, Any]
+        File-specific settings given in source file comments as:
+        ``# sphinx_gallery_<name> = <value>``.
 
     Returns
     -------
@@ -743,7 +749,7 @@ def execute_code_block(compiler, block, example_globals, script_vars,
 
         code_output = _get_code_output(
             is_last_expr, example_globals, gallery_conf, logging_tee,
-            images_rst
+            images_rst, file_conf
         )
     finally:
         _reset_cwd_syspath(cwd, sys_path)
@@ -784,7 +790,7 @@ def _check_input(prompt=None):
         'Cannot use input() builtin function in Sphinx-Gallery examples')
 
 
-def execute_script(script_blocks, script_vars, gallery_conf):
+def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
     """Execute and capture output from python script already in block structure
 
     Parameters
@@ -797,6 +803,9 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         Configuration and run time variables
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
+    file_conf : dict
+        File-specific settings given in source file comments as:
+        ``# sphinx_gallery_<name> = <value>``
 
     Returns
     -------
@@ -850,7 +859,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         for block in script_blocks:
             logging_tee.set_std_and_reset_position()
             output_blocks.append(execute_code_block(
-                compiler, block, example_globals, script_vars, gallery_conf))
+                compiler, block, example_globals, script_vars, gallery_conf,
+                file_conf))
     time_elapsed = time() - t_start
     sys.argv = argv_orig
     script_vars['memory_delta'] = max(script_vars['memory_delta'])
@@ -932,7 +942,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         clean_modules(gallery_conf, fname, 'before')
     output_blocks, time_elapsed = execute_script(script_blocks,
                                                  script_vars,
-                                                 gallery_conf)
+                                                 gallery_conf,
+                                                 file_conf)
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
 
