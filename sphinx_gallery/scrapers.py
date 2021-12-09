@@ -13,6 +13,7 @@ images are injected as rst ``image-sg`` directives into the ``.rst``
 file generated for each example script.
 """
 
+import importlib
 import inspect
 import os
 import sys
@@ -544,8 +545,11 @@ SINGLE_IMAGE = """
 
 def _reset_matplotlib(gallery_conf, fname):
     """Reset matplotlib."""
-    _, plt = _import_matplotlib()
+    mpl, plt = _import_matplotlib()
     plt.rcdefaults()
+    importlib.reload(mpl.units)
+    importlib.reload(mpl.dates)
+    importlib.reload(mpl.category)
 
 
 def _reset_seaborn(gallery_conf, fname):

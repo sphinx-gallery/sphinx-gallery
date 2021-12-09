@@ -7,7 +7,8 @@ import sphinx_gallery
 from sphinx_gallery.gen_gallery import _complete_gallery_conf
 from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SG_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
-                                     save_figures, _KNOWN_IMG_EXTS)
+                                     save_figures, _KNOWN_IMG_EXTS,
+                                     _reset_matplotlib)
 from sphinx_gallery.utils import _get_image
 
 
@@ -313,3 +314,15 @@ def test_iterator():
     with pytest.raises(ExtensionError, match='10 images'):
         for ii in ipi:
             pass
+
+
+def test_reset_matplotlib(gallery_conf):
+    """Test _reset_matplotlib."""
+    import matplotlib
+    matplotlib.rcParams['lines.linewidth'] = 42
+    matplotlib.units.registry.clear()
+
+    _reset_matplotlib(gallery_conf, '')
+
+    assert matplotlib.rcParams['lines.linewidth'] != 42
+    assert len(matplotlib.units.registry) > 0
