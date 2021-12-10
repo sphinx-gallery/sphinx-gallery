@@ -930,8 +930,9 @@ class TestLoggingTee:
         assert (self.output_file.getvalue() ==
                 'first line\rsecond line\nthird line')
         verbose_calls = log_collector.calls['verbose']
-        print(log_collector.__dict__)
-        print(f"log collector {log_collector}")
+
+        # print(f"log collector {log_collector}")
+        print(f" log collector dict {log_collector.__dict__}")
         # assert len(verbose_calls) == 3
         # assert self.src_filename in verbose_calls[0].args
         # assert 'first line' in verbose_calls[1].args
