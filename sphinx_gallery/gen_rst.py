@@ -85,7 +85,6 @@ class _LoggingTee(object):
         if self.first_write:
             self.logger.verbose('Output from %s', self.src_filename,
                                 color='brown')
-            print(f"logger {self.logger}")
             self.first_write = False
 
         data = self.logger_buffer + data

@@ -929,7 +929,6 @@ class TestLoggingTee:
         assert (self.output_file.getvalue() ==
                 'first line\rsecond line\nthird line')
         verbose_calls = log_collector.calls['verbose']
-        print(type(log_collector))
         print(log_collector.__dict__)
         print(f"log collector {log_collector.calls}")
         assert len(verbose_calls) == 3
