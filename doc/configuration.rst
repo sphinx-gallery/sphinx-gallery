@@ -57,6 +57,7 @@ Some options can also be set or overridden on a file-by-file basis:
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
 - ``# sphinx_gallery_thumbnail_path`` (:ref:`providing_thumbnail`)
 - ``# sphinx_gallery_dummy_images`` (:ref:`dummy_images`)
+- ``# sphinx_gallery_capture_repr`` (:ref:`capture_repr`)
 
 Some options can be set on a per-code-block basis in a file:
 
@@ -1579,6 +1580,13 @@ are:
   to ``format()``.
 * ``_repr_html_`` - returns a HTML version of the object. This method is only
   present in some objects, for example, pandas dataframes.
+
+Output capture can be controlled globally by the ``capture_repr`` configuration
+setting or file-by-file by adding a comment to the example file, which overrides
+any global setting::
+
+    # sphinx_gallery_capture_repr = ()
+
 
 The default setting is::
 
