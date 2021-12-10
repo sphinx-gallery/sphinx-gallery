@@ -81,6 +81,7 @@ def fakesphinxapp():
 
 @pytest.fixture
 def log_collector():
+    print('start log collector')
     orig_dr_logger = docs_resolv.logger
     orig_gg_logger = gen_gallery.logger
     orig_gr_logger = gen_rst.logger
@@ -91,6 +92,7 @@ def log_collector():
     py_source_parser.logger = app
     gen_rst.logger = app
     try:
+        print('yield app')
         yield app
     finally:
         docs_resolv.logger = orig_dr_logger
