@@ -99,7 +99,6 @@ class _LoggingTee(object):
 
         self.logger.verbose("test log")
         for line in lines:
-            print('logging to verbose')
             self.logger.verbose('%s', line)
 
     def flush(self):
