@@ -49,7 +49,10 @@ class FakeSphinxApp:
         self.calls['info'].append(Params(args, kwargs))
 
     def verbose(self, *args, **kwargs):
+        print(f"fake app verbose")
+        print(f"params {Params(args, kwargs)}")
         self.calls['verbose'].append(Params(args, kwargs))
+        print(f"self calls {self.calls}")
 
     def debug(self, *args, **kwargs):
         self.calls['debug'].append(Params(args, kwargs))
