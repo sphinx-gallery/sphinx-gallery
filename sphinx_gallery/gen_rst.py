@@ -61,6 +61,7 @@ class _LoggingTee(object):
 
     def __init__(self, src_filename):
         self.logger = logger
+        print(f"self logger loggingtee {self.logger}")
         self.src_filename = src_filename
         self.logger_buffer = ''
         self.set_std_and_reset_position()
@@ -79,7 +80,6 @@ class _LoggingTee(object):
         sys.stdout, sys.stderr = self.origs
 
     def write(self, data):
-        print(f"data {data}")
         self.output.write(data)
 
         if self.first_write:
