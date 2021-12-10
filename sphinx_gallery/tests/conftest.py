@@ -32,6 +32,7 @@ Params = collections.namedtuple('Params', 'args kwargs')
 
 class FakeSphinxApp:
     def __init__(self):
+        print('init fakesphinxapp')
         self.calls = collections.defaultdict(list)
 
     def status_iterator(self, *args, **kwargs):
@@ -87,7 +88,6 @@ def log_collector():
     orig_gr_logger = gen_rst.logger
     orig_ps_logger = py_source_parser.logger
     app = FakeSphinxApp()
-    print(f"app {app}")
     docs_resolv.logger = app
     gen_gallery.logger = app
     py_source_parser.logger = app
