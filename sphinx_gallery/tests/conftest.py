@@ -88,6 +88,7 @@ def log_collector():
     orig_gr_logger = gen_rst.logger
     orig_ps_logger = py_source_parser.logger
     app = FakeSphinxApp()
+    print("log collector app")
     docs_resolv.logger = app
     gen_gallery.logger = app
     py_source_parser.logger = app
