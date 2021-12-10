@@ -7,9 +7,11 @@
 set -e
 
 if [ "$DISTRIB" == "ubuntu" ]; then
-    python3 -m pytest sphinx_gallery -v --tb=short
+    # python3 -m pytest sphinx_gallery -v --tb=short
+    python3 -m pytest sphinx_gallery/tests/test_gen_rst.py -k test_multi_line -v --tb=short
 else
-    pytest sphinx_gallery -v --tb=short
+    # pytest sphinx_gallery -v --tb=short
+    python3 -m pytest sphinx_gallery/tests/test_gen_rst.py -k test_multi_line -v --tb=short
 fi
 
 if [ "$DISTRIB" != "minimal" ] && [ "$DISTRIB" != "nightly" ]; then

@@ -79,11 +79,13 @@ class _LoggingTee(object):
         sys.stdout, sys.stderr = self.origs
 
     def write(self, data):
+        print(f"data {data}")
         self.output.write(data)
 
         if self.first_write:
             self.logger.verbose('Output from %s', self.src_filename,
                                 color='brown')
+            print(f"logger {self.logger}")
             self.first_write = False
 
         data = self.logger_buffer + data
