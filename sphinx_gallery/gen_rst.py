@@ -81,6 +81,7 @@ class _LoggingTee(object):
 
     def write(self, data):
         self.output.write(data)
+        print(f"logger {self.logger}")
 
         if self.first_write:
             self.logger.verbose('Output from %s', self.src_filename,
