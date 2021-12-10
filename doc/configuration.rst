@@ -1321,7 +1321,8 @@ to ensure that any changes made to plotting behavior in one example do not
 propagate to the other examples.
 
 By default, before each example file executes, Sphinx-Gallery will
-reset ``matplotlib`` (by using :func:`matplotlib.pyplot.rcdefaults`) and ``seaborn``
+reset ``matplotlib`` (by using :func:`matplotlib.pyplot.rcdefaults` and
+reloading submodules that populate the units registry) and ``seaborn``
 (by trying to unload the module from ``sys.modules``). This is equivalent to the
 following configuration::
 
