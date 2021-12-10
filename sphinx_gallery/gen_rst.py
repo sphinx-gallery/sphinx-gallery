@@ -98,6 +98,7 @@ class _LoggingTee(object):
         else:
             self.logger_buffer = ''
 
+        self.logger.verbose("test log")
         for line in lines:
             self.logger.verbose('%s', line)
 
