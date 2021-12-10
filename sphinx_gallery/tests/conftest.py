@@ -78,23 +78,13 @@ def fakesphinxapp():
 
 
 @pytest.fixture
-def log_collector():
-    orig_dr_logger = docs_resolv.logger
-    orig_gg_logger = gen_gallery.logger
-    orig_gr_logger = gen_rst.logger
-    orig_ps_logger = py_source_parser.logger
+def log_collector(monkeypatch):
     app = FakeSphinxApp()
-    docs_resolv.logger = app
-    gen_gallery.logger = app
-    py_source_parser.logger = app
-    gen_rst.logger = app
-    try:
-        yield app
-    finally:
-        docs_resolv.logger = orig_dr_logger
-        gen_gallery.logger = orig_gg_logger
-        gen_rst.logger = orig_gr_logger
-        py_source_parser.logger = orig_ps_logger
+    monkeypatch.setattr(docs_resolv, 'logger', app)
+    monkeypatch.setattr(gen_gallery, 'logger', app)
+    monkeypatch.setattr(py_source_parser, 'logger', app)
+    monkeypatch.setattr(gen_rst, 'logger', app)
+    yield app
 
 
 @pytest.fixture

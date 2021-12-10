@@ -906,63 +906,74 @@ def test_reset_module_order_3_param_invalid_when(gallery_conf):
     assert mock_reset_module.call_count == 0
 
 
-class TestLoggingTee:
-    def setup(self):
-        self.src_filename = 'source file name'
-        self.tee = sg._LoggingTee(self.src_filename)
-        self.output_file = self.tee.output
+@pytest.fixture
+def log_collector_wrap(log_collector):
+    """Wrap our log_collector."""
+    src_filename = 'source file name'
+    tee = sg._LoggingTee(src_filename)
+    output_file = tee.output
+    yield log_collector, src_filename, tee, output_file
 
-    def test_full_line(self, log_collector):
-        # A full line is output immediately.
-        self.tee.write('Output\n')
-        self.tee.flush()
-        assert self.output_file.getvalue() == 'Output\n'
-        assert len(log_collector.calls['verbose']) == 2
-        assert self.src_filename in log_collector.calls['verbose'][0].args
-        assert 'Output' in log_collector.calls['verbose'][1].args
 
-    def test_incomplete_line_with_flush(self, log_collector):
-        # An incomplete line ...
-        self.tee.write('Output')
-        assert self.output_file.getvalue() == 'Output'
-        assert len(log_collector.calls['verbose']) == 1
-        assert self.src_filename in log_collector.calls['verbose'][0].args
+def test_full_line(log_collector_wrap):
+    # A full line is output immediately.
+    log_collector, src_filename, tee, output_file = log_collector_wrap
+    tee.write('Output\n')
+    tee.flush()
+    assert output_file.getvalue() == 'Output\n'
+    assert len(log_collector.calls['verbose']) == 2
+    assert src_filename in log_collector.calls['verbose'][0].args
+    assert 'Output' in log_collector.calls['verbose'][1].args
 
-        # ... should appear when flushed.
-        self.tee.flush()
-        assert len(log_collector.calls['verbose']) == 2
-        assert 'Output' in log_collector.calls['verbose'][1].args
 
-    def test_incomplete_line_with_more_output(self, log_collector):
-        # An incomplete line ...
-        self.tee.write('Output')
-        assert self.output_file.getvalue() == 'Output'
-        assert len(log_collector.calls['verbose']) == 1
-        assert self.src_filename in log_collector.calls['verbose'][0].args
+def test_incomplete_line_with_flush(log_collector_wrap):
+    # An incomplete line ...
+    log_collector, src_filename, tee, output_file = log_collector_wrap
+    tee.write('Output')
+    assert output_file.getvalue() == 'Output'
+    assert len(log_collector.calls['verbose']) == 1
+    assert src_filename in log_collector.calls['verbose'][0].args
 
-        # ... should appear when more data is written.
-        self.tee.write('\nMore output\n')
-        assert self.output_file.getvalue() == 'Output\nMore output\n'
-        assert len(log_collector.calls['verbose']) == 3
-        assert 'Output' in log_collector.calls['verbose'][1].args
-        assert 'More output' in log_collector.calls['verbose'][2].args
+    # ... should appear when flushed.
+    tee.flush()
+    assert len(log_collector.calls['verbose']) == 2
+    assert 'Output' in log_collector.calls['verbose'][1].args
 
-    def test_multi_line(self, log_collector):
-        self.tee.write('first line\rsecond line\nthird line')
-        assert (self.output_file.getvalue() ==
-                'first line\rsecond line\nthird line')
-        verbose_calls = log_collector.calls['verbose']
-        assert len(verbose_calls) == 3
-        assert self.src_filename in verbose_calls[0].args
-        assert 'first line' in verbose_calls[1].args
-        assert 'second line' in verbose_calls[2].args
-        assert self.tee.logger_buffer == 'third line'
 
-    def test_isatty(self, monkeypatch):
-        assert not self.tee.isatty()
+def test_incomplete_line_with_more_output(log_collector_wrap):
+    # An incomplete line ...
+    log_collector, src_filename, tee, output_file = log_collector_wrap
+    tee.write('Output')
+    assert output_file.getvalue() == 'Output'
+    assert len(log_collector.calls['verbose']) == 1
+    assert src_filename in log_collector.calls['verbose'][0].args
 
-        monkeypatch.setattr(self.tee.output, 'isatty', lambda: True)
-        assert self.tee.isatty()
+    # ... should appear when more data is written.
+    tee.write('\nMore output\n')
+    assert output_file.getvalue() == 'Output\nMore output\n'
+    assert len(log_collector.calls['verbose']) == 3
+    assert 'Output' in log_collector.calls['verbose'][1].args
+    assert 'More output' in log_collector.calls['verbose'][2].args
+
+
+def test_multi_line(log_collector_wrap):
+    log_collector, src_filename, tee, output_file = log_collector_wrap
+    tee.write('first line\rsecond line\nthird line')
+    assert (output_file.getvalue() ==
+            'first line\rsecond line\nthird line')
+    verbose_calls = log_collector.calls['verbose']
+    assert len(verbose_calls) == 3
+    assert src_filename in verbose_calls[0].args
+    assert 'first line' in verbose_calls[1].args
+    assert 'second line' in verbose_calls[2].args
+    assert tee.logger_buffer == 'third line'
+
+
+def test_isatty(monkeypatch, log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert not tee.isatty()
+    monkeypatch.setattr(tee.output, 'isatty', lambda: True)
+    assert tee.isatty()
 
 
 # TODO: test that broken thumbnail does appear when needed
