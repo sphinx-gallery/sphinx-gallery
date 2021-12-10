@@ -32,7 +32,6 @@ Params = collections.namedtuple('Params', 'args kwargs')
 
 class FakeSphinxApp:
     def __init__(self):
-        print('init fake app')
         self.calls = collections.defaultdict(list)
 
     def status_iterator(self, *args, **kwargs):
@@ -50,7 +49,7 @@ class FakeSphinxApp:
         self.calls['info'].append(Params(args, kwargs))
 
     def verbose(self, *args, **kwargs):
-        print(f"params {Params(args, kwargs)}")
+        print(f"verbose call")
         self.calls['verbose'].append(Params(args, kwargs))
         print(f"self calls {self.calls}")
 

@@ -926,6 +926,7 @@ class TestLoggingTee:
 
     def test_multi_line(self, log_collector):
         self.tee.write('first line\rsecond line\nthird line')
+        print(self.output_file.getvalue())
         assert (self.output_file.getvalue() ==
                 'first line\rsecond line\nthird line')
         verbose_calls = log_collector.calls['verbose']
