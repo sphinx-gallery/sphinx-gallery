@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Next version
+------------
+
+In this version, the "Out:" prefix applied to code outputs is now created from
+CSS pseudo-elements instead of additional real text. For more details, see
+`#896 <https://github.com/sphinx-gallery/sphinx-gallery/pull/896>`.
+
 v0.10.1
 -------
 
