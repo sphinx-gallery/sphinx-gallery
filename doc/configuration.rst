@@ -401,12 +401,14 @@ see :ref:`plain_rst`.
 Add mini-galleries for API documentation
 ========================================
 
-When documenting a given function/class, Sphinx-Gallery enables you to link to
-any examples that either:
+When documenting a given function/method/attribute/object/class, Sphinx-Gallery
+enables you to link to any examples that either:
 
-1. Use the function/instantiate the class in the code.
-2. Refer to that function/class using sphinx markup ``:func:``/``:class:``
-   in a documentation block.
+1. Use the function/method/attribute/object or instantiate the class in the
+   code.
+2. Refer to that function/method/attribute/object/class using sphinx markup
+   ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a documentation
+   block.
 
 The former is useful for auto-documenting functions that are used and classes
 that are explicitly instantiated. The latter is useful for classes that are
