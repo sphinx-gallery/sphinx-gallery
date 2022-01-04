@@ -185,6 +185,7 @@ def _get_short_module_name(module_name, obj_name):
     return short_name
 
 
+# keep in synch w/ configuration.rst "Add mini-galleries for API documentation"
 _regex = re.compile(r':(?:'
                     r'func(?:tion)?|'
                     r'meth(?:od)?|'
