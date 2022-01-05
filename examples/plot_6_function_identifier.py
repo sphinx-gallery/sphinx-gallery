@@ -10,12 +10,17 @@ which functions are called in the script and to which module do they belong.
 # Code source: Óscar Nájera
 # License: BSD 3 clause
 
-import os  # noqa, analysis:ignore
+import os.path as op  # noqa, analysis:ignore
 import matplotlib.pyplot as plt
+import sphinx_gallery
 from sphinx_gallery.backreferences import identify_names
 from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 
-filename = os.__file__.replace('.pyc', '.py')
+filename = 'plot_6_function_identifier.py'
+if not op.exists(filename):
+    filename = __file__ if '__file__' in locals() else op.join(op.dirname(
+                   sphinx_gallery.__path__[0]), 'examples', filename)
+
 _, script_blocks = split_code_and_text_blocks(filename)
 names = identify_names(script_blocks)
 figheight = len(names) + .5
@@ -34,7 +39,8 @@ fontsize = 12.5
 # Also note that global variables of the script have intersphinx references
 # added to them automatically (e.g., ``fig`` and ``fig.text`` below).
 
-fig = plt.figure(figsize=(7.5, 8))
+fig, ax = plt.subplots(figsize=(7.5, 8))
+ax.set_visible(False)
 
 for i, (name, obj) in enumerate(names.items()):
     fig.text(0.55, (float(len(names)) - 0.5 - i) / figheight,
@@ -50,4 +56,4 @@ for i, (name, obj) in enumerate(names.items()):
              transform=fig.transFigure,
              bbox=dict(boxstyle='larrow,pad=0.1', fc="w", ec="k"))
 
-plt.draw()
+plt.show()
