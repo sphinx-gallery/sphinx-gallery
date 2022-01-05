@@ -518,7 +518,7 @@ def test_pattern_matching(gallery_conf, log_collector, req_pil):
     gallery_conf.update(image_scrapers=(), reset_modules=())
     gallery_conf.update(filename_pattern=re.escape(os.sep) + 'plot_0')
 
-    code_output = ('\n Out:\n\n .. code-block:: none\n'
+    code_output = ('\n .. code-block:: none\n'
                    '\n'
                    '    Óscar output\n'
                    '    log:Óscar\n'
@@ -746,9 +746,7 @@ html_out = """.. raw:: html
     <br />
     <br />"""
 
-text_above_html = """Out:
-
- .. code-block:: none
+text_above_html = """.. code-block:: none
 
     print statement
 
@@ -768,7 +766,7 @@ def _clean_output(output):
         return output_test_string.strip()
     elif is_text:
         output_test_string = "\n".join(
-            [line[4:] for line in output.strip().split("\n")[6:]])
+            [line[4:] for line in output.strip().split("\n")[4:]])
         return output_test_string.strip()
     elif is_html:
         output_test_string = "\n".join(output.strip().split("\n"))

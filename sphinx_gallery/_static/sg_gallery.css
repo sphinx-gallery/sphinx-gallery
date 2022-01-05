@@ -74,15 +74,25 @@ thumbnail with its default link Background color */
 
 .sphx-glr-script-out {
   color: #888;
-  margin: 0;
+  display: flex;
+  gap: 0.5em;
 }
-p.sphx-glr-script-out {
-    padding-top: 0.7em;
+.sphx-glr-script-out::before {
+  content: "Out:";
+  /* These numbers come from the pre style in the pydata sphinx theme. This
+   * turns out to match perfectly on the rtd theme, but be a bit too low for
+   * the pydata sphinx theme. As I could not find a dimension to use that was
+   * scaled the same way, I just picked one option that worked pretty close for
+   * both. */
+  line-height: 1.4;
+  padding-top: 10px;
 }
 .sphx-glr-script-out .highlight {
   background-color: transparent;
-  margin-left: 2.5em;
-  margin-top: -2.9em;
+  /* These options make the div expand... */
+  flex-grow: 1;
+  /* ... but also keep it from overflowing its flex container. */
+  overflow: auto;
 }
 .sphx-glr-script-out .highlight pre {
   background-color: #fafae2;
@@ -90,7 +100,10 @@ p.sphx-glr-script-out {
   max-height: 30em;
   overflow: auto;
   padding-left: 1ex;
-  margin: 0px;
+  /* This margin is necessary in the pydata sphinx theme because pre has a box
+   * shadow which would be clipped by the overflow:auto in the parent div
+   * above. */
+  margin: 2px;
   word-break: break-word;
 }
 .sphx-glr-script-out + p {
