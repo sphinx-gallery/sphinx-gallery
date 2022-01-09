@@ -22,7 +22,7 @@ import pytest
 from sphinx.errors import ExtensionError
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
-from sphinx_gallery.gen_gallery import generate_dir_rst
+from sphinx_gallery.gen_gallery import generate_dir_rst, _update_gallery_conf
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 
 CONTENT = [
@@ -491,6 +491,40 @@ def test_download_link_classes(gallery_conf, req_pil):
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     for kind in ('python', 'jupyter'):
         assert 'sphx-glr-download sphx-glr-download-' + kind in rst
+
+
+EXCLUDE_CONTENT = '''
+""":obj:`numpy.pi` :func:`numpy.sin`"""
+import numpy
+numpy.pi
+numpy.e
+'''.split('\n')
+
+
+@pytest.mark.parametrize(
+    'exclusion, expected',
+    [
+        (None, {'numpy.sin', 'numpy.pi', 'numpy.e'}),
+        ({'.*'}, {'numpy.sin', 'numpy.pi'}),
+        ({'pi'}, {'numpy.sin', 'numpy.pi', 'numpy.e'}),
+        ({r'numpy\.e', 'sin'}, {'numpy.sin', 'numpy.pi'}),
+    ],
+    ids=[
+        'exclude nothing (default)',
+        'exclude anything (explicit backreferences only)',
+        'explicit backref not shadowed by implicit one',
+        'exclude implicit backref',
+    ],
+)
+def test_exclude_implicit(gallery_conf, exclusion, expected, monkeypatch):
+    mock_write_backreferences = mock.create_autospec(sg._write_backreferences)
+    monkeypatch.setattr(sg, '_write_backreferences', mock_write_backreferences)
+    gallery_conf['doc_module'] = ('numpy',)
+    if exclusion:
+        gallery_conf['exclude_implicit_doc'] = exclusion
+        _update_gallery_conf(gallery_conf)
+    _generate_rst(gallery_conf, 'test_exclude_implicit.py', EXCLUDE_CONTENT)
+    assert mock_write_backreferences.call_args.args[0] == expected
 
 
 @pytest.mark.parametrize('ext', ('.txt', '.rst', '.bad'))
