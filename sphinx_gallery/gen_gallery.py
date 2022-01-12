@@ -439,41 +439,66 @@ def generate_gallery_rst(app):
 
     for examples_dir, gallery_dir in workdirs:
 
-        examples_dir = os.path.join(app.builder.srcdir, examples_dir)
-        gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
+        examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
+        gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
 
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
         this_fhindex, this_costs = generate_dir_rst(
-            examples_dir, gallery_dir, gallery_conf, seen_backrefs)
+            examples_dir_abs_path,
+            gallery_dir_abs_path,
+            gallery_conf,
+            seen_backrefs
+        )
 
         costs += this_costs
-        write_computation_times(gallery_conf, gallery_dir, this_costs)
+        write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
         # we create an index.rst with all examples
-        index_rst_new = os.path.join(gallery_dir, 'index.rst.new')
+        index_rst_new = os.path.join(gallery_dir_abs_path, 'index.rst.new')
         with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             fhindex.write(":orphan:\n\n" + this_fhindex)
 
+            # list all paths to subsection index files in this array
+            subsection_index_files = []
+
             for subsection in get_subsections(
-                    app.builder.srcdir, examples_dir, gallery_conf):
-                src_dir = os.path.join(examples_dir, subsection)
-                target_dir = os.path.join(gallery_dir, subsection)
-                this_fhindex, this_costs = \
+                    app.builder.srcdir, examples_dir_abs_path, gallery_conf):
+                src_dir = os.path.join(examples_dir_abs_path, subsection)
+                target_dir = os.path.join(gallery_dir_abs_path, subsection)
+                subsection_index_files.append(
+                    os.path.join('/', gallery_dir, subsection, 'index.rst')
+                )
+                subsection_index_content, subsection_costs = \
                     generate_dir_rst(src_dir, target_dir, gallery_conf,
                                      seen_backrefs)
-                fhindex.write(this_fhindex)
-                costs += this_costs
-                write_computation_times(gallery_conf, target_dir, this_costs)
+                fhindex.write(subsection_index_content)
+
+                costs += subsection_costs
+                write_computation_times(
+                    gallery_conf, target_dir, subsection_costs
+                )
+
+            # generate and write toctree with subsections
+            subsections_toctree = """
+.. toctree::
+   :hidden:
+   :includehidden:
+
+   %s\n""" % "\n   ".join(subsection_index_files)
+
+            fhindex.write(subsections_toctree)
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(
-                    gallery_dir, app.builder.srcdir)
+                    gallery_dir_abs_path, app.builder.srcdir
+                )
                 fhindex.write(download_fhindex)
 
             if (app.config.sphinx_gallery_conf['show_signature']):
                 fhindex.write(SPHX_GLR_SIG)
+
         _replace_md5(index_rst_new, mode='t')
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
