@@ -235,10 +235,10 @@ def identify_names(script_blocks, global_variables=None, node=''):
     return example_code_obj
 
 
-THUMBNAIL_TEMPLATE = """
+THUMBNAIL_TEMPLATE_OLD = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="{snippet}">
+    <div class="sphx-glr-thumbcontainer">
 
 .. only:: html
 
@@ -250,6 +250,23 @@ THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
     </div>
+"""
+
+THUMBNAIL_TEMPLATE = """
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer">
+
+.. only:: html
+
+  .. image:: /{thumbnail}
+    :alt: {title}
+
+.. raw:: html
+
+      <div class="sphx-glr-thumb-title">{title}</div>
+    </div>
+
 """
 
 BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
