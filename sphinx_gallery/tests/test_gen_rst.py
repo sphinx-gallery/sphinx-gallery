@@ -13,6 +13,7 @@ import tempfile
 import re
 import os
 import shutil
+import sys
 from unittest import mock
 import zipfile
 import codeop
@@ -516,7 +517,11 @@ numpy.e
         'exclude implicit backref',
     ],
 )
-def test_exclude_implicit(gallery_conf, exclusion, expected, monkeypatch):
+def test_exclude_implicit(gallery_conf,
+                          exclusion,
+                          expected,
+                          monkeypatch,
+                          req_pil):
     mock_write_backreferences = mock.create_autospec(sg._write_backreferences)
     monkeypatch.setattr(sg, '_write_backreferences', mock_write_backreferences)
     gallery_conf['doc_module'] = ('numpy',)
@@ -524,7 +529,10 @@ def test_exclude_implicit(gallery_conf, exclusion, expected, monkeypatch):
         gallery_conf['exclude_implicit_doc'] = exclusion
         _update_gallery_conf(gallery_conf)
     _generate_rst(gallery_conf, 'test_exclude_implicit.py', EXCLUDE_CONTENT)
-    assert mock_write_backreferences.call_args.args[0] == expected
+    if sys.version_info >= (3, 8, 0):
+        assert mock_write_backreferences.call_args.args[0] == expected
+    else:
+        assert mock_write_backreferences.call_args[0][0] == expected
 
 
 @pytest.mark.parametrize('ext', ('.txt', '.rst', '.bad'))
