@@ -412,7 +412,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
    /%s\n""" % "\n   /".join(subsection_toctree_filenames)
 
     # Write subsection index file
-    subsection_index_path = os.path.join(target_dir, 'index.rst')
+    subsection_index_path = os.path.join(target_dir, 'index.rst.new')
     with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
         findex.write(subsection_index_content)
         findex.write(subsection_index_toctree)
