@@ -407,7 +407,7 @@ enables you to link to any examples that either:
 1. Use the function/method/attribute/object or instantiate the class in the
    code.
 2. Refer to that function/method/attribute/object/class using sphinx markup
-   ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a documentation
+   ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a text
    block.
 
 The former is useful for auto-documenting functions that are used and classes
