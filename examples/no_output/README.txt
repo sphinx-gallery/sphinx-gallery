@@ -1,5 +1,3 @@
-.. _no_out_examples:
-
 No image output examples
 ------------------------
 

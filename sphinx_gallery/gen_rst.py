@@ -347,10 +347,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory."""
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
 
-    subsection_index_content = """\n\n.. _sphx_glr_{0}:\n\n""".format(
-        head_ref.replace(os.path.sep, '_')
-    )
-
+    subsection_index_content = ""
     subsection_readme_fname = _get_readme(src_dir, gallery_conf)
 
     with codecs.open(subsection_readme_fname, 'r', encoding='utf-8') as fid:
@@ -409,15 +406,19 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 .. toctree::
    :hidden:
 
-   /%s\n""" % "\n   /".join(subsection_toctree_filenames)
+   /%s\n
+""" % "\n   /".join(subsection_toctree_filenames)
 
     # Write subsection index file
     subsection_index_path = os.path.join(target_dir, 'index.rst.new')
     with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
+        findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
+            head_ref.replace(os.path.sep, '_')
+        ))
         findex.write(subsection_index_content)
         findex.write(subsection_index_toctree)
 
-    return subsection_index_content, costs
+    return subsection_index_content, costs, subsection_index_toctree, subsection_index_path
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):

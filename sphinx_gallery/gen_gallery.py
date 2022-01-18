@@ -444,7 +444,7 @@ def generate_gallery_rst(app):
 
         # Here we don't use an os.walk, but we recurse only twice: flat is
         # better than nested.
-        this_fhindex, this_costs = generate_dir_rst(
+        this_fhindex, this_costs, this_toctree, _ = generate_dir_rst(
             examples_dir_abs_path,
             gallery_dir_abs_path,
             gallery_conf,
@@ -458,7 +458,7 @@ def generate_gallery_rst(app):
         index_rst_new = os.path.join(gallery_dir_abs_path, 'index.rst.new')
         with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
-            fhindex.write(":orphan:\n\n" + this_fhindex)
+            fhindex.write(":orphan:\n\n" + this_fhindex + this_toctree)
 
             # list all paths to subsection index files in this array
             subsection_index_files = []
@@ -468,9 +468,11 @@ def generate_gallery_rst(app):
                 src_dir = os.path.join(examples_dir_abs_path, subsection)
                 target_dir = os.path.join(gallery_dir_abs_path, subsection)
                 subsection_index_files.append(
-                    os.path.join('/', gallery_dir, subsection, 'index.rst')
+                    os.path.join(
+                        '/', gallery_dir, subsection, 'index.rst'
+                    )
                 )
-                subsection_index_content, subsection_costs = \
+                subsection_index_content, subsection_costs, _, subsection_index_path = \
                     generate_dir_rst(src_dir, target_dir, gallery_conf,
                                      seen_backrefs)
                 fhindex.write(subsection_index_content)
@@ -480,13 +482,16 @@ def generate_gallery_rst(app):
                     gallery_conf, target_dir, subsection_costs
                 )
 
+                _replace_md5(subsection_index_path, mode='t')
+
             # generate and write toctree with subsections
             subsections_toctree = """
 .. toctree::
    :hidden:
    :includehidden:
 
-   %s\n""" % "\n   ".join(subsection_index_files)
+   %s\n
+""" % "\n   ".join(subsection_index_files)
 
             fhindex.write(subsections_toctree)
 
