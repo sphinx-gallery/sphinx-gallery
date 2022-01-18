@@ -8,6 +8,22 @@ In this version, the "Out:" prefix applied to code outputs is now created from
 CSS pseudo-elements instead of additional real text. For more details, see
 `#896 <https://github.com/sphinx-gallery/sphinx-gallery/pull/896>`.
 
+v0.10.2
+-------
+
+**Implemented enhancements:**
+
+
+**Fixed bugs:**
+
+-  Display gallery items using CSS grid instead of floating `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__ (`alexisthual <https://github.com/alexisthual>`__)
+
+**Closed issues:**
+
+
+**Merged pull requests:**
+
+
 v0.10.1
 -------
 
