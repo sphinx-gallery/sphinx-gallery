@@ -27,7 +27,7 @@ N_TOT = 13
 
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
-N_RST = 15 + N_TOT
+N_RST = 15 + N_TOT + 1
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
@@ -614,7 +614,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '[8|9]'
+    n_ch = '(8|9|10)'
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
@@ -695,7 +695,6 @@ def test_error_messages(sphinx_app, name, want):
     example_rst = op.join(src_dir, 'auto_examples', name + '.rst')
     with codecs.open(example_rst, 'r', 'utf-8') as fid:
         rst = fid.read()
-    print(rst)
     rst = rst.replace('\n', ' ')
     assert re.match(want, rst) is not None
 
