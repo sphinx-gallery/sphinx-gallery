@@ -64,6 +64,7 @@ Tested for Read the Docs theme 0.1.7 */
   bottom: 0;
   display: block;
   left: 0;
+  box-sizing: border-box;
   padding: 150px 10px 0;
   position: absolute;
   right: 0;
