@@ -238,7 +238,7 @@ def identify_names(script_blocks, global_variables=None, node=''):
 THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer">
+    <div class="sphx-glr-thumbcontainer" tooltip="{snippet}">
 
 .. only:: html
 
