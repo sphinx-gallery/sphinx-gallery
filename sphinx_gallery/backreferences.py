@@ -245,9 +245,11 @@ THUMBNAIL_TEMPLATE = """
   .. image:: /{thumbnail}
     :alt: {title}
 
+  :ref:`sphx_glr_{ref_name}`
+
 .. raw:: html
 
-      <div class="sphx-glr-thumb-title">{title}</div>
+      <div class="sphx-glr-thumbnail-title">{title}</div>
     </div>
 
 """

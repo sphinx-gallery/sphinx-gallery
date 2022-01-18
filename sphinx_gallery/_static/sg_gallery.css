@@ -25,6 +25,9 @@ Tested for Read the Docs theme 0.1.7 */
   border-radius: 5px;
   box-shadow: 0 0 10px #6c757d40;
 
+  /* useful to absolutely position link in div */
+  position: relative;
+
   /* limit thumbnail width to 170px */
   box-sizing: border-box;
   width: 170px;
@@ -36,6 +39,22 @@ Tested for Read the Docs theme 0.1.7 */
   flex-direction: column;
   align-items: center;
   gap: 7px;
+}
+.sphx-glr-thumbcontainer p {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.sphx-glr-thumbcontainer p,
+.sphx-glr-thumbcontainer p a {
+  /* link should cover the whole thumbnail div */
+  width: 100%;
+  height: 100%;
+}
+.sphx-glr-thumbcontainer p a span {
+  /* text within link should be masked
+  (we are just interested in the href) */
+  display: none;
 }
 .sphx-glr-thumbcontainer:hover {
   border: 1px solid #0069d9;
