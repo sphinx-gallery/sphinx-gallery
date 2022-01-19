@@ -418,7 +418,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         findex.write(subsection_index_content)
         findex.write(subsection_index_toctree)
 
-    return subsection_index_content, costs, subsection_index_toctree, subsection_index_path
+    return subsection_index_content, costs, subsection_index_toctree, \
+        subsection_index_path
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):

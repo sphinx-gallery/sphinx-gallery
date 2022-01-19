@@ -472,7 +472,9 @@ def generate_gallery_rst(app):
                         '/', gallery_dir, subsection, 'index.rst'
                     )
                 )
-                subsection_index_content, subsection_costs, _, subsection_index_path = \
+
+                subsection_index_content, subsection_costs, \
+                    _, subsection_index_path = \
                     generate_dir_rst(src_dir, target_dir, gallery_conf,
                                      seen_backrefs)
                 fhindex.write(subsection_index_content)
