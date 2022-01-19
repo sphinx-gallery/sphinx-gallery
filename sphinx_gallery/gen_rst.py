@@ -357,13 +357,6 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
 
 """
 
-CLEAR_DIV = """
-.. raw:: html
-
-    <div class="sphx-glr-clear"></div>
-
-"""
-
 
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory."""
@@ -418,9 +411,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
     for entry_text in entries_text:
         fhindex += entry_text
-
-    # Clear at the end of the section
-    # fhindex += CLEAR_DIV
 
     # Close thumbnail parent div
     fhindex += THUMBNAIL_PARENT_DIV_CLOSE
