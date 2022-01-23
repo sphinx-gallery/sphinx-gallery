@@ -16,7 +16,7 @@ v0.10.2
 
 **Fixed bugs:**
 
--  Display gallery items using CSS grid instead of floating `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__ (`alexisthual <https://github.com/alexisthual>`__)
+-  Display gallery items using CSS grid instead of floating `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__, see `migration guide <https://github.com/sphinx-gallery/sphinx-gallery/pull/906#issuecomment-1019542067>`__ to adapt custom css for thumbnails (`alexisthual <https://github.com/alexisthual>`__)
 
 **Closed issues:**
 
