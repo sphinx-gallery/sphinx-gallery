@@ -9,8 +9,11 @@ Tested for Read the Docs theme 0.1.7 */
   /* align thumbnails on a grid */
   justify-content: space-between;
   display: grid;
-  grid-template-columns: repeat(auto-fill, 170px);
-  grid-gap: 15px;
+  /* each grid column should be at least 160px (this will determine
+  the actual number of columns) and then take as much of the
+  remaining width as possible */
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
 }
 .sphx-glr-thumbnails .toctree-wrapper {
   /* hide empty toctree divs added to the DOM
@@ -28,9 +31,10 @@ Tested for Read the Docs theme 0.1.7 */
   /* useful to absolutely position link in div */
   position: relative;
 
-  /* limit thumbnail width to 170px */
+  /* thumbnail width should include padding and borders
+  and take all available space */
   box-sizing: border-box;
-  width: 170px;
+  width: 100%;
   padding: 10px;
   border: 1px solid transparent;
 
