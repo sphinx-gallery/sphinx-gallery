@@ -343,6 +343,21 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
     return None
 
 
+THUMBNAIL_PARENT_DIV = """
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+"""
+
+THUMBNAIL_PARENT_DIV_CLOSE = """
+.. raw:: html
+
+    </div>
+
+"""
+
+
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory."""
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
@@ -368,6 +383,11 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     # sort them
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
+
+    # Add div containing all thumbnails;
+    # this is helpful for controlling grid or flexbox behaviours
+    fhindex += THUMBNAIL_PARENT_DIV
+
     entries_text = []
     costs = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
@@ -392,9 +412,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     for entry_text in entries_text:
         fhindex += entry_text
 
-    # clear at the end of the section
-    fhindex += """.. raw:: html\n
-    <div class="sphx-glr-clear"></div>\n\n"""
+    # Close thumbnail parent div
+    fhindex += THUMBNAIL_PARENT_DIV_CLOSE
 
     return fhindex, costs
 

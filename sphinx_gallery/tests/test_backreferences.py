@@ -20,15 +20,17 @@ REFERENCE = r"""
 
 .. only:: html
 
- .. figure:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
-     :alt: test title
+  .. image:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
+    :alt: test title
 
-     :ref:`sphx_glr_fake_dir_test_file.py`
+  :ref:`sphx_glr_fake_dir_test_file.py`
 
 .. raw:: html
 
-    </div>{1}
-"""
+      <div class="sphx-glr-thumbnail-title">test title</div>
+    </div>
+
+{1}"""
 
 
 @pytest.mark.parametrize('content, tooltip, is_backref', [
@@ -56,10 +58,10 @@ def test_thumbnail_div(content, tooltip, is_backref):
                                  check=False)
     if is_backref:
         extra = """
-
 .. only:: not html
 
- * :ref:`sphx_glr_fake_dir_test_file.py`"""
+ * :ref:`sphx_glr_fake_dir_test_file.py`
+"""
     else:
         extra = ''
     reference = REFERENCE.format(tooltip, extra)
