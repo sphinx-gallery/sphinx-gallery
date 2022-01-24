@@ -1144,7 +1144,8 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                                         replace_py_ipynb(fname),
                                         binder_badge_rst,
                                         ref_fname)
-    example_rst += SPHX_GLR_SIG
+    if gallery_conf['show_signature']:
+        example_rst += SPHX_GLR_SIG
 
     write_file_new = re.sub(r'\.py$', '.rst.new', example_file)
     with codecs.open(write_file_new, 'w', encoding="utf-8") as f:
