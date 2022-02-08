@@ -13,7 +13,6 @@ from docutils.parsers.rst.directives import images
 
 from sphinx.errors import ExtensionError
 
-# from .get_rst import (THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE)
 
 THUMBNAIL_PARENT_DIV = """
 .. raw:: html
@@ -28,6 +27,7 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
     </div>
 
 """
+
 
 class MiniGallery(Directive):
     """
@@ -87,6 +87,8 @@ class MiniGallery(Directive):
         if not any(has_backrefs(obj) for obj in obj_list):
             return []
 
+        # Add div containing all thumbnails;
+        # this is helpful for controlling grid or flexbox behaviours
         lines.append(THUMBNAIL_PARENT_DIV)
 
         # Insert the backreferences file(s) using the `include` directive
@@ -98,8 +100,7 @@ class MiniGallery(Directive):
             # Always remove the heading (first 5 lines) from the file
             lines.append('.. include:: {}\n    :start-line: 5'.format(path))
 
-        # Insert the end for the gallery using the `raw` directive
-        # lines.append('.. raw:: html\n\n    <div class="sphx-glr-clear"></div>')
+        # Close thumbnail parent div
         lines.append(THUMBNAIL_PARENT_DIV_CLOSE)
 
         # Parse the assembly of `include` and `raw` directives
