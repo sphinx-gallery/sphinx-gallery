@@ -46,3 +46,16 @@ Alternatively, you can set ``capture_repr`` to be an empty tuple
 (``'capture_repr': ()``), which will imitate the behavior of Sphinx-Gallery
 prior to v0.5.0. This will also prevent you from getting any other unwanted
 output that did not occur prior to v0.5.0.
+
+Why has my thumbnail appearance changed?
+----------------------------------------
+
+The DOM structure of thumbnails was refactored in order to make them responsive
+and aligned on a css grid. These changes might make your existing custom css
+obsolete. You can read our
+`custom css migration guide for thumbnails <https://github.com/sphinx-gallery/sphinx-gallery/pull/906#issuecomment-1019542067>`_
+for pointers on how to update your css.
+
+
+.. seealso::
+    `Github PR #906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`_

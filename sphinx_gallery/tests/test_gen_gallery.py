@@ -164,6 +164,12 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
 
 
 def _check_order(sphinx_app, key):
+    """
+    Iterates through sphx-glr-thumbcontainer divs from index.rst lines
+    and reads given key from the tooltip.
+    Test that these keys appear in a specific order.
+    """
+
     index_fname = os.path.join(sphinx_app.outdir, '..', 'ex', 'index.rst')
     order = list()
     regex = '.*:%s=(.):.*' % key

@@ -242,14 +242,16 @@ THUMBNAIL_TEMPLATE = """
 
 .. only:: html
 
- .. figure:: /{thumbnail}
-     :alt: {title}
+  .. image:: /{thumbnail}
+    :alt: {title}
 
-     :ref:`sphx_glr_{ref_name}`
+  :ref:`sphx_glr_{ref_name}`
 
 .. raw:: html
 
+      <div class="sphx-glr-thumbnail-title">{title}</div>
     </div>
+
 """
 
 BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
