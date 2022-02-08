@@ -388,7 +388,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
     # Add div containing all thumbnails;
     # this is helpful for controlling grid or flexbox behaviours
-    fhindex += THUMBNAIL_PARENT_DIV
+    subsection_index_content += THUMBNAIL_PARENT_DIV
 
     entries_text = []
     costs = []
@@ -417,7 +417,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         subsection_index_content += entry_text
 
     # Close thumbnail parent div
-    fhindex += THUMBNAIL_PARENT_DIV_CLOSE
+    subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
 
     # Create toctree for index file
     # with all gallery items which belong to current subsection
