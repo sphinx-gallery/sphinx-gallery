@@ -44,6 +44,7 @@ coverage.xml
 *.orig
 .pytest_cache
 CHANGELOG.md
+junit-results.xml
 
 # Translations
 *.mo
