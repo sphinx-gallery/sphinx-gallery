@@ -214,7 +214,6 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
 
 def _anim_rst(anim, image_path, gallery_conf):
-    import matplotlib
     from matplotlib.animation import FFMpegWriter, ImageMagickWriter
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail

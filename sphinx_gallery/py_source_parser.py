@@ -12,7 +12,6 @@ import codecs
 import ast
 from io import BytesIO
 import re
-import sys
 import tokenize
 from textwrap import dedent
 
