@@ -10,7 +10,6 @@ from __future__ import division, absolute_import, print_function
 
 import codecs
 import ast
-from distutils.version import LooseVersion
 from io import BytesIO
 import re
 import sys
@@ -102,26 +101,21 @@ def _get_docstring_and_rest(filename):
             'unless the file is ignored by "ignore_pattern"'
             .format(filename))
 
-    if LooseVersion(sys.version) >= LooseVersion('3.7'):
-        docstring = ast.get_docstring(node)
-        assert docstring is not None  # should be guaranteed above
-        # This is just for backward compat
-        if len(node.body[0].value.s) and node.body[0].value.s[0] == '\n':
-            # just for strict backward compat here
-            docstring = '\n' + docstring
-        ts = tokenize.tokenize(BytesIO(content.encode()).readline)
-        # find the first string according to the tokenizer and get its end row
-        for tk in ts:
-            if tk.exact_type == 3:
-                lineno, _ = tk.end
-                break
-        else:
-            lineno = 0
+    # Python 3.7+ way
+    docstring = ast.get_docstring(node)
+    assert docstring is not None  # should be guaranteed above
+    # This is just for backward compat
+    if len(node.body[0].value.s) and node.body[0].value.s[0] == '\n':
+        # just for strict backward compat here
+        docstring = '\n' + docstring
+    ts = tokenize.tokenize(BytesIO(content.encode()).readline)
+    # find the first string according to the tokenizer and get its end row
+    for tk in ts:
+        if tk.exact_type == 3:
+            lineno, _ = tk.end
+            break
     else:
-        # this block can be removed when python 3.6 support is dropped
-        docstring_node = node.body[0]
-        docstring = docstring_node.value.s
-        lineno = docstring_node.lineno  # The last line of the string.
+        lineno = 0
 
     # This get the content of the file after the docstring last line
     # Note: 'maxsplit' argument is not a keyword argument in python2
