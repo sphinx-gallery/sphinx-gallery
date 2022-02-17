@@ -24,7 +24,8 @@ if [ "$DISTRIB" == "conda" ]; then
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
+        # It is a mystery to me why we need black, but we get an error with sphinx that it's needed at the end of the build...
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master black"
     else
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
