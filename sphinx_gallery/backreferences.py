@@ -95,9 +95,14 @@ class NameFinder(ast.NodeVisitor):
                                 obj = last_obj
                                 class_attr, method = True, [level]
                                 break
+                            # For most objects this will emit a AttributeError,
+                            # but for some (e.g., PyQt5) you can get other
+                            # errors like "RuntimeError: wrapped C/C++ object
+                            # ... has been deleted" so let's be safer with
+                            # plain Exception
                             try:
                                 obj = getattr(obj, level)
-                            except AttributeError:
+                            except Exception:
                                 break
                             if inspect.ismethod(obj):
                                 obj = last_obj
