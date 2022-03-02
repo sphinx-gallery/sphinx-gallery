@@ -19,17 +19,18 @@ if [ "$DISTRIB" == "conda" ]; then
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
     if [ "$PYTHON_VERSION" != "3.7" -o "$LOCALE" != "C" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} memory_profiler vtk<=9.0.1 traits<6.3.0 https://github.com/enthought/mayavi/zipball/master ipython pypandoc"
+        CONDA_TO_INSTALL="$CONDA_TO_INSTALL mayavi memory_profiler ipython pypandoc"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
+        # It is a mystery to me why we need black, but we get an error with sphinx that it's needed at the end of the build...
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master black"
     else
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
     source activate base
-    conda install --yes $CONDA_TO_INSTALL
+    conda install --yes -c conda-forge $CONDA_TO_INSTALL
     conda info --envs
     pytest --version
     python -m pip install $PIP_DEPENDENCIES

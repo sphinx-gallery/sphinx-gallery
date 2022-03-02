@@ -18,7 +18,6 @@ import inspect
 import os
 import sys
 import re
-from distutils.version import LooseVersion
 from textwrap import indent
 from pathlib import PurePosixPath
 from warnings import filterwarnings
@@ -215,7 +214,6 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
 
 def _anim_rst(anim, image_path, gallery_conf):
-    import matplotlib
     from matplotlib.animation import FFMpegWriter, ImageMagickWriter
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
@@ -225,9 +223,7 @@ def _anim_rst(anim, image_path, gallery_conf):
     thumb_size = gallery_conf['thumbnail_size']
     use_dpi = round(
         min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
-    # FFmpeg is buggy for GIFs before Matplotlib 3.3.1
-    if LooseVersion(matplotlib.__version__) >= LooseVersion('3.3.1') and \
-            FFMpegWriter.isAvailable():
+    if FFMpegWriter.isAvailable():
         writer = 'ffmpeg'
     elif ImageMagickWriter.isAvailable():
         writer = 'imagemagick'

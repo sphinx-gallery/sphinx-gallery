@@ -29,3 +29,4 @@ Here is a list of projects using `sphinx-gallery`.
 * `OpenML-Python <https://openml.github.io/openml-python/main/examples/index.html>`_
 * `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
 * `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
+* `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
