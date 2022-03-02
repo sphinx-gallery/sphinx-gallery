@@ -486,7 +486,7 @@ def generate_gallery_rst(app):
 
                 _replace_md5(subsection_index_path, mode='t')
 
-            # generate and write toctree with subsections
+            # generate toctree with subsections
             subsections_toctree = """
 .. toctree::
    :hidden:
@@ -495,7 +495,9 @@ def generate_gallery_rst(app):
    %s\n
 """ % "\n   ".join(subsection_index_files)
 
-            fhindex.write(subsections_toctree)
+            # add toctree to file only if there are subsections
+            if len(subsection_index_files) > 0:
+                fhindex.write(subsections_toctree)
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(

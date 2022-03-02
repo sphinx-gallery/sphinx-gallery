@@ -435,7 +435,10 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
             head_ref.replace(os.path.sep, '_')
         ))
         findex.write(subsection_index_content)
-        findex.write(subsection_index_toctree)
+
+        # add toctree to file only if it's not empty
+        if len(subsection_toctree_filenames) > 0:
+            findex.write(subsection_index_toctree)
 
     return subsection_index_content, costs, subsection_index_toctree, \
         subsection_index_path
