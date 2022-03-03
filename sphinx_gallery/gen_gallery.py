@@ -422,6 +422,9 @@ def generate_gallery_rst(app):
     Start the Sphinx-Gallery configuration and recursively scan the examples
     directories in order to populate the examples gallery
     """
+    if app.builder.name != 'html':
+        raise ConfigError('Builder must be `html` for sphinx-gallery')
+
     logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
 
