@@ -26,10 +26,10 @@ help you get started.
 
 .. note::
    Working `sphinx 
-   builders<https://www.sphinx-doc.org/en/master/man/sphinx-build.html#options>`_ 
-   for sphinx_gallery include `html` and `latex`.
-
-   E.g., `dirhtml` will cause broken image links.
+   builders <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#options>`_ 
+   for sphinx_gallery include `html` and `latex`. Support for other builders
+   is not guaranteed (e.g., `dirhtml` is known to be broken and will cause
+   broken image links.).
 
 
 .. _set_up_your_project:
