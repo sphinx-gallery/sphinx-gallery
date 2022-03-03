@@ -27,6 +27,13 @@ def test_bad_config():
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
 
 
+def test_bad_builder(sphinx_app_wrapper):
+    """Test that we raise an error for a bad builder."""
+    sphinx_app_wrapper.buildername = 'dirhtml'
+    with pytest.raises(ConfigError, match=".*dirhtml.*sphinx_gallery does not work.*"):  # noqa: E501
+        sphinx_app_wrapper.create_sphinx_app()
+
+
 def test_default_config(sphinx_app_wrapper):
     """Test the default Sphinx-Gallery configuration is loaded
 
