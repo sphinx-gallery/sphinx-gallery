@@ -23,7 +23,7 @@ def test_bad_config():
     with pytest.raises(ConfigError, match="example_dir.*did you mean 'examples_dirs'?.*"):  # noqa: E501
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
     sphinx_gallery_conf = dict(builder='dirhtml')
-    with pytest.raises(ConfigError, match="Builder must be `html` for sphinx-gallery?.*"):  # noqa: E501
+    with pytest.raises(ConfigError, match=".*dirhtml.*sphinx_gallery does not work.*"):  # noqa: E501
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
     sphinx_gallery_conf = dict(n_subsection_order='')
     with pytest.raises(ConfigError, match=r"did you mean one of \['subsection_order', 'within_.*"):  # noqa: E501
