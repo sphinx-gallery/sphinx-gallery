@@ -48,6 +48,7 @@ setup(
     url="https://sphinx-gallery.github.io",
     project_urls={
         "Source": "https://github.com/sphinx-gallery/sphinx-gallery",
+        "Documentation": "https://sphinx-gallery.github.io",
     },
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',
