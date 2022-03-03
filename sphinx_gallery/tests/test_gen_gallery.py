@@ -22,12 +22,16 @@ def test_bad_config():
     sphinx_gallery_conf = dict(example_dir='')
     with pytest.raises(ConfigError, match="example_dir.*did you mean 'examples_dirs'?.*"):  # noqa: E501
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
-    sphinx_gallery_conf = dict(builder='dirhtml')
-    with pytest.raises(ConfigError, match=".*dirhtml.*sphinx_gallery does not work.*"):  # noqa: E501
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
     sphinx_gallery_conf = dict(n_subsection_order='')
     with pytest.raises(ConfigError, match=r"did you mean one of \['subsection_order', 'within_.*"):  # noqa: E501
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+
+
+def test_bad_builder(sphinx_app_wrapper):
+    """Test that we raise an error for a bad builder."""
+    sphinx_app_wrapper.buildername = 'dirhtml'
+    with pytest.raises(ConfigError, match=".*dirhtml.*sphinx_gallery does not work.*"):  # noqa: E501
+        sphinx_app_wrapper.create_sphinx_app()
 
 
 def test_default_config(sphinx_app_wrapper):

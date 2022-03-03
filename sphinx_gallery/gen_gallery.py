@@ -425,8 +425,8 @@ def generate_gallery_rst(app):
     blocked_builder = ['dirhtml']
     if app.builder.name in blocked_builder:
         msg = (
-            f'Builder is set to be {app.builder.name}. sphinx_gallery does ',
-            f'not work for any of the following:\n\t{[blocked_builder]}'
+            f'Builder is set to {repr(app.builder.name)}. sphinx_gallery does '
+            f'not work for any of the following: {[blocked_builder]}'
         )
         raise ConfigError(msg)
 
