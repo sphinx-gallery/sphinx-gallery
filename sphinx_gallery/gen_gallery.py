@@ -422,6 +422,14 @@ def generate_gallery_rst(app):
     Start the Sphinx-Gallery configuration and recursively scan the examples
     directories in order to populate the examples gallery
     """
+    blocked_builder = ['dirhtml']
+    if app.builder.name in blocked_builder:
+        msg = (
+            f'Builder is set to {repr(app.builder.name)}. sphinx_gallery does '
+            f'not work for any of the following: {[blocked_builder]}'
+        )
+        raise ConfigError(msg)
+
     logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
 
