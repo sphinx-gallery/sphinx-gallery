@@ -420,8 +420,12 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
 
     # Create toctree for index file
-    # with all gallery items which belong to current subsection
-    subsection_index_toctree = """
+    # with all gallery items which belong to current subsection.
+    # The toctree string should be empty if there are no subsections
+    # or related files, as it will be returned at the end of this function.
+    subsection_index_toctree = ""
+    if len(subsection_toctree_filenames) > 0:
+        subsection_index_toctree = """
 .. toctree::
    :hidden:
 
@@ -436,7 +440,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         ))
         findex.write(subsection_index_content)
 
-        # add toctree to file only if it's not empty
+        # add toctree to file only if toctree is not empty
         if len(subsection_toctree_filenames) > 0:
             findex.write(subsection_index_toctree)
 
