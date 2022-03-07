@@ -434,11 +434,11 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
 
         # Modules for which function/class level galleries are created. In
         # this case sphinx_gallery and numpy in a tuple of strings.
-        'doc_module'          : ('sphinx_gallery', 'numpy')
+        'doc_module'          : ('sphinx_gallery', 'numpy'),
 
         # objects to exclude from implicit backreferences. The default option
         # is an empty set, i.e. exclude nothing.
-        'exclude_implicit_doc': {}
+        'exclude_implicit_doc': {},
     }
 
 The path you specify in ``backreferences_dir`` (here we choose
