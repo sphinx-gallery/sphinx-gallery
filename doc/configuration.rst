@@ -24,7 +24,8 @@ file:
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
 - ``reference_url`` (:ref:`link_to_documentation`)
-- ``backreferences_dir``, ``doc_module``, and ``inspect_global_variables`` (:ref:`references_to_examples`)
+- ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
+  and ``inspect_global_variables`` (:ref:`references_to_examples`)
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
 - ``line_numbers`` (:ref:`adding_line_numbers`)
@@ -411,10 +412,11 @@ enables you to link to any examples that either:
    block.
 
 The former is useful for auto-documenting functions that are used and classes
-that are explicitly instantiated. The latter is useful for classes that are
-typically implicitly returned rather than explicitly instantiated (e.g.,
+that are explicitly instantiated. The generated links are called implicit
+backreferences. The latter is useful for classes that are typically implicitly
+returned rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
-within function calls).
+within function calls). Such links are called explicit backreferences.
 
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
@@ -432,7 +434,12 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
 
         # Modules for which function/class level galleries are created. In
         # this case sphinx_gallery and numpy in a tuple of strings.
-        'doc_module'          : ('sphinx_gallery', 'numpy')}
+        'doc_module'          : ('sphinx_gallery', 'numpy'),
+
+        # objects to exclude from implicit backreferences. The default option
+        # is an empty set, i.e. exclude nothing.
+        'exclude_implicit_doc': {},
+    }
 
 The path you specify in ``backreferences_dir`` (here we choose
 ``gen_modules/backreferences``) will be populated with
@@ -442,7 +449,7 @@ and belonging to the modules listed in ``doc_module``.
 ``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
-Within your sphinx documentation ``.rst`` files, you can use easily
+Within your sphinx documentation ``.rst`` files, you can easily
 add this reduced version of the Gallery. For example, the rst below adds
 the reduced version of the Gallery for ``numpy.exp``, which includes all
 examples that use the specific function ``numpy.exp``:
@@ -451,6 +458,19 @@ examples that use the specific function ``numpy.exp``:
 
     .. minigallery:: numpy.exp
         :add-heading:
+
+Sometimes, there are functions that are being used in practically every example
+for the given module, for instance the ``pyplot.show`` or ``pyplot.subplots``
+functions in Matplotlib, so that a large number of often spurious examples will
+be linked to these functions. To prevent this, you can exclude implicit
+backreferences for certain objects by including them as regular expressions
+in ``exclude_implicit_doc``. The following setting will exclude any implicit
+backreferences so that examples galleries are only created for objects
+explicitly mentioned by Sphinx markup in a documentation block: ``{'.*'}``.
+To exclude the functions mentioned above you would use
+``{r'pyplot\.show', r'pyplot\.subplots'}`` (note the escape to match a dot
+instead of any character, if the name is unambiguous you can also write
+``pyplot.show`` or just ``show``).
 
 The ``add-heading`` option adds a heading for the mini-gallery, which will be a
 default generated message if no string is provided as an argument.  The example
