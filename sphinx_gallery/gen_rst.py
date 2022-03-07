@@ -999,15 +999,17 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         with open(codeobj_fname, 'wb') as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)
-    backrefs = set('{module_short}.{name}'.format(**cobj)
-                   for cobjs in example_code_obj.values()
-                   for cobj in cobjs
-                   if cobj['module'].startswith(gallery_conf['doc_module'])
-                   and (cobj['is_explicit']
-                        or not (gallery_conf['exclude_implicit_doc_regex']
-                                .search('{module}.{name}'.format(**cobj))
-                                if gallery_conf['exclude_implicit_doc_regex']
-                                else False)))
+    exclude_regex = gallery_conf['exclude_implicit_doc_regex']
+    backrefs = set(
+        '{module_short}.{name}'.format(**cobj)
+        for cobjs in example_code_obj.values()
+        for cobj in cobjs
+        if cobj['module'].startswith(gallery_conf['doc_module']) and (
+            cobj['is_explicit'] or
+            (not exclude_regex) or
+            (not exclude_regex.search('{module}.{name}'.format(**cobj)))
+        )
+    )
 
     # Write backreferences
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,

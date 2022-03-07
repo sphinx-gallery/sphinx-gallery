@@ -1,24 +1,21 @@
 """
-Testing future statements across examples
------------------------------------------
+Testing backreferences
+----------------------
 
 This example runs after plot_future_statements.py (alphabetical ordering within
 subsection) and should be unaffected by the __future__ import in
-plot_future_statements.py.
+plot_future_statements.py. We should eventually update this script to actually
+test this... we require Python 3 nowadays so the __future__ statements there
+don't do anything. So for now let's repurpose this to look at some
+backreferences. We should probably also change the filename in another PR!
 """
 # sphinx_gallery_thumbnail_path = '_static_nonstandard/demo.png'
 
-import sys
 from sphinx_gallery.sorting import ExplicitOrder
+from sphinx_gallery.scrapers import figure_rst, clean_modules
 
 ExplicitOrder([])  # must actually be used to become a backref target!
 
-PY2 = sys.version_info[0] == 2
-
-expected = 1 if PY2 else 1.5
-assert 3/2 == expected
-
-# Make sure print is a keyword not a function. Note: need to use exec because
-# otherwise you get a SyntaxError on Python 3
-if PY2:
-    exec('print "test"')
+assert 3 / 2 == 1.5
+assert figure_rst([], '') == ''
+assert clean_modules(dict(reset_modules=[]), '', 'before') is None
