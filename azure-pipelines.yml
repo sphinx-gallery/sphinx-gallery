@@ -39,8 +39,8 @@ stages:
       vmImage: 'windows-latest'
     strategy:
       matrix:
-        Python310:
-          PYTHON_VERSION: '3.10'
+        Python39:
+          PYTHON_VERSION: '3.9'
 
     steps:
     - task: UsePythonVersion@0
@@ -50,8 +50,13 @@ stages:
         addToPath: true
     - bash: |
         set -e
+        git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
+        powershell gl-ci-helpers/appveyor/install_opengl.ps1
+      displayName: Install OpenGL
+    - bash: |
+        set -e
         pip install --user --upgrade pip setuptools wheel
-        pip install --user --upgrade --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" https://github.com/pyvista/pyvista-wheels/raw/bbc641496ada69d7490337ebaeb1730f1cbff8b0/vtk-9.1.0.dev0-cp310-cp310-win_amd64.whl
+        pip install --user --upgrade --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" vtk
         pip install --user --upgrade --progress-bar off pyvista mayavi
       displayName: Setup pip environment
     - script: pip list
