@@ -39,35 +39,40 @@ stages:
       vmImage: 'windows-latest'
     strategy:
       matrix:
-        Python37:
-          python.version: '3.7'
-        Python38:
-          python.version: '3.8'
+        Python39:
+          PYTHON_VERSION: '3.9'
 
     steps:
-    - script: |
-        call "%CONDA%\Scripts\activate" base
-        echo "##vso[task.setvariable variable=PATH]%CONDA%\Scripts;%PATH%"
-      displayName: Add conda to PATH and activate conda base
-    - script: |
-        conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0"
-        conda list
-      displayName: Setup conda environment
-    - script: python setup.py develop
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: $(PYTHON_VERSION)
+        architecture: 'x64'
+        addToPath: true
+    - bash: |
+        set -e
+        git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
+        powershell gl-ci-helpers/appveyor/install_opengl.ps1
+      displayName: Install OpenGL
+    - bash: |
+        set -e
+        pip install --user --upgrade pip setuptools wheel
+        pip install --user --upgrade --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" vtk
+        pip install --user --upgrade --progress-bar off pyvista mayavi pyqt5
+      displayName: Setup pip environment
+    - script: pip list
+      displayName: pip list
+    - script: python -c "import pyvista; print(pyvista.Report()); from mayavi import mlab; mlab.test_plot3d()"
+      displayName: Test 3D
+    - script: python setup.py develop --user
       displayName: Install sphinx-gallery
     - script: pytest --tb=short sphinx_gallery
       displayName: pytest
-    - script: |
-        cd doc
-        sphinx-build -D plot_gallery=0 -b html -d _build\doctrees . _build\html
-      displayName: make html-noplot
     - bash: |
-        cd doc
-        make clean
-      displayName: make clean
-    - script: |
-        cd doc
-        sphinx-build -b html -d _build\doctrees . _build\html
+        set -e
+        sed -i '/show_memory/d' doc/conf.py
+        sed -i '/compress_images/d' doc/conf.py
+      displayName: Remove keys incompatible with this Windows build
+    - bash: make -C doc html
       displayName: make html
     - task: PublishTestResults@2
       inputs:
