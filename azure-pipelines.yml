@@ -46,7 +46,7 @@ stages:
     - task: UsePythonVersion@0
       inputs:
         versionSpec: $(PYTHON_VERSION)
-        architecture: $(PYTHON_ARCH)
+        architecture: 'x64'
         addToPath: true
     - bash: |
         set -e
