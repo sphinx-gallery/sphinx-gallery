@@ -56,7 +56,7 @@ stages:
       displayName: Setup pip environment
     - script: pip list
       displayName: pip list
-    - script: python setup.py develop
+    - script: python setup.py develop --user
       displayName: Install sphinx-gallery
     - script: pytest --tb=short sphinx_gallery
       displayName: pytest
