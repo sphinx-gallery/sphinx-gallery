@@ -23,11 +23,11 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 
 import pytest
 
-N_TOT = 13
+N_TOT = 13  # examples (plot_*.py in examples/**)
 
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
-N_RST = 15 + N_TOT + 1
+N_RST = 16 + N_TOT  + 1 # includes module API pages, etc.
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
@@ -379,6 +379,14 @@ def test_backreferences(sphinx_app):
         lines = fid.read()
     assert 'NameFinder' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
+    # rendered file
+    html = op.join(out_dir, 'auto_examples', 'plot_second_future_imports.html')
+    assert op.isfile(html)
+    with codecs.open(html, 'r', 'utf-8') as fid:
+        html = fid.read()
+    assert 'sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder' in html  # noqa: E501
+    assert 'sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules' in html  # noqa: E501
+    assert 'figure_rst.html' not in html  # excluded
 
 
 @pytest.mark.parametrize('rst_file, example_used_in', [

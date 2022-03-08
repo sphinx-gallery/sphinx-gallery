@@ -46,6 +46,10 @@ setup(
     ]},
     scripts=['bin/copy_sphinxgallery.sh', 'bin/sphx_glr_python_to_jupyter.py'],
     url="https://sphinx-gallery.github.io",
+    project_urls={
+        "Source": "https://github.com/sphinx-gallery/sphinx-gallery",
+        "Documentation": "https://sphinx-gallery.github.io",
+    },
     author="Óscar Nájera",
     author_email='najera.oscar@gmail.com',
     install_requires=install_requires,

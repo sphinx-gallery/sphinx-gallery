@@ -77,6 +77,7 @@ def test_identify_names(unicode_sample):
                 'module': 'os.path',
                 'module_short': 'os.path',
                 'is_class': False,
+                'is_explicit': False,
             }],
         'br.identify_names':
             [{
@@ -84,6 +85,7 @@ def test_identify_names(unicode_sample):
                 'module': 'sphinx_gallery.back_references',
                 'module_short': 'sphinx_gallery.back_references',
                 'is_class': False,
+                'is_explicit': False,
             }],
         'identify_names':
             [{
@@ -91,6 +93,7 @@ def test_identify_names(unicode_sample):
                 'module': 'sphinx_gallery.back_references',
                 'module_short': 'sphinx_gallery.back_references',
                 'is_class': False,
+                'is_explicit': False,
              }],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
@@ -123,6 +126,7 @@ h.i.j()
             'module': 'a.b',
             'module_short': 'a.b',
             'is_class': False,
+            'is_explicit': False,
         }],
         'e.HelloWorld':
         [{
@@ -130,6 +134,7 @@ h.i.j()
             'module': 'd',
             'module_short': 'd',
             'is_class': False,
+            'is_explicit': False,
         }],
         'h.i.j':
         [{
@@ -137,6 +142,7 @@ h.i.j()
             'module': 'h.i',
             'module_short': 'h.i',
             'is_class': False,
+            'is_explicit': False,
         }],
     }
 
@@ -157,9 +163,9 @@ This example uses :func:`k.l` and :meth:`~m.n`.
 '''
 """ + code_str.split(b"'''")[-1]
     expected['k.l'] = [{u'module': u'k', u'module_short': u'k', u'name': u'l',
-                        'is_class': False}]
+                        'is_class': False, 'is_explicit': True}]
     expected['m.n'] = [{u'module': u'm', u'module_short': u'm', u'name': u'n',
-                        'is_class': False}]
+                        'is_class': False, 'is_explicit': True}]
 
     fname = tmpdir.join("identify_names.py")
     fname.write(code_str, 'wb')

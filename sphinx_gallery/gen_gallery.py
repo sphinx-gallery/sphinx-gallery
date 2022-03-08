@@ -58,6 +58,7 @@ DEFAULT_GALLERY_CONF = {
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
     'doc_module': (),
+    'exclude_implicit_doc': {},
     'reference_url': {},
     'capture_repr': ('_repr_html_', '__repr__'),
     'ignore_repr_types': r'',
@@ -127,6 +128,17 @@ def parse_config(app, check_keys=True):
     app.config.sphinx_gallery_conf = gallery_conf
     app.config.html_static_path.append(glr_path_static())
     return gallery_conf
+
+
+def _update_gallery_conf(gallery_conf):
+    """Update gallery config.
+
+    This is separate function for better testability.
+    """
+    # prepare regex for exclusions from implicit documentation
+    exclude_regex = re.compile('|'.join(gallery_conf['exclude_implicit_doc']))\
+        if gallery_conf['exclude_implicit_doc'] else False
+    gallery_conf['exclude_implicit_doc_regex'] = exclude_regex
 
 
 def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
@@ -362,6 +374,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                               % (css, _KNOWN_CSS))
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
+
+    _update_gallery_conf(gallery_conf)
 
     return gallery_conf
 
