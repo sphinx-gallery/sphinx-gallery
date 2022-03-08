@@ -484,16 +484,6 @@ def generate_gallery_rst(app):
             seen_backrefs
         )
 
-        # Filter out tags from fhindex
-        # to prevent tag duplication across the documentation
-        tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
-        this_fhindex = "\n".join(list(
-            filter(
-                lambda l: re.match(tag_regex, l) is None,
-                iter(this_fhindex.splitlines())
-            )
-        ))
-
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
@@ -516,10 +506,23 @@ def generate_gallery_rst(app):
                     )
                 )
 
-                subsection_index_content, subsection_costs, \
-                    _, subsection_index_path = \
-                    generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                     seen_backrefs)
+                (
+                    subsection_index_content,
+                    subsection_costs,
+                    _,
+                    subsection_index_path,
+                ) = generate_dir_rst(
+                    src_dir, target_dir, gallery_conf, seen_backrefs
+                )
+
+                # Filter out tags from subsection content
+                # to prevent tag duplication across the documentation
+                tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
+                subsection_index_content = "\n".join([
+                    line for line in subsection_index_content.splitlines()
+                    if re.match(tag_regex, line) is None
+                ] + [''])
+
                 fhindex.write(subsection_index_content)
 
                 costs += subsection_costs

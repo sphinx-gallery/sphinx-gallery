@@ -27,7 +27,7 @@ N_TOT = 13  # examples (plot_*.py in examples/**)
 
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
-N_RST = 16 + N_TOT  + 1 # includes module API pages, etc.
+N_RST = 16 + N_TOT + 1  # includes module API pages, etc.
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
