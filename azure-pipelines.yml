@@ -40,9 +40,7 @@ stages:
     strategy:
       matrix:
         Python37:
-          PYTHON_VERSION: '3.7'
-        Python38:
-          PYTHON_VERSION: '3.8'
+          PYTHON_VERSION: '3.10'
 
     steps:
     - task: UsePythonVersion@0
