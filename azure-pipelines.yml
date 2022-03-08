@@ -50,7 +50,7 @@ stages:
         echo "##vso[task.setvariable variable=PATH]%CONDA%\Scripts;%PATH%"
       displayName: Add conda to PATH and activate conda base
     - script: |
-        conda install python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" mayavi
+        conda install -c conda-forge python=%PYTHON_VERSION% ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" mayavi
         conda list
       displayName: Setup conda environment
     - script: python setup.py develop
