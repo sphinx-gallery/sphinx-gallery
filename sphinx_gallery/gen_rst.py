@@ -361,14 +361,16 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory."""
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    fhindex = """\n\n.. _sphx_glr_{0}:\n\n""".format(
-        head_ref.replace(os.path.sep, '_'))
 
-    fname = _get_readme(src_dir, gallery_conf)
-    with codecs.open(fname, 'r', encoding='utf-8') as fid:
-        fhindex += fid.read()
+    subsection_index_content = ""
+    subsection_readme_fname = _get_readme(src_dir, gallery_conf)
+
+    with codecs.open(subsection_readme_fname, 'r', encoding='utf-8') as fid:
+        subsection_readme_content = fid.read()
+        subsection_index_content += subsection_readme_content
+
     # Add empty lines to avoid bug in issue #165
-    fhindex += "\n\n"
+    subsection_index_content += "\n\n"
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
@@ -386,10 +388,11 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
     # Add div containing all thumbnails;
     # this is helpful for controlling grid or flexbox behaviours
-    fhindex += THUMBNAIL_PARENT_DIV
+    subsection_index_content += THUMBNAIL_PARENT_DIV
 
     entries_text = []
     costs = []
+    subsection_toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     iterator = sphinx_compatibility.status_iterator(
         sorted_listdir,
@@ -400,22 +403,49 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
             fname, target_dir, src_dir, gallery_conf, seen_backrefs)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append((cost, src_file))
-        this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
-                                    fname, intro, title) + """
+        gallery_item_filename = os.path.join(
+            build_target_dir,
+            fname[:-3]
+        ).replace(os.sep, '/')
+        this_entry = _thumbnail_div(
+            target_dir, gallery_conf['src_dir'], fname, intro, title
+        )
+        entries_text.append(this_entry)
+        subsection_toctree_filenames.append(gallery_item_filename)
 
+    for entry_text in entries_text:
+        subsection_index_content += entry_text
+
+    # Close thumbnail parent div
+    subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
+
+    # Create toctree for index file
+    # with all gallery items which belong to current subsection.
+    # The toctree string should be empty if there are no subsections
+    # or related files, as it will be returned at the end of this function.
+    subsection_index_toctree = ""
+    if len(subsection_toctree_filenames) > 0:
+        subsection_index_toctree = """
 .. toctree::
    :hidden:
 
-   /%s\n""" % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')
-        entries_text.append(this_entry)
+   /%s\n
+""" % "\n   /".join(subsection_toctree_filenames)
 
-    for entry_text in entries_text:
-        fhindex += entry_text
+    # Write subsection index file
+    subsection_index_path = os.path.join(target_dir, 'index.rst.new')
+    with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
+        findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
+            head_ref.replace(os.path.sep, '_')
+        ))
+        findex.write(subsection_index_content)
 
-    # Close thumbnail parent div
-    fhindex += THUMBNAIL_PARENT_DIV_CLOSE
+        # add toctree to file only if toctree is not empty
+        if len(subsection_toctree_filenames) > 0:
+            findex.write(subsection_index_toctree)
 
-    return fhindex, costs
+    return subsection_index_content, costs, subsection_index_toctree, \
+        subsection_index_path
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):
