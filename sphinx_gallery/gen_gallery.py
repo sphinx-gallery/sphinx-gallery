@@ -459,6 +459,16 @@ def generate_gallery_rst(app):
             seen_backrefs
         )
 
+        # Filter out tags from fhindex
+        # to prevent tag duplication across the documentation
+        tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
+        this_fhindex = "\n".join(list(
+            filter(
+                lambda l: re.match(tag_regex, l) is None,
+                iter(this_fhindex.splitlines())
+            )
+        ))
+
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
