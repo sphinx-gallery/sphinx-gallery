@@ -420,7 +420,18 @@ def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText
 
     Start the Sphinx-Gallery configuration and recursively scan the examples
-    directories in order to populate the examples gallery
+    directories in order to populate the examples gallery.
+
+    We create a 2-level nested structure by iterating through every
+    sibling folder of the current index file.
+    In each of these folders, we look for a section index file,
+    for which we generate a toctree pointing to sibling scripts.
+    Then, we append the content of this section index file
+    to the current index file,
+    after we remove toctree (to keep a clean nested structure)
+    and sphinx tags (to prevent tag duplication)
+    Eventually, we create a toctree in the current index file
+    which points to section index files.
     """
     blocked_builder = ['dirhtml']
     if app.builder.name in blocked_builder:
@@ -450,8 +461,8 @@ def generate_gallery_rst(app):
         examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
         gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
 
-        # Here we don't use an os.walk, but we recurse only twice: flat is
-        # better than nested.
+        # Create section rst files and fetch content which will
+        # be added to current index file
         this_fhindex, this_costs, this_toctree, _ = generate_dir_rst(
             examples_dir_abs_path,
             gallery_dir_abs_path,
