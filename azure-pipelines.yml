@@ -51,7 +51,7 @@ stages:
       displayName: Add conda to PATH and activate conda base
     - bash: |
         set -e
-        conda install -c conda-forge python=${PYTHON_VERSION} ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" vtk
+        conda install -c conda-forge python=${PYTHON_VERSION} ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" vtk pyvista
         pip install mayavi
         conda list
       displayName: Setup conda environment
