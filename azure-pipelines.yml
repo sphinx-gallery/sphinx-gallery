@@ -40,19 +40,21 @@ stages:
     strategy:
       matrix:
         Python37:
-          python.version: '3.7'
+          PYTHON_VERSION: '3.7'
         Python38:
-          python.version: '3.8'
+          PYTHON_VERSION: '3.8'
 
     steps:
-    - script: |
-        call "%CONDA%\Scripts\activate" base
-        echo "##vso[task.setvariable variable=PATH]%CONDA%\Scripts;%PATH%"
-      displayName: Add conda to PATH and activate conda base
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: $(PYTHON_VERSION)
+        architecture: $(PYTHON_ARCH)
+        addToPath: true
     - bash: |
         set -e
-        conda install -c conda-forge python=${PYTHON_VERSION} ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" vtk pyvista
-        pip install mayavi
+        pip install --upgrade pip setuptools wheel
+        pip install --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" https://github.com/pyvista/pyvista-wheels/raw/bbc641496ada69d7490337ebaeb1730f1cbff8b0/vtk-9.1.0.dev0-cp310-cp310-win_amd64.whl
+        pip install --progress-bar off pyvista mayavi
         conda list
       displayName: Setup conda environment
     - script: python setup.py develop
