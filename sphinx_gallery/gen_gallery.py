@@ -501,9 +501,9 @@ def generate_gallery_rst(app):
                 src_dir = os.path.join(examples_dir_abs_path, subsection)
                 target_dir = os.path.join(gallery_dir_abs_path, subsection)
                 subsection_index_files.append(
-                    os.path.join(
-                        '/', gallery_dir, subsection, 'index.rst'
-                    )
+                    '/'.join([
+                        '', gallery_dir, subsection, 'index.rst'
+                    ])
                 )
 
                 (
