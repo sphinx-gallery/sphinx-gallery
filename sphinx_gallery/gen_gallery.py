@@ -59,6 +59,7 @@ DEFAULT_GALLERY_CONF = {
     'backreferences_dir': None,
     'doc_module': (),
     'exclude_implicit_doc': {},
+    'log_implicit_limit': 0,
     'reference_url': {},
     'capture_repr': ('_repr_html_', '__repr__'),
     'ignore_repr_types': r'',
@@ -193,6 +194,13 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
 
     # deal with show_memory
     gallery_conf['memory_base'] = 0.
+    if isinstance(gallery_conf['show_memory'], str):
+        # Allow passing things like `-D sphinx_gallery_conf.show_memory=0`
+        try:
+            gallery_conf['show_memory'] = eval(
+                gallery_conf['show_memory'], {}, {})
+        except Exception:
+            pass
     if gallery_conf['show_memory']:
         if not callable(gallery_conf['show_memory']):  # True-like
             try:
@@ -260,10 +268,12 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # compress_images
     compress_images = gallery_conf['compress_images']
     if isinstance(compress_images, str):
-        compress_images = [compress_images]
+        # Allow an empty string (passable as a -D) to mean []
+        compress_images = [compress_images] if compress_images else []
     elif not isinstance(compress_images, (tuple, list)):
         raise ConfigError('compress_images must be a tuple, list, or str, '
-                          'got %s' % (type(compress_images),))
+                          'got %s. You can pass an empty string to act '
+                          'as an empty list.' % (type(compress_images),))
     compress_images = list(compress_images)
     allowed_values = ('images', 'thumbnails')
     pops = list()
@@ -375,6 +385,16 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
+    # implicit backref config
+    lil = gallery_conf['log_implicit_limit']
+    if lil:
+        if isinstance(lil, str) and len(lil) == 0:
+            lil = 0
+    try:
+        gallery_conf['log_implicit_limit'] = int(lil)
+    except Exception:
+        raise ConfigError(
+            f'log_implicit_limit must be an int, got {repr(lil)}')
     _update_gallery_conf(gallery_conf)
 
     return gallery_conf
@@ -459,6 +479,7 @@ def generate_gallery_rst(app):
     gallery_conf = parse_config(app)
 
     seen_backrefs = set()
+    implicit_count = dict()
 
     costs = []
     workdirs = _prepare_sphx_glr_dirs(gallery_conf,
@@ -481,7 +502,8 @@ def generate_gallery_rst(app):
             examples_dir_abs_path,
             gallery_dir_abs_path,
             gallery_conf,
-            seen_backrefs
+            seen_backrefs,
+            implicit_count=implicit_count,
         )
 
         costs += this_costs
@@ -512,7 +534,8 @@ def generate_gallery_rst(app):
                     _,
                     subsection_index_path,
                 ) = generate_dir_rst(
-                    src_dir, target_dir, gallery_conf, seen_backrefs
+                    src_dir, target_dir, gallery_conf, seen_backrefs,
+                    implicit_count=implicit_count,
                 )
 
                 # Filter out tags from subsection content
@@ -571,6 +594,22 @@ def generate_gallery_rst(app):
                 if t_float >= gallery_conf['min_reported_time']:
                     text += t.rjust(lens[1]) + '   ' + m.rjust(lens[2])
                     logger.info(text)
+        # Print our implicit backref count
+        lil = gallery_conf['log_implicit_limit']
+        if lil:
+            logger.info(
+                f"most common implicit backreferences ({lil} most):",
+                color='pink')
+            implicit_count = {
+                key: implicit_count[key]
+                for key in sorted(
+                    implicit_count, key=lambda n: implicit_count[n],
+                    reverse=True)}
+            for ki, (name, count) in enumerate(implicit_count.items()):
+                if ki >= gallery_conf['log_implicit_limit']:
+                    break
+                logger.info(f"    - {count}: {name}", color='pink')
+
         # Also create a junit.xml file, useful e.g. on CircleCI
         write_junit_xml(gallery_conf, app.builder.outdir, costs)
 
