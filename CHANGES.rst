@@ -10,6 +10,7 @@ CSS pseudo-elements instead of additional real text. For more details, see
 
 **Implemented enhancements:**
 
+-  Modify toctree to include gallery categories (ie gallery subfolders) `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. Instead of a flat toctree linking the main gallery README / index to all gallery items, one now links the main README to category READMEs, which themselves point to category items. In particular, this allows displaying categories of a given gallery in the sidebar (`alexisthual <https://github.com/alexisthual>`__)
 
 **Fixed bugs:**
 
