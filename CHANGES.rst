@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+v0.11.0 in progress
+-------------------
+
+**Implemented enhancements:**
+
+ - New ``sphinx_gallery_expected_error`` code block directive to show expected errors. `#912 <https://github.com/sphinx-gallery/sphinx-gallery/issues/912>`__
+
 v0.10.0
 -------
 
