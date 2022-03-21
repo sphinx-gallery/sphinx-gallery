@@ -304,8 +304,9 @@ texinfo_documents = [
 intersphinx_mapping = {
     'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'matplotlib': ('https://matplotlib.org/', None),
+    'matplotlib': ('https://matplotlib.org/stable', None),
     'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
+    'pyvista': ('https://docs.pyvista.org/', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
@@ -330,12 +331,35 @@ else:
     # examples. These are very annoying since they steal the focus.
     mlab.options.offscreen = True
 
+try:
+    # Run the PyVista examples and find the PyVista figures if PyVista is
+    # installed
+    import pyvista
+except Exception:  # can raise all sorts of errors
+    pass
+else:
+    image_scrapers += ('pyvista',)
+    examples_dirs.append('../pyvista_examples')
+    gallery_dirs.append('auto_pyvista_examples')
+    pyvista.OFF_SCREEN = True
+    # Preferred plotting style for documentation
+    pyvista.set_plot_theme('document')
+    pyvista.global_theme.window_size = [1024, 768]
+    pyvista.global_theme.font.size = 22
+    pyvista.global_theme.font.label_size = 22
+    pyvista.global_theme.font.title_size = 22
+    pyvista.global_theme.return_cpos = False
+    # necessary when building the sphinx gallery
+    pyvista.BUILDING_GALLERY = True
+    pyvista.set_jupyter_backend(None)
+
 # Set plotly renderer to capture _repr_html_ for sphinx-gallery
 try:
-    import plotly.io as pio
-    pio.renderers.default = 'sphinx_gallery'
+    import plotly.io.renderers
 except ImportError:
     pass
+else:
+    plotly.io.renderers.default = 'sphinx_gallery'
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:

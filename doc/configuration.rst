@@ -24,7 +24,8 @@ file:
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
 - ``reference_url`` (:ref:`link_to_documentation`)
-- ``backreferences_dir``, ``doc_module``, and ``inspect_global_variables`` (:ref:`references_to_examples`)
+- ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
+  and ``inspect_global_variables`` (:ref:`references_to_examples`)
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
 - ``line_numbers`` (:ref:`adding_line_numbers`)
@@ -36,6 +37,7 @@ file:
 - ``compress_images`` (:ref:`compress_images`)
 - ``image_srcset`` (:ref:`image_srcset`)
 - ``reset_modules`` (:ref:`reset_modules`)
+- ``reset_modules_order`` (:ref:`reset_modules_order`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``only_warn_on_example_error`` (:ref:`warning_on_error`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
@@ -56,6 +58,7 @@ Some options can also be set or overridden on a file-by-file basis:
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
 - ``# sphinx_gallery_thumbnail_path`` (:ref:`providing_thumbnail`)
 - ``# sphinx_gallery_dummy_images`` (:ref:`dummy_images`)
+- ``# sphinx_gallery_capture_repr`` (:ref:`capture_repr`)
 
 Some options can be set on a per-code-block basis in a file:
 
@@ -150,16 +153,18 @@ instead of ``'/'`` if they want to be agnostic to the operating system.
 
 The ``filename_pattern`` option is also useful if you want to build only a
 subset of the examples. For example, you may
-want to build only one example so that you can link it in the documentation. In that case,
-you would do::
+want to build only one example so that you can link it in the documentation.
+In that case, you would do::
 
     sphinx_gallery_conf = {
         ...
         'filename_pattern': r'plot_awesome_example\.py',
     }
 
-Here, one should escape the dot ``r'\.'`` as otherwise python `regular expressions`_ matches any character. Nevertheless, as
-one is targeting a specific file, it would match the dot in the filename even without this escape character.
+Here, one should escape the dot ``r'\.'`` as otherwise python
+`regular expressions`_ matches any character. Nevertheless, as
+one is targeting a specific file, it would match the dot in the filename even
+without this escape character.
 
 .. note::
     Sphinx-Gallery only re-runs examples that have changed (according to their
@@ -172,20 +177,21 @@ Similarly, to build only examples in a specific directory, you can do::
         'filename_pattern': '/directory/plot_',
     }
 
-Alternatively, you can skip executing some examples. For example, to skip building examples
-starting with ``plot_long_examples_``, you would do::
+Alternatively, you can skip executing some examples. For example, to skip
+building examples starting with ``plot_long_examples_``, you would do::
 
     sphinx_gallery_conf = {
         ...
         'filename_pattern': '/plot_(?!long_examples)',
     }
 
-As the patterns are parsed as `regular expressions`_, users are advised to consult the
-`regular expressions`_ module for more details.
+As the patterns are parsed as `regular expressions`_, users are advised to
+consult the `regular expressions`_ module for more details.
 
 .. note::
     Remember that Sphinx allows overriding ``conf.py`` values from the command
-    line, so you can for example build a single example directly via something like:
+    line, so you can for example build a single example directly via something
+    like:
 
     .. code-block:: console
 
@@ -396,18 +402,21 @@ see :ref:`plain_rst`.
 Add mini-galleries for API documentation
 ========================================
 
-When documenting a given function/class, Sphinx-Gallery enables you to link to
-any examples that either:
+When documenting a given function/method/attribute/object/class, Sphinx-Gallery
+enables you to link to any examples that either:
 
-1. Use the function/instantiate the class in the code.
-2. Refer to that function/class using sphinx markup ``:func:``/``:class:``
-   in a documentation block.
+1. Use the function/method/attribute/object or instantiate the class in the
+   code.
+2. Refer to that function/method/attribute/object/class using sphinx markup
+   ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a text
+   block.
 
 The former is useful for auto-documenting functions that are used and classes
-that are explicitly instantiated. The latter is useful for classes that are
-typically implicitly returned rather than explicitly instantiated (e.g.,
+that are explicitly instantiated. The generated links are called implicit
+backreferences. The latter is useful for classes that are typically implicitly
+returned rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
-within function calls).
+within function calls). Such links are called explicit backreferences.
 
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
@@ -425,7 +434,12 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
 
         # Modules for which function/class level galleries are created. In
         # this case sphinx_gallery and numpy in a tuple of strings.
-        'doc_module'          : ('sphinx_gallery', 'numpy')}
+        'doc_module'          : ('sphinx_gallery', 'numpy'),
+
+        # objects to exclude from implicit backreferences. The default option
+        # is an empty set, i.e. exclude nothing.
+        'exclude_implicit_doc': {},
+    }
 
 The path you specify in ``backreferences_dir`` (here we choose
 ``gen_modules/backreferences``) will be populated with
@@ -435,7 +449,7 @@ and belonging to the modules listed in ``doc_module``.
 ``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
-Within your sphinx documentation ``.rst`` files, you can use easily
+Within your sphinx documentation ``.rst`` files, you can easily
 add this reduced version of the Gallery. For example, the rst below adds
 the reduced version of the Gallery for ``numpy.exp``, which includes all
 examples that use the specific function ``numpy.exp``:
@@ -444,6 +458,19 @@ examples that use the specific function ``numpy.exp``:
 
     .. minigallery:: numpy.exp
         :add-heading:
+
+Sometimes, there are functions that are being used in practically every example
+for the given module, for instance the ``pyplot.show`` or ``pyplot.subplots``
+functions in Matplotlib, so that a large number of often spurious examples will
+be linked to these functions. To prevent this, you can exclude implicit
+backreferences for certain objects by including them as regular expressions
+in ``exclude_implicit_doc``. The following setting will exclude any implicit
+backreferences so that examples galleries are only created for objects
+explicitly mentioned by Sphinx markup in a documentation block: ``{'.*'}``.
+To exclude the functions mentioned above you would use
+``{r'pyplot\.show', r'pyplot\.subplots'}`` (note the escape to match a dot
+instead of any character, if the name is unambiguous you can also write
+``pyplot.show`` or just ``show``).
 
 The ``add-heading`` option adds a heading for the mini-gallery, which will be a
 default generated message if no string is provided as an argument.  The example
@@ -949,7 +976,8 @@ Generate Binder links for gallery notebooks (experimental)
 
 Sphinx-Gallery automatically generates Jupyter notebooks for any
 examples built with the gallery. `Binder <https://mybinder.org>`_ makes it
-possible to create interactive GitHub repositories that connect to cloud resources.
+possible to create interactive GitHub repositories that connect to cloud
+resources.
 
 If you host your documentation on a GitHub repository, it is possible to
 auto-generate a Binder link for each notebook. Clicking this link will
@@ -982,12 +1010,17 @@ dictionary following the pattern below::
          }
     }
 
-If a Sphinx-Gallery configuration for Binder is discovered, the following extra things will happen:
+If a Sphinx-Gallery configuration for Binder is discovered, the following extra
+things will happen:
 
-1. The dependency files specified in ``dependencies`` will be copied to a ``binder/`` folder in your built documentation.
-2. The built Jupyter Notebooks from the documentation will be copied to a folder called ``<notebooks_dir/>`` at the root of
-   your built documentation (they will follow the same folder hierarchy within the notebooks directory folder.
-3. The rST output of each Sphinx-Gallery example will now have a ``launch binder`` button in it.
+1. The dependency files specified in ``dependencies`` will be copied to a
+   ``binder/`` folder in your built documentation.
+2. The built Jupyter Notebooks from the documentation will be copied to a
+   folder called ``<notebooks_dir/>`` at the root of
+   your built documentation (they will follow the same folder hierarchy within
+   the notebooks directory folder.
+3. The rST output of each Sphinx-Gallery example will now have a
+   ``launch binder`` button in it.
 4. That button will point to a binder link with the following structure
 
    .. code-block:: html
@@ -1002,23 +1035,29 @@ repo (type: string)
   The GitHub repository where your documentation is stored.
 ref (type: string)
   A reference to the version of your repository where your documentation exists.
-  For example, if your built documentation is stored on a ``gh-pages`` branch, then this field
-  should be set to ``gh-pages``.
+  For example, if your built documentation is stored on a ``gh-pages`` branch,
+  then this field should be set to ``gh-pages``.
 binderhub_url (type: string)
-  The full URL to a BinderHub deployment where you want your examples to run. One
-  public BinderHub deployment is at ``https://mybinder.org``, though if you (and your users) have access to
-  another, this can be configured with this field.
+  The full URL to a BinderHub deployment where you want your examples to run.
+  One public BinderHub deployment is at ``https://mybinder.org``, though if you
+  (and your users) have access to another, this can be configured with this
+  field.
 dependencies (type: list)
-  A list of paths (relative to ``conf.py``) to dependency files that Binder uses to infer the environment needed
-  to run your examples. For example, a ``requirements.txt`` file. These will be copied into a folder
-  called ``binder/`` in your built documentation folder. For a list of all the possible dependency files
-  you can use, see `the Binder configuration documentation <https://mybinder.readthedocs.io/en/latest/config_files.html#config-files>`_.
+  A list of paths (relative to ``conf.py``) to dependency files that Binder uses
+  to infer the environment needed to run your examples. For example, a
+  ``requirements.txt`` file. These will be copied into a folder   called
+  ``binder/`` in your built documentation folder. For a list of all the possible
+  dependency files you can use, see `the Binder configuration documentation
+  <https://mybinder.readthedocs.io/en/latest/config_files.html#config-files>`_.
 filepath_prefix (type: string | None, default: ``None``)
-  A prefix to append to the filepath in the Binder links. You should use this if you will store your built
-  documentation in a sub-folder of a repository, instead of in the root.
+  A prefix to append to the filepath in the Binder links. You should use this if
+  you will store your built documentation in a sub-folder of a repository,
+  instead of in the root.
 notebooks_dir (type: string, default: ``notebooks``)
-  The name of a folder where the built Jupyter notebooks will be copied. This ensures that all the notebooks are
-  in one place (though they retain their folder hierarchy) in case you'd like users to browse multiple notebook examples in one session.
+  The name of a folder where the built Jupyter notebooks will be copied. This
+  ensures that all the notebooks are in one place (though they retain their
+  folder hierarchy) in case you'd like users to browse multiple notebook
+  examples in one session.
 use_jupyter_lab (type: bool, default: ``False``)
   Whether the default interface activated by the Binder link will be for
   Jupyter Lab or the classic Jupyter Notebook interface.
@@ -1141,9 +1180,9 @@ This is converted to html by the custom directive as::
 This leads to a larger website, but clients that support the ``srcset`` tag will only
 download the appropriate-sized images.
 
-Note that the ``.. image-sg`` directive currently ignores other ``.. image`` directive
-tags like ``width``, ``height``, and ``align``.  It also only works with the *html* and
-*latex*  builders.
+Note that the ``.. image-sg`` directive currently ignores other ``.. image``
+directive tags like ``width``, ``height``, and ``align``.  It also only works
+with the *html* and *latex*  builders.
 
 .. _image_scrapers:
 
@@ -1174,7 +1213,7 @@ than a single static image of the animation figure, you should add::
 
 HTML embedding options can be changed by setting ``rcParams['animation.html']``
 and related options in your
-:ref:`matplotlib rcParams <matplotlib:matplotlib-rcparams>`.
+`matplotlib rcParams <https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_.
 It's also recommended to ensure that "imagemagick" is available as a
 ``writer``, which you can check with
 :class:`matplotlib.animation.ImageMagickWriter.isAvailable()
@@ -1305,7 +1344,8 @@ to ensure that any changes made to plotting behavior in one example do not
 propagate to the other examples.
 
 By default, before each example file executes, Sphinx-Gallery will
-reset ``matplotlib`` (by using :func:`matplotlib.pyplot.rcdefaults`) and ``seaborn``
+reset ``matplotlib`` (by using :func:`matplotlib.pyplot.rcdefaults` and
+reloading submodules that populate the units registry) and ``seaborn``
 (by trying to unload the module from ``sys.modules``). This is equivalent to the
 following configuration::
 
@@ -1320,6 +1360,26 @@ this tuple in order to define resetting behavior for other visualization librari
 
 To do so, follow the instructions in :ref:`custom_reset`.
 
+.. _reset_modules_order:
+
+Order of resetting modules
+==========================
+
+By default, Sphinx-Gallery will reset modules before each example is run.
+The choices for ``reset_modules_order`` are ``before`` (default), ``after``, and
+``both``. If the last example run in Sphinx-Gallery modifies a module, it is
+recommended to use ``after`` or ``both`` to avoid leaking out a modified module to
+other parts of the Sphinx build process.  For example, set ``reset_modules_order``
+to ``both`` in the configuration::
+
+    sphinx_gallery_conf = {
+        ...
+        'reset_modules_order': 'both',
+    }
+
+Custom functions can be constructed to have custom functionality depending on
+whether they are called before or after the examples.  See :ref:`custom_reset`
+for more information.
 
 Dealing with failing Gallery example scripts
 ============================================
@@ -1360,8 +1420,8 @@ by including in your ``Makefile``:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-Remember that for ``Makefile`` white space is significant and the indentation are tabs
-and not spaces.
+Remember that for ``Makefile`` white space is significant and the indentation
+are tabs and not spaces.
 
 Alternatively, you can add the ``abort_on_example_error`` option to
 the ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
@@ -1404,7 +1464,9 @@ the example script.
 Never fail the build on error
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sphinx-Gallery can be configured to only log warnings when examples fail. This means that sphinx will only exit with a non-zero exit code if the ``-W`` flag is passed to ``sphinx-build``. This can be enabled by setting::
+Sphinx-Gallery can be configured to only log warnings when examples fail.
+This means that sphinx will only exit with a non-zero exit code if the ``-W``
+flag is passed to ``sphinx-build``. This can be enabled by setting::
 
     sphinx_gallery_conf = {
         ...
@@ -1540,6 +1602,13 @@ are:
   to ``format()``.
 * ``_repr_html_`` - returns a HTML version of the object. This method is only
   present in some objects, for example, pandas dataframes.
+
+Output capture can be controlled globally by the ``capture_repr`` configuration
+setting or file-by-file by adding a comment to the example file, which overrides
+any global setting::
+
+    # sphinx_gallery_capture_repr = ()
+
 
 The default setting is::
 

@@ -16,14 +16,14 @@ every module. Examples `here <auto_examples/index.html>`_.
    :toctree: gen_modules/
    :template: module.rst
 
-   gen_gallery
    backreferences
-   gen_rst
-   py_source_parser
    docs_resolv
-   notebook
    downloads
-   docs_resolv
+   gen_gallery
+   gen_rst
+   notebook
+   py_source_parser
+   scrapers
    sorting
 
 Examples

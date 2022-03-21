@@ -1,12 +1,59 @@
 Change Log
 ==========
 
-v0.11.0 in progress
--------------------
+Next version
+------------
+
+In this version, the "Out:" prefix applied to code outputs is now created from
+CSS pseudo-elements instead of additional real text. For more details, see
+`#896 <https://github.com/sphinx-gallery/sphinx-gallery/pull/896>`__.
 
 **Implemented enhancements:**
 
+-  Modify toctree to include gallery categories (ie gallery subfolders) `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. Instead of a flat toctree linking the main gallery README / index to all gallery items, one now links the main README to category READMEs, which themselves point to category items. In particular, this allows displaying categories of a given gallery in the sidebar (`alexisthual <https://github.com/alexisthual>`__)
+
  - New ``sphinx_gallery_expected_error`` code block directive to show expected errors. `#912 <https://github.com/sphinx-gallery/sphinx-gallery/issues/912>`__
+
+**Fixed bugs:**
+
+-  Display gallery items using CSS grid instead of floating `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__, see `migration guide <https://github.com/sphinx-gallery/sphinx-gallery/pull/906#issuecomment-1019542067>`__ to adapt custom css for thumbnails (`alexisthual <https://github.com/alexisthual>`__)
+
+**Closed issues:**
+
+
+**Merged pull requests:**
+
+
+v0.10.1
+-------
+
+Support for Python 3.6 dropped in this release. Requirement is Python >=3.7.
+
+**Implemented enhancements:**
+
+-  Feature Request: ``reset_modules`` to be applied after each or all examples `#866 <https://github.com/sphinx-gallery/sphinx-gallery/issues/866>`__
+-  Enable ``reset_modules`` to run either before or after examples, or both `#870 <https://github.com/sphinx-gallery/sphinx-gallery/pull/870>`__ (`MatthewFlamm <https://github.com/MatthewFlamm>`__)
+
+**Fixed bugs:**
+
+-  embed_code_links throwing <exception: list indices must be integers or slices, not str> `#879 <https://github.com/sphinx-gallery/sphinx-gallery/issues/879>`__
+-  ``0.10.0`` breaks ``sphinx_gallery.load_style`` `#878 <https://github.com/sphinx-gallery/sphinx-gallery/issues/878>`__
+-  Add imagesg directive in load style `#880 <https://github.com/sphinx-gallery/sphinx-gallery/pull/880>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Use bools for ‘plot_gallery’ in sphinx_gallery_conf `#863 <https://github.com/sphinx-gallery/sphinx-gallery/pull/863>`__ (`timhoffm <https://github.com/timhoffm>`__)
+
+**Closed issues:**
+
+-  Idea: make galleries out of the “testing” folder to use each unit test as an example. `#875 <https://github.com/sphinx-gallery/sphinx-gallery/issues/875>`__
+-  Output text in dark mode is not visible `#869 <https://github.com/sphinx-gallery/sphinx-gallery/issues/869>`__
+-  Using a .gif image works in ``.rst`` sphinx build but not inside example generated with sphinx-gallery `#868 <https://github.com/sphinx-gallery/sphinx-gallery/issues/868>`__
+-  How to avoid capture of tqdm progress bars `#867 <https://github.com/sphinx-gallery/sphinx-gallery/issues/867>`__
+
+**Merged pull requests:**
+
+-  DOC Add reference to sphinx-codeautolink `#874 <https://github.com/sphinx-gallery/sphinx-gallery/pull/874>`__ (`felix-hilden <https://github.com/felix-hilden>`__)
+-  Add Neuraxle to “Who uses Sphinx-Gallery” `#873 <https://github.com/sphinx-gallery/sphinx-gallery/pull/873>`__ (`guillaume-chevalier <https://github.com/guillaume-chevalier>`__)
+-  DOC Fix typo in dummy images doc `#871 <https://github.com/sphinx-gallery/sphinx-gallery/pull/871>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  CI: Fix CircleCI `#865 <https://github.com/sphinx-gallery/sphinx-gallery/pull/865>`__ (`larsoner <https://github.com/larsoner>`__)
 
 v0.10.0
 -------

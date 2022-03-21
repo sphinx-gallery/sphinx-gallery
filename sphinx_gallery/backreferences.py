@@ -95,9 +95,14 @@ class NameFinder(ast.NodeVisitor):
                                 obj = last_obj
                                 class_attr, method = True, [level]
                                 break
+                            # For most objects this will emit a AttributeError,
+                            # but for some (e.g., PyQt5) you can get other
+                            # errors like "RuntimeError: wrapped C/C++ object
+                            # ... has been deleted" so let's be safer with
+                            # plain Exception
                             try:
                                 obj = getattr(obj, level)
-                            except AttributeError:
+                            except Exception:
                                 break
                             if inspect.ismethod(obj):
                                 obj = last_obj
@@ -128,7 +133,8 @@ class NameFinder(ast.NodeVisitor):
                                 full_name = '.'.join(
                                     module[:depth] + [class_name] + method)
                                 options.append(
-                                    (name, full_name, class_attr, is_class))
+                                    (name, full_name, class_attr, is_class,
+                                        False))
             # second pass: by import (can't resolve as well without doing
             # some actions like actually importing the modules, so use it
             # as a last resort)
@@ -139,7 +145,7 @@ class NameFinder(ast.NodeVisitor):
                     full_name = self.imported_names[local_name] + remainder
                     is_class = class_attr = False  # can't tell without import
                     options.append(
-                        (name, full_name, class_attr, is_class))
+                        (name, full_name, class_attr, is_class, False))
         return options
 
 
@@ -185,6 +191,7 @@ def _get_short_module_name(module_name, obj_name):
     return short_name
 
 
+# keep in synch w/ configuration.rst "Add mini-galleries for API documentation"
 _regex = re.compile(r':(?:'
                     r'func(?:tion)?|'
                     r'meth(?:od)?|'
@@ -199,18 +206,18 @@ def identify_names(script_blocks, global_variables=None, node=''):
     if node == '':  # mostly convenience for testing functions
         c = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'code')
         node = ast.parse(c)
-    # Get matches from the code (AST)
+    # Get matches from the code (AST, implicit matches)
     finder = NameFinder(global_variables)
     if node is not None:
         finder.visit(node)
     names = list(finder.get_mapping())
-    # Get matches from docstring inspection
+    # Get matches from docstring inspection (explicit matches)
     text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
-    names.extend((x, x, False, False) for x in re.findall(_regex, text))
+    names.extend((x, x, False, False, True) for x in re.findall(_regex, text))
     example_code_obj = collections.OrderedDict()  # order is important
     # Make a list of all guesses, in `_embed_code_links` we will break
     # when we find a match
-    for name, full_name, class_like, is_class in names:
+    for name, full_name, class_like, is_class, is_explicit in names:
         if name not in example_code_obj:
             example_code_obj[name] = list()
         # name is as written in file (e.g. np.asarray)
@@ -229,7 +236,8 @@ def identify_names(script_blocks, global_variables=None, node=''):
         # get shortened module name
         module_short = _get_short_module_name(module, attribute)
         cobj = {'name': attribute, 'module': module,
-                'module_short': module_short or module, 'is_class': is_class}
+                'module_short': module_short or module, 'is_class': is_class,
+                'is_explicit': is_explicit}
         example_code_obj[name].append(cobj)
     return example_code_obj
 
@@ -241,14 +249,16 @@ THUMBNAIL_TEMPLATE = """
 
 .. only:: html
 
- .. figure:: /{thumbnail}
-     :alt: {title}
+  .. image:: /{thumbnail}
+    :alt: {title}
 
-     :ref:`sphx_glr_{ref_name}`
+  :ref:`sphx_glr_{ref_name}`
 
 .. raw:: html
 
+      <div class="sphx-glr-thumbnail-title">{title}</div>
     </div>
+
 """
 
 BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """

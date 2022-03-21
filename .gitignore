@@ -44,6 +44,7 @@ coverage.xml
 *.orig
 .pytest_cache
 CHANGELOG.md
+junit-results.xml
 
 # Translations
 *.mo
@@ -56,6 +57,7 @@ CHANGELOG.md
 doc/_build/
 doc/auto_examples
 doc/auto_mayavi_examples
+doc/auto_pyvista_examples
 doc/tutorials/
 doc/gen_modules/
 
@@ -64,6 +66,7 @@ sphinx_gallery/tests/tinybuild/gen_modules/
 sphinx_gallery/tests/tinybuild/auto_examples/
 sphinx_gallery/tests/tinybuild/_build/
 sphinx_gallery/tests/tinybuild/tiny_html/
+junit-results.xml
 
 # PyBuilder
 target/

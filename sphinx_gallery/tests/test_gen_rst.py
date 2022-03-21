@@ -13,6 +13,8 @@ import tempfile
 import re
 import os
 import shutil
+import sys
+from unittest import mock
 import zipfile
 import codeop
 
@@ -21,7 +23,7 @@ import pytest
 from sphinx.errors import ExtensionError
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
-from sphinx_gallery.gen_gallery import generate_dir_rst
+from sphinx_gallery.gen_gallery import generate_dir_rst, _update_gallery_conf
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 
 CONTENT = [
@@ -149,9 +151,10 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
     assert blocks[3][0] == 'text'
 
     script_vars = {'execute_script': ''}
+    file_conf = {}
 
     output_blocks, time_elapsed = sg.execute_script(
-        blocks, script_vars, gallery_conf)
+        blocks, script_vars, gallery_conf, file_conf)
 
     example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
     want_rst = """\
@@ -198,7 +201,7 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
                        image_path_iterator=[], target_file=filename)
 
     output_blocks, time_elapsed = sg.execute_script(
-        blocks, script_vars, gallery_conf)
+        blocks, script_vars, gallery_conf, file_conf)
 
     example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
     want_rst = """\
@@ -241,7 +244,7 @@ b = 'foo'
                    'image_path_iterator': [],
                    'target_file': filename}
     output_blocks, time_elapsed = sg.execute_script(
-        blocks, script_vars, gallery_conf)
+        blocks, script_vars, gallery_conf, file_conf)
     assert 'example_globals' in script_vars
     assert script_vars['example_globals']['a'] == 1.
     assert script_vars['example_globals']['b'] == 'foo'
@@ -491,6 +494,47 @@ def test_download_link_classes(gallery_conf, req_pil):
         assert 'sphx-glr-download sphx-glr-download-' + kind in rst
 
 
+EXCLUDE_CONTENT = '''
+""":obj:`numpy.pi` :func:`numpy.sin`"""
+import numpy
+numpy.pi
+numpy.e
+'''.split('\n')
+
+
+@pytest.mark.parametrize(
+    'exclusion, expected',
+    [
+        (None, {'numpy.sin', 'numpy.pi', 'numpy.e'}),
+        ({'.*'}, {'numpy.sin', 'numpy.pi'}),
+        ({'pi'}, {'numpy.sin', 'numpy.pi', 'numpy.e'}),
+        ({r'numpy\.e', 'sin'}, {'numpy.sin', 'numpy.pi'}),
+    ],
+    ids=[
+        'exclude nothing (default)',
+        'exclude anything (explicit backreferences only)',
+        'explicit backref not shadowed by implicit one',
+        'exclude implicit backref',
+    ],
+)
+def test_exclude_implicit(gallery_conf,
+                          exclusion,
+                          expected,
+                          monkeypatch,
+                          req_pil):
+    mock_write_backreferences = mock.create_autospec(sg._write_backreferences)
+    monkeypatch.setattr(sg, '_write_backreferences', mock_write_backreferences)
+    gallery_conf['doc_module'] = ('numpy',)
+    if exclusion:
+        gallery_conf['exclude_implicit_doc'] = exclusion
+        _update_gallery_conf(gallery_conf)
+    _generate_rst(gallery_conf, 'test_exclude_implicit.py', EXCLUDE_CONTENT)
+    if sys.version_info >= (3, 8, 0):
+        assert mock_write_backreferences.call_args.args[0] == expected
+    else:
+        assert mock_write_backreferences.call_args[0][0] == expected
+
+
 @pytest.mark.parametrize('ext', ('.txt', '.rst', '.bad'))
 def test_gen_dir_rst(gallery_conf, fakesphinxapp, ext):
     """Test gen_dir_rst."""
@@ -516,7 +560,7 @@ def test_pattern_matching(gallery_conf, log_collector, req_pil):
     gallery_conf.update(image_scrapers=(), reset_modules=())
     gallery_conf.update(filename_pattern=re.escape(os.sep) + 'plot_0')
 
-    code_output = ('\n Out:\n\n .. code-block:: none\n'
+    code_output = ('\n .. code-block:: none\n'
                    '\n'
                    '    Óscar output\n'
                    '    log:Óscar\n'
@@ -639,8 +683,9 @@ def test_output_indentation(gallery_conf, script_vars):
     ])
     code = "print('" + test_string + "')"
     code_block = ("code", code, 1)
+    file_conf = {}
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     output_test_string = "\n".join(
         [line[4:] for line in output.strip().split("\n")[-3:]]
@@ -658,8 +703,9 @@ def test_output_no_ansi(gallery_conf, script_vars):
 
     code = 'print("\033[94m0.25")'
     code_block = ("code", code, 1)
+    file_conf = {}
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     output_test_string = "\n".join(
         [line[4:] for line in output.strip().split("\n")[-3:]]
@@ -674,9 +720,10 @@ def test_empty_output_box(gallery_conf, script_vars):
     compiler = codeop.Compile()
 
     code_block = ("code", "print(__doc__)", 1)
+    file_conf = {}
 
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     assert output.isspace()
 
@@ -741,9 +788,7 @@ html_out = """.. raw:: html
     <br />
     <br />"""
 
-text_above_html = """Out:
-
- .. code-block:: none
+text_above_html = """.. code-block:: none
 
     print statement
 
@@ -763,7 +808,7 @@ def _clean_output(output):
         return output_test_string.strip()
     elif is_text:
         output_test_string = "\n".join(
-            [line[4:] for line in output.strip().split("\n")[6:]])
+            [line[4:] for line in output.strip().split("\n")[4:]])
         return output_test_string.strip()
     elif is_html:
         output_test_string = "\n".join(output.strip().split("\n"))
@@ -806,8 +851,26 @@ def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
     compiler = codeop.Compile()
     code_block = ('code', code, 1)
     gallery_conf['capture_repr'] = capture_repr
+    file_conf = {}
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
+    )
+    assert _clean_output(output) == expected_out
+
+
+@pytest.mark.parametrize('caprepr_gallery, caprepr_file, expected_out', [
+    pytest.param(tuple(), ('__repr__',), '2', id='() --> repr'),
+    pytest.param(('__repr__',), '()', '', id='repr --> ()'),
+])
+def test_per_file_capture_repr(gallery_conf, caprepr_gallery, caprepr_file,
+                               expected_out, req_mpl, req_pil, script_vars):
+    """Tests that per file capture_repr overrides gallery_conf."""
+    compiler = codeop.Compile()
+    code_block = ('code', 'a=2\n2', 1)
+    gallery_conf['capture_repr'] = caprepr_gallery
+    file_conf = {'capture_repr': caprepr_file}
+    output = sg.execute_code_block(
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     assert _clean_output(output) == expected_out
 
@@ -817,69 +880,140 @@ def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
     compiler = codeop.Compile()
     code_block = ('code', 'a=2\na', 1)
     gallery_conf['ignore_repr_types'] = r'int'
+    file_conf = {}
     output = sg.execute_code_block(
-        compiler, code_block, None, script_vars, gallery_conf
+        compiler, code_block, None, script_vars, gallery_conf, file_conf
     )
     assert _clean_output(output) == ''
 
 
-class TestLoggingTee:
-    def setup(self):
-        self.src_filename = 'source file name'
-        self.tee = sg._LoggingTee(self.src_filename)
-        self.output_file = self.tee.output
+@pytest.mark.parametrize(
+    ('order', 'call_count'), [('before', 1), ('after', 1), ('both', 2)]
+)
+def test_reset_module_order_2_param(gallery_conf, order, call_count, req_pil):
+    """Test that reset module with 2 parameters."""
 
-    def test_full_line(self, log_collector):
-        # A full line is output immediately.
-        self.tee.write('Output\n')
-        self.tee.flush()
-        assert self.output_file.getvalue() == 'Output\n'
-        assert len(log_collector.calls['verbose']) == 2
-        assert self.src_filename in log_collector.calls['verbose'][0].args
-        assert 'Output' in log_collector.calls['verbose'][1].args
+    def cleanup_2_param(gallery_conf, fname):
+        pass
 
-    def test_incomplete_line_with_flush(self, log_collector):
-        # An incomplete line ...
-        self.tee.write('Output')
-        assert self.output_file.getvalue() == 'Output'
-        assert len(log_collector.calls['verbose']) == 1
-        assert self.src_filename in log_collector.calls['verbose'][0].args
+    mock_reset_module = mock.create_autospec(cleanup_2_param)
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = order
+    _generate_rst(gallery_conf, 'plot_test.py', CONTENT)
+    assert mock_reset_module.call_count == call_count
 
-        # ... should appear when flushed.
-        self.tee.flush()
-        assert len(log_collector.calls['verbose']) == 2
-        assert 'Output' in log_collector.calls['verbose'][1].args
 
-    def test_incomplete_line_with_more_output(self, log_collector):
-        # An incomplete line ...
-        self.tee.write('Output')
-        assert self.output_file.getvalue() == 'Output'
-        assert len(log_collector.calls['verbose']) == 1
-        assert self.src_filename in log_collector.calls['verbose'][0].args
+@pytest.mark.parametrize(
+    ('order', 'call_count', 'expected_call_order'),
+    [
+        ('before', 1, ('before',)),
+        ('after', 1, ('after',)),
+        ('both', 2, ('before', 'after'))
+    ]
+)
+def test_reset_module_order_3_param(gallery_conf, order, call_count,
+                                    expected_call_order, req_pil):
+    """Test reset module with 3 parameters."""
 
-        # ... should appear when more data is written.
-        self.tee.write('\nMore output\n')
-        assert self.output_file.getvalue() == 'Output\nMore output\n'
-        assert len(log_collector.calls['verbose']) == 3
-        assert 'Output' in log_collector.calls['verbose'][1].args
-        assert 'More output' in log_collector.calls['verbose'][2].args
+    def cleanup_3_param(gallery_conf, fname, when):
+        pass
 
-    def test_multi_line(self, log_collector):
-        self.tee.write('first line\rsecond line\nthird line')
-        assert (self.output_file.getvalue() ==
-                'first line\rsecond line\nthird line')
-        verbose_calls = log_collector.calls['verbose']
-        assert len(verbose_calls) == 3
-        assert self.src_filename in verbose_calls[0].args
-        assert 'first line' in verbose_calls[1].args
-        assert 'second line' in verbose_calls[2].args
-        assert self.tee.logger_buffer == 'third line'
+    mock_reset_module = mock.create_autospec(cleanup_3_param)
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = order
+    _generate_rst(gallery_conf, 'plot_test.py', CONTENT)
+    assert mock_reset_module.call_count == call_count
 
-    def test_isatty(self, monkeypatch):
-        assert not self.tee.isatty()
+    expected_calls = [
+        mock.call(mock.ANY, mock.ANY, order) for order in expected_call_order
+    ]
+    mock_reset_module.assert_has_calls(expected_calls)
 
-        monkeypatch.setattr(self.tee.output, 'isatty', lambda: True)
-        assert self.tee.isatty()
+
+def test_reset_module_order_3_param_invalid_when(gallery_conf):
+    """Test reset module with unknown 3rd parameter."""
+
+    def cleanup_3_param(gallery_conf, fname, invalid):
+        pass
+
+    mock_reset_module = mock.create_autospec(cleanup_3_param)
+    gallery_conf['reset_modules'] = (mock_reset_module,)
+    gallery_conf['reset_modules_order'] = 'before'
+    with pytest.raises(ValueError,
+                       match=("3rd parameter in cleanup_3_param "
+                              "function signature must be 'when'")):
+        _generate_rst(gallery_conf, 'plot_test.py', CONTENT)
+    assert mock_reset_module.call_count == 0
+
+
+@pytest.fixture
+def log_collector_wrap(log_collector):
+    """Wrap our log_collector."""
+    src_filename = 'source file name'
+    tee = sg._LoggingTee(src_filename)
+    output_file = tee.output
+    yield log_collector, src_filename, tee, output_file
+
+
+def test_full_line(log_collector_wrap):
+    # A full line is output immediately.
+    log_collector, src_filename, tee, output_file = log_collector_wrap
+    tee.write('Output\n')
+    tee.flush()
+    assert output_file.getvalue() == 'Output\n'
+    assert len(log_collector.calls['verbose']) == 2
+    assert src_filename in log_collector.calls['verbose'][0].args
+    assert 'Output' in log_collector.calls['verbose'][1].args
+
+
+def test_incomplete_line_with_flush(log_collector_wrap):
+    # An incomplete line ...
+    log_collector, src_filename, tee, output_file = log_collector_wrap
+    tee.write('Output')
+    assert output_file.getvalue() == 'Output'
+    assert len(log_collector.calls['verbose']) == 1
+    assert src_filename in log_collector.calls['verbose'][0].args
+
+    # ... should appear when flushed.
+    tee.flush()
+    assert len(log_collector.calls['verbose']) == 2
+    assert 'Output' in log_collector.calls['verbose'][1].args
+
+
+def test_incomplete_line_with_more_output(log_collector_wrap):
+    # An incomplete line ...
+    log_collector, src_filename, tee, output_file = log_collector_wrap
+    tee.write('Output')
+    assert output_file.getvalue() == 'Output'
+    assert len(log_collector.calls['verbose']) == 1
+    assert src_filename in log_collector.calls['verbose'][0].args
+
+    # ... should appear when more data is written.
+    tee.write('\nMore output\n')
+    assert output_file.getvalue() == 'Output\nMore output\n'
+    assert len(log_collector.calls['verbose']) == 3
+    assert 'Output' in log_collector.calls['verbose'][1].args
+    assert 'More output' in log_collector.calls['verbose'][2].args
+
+
+def test_multi_line(log_collector_wrap):
+    log_collector, src_filename, tee, output_file = log_collector_wrap
+    tee.write('first line\rsecond line\nthird line')
+    assert (output_file.getvalue() ==
+            'first line\rsecond line\nthird line')
+    verbose_calls = log_collector.calls['verbose']
+    assert len(verbose_calls) == 3
+    assert src_filename in verbose_calls[0].args
+    assert 'first line' in verbose_calls[1].args
+    assert 'second line' in verbose_calls[2].args
+    assert tee.logger_buffer == 'third line'
+
+
+def test_isatty(monkeypatch, log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert not tee.isatty()
+    monkeypatch.setattr(tee.output, 'isatty', lambda: True)
+    assert tee.isatty()
 
 
 # TODO: test that broken thumbnail does appear when needed

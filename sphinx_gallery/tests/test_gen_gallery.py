@@ -27,6 +27,13 @@ def test_bad_config():
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
 
 
+def test_bad_builder(sphinx_app_wrapper):
+    """Test that we raise an error for a bad builder."""
+    sphinx_app_wrapper.buildername = 'dirhtml'
+    with pytest.raises(ConfigError, match=".*dirhtml.*sphinx_gallery does not work.*"):  # noqa: E501
+        sphinx_app_wrapper.create_sphinx_app()
+
+
 def test_default_config(sphinx_app_wrapper):
     """Test the default Sphinx-Gallery configuration is loaded
 
@@ -71,6 +78,23 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
                      content="sphinx_gallery_conf={'reset_modules': (1.,),}")),
 ])
 def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
+    with pytest.raises(err_class, match=err_match):
+        sphinx_app_wrapper.create_sphinx_app()
+
+
+@pytest.mark.parametrize('err_class, err_match', [
+    pytest.param(ConfigError, 'reset_modules_order must be a str',
+                 id='Resetter unknown',
+                 marks=pytest.mark.conf_file(
+                     content=("sphinx_gallery_conf="
+                              "{'reset_modules_order': 1,}"))),
+    pytest.param(ConfigError, "reset_modules_order must be in",
+                 id='reset_modules_order not valid',
+                 marks=pytest.mark.conf_file(
+                     content=("sphinx_gallery_conf="
+                              "{'reset_modules_order': 'invalid',}"))),
+])
+def test_bad_reset_modules_order(sphinx_app_wrapper, err_class, err_match):
     with pytest.raises(err_class, match=err_match):
         sphinx_app_wrapper.create_sphinx_app()
 
@@ -147,6 +171,12 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
 
 
 def _check_order(sphinx_app, key):
+    """
+    Iterates through sphx-glr-thumbcontainer divs from index.rst lines
+    and reads given key from the tooltip.
+    Test that these keys appear in a specific order.
+    """
+
     index_fname = os.path.join(sphinx_app.outdir, '..', 'ex', 'index.rst')
     order = list()
     regex = '.*:%s=(.):.*' % key

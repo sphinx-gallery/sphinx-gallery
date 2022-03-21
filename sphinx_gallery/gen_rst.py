@@ -140,8 +140,6 @@ SINGLE_IMAGE = """
 
 CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
 
- Out:
-
  .. code-block:: none
 
 {0}\n"""
@@ -345,17 +343,34 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
     return None
 
 
+THUMBNAIL_PARENT_DIV = """
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+"""
+
+THUMBNAIL_PARENT_DIV_CLOSE = """
+.. raw:: html
+
+    </div>
+
+"""
+
+
 def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory."""
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    fhindex = """\n\n.. _sphx_glr_{0}:\n\n""".format(
-        head_ref.replace(os.path.sep, '_'))
 
-    fname = _get_readme(src_dir, gallery_conf)
-    with codecs.open(fname, 'r', encoding='utf-8') as fid:
-        fhindex += fid.read()
+    subsection_index_content = ""
+    subsection_readme_fname = _get_readme(src_dir, gallery_conf)
+
+    with codecs.open(subsection_readme_fname, 'r', encoding='utf-8') as fid:
+        subsection_readme_content = fid.read()
+        subsection_index_content += subsection_readme_content
+
     # Add empty lines to avoid bug in issue #165
-    fhindex += "\n\n"
+    subsection_index_content += "\n\n"
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
@@ -370,8 +385,14 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     # sort them
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
+
+    # Add div containing all thumbnails;
+    # this is helpful for controlling grid or flexbox behaviours
+    subsection_index_content += THUMBNAIL_PARENT_DIV
+
     entries_text = []
     costs = []
+    subsection_toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     iterator = sphinx_compatibility.status_iterator(
         sorted_listdir,
@@ -382,23 +403,49 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
             fname, target_dir, src_dir, gallery_conf, seen_backrefs)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append((cost, src_file))
-        this_entry = _thumbnail_div(target_dir, gallery_conf['src_dir'],
-                                    fname, intro, title) + """
+        gallery_item_filename = os.path.join(
+            build_target_dir,
+            fname[:-3]
+        ).replace(os.sep, '/')
+        this_entry = _thumbnail_div(
+            target_dir, gallery_conf['src_dir'], fname, intro, title
+        )
+        entries_text.append(this_entry)
+        subsection_toctree_filenames.append(gallery_item_filename)
 
+    for entry_text in entries_text:
+        subsection_index_content += entry_text
+
+    # Close thumbnail parent div
+    subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
+
+    # Create toctree for index file
+    # with all gallery items which belong to current subsection.
+    # The toctree string should be empty if there are no subsections
+    # or related files, as it will be returned at the end of this function.
+    subsection_index_toctree = ""
+    if len(subsection_toctree_filenames) > 0:
+        subsection_index_toctree = """
 .. toctree::
    :hidden:
 
-   /%s\n""" % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')
-        entries_text.append(this_entry)
+   /%s\n
+""" % "\n   /".join(subsection_toctree_filenames)
 
-    for entry_text in entries_text:
-        fhindex += entry_text
+    # Write subsection index file
+    subsection_index_path = os.path.join(target_dir, 'index.rst.new')
+    with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
+        findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
+            head_ref.replace(os.path.sep, '_')
+        ))
+        findex.write(subsection_index_content)
 
-    # clear at the end of the section
-    fhindex += """.. raw:: html\n
-    <div class="sphx-glr-clear"></div>\n\n"""
+        # add toctree to file only if toctree is not empty
+        if len(subsection_toctree_filenames) > 0:
+            findex.write(subsection_index_toctree)
 
-    return fhindex, costs
+    return subsection_index_content, costs, subsection_index_toctree, \
+        subsection_index_path
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):
@@ -596,10 +643,10 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf,
     return is_last_expr, mem_max
 
 
-def _get_last_repr(gallery_conf, ___):
+def _get_last_repr(capture_repr, ___):
     """Get a repr of the last expression, using first method in 'capture_repr'
     available for the last expression."""
-    for meth in gallery_conf['capture_repr']:
+    for meth in capture_repr:
         try:
             last_repr = getattr(___, meth)()
             # for case when last statement is print()
@@ -617,7 +664,7 @@ def _get_last_repr(gallery_conf, ___):
 
 
 def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
-                     images_rst):
+                     images_rst, file_conf):
     """Obtain standard output and html output in rST."""
     last_repr = None
     repr_meth = None
@@ -629,8 +676,10 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
             ignore_repr = re.search(
                 gallery_conf['ignore_repr_types'], str(type(___))
             )
-        if gallery_conf['capture_repr'] != () and not ignore_repr:
-            last_repr, repr_meth = _get_last_repr(gallery_conf, ___)
+        capture_repr = file_conf.get('capture_repr',
+                                     gallery_conf['capture_repr'])
+        if capture_repr != () and not ignore_repr:
+            last_repr, repr_meth = _get_last_repr(capture_repr, ___)
 
     captured_std = logging_tee.output.getvalue().expandtabs()
     # normal string output
@@ -659,7 +708,7 @@ def _reset_cwd_syspath(cwd, sys_path):
 
 
 def execute_code_block(compiler, block, example_globals, script_vars,
-                       gallery_conf):
+                       gallery_conf, file_conf):
     """Execute the code block of the example file.
 
     Parameters
@@ -679,6 +728,10 @@ def execute_code_block(compiler, block, example_globals, script_vars,
 
     gallery_conf : Dict[str, Any]
         Gallery configurations.
+
+    file_conf : Dict[str, Any]
+        File-specific settings given in source file comments as:
+        ``# sphinx_gallery_<name> = <value>``.
 
     Returns
     -------
@@ -743,7 +796,7 @@ def execute_code_block(compiler, block, example_globals, script_vars,
 
         code_output = _get_code_output(
             is_last_expr, example_globals, gallery_conf, logging_tee,
-            images_rst
+            images_rst, file_conf
         )
     finally:
         _reset_cwd_syspath(cwd, sys_path)
@@ -784,7 +837,7 @@ def _check_input(prompt=None):
         'Cannot use input() builtin function in Sphinx-Gallery examples')
 
 
-def execute_script(script_blocks, script_vars, gallery_conf):
+def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
     """Execute and capture output from python script already in block structure
 
     Parameters
@@ -797,6 +850,9 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         Configuration and run time variables
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
+    file_conf : dict
+        File-specific settings given in source file comments as:
+        ``# sphinx_gallery_<name> = <value>``
 
     Returns
     -------
@@ -850,7 +906,8 @@ def execute_script(script_blocks, script_vars, gallery_conf):
         for block in script_blocks:
             logging_tee.set_std_and_reset_position()
             output_blocks.append(execute_code_block(
-                compiler, block, example_globals, script_vars, gallery_conf))
+                compiler, block, example_globals, script_vars, gallery_conf,
+                file_conf))
     time_elapsed = time() - t_start
     sys.argv = argv_orig
     script_vars['memory_delta'] = max(script_vars['memory_delta'])
@@ -925,11 +982,15 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         'src_file': src_file,
         'target_file': target_file}
 
-    if executable:
-        clean_modules(gallery_conf, fname)
+    if (
+        executable
+        and gallery_conf['reset_modules_order'] in ['before', 'both']
+    ):
+        clean_modules(gallery_conf, fname, 'before')
     output_blocks, time_elapsed = execute_script(script_blocks,
                                                  script_vars,
-                                                 gallery_conf)
+                                                 gallery_conf,
+                                                 file_conf)
 
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
 
@@ -987,13 +1048,25 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         with open(codeobj_fname, 'wb') as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)
-    backrefs = set('{module_short}.{name}'.format(**cobj)
-                   for cobjs in example_code_obj.values()
-                   for cobj in cobjs
-                   if cobj['module'].startswith(gallery_conf['doc_module']))
+    exclude_regex = gallery_conf['exclude_implicit_doc_regex']
+    backrefs = set(
+        '{module_short}.{name}'.format(**cobj)
+        for cobjs in example_code_obj.values()
+        for cobj in cobjs
+        if cobj['module'].startswith(gallery_conf['doc_module']) and (
+            cobj['is_explicit'] or
+            (not exclude_regex) or
+            (not exclude_regex.search('{module}.{name}'.format(**cobj)))
+        )
+    )
+
     # Write backreferences
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
                           fname, intro, title)
+
+    del script_vars, global_variables  # don't keep these during reset
+    if executable and gallery_conf['reset_modules_order'] in ['after', 'both']:
+        clean_modules(gallery_conf, fname, 'after')
 
     return intro, title, (time_elapsed, memory_used)
 
@@ -1129,7 +1202,8 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                                         replace_py_ipynb(fname),
                                         binder_badge_rst,
                                         ref_fname)
-    example_rst += SPHX_GLR_SIG
+    if gallery_conf['show_signature']:
+        example_rst += SPHX_GLR_SIG
 
     write_file_new = re.sub(r'\.py$', '.rst.new', example_file)
     with codecs.open(write_file_new, 'w', encoding="utf-8") as f:

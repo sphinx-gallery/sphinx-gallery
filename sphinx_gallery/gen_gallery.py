@@ -58,6 +58,7 @@ DEFAULT_GALLERY_CONF = {
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
     'doc_module': (),
+    'exclude_implicit_doc': {},
     'reference_url': {},
     'capture_repr': ('_repr_html_', '__repr__'),
     'ignore_repr_types': r'',
@@ -81,6 +82,7 @@ DEFAULT_GALLERY_CONF = {
     'image_scrapers': ('matplotlib',),
     'compress_images': (),
     'reset_modules': ('matplotlib', 'seaborn'),
+    'reset_modules_order': 'before',
     'first_notebook_cell': '%matplotlib inline',
     'last_notebook_cell': None,
     'notebook_images': False,
@@ -126,6 +128,17 @@ def parse_config(app, check_keys=True):
     app.config.sphinx_gallery_conf = gallery_conf
     app.config.html_static_path.append(glr_path_static())
     return gallery_conf
+
+
+def _update_gallery_conf(gallery_conf):
+    """Update gallery config.
+
+    This is separate function for better testability.
+    """
+    # prepare regex for exclusions from implicit documentation
+    exclude_regex = re.compile('|'.join(gallery_conf['exclude_implicit_doc']))\
+        if gallery_conf['exclude_implicit_doc'] else False
+    gallery_conf['exclude_implicit_doc_regex'] = exclude_regex
 
 
 def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
@@ -287,6 +300,14 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                               % (resetter,))
     gallery_conf['reset_modules'] = tuple(resetters)
 
+    if not isinstance(gallery_conf['reset_modules_order'], str):
+        raise ConfigError('reset_modules_order must be a str, '
+                          'got %r' % gallery_conf['reset_modules_order'])
+    if gallery_conf['reset_modules_order'] not in ['before', 'after', 'both']:
+        raise ConfigError("reset_modules_order must be in"
+                          "['before', 'after', 'both'], "
+                          'got %r' % gallery_conf['reset_modules_order'])
+
     lang = lang if lang in ('python', 'python3', 'default') else 'python'
     gallery_conf['lang'] = lang
     del resetters
@@ -354,6 +375,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
+    _update_gallery_conf(gallery_conf)
+
     return gallery_conf
 
 
@@ -411,8 +434,27 @@ def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText
 
     Start the Sphinx-Gallery configuration and recursively scan the examples
-    directories in order to populate the examples gallery
+    directories in order to populate the examples gallery.
+
+    We create a 2-level nested structure by iterating through every
+    sibling folder of the current index file.
+    In each of these folders, we look for a section index file,
+    for which we generate a toctree pointing to sibling scripts.
+    Then, we append the content of this section index file
+    to the current index file,
+    after we remove toctree (to keep a clean nested structure)
+    and sphinx tags (to prevent tag duplication)
+    Eventually, we create a toctree in the current index file
+    which points to section index files.
     """
+    blocked_builder = ['dirhtml']
+    if app.builder.name in blocked_builder:
+        msg = (
+            f'Builder is set to {repr(app.builder.name)}. sphinx_gallery does '
+            f'not work for any of the following: {[blocked_builder]}'
+        )
+        raise ConfigError(msg)
+
     logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
 
@@ -430,41 +472,88 @@ def generate_gallery_rst(app):
 
     for examples_dir, gallery_dir in workdirs:
 
-        examples_dir = os.path.join(app.builder.srcdir, examples_dir)
-        gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
+        examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
+        gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
 
-        # Here we don't use an os.walk, but we recurse only twice: flat is
-        # better than nested.
-        this_fhindex, this_costs = generate_dir_rst(
-            examples_dir, gallery_dir, gallery_conf, seen_backrefs)
+        # Create section rst files and fetch content which will
+        # be added to current index file
+        this_fhindex, this_costs, this_toctree, _ = generate_dir_rst(
+            examples_dir_abs_path,
+            gallery_dir_abs_path,
+            gallery_conf,
+            seen_backrefs
+        )
 
         costs += this_costs
-        write_computation_times(gallery_conf, gallery_dir, this_costs)
+        write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
         # we create an index.rst with all examples
-        index_rst_new = os.path.join(gallery_dir, 'index.rst.new')
+        index_rst_new = os.path.join(gallery_dir_abs_path, 'index.rst.new')
         with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
-            fhindex.write(":orphan:\n\n" + this_fhindex)
+            fhindex.write(":orphan:\n\n" + this_fhindex + this_toctree)
+
+            # list all paths to subsection index files in this array
+            subsection_index_files = []
 
             for subsection in get_subsections(
-                    app.builder.srcdir, examples_dir, gallery_conf):
-                src_dir = os.path.join(examples_dir, subsection)
-                target_dir = os.path.join(gallery_dir, subsection)
-                this_fhindex, this_costs = \
-                    generate_dir_rst(src_dir, target_dir, gallery_conf,
-                                     seen_backrefs)
-                fhindex.write(this_fhindex)
-                costs += this_costs
-                write_computation_times(gallery_conf, target_dir, this_costs)
+                    app.builder.srcdir, examples_dir_abs_path, gallery_conf):
+                src_dir = os.path.join(examples_dir_abs_path, subsection)
+                target_dir = os.path.join(gallery_dir_abs_path, subsection)
+                subsection_index_files.append(
+                    '/'.join([
+                        '', gallery_dir, subsection, 'index.rst'
+                    ])
+                )
+
+                (
+                    subsection_index_content,
+                    subsection_costs,
+                    _,
+                    subsection_index_path,
+                ) = generate_dir_rst(
+                    src_dir, target_dir, gallery_conf, seen_backrefs
+                )
+
+                # Filter out tags from subsection content
+                # to prevent tag duplication across the documentation
+                tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
+                subsection_index_content = "\n".join([
+                    line for line in subsection_index_content.splitlines()
+                    if re.match(tag_regex, line) is None
+                ] + [''])
+
+                fhindex.write(subsection_index_content)
+
+                costs += subsection_costs
+                write_computation_times(
+                    gallery_conf, target_dir, subsection_costs
+                )
+
+                _replace_md5(subsection_index_path, mode='t')
+
+            # generate toctree with subsections
+            subsections_toctree = """
+.. toctree::
+   :hidden:
+   :includehidden:
+
+   %s\n
+""" % "\n   ".join(subsection_index_files)
+
+            # add toctree to file only if there are subsections
+            if len(subsection_index_files) > 0:
+                fhindex.write(subsections_toctree)
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(
-                    gallery_dir, app.builder.srcdir)
+                    gallery_dir_abs_path, app.builder.srcdir
+                )
                 fhindex.write(download_fhindex)
 
             if (app.config.sphinx_gallery_conf['show_signature']):
                 fhindex.write(SPHX_GLR_SIG)
+
         _replace_md5(index_rst_new, mode='t')
     _finalize_backreferences(seen_backrefs, gallery_conf)
 

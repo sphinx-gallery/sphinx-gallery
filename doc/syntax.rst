@@ -143,8 +143,8 @@ Plain RST examples
 ==================
 
 Sphinx-Gallery generates examples from Python scripts,
-so examples written in plain .rst files is not supported.
-If you're looking to generate hyperlinks for functions (linking to their corresponding
-online documentation) in code blocks of ordinary RST documentation, you might
-find
+so examples written in plain RST files are not supported.
+If you're looking to generate hyperlinks for functions (linking to their
+corresponding online documentation) in code blocks of ordinary RST
+documentation, you might find
 `sphinx-codeautolink <https://sphinx-codeautolink.rtfd.io>`_ helpful.

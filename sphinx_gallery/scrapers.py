@@ -13,10 +13,11 @@ images are injected as rst ``image-sg`` directives into the ``.rst``
 file generated for each example script.
 """
 
+import importlib
+import inspect
 import os
 import sys
 import re
-from distutils.version import LooseVersion
 from textwrap import indent
 from pathlib import PurePosixPath
 from warnings import filterwarnings
@@ -213,7 +214,6 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
 
 def _anim_rst(anim, image_path, gallery_conf):
-    import matplotlib
     from matplotlib.animation import FFMpegWriter, ImageMagickWriter
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
@@ -223,9 +223,7 @@ def _anim_rst(anim, image_path, gallery_conf):
     thumb_size = gallery_conf['thumbnail_size']
     use_dpi = round(
         min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
-    # FFmpeg is buggy for GIFs before Matplotlib 3.3.1
-    if LooseVersion(matplotlib.__version__) >= LooseVersion('3.3.1') and \
-            FFMpegWriter.isAvailable():
+    if FFMpegWriter.isAvailable():
         writer = 'ffmpeg'
     elif ImageMagickWriter.isAvailable():
         writer = 'imagemagick'
@@ -543,8 +541,11 @@ SINGLE_IMAGE = """
 
 def _reset_matplotlib(gallery_conf, fname):
     """Reset matplotlib."""
-    _, plt = _import_matplotlib()
+    mpl, plt = _import_matplotlib()
     plt.rcdefaults()
+    importlib.reload(mpl.units)
+    importlib.reload(mpl.dates)
+    importlib.reload(mpl.category)
 
 
 def _reset_seaborn(gallery_conf, fname):
@@ -564,8 +565,8 @@ _reset_dict = {
 }
 
 
-def clean_modules(gallery_conf, fname):
-    """Remove, unload, or reset modules after running each example.
+def clean_modules(gallery_conf, fname, when):
+    """Remove, unload, or reset modules.
 
     After a script is executed it can load a variety of settings that one
     does not want to influence in other examples in the gallery.
@@ -577,6 +578,21 @@ def clean_modules(gallery_conf, fname):
     fname : str or None
         The example being run. Will be None when this is called entering
         a directory of examples to be built.
+    when : str
+        Whether this module is run before or after examples.
+
+        This parameter is only forwarded when the callables accept 3
+        parameters.
     """
     for reset_module in gallery_conf['reset_modules']:
-        reset_module(gallery_conf, fname)
+
+        sig = inspect.signature(reset_module)
+        if len(sig.parameters) == 3:
+            third_param = list(sig.parameters.keys())[2]
+            if third_param != 'when':
+                raise ValueError(f"3rd parameter in {reset_module.__name__} "
+                                 "function signature must be 'when', "
+                                 f"got {third_param}")
+            reset_module(gallery_conf, fname, when=when)
+        else:
+            reset_module(gallery_conf, fname)
