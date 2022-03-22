@@ -156,6 +156,24 @@ class Block:
         self.lineno = lineno
         self.config = config if config is not None else {}
 
+    def __repr__(self):
+        return "%s(lineno=%s, config=%r, contents=%r)" % (
+            type(self).__name__,
+            self.lineno,
+            self.config,
+            self.contents[:100],
+        )
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        else:
+            return (
+                self.contents == other.contents
+                and self.lineno == other.lineno
+                and self.config == other.config
+            )
+
     def remove_config_comments(self):
         """Return a copy of this block with config comments removed."""
         new_contents = remove_config_comments(self.contents)
