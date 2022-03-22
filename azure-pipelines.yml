@@ -92,11 +92,7 @@ stages:
           DISTRIB: 'conda'
           PYTHON_VERSION: '3.7'
           SPHINX_VERSION: '1.8.3'
-        conda_python37_localeC:
-          DISTRIB: 'conda'
-          PYTHON_VERSION: '3.7'
           LOCALE: 'C'
-          BAD_MTIME: '1'  # not clear why, maybe some specific Sphinx version?
         conda_python38_sphinxDev:
           DISTRIB: 'conda'
           PYTHON_VERSION: '3.8'
