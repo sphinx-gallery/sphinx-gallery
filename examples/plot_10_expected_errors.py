@@ -10,7 +10,7 @@ examples.
 # The following code raises an error:
 
 # sphinx_gallery_expected_error
-1 + "hello"
+# TODO 1 + "hello"
 
 # %%
 # But this runs without error:
@@ -22,4 +22,4 @@ examples.
 # (This may look familiar to ``pytest`` users)
 
 # sphinx_gallery_expected_error : TypeError
-1 + "hello"
+# TODO 1 + "hello"
