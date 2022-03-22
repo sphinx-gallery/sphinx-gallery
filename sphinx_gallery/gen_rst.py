@@ -768,7 +768,9 @@ def execute_code_block(compiler, block, example_globals, script_vars,
         ast_Module = _ast_module()
         code_ast = ast_Module([block.contents])
         flags = ast.PyCF_ONLY_AST | compiler.flags
-        code_ast = compile(block.contents, src_file, 'exec', flags, dont_inherit=1)
+        code_ast = compile(
+            block.contents, src_file, 'exec', flags, dont_inherit=1
+        )
         ast.increment_lineno(code_ast, block.lineno - 1)
 
         is_last_expr, mem_max = _exec_and_get_memory(
