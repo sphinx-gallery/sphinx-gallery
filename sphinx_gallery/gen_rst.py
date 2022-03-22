@@ -1046,7 +1046,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     if example_code_obj:
         codeobj_fname = target_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(example_code_obj, fid)
         _replace_md5(codeobj_fname)
     exclude_regex = gallery_conf['exclude_implicit_doc_regex']
     backrefs = set(
