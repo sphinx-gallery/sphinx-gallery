@@ -21,6 +21,7 @@ import warnings
 from sphinx.errors import ExtensionError
 
 from . import sphinx_compatibility
+from .py_source_parser import CodeBlock, TextBlock
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
 
@@ -204,7 +205,7 @@ _regex = re.compile(r':(?:'
 def identify_names(script_blocks, global_variables=None, node=''):
     """Build a codeobj summary by identifying and resolving used names."""
     if node == '':  # mostly convenience for testing functions
-        c = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'code')
+        c = '\n'.join(blk.contents for blk in script_blocks if isinstance(blk, CodeBlock))
         node = ast.parse(c)
     # Get matches from the code (AST, implicit matches)
     finder = NameFinder(global_variables)
@@ -212,7 +213,7 @@ def identify_names(script_blocks, global_variables=None, node=''):
         finder.visit(node)
     names = list(finder.get_mapping())
     # Get matches from docstring inspection (explicit matches)
-    text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
+    text = '\n'.join(blk.contents for blk in script_blocks if isinstance(blk, TextBlock))
     names.extend((x, x, False, False, True) for x in re.findall(_regex, text))
     example_code_obj = collections.OrderedDict()  # order is important
     # Make a list of all guesses, in `_embed_code_links` we will break
