@@ -259,12 +259,19 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
         else:
             if gallery_conf["pypandoc"] is False:
                 markdown = rst2md(
-                    blk.contents + '\n', gallery_conf, target_dir, heading_levels)
+                    blk.contents + '\n',
+                    gallery_conf,
+                    target_dir,
+                    heading_levels,
+                )
             else:
                 import pypandoc
                 # pandoc automatically addds \n to the end
                 markdown = pypandoc.convert_text(
-                    blk.contents, to='md', format='rst', **gallery_conf["pypandoc"]
+                    blk.contents,
+                    to='md',
+                    format='rst',
+                    **gallery_conf["pypandoc"],
                 )
             add_markdown_cell(work_notebook, markdown)
 

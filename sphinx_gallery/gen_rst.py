@@ -757,8 +757,11 @@ def execute_code_block(compiler, block, example_globals, script_vars,
     sys.path.append(os.getcwd())
 
     # Save figures unless there is a `sphinx_gallery_defer_figures` flag
-    match = re.search(r'^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?',
-                      block.contents, re.MULTILINE)
+    match = re.search(
+        r'^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?',
+        block.contents,
+        re.MULTILINE,
+    )
     need_save_figures = match is None
 
     try:
@@ -1146,7 +1149,9 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
                     example_rst += "\n\n|\n\n"
                 example_rst += code_rst
         else:
-            block_separator = '\n\n' if not blk.contents.endswith('\n') else '\n'
+            block_separator = (
+                '\n\n' if not blk.contents.endswith('\n') else '\n'
+            )
             example_rst += blk.contents + block_separator
 
     return example_rst

@@ -114,10 +114,12 @@ def test_direct_comment_after_docstring():
     assert file_conf == {}
     expected_result = [
         TextBlock(contents='Docstring', lineno=1),
-        CodeBlock(contents='\n'.join(['# and now comes the module code',
-                            '# with a second line of comment',
-                            'x, y = 1, 2',
-                            '']), lineno=2)]
+        CodeBlock(contents='\n'.join([
+            '# and now comes the module code',
+            '# with a second line of comment',
+            'x, y = 1, 2',
+            ''
+        ]), lineno=2)]
     assert result == expected_result
 
 

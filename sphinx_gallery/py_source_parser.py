@@ -177,7 +177,9 @@ class Block:
     def remove_config_comments(self):
         """Return a copy of this block with config comments removed."""
         new_contents = remove_config_comments(self.contents)
-        blk_copy = type(self)(contents=new_contents, lineno=self.lineno, config=self.config)
+        blk_copy = type(self)(
+            contents=new_contents, lineno=self.lineno, config=self.config
+        )
         return blk_copy
 
 
@@ -213,8 +215,8 @@ def split_code_and_text_blocks(source_file, return_node=False):
         source_file)
     blocks = [TextBlock(contents=docstring, lineno=1)]
 
-    # TODO This is maybe useless: now that the block-related ones are read below
-    #   we could probably replace it with a union of all block configs
+    # TODO This is maybe useless: now that the block-related ones are read
+    #  below we could probably replace it with a union of all block configs
     file_conf = extract_file_config(rest_of_content)
 
     pattern = re.compile(
@@ -227,7 +229,9 @@ def split_code_and_text_blocks(source_file, return_node=False):
         code_block_content = rest_of_content[pos_so_far:match.start()]
         if code_block_content.strip():
             cfg = extract_file_config(code_block_content)
-            block = CodeBlock(contents=code_block_content, lineno=lineno, config=cfg)
+            block = CodeBlock(
+                contents=code_block_content, lineno=lineno, config=cfg
+            )
             blocks.append(block)
         lineno += code_block_content.count('\n')
 
@@ -235,7 +239,7 @@ def split_code_and_text_blocks(source_file, return_node=False):
         text_content = match.group('text_content')
         text_block_content = dedent(re.sub(sub_pat, '', text_content)).lstrip()
         if text_block_content.strip():
-            block = TextBlock(contents=text_block_content, lineno=lineno, config={})
+            block = TextBlock(contents=text_block_content, lineno=lineno)
             blocks.append(block)
         lineno += text_content.count('\n')
 
@@ -244,7 +248,9 @@ def split_code_and_text_blocks(source_file, return_node=False):
     remaining_content = rest_of_content[pos_so_far:]
     if remaining_content.strip():
         cfg = extract_file_config(remaining_content)
-        block = CodeBlock(contents=remaining_content, lineno=lineno, config=cfg)
+        block = CodeBlock(
+            contents=remaining_content, lineno=lineno, config=cfg
+        )
         blocks.append(block)
 
     out = (file_conf, blocks)
