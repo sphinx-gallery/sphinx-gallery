@@ -91,8 +91,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : Block
+        A CodeBlock or a TextBlock
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict
@@ -242,8 +242,8 @@ def mayavi_scraper(block, block_vars, gallery_conf):
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : Block
+        A CodeBlock or a TextBlock
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict
@@ -356,8 +356,8 @@ def save_figures(block, block_vars, gallery_conf):
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : Block
+        A CodeBlock or a TextBlock
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict

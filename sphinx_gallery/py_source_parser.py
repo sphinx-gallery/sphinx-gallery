@@ -13,7 +13,7 @@ import ast
 from io import BytesIO
 import re
 import tokenize
-from textwrap import dedent
+from textwrap import dedent, indent
 
 from sphinx.errors import ExtensionError
 from .sphinx_compatibility import getLogger
@@ -156,12 +156,41 @@ class Block:
         self.lineno = lineno
         self.config = config if config is not None else {}
 
+    def __getitem__(self, item):
+        """Retrocompat for scrapers' use in ``save_figures``"""
+        logger.warning(
+            "Accessing a Block's details using tuple notation is deprecated "
+            "and will be removed in a later release. Please use attribute "
+            "access."
+        )
+        if item == 0:
+            return "text" if isinstance(self, TextBlock) else "code"
+        elif item == 1:
+            return self.contents
+        elif item == 2:
+            return self.lineno
+        else:
+            raise IndexError(item)
+
+    def __str__(self):
+        """Full multi-line display for str(self) and print(self)."""
+        return "%s(lineno=%s, config=%r):\n%s" % (
+            type(self).__name__,
+            self.lineno,
+            self.config,
+            indent(self.contents, "    "),
+        )
+
     def __repr__(self):
+        """Efficient one-liner for repr(self)"""
         return "%s(lineno=%s, config=%r, contents=%r)" % (
             type(self).__name__,
             self.lineno,
             self.config,
-            self.contents[:100],
+            "%s%s" % (
+                self.contents[:100],
+                "(...)" if len(self.contents) >= 100 else ""
+            ),
         )
 
     def __eq__(self, other):
