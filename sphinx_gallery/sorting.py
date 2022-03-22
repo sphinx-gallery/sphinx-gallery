@@ -16,7 +16,7 @@ import types
 from sphinx.errors import ConfigError
 
 from .gen_rst import extract_intro_and_title
-from .py_source_parser import split_code_and_text_blocks
+from .py_source_parser import split_code_and_text_blocks, CodeBlock
 
 
 class ExplicitOrder(object):
@@ -78,9 +78,9 @@ class NumberOfCodeLinesSortKey(_SortKey):
     def __call__(self, filename):
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
-        amount_of_code = sum([len(bcontent)
-                              for blabel, bcontent, lineno in script_blocks
-                              if blabel == 'code'])
+        amount_of_code = sum([len(block.contents)
+                              for block in script_blocks
+                              if isinstance(block, CodeBlock)])
         return amount_of_code
 
 
@@ -123,5 +123,5 @@ class ExampleTitleSortKey(_SortKey):
     def __call__(self, filename):
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         _, script_blocks = split_code_and_text_blocks(src_file)
-        _, title = extract_intro_and_title(src_file, script_blocks[0][1])
+        _, title = extract_intro_and_title(src_file, script_blocks[0].contents)
         return title
