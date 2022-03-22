@@ -768,9 +768,9 @@ def execute_code_block(compiler, block, example_globals, script_vars,
         ast_Module = _ast_module()
         code_ast = ast_Module([block.contents])
         flags = ast.PyCF_ONLY_AST | compiler.flags
-        code_ast = compile(
-            block.contents, src_file, 'exec', flags, dont_inherit=1
-        )
+        # warning do not change indentation here as it is used
+        # in handle_exception stack introspection
+        code_ast = compile(block.contents, src_file, 'exec', flags, dont_inherit=1)  # noqa
         ast.increment_lineno(code_ast, block.lineno - 1)
 
         is_last_expr, mem_max = _exec_and_get_memory(
@@ -781,6 +781,8 @@ def execute_code_block(compiler, block, example_globals, script_vars,
         logging_tee.restore_std()
         if need_save_figures:
             need_save_figures = False
+            # warning do not change indentation here as it is used
+            # in handle_exception stack introspection
             images_rst = save_figures(block, script_vars, gallery_conf)
         else:
             images_rst = u''
@@ -793,6 +795,8 @@ def execute_code_block(compiler, block, example_globals, script_vars,
         # still call this even though we won't use the images so that
         # figures are closed
         if need_save_figures:
+            # warning do not change indentation here as it is used
+            # in handle_exception stack introspection
             save_figures(block, script_vars, gallery_conf)
     else:
         _reset_cwd_syspath(cwd, sys_path)
