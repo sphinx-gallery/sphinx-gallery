@@ -175,6 +175,11 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf['src_dir'] = src_dir
     gallery_conf['app'] = app
 
+    # Resolve expected_failing_examples paths
+    gallery_conf['expected_failing_examples'] = set(
+        os.path.normpath(os.path.join(gallery_conf['src_dir'], path))
+        for path in gallery_conf['expected_failing_examples'])
+
     # Check capture_repr
     capture_repr = gallery_conf['capture_repr']
     supported_reprs = ['__repr__', '__str__', '_repr_html_']
@@ -721,16 +726,10 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
-def _expected_failing_examples(gallery_conf):
-    return set(
-        os.path.normpath(os.path.join(gallery_conf['src_dir'], path))
-        for path in gallery_conf['expected_failing_examples'])
-
-
 def _parse_failures(gallery_conf):
     """Split the failures."""
     failing_examples = set(gallery_conf['failing_examples'].keys())
-    expected_failing_examples = _expected_failing_examples(gallery_conf)
+    expected_failing_examples = gallery_conf['expected_failing_examples']
     failing_as_expected = failing_examples.intersection(
         expected_failing_examples)
     failing_unexpectedly = failing_examples.difference(

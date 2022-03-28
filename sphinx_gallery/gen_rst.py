@@ -450,7 +450,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     """Trim and format exception, maybe raise error, etc."""
-    from .gen_gallery import _expected_failing_examples
     etype, exc, tb = exc_info
     stack = traceback.extract_tb(tb)
     # The full traceback will look something like:
@@ -494,7 +493,7 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
         traceback.format_list(stack) +
         traceback.format_exception_only(etype, exc))
 
-    expected = src_file in _expected_failing_examples(gallery_conf)
+    expected = src_file in gallery_conf['expected_failing_examples']
     if expected:
         func, color = logger.info, 'blue',
     else:
@@ -509,7 +508,7 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
         raise
     # Stores failing file
     gallery_conf['failing_examples'][src_file] = formatted_exception
-    script_vars['execute_script'] = False
+    # script_vars['execute_script'] = False
 
     # Ensure it's marked as our style
     except_rst = ".. rst-class:: sphx-glr-script-out\n\n" + except_rst
@@ -965,6 +964,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
                 do_return = False
             else:
                 gallery_conf['stale_examples'].append(target_file)
+                if src_file in gallery_conf['expected_failing_examples']:
+                    gallery_conf['expected_failing_examples'].remove(src_file)
         if do_return:
             return intro, title, (0, 0)
 
