@@ -75,8 +75,8 @@ def test_extract_file_config(content, file_conf, log_collector):
      "a = 1\nb = 1"),
     ("a = 1\n\n# sphinx_gallery_line_numbers = True\n\nb = 1",
      "a = 1\n\n\nb = 1"),
-    ("# comment\n# sphinx_gallery_line_numbers = True\n# commment 2",
-     "# comment\n# commment 2"),
+    ("# comment\n# sphinx_gallery_line_numbers = True\n# comment 2",
+     "# comment\n# comment 2"),
     ("# sphinx_gallery_defer_figures",
      ""),
 ])
