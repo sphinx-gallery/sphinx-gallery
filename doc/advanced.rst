@@ -408,7 +408,7 @@ The value passed into ``when`` can be ``'before'`` or ``'after'``.
 If ``reset_modules_order`` in the :ref:`configuration <reset_modules_order>`
 is set to ``'before'`` or ``'after'``, ``when`` will always be the same value
 as what ``reset_modules_order`` is set to.
-This function signature is only useful when used in conjuction with
+This function signature is only useful when used in conjunction with
 ``reset_modules_order`` set to ``'both'``.
 
 Altering Sphinx-Gallery CSS
