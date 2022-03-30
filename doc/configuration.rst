@@ -893,7 +893,7 @@ Sphinx-Gallery logs output at several stages. Warnings can be generated for
 code that requires case sensitivity (e.g., ``plt.subplot`` and ``plt.Subplot``)
 when building docs on a filesystem that does not support case sensitive
 naming (e.g., Windows). In this case, by default a ``logger.warning`` is
-emitted, which will lead to a build failure when buidling with ``-W``.
+emitted, which will lead to a build failure when building with ``-W``.
 The log level can be set with::
 
     sphinx_gallery_conf = {

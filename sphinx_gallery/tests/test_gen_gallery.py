@@ -479,7 +479,7 @@ sphinx_gallery_conf = {
     'pypandoc': {'bad key': 1},
 }""")
 def test_pypandoc_config_keys(sphinx_app_wrapper):
-    """Tests 'pypandoc' dictonary key checking."""
+    """Tests 'pypandoc' dictionary key checking."""
     from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
                        match="'pypandoc' only accepts the following key "

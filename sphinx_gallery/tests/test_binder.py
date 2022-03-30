@@ -101,7 +101,7 @@ def test_binder():
     for iconf in [conf4, conf5]:
         assert iconf == {}
 
-    # Assert extra unkonwn params
+    # Assert extra unknown params
     conf7 = deepcopy(conf1)
     conf7['foo'] = 'blah'
     with pytest.raises(ConfigError, match='Unknown Binder config key'):

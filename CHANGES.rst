@@ -708,7 +708,7 @@ Developer changes
    `#438 <https://github.com/sphinx-gallery/sphinx-gallery/issues/438>`__
 -  Won’t display stdout
    `#435 <https://github.com/sphinx-gallery/sphinx-gallery/issues/435>`__
--  realtive paths in github.io
+-  relative paths in github.io
    `#434 <https://github.com/sphinx-gallery/sphinx-gallery/issues/434>`__
 -  ‘make html’ does not attempt to run examples
    `#425 <https://github.com/sphinx-gallery/sphinx-gallery/issues/425>`__
@@ -1073,7 +1073,7 @@ New features
 
 Bug Fixes
 '''''''''
-* Sphinx-Gallery now raises an exception if the matplotlib bakend can
+* Sphinx-Gallery now raises an exception if the matplotlib backend can
   not be set to ``'agg'``. This can happen for example if
   matplotlib.pyplot is imported in conf.py. See `#157
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/157>`_ for

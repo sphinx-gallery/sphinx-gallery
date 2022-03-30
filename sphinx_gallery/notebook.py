@@ -262,7 +262,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
                     bcontent + '\n', gallery_conf, target_dir, heading_levels)
             else:
                 import pypandoc
-                # pandoc automatically addds \n to the end
+                # pandoc automatically adds \n to the end
                 markdown = pypandoc.convert_text(
                     bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
                 )
