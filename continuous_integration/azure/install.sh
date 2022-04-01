@@ -27,7 +27,7 @@ if [ "$DISTRIB" == "conda" ]; then
         # It is a mystery to me why we need black, but we get an error with sphinx that it's needed at the end of the build...
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master black"
     else
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION} \"jinja2<=3.0.3\""
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION} jinja2<=3.0.3"
     fi
     source activate base
     conda install --yes -c conda-forge $CONDA_TO_INSTALL
@@ -66,7 +66,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     python3 -m pip install -r dev-requirements.txt | cat
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    python3 -m pip install sphinx==1.8.3
+    python3 -m pip install sphinx==1.8.3 "jinja2<=3.0.3"
     python3 setup.py install --user
     python3 -m pip list
 else
