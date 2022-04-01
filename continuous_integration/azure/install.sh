@@ -22,7 +22,7 @@ if [ "$DISTRIB" == "conda" ]; then
         CONDA_TO_INSTALL="$CONDA_TO_INSTALL mayavi memory_profiler ipython pypandoc"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx \"jinja2<=3.0.3\""
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
         # It is a mystery to me why we need black, but we get an error with sphinx that it's needed at the end of the build...
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master black"
