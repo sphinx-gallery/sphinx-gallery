@@ -61,7 +61,11 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     # resize the image using resize; if using .thumbnail and the image is
     # already smaller than max_width, max_height, then this won't scale up
     # at all (maybe could be an option someday...)
-    img = img.resize((width_sc, height_sc), Image.BICUBIC)
+    try:  # Pillow 9+
+        bicubic = Image.Resampling.BICUBIC
+    except Exception:
+        bicubic = Image.BICUBIC
+    img = img.resize((width_sc, height_sc), bicubic)
     # img.thumbnail((width_sc, height_sc), Image.BICUBIC)
     # width_sc, height_sc = img.size  # necessary if using thumbnail
 

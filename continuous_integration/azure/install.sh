@@ -22,12 +22,12 @@ if [ "$DISTRIB" == "conda" ]; then
         CONDA_TO_INSTALL="$CONDA_TO_INSTALL mayavi memory_profiler ipython pypandoc"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
         # It is a mystery to me why we need black, but we get an error with sphinx that it's needed at the end of the build...
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master black"
     else
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION} jinja2<=3.0.3"
     fi
     source activate base
     conda install --yes -c conda-forge $CONDA_TO_INSTALL
@@ -55,7 +55,7 @@ elif [ "$DISTRIB" == "nightly" ]; then
     # pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
     #
     # So for now we'll just live without NumPy.
-    pip install -q --upgrade --pre sphinx joblib pytest-cov pygments colorama jinja2>=2.3 markupsafe>=1.1
+    pip install -q --upgrade --pre sphinx joblib pytest-cov pygments colorama "jinja2>=2.3" markupsafe>=1.1
     pip install -q .
     pip list
 elif [ "$DISTRIB" == "minimal" ]; then
@@ -66,7 +66,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     python3 -m pip install -r dev-requirements.txt | cat
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    python3 -m pip install sphinx==1.8.3
+    python3 -m pip install sphinx==1.8.3 "jinja2<=3.0.3"
     python3 setup.py install --user
     python3 -m pip list
 else
