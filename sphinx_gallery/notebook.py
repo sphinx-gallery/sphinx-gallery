@@ -267,6 +267,25 @@ def add_markdown_cell(work_notebook, markdown):
     work_notebook["cells"].append(markdown_cell)
 
 
+def promote_jupyter_cell_magic(work_notebook, markdown):
+    # Regex detects all code blocks that use %% Jupyter cell magic
+    cell_magic_regex = r'\n?```\s*[a-z]*\n(%%(?:[\s\S]*?))\n?```\n?'
+
+    text_cell_start = 0
+    for magic_cell in re.finditer(cell_magic_regex, markdown):
+        # Extract the preceeding text block, and add it if non-empty
+        text_block = markdown[text_cell_start:magic_cell.span()[0]]
+        if text_block and not text_block.isspace():
+            add_markdown_cell(work_notebook, text_block)
+        text_cell_start = magic_cell.span()[1]
+
+        code_block = magic_cell.group(1)
+        add_code_cell(work_notebook, code_block)
+
+    # Return remaining text (which equals markdown if no magic cells exist)
+    return markdown[text_cell_start:]
+
+
 def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
     """Writes the Jupyter notebook cells
 
@@ -292,7 +311,10 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
                 markdown = pypandoc.convert_text(
                     bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
                 )
-            add_markdown_cell(work_notebook, markdown)
+
+            remaining = promote_jupyter_cell_magic(work_notebook, markdown)
+            if remaining and not remaining.isspace():
+                add_markdown_cell(work_notebook, remaining)
 
 
 def save_notebook(work_notebook, write_file):

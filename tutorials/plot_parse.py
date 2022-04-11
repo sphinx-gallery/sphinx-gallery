@@ -88,6 +88,14 @@ print('one')
 B = 1
 
 # %%
+# Code blocks containing Jupyter magic are executable
+#     .. code-block:: bash
+#
+#       %%bash
+#       # This could be run!
+#
+
+# %%
 # Last text block.
 #
 # That's all folks !
