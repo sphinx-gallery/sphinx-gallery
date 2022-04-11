@@ -37,8 +37,15 @@ Example script with invalid Python syntax
 #     # sphinx_gallery_thumbnail_number = 2
 #
 #     b = 2
+FLAG_START = r"^[\ \t]*#\s*"
 INFILE_CONFIG_PATTERN = re.compile(
-    r"^[\ \t]*#\s*sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?",
+    FLAG_START + r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?",
+    re.MULTILINE)
+
+START_IGNORE_FLAG = FLAG_START + "sphinx_gallery_start_ignore"
+END_IGNORE_FLAG = FLAG_START + "sphinx_gallery_end_ignore"
+IGNORE_BLOCK_PATTERN = re.compile(
+    rf"{START_IGNORE_FLAG}(?:[\s\S]*?){END_IGNORE_FLAG}\n?",
     re.MULTILINE)
 
 
@@ -201,6 +208,26 @@ def split_code_and_text_blocks(source_file, return_node=False):
     if return_node:
         out += (node,)
     return out
+
+
+def remove_ignore_blocks(code_block):
+    """
+    Return the content of *code_block* with ignored areas removed.
+
+    An ignore block starts with # sphinx_gallery_begin_ignore, and ends with
+    # sphinx_gallery_end_ignore. These lines and anything in between them will
+    be removed, but surrounding empty lines are preserved.
+
+    Parameters
+    ----------
+    code_block : str
+        A code segment.
+    """
+    num_start_flags = len(re.findall(START_IGNORE_FLAG, code_block))
+    num_end_flags = len(re.findall(END_IGNORE_FLAG, code_block))
+
+    assert num_start_flags == num_end_flags, "start/end ignore block mismatch!"
+    return re.subn(IGNORE_BLOCK_PATTERN, '', code_block)[0]
 
 
 def remove_config_comments(code_block):

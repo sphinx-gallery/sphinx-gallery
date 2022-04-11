@@ -12,6 +12,7 @@ from __future__ import division, absolute_import, print_function
 
 import os.path as op
 import pytest
+import textwrap
 from sphinx.errors import ExtensionError
 import sphinx_gallery.py_source_parser as sg
 
@@ -82,3 +83,33 @@ def test_extract_file_config(content, file_conf, log_collector):
 ])
 def test_remove_config_comments(contents, result):
     assert sg.remove_config_comments(contents) == result
+
+
+def test_remove_ignore_comments():
+    print(sg.IGNORE_BLOCK_PATTERN)
+    normal_code = "# Regular code\n# should\n# be untouched!"
+    assert sg.remove_ignore_blocks(normal_code) == normal_code
+
+    mismatched_code = "# sphinx_gallery_start_ignore"
+    with pytest.raises(AssertionError) as error:
+        sg.remove_ignore_blocks(mismatched_code)
+    assert "mismatch" in str(error)
+
+    code_with_ignores = textwrap.dedent("""\
+    # Indented ignores should work
+        # sphinx_gallery_start_ignore
+        # The variable name should do nothing
+        sphinx_gallery_end_ignore = 0
+        # sphinx_gallery_end_ignore
+
+    # New line above should stay intact
+    # sphinx_gallery_start_ignore
+    # sphinx_gallery_end_ignore
+    # Empty ignore blocks are fine too
+    """)
+    assert sg.remove_ignore_blocks(code_with_ignores) == textwrap.dedent("""\
+    # Indented ignores should work
+
+    # New line above should stay intact
+    # Empty ignore blocks are fine too
+    """)
