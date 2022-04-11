@@ -48,6 +48,7 @@ Who uses Sphinx-Gallery
 * `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
 * `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
 * `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
+* `Apache TVM <https://tvm.apache.org/docs/tutorial/index.html>`_
 
 .. installation-begin-content
 
