@@ -41,6 +41,36 @@ def test_latex_conversion(gallery_conf):
     assert align_eq_jmd == rst2md(align_eq, gallery_conf, "", {})
 
 
+def test_code_conversion():
+    """Use the ``` code format so Jupyter syntax highlighting works"""
+    rst = (
+        "\n"
+        "Regular text\n"
+        "    .. code-block:: bash\n"
+        "  \n"
+        "       # Bash code\n"
+        "\n"
+        "  More regular text\n"
+        ".. code-block:: cpp\n"
+        "\n"
+        "  //cpp code\n"
+        "\n"
+        "  //more cpp code\n"
+    )
+    assert rst2md(rst, {}, "", {}) == textwrap.dedent("""
+        Regular text
+        ```bash
+        # Bash code
+        ```
+          More regular text
+        ```cpp
+        //cpp code
+
+        //more cpp code
+        ```
+    """)
+
+
 def test_convert(gallery_conf):
     """Test ReST conversion"""
     rst = """hello
