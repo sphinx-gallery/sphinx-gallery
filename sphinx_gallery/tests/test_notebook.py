@@ -65,6 +65,8 @@ For more details on interpolation see the page :ref:`channel_interpolation`.
   :whatever: you
   :width: 200px
   :class: img_class
+
+`See more  <https://en.wikipedia.org/wiki/Interpolation>`_.
 """
 
     markdown = """hello
@@ -79,6 +81,8 @@ This is $some$ math $stuff$.
 For more details on interpolation see the page `channel_interpolation`.
 
 <img src="file://foobar" alt="me" whatever="you" width="200px" class="img_class">
+
+[See more](https://en.wikipedia.org/wiki/Interpolation).
 """  # noqa
     assert rst2md(rst, gallery_conf, "", {}) == markdown
 
