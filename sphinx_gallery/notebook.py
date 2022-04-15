@@ -124,8 +124,11 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
         text = re.sub(directive_re,
                       partial(directive_fun, directive=directive), text)
 
-    links = re.compile(r'^ *\.\. _.*:.*$\n', flags=re.M)
-    text = re.sub(links, '', text)
+    footnote_links = re.compile(r'^ *\.\. _.*:.*$\n', flags=re.M)
+    text = re.sub(footnote_links, '', text)
+
+    embedded_uris = re.compile(r'`([^`]*?)\s*<([^`]*)>`_')
+    text = re.sub(embedded_uris, r'[\1](\2)', text)
 
     refs = re.compile(r':ref:`')
     text = re.sub(refs, '`', text)
