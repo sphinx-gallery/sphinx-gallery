@@ -13,7 +13,7 @@ import ast
 from io import BytesIO
 import re
 import tokenize
-from textwrap import dedent
+from textwrap import dedent, indent
 
 from sphinx.errors import ExtensionError
 from .sphinx_compatibility import getLogger
@@ -126,6 +126,9 @@ def _get_docstring_and_rest(filename):
 def extract_file_config(content):
     """
     Pull out the file-specific config specified in the docstring.
+    Note that this can be used for a single block too.
+    When a directive is present several times in `content` only the last
+    occurence will be present in the output config dict.
     """
     file_conf = {}
     for match in re.finditer(INFILE_CONFIG_PATTERN, content):
@@ -144,6 +147,79 @@ def extract_file_config(content):
     return file_conf
 
 
+class Block:
+    """Contents of a parsed block"""
+    __slots__ = ("contents", "lineno", "config")
+
+    def __init__(self, contents, lineno, config=None):
+        self.contents = contents
+        self.lineno = lineno
+        self.config = config if config is not None else {}
+
+    def __getitem__(self, item):
+        """Retrocompat for scrapers' use in ``save_figures``"""
+        logger.warning(
+            "Accessing a Block's details using tuple notation is deprecated "
+            "and will be removed in a later release. Please use attribute "
+            "access."
+        )
+        if item == 0:
+            return "text" if isinstance(self, TextBlock) else "code"
+        elif item == 1:
+            return self.contents
+        elif item == 2:
+            return self.lineno
+        else:
+            raise IndexError(item)
+
+    def __str__(self):
+        """Full multi-line display for str(self) and print(self)."""
+        return "%s(lineno=%s, config=%r):\n%s" % (
+            type(self).__name__,
+            self.lineno,
+            self.config,
+            indent(self.contents, "    "),
+        )
+
+    def __repr__(self):
+        """Efficient one-liner for repr(self)"""
+        return "%s(lineno=%s, config=%r, contents=%r)" % (
+            type(self).__name__,
+            self.lineno,
+            self.config,
+            "%s%s" % (
+                self.contents[:100],
+                "(...)" if len(self.contents) >= 100 else ""
+            ),
+        )
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        else:
+            return (
+                self.contents == other.contents
+                and self.lineno == other.lineno
+                and self.config == other.config
+            )
+
+    def remove_config_comments(self):
+        """Return a copy of this block with config comments removed."""
+        new_contents = remove_config_comments(self.contents)
+        blk_copy = type(self)(
+            contents=new_contents, lineno=self.lineno, config=self.config
+        )
+        return blk_copy
+
+
+class CodeBlock(Block):
+    pass
+
+
+class TextBlock(Block):
+    pass
+
+
 def split_code_and_text_blocks(source_file, return_node=False):
     """Return list with source file separated into code and text blocks.
 
@@ -159,17 +235,17 @@ def split_code_and_text_blocks(source_file, return_node=False):
     file_conf : dict
         File-specific settings given in source file comments as:
         ``# sphinx_gallery_<name> = <value>``
-    blocks : list
-        (label, content, line_number)
-        List where each element is a tuple with the label ('text' or 'code'),
-        the corresponding content string of block and the leading line number
+    blocks : list[Block]
+        List where each element is a CodeBlock or TextBlock.
     node : ast Node
         The parsed node.
     """
     docstring, rest_of_content, lineno, node = _get_docstring_and_rest(
         source_file)
-    blocks = [('text', docstring, 1)]
+    blocks = [TextBlock(contents=docstring, lineno=1)]
 
+    # TODO This is maybe useless: now that the block-related ones are read
+    #  below we could probably replace it with a union of all block configs
     file_conf = extract_file_config(rest_of_content)
 
     pattern = re.compile(
@@ -181,21 +257,30 @@ def split_code_and_text_blocks(source_file, return_node=False):
     for match in re.finditer(pattern, rest_of_content):
         code_block_content = rest_of_content[pos_so_far:match.start()]
         if code_block_content.strip():
-            blocks.append(('code', code_block_content, lineno))
+            cfg = extract_file_config(code_block_content)
+            block = CodeBlock(
+                contents=code_block_content, lineno=lineno, config=cfg
+            )
+            blocks.append(block)
         lineno += code_block_content.count('\n')
 
         lineno += 1  # Ignored header line of hashes.
         text_content = match.group('text_content')
         text_block_content = dedent(re.sub(sub_pat, '', text_content)).lstrip()
         if text_block_content.strip():
-            blocks.append(('text', text_block_content, lineno))
+            block = TextBlock(contents=text_block_content, lineno=lineno)
+            blocks.append(block)
         lineno += text_content.count('\n')
 
         pos_so_far = match.end()
 
     remaining_content = rest_of_content[pos_so_far:]
     if remaining_content.strip():
-        blocks.append(('code', remaining_content, lineno))
+        cfg = extract_file_config(remaining_content)
+        block = CodeBlock(
+            contents=remaining_content, lineno=lineno, config=cfg
+        )
+        blocks.append(block)
 
     out = (file_conf, blocks)
     if return_node:

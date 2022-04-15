@@ -44,8 +44,7 @@ from . import sphinx_compatibility
 from .backreferences import (_write_backreferences, _thumbnail_div,
                              identify_names)
 from .downloads import CODE_DOWNLOAD
-from .py_source_parser import (split_code_and_text_blocks,
-                               remove_config_comments)
+from .py_source_parser import split_code_and_text_blocks, CodeBlock, TextBlock
 
 from .notebook import jupyter_notebook, save_notebook
 from .binder import check_binder_conf, gen_binder_rst
@@ -716,9 +715,8 @@ def execute_code_block(compiler, block, example_globals, script_vars,
     compiler : codeop.Compile
         Compiler to compile AST of code block.
 
-    block : List[Tuple[str, str, int]]
-        List of Tuples, each Tuple contains label ('text' or 'code'),
-        the corresponding content string of block and the leading line number.
+    block : Block
+        A CodeBlock or TextBlock
 
     example_globals: Dict[str, Any]
         Global variables for examples.
@@ -740,9 +738,9 @@ def execute_code_block(compiler, block, example_globals, script_vars,
     """
     if example_globals is None:  # testing shortcut
         example_globals = script_vars['fake_main'].__dict__
-    blabel, bcontent, lineno = block
+
     # If example is not suitable to run, skip executing its blocks
-    if not script_vars['execute_script'] or blabel == 'text':
+    if not script_vars['execute_script'] or isinstance(block, TextBlock):
         return ''
 
     cwd = os.getcwd()
@@ -759,16 +757,21 @@ def execute_code_block(compiler, block, example_globals, script_vars,
     sys.path.append(os.getcwd())
 
     # Save figures unless there is a `sphinx_gallery_defer_figures` flag
-    match = re.search(r'^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?',
-                      bcontent, re.MULTILINE)
+    match = re.search(
+        r'^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?',
+        block.contents,
+        re.MULTILINE,
+    )
     need_save_figures = match is None
 
     try:
         ast_Module = _ast_module()
-        code_ast = ast_Module([bcontent])
+        code_ast = ast_Module([block.contents])
         flags = ast.PyCF_ONLY_AST | compiler.flags
-        code_ast = compile(bcontent, src_file, 'exec', flags, dont_inherit=1)
-        ast.increment_lineno(code_ast, lineno - 1)
+        # warning do not change indentation here as it is used
+        # in handle_exception stack introspection
+        code_ast = compile(block.contents, src_file, 'exec', flags, dont_inherit=1)  # noqa
+        ast.increment_lineno(code_ast, block.lineno - 1)
 
         is_last_expr, mem_max = _exec_and_get_memory(
             compiler, ast_Module, code_ast, gallery_conf, script_vars
@@ -778,6 +781,8 @@ def execute_code_block(compiler, block, example_globals, script_vars,
         logging_tee.restore_std()
         if need_save_figures:
             need_save_figures = False
+            # warning do not change indentation here as it is used
+            # in handle_exception stack introspection
             images_rst = save_figures(block, script_vars, gallery_conf)
         else:
             images_rst = u''
@@ -790,6 +795,8 @@ def execute_code_block(compiler, block, example_globals, script_vars,
         # still call this even though we won't use the images so that
         # figures are closed
         if need_save_figures:
+            # warning do not change indentation here as it is used
+            # in handle_exception stack introspection
             save_figures(block, script_vars, gallery_conf)
     else:
         _reset_cwd_syspath(cwd, sys_path)
@@ -842,10 +849,8 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
 
     Parameters
     ----------
-    script_blocks : list
-        (label, content, line_number)
-        List where each element is a tuple with the label ('text' or 'code'),
-        the corresponding content string of block and the leading line number
+    script_blocks : list[Block]
+        List where each element is a CodeBlock or TextBlock.
     script_vars : dict
         Configuration and run time variables
     gallery_conf : dict
@@ -953,7 +958,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
 
     file_conf, script_blocks, node = split_code_and_text_blocks(
         src_file, return_node=True)
-    intro, title = extract_intro_and_title(fname, script_blocks[0][1])
+    intro, title = extract_intro_and_title(fname, script_blocks[0].contents)
     gallery_conf['titles'][src_file] = title
 
     executable = executable_script(src_file, gallery_conf)
@@ -1011,13 +1016,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
 
     if gallery_conf['remove_config_comments']:
         script_blocks = [
-            (label, remove_config_comments(content), line_number)
-            for label, content, line_number in script_blocks
+            block.remove_config_comments()
+            for block in script_blocks
         ]
 
     # Remove final empty block, which can occur after config comments
     # are removed
-    if script_blocks[-1][1].isspace():
+    if script_blocks[-1].contents.isspace():
         script_blocks = script_blocks[:-1]
         output_blocks = output_blocks[:-1]
 
@@ -1102,10 +1107,8 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
 
     Parameters
     ----------
-    script_blocks : list
-        (label, content, line_number)
-        List where each element is a tuple with the label ('text' or 'code'),
-        the corresponding content string of block and the leading line number
+    script_blocks : list[Block]
+        List where each element is a CodeBlock or TextBlock.
     output_blocks : list
         List of strings where each element is the restructured text
         representation of the output of each block
@@ -1125,21 +1128,23 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
     example_rst = ""
-    for bi, ((blabel, bcontent, lineno), code_output) in \
+    for bi, (blk, code_output) in \
             enumerate(zip(script_blocks, output_blocks)):
         # do not add comment to the title block, otherwise the linking does
         # not work properly
         if bi > 0:
             example_rst += RST_BLOCK_HEADER.format(
-                lineno, lineno + bcontent.count('\n'))
-        if blabel == 'code':
+                blk.lineno, blk.lineno + blk.contents.count('\n'))
+        if isinstance(blk, CodeBlock):
 
             if not file_conf.get('line_numbers',
                                  gallery_conf.get('line_numbers', False)):
-                lineno = None
+                usedlineno = None
+            else:
+                usedlineno = blk.lineno
 
-            code_rst = codestr2rst(bcontent, lang=gallery_conf['lang'],
-                                   lineno=lineno) + '\n'
+            code_rst = codestr2rst(blk.contents, lang=gallery_conf['lang'],
+                                   lineno=usedlineno) + '\n'
             if is_example_notebook_like:
                 example_rst += code_rst
                 example_rst += code_output
@@ -1150,8 +1155,10 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
                     example_rst += "\n\n|\n\n"
                 example_rst += code_rst
         else:
-            block_separator = '\n\n' if not bcontent.endswith('\n') else '\n'
-            example_rst += bcontent + block_separator
+            block_separator = (
+                '\n\n' if not blk.contents.endswith('\n') else '\n'
+            )
+            example_rst += blk.contents + block_separator
 
     return example_rst
 

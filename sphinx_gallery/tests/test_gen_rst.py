@@ -24,6 +24,7 @@ from sphinx.errors import ExtensionError
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst, _update_gallery_conf
+from sphinx_gallery.py_source_parser import TextBlock, CodeBlock
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 
 CONTENT = [
@@ -65,8 +66,20 @@ def test_split_code_and_text_blocks():
         'examples/no_output/just_code.py')
 
     assert file_conf == {}
-    assert blocks[0][0] == 'text'
-    assert blocks[1][0] == 'code'
+    assert isinstance(blocks[0], TextBlock)
+    assert isinstance(blocks[1], CodeBlock)
+
+
+def _as_blocks(blocks_list):
+    return [
+        (
+            TextBlock(contents=bcontents, lineno=lineno)
+            if blabel == "text"
+            else CodeBlock(contents=bcontents, lineno=lineno)
+        )
+        for blabel, bcontents, lineno
+        in blocks_list
+    ]
 
 
 def test_bug_cases_of_notebook_syntax():
@@ -76,6 +89,7 @@ def test_bug_cases_of_notebook_syntax():
 
     with open('sphinx_gallery/tests/reference_parse.txt') as reference:
         ref_blocks = ast.literal_eval(reference.read())
+        ref_blocks = _as_blocks(ref_blocks)
         file_conf, blocks = sg.split_code_and_text_blocks(
             'tutorials/plot_parse.py')
 
@@ -99,11 +113,13 @@ def test_direct_comment_after_docstring():
 
     assert file_conf == {}
     expected_result = [
-        ('text', 'Docstring', 1),
-        ('code', '\n'.join(['# and now comes the module code',
-                            '# with a second line of comment',
-                            'x, y = 1, 2',
-                            '']), 2)]
+        TextBlock(contents='Docstring', lineno=1),
+        CodeBlock(contents='\n'.join([
+            '# and now comes the module code',
+            '# with a second line of comment',
+            'x, y = 1, 2',
+            ''
+        ]), lineno=2)]
     assert result == expected_result
 
 
@@ -123,7 +139,7 @@ def test_final_rst_last_word(tmpdir):
         ('text', 'Docstring', 1),
         ('code', '# comment only code block\n', 2),
         ('text', 'Include this whole sentence.', 4)]
-    assert result == expected_result
+    assert result == _as_blocks(expected_result)
 
 
 def test_rst_block_after_docstring(gallery_conf, tmpdir):
@@ -145,10 +161,10 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
 
     assert file_conf == {}
     assert len(blocks) == 4
-    assert blocks[0][0] == 'text'
-    assert blocks[1][0] == 'text'
-    assert blocks[2][0] == 'text'
-    assert blocks[3][0] == 'text'
+    assert isinstance(blocks[0], TextBlock)
+    assert isinstance(blocks[1], TextBlock)
+    assert isinstance(blocks[2], TextBlock)
+    assert isinstance(blocks[3], TextBlock)
 
     script_vars = {'execute_script': ''}
     file_conf = {}
@@ -192,9 +208,9 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
 
     assert file_conf == {}
     assert len(blocks) == 3
-    assert blocks[0][0] == 'text'
-    assert blocks[1][0] == 'text'
-    assert blocks[2][0] == 'code'
+    assert isinstance(blocks[0], TextBlock)
+    assert isinstance(blocks[1], TextBlock)
+    assert isinstance(blocks[2], CodeBlock)
 
     gallery_conf['abort_on_example_error'] = True
     script_vars = dict(execute_script=True, src_file=filename,
@@ -237,8 +253,8 @@ b = 'foo'
 """)
     file_conf, blocks = sg.split_code_and_text_blocks(filename)
     assert len(blocks) == 2
-    assert blocks[0][0] == 'text'
-    assert blocks[1][0] == 'code'
+    assert isinstance(blocks[0], TextBlock)
+    assert isinstance(blocks[1], CodeBlock)
     assert file_conf == {}
     script_vars = {'execute_script': True, 'src_file': filename,
                    'image_path_iterator': [],
@@ -682,7 +698,7 @@ def test_output_indentation(gallery_conf, script_vars):
         "B 3 4"
     ])
     code = "print('" + test_string + "')"
-    code_block = ("code", code, 1)
+    code_block = CodeBlock(contents=code, lineno=1)
     file_conf = {}
     output = sg.execute_code_block(
         compiler, code_block, None, script_vars, gallery_conf, file_conf
@@ -702,7 +718,7 @@ def test_output_no_ansi(gallery_conf, script_vars):
     compiler = codeop.Compile()
 
     code = 'print("\033[94m0.25")'
-    code_block = ("code", code, 1)
+    code_block = CodeBlock(contents=code, lineno=1)
     file_conf = {}
     output = sg.execute_code_block(
         compiler, code_block, None, script_vars, gallery_conf, file_conf
@@ -719,7 +735,7 @@ def test_empty_output_box(gallery_conf, script_vars):
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
 
-    code_block = ("code", "print(__doc__)", 1)
+    code_block = CodeBlock(contents="print(__doc__)", lineno=1)
     file_conf = {}
 
     output = sg.execute_code_block(
@@ -849,7 +865,7 @@ def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
                       req_mpl, req_pil, script_vars):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
-    code_block = ('code', code, 1)
+    code_block = CodeBlock(contents=code, lineno=1)
     gallery_conf['capture_repr'] = capture_repr
     file_conf = {}
     output = sg.execute_code_block(
@@ -866,7 +882,7 @@ def test_per_file_capture_repr(gallery_conf, caprepr_gallery, caprepr_file,
                                expected_out, req_mpl, req_pil, script_vars):
     """Tests that per file capture_repr overrides gallery_conf."""
     compiler = codeop.Compile()
-    code_block = ('code', 'a=2\n2', 1)
+    code_block = CodeBlock(contents='a=2\n2', lineno=1)
     gallery_conf['capture_repr'] = caprepr_gallery
     file_conf = {'capture_repr': caprepr_file}
     output = sg.execute_code_block(
@@ -878,7 +894,7 @@ def test_per_file_capture_repr(gallery_conf, caprepr_gallery, caprepr_file,
 def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
-    code_block = ('code', 'a=2\na', 1)
+    code_block = CodeBlock(contents='a=2\na', lineno=1)
     gallery_conf['ignore_repr_types'] = r'int'
     file_conf = {}
     output = sg.execute_code_block(

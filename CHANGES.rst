@@ -12,6 +12,8 @@ CSS pseudo-elements instead of additional real text. For more details, see
 
 -  Modify toctree to include gallery categories (ie gallery subfolders) `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. Instead of a flat toctree linking the main gallery README / index to all gallery items, one now links the main README to category READMEs, which themselves point to category items. In particular, this allows displaying categories of a given gallery in the sidebar (`alexisthual <https://github.com/alexisthual>`__)
 
+ - New ``sphinx_gallery_expected_error`` code block directive to show expected errors. `#912 <https://github.com/sphinx-gallery/sphinx-gallery/issues/912>`__
+
 **Fixed bugs:**
 
 -  Display gallery items using CSS grid instead of floating `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__, see `migration guide <https://github.com/sphinx-gallery/sphinx-gallery/pull/906#issuecomment-1019542067>`__ to adapt custom css for thumbnails (`alexisthual <https://github.com/alexisthual>`__)

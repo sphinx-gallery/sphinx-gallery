@@ -25,7 +25,7 @@ import copy
 from sphinx.errors import ExtensionError
 
 from . import sphinx_compatibility
-from .py_source_parser import split_code_and_text_blocks
+from .py_source_parser import split_code_and_text_blocks, CodeBlock
 from .utils import replace_py_ipynb
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -252,22 +252,29 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
     Parameters
     ----------
     script_blocks : list
-        Each list element should be a tuple of (label, content, lineno).
+        Each list element should be a CodeBlock or TextBlock.
     """
     heading_level_counter = count(start=1)
     heading_levels = defaultdict(lambda: next(heading_level_counter))
-    for blabel, bcontent, lineno in script_blocks:
-        if blabel == 'code':
-            add_code_cell(work_notebook, bcontent)
+    for blk in script_blocks:
+        if isinstance(blk, CodeBlock):
+            add_code_cell(work_notebook, blk.contents)
         else:
             if gallery_conf["pypandoc"] is False:
                 markdown = rst2md(
-                    bcontent + '\n', gallery_conf, target_dir, heading_levels)
+                    blk.contents + '\n',
+                    gallery_conf,
+                    target_dir,
+                    heading_levels,
+                )
             else:
                 import pypandoc
                 # pandoc automatically adds \n to the end
                 markdown = pypandoc.convert_text(
-                    bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
+                    blk.contents,
+                    to='md',
+                    format='rst',
+                    **gallery_conf["pypandoc"],
                 )
             add_markdown_cell(work_notebook, markdown)
 
