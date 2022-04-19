@@ -448,7 +448,7 @@ def generate_dir_rst(
             target_dir, gallery_conf['src_dir'], fname, intro, title
         )
         entries_text.append(this_entry)
-        subsection_toctree_filenames.append(gallery_item_filename)
+        subsection_toctree_filenames.append("/" + gallery_item_filename)
 
     for entry_text in entries_text:
         subsection_index_content += entry_text
@@ -476,8 +476,8 @@ def generate_dir_rst(
 .. toctree::
    :hidden:
 
-   /%s\n
-""" % "\n   /".join(subsection_toctree_filenames)
+   %s\n
+""" % "\n   ".join(subsection_toctree_filenames)
             findex.write(subsection_index_toctree)
 
     return (
