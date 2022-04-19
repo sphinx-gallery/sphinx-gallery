@@ -481,7 +481,6 @@ def generate_gallery_rst(app):
             _,
             this_fhindex,
             this_costs,
-            _,
             this_toctree_items,
         ) = generate_dir_rst(
             examples_dir_abs_path,
@@ -517,7 +516,6 @@ def generate_gallery_rst(app):
                     subsection_index_path,
                     subsection_index_content,
                     subsection_costs,
-                    _,
                     _,
                 ) = generate_dir_rst(
                     src_dir, target_dir, gallery_conf, seen_backrefs
