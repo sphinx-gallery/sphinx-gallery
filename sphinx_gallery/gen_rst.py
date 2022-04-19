@@ -365,37 +365,38 @@ def generate_dir_rst(
     seen_backrefs,
     include_toctree=True,
 ):
-    """
-    Generate the gallery reStructuredText for an example directory.
+    """Generate the gallery reStructuredText for an example directory.
 
-    Inputs
-    ------
+    Parameters
+    ----------
     src_dir: str,
-             Path to example directory containing python files
-             and possibly sub categories
+        Path to example directory containing python files
+        and possibly sub categories
     target_dir: str,
-                Path where parsed examples (rst, python files, etc)
-                will be outputed
-    gallery_conf: gallery configuration
+        Path where parsed examples (rst, python files, etc)
+        will be outputed
+    gallery_conf : Dict[str, Any]
+        Gallery configurations.
     seen_backrefs: set,
-                   Back references encountered when parsing this gallery
-                   will be stored in this set.
-    include_toctree: boolean, default=True,
-                     Whether or not toctree should be included
-                     in generated rst file.
+        Back references encountered when parsing this gallery
+        will be stored in this set.
+    include_toctree: bool,
+        Whether or not toctree should be included
+        in generated rst file.
+        Default = True.
 
-    Outputs
+    Returns
     -------
     index_path: str,
-                Path to index rst file presenting the current example gallery
+        Path to index rst file presenting the current example gallery
     index_content: str,
-                   Content which will be written to the index rst file
-                   presenting the current example gallery
+        Content which will be written to the index rst file
+        presenting the current example gallery
     costs: list,
-           List of costs for building each element of the gallery
+        List of costs for building each element of the gallery
     toctree_items: list,
-                   List of files included in toctree
-                   (independent of include_toctree's value)
+        List of files included in toctree
+        (independent of include_toctree's value)
     """
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
 
