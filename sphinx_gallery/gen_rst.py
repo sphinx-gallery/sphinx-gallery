@@ -358,8 +358,46 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
 """
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
-    """Generate the gallery reStructuredText for an example directory."""
+def generate_dir_rst(
+    src_dir,
+    target_dir,
+    gallery_conf,
+    seen_backrefs,
+    include_toctree=True,
+):
+    """
+    Generate the gallery reStructuredText for an example directory.
+
+    Inputs
+    ------
+    src_dir: str,
+             Path to example directory containing python files
+             and possibly sub categories
+    target_dir: str,
+                Path where parsed examples (rst, python files, etc)
+                will be outputed
+    gallery_conf: gallery configuration
+    seen_backrefs: set,
+                   Back references encountered when parsing this gallery
+                   will be stored in this set.
+    include_toctree: boolean, default=True,
+                     Whether or not toctree should be included
+                     in generated rst file.
+
+    Outputs
+    -------
+    index_path: str,
+                Path to index rst file presenting the current example gallery
+    index_content: str,
+                   Content which will be written to the index rst file
+                   presenting the current example gallery
+    costs: list,
+           List of costs for building each element of the gallery
+    toctree: str,
+             Toctree contained in the generted index rst file
+    toctree_items: list,
+                   List of files included in the toctree
+    """
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
 
     subsection_index_content = ""
@@ -441,11 +479,16 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         findex.write(subsection_index_content)
 
         # add toctree to file only if toctree is not empty
-        if len(subsection_toctree_filenames) > 0:
+        if len(subsection_toctree_filenames) > 0 and include_toctree:
             findex.write(subsection_index_toctree)
 
-    return subsection_index_content, costs, subsection_index_toctree, \
-        subsection_index_path
+    return (
+        subsection_index_path,
+        subsection_index_content,
+        costs,
+        subsection_index_toctree,
+        subsection_toctree_filenames,
+    )
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):

@@ -477,11 +477,18 @@ def generate_gallery_rst(app):
 
         # Create section rst files and fetch content which will
         # be added to current index file
-        this_fhindex, this_costs, this_toctree, _ = generate_dir_rst(
+        (
+            _,
+            this_fhindex,
+            this_costs,
+            this_toctree,
+            this_toctree_items,
+        ) = generate_dir_rst(
             examples_dir_abs_path,
             gallery_dir_abs_path,
             gallery_conf,
-            seen_backrefs
+            seen_backrefs,
+            include_toctree=False,
         )
 
         costs += this_costs
@@ -507,10 +514,11 @@ def generate_gallery_rst(app):
                 )
 
                 (
+                    subsection_index_path,
                     subsection_index_content,
                     subsection_costs,
                     _,
-                    subsection_index_path,
+                    _,
                 ) = generate_dir_rst(
                     src_dir, target_dir, gallery_conf, seen_backrefs
                 )
@@ -539,7 +547,7 @@ def generate_gallery_rst(app):
    :includehidden:
 
    %s\n
-""" % "\n   ".join(subsection_index_files)
+""" % "\n   ".join(this_toctree_items + subsection_index_files)
 
             # add toctree to file only if there are subsections
             if len(subsection_index_files) > 0:
