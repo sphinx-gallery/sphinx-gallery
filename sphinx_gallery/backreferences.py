@@ -23,6 +23,7 @@ from sphinx.errors import ExtensionError
 from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
+from .directives import THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE
 
 
 class DummyClass(object):
@@ -310,6 +311,9 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write('\n\n' + heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
+                # Open a div which will contain all thumbnails
+                # (it will be closed in _finalize_backreferences)
+                ex_file.write(THUMBNAIL_PARENT_DIV)
             ex_file.write(_thumbnail_div(target_dir, gallery_conf['src_dir'],
                                          fname, snippet, title,
                                          is_backref=True))
@@ -327,6 +331,10 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
                             gallery_conf['backreferences_dir'],
                             '%s.examples.new' % backref)
         if os.path.isfile(path):
+            # Close div containing all thumbnails
+            # (it was open in _write_backreferences)
+            with codecs.open(path, 'a', encoding='utf-8') as ex_file:
+                ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
             _replace_md5(path, mode='t')
         else:
             level = gallery_conf['log_level'].get('backreference_missing',
