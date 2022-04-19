@@ -481,7 +481,7 @@ def generate_gallery_rst(app):
             _,
             this_fhindex,
             this_costs,
-            this_toctree,
+            _,
             this_toctree_items,
         ) = generate_dir_rst(
             examples_dir_abs_path,
@@ -498,7 +498,7 @@ def generate_gallery_rst(app):
         index_rst_new = os.path.join(gallery_dir_abs_path, 'index.rst.new')
         with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
-            fhindex.write(":orphan:\n\n" + this_fhindex + this_toctree)
+            fhindex.write(":orphan:\n\n" + this_fhindex)
 
             # list all paths to subsection index files in this array
             subsection_index_files = []

@@ -393,10 +393,9 @@ def generate_dir_rst(
                    presenting the current example gallery
     costs: list,
            List of costs for building each element of the gallery
-    toctree: str,
-             Toctree contained in the generted index rst file
     toctree_items: list,
-                   List of files included in the toctree
+                   List of files included in toctree
+                   (independent of include_toctree's value)
     """
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
 
@@ -457,19 +456,6 @@ def generate_dir_rst(
     # Close thumbnail parent div
     subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
 
-    # Create toctree for index file
-    # with all gallery items which belong to current subsection.
-    # The toctree string should be empty if there are no subsections
-    # or related files, as it will be returned at the end of this function.
-    subsection_index_toctree = ""
-    if len(subsection_toctree_filenames) > 0:
-        subsection_index_toctree = """
-.. toctree::
-   :hidden:
-
-   /%s\n
-""" % "\n   /".join(subsection_toctree_filenames)
-
     # Write subsection index file
     subsection_index_path = os.path.join(target_dir, 'index.rst.new')
     with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
@@ -478,15 +464,26 @@ def generate_dir_rst(
         ))
         findex.write(subsection_index_content)
 
-        # add toctree to file only if toctree is not empty
+        # Create toctree for index file
+        # with all gallery items which belong to current subsection
+        # and add it to generated index rst file if need be.
+        # Toctree cannot be empty
+        # and won't be added if include_toctree is false
+        # (this is useful when generating the example gallery's main
+        # index rst file, which should contain only one toctree)
         if len(subsection_toctree_filenames) > 0 and include_toctree:
+            subsection_index_toctree = """
+.. toctree::
+   :hidden:
+
+   /%s\n
+""" % "\n   /".join(subsection_toctree_filenames)
             findex.write(subsection_index_toctree)
 
     return (
         subsection_index_path,
         subsection_index_content,
         costs,
-        subsection_index_toctree,
         subsection_toctree_filenames,
     )
 
