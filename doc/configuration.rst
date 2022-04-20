@@ -9,6 +9,11 @@ dictionary specified in your ``conf.py`` file. A list of the possible
 keys are listed :ref:`below <list_of_options>` and explained in
 greater detail in subsequent sections.
 
+When using these flags, it is good practice to make sure the source Python files
+are equivalent to the generated HTML and iPython notebooks (i.e. make sure
+``.py == .html == .ipynb``). This principle should be violated only when
+necessary, and on a case-by-case basis.
+
 .. _list_of_options:
 
 List of config options
