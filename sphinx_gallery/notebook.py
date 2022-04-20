@@ -312,9 +312,12 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
                     bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
                 )
 
-            remaining = promote_jupyter_cell_magic(work_notebook, markdown)
-            if remaining and not remaining.isspace():
-                add_markdown_cell(work_notebook, remaining)
+            if gallery_conf["promote_jupyter_magic"]:
+                remaining = promote_jupyter_cell_magic(work_notebook, markdown)
+                if remaining and not remaining.isspace():
+                    add_markdown_cell(work_notebook, remaining)
+            else:
+                add_markdown_cell(work_notebook, markdown)
 
 
 def save_notebook(work_notebook, write_file):
