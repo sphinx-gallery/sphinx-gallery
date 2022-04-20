@@ -45,6 +45,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``show_signature`` (:ref:`show_signature`)
 - ``binder`` (:ref:`binder_links`)
+- ``promote_jupyter_magic`` (:ref: `promote_jupyter_magic`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``notebook_images`` (:ref:`notebook_images`)
 - ``pypandoc`` (:ref:`use_pypandoc`)
@@ -1078,6 +1079,60 @@ Binder links will point to these notebooks.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the `public Binder server <http://mybinder.org>`_.
+
+.. _promote_jupyter_magic:
+
+Make Jupyter cell magic compile as code
+=======================================
+
+Often times, tutorials will include bash scripts for the user to copy/paste into
+their terminal. These scripts are not intended to be run when someone is
+building the documentation, as they will already have those dependencies in
+their environment. Hence they are normally written as code blocks inside text::
+
+  #%%
+  # Installing dependencies
+  #
+  #     .. code-block:: bash
+  #
+  #       pip install -q tensorflow
+  #       apt-get -qq install curl
+
+This works fine for the ``.py`` and ``.html`` files, but causes problems when
+rendered as an Jupyter notebook. The downloaded ``.ipynb`` file will not have
+those dependencies installed, and thus will not work without running the script.
+
+To fix this, we can set the ``promote_jupyter_magic`` flag in ``conf.py``::
+
+  sphinx_gallery_conf = {
+      ...
+      'promote_jupyter_magic': True,
+  }
+
+If this flag is ``True``, then when a Jupyter notebook is being built, any code
+block starting with a `Jupyter cell magic <https://ipython.readthedocs.io/en/stable/interactive/magics.html>`_ (e.g. ``%%bash`` or ``%%writefile``)
+will be turned into a runnable code block.
+
+For our earlier example, we could change the Markdown text to::
+
+  #%%
+  # Installing dependencies
+  #
+  #     .. code-block:: bash
+  #
+  #       %%bash
+  #       pip install -q tensorflow
+  #       apt-get -qq install curl
+
+Then, TensorFlow and Curl would be automatically installed upon running the
+Jupyter notebook. This works for any cell magic (not just those mentioned above)
+and only affects the creation of Jupyter notebooks.
+
+.. warning::
+  It is good practice to ensure the ``.py`` and ``.html`` files match the ``.ipynb``
+  files as closely as possible. This flag (and Jupyter cell magics) should only
+  be used when the relevant code is already intended to be executed by the end
+  user.
 
 .. _without_execution:
 
