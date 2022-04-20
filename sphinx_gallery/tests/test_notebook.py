@@ -353,6 +353,8 @@ def test_jupyter_notebook(gallery_conf):
     assert re.match("^Last text block.\n\nThat[\\\\]?'s all folks !", cell_src)
 
     # Test Jupyter magic code blocks are promoted
+    gallery_conf['promote_jupyter_magic'] = True
+    example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
     bash_block = example_nb.get('cells')[-2]
     assert bash_block['cell_type'] == 'code'
     assert bash_block['source'][0] == '%%bash\n# This could be run!'

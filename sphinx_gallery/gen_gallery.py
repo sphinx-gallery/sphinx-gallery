@@ -79,6 +79,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
+    'promote_jupyter_magic': False,
     'image_scrapers': ('matplotlib',),
     'compress_images': (),
     'reset_modules': ('matplotlib', 'seaborn'),
