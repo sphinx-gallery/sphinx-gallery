@@ -66,6 +66,7 @@ sphinx_gallery/tests/tinybuild/gen_modules/
 sphinx_gallery/tests/tinybuild/auto_examples/
 sphinx_gallery/tests/tinybuild/_build/
 sphinx_gallery/tests/tinybuild/tiny_html/
+junit-results.xml
 
 # PyBuilder
 target/

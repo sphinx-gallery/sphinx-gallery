@@ -99,7 +99,8 @@ sphinx_gallery_conf = {
     'junit': op.join('sphinx-gallery', 'junit-results.xml'),
     'matplotlib_animations': True,
     'pypandoc': True,
-    'image_srcset': ["2x"]
+    'image_srcset': ["2x"],
+    'exclude_implicit_doc': ['figure_rst'],
 }
 nitpicky = True
 highlight_language = 'python3'

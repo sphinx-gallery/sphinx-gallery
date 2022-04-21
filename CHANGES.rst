@@ -6,10 +6,11 @@ Next version
 
 In this version, the "Out:" prefix applied to code outputs is now created from
 CSS pseudo-elements instead of additional real text. For more details, see
-`#896 <https://github.com/sphinx-gallery/sphinx-gallery/pull/896>`.
+`#896 <https://github.com/sphinx-gallery/sphinx-gallery/pull/896>`__.
 
 **Implemented enhancements:**
 
+-  Modify toctree to include gallery categories (ie gallery subfolders) `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. Instead of a flat toctree linking the main gallery README / index to all gallery items, one now links the main README to category READMEs, which themselves point to category items. In particular, this allows displaying categories of a given gallery in the sidebar (`alexisthual <https://github.com/alexisthual>`__)
 
 **Fixed bugs:**
 
@@ -707,7 +708,7 @@ Developer changes
    `#438 <https://github.com/sphinx-gallery/sphinx-gallery/issues/438>`__
 -  Won’t display stdout
    `#435 <https://github.com/sphinx-gallery/sphinx-gallery/issues/435>`__
--  realtive paths in github.io
+-  relative paths in github.io
    `#434 <https://github.com/sphinx-gallery/sphinx-gallery/issues/434>`__
 -  ‘make html’ does not attempt to run examples
    `#425 <https://github.com/sphinx-gallery/sphinx-gallery/issues/425>`__
@@ -1072,7 +1073,7 @@ New features
 
 Bug Fixes
 '''''''''
-* Sphinx-Gallery now raises an exception if the matplotlib bakend can
+* Sphinx-Gallery now raises an exception if the matplotlib backend can
   not be set to ``'agg'``. This can happen for example if
   matplotlib.pyplot is imported in conf.py. See `#157
   <https://github.com/sphinx-gallery/sphinx-gallery/pull/157>`_ for

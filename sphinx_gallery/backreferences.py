@@ -23,6 +23,7 @@ from sphinx.errors import ExtensionError
 from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
+from .directives import THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE
 
 
 class DummyClass(object):
@@ -133,7 +134,8 @@ class NameFinder(ast.NodeVisitor):
                                 full_name = '.'.join(
                                     module[:depth] + [class_name] + method)
                                 options.append(
-                                    (name, full_name, class_attr, is_class))
+                                    (name, full_name, class_attr, is_class,
+                                        False))
             # second pass: by import (can't resolve as well without doing
             # some actions like actually importing the modules, so use it
             # as a last resort)
@@ -144,7 +146,7 @@ class NameFinder(ast.NodeVisitor):
                     full_name = self.imported_names[local_name] + remainder
                     is_class = class_attr = False  # can't tell without import
                     options.append(
-                        (name, full_name, class_attr, is_class))
+                        (name, full_name, class_attr, is_class, False))
         return options
 
 
@@ -205,18 +207,18 @@ def identify_names(script_blocks, global_variables=None, node=''):
     if node == '':  # mostly convenience for testing functions
         c = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'code')
         node = ast.parse(c)
-    # Get matches from the code (AST)
+    # Get matches from the code (AST, implicit matches)
     finder = NameFinder(global_variables)
     if node is not None:
         finder.visit(node)
     names = list(finder.get_mapping())
-    # Get matches from docstring inspection
+    # Get matches from docstring inspection (explicit matches)
     text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
-    names.extend((x, x, False, False) for x in re.findall(_regex, text))
+    names.extend((x, x, False, False, True) for x in re.findall(_regex, text))
     example_code_obj = collections.OrderedDict()  # order is important
     # Make a list of all guesses, in `_embed_code_links` we will break
     # when we find a match
-    for name, full_name, class_like, is_class in names:
+    for name, full_name, class_like, is_class, is_explicit in names:
         if name not in example_code_obj:
             example_code_obj[name] = list()
         # name is as written in file (e.g. np.asarray)
@@ -235,7 +237,8 @@ def identify_names(script_blocks, global_variables=None, node=''):
         # get shortened module name
         module_short = _get_short_module_name(module, attribute)
         cobj = {'name': attribute, 'module': module,
-                'module_short': module_short or module, 'is_class': is_class}
+                'module_short': module_short or module, 'is_class': is_class,
+                'is_explicit': is_explicit}
         example_code_obj[name].append(cobj)
     return example_code_obj
 
@@ -308,6 +311,9 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write('\n\n' + heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
+                # Open a div which will contain all thumbnails
+                # (it will be closed in _finalize_backreferences)
+                ex_file.write(THUMBNAIL_PARENT_DIV)
             ex_file.write(_thumbnail_div(target_dir, gallery_conf['src_dir'],
                                          fname, snippet, title,
                                          is_backref=True))
@@ -325,6 +331,10 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
                             gallery_conf['backreferences_dir'],
                             '%s.examples.new' % backref)
         if os.path.isfile(path):
+            # Close div containing all thumbnails
+            # (it was open in _write_backreferences)
+            with codecs.open(path, 'a', encoding='utf-8') as ex_file:
+                ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
             _replace_md5(path, mode='t')
         else:
             level = gallery_conf['log_level'].get('backreference_missing',

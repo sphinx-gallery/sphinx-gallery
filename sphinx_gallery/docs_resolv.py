@@ -356,7 +356,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         for name in sorted(example_code_obj):
             cobjs = example_code_obj[name]
             # possible names from identify_names, which in turn gets
-            # possibilites from NameFinder.get_mapping
+            # possibilities from NameFinder.get_mapping
             link = type_ = None
             for cobj in cobjs:
                 for modname in (cobj['module_short'], cobj['module']):

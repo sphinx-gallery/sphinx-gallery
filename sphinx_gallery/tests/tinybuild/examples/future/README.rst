@@ -1,5 +1,7 @@
 :orphan:
 
+.. _future_examples:
+
 Future examples
 ===============
 

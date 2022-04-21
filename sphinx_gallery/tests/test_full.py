@@ -23,11 +23,11 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 
 import pytest
 
-N_TOT = 13
+N_TOT = 13  # examples (plot_*.py in examples/**)
 
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
-N_RST = 15 + N_TOT
+N_RST = 16 + N_TOT + 1  # includes module API pages, etc.
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
@@ -379,6 +379,14 @@ def test_backreferences(sphinx_app):
         lines = fid.read()
     assert 'NameFinder' in lines  # in API doc
     assert 'plot_future_imports.html' in lines  # backref via doc block
+    # rendered file
+    html = op.join(out_dir, 'auto_examples', 'plot_second_future_imports.html')
+    assert op.isfile(html)
+    with codecs.open(html, 'r', 'utf-8') as fid:
+        html = fid.read()
+    assert 'sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder' in html  # noqa: E501
+    assert 'sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules' in html  # noqa: E501
+    assert 'figure_rst.html' not in html  # excluded
 
 
 @pytest.mark.parametrize('rst_file, example_used_in', [
@@ -614,7 +622,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '[8|9]'
+    n_ch = '(8|9|10)'
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
@@ -695,7 +703,6 @@ def test_error_messages(sphinx_app, name, want):
     example_rst = op.join(src_dir, 'auto_examples', name + '.rst')
     with codecs.open(example_rst, 'r', 'utf-8') as fid:
         rst = fid.read()
-    print(rst)
     rst = rst.replace('\n', ' ')
     assert re.match(want, rst) is not None
 

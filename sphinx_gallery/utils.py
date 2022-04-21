@@ -61,7 +61,11 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     # resize the image using resize; if using .thumbnail and the image is
     # already smaller than max_width, max_height, then this won't scale up
     # at all (maybe could be an option someday...)
-    img = img.resize((width_sc, height_sc), Image.BICUBIC)
+    try:  # Pillow 9+
+        bicubic = Image.Resampling.BICUBIC
+    except Exception:
+        bicubic = Image.BICUBIC
+    img = img.resize((width_sc, height_sc), bicubic)
     # img.thumbnail((width_sc, height_sc), Image.BICUBIC)
     # width_sc, height_sc = img.size  # necessary if using thumbnail
 
@@ -133,7 +137,7 @@ def get_md5sum(src_file, mode='b'):
         Filename to get md5sum for.
     mode : 't' or 'b'
         File mode to open file with. When in text mode, universal line endings
-        are used to ensure consitency in hashes between platforms.
+        are used to ensure consistency in hashes between platforms.
     """
     errors = 'surrogateescape' if mode == 't' else None
     with open(src_file, 'r' + mode, errors=errors) as src_data:

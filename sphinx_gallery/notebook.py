@@ -124,8 +124,11 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
         text = re.sub(directive_re,
                       partial(directive_fun, directive=directive), text)
 
-    links = re.compile(r'^ *\.\. _.*:.*$\n', flags=re.M)
-    text = re.sub(links, '', text)
+    footnote_links = re.compile(r'^ *\.\. _.*:.*$\n', flags=re.M)
+    text = re.sub(footnote_links, '', text)
+
+    embedded_uris = re.compile(r'`([^`]*?)\s*<([^`]*)>`_')
+    text = re.sub(embedded_uris, r'[\1](\2)', text)
 
     refs = re.compile(r':ref:`')
     text = re.sub(refs, '`', text)
@@ -262,7 +265,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
                     bcontent + '\n', gallery_conf, target_dir, heading_levels)
             else:
                 import pypandoc
-                # pandoc automatically addds \n to the end
+                # pandoc automatically adds \n to the end
                 markdown = pypandoc.convert_text(
                     bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
                 )
