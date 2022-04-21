@@ -136,7 +136,8 @@ class SphinxDocLinkResolver(object):
         package).
     """
 
-    def __init__(self, doc_url, gallery_dir, relative=False):
+    def __init__(self, config, doc_url, gallery_dir, relative=False):
+        self.config = config
         self.doc_url = doc_url
         self.gallery_dir = gallery_dir
         self.relative = relative
@@ -276,10 +277,11 @@ class SphinxDocLinkResolver(object):
         full_name = cobj['module_short'] + '.' + cobj['name']
         if full_name not in self._link_cache:
             # we don't have it cached
-            pattern = 'osaft.solutions.\w+\d{4}\w*.ARF$'
             use_full_module = False
-            if re.search(pattern, full_name):
-                use_full_module = True
+            for pattern in self.config['prefer_full_module']:
+                if re.search(pattern, full_name):
+                    use_full_module = True
+                    break
             self._link_cache[full_name] = self._get_link_type(
                 cobj, use_full_module)
         link, type_ = self._link_cache[full_name]
@@ -320,9 +322,11 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         try:
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
+                    app.config.sphinx_gallery_conf,
                     app.builder.outdir, src_gallery_dir, relative=True)
             else:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
+                    app.config.sphinx_gallery_conf,
                     url, src_gallery_dir)
 
         except (URLError, HTTPError) as e:
