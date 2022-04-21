@@ -208,8 +208,11 @@ class SphinxDocLinkResolver(object):
                     return None
         return match
 
-    def _get_link_type(self, cobj):
+    def _get_link_type(self, cobj, use_full_module=False):
         """Get a valid link and type_, False if not found."""
+        module_type = 'module_short'
+        if use_full_module:
+            module_type = 'module'
         first, second = cobj['module_short'], cobj['name']
         match = self._get_index_match(first, second)
         if match is None and '.' in second:  # possible class attribute
@@ -273,7 +276,12 @@ class SphinxDocLinkResolver(object):
         full_name = cobj['module_short'] + '.' + cobj['name']
         if full_name not in self._link_cache:
             # we don't have it cached
-            self._link_cache[full_name] = self._get_link_type(cobj)
+            pattern = 'osaft.solutions.\w+\d{4}\w*.ARF$'
+            use_full_module = False
+            if re.search(pattern, full_name):
+                use_full_module = True
+            self._link_cache[full_name] = self._get_link_type(
+                cobj, use_full_module)
         link, type_ = self._link_cache[full_name]
 
         if self.relative and link is not None:
