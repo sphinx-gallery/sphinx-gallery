@@ -17,7 +17,7 @@ from .utils import _replace_md5
 CODE_DOWNLOAD = """
 .. _sphx_glr_download_{3}:
 
-\n.. only :: html
+\n.. only:: html
 
  .. container:: sphx-glr-footer
     :class: sphx-glr-footer-example
@@ -32,7 +32,7 @@ CODE_DOWNLOAD = """
      :download:`Download Jupyter notebook: {1} <{1}>`\n"""
 
 CODE_ZIP_DOWNLOAD = """
-\n.. only :: html
+\n.. only:: html
 
  .. container:: sphx-glr-footer
     :class: sphx-glr-footer-gallery
