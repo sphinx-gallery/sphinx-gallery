@@ -28,7 +28,8 @@ CODE_DOWNLOAD = """
 
     .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-      :download:`Download Jupyter notebook: {1} <{1}>`"""
+      :download:`Download Jupyter notebook: {1} <{1}>`
+"""
 
 CODE_ZIP_DOWNLOAD = """
 .. only:: html
@@ -41,7 +42,8 @@ CODE_ZIP_DOWNLOAD = """
 
     .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-      :download:`Download all examples in Jupyter notebooks: {2} </{3}>`"""
+      :download:`Download all examples in Jupyter notebooks: {2} </{3}>`
+"""
 
 
 def python_zip(file_list, gallery_path, extension='.py'):
