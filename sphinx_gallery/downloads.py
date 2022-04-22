@@ -19,31 +19,29 @@ CODE_DOWNLOAD = """
 
 .. only:: html
 
-    .. container:: sphx-glr-footer
-        :class: sphx-glr-footer-example
+  .. container:: sphx-glr-footer sphx-glr-footer-example
 
 {2}
     .. container:: sphx-glr-download sphx-glr-download-python
 
-        :download:`Download Python source code: {0} <{0}>`
+      :download:`Download Python source code: {0} <{0}>`
 
-     .. container:: sphx-glr-download sphx-glr-download-jupyter
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-        :download:`Download Jupyter notebook: {1} <{1}>`"""
+      :download:`Download Jupyter notebook: {1} <{1}>`"""
 
 CODE_ZIP_DOWNLOAD = """
 .. only:: html
 
-    .. container:: sphx-glr-footer
-        :class: sphx-glr-footer-gallery
+  .. container:: sphx-glr-footer sphx-glr-footer-gallery
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
-        :download:`Download all examples in Python source code: {0} </{1}>`
+      :download:`Download all examples in Python source code: {0} </{1}>`
 
     .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-        :download:`Download all examples in Jupyter notebooks: {2} </{3}>`"""
+      :download:`Download all examples in Jupyter notebooks: {2} </{3}>`"""
 
 def python_zip(file_list, gallery_path, extension='.py'):
     """Stores all files in file_list into an zip file
