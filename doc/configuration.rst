@@ -73,8 +73,7 @@ See also :ref:`removing_config_comments` to hide config comments in files from
 the rendered examples.
 
 Some options can be set on a per-line basis in a file:
-- ``# sphinx_gallery_start_ignore`` (:ref:`hiding_code_blocks`)
-- ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
+- ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
 
 Some options can be set during the build execution step, e.g. using a Makefile:
 
@@ -1300,8 +1299,8 @@ further deferred, if desired).  The following produces only one plot::
 
 .. _hiding_code_blocks:
 
-Hiding code blocks
-==================
+Hiding lines of code
+====================
 
 Normally, Sphinx-Gallery will render every line of Python code when building
 HTML and iPython notebooks. This is usually desirable, as we want to ensure the
