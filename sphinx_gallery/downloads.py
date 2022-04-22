@@ -17,33 +17,33 @@ from .utils import _replace_md5
 CODE_DOWNLOAD = """
 .. _sphx_glr_download_{3}:
 
-\n.. only :: html
+.. only:: html
 
- .. container:: sphx-glr-footer
-    :class: sphx-glr-footer-example
+  .. container:: sphx-glr-footer sphx-glr-footer-example
 
 {2}
-\n  .. container:: sphx-glr-download sphx-glr-download-python
+    .. container:: sphx-glr-download sphx-glr-download-python
 
-     :download:`Download Python source code: {0} <{0}>`\n
+      :download:`Download Python source code: {0} <{0}>`
 
-\n  .. container:: sphx-glr-download sphx-glr-download-jupyter
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-     :download:`Download Jupyter notebook: {1} <{1}>`\n"""
+      :download:`Download Jupyter notebook: {1} <{1}>`
+"""
 
 CODE_ZIP_DOWNLOAD = """
-\n.. only :: html
+.. only:: html
 
- .. container:: sphx-glr-footer
-    :class: sphx-glr-footer-gallery
+  .. container:: sphx-glr-footer sphx-glr-footer-gallery
 
-\n  .. container:: sphx-glr-download sphx-glr-download-python
+    .. container:: sphx-glr-download sphx-glr-download-python
 
-    :download:`Download all examples in Python source code: {0} </{1}>`\n
+      :download:`Download all examples in Python source code: {0} </{1}>`
 
-\n  .. container:: sphx-glr-download sphx-glr-download-jupyter
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-    :download:`Download all examples in Jupyter notebooks: {2} </{3}>`\n"""
+      :download:`Download all examples in Jupyter notebooks: {2} </{3}>`
+"""
 
 
 def python_zip(file_list, gallery_path, extension='.py'):
