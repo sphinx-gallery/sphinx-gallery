@@ -43,6 +43,7 @@ CODE_ZIP_DOWNLOAD = """
 
       :download:`Download all examples in Jupyter notebooks: {2} </{3}>`"""
 
+
 def python_zip(file_list, gallery_path, extension='.py'):
     """Stores all files in file_list into an zip file
 
