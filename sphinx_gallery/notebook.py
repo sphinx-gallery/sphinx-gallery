@@ -71,16 +71,23 @@ def directive_fun(match, directive):
 
 
 def convert_code_to_md(text):
-    code_regex = r'[ \t]*\.\. code-block::[ \t]*([a-z]*)\n[ \t]*\n'
-    indent_regex = re.compile(r'[ \t]*')
+    """Rewrites code blocks using the code-block:: notation to use the
+    better supported ``` notation, while preserving syntax highlighting
+
+    Parameters
+    ----------
+    text: str
+        A mostly converted string of markdown text. May contain zero, one,
+        or multiple code blocks in code-block:: format.
+    """
+
+    code_regex = r'[ \t]*\.\. code-block::[ \t]*(\S*)\n[ \t]*\n([ \t]+)'
     while True:
         code_block = re.search(code_regex, text)
         if not code_block:
             break
-        start_index = code_block.span()[1]
-        indent = indent_regex.search(text, start_index).group(0)
-        if not indent:
-            continue
+        indent = code_block.group(2)
+        start_index = code_block.span()[1] - len(indent)
 
         # Find first non-empty, non-indented line
         end = re.compile(fr'^(?!{re.escape(indent)})[ \t]*\S+', re.MULTILINE)
@@ -268,6 +275,17 @@ def add_markdown_cell(work_notebook, markdown):
 
 
 def promote_jupyter_cell_magic(work_notebook, markdown):
+    """Parses a block of markdown text looking for code blocks starting with a
+    Jupyter cell magic (e.g. %%bash). Whenever one is found, the text before it
+    and the code (as a runnable code block) are added to work_notebook. Any
+    remaining text is returned.
+
+    Parameters
+    ----------
+    markdown : str
+        Markdown cell content.
+    """
+
     # Regex detects all code blocks that use %% Jupyter cell magic
     cell_magic_regex = r'\n?```\s*[a-z]*\n(%%(?:[\s\S]*?))\n?```\n?'
 
