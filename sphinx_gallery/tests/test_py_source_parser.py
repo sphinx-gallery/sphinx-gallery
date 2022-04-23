@@ -90,7 +90,7 @@ def test_remove_ignore_comments():
     assert sg.remove_ignore_blocks(normal_code) == normal_code
 
     mismatched_code = "# sphinx_gallery_start_ignore"
-    with pytest.raises(AssertionError) as error:
+    with pytest.raises(ExtensionError) as error:
         sg.remove_ignore_blocks(mismatched_code)
     assert "must have a matching" in str(error)
 

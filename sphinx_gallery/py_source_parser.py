@@ -226,10 +226,11 @@ def remove_ignore_blocks(code_block):
     num_start_flags = len(re.findall(START_IGNORE_FLAG, code_block))
     num_end_flags = len(re.findall(END_IGNORE_FLAG, code_block))
 
-    assert num_start_flags == num_end_flags, (
-        'All "sphinx_gallery_start_ignore" flags must have a matching '
-        '"sphinx_gallery_end_ignore" flag!'
-    )
+    if num_start_flags != num_end_flags:
+        raise ExtensionError(
+            'All "sphinx_gallery_start_ignore" flags must have a matching '
+            '"sphinx_gallery_end_ignore" flag!'
+        )
     return re.subn(IGNORE_BLOCK_PATTERN, '', code_block)[0]
 
 
