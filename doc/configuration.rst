@@ -1082,8 +1082,8 @@ for an example that uses the `public Binder server <http://mybinder.org>`_.
 
 .. _promote_jupyter_magic:
 
-Make Jupyter cell magic compile as code
-=======================================
+Making cell magic executable in notebooks
+=========================================
 
 Often times, tutorials will include bash scripts for the user to copy/paste into
 their terminal. These scripts are not intended to be run when someone is
@@ -1131,7 +1131,7 @@ and only affects the creation of Jupyter notebooks.
 .. warning::
   It is good practice to ensure the ``.py`` and ``.html`` files match the ``.ipynb``
   files as closely as possible. This flag (and Jupyter cell magics) should only
-  be used when the relevant code is already intended to be executed by the end
+  be used when the relevant code is intended to be executed by the end
   user.
 
 .. _without_execution:
