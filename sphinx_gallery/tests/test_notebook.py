@@ -44,26 +44,23 @@ def test_latex_conversion(gallery_conf):
 
 def test_code_conversion():
     """Use the ``` code format so Jupyter syntax highlighting works"""
-    rst = textwrap.dedent("""
-        Regular text
-            .. code-block::
-
-               # Bash code
-
-          More regular text
-        .. code-block:: cpp
-
-          //cpp code
-
-          //more cpp code
-        non-indented code blocks are not valid
-        .. code-block:: cpp
-
-        // not a real code block
-    """)
+    rst = (
+        "\n"
+        "Regular text\n"
+        "    .. code-block:: bash\n"
+        "  \n"
+        "       # Bash code\n"
+        "\n"
+        "  More regular text\n"
+        ".. code-block:: cpp\n"
+        "\n"
+        "  //cpp code\n"
+        "\n"
+        "  //more cpp code\n"
+    )
     assert rst2md(rst, {}, "", {}) == textwrap.dedent("""
         Regular text
-        ```
+        ```bash
         # Bash code
         ```
           More regular text
@@ -72,10 +69,6 @@ def test_code_conversion():
 
         //more cpp code
         ```
-        non-indented code blocks are not valid
-        .. code-block:: cpp
-
-        // not a real code block
     """)
 
 
