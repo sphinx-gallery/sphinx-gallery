@@ -71,16 +71,23 @@ def directive_fun(match, directive):
 
 
 def convert_code_to_md(text):
-    code_regex = r'[ \t]*\.\. code-block::[ \t]*([a-z]*)\n[ \t]*\n'
-    indent_regex = re.compile(r'[ \t]*')
+    """Rewrites code blocks using the code-block:: notation to use the
+    better supported ``` notation, while preserving syntax highlighting
+
+    Parameters
+    ----------
+    text: str
+        A mostly converted string of markdown text. May contain zero, one,
+        or multiple code blocks in code-block:: format.
+    """
+
+    code_regex = r'[ \t]*\.\. code-block::[ \t]*(\S*)\n[ \t]*\n([ \t]+)'
     while True:
         code_block = re.search(code_regex, text)
         if not code_block:
             break
-        start_index = code_block.span()[1]
-        indent = indent_regex.search(text, start_index).group(0)
-        if not indent:
-            continue
+        indent = code_block.group(2)
+        start_index = code_block.span()[1] - len(indent)
 
         # Find first non-empty, non-indented line
         end = re.compile(fr'^(?!{re.escape(indent)})[ \t]*\S+', re.MULTILINE)
