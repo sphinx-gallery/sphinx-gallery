@@ -72,7 +72,7 @@ def directive_fun(match, directive):
 
 def convert_code_to_md(text):
     """Rewrites code blocks using the "code-block" notation to use the
-    better supported ``` notation, while preserving syntax highlighting
+    better supported backtick notation, while preserving syntax highlighting.
 
     Parameters
     ----------
