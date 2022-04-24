@@ -275,6 +275,17 @@ def add_markdown_cell(work_notebook, markdown):
 
 
 def promote_jupyter_cell_magic(work_notebook, markdown):
+    """Parses a block of markdown text looking for code blocks starting with a
+    Jupyter cell magic (e.g. %%bash). Whenever one is found, the text before it
+    and the code (as a runnable code block) are added to work_notebook. Any
+    remaining text is returned.
+
+    Parameters
+    ----------
+    markdown : str
+        Markdown cell content.
+    """
+
     # Regex detects all code blocks that use %% Jupyter cell magic
     cell_magic_regex = r'\n?```\s*[a-z]*\n(%%(?:[\s\S]*?))\n?```\n?'
 
