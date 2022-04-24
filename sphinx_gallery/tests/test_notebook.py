@@ -356,7 +356,6 @@ def test_jupyter_notebook(gallery_conf):
     assert re.match("^Last text block.\n\nThat[\\\\]?'s all folks !", cell_src)
 
     # Test Jupyter magic code blocks are promoted
-    gallery_conf = gallery_conf.copy()
     gallery_conf['promote_jupyter_magic'] = True
     example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
     bash_block = example_nb.get('cells')[-2]
