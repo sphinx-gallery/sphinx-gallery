@@ -376,6 +376,12 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
+    # jupyter magics
+    if not isinstance(gallery_conf['promote_jupyter_magic'], bool):
+        raise ConfigError('gallery_conf["promote_jupyter_magic"] must be of '
+                          'type bool, got: %s.'
+                          % type(gallery_conf['promote_jupyter_magic']))
+
     _update_gallery_conf(gallery_conf)
 
     return gallery_conf

@@ -1093,10 +1093,10 @@ for an example that uses the `public Binder server <http://mybinder.org>`_.
 Making cell magic executable in notebooks
 =========================================
 
-Often times, tutorials will include bash scripts for the user to copy/paste into
-their terminal. These scripts are not intended to be run when someone is
-building the documentation, as they will already have those dependencies in
-their environment. Hence they are normally written as code blocks inside text::
+Often times, tutorials will include bash code for the user to copy/paste into
+their terminal. This code should not be run when someone is building the
+documentation, as they will already have those dependencies in their
+environment. Hence they are normally written as code blocks inside text::
 
   #%%
   # Installing dependencies
@@ -1108,7 +1108,7 @@ their environment. Hence they are normally written as code blocks inside text::
 
 This works fine for the ``.py`` and ``.html`` files, but causes problems when
 rendered as an Jupyter notebook. The downloaded ``.ipynb`` file will not have
-those dependencies installed, and thus will not work without running the script.
+those dependencies installed, and will not work without running the bash code.
 
 To fix this, we can set the ``promote_jupyter_magic`` flag in ``conf.py``::
 
@@ -1118,7 +1118,7 @@ To fix this, we can set the ``promote_jupyter_magic`` flag in ``conf.py``::
   }
 
 If this flag is ``True``, then when a Jupyter notebook is being built, any code
-block starting with a `Jupyter cell magic <https://ipython.readthedocs.io/en/stable/interactive/magics.html>`_ (e.g. ``%%bash`` or ``%%writefile``)
+block starting with `Jupyter cell magics <https://ipython.readthedocs.io/en/stable/interactive/magics.html>`_ (e.g. ``%%bash`` or ``%%writefile``)
 will be turned into a runnable code block.
 
 For our earlier example, we could change the Markdown text to::
@@ -1132,15 +1132,14 @@ For our earlier example, we could change the Markdown text to::
   #       pip install -q tensorflow
   #       apt-get -qq install curl
 
-Then, TensorFlow and Curl would be automatically installed upon running the
+meaning TensorFlow and Curl would be automatically installed upon running the
 Jupyter notebook. This works for any cell magic (not just those mentioned above)
 and only affects the creation of Jupyter notebooks.
 
 .. warning::
   It is good practice to ensure the ``.py`` and ``.html`` files match the ``.ipynb``
-  files as closely as possible. This flag (and Jupyter cell magics) should only
-  be used when the relevant code is intended to be executed by the end
-  user.
+  files as closely as possible. This functionality should only be used when the
+  relevant code is intended to be executed by the end user.
 
 .. _without_execution:
 
