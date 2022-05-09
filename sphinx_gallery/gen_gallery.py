@@ -171,7 +171,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf.update(abort_on_example_error=abort_on_example_error)
     # XXX anything that can only be a bool (rather than str) should probably be
     # evaluated this way as it allows setting via -D on the command line
-    for key in ('run_stale_examples',):
+    for key in ('promote_jupyter_magic', 'run_stale_examples',):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
     gallery_conf['src_dir'] = src_dir
     gallery_conf['app'] = app
@@ -375,12 +375,6 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                               % (css, _KNOWN_CSS))
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
-
-    # jupyter magics
-    if not isinstance(gallery_conf['promote_jupyter_magic'], bool):
-        raise ConfigError('gallery_conf["promote_jupyter_magic"] must be of '
-                          'type bool, got: %s.'
-                          % type(gallery_conf['promote_jupyter_magic']))
 
     _update_gallery_conf(gallery_conf)
 
