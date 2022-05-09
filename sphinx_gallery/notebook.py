@@ -15,12 +15,13 @@ from functools import partial
 from itertools import count
 import argparse
 import base64
+import copy
 import json
 import mimetypes
 import os
 import re
 import sys
-import copy
+import textwrap
 
 from sphinx.errors import ExtensionError
 
@@ -67,6 +68,36 @@ def directive_fun(match, directive):
     return ('<div class="alert alert-{0}"><h4>{1}</h4><p>{2}</p></div>'
             .format(directive_to_alert[directive], directive.capitalize(),
                     match.group(1).strip()))
+
+
+def convert_code_to_md(text):
+    """Rewrites code blocks using the code-block notation to use Markdown's
+    preferred backtick notation, which preserves syntax highlighting.
+
+    Parameters
+    ----------
+    text: str
+        A mostly converted string of markdown text. May contain zero, one,
+        or multiple code blocks in code-block format.
+    """
+
+    code_regex = r'[ \t]*\.\. code-block::[ \t]*(\S*)\n[ \t]*\n([ \t]+)'
+    while True:
+        code_block = re.search(code_regex, text)
+        if not code_block:
+            break
+        indent = code_block.group(2)
+        start_index = code_block.span()[1] - len(indent)
+
+        # Find first non-empty, non-indented line
+        end = re.compile(fr'^(?!{re.escape(indent)})[ \t]*\S+', re.MULTILINE)
+        code_end_match = end.search(text, start_index)
+        end_index = code_end_match.start() if code_end_match else len(text)
+
+        contents = textwrap.dedent(text[start_index:end_index]).rstrip()
+        new_code = (f'```{code_block.group(1)}\n{contents}\n```\n')
+        text = text[:code_block.span()[0]] + new_code + text[end_index:]
+    return text
 
 
 def rst2md(text, gallery_conf, target_dir, heading_levels):
@@ -148,6 +179,8 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
                 match.group(1).strip(), gallery_conf, target_dir),
             re.sub(image_opts, r' \1="\2"', match.group(2) or '')),
         text)
+
+    text = convert_code_to_md(text)
 
     return text
 
@@ -244,6 +277,36 @@ def add_markdown_cell(work_notebook, markdown):
     work_notebook["cells"].append(markdown_cell)
 
 
+def promote_jupyter_cell_magic(work_notebook, markdown):
+    """Parses a block of markdown text looking for code blocks starting with a
+    Jupyter cell magic (e.g. %%bash). Whenever one is found, the text before it
+    and the code (as a runnable code block) are added to work_notebook. Any
+    remaining text is returned.
+
+    Parameters
+    ----------
+    markdown : str
+        Markdown cell content.
+    """
+
+    # Regex detects all code blocks that use %% Jupyter cell magic
+    cell_magic_regex = r'\n?```\s*[a-z]*\n(%%(?:[\s\S]*?))\n?```\n?'
+
+    text_cell_start = 0
+    for magic_cell in re.finditer(cell_magic_regex, markdown):
+        # Extract the preceeding text block, and add it if non-empty
+        text_block = markdown[text_cell_start:magic_cell.span()[0]]
+        if text_block and not text_block.isspace():
+            add_markdown_cell(work_notebook, text_block)
+        text_cell_start = magic_cell.span()[1]
+
+        code_block = magic_cell.group(1)
+        add_code_cell(work_notebook, code_block)
+
+    # Return remaining text (which equals markdown if no magic cells exist)
+    return markdown[text_cell_start:]
+
+
 def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
     """Writes the Jupyter notebook cells
 
@@ -269,7 +332,13 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
                 markdown = pypandoc.convert_text(
                     bcontent, to='md', format='rst', **gallery_conf["pypandoc"]
                 )
-            add_markdown_cell(work_notebook, markdown)
+
+            if gallery_conf["promote_jupyter_magic"]:
+                remaining = promote_jupyter_cell_magic(work_notebook, markdown)
+                if remaining and not remaining.isspace():
+                    add_markdown_cell(work_notebook, remaining)
+            else:
+                add_markdown_cell(work_notebook, markdown)
 
 
 def save_notebook(work_notebook, write_file):

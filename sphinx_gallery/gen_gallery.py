@@ -79,6 +79,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
+    'promote_jupyter_magic': False,
     'image_scrapers': ('matplotlib',),
     'compress_images': (),
     'reset_modules': ('matplotlib', 'seaborn'),
@@ -170,7 +171,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf.update(abort_on_example_error=abort_on_example_error)
     # XXX anything that can only be a bool (rather than str) should probably be
     # evaluated this way as it allows setting via -D on the command line
-    for key in ('run_stale_examples',):
+    for key in ('promote_jupyter_magic', 'run_stale_examples',):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
     gallery_conf['src_dir'] = src_dir
     gallery_conf['app'] = app
