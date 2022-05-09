@@ -45,7 +45,8 @@ from .backreferences import (_write_backreferences, _thumbnail_div,
                              identify_names)
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (split_code_and_text_blocks,
-                               remove_config_comments)
+                               remove_config_comments,
+                               remove_ignore_blocks)
 
 from .notebook import jupyter_notebook, save_notebook
 from .binder import check_binder_conf, gen_binder_rst
@@ -1016,6 +1017,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             for label, content, line_number in script_blocks
         ]
 
+    script_blocks = [
+        (label, remove_ignore_blocks(content), line_number)
+        for label, content, line_number in script_blocks
+    ]
+
     # Remove final empty block, which can occur after config comments
     # are removed
     if script_blocks[-1][1].isspace():
@@ -1197,6 +1203,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     if len(binder_conf) > 0:
         binder_badge_rst += gen_binder_rst(example_file, binder_conf,
                                            gallery_conf)
+        binder_badge_rst = indent(binder_badge_rst, '  ')  # need an extra two
 
     fname = os.path.basename(example_file)
     example_rst += CODE_DOWNLOAD.format(fname,

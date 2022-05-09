@@ -99,6 +99,13 @@
   '\n# another way to separate code blocks shown above\nB = 1\n\n',
   86),
 ('text',
+  'Code blocks containing Jupyter magic are executable\n'
+  '    .. code-block:: bash\n'
+  '\n'
+  '      %%bash\n'
+  '      # This could be run!\n\n',
+  91),
+('text',
   'Last text block.\n'
   '\n'
   "That's all folks !\n"
@@ -106,4 +113,4 @@
   '.. literalinclude:: plot_parse.py\n'
   '\n'
   '\n',
-  91)]
+  99)]

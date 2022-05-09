@@ -21,7 +21,8 @@ from sphinx.errors import ExtensionError
 
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery.notebook import (rst2md, jupyter_notebook, save_notebook,
-                                     python_to_jupyter_cli)
+                                     promote_jupyter_cell_magic,
+                                     python_to_jupyter_cli,)
 
 
 def test_latex_conversion(gallery_conf):
@@ -39,6 +40,43 @@ def test_latex_conversion(gallery_conf):
 \begin{align}\mathcal{H} &= 0 \\
    \mathcal{G} &= D\end{align}"""
     assert align_eq_jmd == rst2md(align_eq, gallery_conf, "", {})
+
+
+def test_code_conversion():
+    """Use the ``` code format so Jupyter syntax highlighting works"""
+    rst = textwrap.dedent("""
+        Regular text
+            .. code-block::
+
+               # Bash code
+
+          More regular text
+        .. code-block:: cpp
+
+          //cpp code
+
+          //more cpp code
+        non-indented code blocks are not valid
+        .. code-block:: cpp
+
+        // not a real code block
+    """)
+    assert rst2md(rst, {}, "", {}) == textwrap.dedent("""
+        Regular text
+        ```
+        # Bash code
+        ```
+          More regular text
+        ```cpp
+        //cpp code
+
+        //more cpp code
+        ```
+        non-indented code blocks are not valid
+        .. code-block:: cpp
+
+        // not a real code block
+    """)
 
 
 def test_convert(gallery_conf):
@@ -65,6 +103,8 @@ For more details on interpolation see the page :ref:`channel_interpolation`.
   :whatever: you
   :width: 200px
   :class: img_class
+
+`See more  <https://en.wikipedia.org/wiki/Interpolation>`_.
 """
 
     markdown = """hello
@@ -79,6 +119,8 @@ This is $some$ math $stuff$.
 For more details on interpolation see the page `channel_interpolation`.
 
 <img src="file://foobar" alt="me" whatever="you" width="200px" class="img_class">
+
+[See more](https://en.wikipedia.org/wiki/Interpolation).
 """  # noqa
     assert rst2md(rst, gallery_conf, "", {}) == markdown
 
@@ -164,6 +206,43 @@ def test_headings():
     assert "\n# Centered\n" in text
     assert "#\nBlank heading above." not in text
     assert "# White space above\n" in text
+
+
+def test_cell_magic_promotion():
+    markdown = textwrap.dedent("""\
+    # Should be rendered as text
+    ``` bash
+    # This should be rendered as normal
+    ```
+    ``` bash
+    %%bash
+    # bash magic
+    ```
+    ```cpp
+    %%writefile out.cpp
+    // This c++ cell magic will write a file
+    // There should NOT be a text block above this
+    ```
+    Interspersed text block
+    ```javascript
+    %%javascript
+    // Should also be a code block
+    // There should NOT be a trailing text block after this
+    ```
+    """)
+    work_notebook = {"cells": []}
+    promote_jupyter_cell_magic(work_notebook, markdown)
+    cells = work_notebook["cells"]
+
+    assert len(cells) == 5
+    assert cells[0]["cell_type"] == "markdown"
+    assert "``` bash" in cells[0]["source"][0]
+    assert cells[1]["cell_type"] == "code"
+    assert cells[1]["source"][0] == "%%bash\n# bash magic"
+    assert cells[2]["cell_type"] == "code"
+    assert cells[3]["cell_type"] == "markdown"
+    assert cells[3]["source"][0] == "Interspersed text block"
+    assert cells[4]["cell_type"] == "code"
 
 
 @pytest.mark.parametrize(
@@ -279,6 +358,18 @@ def test_jupyter_notebook(gallery_conf):
     example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
     cell_src = example_nb.get('cells')[-1]['source'][0]
     assert re.match("^Last text block.\n\nThat[\\\\]?'s all folks !", cell_src)
+
+    # Test Jupyter magic code blocks are promoted
+    gallery_conf['promote_jupyter_magic'] = True
+    example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
+    bash_block = example_nb.get('cells')[-2]
+    assert bash_block['cell_type'] == 'code'
+    assert bash_block['source'][0] == '%%bash\n# This could be run!'
+
+    # Test text above Jupyter magic code blocks is intact
+    md_above_bash_block = example_nb.get('cells')[-3]
+    assert md_above_bash_block['cell_type'] == 'markdown'
+    assert 'Code blocks containing' in md_above_bash_block['source'][0]
 
 
 ###############################################################################

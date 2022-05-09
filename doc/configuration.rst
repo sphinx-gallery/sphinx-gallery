@@ -9,6 +9,11 @@ dictionary specified in your ``conf.py`` file. A list of the possible
 keys are listed :ref:`below <list_of_options>` and explained in
 greater detail in subsequent sections.
 
+When using these flags, it is good practice to make sure the source Python files
+are equivalent to the generated HTML and iPython notebooks (i.e. make sure
+``.py == .html == .ipynb``). This principle should be violated only when
+necessary, and on a case-by-case basis.
+
 .. _list_of_options:
 
 List of config options
@@ -45,6 +50,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``show_signature`` (:ref:`show_signature`)
 - ``binder`` (:ref:`binder_links`)
+- ``promote_jupyter_magic`` (:ref:`promote_jupyter_magic`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``notebook_images`` (:ref:`notebook_images`)
 - ``pypandoc`` (:ref:`use_pypandoc`)
@@ -66,6 +72,9 @@ Some options can be set on a per-code-block basis in a file:
 
 See also :ref:`removing_config_comments` to hide config comments in files from
 the rendered examples.
+
+Some options can be set on a per-line basis in a file:
+- ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
 
 Some options can be set during the build execution step, e.g. using a Makefile:
 
@@ -1079,6 +1088,59 @@ Binder links will point to these notebooks.
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the `public Binder server <http://mybinder.org>`_.
 
+.. _promote_jupyter_magic:
+
+Making cell magic executable in notebooks
+=========================================
+
+Often times, tutorials will include bash code for the user to copy/paste into
+their terminal. This code should not be run when someone is building the
+documentation, as they will already have those dependencies in their
+environment. Hence they are normally written as code blocks inside text::
+
+  #%%
+  # Installing dependencies
+  #
+  #     .. code-block:: bash
+  #
+  #       pip install -q tensorflow
+  #       apt-get -qq install curl
+
+This works fine for the ``.py`` and ``.html`` files, but causes problems when
+rendered as an Jupyter notebook. The downloaded ``.ipynb`` file will not have
+those dependencies installed, and will not work without running the bash code.
+
+To fix this, we can set the ``promote_jupyter_magic`` flag in ``conf.py``::
+
+  sphinx_gallery_conf = {
+      ...
+      'promote_jupyter_magic': True,
+  }
+
+If this flag is ``True``, then when a Jupyter notebook is being built, any code
+block starting with `Jupyter cell magics <https://ipython.readthedocs.io/en/stable/interactive/magics.html>`_ (e.g. ``%%bash`` or ``%%writefile``)
+will be turned into a runnable code block.
+
+For our earlier example, we could change the Markdown text to::
+
+  #%%
+  # Installing dependencies
+  #
+  #     .. code-block:: bash
+  #
+  #       %%bash
+  #       pip install -q tensorflow
+  #       apt-get -qq install curl
+
+meaning TensorFlow and Curl would be automatically installed upon running the
+Jupyter notebook. This works for any cell magic (not just those mentioned above)
+and only affects the creation of Jupyter notebooks.
+
+.. warning::
+  It is good practice to ensure the ``.py`` and ``.html`` files match the ``.ipynb``
+  files as closely as possible. This functionality should only be used when the
+  relevant code is intended to be executed by the end user.
+
 .. _without_execution:
 
 Building without executing examples
@@ -1288,6 +1350,46 @@ further deferred, if desired).  The following produces only one plot::
 
   plt.plot([2, 2])
   plt.show()
+
+.. _hiding_code_blocks:
+
+Hiding lines of code
+====================
+
+Normally, Sphinx-Gallery will render every line of Python code when building
+HTML and iPython notebooks. This is usually desirable, as we want to ensure the
+Python source files, HTML, and iPython notebooks all do the same thing.
+
+However, it is sometimes useful to have Python code that runs, but is not
+included in any user-facing documentation. For example, suppose we wanted to
+add some ``assert`` statements to verify the docs were built successfully, but
+did not want these shown to users. We could use the ``sphinx_gallery_start_ignore``
+and ``sphinx_gallery_end_ignore`` flags to achieve this::
+
+    model.compile()
+    # sphinx_gallery_start_ignore
+    assert len(model.layers) == 5
+    assert model.count_params() == 219058
+    # sphinx_gallery_end_ignore
+    model.fit()
+
+When the HTML or iPython notebooks are built, this code block will be shown as::
+
+    model.compile()
+    model.fit()
+
+The ``sphinx_gallery_start_ignore`` and ``sphinx_gallery_end_ignore`` flags may
+be used in any code block, and multiple pairs of flags may be used in the same
+block. Every start flag must always have a corresponding end flag, or an error
+will be raised during doc generation. These flags and the code between them are
+always removed, regardless of what ``remove_config_comments`` is set to.
+
+Note that any output from the ignored code will still be captured.
+
+.. warning::
+  This flag should be used sparingly, as it makes the ``.py`` source files less
+  equivalent to the generated ``.html`` and ``.ipynb`` files. It is bad practice
+  to use this when other methods that preserve this relationship are possible.
 
 .. _dummy_images:
 

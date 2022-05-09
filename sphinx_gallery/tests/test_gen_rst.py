@@ -42,6 +42,9 @@ CONTENT = [
     '# sphinx_gallery_thumbnail_number = 1',
     '# sphinx_gallery_defer_figures',
     '# and now comes the module code',
+    '# sphinx_gallery_start_ignore',
+    'pass # Will be run but not rendered',
+    '# sphinx_gallery_end_ignore',
     'import logging',
     'import sys',
     'from warnings import warn',
@@ -455,6 +458,15 @@ def test_remove_config_comments(gallery_conf, req_pil):
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     assert '# sphinx_gallery_thumbnail_number = 1' not in rst
     assert '# sphinx_gallery_defer_figures' not in rst
+
+
+def test_remove_ignore_blocks(gallery_conf, req_pil):
+    """Test removal of ignore blocks."""
+    rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
+    assert 'pass # Will be run but not rendered' in CONTENT
+    assert 'pass # Will be run but not rendered' not in rst
+    assert '# sphinx_gallery_start_ignore' in CONTENT
+    assert '# sphinx_gallery_start_ignore' not in rst
 
 
 def test_dummy_image_error(gallery_conf, req_pil):
