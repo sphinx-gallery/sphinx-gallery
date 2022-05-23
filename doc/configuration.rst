@@ -401,7 +401,7 @@ If you are using inheritance for your documented code and you are experience
 wrong links in the sense that the links point to the base class of an object 
 instead of the child, the option ``prefer_full_module`` might solve your issue. 
 Have also a look at `the GitHub 
-issue<https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`_ 
+issue <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
 implementing this option for more context.
 
 To make this work in your documentation you need to include to the 
