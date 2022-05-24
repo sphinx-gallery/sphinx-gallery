@@ -106,6 +106,10 @@ class _LoggingTee(object):
             self.logger.verbose('%s', self.logger_buffer)
             self.logger_buffer = ''
 
+    # Needed to work with Abseil
+    def close(self):
+        pass
+
     # When called from a local terminal seaborn needs it in Python3
     def isatty(self):
         return self.output.isatty()
