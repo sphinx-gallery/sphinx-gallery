@@ -214,7 +214,7 @@ class SphinxDocLinkResolver(object):
         module_type = 'module_short'
         if use_full_module:
             module_type = 'module'
-        first, second = cobj['module_short'], cobj['name']
+        first, second = cobj[module_type], cobj['name']
         match = self._get_index_match(first, second)
         if match is None and '.' in second:  # possible class attribute
             first, second = second.split('.', 1)
