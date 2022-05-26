@@ -736,7 +736,7 @@ def test_absl_logging(gallery_conf, script_vars):
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
     code = 'from absl import logging\nlogging.info("Should not crash!")'
-    output = sg.execute_code_block(
+    sg.execute_code_block(
         compiler, ("code", code, 1), None, script_vars, gallery_conf, {}
     )
 
