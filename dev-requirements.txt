@@ -11,3 +11,4 @@ joblib
 flake8
 check-manifest
 plotly
+absl-py
