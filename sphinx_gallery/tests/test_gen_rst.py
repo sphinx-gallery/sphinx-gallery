@@ -731,6 +731,7 @@ def test_absl_logging(gallery_conf, script_vars):
     """Test using absl logging does not throw error. This is important, as many
     popular libraries like Tensorflow use absl for logging.
     """
+    pytest.importorskip('absl')
 
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
