@@ -9,7 +9,6 @@ from __future__ import (division, absolute_import, print_function,
 import ast
 import codecs
 import importlib
-from io import StringIO
 import logging
 import tempfile
 import re
@@ -732,9 +731,6 @@ def test_absl_logging(gallery_conf, script_vars):
     """Test using absl logging does not throw error. This is important, as many
     popular libraries like Tensorflow use absl for logging.
     """
-    buffer = StringIO()
-    handler = logging.StreamHandler(buffer)
-    logging.getLogger().addHandler(handler)
 
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
@@ -742,11 +738,6 @@ def test_absl_logging(gallery_conf, script_vars):
     output = sg.execute_code_block(
         compiler, ("code", code, 1), None, script_vars, gallery_conf, {}
     )
-
-    logging.getLogger().removeHandler(handler)
-    assert buffer.getvalue() == "Should not crash!\n"
-    # Output from the logging module should NOT be captured
-    assert output.strip() == ""
 
     # Previously, absl crashed during shutdown, after all tests had run, so
     # tests would pass even if this issue occurred. To address this issue, we
