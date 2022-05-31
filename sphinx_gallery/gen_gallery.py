@@ -99,6 +99,7 @@ DEFAULT_GALLERY_CONF = {
     'image_srcset': [],
     'default_thumb_file': None,
     'line_numbers': False,
+    'prefer_full_module': [],
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
