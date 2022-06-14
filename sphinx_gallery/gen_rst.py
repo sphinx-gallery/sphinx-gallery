@@ -363,9 +363,11 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
 """
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs, *,
+                     implicit_count=None):
     """Generate the gallery reStructuredText for an example directory."""
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
+    implicit_count = dict() if implicit_count is None else implicit_count
 
     subsection_index_content = ""
     subsection_readme_fname = _get_readme(src_dir, gallery_conf)
@@ -405,7 +407,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         length=len(sorted_listdir))
     for fname in iterator:
         intro, title, cost = generate_file_rst(
-            fname, target_dir, src_dir, gallery_conf, seen_backrefs)
+            fname, target_dir, src_dir, gallery_conf, seen_backrefs,
+            implicit_count=implicit_count)
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append((cost, src_file))
         gallery_item_filename = os.path.join(
@@ -928,7 +931,7 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
-                      seen_backrefs=None):
+                      seen_backrefs=None, *, implicit_count=None):
     """Generate the rst file for a given example.
 
     Parameters
@@ -943,6 +946,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         Contains the configuration of Sphinx-Gallery
     seen_backrefs : set
         The seen backreferences.
+    implicit_count : dict
+        The count of implicit backreferences.
 
     Returns
     -------
@@ -952,6 +957,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         A tuple containing the ``(time, memory)`` required to run the script.
     """
     seen_backrefs = set() if seen_backrefs is None else seen_backrefs
+    implicit_count = dict() if implicit_count is None else implicit_count
+
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     target_file = os.path.join(target_dir, fname)
     _replace_md5(src_file, target_file, 'copy', mode='t')
@@ -1059,16 +1066,21 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)
     exclude_regex = gallery_conf['exclude_implicit_doc_regex']
-    backrefs = set(
-        '{module_short}.{name}'.format(**cobj)
-        for cobjs in example_code_obj.values()
-        for cobj in cobjs
-        if cobj['module'].startswith(gallery_conf['doc_module']) and (
-            cobj['is_explicit'] or
-            (not exclude_regex) or
-            (not exclude_regex.search('{module}.{name}'.format(**cobj)))
-        )
-    )
+    backrefs = set()
+    for cobjs in example_code_obj.values():
+        for cobj in cobjs:
+            long_name = '{module}.{name}'.format(**cobj)
+            if cobj['module'].startswith(gallery_conf['doc_module']):
+                if cobj['is_explicit'] or \
+                        (not exclude_regex) or \
+                        (not exclude_regex.search(long_name)):
+                    backrefs.add('{module_short}.{name}'.format(**cobj))
+                if not cobj['is_explicit']:
+                    implicit_count[cobj['name']] = \
+                        implicit_count.get(cobj['name'], 0) + 1
+            del cobj
+        del cobjs
+    del example_code_obj
 
     # Write backreferences
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,

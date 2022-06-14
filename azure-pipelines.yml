@@ -68,12 +68,7 @@ stages:
       displayName: Install sphinx-gallery
     - script: pytest --tb=short sphinx_gallery
       displayName: pytest
-    - bash: |
-        set -e
-        sed -i '/show_memory/d' doc/conf.py
-        sed -i '/compress_images/d' doc/conf.py
-      displayName: Remove keys incompatible with this Windows build
-    - bash: make -C doc html
+    - bash: make -C doc html SPHINXOPTS="-nWT --keep-going -D sphinx_gallery_conf.compress_images='' -D sphinx_gallery_conf.show_memory=0"
       displayName: make html
     - task: PublishTestResults@2
       inputs:
