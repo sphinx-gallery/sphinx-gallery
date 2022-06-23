@@ -223,8 +223,9 @@ def remove_ignore_blocks(code_block):
     code_block : str
         A code segment.
     """
-    num_start_flags = len(re.findall(START_IGNORE_FLAG, code_block))
-    num_end_flags = len(re.findall(END_IGNORE_FLAG, code_block))
+    num_start_flags = len(
+        re.findall(START_IGNORE_FLAG, code_block, re.MULTILINE))
+    num_end_flags = len(re.findall(END_IGNORE_FLAG, code_block, re.MULTILINE))
 
     if num_start_flags != num_end_flags:
         raise ExtensionError(
