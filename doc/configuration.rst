@@ -9,6 +9,11 @@ dictionary specified in your ``conf.py`` file. A list of the possible
 keys are listed :ref:`below <list_of_options>` and explained in
 greater detail in subsequent sections.
 
+When using these flags, it is good practice to make sure the source Python files
+are equivalent to the generated HTML and iPython notebooks (i.e. make sure
+``.py == .html == .ipynb``). This principle should be violated only when
+necessary, and on a case-by-case basis.
+
 .. _list_of_options:
 
 List of config options
@@ -23,7 +28,7 @@ file:
 - ``reset_argv`` (:ref:`reset_argv`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
-- ``reference_url`` (:ref:`link_to_documentation`)
+- ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
   and ``inspect_global_variables`` (:ref:`references_to_examples`)
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
@@ -45,6 +50,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``show_signature`` (:ref:`show_signature`)
 - ``binder`` (:ref:`binder_links`)
+- ``promote_jupyter_magic`` (:ref:`promote_jupyter_magic`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``notebook_images`` (:ref:`notebook_images`)
 - ``pypandoc`` (:ref:`use_pypandoc`)
@@ -66,6 +72,9 @@ Some options can be set on a per-code-block basis in a file:
 
 See also :ref:`removing_config_comments` to hide config comments in files from
 the rendered examples.
+
+Some options can be set on a per-line basis in a file:
+- ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
 
 Some options can be set during the build execution step, e.g. using a Makefile:
 
@@ -246,8 +255,8 @@ Passing command line arguments to example scripts
 =================================================
 
 By default, Sphinx-Gallery will not pass any command line arguments to example
-scripts.  By setting the ``reset_argv`` option, it is possible to change this
-behavior and pass command line arguments to example scripts.  ``reset_argv``
+scripts. By setting the ``reset_argv`` option, it is possible to change this
+behavior and pass command line arguments to example scripts. ``reset_argv``
 needs to be a Callable that accepts the ``gallery_conf`` and ``script_vars``
 dictionaries as input and returns a list of strings that are passed as
 additional command line arguments to the interpreter.
@@ -397,6 +406,30 @@ point to the directory containing ``searchindex.js``, such as
 If you wish to do the same for ordinary RST documentation,
 see :ref:`plain_rst`.
 
+If you are using inheritance for your documented code and you are experience 
+wrong links in the sense that the links point to the base class of an object 
+instead of the child, the option ``prefer_full_module`` might solve your issue. 
+Have also a look at `the GitHub 
+issue <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
+implementing this option for more context.
+
+To make this work in your documentation you need to include to the 
+configuration
+dictionary within your Sphinx ``conf.py`` file::
+
+    sphinx_gallery_conf = {
+        ...
+        'prefer_full_module':[
+        # a list of regex command of your module where the full module
+        # name should be used for sphinx_gallery instead of the shortend
+        'yourmodule.*+\d{4}',
+        ]
+    }
+
+In the above examples all modules matching the string ``'yourmodule.*+\d{4}'`` 
+would use the full module name when creating the links. All other use the 
+(default) way of linking.
+
 .. _references_to_examples:
 
 Add mini-galleries for API documentation
@@ -473,8 +506,8 @@ instead of any character, if the name is unambiguous you can also write
 ``pyplot.show`` or just ``show``).
 
 The ``add-heading`` option adds a heading for the mini-gallery, which will be a
-default generated message if no string is provided as an argument.  The example
-mini-gallery shown above uses the default heading.  The level of the heading
+default generated message if no string is provided as an argument. The example
+mini-gallery shown above uses the default heading. The level of the heading
 defaults to ``^``, but can be changed using the ``heading-level`` option, which
 accepts a single character (e.g., ``-``). The mini-gallery will only be shown
 if the item (here ``numpy.exp``) is actually used or referred to in an example.
@@ -524,7 +557,7 @@ documentation is done at the module level. We first start with the
 The important directives are ``currentmodule`` where we specify which
 module we are documenting, for our purpose is ``sphinx_gallery``. The
 ``autosummary`` directive is responsible for generating the ``rst``
-files documenting each module.  ``autosummary`` takes the option
+files documenting each module. ``autosummary`` takes the option
 *toctree* which is where the ``rst`` files are saved and *template*
 which is the file that describes how the module ``rst`` documentation
 file is to be constructed, finally we write the modules we wish to
@@ -568,7 +601,7 @@ properly):
 
 - :class:`lst <python:list>`
 - :func:`plt.subplots <matplotlib.pyplot.subplots>`
-- :class:`fig  <matplotlib.figure.Figure>`
+- :class:`fig <matplotlib.figure.Figure>`
 - :class:`ax <matplotlib.axes.Axes>`
 - :meth:`ax.plot <matplotlib.axes.Axes.plot>`
 
@@ -1000,8 +1033,8 @@ dictionary following the pattern below::
          # Required keys
          'org': '<github_org>',
          'repo': '<github_repo>',
-         'branch': '<github_branch>',  # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
-         'binderhub_url': '<binder_url>',  # Any URL of a binderhub deployment. Must be full URL (e.g. https://mybinder.org).
+         'branch': '<github_branch>', # Can be any branch, tag, or commit hash. Use a branch that hosts your docs.
+         'binderhub_url': '<binder_url>', # Any URL of a binderhub deployment. Must be full URL (e.g. https://mybinder.org).
          'dependencies': '<list_of_paths_to_dependency_files>',
          # Optional keys
          'filepath_prefix': '<prefix>' # A prefix to prepend to any filepaths in Binder links.
@@ -1045,7 +1078,7 @@ binderhub_url (type: string)
 dependencies (type: list)
   A list of paths (relative to ``conf.py``) to dependency files that Binder uses
   to infer the environment needed to run your examples. For example, a
-  ``requirements.txt`` file. These will be copied into a folder   called
+  ``requirements.txt`` file. These will be copied into a folder  called
   ``binder/`` in your built documentation folder. For a list of all the possible
   dependency files you can use, see `the Binder configuration documentation
   <https://mybinder.readthedocs.io/en/latest/config_files.html#config-files>`_.
@@ -1078,6 +1111,59 @@ Binder links will point to these notebooks.
 
 See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the `public Binder server <http://mybinder.org>`_.
+
+.. _promote_jupyter_magic:
+
+Making cell magic executable in notebooks
+=========================================
+
+Often times, tutorials will include bash code for the user to copy/paste into
+their terminal. This code should not be run when someone is building the
+documentation, as they will already have those dependencies in their
+environment. Hence they are normally written as code blocks inside text::
+
+  #%%
+  # Installing dependencies
+  #
+  #     .. code-block:: bash
+  #
+  #       pip install -q tensorflow
+  #       apt-get -qq install curl
+
+This works fine for the ``.py`` and ``.html`` files, but causes problems when
+rendered as an Jupyter notebook. The downloaded ``.ipynb`` file will not have
+those dependencies installed, and will not work without running the bash code.
+
+To fix this, we can set the ``promote_jupyter_magic`` flag in ``conf.py``::
+
+  sphinx_gallery_conf = {
+      ...
+      'promote_jupyter_magic': True,
+  }
+
+If this flag is ``True``, then when a Jupyter notebook is being built, any code
+block starting with `Jupyter cell magics <https://ipython.readthedocs.io/en/stable/interactive/magics.html>`_ (e.g. ``%%bash`` or ``%%writefile``)
+will be turned into a runnable code block.
+
+For our earlier example, we could change the Markdown text to::
+
+  #%%
+  # Installing dependencies
+  #
+  #     .. code-block:: bash
+  #
+  #       %%bash
+  #       pip install -q tensorflow
+  #       apt-get -qq install curl
+
+meaning TensorFlow and Curl would be automatically installed upon running the
+Jupyter notebook. This works for any cell magic (not just those mentioned above)
+and only affects the creation of Jupyter notebooks.
+
+.. warning::
+  It is good practice to ensure the ``.py`` and ``.html`` files match the ``.ipynb``
+  files as closely as possible. This functionality should only be used when the
+  relevant code is intended to be executed by the end user.
 
 .. _without_execution:
 
@@ -1160,7 +1246,7 @@ for hi-dpi/retina displays. Sphinx Gallery supports this via the
     }
 
 that saves a 1x image at the normal figure dpi (usually 100 dpi) and a 2x
-version at twice the density (e.g. 200 dpi).  The default is no extra images
+version at twice the density (e.g. 200 dpi). The default is no extra images
 (``'image_srcset': []``), and you can specify other resolutions if desired as a
 list: ``["2x", "1.5x"]``.
 
@@ -1181,7 +1267,7 @@ This leads to a larger website, but clients that support the ``srcset`` tag will
 download the appropriate-sized images.
 
 Note that the ``.. image-sg`` directive currently ignores other ``.. image``
-directive tags like ``width``, ``height``, and ``align``.  It also only works
+directive tags like ``width``, ``height``, and ``align``. It also only works
 with the *html* and *latex*  builders.
 
 .. _image_scrapers:
@@ -1252,7 +1338,7 @@ feel free to add it to the list above (see discussion
 Using multiple code blocks to create a single figure
 ====================================================
 
-By default, images are scraped following each code block in an example.  Thus,
+By default, images are scraped following each code block in an example. Thus,
 the following produces two plots, with one plot per code block::
 
   # %%
@@ -1270,10 +1356,10 @@ the following produces two plots, with one plot per code block::
 
 However, sometimes it can be useful to use multiple code blocks to create a
 single figure, particularly if the figure takes a large number commands that
-would benefit from being interleaved with text blocks.  The optional flag
+would benefit from being interleaved with text blocks. The optional flag
 ``sphinx_gallery_defer_figures`` can be inserted as a comment anywhere in a code
 block to defer the scraping of images to the next code block (where it can be
-further deferred, if desired).  The following produces only one plot::
+further deferred, if desired). The following produces only one plot::
 
   # %%
   # This first code block does not produce any plot
@@ -1288,6 +1374,46 @@ further deferred, if desired).  The following produces only one plot::
 
   plt.plot([2, 2])
   plt.show()
+
+.. _hiding_code_blocks:
+
+Hiding lines of code
+====================
+
+Normally, Sphinx-Gallery will render every line of Python code when building
+HTML and iPython notebooks. This is usually desirable, as we want to ensure the
+Python source files, HTML, and iPython notebooks all do the same thing.
+
+However, it is sometimes useful to have Python code that runs, but is not
+included in any user-facing documentation. For example, suppose we wanted to
+add some ``assert`` statements to verify the docs were built successfully, but
+did not want these shown to users. We could use the ``sphinx_gallery_start_ignore``
+and ``sphinx_gallery_end_ignore`` flags to achieve this::
+
+    model.compile()
+    # sphinx_gallery_start_ignore
+    assert len(model.layers) == 5
+    assert model.count_params() == 219058
+    # sphinx_gallery_end_ignore
+    model.fit()
+
+When the HTML or iPython notebooks are built, this code block will be shown as::
+
+    model.compile()
+    model.fit()
+
+The ``sphinx_gallery_start_ignore`` and ``sphinx_gallery_end_ignore`` flags may
+be used in any code block, and multiple pairs of flags may be used in the same
+block. Every start flag must always have a corresponding end flag, or an error
+will be raised during doc generation. These flags and the code between them are
+always removed, regardless of what ``remove_config_comments`` is set to.
+
+Note that any output from the ignored code will still be captured.
+
+.. warning::
+  This flag should be used sparingly, as it makes the ``.py`` source files less
+  equivalent to the generated ``.html`` and ``.ipynb`` files. It is bad practice
+  to use this when other methods that preserve this relationship are possible.
 
 .. _dummy_images:
 
@@ -1369,7 +1495,7 @@ By default, Sphinx-Gallery will reset modules before each example is run.
 The choices for ``reset_modules_order`` are ``before`` (default), ``after``, and
 ``both``. If the last example run in Sphinx-Gallery modifies a module, it is
 recommended to use ``after`` or ``both`` to avoid leaking out a modified module to
-other parts of the Sphinx build process.  For example, set ``reset_modules_order``
+other parts of the Sphinx build process. For example, set ``reset_modules_order``
 to ``both`` in the configuration::
 
     sphinx_gallery_conf = {
@@ -1378,7 +1504,7 @@ to ``both`` in the configuration::
     }
 
 Custom functions can be constructed to have custom functionality depending on
-whether they are called before or after the examples.  See :ref:`custom_reset`
+whether they are called before or after the examples. See :ref:`custom_reset`
 for more information.
 
 Dealing with failing Gallery example scripts
@@ -1528,10 +1654,10 @@ Minimal reported time
 =====================
 
 By default, Sphinx-Gallery logs and embeds in the html output the time it took
-to run each script.  If the majority of your examples runs quickly, you may not
+to run each script. If the majority of your examples runs quickly, you may not
 need this information.
 
-The ``min_reported_time`` parameter can be set to a number of seconds.  The
+The ``min_reported_time`` parameter can be set to a number of seconds. The
 duration of scripts that ran faster than that amount will not be logged nor
 embedded in the html output.
 
@@ -1633,7 +1759,7 @@ From another perspective, take for example the following code block::
 
     print('Hello world')
     a=2
-    a   # this is an expression
+    a  # this is an expression
 
 ``'Hello world'`` would be captured for every ``capture_repr`` setting as this
 is directed to standard output. Further,

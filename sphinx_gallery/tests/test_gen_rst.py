@@ -9,6 +9,7 @@ from __future__ import (division, absolute_import, print_function,
 import ast
 import codecs
 import importlib
+import logging
 import tempfile
 import re
 import os
@@ -42,6 +43,9 @@ CONTENT = [
     '# sphinx_gallery_thumbnail_number = 1',
     '# sphinx_gallery_defer_figures',
     '# and now comes the module code',
+    '# sphinx_gallery_start_ignore',
+    'pass # Will be run but not rendered',
+    '# sphinx_gallery_end_ignore',
     'import logging',
     'import sys',
     'from warnings import warn',
@@ -457,6 +461,15 @@ def test_remove_config_comments(gallery_conf, req_pil):
     assert '# sphinx_gallery_defer_figures' not in rst
 
 
+def test_remove_ignore_blocks(gallery_conf, req_pil):
+    """Test removal of ignore blocks."""
+    rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
+    assert 'pass # Will be run but not rendered' in CONTENT
+    assert 'pass # Will be run but not rendered' not in rst
+    assert '# sphinx_gallery_start_ignore' in CONTENT
+    assert '# sphinx_gallery_start_ignore' not in rst
+
+
 def test_dummy_image_error(gallery_conf, req_pil):
     """Test correct error is raised if int not provided to
     sphinx_gallery_dummy_images."""
@@ -712,6 +725,25 @@ def test_output_no_ansi(gallery_conf, script_vars):
     )
 
     assert output_test_string.split('\n')[-1] == "0.25"
+
+
+def test_absl_logging(gallery_conf, script_vars):
+    """Test using absl logging does not throw error. This is important, as many
+    popular libraries like Tensorflow use absl for logging.
+    """
+    pytest.importorskip('absl')
+
+    gallery_conf.update(image_scrapers=())
+    compiler = codeop.Compile()
+    code = 'from absl import logging\nlogging.info("Should not crash!")'
+    sg.execute_code_block(
+        compiler, ("code", code, 1), None, script_vars, gallery_conf, {}
+    )
+
+    # Previously, absl crashed during shutdown, after all tests had run, so
+    # tests would pass even if this issue occurred. To address this issue, we
+    # call shutdown inside the test.
+    logging.shutdown()
 
 
 def test_empty_output_box(gallery_conf, script_vars):
