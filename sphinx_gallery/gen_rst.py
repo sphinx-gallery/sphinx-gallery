@@ -458,28 +458,31 @@ def generate_dir_rst(
     subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
 
     # Write subsection index file
-    subsection_index_path = os.path.join(target_dir, 'index.rst.new')
-    with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
-        findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
-            head_ref.replace(os.path.sep, '_')
-        ))
-        findex.write(subsection_index_content)
+    # only if nested_sections is True
+    subsection_index_path = None
+    if gallery_conf["nested_sections"] is True:
+        subsection_index_path = os.path.join(target_dir, 'index.rst.new')
+        with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
+            findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
+                head_ref.replace(os.path.sep, '_')
+            ))
+            findex.write(subsection_index_content)
 
-        # Create toctree for index file
-        # with all gallery items which belong to current subsection
-        # and add it to generated index rst file if need be.
-        # Toctree cannot be empty
-        # and won't be added if include_toctree is false
-        # (this is useful when generating the example gallery's main
-        # index rst file, which should contain only one toctree)
-        if len(subsection_toctree_filenames) > 0 and include_toctree:
-            subsection_index_toctree = """
+            # Create toctree for index file
+            # with all gallery items which belong to current subsection
+            # and add it to generated index rst file if need be.
+            # Toctree cannot be empty
+            # and won't be added if include_toctree is false
+            # (this is useful when generating the example gallery's main
+            # index rst file, which should contain only one toctree)
+            if len(subsection_toctree_filenames) > 0 and include_toctree:
+                subsection_index_toctree = """
 .. toctree::
    :hidden:
 
    %s\n
 """ % "\n   ".join(subsection_toctree_filenames)
-            findex.write(subsection_index_toctree)
+                findex.write(subsection_index_toctree)
 
     return (
         subsection_index_path,

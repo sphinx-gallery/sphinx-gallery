@@ -98,6 +98,7 @@ DEFAULT_GALLERY_CONF = {
     'image_srcset': [],
     'default_thumb_file': None,
     'line_numbers': False,
+    'nested_sections': True,
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -518,7 +519,7 @@ def generate_gallery_rst(app):
                     subsection_index_path,
                     subsection_index_content,
                     subsection_costs,
-                    _,
+                    subsection_toctree_filenames,
                 ) = generate_dir_rst(
                     src_dir, target_dir, gallery_conf, seen_backrefs
                 )
@@ -533,15 +534,30 @@ def generate_gallery_rst(app):
 
                 fhindex.write(subsection_index_content)
 
+                # Write subsection toctree in main file
+                # only if nested_sections is False or None
+                if not gallery_conf["nested_sections"]:
+                    if len(subsection_toctree_filenames) > 0:
+                        subsection_index_toctree = """
+.. toctree::
+   :hidden:
+
+   %s\n
+""" % "\n   ".join(subsection_toctree_filenames)
+                    fhindex.write(subsection_index_toctree)
+                # Otherwise, a new index.rst.new file should
+                # have been created and it needs to be parsed
+                else:
+                    _replace_md5(subsection_index_path, mode='t')
+
                 costs += subsection_costs
                 write_computation_times(
                     gallery_conf, target_dir, subsection_costs
                 )
 
-                _replace_md5(subsection_index_path, mode='t')
-
             # generate toctree with subsections
-            subsections_toctree = """
+            if gallery_conf["nested_sections"] is True:
+                subsections_toctree = """
 .. toctree::
    :hidden:
    :includehidden:
@@ -549,9 +565,9 @@ def generate_gallery_rst(app):
    %s\n
 """ % "\n   ".join(this_toctree_items + subsection_index_files)
 
-            # add toctree to file only if there are subsections
-            if len(subsection_index_files) > 0:
-                fhindex.write(subsections_toctree)
+                # add toctree to file only if there are subsections
+                if len(subsection_index_files) > 0:
+                    fhindex.write(subsections_toctree)
 
             if gallery_conf['download_all_examples']:
                 download_fhindex = generate_zipfiles(
