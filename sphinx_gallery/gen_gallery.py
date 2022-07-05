@@ -479,7 +479,9 @@ def generate_gallery_rst(app):
         gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
 
         # Create section rst files and fetch content which will
-        # be added to current index file
+        # be added to current index file. This only includes content
+        # from files located in the root folder of the current gallery
+        # (ie not in subfolders)
         (
             _,
             this_content,
@@ -503,6 +505,16 @@ def generate_gallery_rst(app):
         with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             fhindex.write(":orphan:\n\n" + this_content)
+
+            # Write toctree with gallery items from gallery root folder
+            if len(this_toctree_items) > 0:
+                this_toctree = """
+.. toctree::
+   :hidden:
+
+   %s\n
+""" % "\n   ".join(this_toctree_items)
+                fhindex.write(this_toctree)
 
             # list all paths to subsection index files in this array
             subsection_index_files = []
@@ -565,7 +577,8 @@ def generate_gallery_rst(app):
    :includehidden:
 
    %s\n
-""" % "\n   ".join(this_toctree_items + subsection_index_files)
+""" % "\n   ".join(subsection_index_files)
+# """ % "\n   ".join(this_toctree_items + subsection_index_files)
 
                 # add toctree to file only if there are subsections
                 if len(subsection_index_files) > 0:
