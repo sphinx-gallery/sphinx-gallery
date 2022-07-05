@@ -25,7 +25,7 @@ Tested for Read the Docs theme 0.1.7 */
   --sg-download-a-hover-box-shadow-2: rgba(0, 0, 0, 0.25);
 }
 @media(prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]), html:not([data-theme="dark"]), body:not([data-theme="dark"]){
+  :root[data-theme="auto"], html[data-theme="auto"], body[data-theme="auto"] {
     --sg-tooltip-foreground: black;
     --sg-tooltip-background: rgba(250, 250, 250, 0.9);
     --sg-tooltip-border: #ccc transparent;
@@ -66,7 +66,7 @@ html[data-theme="dark"], body[data-theme="dark"] {
   --sg-download-a-hover-box-shadow-2: rgba(255, 255, 255, 0.25);
 }
 @media(prefers-color-scheme: dark){
-  html:not([data-theme="light"]), body:not([data-theme="light"]) {
+  html[data-theme="auto"], body[data-theme="auto"] {
     --sg-tooltip-foreground: white;
     --sg-tooltip-background: rgba(10, 10, 10, 0.9);
     --sg-tooltip-border: #333 transparent;
