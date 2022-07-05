@@ -467,7 +467,9 @@ def generate_dir_rst(
     subsection_index_path = None
     if gallery_conf["nested_sections"] is True:
         subsection_index_path = os.path.join(target_dir, 'index.rst.new')
-        with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
+        with codecs.open(subsection_index_path, 'w', encoding='utf-8') as (
+            findex
+        ):
             findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
                 head_ref.replace(os.path.sep, '_')
             ))
