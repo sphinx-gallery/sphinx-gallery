@@ -395,7 +395,8 @@ sphinx_gallery_conf = {
     # each code block
     'capture_repr': ('_repr_html_', '__repr__'),
     'matplotlib_animations': True,
-    'image_srcset': ["2x"]
+    'image_srcset': ["2x"],
+    'nested_sections': False,
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show
