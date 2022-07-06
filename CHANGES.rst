@@ -10,11 +10,12 @@ CSS pseudo-elements instead of additional real text. For more details, see
 
 **Implemented enhancements:**
 
--  Modify toctree to include gallery categories (ie gallery subfolders) `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. Instead of a flat toctree linking the main gallery README / index to all gallery items, one now links the main README to category READMEs, which themselves point to category items. In particular, this allows displaying categories of a given gallery in the sidebar (`alexisthual <https://github.com/alexisthual>`__)
+-  Nest gallery sections (ie gallery subfolders) `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. This feature can be disabled (see config option ``nested_sections`` in the documentation) if the previous behaviour is prefered (`alexisthual <https://github.com/alexisthual>`__)
+-  Tooltips now overlay gallery items `commit 36166cd <https://github.com/sphinx-gallery/sphinx-gallery/pull/944/commits/36166cd2fc2b43ecbd585654cfe8745f3a1b3f64>`__. Custom CSS might need to be adapted (`alexisthual <https://github.com/alexisthual>`__)
 
 **Fixed bugs:**
 
--  Display gallery items using CSS grid instead of floating `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__, see `migration guide <https://github.com/sphinx-gallery/sphinx-gallery/pull/906#issuecomment-1019542067>`__ to adapt custom css for thumbnails (`alexisthual <https://github.com/alexisthual>`__)
+-  Display gallery items using CSS grid instead of  ``float`` property `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__, see `migration guide <https://github.com/sphinx-gallery/sphinx-gallery/pull/906#issuecomment-1019542067>`__ to adapt custom CSS for thumbnails (`alexisthual <https://github.com/alexisthual>`__)
 
 **Closed issues:**
 
