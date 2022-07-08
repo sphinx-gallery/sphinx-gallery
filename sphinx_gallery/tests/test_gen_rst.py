@@ -565,7 +565,7 @@ def test_gen_dir_rst(gallery_conf, fakesphinxapp, ext):
             generate_dir_rst(*args)
     else:
         out = generate_dir_rst(*args)
-        assert u"Óscar here" in out[0]
+        assert u"Óscar here" in out[1]
 
 
 def test_pattern_matching(gallery_conf, log_collector, req_pil):

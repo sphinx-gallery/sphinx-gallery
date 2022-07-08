@@ -57,6 +57,7 @@ file:
 - ``junit`` (:ref:`junit_xml`)
 - ``log_level`` (:ref:`log_level`)
 - ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
+- ``nested_sections`` (:ref:`nested_sections`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -1826,3 +1827,37 @@ etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
         'capture_repr': ('__repr__'),
         'ignore_repr_types': r'matplotlib[text, axes]',
     }
+
+
+.. _nested_sections:
+
+Nesting gallery sections
+========================
+
+By default, ``nested_sections=True``.
+In this case, for each folder present in the gallery's root folder,
+Sphinx-Gallery expects to find a readme and uses it to build
+a specific index file for this subsection.
+This index file will contain the section's description and a toctree
+linking to each gallery item which belongs to this subsection.
+
+Eventually, the gallery's main index files will contain the gallery's
+description and a toctree linking to each subsections's index file.
+
+With this behaviour, generated file structure and toctrees mimic that of
+the original gallery folder. This is useful to generate sidebars with
+nested sections representing the gallery's file structure.
+
+.. note::
+
+    When ``nested_sections=True``, gallery items located in the gallery's root folder
+    should be move to a new subfolder, otherwise the sidebar
+    might not behave as expected (due to the fuzzy toctree structure).
+
+If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
+previous to version 0.10.2.
+Specifically, it will generate a single index file for the whole gallery.
+This index file will contain descriptions for the whole gallery as well as for
+each subsection, and a specific toctree for each subsection.
+In particular, sidebars generated using these toctrees might not reflect the
+actual section / folder structure.

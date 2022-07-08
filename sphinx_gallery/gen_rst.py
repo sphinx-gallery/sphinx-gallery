@@ -363,8 +363,46 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
 """
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
-    """Generate the gallery reStructuredText for an example directory."""
+def generate_dir_rst(
+    src_dir,
+    target_dir,
+    gallery_conf,
+    seen_backrefs,
+    include_toctree=True,
+):
+    """Generate the gallery reStructuredText for an example directory.
+
+    Parameters
+    ----------
+    src_dir: str,
+        Path to example directory containing python files
+        and possibly sub categories
+    target_dir: str,
+        Path where parsed examples (rst, python files, etc)
+        will be outputed
+    gallery_conf : Dict[str, Any]
+        Gallery configurations.
+    seen_backrefs: set,
+        Back references encountered when parsing this gallery
+        will be stored in this set.
+    include_toctree: bool,
+        Whether or not toctree should be included
+        in generated rst file.
+        Default = True.
+
+    Returns
+    -------
+    index_path: str,
+        Path to index rst file presenting the current example gallery
+    index_content: str,
+        Content which will be written to the index rst file
+        presenting the current example gallery
+    costs: list,
+        List of costs for building each element of the gallery
+    toctree_items: list,
+        List of files included in toctree
+        (independent of include_toctree's value)
+    """
     head_ref = os.path.relpath(target_dir, gallery_conf['src_dir'])
 
     subsection_index_content = ""
@@ -416,7 +454,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
             target_dir, gallery_conf['src_dir'], fname, intro, title
         )
         entries_text.append(this_entry)
-        subsection_toctree_filenames.append(gallery_item_filename)
+        subsection_toctree_filenames.append("/" + gallery_item_filename)
 
     for entry_text in entries_text:
         subsection_index_content += entry_text
@@ -424,33 +462,41 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     # Close thumbnail parent div
     subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
 
-    # Create toctree for index file
-    # with all gallery items which belong to current subsection.
-    # The toctree string should be empty if there are no subsections
-    # or related files, as it will be returned at the end of this function.
-    subsection_index_toctree = ""
-    if len(subsection_toctree_filenames) > 0:
-        subsection_index_toctree = """
+    # Write subsection index file
+    # only if nested_sections is True
+    subsection_index_path = None
+    if gallery_conf["nested_sections"] is True:
+        subsection_index_path = os.path.join(target_dir, 'index.rst.new')
+        with codecs.open(subsection_index_path, 'w', encoding='utf-8') as (
+            findex
+        ):
+            findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
+                head_ref.replace(os.path.sep, '_')
+            ))
+            findex.write(subsection_index_content)
+
+            # Create toctree for index file
+            # with all gallery items which belong to current subsection
+            # and add it to generated index rst file if need be.
+            # Toctree cannot be empty
+            # and won't be added if include_toctree is false
+            # (this is useful when generating the example gallery's main
+            # index rst file, which should contain only one toctree)
+            if len(subsection_toctree_filenames) > 0 and include_toctree:
+                subsection_index_toctree = """
 .. toctree::
    :hidden:
 
-   /%s\n
-""" % "\n   /".join(subsection_toctree_filenames)
+   %s\n
+""" % "\n   ".join(subsection_toctree_filenames)
+                findex.write(subsection_index_toctree)
 
-    # Write subsection index file
-    subsection_index_path = os.path.join(target_dir, 'index.rst.new')
-    with codecs.open(subsection_index_path, 'w', encoding='utf-8') as findex:
-        findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
-            head_ref.replace(os.path.sep, '_')
-        ))
-        findex.write(subsection_index_content)
-
-        # add toctree to file only if toctree is not empty
-        if len(subsection_toctree_filenames) > 0:
-            findex.write(subsection_index_toctree)
-
-    return subsection_index_content, costs, subsection_index_toctree, \
-        subsection_index_path
+    return (
+        subsection_index_path,
+        subsection_index_content,
+        costs,
+        subsection_toctree_filenames,
+    )
 
 
 def handle_exception(exc_info, src_file, script_vars, gallery_conf):
