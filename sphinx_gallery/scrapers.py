@@ -550,13 +550,9 @@ def _reset_matplotlib(gallery_conf, fname):
 
 def _reset_seaborn(gallery_conf, fname):
     """Reset seaborn."""
-    # Horrible code to 'unload' seaborn, so that it resets
-    # its default when is load
-    # Python does not support unloading of modules
-    # https://bugs.python.org/issue9072
-    for module in list(sys.modules.keys()):
-        if 'seaborn' in module:
-            del sys.modules[module]
+    seaborn_module = sys.modules.get('seaborn')
+    if seaborn_module is not None:
+        seaborn_module.reset_defaults()
 
 
 _reset_dict = {
