@@ -1067,7 +1067,7 @@ org (type: string)
   The GitHub organization where your documentation is stored.
 repo (type: string)
   The GitHub repository where your documentation is stored.
-ref (type: string)
+branch (type: string)
   A reference to the version of your repository where your documentation exists.
   For example, if your built documentation is stored on a ``gh-pages`` branch,
   then this field should be set to ``gh-pages``.
