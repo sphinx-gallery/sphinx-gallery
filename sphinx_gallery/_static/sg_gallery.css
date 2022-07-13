@@ -190,6 +190,7 @@ thumbnail with its default link Background color */
   width: 100%;
   height: 100%;
   position: absolute;
+  pointer-events: none;
   top: 0;
   box-sizing: border-box;
   overflow: hidden;
