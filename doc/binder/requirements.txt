@@ -6,4 +6,4 @@ pillow
 seaborn
 joblib
 sphinx-gallery
-jupyterlite_sphinx
+jupyterlite-sphinx
