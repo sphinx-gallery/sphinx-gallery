@@ -57,6 +57,7 @@ DEFAULT_GALLERY_CONF = {
     'within_subsection_order': NumberOfCodeLinesSortKey,
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
+    'jupyterlite': False,
     'doc_module': (),
     'exclude_implicit_doc': {},
     'reference_url': {},

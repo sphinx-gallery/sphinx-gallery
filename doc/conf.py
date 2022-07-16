@@ -45,7 +45,10 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx_gallery.gen_gallery',
+    'jupyterlite_sphinx',
 ]
+
+jupyterlite_contents = ["./auto_examples/*.ipynb"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -371,6 +374,7 @@ sphinx_gallery_conf = {
     'reference_url': {
         'sphinx_gallery': None,
     },
+    'jupyterlite': True,
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'image_scrapers': image_scrapers,

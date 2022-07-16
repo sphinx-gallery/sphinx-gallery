@@ -131,6 +131,40 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     return rst
 
 
+def gen_lite_rst(fpath, notebook_file, gallery_conf):
+    """Generate the RST + link for the Binder badge.
+
+    Parameters
+    ----------
+    fpath: str
+        The path to the `.ipynb` file for which a JupyterLite badge will be generated.
+
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary.
+
+    Returns
+    -------
+    rst : str
+        The reStructuredText for the JupyterLite badge that links to this file.
+    """
+    lite_url = f"../lite/lab/?path={notebook_file}"
+    physical_path = os.path.join(
+        os.path.dirname(fpath), 'images', 'jupyterlite_badge.svg')
+    os.makedirs(os.path.dirname(physical_path), exist_ok=True)
+    if not os.path.isfile(physical_path):
+        shutil.copyfile(
+            os.path.join(glr_path_static(), 'jupyterlite_badge.svg'),
+            physical_path)
+    rst = (
+        "\n"
+        "  .. container:: lite-badge\n\n"
+        "    .. image:: images/jupyterlite_badge.svg\n"
+        "      :target: {}\n"
+        "      :alt: Launch JupyterLite\n"
+        "      :width: 150 px\n").format(lite_url)
+    return rst
+
+
 def copy_binder_files(app, exception):
     """Copy all Binder requirements and notebooks files."""
     if exception is not None:

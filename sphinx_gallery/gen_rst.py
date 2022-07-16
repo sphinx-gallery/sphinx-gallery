@@ -49,7 +49,7 @@ from .py_source_parser import (split_code_and_text_blocks,
                                remove_ignore_blocks)
 
 from .notebook import jupyter_notebook, save_notebook
-from .binder import check_binder_conf, gen_binder_rst
+from .binder import check_binder_conf, gen_binder_rst, gen_lite_rst
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
 
@@ -183,6 +183,8 @@ def codestr2rst(codestr, lang='python', lineno=None):
     else:
         lineno = ''
     code_directive = ".. code-block:: {0}\n{1}\n".format(lang, lineno)
+    # code_directive = ".. replite::\n"
+    # code_directive = code_directive + f"    :kernel: {lang}\n\n"
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
@@ -1243,6 +1245,9 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     if time_elapsed >= gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)
         example_rst += TIMING_CONTENT.format(time_m, time_s)
+
+    fname = os.path.basename(example_file)
+
     if gallery_conf['show_memory']:
         example_rst += ("**Estimated memory usage:** {0: .0f} MB\n\n"
                         .format(memory_used))
@@ -1254,11 +1259,16 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                                            gallery_conf)
         binder_badge_rst = indent(binder_badge_rst, '  ')  # need an extra two
 
-    fname = os.path.basename(example_file)
+    jupyterlite_rst = ''
+    if gallery_conf['jupyterlite']:
+        jupyterlite_rst = gen_lite_rst(example_file, replace_py_ipynb(fname), gallery_conf)
+        jupyterlite_rst = indent(jupyterlite_rst, '  ')  # need an extra two
+
     example_rst += CODE_DOWNLOAD.format(fname,
                                         replace_py_ipynb(fname),
                                         binder_badge_rst,
-                                        ref_fname)
+                                        ref_fname,
+                                        jupyterlite_rst)
     if gallery_conf['show_signature']:
         example_rst += SPHX_GLR_SIG
 
