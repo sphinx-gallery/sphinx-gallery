@@ -48,7 +48,9 @@ extensions = [
     'jupyterlite_sphinx',
 ]
 
-jupyterlite_contents = ["./auto_examples/*.ipynb"]
+# Needs https://github.com/jupyterlite/jupyterlite-sphinx/pull/64 to only show ipynb files
+# jupyterlite_contents = ["./auto_examples/*.ipynb"
+jupyterlite_contents = ["./auto_examples/"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
