@@ -137,7 +137,8 @@ def gen_lite_rst(fpath, notebook_file, gallery_conf):
     Parameters
     ----------
     fpath: str
-        The path to the `.ipynb` file for which a JupyterLite badge will be generated.
+        The path to the `.ipynb` file for which a JupyterLite badge will be
+        generated.
 
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary.
