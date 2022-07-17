@@ -12,3 +12,4 @@ flake8
 check-manifest
 plotly
 absl-py
+jupyterlite-sphinx
