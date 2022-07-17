@@ -148,7 +148,7 @@ def gen_lite_rst(fpath, notebook_file, gallery_conf):
     rst : str
         The reStructuredText for the JupyterLite badge that links to this file.
     """
-    lite_url = f"../lite/lab/?path={notebook_file}"
+    lite_url = f"../lite/lab/index.html?path={notebook_file}"
     physical_path = os.path.join(
         os.path.dirname(fpath), 'images', 'jupyterlite_badge.svg')
     os.makedirs(os.path.dirname(physical_path), exist_ok=True)
