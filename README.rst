@@ -50,6 +50,7 @@ Who uses Sphinx-Gallery
 * `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
 * `Apache TVM <https://tvm.apache.org/docs/tutorial/index.html>`_
 * `Tonic <https://tonic.readthedocs.io/en/latest/auto_examples/index.html>`_
+* `Radis <https://radis.readthedocs.io/en/latest/auto_examples/index.html>`_
 
 .. installation-begin-content
 

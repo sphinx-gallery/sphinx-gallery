@@ -30,3 +30,4 @@ Here is a list of projects using `sphinx-gallery`.
 * `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
 * `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
 * `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
+* `Radis <https://radis.readthedocs.io/en/latest/auto_examples/index.html>`_
