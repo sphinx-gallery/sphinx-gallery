@@ -150,7 +150,7 @@ class SphinxDocLinkResolver(object):
                     'URLs (doc_url cannot be absolute)')
             index_url = doc_url + '/'
             searchindex_url = doc_url + '/searchindex.js'
-            docopts_url = doc_url + '_static/documentation_options.js'
+            docopts_url = doc_url + '/_static/documentation_options.js'
         else:
             index_url = os.path.join(doc_url, 'index.html')
             searchindex_url = os.path.join(doc_url, 'searchindex.js')
