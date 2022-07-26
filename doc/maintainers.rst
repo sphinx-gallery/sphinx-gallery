@@ -87,19 +87,21 @@ Finalize the release
 
 1. Create the new release on PyPI
 
-   * Build a source distribution::
+   * Build a source distribution and an ``any`` wheel::
 
-        python setup.py sdist
+        git clean -xdf
+        python setup.py sdist bdist_wheel
 
    * Check the release::
 
-        twine check dist/sphinx-gallery-<version>.tar.gz
+        twine check dist/sphinx-gallery-<version>.*
 
-     ``<version>`` should be the release version, e.g., ``0.7.0``.
+     ``<version>`` should be the release version, e.g., ``0.7.0``, and it
+     should check both the source distribution and the wheel.
 
    * Upload to PyPI::
 
-        twine upload dist/sphinx-gallery-<version>.tar.gz
+        twine upload dist/*
 
      Again, ``<version>`` should be the release version, e.g., ``0.7.0``.
 
