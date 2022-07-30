@@ -702,6 +702,9 @@ def write_computation_times(gallery_conf, target_dir, costs):
 def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
     if backreferences_dir is None or not os.path.isdir(backreferences_dir):
         return
+    total_count = len(os.listdir(backreferences_dir))
+    if total_count == 0:
+        return
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
     new_ref = 'sphx_glr_%s_unused_api' % target_dir_clean
@@ -731,7 +734,6 @@ def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
         fid.write(title + '\n' + '=' * len(title) + '\n')
         for line in unused_lines:
             fid.write(line)
-        total_count = len(os.listdir(backreferences_dir))
         used_count = total_count - unused_count
         used_percentage = used_count / total_count
         fid.write('\nAPI entries used: '
