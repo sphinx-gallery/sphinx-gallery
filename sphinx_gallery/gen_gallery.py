@@ -594,6 +594,12 @@ def generate_gallery_rst(app):
                 fhindex.write(SPHX_GLR_SIG)
 
         _replace_md5(index_rst_new, mode='t')
+
+        write_api_entry_usage(
+            gallery_conf, gallery_dir_abs_path, os.path.join(
+                app.srcdir,
+                app.config.sphinx_gallery_conf["backreferences_dir"]))
+
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf['plot_gallery']:
@@ -614,11 +620,14 @@ def generate_gallery_rst(app):
         write_junit_xml(gallery_conf, app.builder.outdir, costs)
 
 
-SPHX_GLR_COMP_TIMES = """
+SPHX_GLR_ORPHAN = """
 :orphan:
 
 .. _{0}:
 
+"""
+
+SPHX_GLR_COMP_TIMES = SPHX_GLR_ORPHAN + """
 Computation times
 =================
 """
@@ -685,6 +694,51 @@ def write_computation_times(gallery_conf, target_dir, costs):
             assert len(text) == len(hline)
             fid.write(text)
             fid.write(hline)
+
+
+def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
+    if not os.path.isdir(backreferences_dir):
+        return
+    target_dir_clean = os.path.relpath(
+        target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
+    new_ref = 'sphx_glr_%s_unused_api' % target_dir_clean
+    replace_count = len('sphx_glr_' + os.path.basename(target_dir) + '_')
+    unused_count = 0
+    with codecs.open(os.path.join(target_dir, 'sg_api_usage.rst'), 'w',
+                     encoding='utf-8') as fid:
+        fid.write(SPHX_GLR_ORPHAN.format(new_ref))
+        unused_lines = list()
+        used_lines = list()
+        for example in os.listdir(backreferences_dir):
+            # check if backreferences empty
+            example_fname = os.path.join(backreferences_dir, example)
+            if os.path.getsize(example_fname) == 0:
+                unused_count += 1
+                unused_lines.append(f'- {os.path.splitext(example)[0]}\n')
+            else:
+                used_lines.append(f'- {os.path.splitext(example)[0]}\n\n')
+                with open(example_fname, 'r') as fid2:
+                    for line in fid2:
+                        if line.startswith('  :ref:'):
+                            example_name = line.split('`')[1]
+                            example_name = example_name[replace_count:]
+                            used_lines.append(' - ' + example_name + '\n')
+
+        title = 'Unused API Entries'
+        fid.write(title + '\n' + '=' * len(title) + '\n')
+        for line in unused_lines:
+            fid.write(line)
+        total_count = len(os.listdir(backreferences_dir))
+        used_count = total_count - unused_count
+        used_percentage = used_count / total_count
+        fid.write('\nAPI entries used: '
+                  f'{round(used_percentage * 100, 2)}% '
+                  f'({used_count}/{total_count})\n\n')
+
+        title = 'Used API Entries'
+        fid.write(title + '\n' + '=' * len(title) + '\n')
+        for line in used_lines:
+            fid.write(line)
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
