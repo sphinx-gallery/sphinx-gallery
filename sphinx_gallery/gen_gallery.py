@@ -595,10 +595,13 @@ def generate_gallery_rst(app):
 
         _replace_md5(index_rst_new, mode='t')
 
-        write_api_entry_usage(
-            gallery_conf, gallery_dir_abs_path, os.path.join(
+        backreferences_dir = None
+        if app.config.sphinx_gallery_conf["backreferences_dir"] is not None:
+            backreferences_dir = os.path.join(
                 app.srcdir,
-                app.config.sphinx_gallery_conf["backreferences_dir"]))
+                app.config.sphinx_gallery_conf["backreferences_dir"])
+        write_api_entry_usage(
+            gallery_conf, gallery_dir_abs_path, backreferences_dir)
 
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
@@ -697,7 +700,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
 
 
 def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
-    if not os.path.isdir(backreferences_dir):
+    if backreferences_dir is None or not os.path.isdir(backreferences_dir):
         return
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
