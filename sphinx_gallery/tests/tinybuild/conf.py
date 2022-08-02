@@ -57,6 +57,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
+    'sphinx.ext.graphviz',
 ]
 templates_path = ['_templates']
 autosummary_generate = True

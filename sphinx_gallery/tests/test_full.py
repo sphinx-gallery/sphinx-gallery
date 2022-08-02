@@ -87,6 +87,30 @@ def test_timings(sphinx_app):
     assert ('- %s: ' % fname) in status
 
 
+def test_api_usage(sphinx_app):
+    """Test that an api usage page is created."""
+    out_dir = sphinx_app.outdir
+    src_dir = sphinx_app.srcdir
+    # local folder
+    api_rst = op.join(src_dir, 'auto_examples', 'sg_api_usage.rst')
+    assert op.isfile(api_rst)
+    with codecs.open(api_rst, 'r', 'utf-8') as fid:
+        content = fid.read()
+    assert (('- :func:`sphinx_gallery.DummyClass.examples`\n\n'
+             '  - :ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`')
+             in content)
+    # HTML output
+    api_html = op.join(out_dir, 'auto_examples', 'sg_api_usage.html')
+    assert op.isfile(api_html)
+    with codecs.open(api_html, 'r', 'utf-8') as fid:
+        content = fid.read()
+    assert 'href="plot_numpy_matplotlib.html' in content
+    # printed
+    status = sphinx_app._status.getvalue()
+    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    assert ('- %s: ' % fname) in status
+
+
 def test_optipng(sphinx_app):
     """Test that optipng is detected."""
     status = sphinx_app._status.getvalue()

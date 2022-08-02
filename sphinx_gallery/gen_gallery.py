@@ -703,48 +703,107 @@ def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
     if backreferences_dir is None or not os.path.isdir(backreferences_dir):
         return
     example_files = [example for example in os.listdir(backreferences_dir)
-                     if example.endswith('.example')]
+                     if (example.endswith('.examples') and
+                         not os.path.isfile(example + '.new')) or
+                     example.endswith('.examples.new')]
     total_count = len(example_files)
     if total_count == 0:
         return
+    try:
+        import graphviz
+        has_graphviz = True
+    except ImportError:
+        logger.info('`graphviz` required to graphical visualization')
+        has_graphviz = False
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
     new_ref = 'sphx_glr_%s_sg_api_usage' % target_dir_clean
     replace_count = len('sphx_glr_' + os.path.basename(target_dir) + '_')
-    unused_count = 0
     with codecs.open(os.path.join(target_dir, 'sg_api_usage.rst'), 'w',
                      encoding='utf-8') as fid:
         fid.write(SPHX_GLR_ORPHAN.format(new_ref))
-        unused_lines = list()
-        used_lines = list()
+        unused_api_entries = list()
+        used_api_entries = dict()
         for example in example_files:
             # check if backreferences empty
             example_fname = os.path.join(backreferences_dir, example)
+            entry = os.path.splitext(example)[0]
             if os.path.getsize(example_fname) == 0:
-                unused_count += 1
-                unused_lines.append(f'- {os.path.splitext(example)[0]}\n')
+                unused_api_entries.append(entry)
             else:
-                used_lines.append(f'- {os.path.splitext(example)[0]}\n\n')
+                used_api_entries[entry] = list()
                 with open(example_fname, 'r', encoding='utf-8') as fid2:
                     for line in fid2:
                         if line.startswith('  :ref:'):
                             example_name = line.split('`')[1]
-                            example_name = example_name[replace_count:]
-                            used_lines.append(' - ' + example_name + '\n')
-                used_lines.append('\n')
-        unused_lines.append('\n\n')
+                            used_api_entries[entry].append(example_name)
 
-        for title, lines in zip(('Unused API Entries', 'Used API Entries'),
-                                (unused_lines, used_lines)):
-            fid.write(title + '\n' + '=' * len(title) + '\n\n')
-            for line in lines:
-                fid.write(line)
+        title = 'Unused API Entries'
+        fid.write(title + '\n' + '=' * len(title) + '\n\n')
+        for entry in unused_api_entries:
+            fid.write(f'- :func:`{entry}`\n')
+        fid.write('\n\n')
 
-        used_count = total_count - unused_count
+        unused_dot_fname = os.path.join(target_dir, 'sg_api_unused.dot')
+        if has_graphviz and unused_api_entries:
+            fid.write('.. graphviz:: ./sg_api_unused.dot\n'
+                      '    :alt: API used entries graph\n'
+                      '    :layout: neato\n\n')
+
+        used_count = len(used_api_entries)
         used_percentage = used_count / total_count
         fid.write('\nAPI entries used: '
                   f'{round(used_percentage * 100, 2)}% '
                   f'({used_count}/{total_count})\n\n')
+
+        title = 'Used API Entries'
+        fid.write(title + '\n' + '=' * len(title) + '\n\n')
+        for entry, refs in used_api_entries.items():
+            fid.write(f'- :func:`{entry}`\n\n')
+            for ref in refs:
+                fid.write(f'  - :ref:`{ref}`\n')
+            fid.write('\n\n')
+
+        used_dot_fname = os.path.join(target_dir, 'sg_api_used.dot')
+        if has_graphviz and used_api_entries:
+            fid.write('.. graphviz:: ./sg_api_used.dot\n'
+                      '    :alt: API usage graph\n'
+                      '    :layout: neato\n\n')
+
+    # design graph
+    if has_graphviz and unused_api_entries:
+        dg = graphviz.Digraph('api_usage', filename=unused_dot_fname,
+
+                              node_attr={'color': 'lightblue2',
+                                         'style': 'filled'})
+
+        unused_api_connections = set()
+        unused_api_struct = [entry.split('.') for entry in unused_api_entries]
+        n_levels = max([len(struct) for struct in unused_api_struct])
+        for level in range(n_levels):
+            for struct in unused_api_struct:
+                if len(struct) <= level + 1:
+                    continue
+                if (struct[level], struct[level + 1]) in \
+                        unused_api_connections:
+                    continue
+                unused_api_connections.add((struct[level], struct[level + 1]))
+                dg.edge(struct[level], struct[level + 1])
+
+        dg.attr(overlap='scale')
+        dg.save(unused_dot_fname)
+
+    if has_graphviz and used_api_entries:
+        dg = graphviz.Digraph('api_usage', filename=used_dot_fname,
+                              node_attr={'color': 'lightblue2',
+                                         'style': 'filled'})
+
+        for entry, refs in used_api_entries.items():
+            for ref in refs:
+                dg.edge(entry, ref[replace_count:])
+
+        dg.attr(overlap='scale')
+        dg.save(used_dot_fname)
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
