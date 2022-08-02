@@ -463,7 +463,7 @@ def test_write_computation_times_noop():
 
 
 def test_write_api_usage_noop():
-    write_api_entry_usage(None, None, 'foo')
+    write_api_entry_usage({'backreferences_dir': None}, None)
 
 
 @pytest.mark.conf_file(content="""

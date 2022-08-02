@@ -594,14 +594,7 @@ def generate_gallery_rst(app):
                 fhindex.write(SPHX_GLR_SIG)
 
         _replace_md5(index_rst_new, mode='t')
-
-        backreferences_dir = None
-        if app.config.sphinx_gallery_conf["backreferences_dir"] is not None:
-            backreferences_dir = os.path.join(
-                app.srcdir,
-                app.config.sphinx_gallery_conf["backreferences_dir"])
-        write_api_entry_usage(
-            gallery_conf, gallery_dir_abs_path, backreferences_dir)
+        write_api_entry_usage(gallery_conf, gallery_dir_abs_path)
 
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
@@ -699,9 +692,11 @@ def write_computation_times(gallery_conf, target_dir, costs):
             fid.write(hline)
 
 
-def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
-    if backreferences_dir is None or not os.path.isdir(backreferences_dir):
+def write_api_entry_usage(gallery_conf, target_dir):
+    if gallery_conf['backreferences_dir'] is None:
         return
+    backreferences_dir = os.path.join(gallery_conf['src_dir'],
+                                      gallery_conf['backreferences_dir'])
     example_files = [example for example in os.listdir(backreferences_dir)
                      if (example.endswith('.examples') and
                          not os.path.isfile(example + '.new')) or
@@ -728,6 +723,9 @@ def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
             # check if backreferences empty
             example_fname = os.path.join(backreferences_dir, example)
             entry = os.path.splitext(example)[0]
+            while entry.endswith('.examples') or \
+                    entry.endswith('.examples.new'):
+                entry = os.path.splitext(entry)[0]
             if os.path.getsize(example_fname) == 0:
                 unused_api_entries.append(entry)
             else:
