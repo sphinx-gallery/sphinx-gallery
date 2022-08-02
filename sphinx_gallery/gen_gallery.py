@@ -695,6 +695,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
 def write_api_entry_usage(gallery_conf, target_dir):
     if gallery_conf['backreferences_dir'] is None:
         return
+
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
                                       gallery_conf['backreferences_dir'])
     example_files = [example for example in os.listdir(backreferences_dir)
@@ -704,11 +705,22 @@ def write_api_entry_usage(gallery_conf, target_dir):
                      example.endswith('.examples.new'))]
 
     def get_entry(entry):
-        while entry.endswith('.examples') or entry.endswith('.examples.new'):
-            entry = os.path.splitext(entry)[0]
+        """Remove all trailing .examples and .examples.new instances."""
+        if entry.endswith('.new'):
+            entry = entry[:-4]
+        if entry.endswith('.examples'):
+            entry = entry[:-9]
         return entry
 
-    # remove modules
+    def get_entry_type(entry):
+        """Infer type from capitalization."""
+        if any([char.isupper() for char in entry.split('.')[-1]]):
+            return 'class'
+        return 'py:obj'
+
+
+    # modules have classes and functions in them, so check if there exists
+    # functions that have the module as a root and, if so, remove the module
     for example in example_files.copy():
         for example2 in example_files:
             if example != example2 and \
@@ -751,7 +763,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
         title = 'Unused API Entries'
         fid.write(title + '\n' + '=' * len(title) + '\n\n')
         for entry in sorted(unused_api_entries):
-            fid.write(f'- :py:obj:`{entry}`\n')
+            fid.write(f'- :{get_entry_type(entry)}:`{entry}`\n')
         fid.write('\n\n')
 
         unused_dot_fname = os.path.join(target_dir, 'sg_api_unused.dot')
@@ -769,7 +781,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
         title = 'Used API Entries'
         fid.write(title + '\n' + '=' * len(title) + '\n\n')
         for entry in sorted(used_api_entries):
-            fid.write(f'- :py:obj:`{entry}`\n\n')
+            fid.write(f'- :{get_entry_type(entry)}:`{entry}`\n\n')
             for ref in used_api_entries[entry]:
                 fid.write(f'  - :ref:`{ref}`\n')
             fid.write('\n\n')
