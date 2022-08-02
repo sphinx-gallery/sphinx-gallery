@@ -700,7 +700,22 @@ def write_api_entry_usage(gallery_conf, target_dir):
     example_files = [example for example in os.listdir(backreferences_dir)
                      if (example.endswith('.examples') and
                          not os.path.isfile(example + '.new')) or
-                     example.endswith('.examples.new')]
+                     example.endswith('.examples.new') and
+                     '__' not in example]
+
+    def get_entry(entry):
+        while entry.endswith('.examples') or entry.endswith('.examples.new'):
+            entry = os.path.splitext(entry)[0]
+        return entry
+
+    # remove modules
+    for example in example_files.copy():
+        for example2 in example_files:
+            if example != example2 and \
+                    get_entry(example) in get_entry(example2):
+                example_files.remove(example)
+                break
+
     total_count = len(example_files)
     if total_count == 0:
         return
@@ -722,10 +737,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
         for example in example_files:
             # check if backreferences empty
             example_fname = os.path.join(backreferences_dir, example)
-            entry = os.path.splitext(example)[0]
-            while entry.endswith('.examples') or \
-                    entry.endswith('.examples.new'):
-                entry = os.path.splitext(entry)[0]
+            entry = get_entry(example)
             if os.path.getsize(example_fname) == 0:
                 unused_api_entries.append(entry)
             else:
@@ -738,7 +750,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
 
         title = 'Unused API Entries'
         fid.write(title + '\n' + '=' * len(title) + '\n\n')
-        for entry in unused_api_entries:
+        for entry in sorted(unused_api_entries):
             fid.write(f'- :func:`{entry}`\n')
         fid.write('\n\n')
 
@@ -756,9 +768,9 @@ def write_api_entry_usage(gallery_conf, target_dir):
 
         title = 'Used API Entries'
         fid.write(title + '\n' + '=' * len(title) + '\n\n')
-        for entry, refs in used_api_entries.items():
+        for entry in sorted(used_api_entries):
             fid.write(f'- :func:`{entry}`\n\n')
-            for ref in refs:
+            for ref in used_api_entries[entry]:
                 fid.write(f'  - :ref:`{ref}`\n')
             fid.write('\n\n')
 
