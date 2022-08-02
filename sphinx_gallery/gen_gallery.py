@@ -718,16 +718,6 @@ def write_api_entry_usage(gallery_conf, target_dir):
             return 'class'
         return 'py:obj'
 
-
-    # modules have classes and functions in them, so check if there exists
-    # functions that have the module as a root and, if so, remove the module
-    for example in example_files.copy():
-        for example2 in example_files:
-            if example != example2 and \
-                    get_entry(example) in get_entry(example2):
-                example_files.remove(example)
-                break
-
     total_count = len(example_files)
     if total_count == 0:
         return
