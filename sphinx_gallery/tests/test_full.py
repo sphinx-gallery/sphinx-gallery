@@ -27,7 +27,7 @@ N_TOT = 13  # examples (plot_*.py in examples/**)
 
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
-N_RST = 16 + N_TOT + 1  # includes module API pages, etc.
+N_RST = 17 + N_TOT + 1  # includes module API pages, etc.
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
@@ -555,6 +555,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # get extremely unlucky and have identical run times
         # on the one script that gets re-run (because it's a fail)...
         'sg_execution_times',
+        'sg_api_usage',
         'plot_future_imports_broken',
         'plot_scraper_broken'
     )
@@ -622,7 +623,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '(8|9|10)'
+    n_ch = '(8|9|10|11)'
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
@@ -671,6 +672,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
         # get extremely unlucky and have identical run times
         # on the one script above that changes...
         'sg_execution_times',
+        'sg_api_usage',
         # this one will not change even though it was retried
         'plot_future_imports_broken',
         'plot_scraper_broken',

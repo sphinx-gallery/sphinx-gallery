@@ -702,12 +702,14 @@ def write_computation_times(gallery_conf, target_dir, costs):
 def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
     if backreferences_dir is None or not os.path.isdir(backreferences_dir):
         return
-    total_count = len(os.listdir(backreferences_dir))
+    example_files = [example for example in os.listdir(backreferences_dir)
+                     if example.endswith('.example')]
+    total_count = len(example_files)
     if total_count == 0:
         return
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
-    new_ref = 'sphx_glr_%s_unused_api' % target_dir_clean
+    new_ref = 'sphx_glr_%s_sg_api_usage' % target_dir_clean
     replace_count = len('sphx_glr_' + os.path.basename(target_dir) + '_')
     unused_count = 0
     with codecs.open(os.path.join(target_dir, 'sg_api_usage.rst'), 'w',
@@ -715,7 +717,7 @@ def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
         fid.write(SPHX_GLR_ORPHAN.format(new_ref))
         unused_lines = list()
         used_lines = list()
-        for example in os.listdir(backreferences_dir):
+        for example in example_files:
             # check if backreferences empty
             example_fname = os.path.join(backreferences_dir, example)
             if os.path.getsize(example_fname) == 0:
@@ -723,27 +725,26 @@ def write_api_entry_usage(gallery_conf, target_dir, backreferences_dir):
                 unused_lines.append(f'- {os.path.splitext(example)[0]}\n')
             else:
                 used_lines.append(f'- {os.path.splitext(example)[0]}\n\n')
-                with open(example_fname, 'r') as fid2:
+                with open(example_fname, 'r', encoding='utf-8') as fid2:
                     for line in fid2:
                         if line.startswith('  :ref:'):
                             example_name = line.split('`')[1]
                             example_name = example_name[replace_count:]
                             used_lines.append(' - ' + example_name + '\n')
+                used_lines.append('\n')
+        unused_lines.append('\n\n')
 
-        title = 'Unused API Entries'
-        fid.write(title + '\n' + '=' * len(title) + '\n')
-        for line in unused_lines:
-            fid.write(line)
+        for title, lines in zip(('Unused API Entries', 'Used API Entries'),
+                                (unused_lines, used_lines)):
+            fid.write(title + '\n' + '=' * len(title) + '\n\n')
+            for line in lines:
+                fid.write(line)
+
         used_count = total_count - unused_count
         used_percentage = used_count / total_count
         fid.write('\nAPI entries used: '
                   f'{round(used_percentage * 100, 2)}% '
                   f'({used_count}/{total_count})\n\n')
-
-        title = 'Used API Entries'
-        fid.write(title + '\n' + '=' * len(title) + '\n')
-        for line in used_lines:
-            fid.write(line)
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
