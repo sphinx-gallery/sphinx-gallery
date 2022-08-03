@@ -718,6 +718,19 @@ def write_api_entry_usage(gallery_conf, target_dir):
             return 'class'
         return 'py:obj'
 
+    # modules have classes and functions in them, so check if there exists
+    # classes or functions that have the module as a root and, if so,
+    # remove the module (it must be lower case, classes have methods
+    # that include the class name as the prefix but should be kept)
+    for example in example_files.copy():
+        if any([char.isupper() for char in example]):
+            continue  # include classes (camel case)
+        for example2 in example_files:
+            if example != example2 and \
+                    get_entry(example) in get_entry(example2):
+                example_files.remove(example)
+                break
+
     total_count = len(example_files)
     if total_count == 0:
         return
@@ -740,6 +753,9 @@ def write_api_entry_usage(gallery_conf, target_dir):
             # check if backreferences empty
             example_fname = os.path.join(backreferences_dir, example)
             entry = get_entry(example)
+            # TODO: remove after fixing bug in identify_name
+            if entry == 'numpy.RandomState':
+                entry = 'numpy.random.RandomState'
             if os.path.getsize(example_fname) == 0:
                 unused_api_entries.append(entry)
             else:
@@ -803,6 +819,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
                 dg.edge(struct[level], struct[level + 1])
 
         dg.attr(overlap='scale')
+        dg.attr(fontsize='32')
         dg.save(unused_dot_fname)
 
     if has_graphviz and used_api_entries:
@@ -815,6 +832,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
                 dg.edge(entry, ref[replace_count:])
 
         dg.attr(overlap='scale')
+        dg.attr(fontsize='32')
         dg.save(used_dot_fname)
 
 
