@@ -96,7 +96,6 @@ def test_api_usage(sphinx_app):
     assert op.isfile(api_rst)
     with codecs.open(api_rst, 'r', 'utf-8') as fid:
         content = fid.read()
-    import pdb; pdb.set_trace()
     assert (('- :class:`sphinx_gallery.DummyClass`\n\n'
              '  - :ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`')
             in content)
