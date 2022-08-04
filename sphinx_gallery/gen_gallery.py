@@ -795,7 +795,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
         if has_graphviz and used_api_entries:
             used_modules = set([os.path.splitext(entry)[0]
                                 for entry in used_api_entries])
-            for module in used_modules:
+            for module in sorted(used_modules):
                 fid.write(f'{module}\n' + '^' * len(module) + '\n'
                           f'.. graphviz:: ./{module}_sg_api_used.dot\n'
                           f'    :alt: {module} usage graph\n'
