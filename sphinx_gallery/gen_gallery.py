@@ -698,7 +698,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
 
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
                                       gallery_conf['backreferences_dir'])
-    
+
     def pick_examples(fname):
         is_new = fname.endswith('.examples.new')
         new_exists = os.path.isfile(fname + '.new')
