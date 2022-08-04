@@ -746,6 +746,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
         fid.write(SPHX_GLR_ORPHAN.format(new_ref))
         unused_api_entries = list()
         used_api_entries = dict()
+        modules = set()
         for example in example_files:
             # check if backreferences empty
             example_fname = os.path.join(backreferences_dir, example)
@@ -762,6 +763,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
                         if line.startswith('  :ref:'):
                             example_name = line.split('`')[1]
                             used_api_entries[entry].append(example_name)
+            modules.add(os.path.splitext(entry)[0])
 
         title = 'Unused API Entries'
         fid.write(title + '\n' + '^' * len(title) + '\n\n')
@@ -791,12 +793,9 @@ def write_api_entry_usage(gallery_conf, target_dir):
 
         used_dot_fname = os.path.join(target_dir, '{}_sg_api_used.dot')
         if has_graphviz and used_api_entries:
-            # get all modules for separate graphs
-            modules = set()
-            for struct in [entry.split('.') for entry in used_api_entries]:
-                if len(struct) > 1:
-                    modules.add('.'.join(struct[:-1]))
-            for module in modules:
+            used_modules = set([os.path.splitext(entry)[0]
+                                for entry in used_api_entries])
+            for module in used_modules:
                 fid.write(f'{module}\n' + '^' * len(module) + '\n'
                           f'.. graphviz:: ./{module}_sg_api_used.dot\n'
                           f'    :alt: {module} usage graph\n'
@@ -817,6 +816,10 @@ def write_api_entry_usage(gallery_conf, target_dir):
                         if (struct[level], struct[level + 1]) in connections:
                             continue
                         connections.add((struct[level], struct[level + 1]))
+                        node_from = lut[struct[level]] if \
+                            struct[level] in lut else struct[level]
+                        dg.attr('node', color='lightblue2')
+                        dg.node(node_from)
                         node_to = struct[level + 1]
                         # count, don't show leaves
                         if len(struct) - 3 == level:
@@ -832,13 +835,32 @@ def write_api_entry_usage(gallery_conf, target_dir):
                                     leaf_count += 1
                             node_to += f'\n({leaf_count})'
                             lut[struct[level + 1]] = node_to
-                        node_from = lut[struct[level]] if \
-                            struct[level] in lut else struct[level]
+                            if leaf_count > 10:
+                                color = 'red'
+                            elif leaf_count > 5:
+                                color = 'orange'
+                            else:
+                                color = 'yellow'
+                            dg.attr('node', color=color)
+                        else:
+                            dg.attr('node', color='lightblue2')
+                        dg.node(node_to)
                         dg.edge(node_from, node_to)
+                # add modules with all API entries
+                dg.attr('node', color='lightblue2')
+                for module in modules:
+                    struct = module.split('.')
+                    for i in range(len(struct) - 1):
+                        if struct[i + 1] not in lut:
+                            dg.edge(struct[i], struct[i + 1])
             else:
                 assert isinstance(entries, dict)
                 for entry, refs in entries.items():
+                    dg.attr('node', color='lightblue2')
+                    dg.node(entry)
+                    dg.attr('node', color='yellow')
                     for ref in refs:
+                        dg.node(ref[replace_count:])
                         dg.edge(entry, ref[replace_count:])
 
             dg.attr(overlap='scale')
@@ -849,7 +871,7 @@ def write_api_entry_usage(gallery_conf, target_dir):
             make_graph(unused_dot_fname, unused_api_entries)
 
         if has_graphviz and used_api_entries:
-            for module in modules:
+            for module in used_modules:
                 logger.info(f'Making API usage graph for {module}')
                 entries = {entry: ref for entry, ref in
                            used_api_entries.items()
