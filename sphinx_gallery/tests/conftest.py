@@ -4,11 +4,11 @@ Pytest fixtures
 """
 from __future__ import division, absolute_import, print_function
 
-import collections
 from contextlib import contextmanager
 from io import StringIO
 import os
 import shutil
+from unittest.mock import Mock
 
 import pytest
 
@@ -27,34 +27,6 @@ def pytest_report_header(config, startdir):
     return 'Sphinx:  %s (%s)' % (sphinx.__version__, sphinx.__file__)
 
 
-Params = collections.namedtuple('Params', 'args kwargs')
-
-
-class FakeSphinxApp:
-    def __init__(self):
-        self.calls = collections.defaultdict(list)
-
-    def status_iterator(self, *args, **kwargs):
-        self.calls['status_iterator'].append(Params(args, kwargs))
-        for it in args[0]:
-            yield it
-
-    def warning(self, *args, **kwargs):
-        self.calls['warning'].append(Params(args, kwargs))
-
-    def warn(self, *args, **kwargs):
-        self.calls['warn'].append(Params(args, kwargs))
-
-    def info(self, *args, **kwargs):
-        self.calls['info'].append(Params(args, kwargs))
-
-    def verbose(self, *args, **kwargs):
-        self.calls['verbose'].append(Params(args, kwargs))
-
-    def debug(self, *args, **kwargs):
-        self.calls['debug'].append(Params(args, kwargs))
-
-
 @pytest.fixture
 def gallery_conf(tmpdir):
     """Set up a test sphinx-gallery configuration."""
@@ -68,13 +40,8 @@ def gallery_conf(tmpdir):
 
 
 @pytest.fixture
-def fakesphinxapp():
-    yield FakeSphinxApp()
-
-
-@pytest.fixture
 def log_collector(monkeypatch):
-    app = FakeSphinxApp()
+    app = Mock(spec=Sphinx, name='FakeSphinxApp')()
     monkeypatch.setattr(docs_resolv, 'logger', app)
     monkeypatch.setattr(gen_gallery, 'logger', app)
     monkeypatch.setattr(py_source_parser, 'logger', app)
