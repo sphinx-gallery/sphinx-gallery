@@ -34,13 +34,13 @@ import traceback
 import codeop
 
 from sphinx.errors import ExtensionError
+import sphinx.util
 
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
 from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
                     optipng)
 from . import glr_path_static
-from . import sphinx_compatibility
 from .backreferences import (_write_backreferences, _thumbnail_div,
                              identify_names)
 from .downloads import CODE_DOWNLOAD
@@ -51,7 +51,7 @@ from .py_source_parser import (split_code_and_text_blocks,
 from .notebook import jupyter_notebook, save_notebook
 from .binder import check_binder_conf, gen_binder_rst
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 ###############################################################################
@@ -437,7 +437,7 @@ def generate_dir_rst(
     costs = []
     subsection_toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    iterator = sphinx_compatibility.status_iterator(
+    iterator = sphinx.util.status_iterator(
         sorted_listdir,
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))

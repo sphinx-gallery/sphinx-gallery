@@ -19,8 +19,8 @@ import re
 import warnings
 
 from sphinx.errors import ExtensionError
+import sphinx.util
 
-from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
 from .directives import THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE
@@ -322,7 +322,7 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
 
 def _finalize_backreferences(seen_backrefs, gallery_conf):
     """Replace backref files only if necessary."""
-    logger = sphinx_compatibility.getLogger('sphinx-gallery')
+    logger = sphinx.util.logging.getLogger('sphinx-gallery')
     if gallery_conf['backreferences_dir'] is None:
         return
 
