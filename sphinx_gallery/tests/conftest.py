@@ -16,8 +16,7 @@ import sphinx
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
-from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
-                            py_source_parser)
+from sphinx_gallery import docs_resolv, gen_gallery, gen_rst, py_source_parser
 from sphinx_gallery.scrapers import _import_matplotlib
 from sphinx_gallery.utils import _get_image
 
@@ -30,9 +29,7 @@ def pytest_report_header(config, startdir):
 @pytest.fixture
 def gallery_conf(tmpdir):
     """Set up a test sphinx-gallery configuration."""
-    app = utils.Bunch()
-    app.add_css_file = lambda x: None
-    app.config = dict(source_suffix={'.rst': None})
+    app = Mock(spec=Sphinx, config=dict(source_suffix={'.rst': None}))
     gallery_conf = gen_gallery._complete_gallery_conf(
         {}, str(tmpdir), True, False, app=app)
     gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
