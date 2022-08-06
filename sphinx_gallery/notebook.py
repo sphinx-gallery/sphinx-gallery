@@ -24,12 +24,12 @@ import sys
 import textwrap
 
 from sphinx.errors import ExtensionError
+import sphinx.util
 
-from . import sphinx_compatibility
 from .py_source_parser import split_code_and_text_blocks
 from .utils import replace_py_ipynb
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 def jupyter_notebook_skeleton():

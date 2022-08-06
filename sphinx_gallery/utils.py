@@ -15,10 +15,11 @@ import os
 from shutil import move, copyfile
 import subprocess
 
-from . import sphinx_compatibility
 from sphinx.errors import ExtensionError
+import sphinx.util
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 def _get_image():

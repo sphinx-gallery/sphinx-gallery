@@ -17,7 +17,7 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
-                            sphinx_compatibility, py_source_parser)
+                            py_source_parser)
 from sphinx_gallery.scrapers import _import_matplotlib
 from sphinx_gallery.utils import _get_image
 
@@ -69,12 +69,7 @@ def gallery_conf(tmpdir):
 
 @pytest.fixture
 def fakesphinxapp():
-    orig_app = sphinx_compatibility._app
-    sphinx_compatibility._app = app = FakeSphinxApp()
-    try:
-        yield app
-    finally:
-        sphinx_compatibility._app = orig_app
+    yield FakeSphinxApp()
 
 
 @pytest.fixture
@@ -198,7 +193,6 @@ class SphinxAppWrapper(object):
         with docutils_namespace():
             app = Sphinx(self.srcdir, self.confdir, self.outdir,
                          self.doctreedir, self.buildername, **self.kwargs)
-            sphinx_compatibility._app = app
             yield app
 
     def build_sphinx_app(self, *args, **kwargs):
