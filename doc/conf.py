@@ -20,10 +20,10 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
-from sphinx_gallery import sphinx_compatibility
+from sphinx.util import logging
 import sphinx_rtd_theme
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = logging.getLogger('sphinx-gallery')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
