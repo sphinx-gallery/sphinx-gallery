@@ -20,6 +20,7 @@ from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
                                   _has_pypandoc)
+from sphinx_gallery.gen_gallery import write_api_entry_usage
 
 import pytest
 
@@ -91,6 +92,8 @@ def test_api_usage(sphinx_app):
     """Test that an api usage page is created."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
+    # FIXME: not triggered by test build
+    write_api_entry_usage(sphinx_app, None, None)
     # local folder
     api_rst = op.join(src_dir, 'auto_examples', 'sg_api_usage.rst')
     assert op.isfile(api_rst)
