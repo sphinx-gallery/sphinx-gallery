@@ -404,7 +404,6 @@ sphinx_gallery_conf = {
     'matplotlib_animations': True,
     'image_srcset': ["2x"],
     'nested_sections': False,
-    'show_api_usage': True,
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show
@@ -431,8 +430,6 @@ def write_api_entries(app, what, name, obj, options, lines):
 
 def write_api_entry_usage(app, doctree, docname):
     gallery_conf = app.config.sphinx_gallery_conf
-    if not gallery_conf['show_api_usage']:
-        return
     for gallery_dir in gallery_conf['gallery_dirs']:
         target_dir = os.path.join(app.builder.srcdir, gallery_dir)
         _write_api_entry_usage(gallery_conf, target_dir)
