@@ -20,7 +20,7 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
-from sphinx_gallery.gen_gallery import write_api_entry_usage
+from sphinx_gallery.gen_gallery import _write_api_entry_usage
 from sphinx.util import logging
 import sphinx_rtd_theme
 
