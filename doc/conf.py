@@ -427,3 +427,10 @@ def write_api_entries(app, what, name, obj, options, lines):
     if what not in app.config.sphinx_gallery_conf['api_entries']:
         app.config.sphinx_gallery_conf['api_entries'][what] = set()
     app.config.sphinx_gallery_conf['api_entries'][what].add(name)
+
+
+def write_api_entry_usage(app, doctree, docname):
+    gallery_conf = app.config.sphinx_gallery_conf
+    for gallery_dir in gallery_conf['gallery_dirs']:
+        target_dir = os.path.join(app.builder.srcdir, gallery_dir)
+        _write_api_entry_usage(gallery_conf, target_dir)

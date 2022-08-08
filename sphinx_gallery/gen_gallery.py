@@ -689,12 +689,6 @@ def write_computation_times(gallery_conf, target_dir, costs):
             fid.write(text)
             fid.write(hline)
 
-def write_api_entry_usage(app, doctree, docname):
-    gallery_conf = app.config.sphinx_gallery_conf
-    for gallery_dir in gallery_conf['gallery_dirs']:
-        target_dir = os.path.join(app.builder.srcdir, gallery_dir)
-        _write_api_entry_usage(gallery_conf, target_dir)
-
 
 def _write_api_entry_usage(gallery_conf, target_dir):
     if gallery_conf['backreferences_dir'] is None or \
