@@ -594,7 +594,6 @@ def generate_gallery_rst(app):
                 fhindex.write(SPHX_GLR_SIG)
 
         _replace_md5(index_rst_new, mode='t')
-        write_api_entry_usage(gallery_conf, gallery_dir_abs_path)
 
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
@@ -616,14 +615,11 @@ def generate_gallery_rst(app):
         write_junit_xml(gallery_conf, app.builder.outdir, costs)
 
 
-SPHX_GLR_ORPHAN = """
+SPHX_GLR_COMP_TIMES = """
 :orphan:
 
 .. _{0}:
 
-"""
-
-SPHX_GLR_COMP_TIMES = SPHX_GLR_ORPHAN + """
 Computation times
 =================
 """
@@ -690,193 +686,6 @@ def write_computation_times(gallery_conf, target_dir, costs):
             assert len(text) == len(hline)
             fid.write(text)
             fid.write(hline)
-
-
-def write_api_entry_usage(gallery_conf, target_dir):
-    if gallery_conf['backreferences_dir'] is None:
-        return
-
-    backreferences_dir = os.path.join(gallery_conf['src_dir'],
-                                      gallery_conf['backreferences_dir'])
-
-    def pick_examples(fname):
-        is_new = fname.endswith('.examples.new')
-        new_exists = os.path.isfile(fname + '.new')
-        is_ex = fname.endswith('.examples')
-        is_builtin = '__' in fname
-        return not is_builtin and (is_new or (is_ex and not new_exists))
-
-    # TODO: should exclude modules as they cannot be called directly
-    # but this is not easy to do from just the name
-    example_files = list(filter(
-        pick_examples, os.listdir(backreferences_dir)))
-
-    def strip_ext(entry):
-        """Remove all trailing .examples and .examples.new instances."""
-        if entry.endswith('.new'):
-            entry = entry[:-4]
-        if entry.endswith('.examples'):
-            entry = entry[:-9]
-        return entry
-
-    def get_entry_type(entry):
-        """Infer type from capitalization."""
-        if any([char.isupper() for char in entry.split('.')[-1]]):
-            return 'class'
-        return 'py:obj'
-
-    total_count = len(example_files)
-
-    if total_count == 0:
-        return
-
-    try:
-        import graphviz
-        has_graphviz = True
-    except ImportError:
-        logger.info('`graphviz` required for graphical visualization')
-        has_graphviz = False
-
-    target_dir_clean = os.path.relpath(
-        target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
-    new_ref = 'sphx_glr_%s_sg_api_usage' % target_dir_clean
-    replace_count = len('sphx_glr_' + os.path.basename(target_dir) + '_')
-    with codecs.open(os.path.join(target_dir, 'sg_api_usage.rst'), 'w',
-                     encoding='utf-8') as fid:
-        fid.write(SPHX_GLR_ORPHAN.format(new_ref))
-        unused_api_entries = list()
-        used_api_entries = dict()
-        modules = set()
-        for example in example_files:
-            # check if backreferences empty
-            example_fname = os.path.join(backreferences_dir, example)
-            entry = strip_ext(example)
-            # TODO: remove after fixing bug in identify_name
-            if entry == 'numpy.RandomState':
-                entry = 'numpy.random.RandomState'
-            if os.path.getsize(example_fname) == 0:
-                unused_api_entries.append(entry)
-            else:
-                used_api_entries[entry] = list()
-                with open(example_fname, 'r', encoding='utf-8') as fid2:
-                    for line in fid2:
-                        if line.startswith('  :ref:'):
-                            example_name = line.split('`')[1]
-                            used_api_entries[entry].append(example_name)
-            modules.add(os.path.splitext(entry)[0])
-
-        title = 'Unused API Entries'
-        fid.write(title + '\n' + '^' * len(title) + '\n\n')
-        for entry in sorted(unused_api_entries):
-            fid.write(f'- :{get_entry_type(entry)}:`{entry}`\n')
-        fid.write('\n\n')
-
-        unused_dot_fname = os.path.join(target_dir, 'sg_api_unused.dot')
-        if has_graphviz and unused_api_entries:
-            fid.write('.. graphviz:: ./sg_api_unused.dot\n'
-                      '    :alt: API unused entries graph\n'
-                      '    :layout: neato\n\n')
-
-        used_count = len(used_api_entries)
-        used_percentage = used_count / total_count
-        fid.write('\nAPI entries used: '
-                  f'{round(used_percentage * 100, 2)}% '
-                  f'({used_count}/{total_count})\n\n')
-
-        title = 'Used API Entries'
-        fid.write(title + '\n' + '^' * len(title) + '\n\n')
-        for entry in sorted(used_api_entries):
-            fid.write(f'- :{get_entry_type(entry)}:`{entry}`\n\n')
-            for ref in used_api_entries[entry]:
-                fid.write(f'  - :ref:`{ref}`\n')
-            fid.write('\n\n')
-
-        used_dot_fname = os.path.join(target_dir, '{}_sg_api_used.dot')
-        if has_graphviz and used_api_entries:
-            used_modules = set([os.path.splitext(entry)[0]
-                                for entry in used_api_entries])
-            for module in sorted(used_modules):
-                fid.write(f'{module}\n' + '^' * len(module) + '\n'
-                          f'.. graphviz:: ./{module}_sg_api_used.dot\n'
-                          f'    :alt: {module} usage graph\n'
-                          '    :layout: neato\n\n')
-
-        def make_graph(fname, entries):
-            dg = graphviz.Digraph(filename=fname,
-                                  node_attr={'color': 'lightblue2',
-                                             'style': 'filled',
-                                             'fontsize': '40'})
-
-            if isinstance(entries, list):
-                connections = set()
-                lut = dict()
-                structs = [entry.split('.') for entry in entries]
-                for struct in sorted(structs, key=len):
-                    for level in range(len(struct) - 2):
-                        if (struct[level], struct[level + 1]) in connections:
-                            continue
-                        connections.add((struct[level], struct[level + 1]))
-                        node_from = lut[struct[level]] if \
-                            struct[level] in lut else struct[level]
-                        dg.attr('node', color='lightblue2')
-                        dg.node(node_from)
-                        node_to = struct[level + 1]
-                        # count, don't show leaves
-                        if len(struct) - 3 == level:
-                            leaf_count = 0
-                            for struct2 in structs:
-                                # find structures of the same length as struct
-                                if len(struct2) != level + 3:
-                                    continue
-                                # find structures with two entries before
-                                # the leaf that are the same as struct
-                                if all([struct2[level2] == struct[level2]
-                                        for level2 in range(level + 2)]):
-                                    leaf_count += 1
-                            node_to += f'\n({leaf_count})'
-                            lut[struct[level + 1]] = node_to
-                            if leaf_count > 10:
-                                color = 'red'
-                            elif leaf_count > 5:
-                                color = 'orange'
-                            else:
-                                color = 'yellow'
-                            dg.attr('node', color=color)
-                        else:
-                            dg.attr('node', color='lightblue2')
-                        dg.node(node_to)
-                        dg.edge(node_from, node_to)
-                # add modules with all API entries
-                dg.attr('node', color='lightblue2')
-                for module in modules:
-                    struct = module.split('.')
-                    for i in range(len(struct) - 1):
-                        if struct[i + 1] not in lut:
-                            dg.edge(struct[i], struct[i + 1])
-            else:
-                assert isinstance(entries, dict)
-                for entry, refs in entries.items():
-                    dg.attr('node', color='lightblue2')
-                    dg.node(entry)
-                    dg.attr('node', color='yellow')
-                    for ref in refs:
-                        dg.node(ref[replace_count:])
-                        dg.edge(entry, ref[replace_count:])
-
-            dg.attr(overlap='scale')
-            dg.save(fname)
-
-        # design graph
-        if has_graphviz and unused_api_entries:
-            make_graph(unused_dot_fname, unused_api_entries)
-
-        if has_graphviz and used_api_entries:
-            for module in used_modules:
-                logger.info(f'Making API usage graph for {module}')
-                entries = {entry: ref for entry, ref in
-                           used_api_entries.items()
-                           if os.path.splitext(entry)[0] == module}
-                make_graph(used_dot_fname.format(module), entries)
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):

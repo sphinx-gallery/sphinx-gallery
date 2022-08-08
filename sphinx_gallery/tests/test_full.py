@@ -93,6 +93,7 @@ def test_api_usage(sphinx_app):
     src_dir = sphinx_app.srcdir
     # local folder
     api_rst = op.join(src_dir, 'auto_examples', 'sg_api_usage.rst')
+    import pdb; pdb.set_trace()
     assert op.isfile(api_rst)
     with codecs.open(api_rst, 'r', 'utf-8') as fid:
         content = fid.read()
