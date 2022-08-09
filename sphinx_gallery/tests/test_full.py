@@ -31,7 +31,6 @@ N_GOOD = N_TOT - N_FAILING
 N_RST = 17 + N_TOT + 1  # includes module API pages, etc.
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
-
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory, req_mpl, req_pil):
     # Skip if numpy not installed
@@ -42,7 +41,6 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
 
     def ignore(src, names):
         return ('_build', 'gen_modules', 'auto_examples')
-
 
     shutil.copytree(src_dir, temp_dir, ignore=ignore)
     # For testing iteration, you can get similar behavior just doing `make`
