@@ -702,11 +702,13 @@ def write_api_entry_usage(app):
     gallery_conf = app.config.sphinx_gallery_conf
     for gallery_dir in gallery_conf['gallery_dirs']:
         target_dir = os.path.join(app.builder.srcdir, gallery_dir)
-        yield _write_api_entry_usage(gallery_conf, target_dir)
+        yield _write_api_entry_usage(gallery_conf, target_dir,
+                                     app.config.html_context)
 
 
-def _write_api_entry_usage(gallery_conf, target_dir):
-    if gallery_conf['backreferences_dir'] is None:
+def _write_api_entry_usage(gallery_conf, target_dir, context):
+    if gallery_conf['backreferences_dir'] is None or \
+            'api_entries' not in gallery_conf:
         return
 
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
@@ -875,7 +877,7 @@ def _write_api_entry_usage(gallery_conf, target_dir):
                            used_api_entries.items()
                            if os.path.splitext(entry)[0] == module}
                 make_graph(used_dot_fname.format(module), entries)
-    return os.path.join(target_dir, 'sg_api_usage'), gallery_conf, 'page.html'  
+    return 'sg_api_usage', context, 'page.html'
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
