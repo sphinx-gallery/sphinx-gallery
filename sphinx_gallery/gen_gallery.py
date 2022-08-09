@@ -690,9 +690,23 @@ def write_computation_times(gallery_conf, target_dir, costs):
             fid.write(hline)
 
 
+def write_api_entries(app, what, name, obj, options, lines):
+    if 'api_entries' not in app.config.sphinx_gallery_conf:
+        app.config.sphinx_gallery_conf['api_entries'] = dict()
+    if what not in app.config.sphinx_gallery_conf['api_entries']:
+        app.config.sphinx_gallery_conf['api_entries'][what] = set()
+    app.config.sphinx_gallery_conf['api_entries'][what].add(name)
+
+
+def write_api_entry_usage(app):
+    gallery_conf = app.config.sphinx_gallery_conf
+    for gallery_dir in gallery_conf['gallery_dirs']:
+        target_dir = os.path.join(app.builder.srcdir, gallery_dir)
+        yield _write_api_entry_usage(gallery_conf, target_dir)
+
+
 def _write_api_entry_usage(gallery_conf, target_dir):
-    if gallery_conf['backreferences_dir'] is None or \
-        os.path.isfile(os.path.join(target_dir, 'sg_api_usage.rst')):
+    if gallery_conf['backreferences_dir'] is None:
         return
 
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
@@ -861,6 +875,7 @@ def _write_api_entry_usage(gallery_conf, target_dir):
                            used_api_entries.items()
                            if os.path.splitext(entry)[0] == module}
                 make_graph(used_dot_fname.format(module), entries)
+    return os.path.join(target_dir, 'sg_api_usage'), gallery_conf, 'page.html'  
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
@@ -1087,6 +1102,8 @@ def setup(app):
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
+        app.connect('autodoc-process-docstring', write_api_entries)
+        app.connect('html-collect-pages', write_api_entry_usage)
 
     # Add the custom directive
     app.add_directive('minigallery', MiniGallery)
@@ -1098,6 +1115,7 @@ def setup(app):
     app.connect('build-finished', copy_binder_files)
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
+
     metadata = {'parallel_read_safe': True,
                 'parallel_write_safe': True,
                 'version': _sg_version}

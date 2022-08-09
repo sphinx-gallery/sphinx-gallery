@@ -20,7 +20,7 @@ from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
                                   _has_pypandoc)
-from sphinx_gallery.gen_gallery import write_api_entry_usage
+
 
 import pytest
 
@@ -42,6 +42,7 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
 
     def ignore(src, names):
         return ('_build', 'gen_modules', 'auto_examples')
+
 
     shutil.copytree(src_dir, temp_dir, ignore=ignore)
     # For testing iteration, you can get similar behavior just doing `make`
@@ -97,9 +98,9 @@ def test_api_usage(sphinx_app):
     assert op.isfile(api_rst)
     with codecs.open(api_rst, 'r', 'utf-8') as fid:
         content = fid.read()
-    assert (('- :class:`sphinx_gallery.DummyClass`\n\n'
-             '  - :ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`')
-            in content)
+    test_text = '- :class:`sphinx_gallery.backreferences.DummyClass`\n\n' \
+        '  - :ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`'
+    assert test_text in content
     # HTML output
     api_html = op.join(out_dir, 'auto_examples', 'sg_api_usage.html')
     assert op.isfile(api_html)

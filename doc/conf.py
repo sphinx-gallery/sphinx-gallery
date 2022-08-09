@@ -14,17 +14,12 @@
 
 import sys
 import os
-import codecs
 from datetime import date
 import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
-from sphinx_gallery.gen_gallery import _write_api_entry_usage
-from sphinx.util import logging
 import sphinx_rtd_theme
-
-logger = logging.getLogger('sphinx-gallery')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -146,8 +141,6 @@ def setup(app):
     app.add_object_type('confval', 'confval',
                         objname='configuration value',
                         indextemplate='pair: %s; configuration value')
-    app.connect('autodoc-process-docstring', write_api_entries)
-    app.connect('doctree-resolved', write_api_entry_usage)
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -419,18 +412,3 @@ html_context = {
         ('stable', 'https://sphinx-gallery.github.io/stable'),
     )
 }
-
-def write_api_entries(app, what, name, obj, options, lines):
-    """Write unused API entries and API usage in gallery."""
-    if 'api_entries' not in app.config.sphinx_gallery_conf:
-        app.config.sphinx_gallery_conf['api_entries'] = dict()
-    if what not in app.config.sphinx_gallery_conf['api_entries']:
-        app.config.sphinx_gallery_conf['api_entries'][what] = set()
-    app.config.sphinx_gallery_conf['api_entries'][what].add(name)
-
-
-def write_api_entry_usage(app, doctree, docname):
-    gallery_conf = app.config.sphinx_gallery_conf
-    for gallery_dir in gallery_conf['gallery_dirs']:
-        target_dir = os.path.join(app.builder.srcdir, gallery_dir)
-        _write_api_entry_usage(gallery_conf, target_dir)
