@@ -105,3 +105,36 @@ sphinx_gallery_conf = {
 nitpicky = True
 highlight_language = 'python3'
 html_static_path = ['_static_nonstandard']
+
+
+from pathlib import Path  # noqa
+names = list()
+
+
+def append_names(app, what, name, obj, options, lines):
+    names.append(name)
+
+
+# Instead of hooking into this event, we should just touch the file in the
+# Python code
+def touch_names(app, env, added, changed, removed):
+    fname = 'sg_ref_names'
+    with open(Path(app.srcdir) / f'{fname}.rst', 'w'):
+        pass
+    return [fname]
+
+
+def write_names(app, docname, source):
+    if docname != 'sg_ref_names':
+        return
+    lines = []
+    lines.append(':orphan:\n\nNames\n=====\n')
+    lines.extend(f'- {name}\n' for name in names)
+    source[0] = '\n'.join(lines)
+
+
+def setup(app):
+    """Set up the Sphinx app."""
+    app.connect('autodoc-process-docstring', append_names)
+    app.connect('env-get-outdated', touch_names)
+    app.connect('source-read', write_names)
