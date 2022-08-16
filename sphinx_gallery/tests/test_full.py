@@ -91,20 +91,22 @@ def test_api_usage(sphinx_app):
     """Test that an api usage page is created."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
-    # local folder
+    # the rst file is empty, all the content is added
+    # in post-processing
     api_rst = op.join(src_dir, 'sg_api_usage.rst')
     assert op.isfile(api_rst)
-    with codecs.open(api_rst, 'r', 'utf-8') as fid:
-        content = fid.read()
-    test_text = '- :class:`sphinx_gallery.backreferences.DummyClass`\n\n' \
-        '  - :ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`'
-    assert test_text in content
     # HTML output
     api_html = op.join(out_dir, 'sg_api_usage.html')
     assert op.isfile(api_html)
     with codecs.open(api_html, 'r', 'utf-8') as fid:
         content = fid.read()
-    assert 'href="plot_numpy_matplotlib.html' in content
+    # spot check references
+    assert 'href="auto_examples/plot_numpy_matplotlib.html' in content
+    # check used and unused
+    assert 'alt="API unused entries graph"' in content
+    assert 'alt="sphinx_gallery.scrapers usage graph"' in content
+    # check graph output
+    assert 'src="_images/graphviz-' in content
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('examples', 'plot_numpy_matplotlib.py')

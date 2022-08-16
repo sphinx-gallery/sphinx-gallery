@@ -712,13 +712,11 @@ def write_api_entry_usage(app, docname, source):
         return
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
-    assert 'api_entries' in gallery_conf
-    for gallery_dir in gallery_conf['gallery_dirs']:
-        target_dir = os.path.join(app.builder.srcdir, gallery_dir)
-        source[0] += _write_api_entry_usage(gallery_conf, target_dir)
+    # assert 'api_entries' in gallery_conf
+    source[0] += _write_api_entry_usage(gallery_conf)
 
 
-def _write_api_entry_usage(gallery_conf, target_dir):
+def _write_api_entry_usage(gallery_conf):
     if gallery_conf['backreferences_dir'] is None:
         return
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
@@ -767,8 +765,6 @@ def _write_api_entry_usage(gallery_conf, target_dir):
                     if line.startswith('  :ref:'):
                         example_name = line.split('`')[1]
                         used_api_entries[entry].append(example_name)
-
-    replace_count = len('sphx_glr_' + os.path.basename(target_dir) + '_')
 
     def make_graph(fname, entries):
         dg = graphviz.Digraph(filename=fname,
@@ -829,16 +825,15 @@ def _write_api_entry_usage(gallery_conf, target_dir):
                 dg.node(entry)
                 dg.attr('node', color='yellow')
                 for ref in refs:
-                    dg.node(ref[replace_count:])
-                    dg.edge(entry, ref[replace_count:])
+                    # remove sphx_glr_auto_xxx
+                    ref = '_'.join(ref.split('_')[3:])
+                    dg.node(ref)
+                    dg.edge(entry, ref)
 
         dg.attr(overlap='scale')
         dg.save(fname)
 
-    target_dir_clean = os.path.relpath(
-        target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
-    new_ref = 'sphx_glr_%s_sg_api_usage' % target_dir_clean
-    lines = SPHX_GLR_ORPHAN.format(new_ref)
+    lines = SPHX_GLR_ORPHAN.format('sphx_glr_sg_api_usage')
 
     title = 'Unused API Entries'
     lines += title + '\n' + '^' * len(title) + '\n\n'
@@ -846,7 +841,8 @@ def _write_api_entry_usage(gallery_conf, target_dir):
         lines += f'- :{get_entry_type(entry)}:`{entry}`\n'
     lines += '\n\n'
 
-    unused_dot_fname = 'sg_api_unused.dot'
+    unused_dot_fname = os.path.join(gallery_conf['src_dir'],
+                                    'sg_api_unused.dot')
     if has_graphviz and unused_api_entries:
         lines += ('.. graphviz:: ./sg_api_unused.dot\n'
                   '    :alt: API unused entries graph\n'
@@ -866,7 +862,8 @@ def _write_api_entry_usage(gallery_conf, target_dir):
             lines += f'  - :ref:`{ref}`\n'
         lines += '\n\n'
 
-    used_dot_fname = '{}_sg_api_used.dot'
+    used_dot_fname = os.path.join(gallery_conf['src_dir'],
+                                  '{}_sg_api_used.dot')
     if has_graphviz and used_api_entries:
         used_modules = set([os.path.splitext(entry)[0]
                             for entry in used_api_entries])
