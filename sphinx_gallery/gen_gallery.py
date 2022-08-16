@@ -101,6 +101,7 @@ DEFAULT_GALLERY_CONF = {
     'line_numbers': False,
     'nested_sections': True,
     'prefer_full_module': [],
+    'missing_doc_ignore': '__.*__',
 }
 
 logger = sphinx_compatibility.getLogger('sphinx-gallery')
@@ -746,7 +747,8 @@ def write_api_entry_usage(app, docname, source):
     unused_api_entries = list()
     used_api_entries = dict()
     for entry in example_files:
-        if '__' in entry:  # don't include built-in methods
+        # don't include built-in methods etc.
+        if re.match(gallery_conf['missing_doc_ignore'], entry) is not None:
             continue
         # check if backreferences empty
         example_fname = os.path.join(
