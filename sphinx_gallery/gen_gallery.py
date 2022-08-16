@@ -707,13 +707,13 @@ def init_api_usage(gallery_dir):
 
 
 def write_api_entry_usage(app, docname, source):
-    if 'sg_api_usage' not in docname:
-        return
     gallery_conf = app.config.sphinx_gallery_conf
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
-    assert 'api_entries' in gallery_conf
-    if gallery_conf['backreferences_dir'] is None:
+    # which means that all the api entries will be in gallery_conf
+    if 'sg_api_usage' not in docname or \
+            'api_entries' not in gallery_conf or \
+            gallery_conf['backreferences_dir'] is None:
         return
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
                                       gallery_conf['backreferences_dir'])
@@ -829,34 +829,34 @@ def write_api_entry_usage(app, docname, source):
         dg.attr(overlap='scale')
         dg.save(fname)
 
-    lines = SPHX_GLR_ORPHAN.format('sphx_glr_sg_api_usage')
+    source[0] = SPHX_GLR_ORPHAN.format('sphx_glr_sg_api_usage')
 
     title = 'Unused API Entries'
-    lines += title + '\n' + '^' * len(title) + '\n\n'
+    source[0] += title + '\n' + '^' * len(title) + '\n\n'
     for entry in sorted(unused_api_entries):
-        lines += f'- :{get_entry_type(entry)}:`{entry}`\n'
-    lines += '\n\n'
+        source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n'
+    source[0] += '\n\n'
 
     unused_dot_fname = os.path.join(gallery_conf['src_dir'],
                                     'sg_api_unused.dot')
     if has_graphviz and unused_api_entries:
-        lines += ('.. graphviz:: ./sg_api_unused.dot\n'
-                  '    :alt: API unused entries graph\n'
-                  '    :layout: neato\n\n')
+        source[0] += ('.. graphviz:: ./sg_api_unused.dot\n'
+                      '    :alt: API unused entries graph\n'
+                      '    :layout: neato\n\n')
 
     used_count = len(used_api_entries)
     used_percentage = used_count / total_count
-    lines += ('\nAPI entries used: '
-              f'{round(used_percentage * 100, 2)}% '
-              f'({used_count}/{total_count})\n\n')
+    source[0] += ('\nAPI entries used: '
+                  f'{round(used_percentage * 100, 2)}% '
+                  f'({used_count}/{total_count})\n\n')
 
     title = 'Used API Entries'
-    lines += title + '\n' + '^' * len(title) + '\n\n'
+    source[0] += title + '\n' + '^' * len(title) + '\n\n'
     for entry in sorted(used_api_entries):
-        lines += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
+        source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
         for ref in used_api_entries[entry]:
-            lines += f'  - :ref:`{ref}`\n'
-        lines += '\n\n'
+            source[0] += f'  - :ref:`{ref}`\n'
+        source[0] += '\n\n'
 
     used_dot_fname = os.path.join(gallery_conf['src_dir'],
                                   '{}_sg_api_used.dot')
@@ -864,10 +864,10 @@ def write_api_entry_usage(app, docname, source):
         used_modules = set([os.path.splitext(entry)[0]
                             for entry in used_api_entries])
         for module in sorted(used_modules):
-            lines += (f'{module}\n' + '^' * len(module) + '\n'
-                      f'.. graphviz:: ./{module}_sg_api_used.dot\n'
-                      f'    :alt: {module} usage graph\n'
-                      '    :layout: neato\n\n')
+            source[0] += (f'{module}\n' + '^' * len(module) + '\n'
+                          f'.. graphviz:: ./{module}_sg_api_used.dot\n'
+                          f'    :alt: {module} usage graph\n'
+                          '    :layout: neato\n\n')
 
     # design graph
     if has_graphviz and unused_api_entries:
@@ -880,7 +880,6 @@ def write_api_entry_usage(app, docname, source):
                        used_api_entries.items()
                        if os.path.splitext(entry)[0] == module}
             make_graph(used_dot_fname.format(module), entries)
-    return lines
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
