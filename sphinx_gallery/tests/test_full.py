@@ -100,13 +100,22 @@ def test_api_usage(sphinx_app):
     assert op.isfile(api_html)
     with codecs.open(api_html, 'r', 'utf-8') as fid:
         content = fid.read()
+    try:
+        import graphviz  # noqa F402
+        has_graphviz = True
+    except ImportError:
+        has_graphviz = False
     # spot check references
     assert 'href="auto_examples/plot_numpy_matplotlib.html' in content
     # check used and unused
-    assert 'alt="API unused entries graph"' in content
-    assert 'alt="sphinx_gallery.scrapers usage graph"' in content
-    # check graph output
-    assert 'src="_images/graphviz-' in content
+    if has_graphviz:
+        assert 'alt="API unused entries graph"' in content
+        assert 'alt="sphinx_gallery.scrapers usage graph"' in content
+        # check graph output
+        assert 'src="_images/graphviz-' in content
+    else:
+        assert 'alt="API unused entries graph"' not in content
+        assert 'alt="sphinx_gallery.scrapers usage graph"' not in content
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('examples', 'plot_numpy_matplotlib.py')
