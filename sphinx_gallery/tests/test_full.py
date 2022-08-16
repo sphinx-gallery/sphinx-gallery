@@ -92,7 +92,7 @@ def test_api_usage(sphinx_app):
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
     # local folder
-    api_rst = op.join(src_dir, 'auto_examples', 'sg_api_usage.rst')
+    api_rst = op.join(src_dir, 'sg_api_usage.rst')
     assert op.isfile(api_rst)
     with codecs.open(api_rst, 'r', 'utf-8') as fid:
         content = fid.read()
@@ -100,7 +100,7 @@ def test_api_usage(sphinx_app):
         '  - :ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`'
     assert test_text in content
     # HTML output
-    api_html = op.join(out_dir, 'auto_examples', 'sg_api_usage.html')
+    api_html = op.join(out_dir, 'sg_api_usage.html')
     assert op.isfile(api_html)
     with codecs.open(api_html, 'r', 'utf-8') as fid:
         content = fid.read()

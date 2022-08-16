@@ -594,7 +594,7 @@ def generate_gallery_rst(app):
                 fhindex.write(SPHX_GLR_SIG)
 
         _replace_md5(index_rst_new, mode='t')
-        init_api_usage(gallery_conf, gallery_dir_abs_path)
+    init_api_usage(app.builder.srcdir)
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf['plot_gallery']:
@@ -694,35 +694,32 @@ def write_computation_times(gallery_conf, target_dir, costs):
 def write_api_entries(app, what, name, obj, options, lines):
     if 'api_entries' not in app.config.sphinx_gallery_conf:
         app.config.sphinx_gallery_conf['api_entries'] = \
-            {'class': set(), 'method': set(), 'function': set(),
-             'module': set(), 'property': set(), 'attribute': set()}
+            {entry_type: set() for entry_type in
+             ('class', 'method', 'function', 'module',
+              'property', 'attribute')}
     app.config.sphinx_gallery_conf['api_entries'][what].add(name)
 
 
-def init_api_usage(gallery_conf, target_dir):
-    if gallery_conf['backreferences_dir'] is None:
-        return
-    backreferences_dir = os.path.join(gallery_conf['src_dir'],
-                                      gallery_conf['backreferences_dir'])
-    target_dir_clean = os.path.relpath(
-        target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
-    new_ref = 'sphx_glr_%s_sg_api_usage' % target_dir_clean
-    replace_count = len('sphx_glr_' + os.path.basename(target_dir) + '_')
-    with codecs.open(os.path.join(target_dir, 'sg_api_usage.rst'), 'w',
-                     encoding='utf-8') as fid:
-        fid.write(SPHX_GLR_ORPHAN.format(new_ref))
+def init_api_usage(gallery_dir):
+    with codecs.open(os.path.join(gallery_dir, 'sg_api_usage.rst'), 'w',
+                     encoding='utf-8'):
+        pass
 
 
-def write_api_entry_usage(app, *args):
+def write_api_entry_usage(app, docname, source):
     gallery_conf = app.config.sphinx_gallery_conf
+    if 'sg_api_usage' not in docname:
+        return
+    # since this is done at the gallery directory level (as opposed
+    # to in a gallery directory, e.g. auto_examples), it runs last
+    assert 'api_entries' in gallery_conf
     for gallery_dir in gallery_conf['gallery_dirs']:
         target_dir = os.path.join(app.builder.srcdir, gallery_dir)
-        _write_api_entry_usage(gallery_conf, target_dir)
+        source[0] += _write_api_entry_usage(gallery_conf, target_dir)
 
 
 def _write_api_entry_usage(gallery_conf, target_dir):
-    if gallery_conf['backreferences_dir'] is None or \
-            'api_entries' not in gallery_conf:
+    if gallery_conf['backreferences_dir'] is None:
         return
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
                                       gallery_conf['backreferences_dir'])
@@ -838,55 +835,59 @@ def _write_api_entry_usage(gallery_conf, target_dir):
         dg.attr(overlap='scale')
         dg.save(fname)
 
-    with codecs.open(os.path.join(target_dir, 'sg_api_usage.rst'), 'a',
-                     encoding='utf-8') as fid:
-        title = 'Unused API Entries'
-        fid.write(title + '\n' + '^' * len(title) + '\n\n')
-        for entry in sorted(unused_api_entries):
-            fid.write(f'- :{get_entry_type(entry)}:`{entry}`\n')
-        fid.write('\n\n')
+    target_dir_clean = os.path.relpath(
+        target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
+    new_ref = 'sphx_glr_%s_sg_api_usage' % target_dir_clean
+    lines = SPHX_GLR_ORPHAN.format(new_ref)
 
-        unused_dot_fname = os.path.join(target_dir, 'sg_api_unused.dot')
-        if has_graphviz and unused_api_entries:
-            fid.write('.. graphviz:: ./sg_api_unused.dot\n'
-                      '    :alt: API unused entries graph\n'
+    title = 'Unused API Entries'
+    lines += title + '\n' + '^' * len(title) + '\n\n'
+    for entry in sorted(unused_api_entries):
+        lines += f'- :{get_entry_type(entry)}:`{entry}`\n'
+    lines += '\n\n'
+
+    unused_dot_fname = 'sg_api_unused.dot'
+    if has_graphviz and unused_api_entries:
+        lines += ('.. graphviz:: ./sg_api_unused.dot\n'
+                  '    :alt: API unused entries graph\n'
+                  '    :layout: neato\n\n')
+
+    used_count = len(used_api_entries)
+    used_percentage = used_count / total_count
+    lines += ('\nAPI entries used: '
+              f'{round(used_percentage * 100, 2)}% '
+              f'({used_count}/{total_count})\n\n')
+
+    title = 'Used API Entries'
+    lines += title + '\n' + '^' * len(title) + '\n\n'
+    for entry in sorted(used_api_entries):
+        lines += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
+        for ref in used_api_entries[entry]:
+            lines += f'  - :ref:`{ref}`\n'
+        lines += '\n\n'
+
+    used_dot_fname = '{}_sg_api_used.dot'
+    if has_graphviz and used_api_entries:
+        used_modules = set([os.path.splitext(entry)[0]
+                            for entry in used_api_entries])
+        for module in sorted(used_modules):
+            lines += (f'{module}\n' + '^' * len(module) + '\n'
+                      f'.. graphviz:: ./{module}_sg_api_used.dot\n'
+                      f'    :alt: {module} usage graph\n'
                       '    :layout: neato\n\n')
 
-        used_count = len(used_api_entries)
-        used_percentage = used_count / total_count
-        fid.write('\nAPI entries used: '
-                  f'{round(used_percentage * 100, 2)}% '
-                  f'({used_count}/{total_count})\n\n')
+    # design graph
+    if has_graphviz and unused_api_entries:
+        make_graph(unused_dot_fname, unused_api_entries)
 
-        title = 'Used API Entries'
-        fid.write(title + '\n' + '^' * len(title) + '\n\n')
-        for entry in sorted(used_api_entries):
-            fid.write(f'- :{get_entry_type(entry)}:`{entry}`\n\n')
-            for ref in used_api_entries[entry]:
-                fid.write(f'  - :ref:`{ref}`\n')
-            fid.write('\n\n')
-
-        used_dot_fname = os.path.join(target_dir, '{}_sg_api_used.dot')
-        if has_graphviz and used_api_entries:
-            used_modules = set([os.path.splitext(entry)[0]
-                                for entry in used_api_entries])
-            for module in sorted(used_modules):
-                fid.write(f'{module}\n' + '^' * len(module) + '\n'
-                          f'.. graphviz:: ./{module}_sg_api_used.dot\n'
-                          f'    :alt: {module} usage graph\n'
-                          '    :layout: neato\n\n')
-
-        # design graph
-        if has_graphviz and unused_api_entries:
-            make_graph(unused_dot_fname, unused_api_entries)
-
-        if has_graphviz and used_api_entries:
-            for module in used_modules:
-                logger.info(f'Making API usage graph for {module}')
-                entries = {entry: ref for entry, ref in
-                           used_api_entries.items()
-                           if os.path.splitext(entry)[0] == module}
-                make_graph(used_dot_fname.format(module), entries)
+    if has_graphviz and used_api_entries:
+        for module in used_modules:
+            logger.info(f'Making API usage graph for {module}')
+            entries = {entry: ref for entry, ref in
+                       used_api_entries.items()
+                       if os.path.splitext(entry)[0] == module}
+            make_graph(used_dot_fname.format(module), entries)
+    return lines
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
@@ -1114,7 +1115,7 @@ def setup(app):
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
         app.connect('autodoc-process-docstring', write_api_entries)
-        app.connect('doctree-resolved', write_api_entry_usage)
+        app.connect('source-read', write_api_entry_usage)
 
     # Add the custom directive
     app.add_directive('minigallery', MiniGallery)
