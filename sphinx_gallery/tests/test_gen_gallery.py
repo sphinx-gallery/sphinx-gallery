@@ -462,8 +462,9 @@ def test_write_computation_times_noop():
     write_computation_times(None, None, [[[0]]])
 
 
-def test_write_api_usage_noop():
-    write_api_entry_usage(None, list(), None)
+def test_write_api_usage_noop(sphinx_app_wrapper):
+    write_api_entry_usage(
+        sphinx_app_wrapper.create_sphinx_app(), list(), None)
 
 
 @pytest.mark.conf_file(content="""
