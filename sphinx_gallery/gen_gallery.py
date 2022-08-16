@@ -746,6 +746,8 @@ def write_api_entry_usage(app, docname, source):
     unused_api_entries = list()
     used_api_entries = dict()
     for entry in example_files:
+        if '__' in entry:  # don't include built-in methods
+            continue
         # check if backreferences empty
         example_fname = os.path.join(
             backreferences_dir, f'{entry}.examples.new')
