@@ -707,16 +707,12 @@ def init_api_usage(gallery_dir):
 
 
 def write_api_entry_usage(app, docname, source):
-    gallery_conf = app.config.sphinx_gallery_conf
     if 'sg_api_usage' not in docname:
         return
+    gallery_conf = app.config.sphinx_gallery_conf
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
-    # assert 'api_entries' in gallery_conf
-    source[0] += _write_api_entry_usage(gallery_conf)
-
-
-def _write_api_entry_usage(gallery_conf):
+    assert 'api_entries' in gallery_conf
     if gallery_conf['backreferences_dir'] is None:
         return
     backreferences_dir = os.path.join(gallery_conf['src_dir'],

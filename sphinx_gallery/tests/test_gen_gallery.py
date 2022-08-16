@@ -15,7 +15,7 @@ from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
     collect_gallery_files, write_computation_times, _complete_gallery_conf,
-    _write_api_entry_usage)
+    write_api_entry_usage)
 
 
 def test_bad_config():
@@ -463,7 +463,7 @@ def test_write_computation_times_noop():
 
 
 def test_write_api_usage_noop():
-    _write_api_entry_usage({'backreferences_dir': None}, None)
+    write_api_entry_usage(None, list(), None)
 
 
 @pytest.mark.conf_file(content="""
