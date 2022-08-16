@@ -20,6 +20,7 @@ from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
                                   _has_pypandoc)
+
 import pytest
 
 N_TOT = 13  # examples (plot_*.py in examples/**)
