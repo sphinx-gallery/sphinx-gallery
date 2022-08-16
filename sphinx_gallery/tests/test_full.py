@@ -20,8 +20,6 @@ from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
                                   _has_pypandoc)
-
-
 import pytest
 
 N_TOT = 13  # examples (plot_*.py in examples/**)
@@ -30,6 +28,7 @@ N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
 N_RST = 17 + N_TOT + 1  # includes module API pages, etc.
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
+
 
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory, req_mpl, req_pil):
