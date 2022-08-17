@@ -4,7 +4,7 @@ Who uses Sphinx-Gallery
 
 Here is a list of projects using `sphinx-gallery`.
 
-* :ref:`Sphinx-Gallery <sphx_glr_auto_examples>`
+* :ref:`Sphinx-Gallery <examples-index>`
 * :doc:`Scikit-learn <sklearn:auto_examples/index>`
 * `Nilearn <https://nilearn.github.io/auto_examples/index.html>`_
 * `MNE-python <https://www.martinos.org/mne/stable/auto_examples/index.html>`_
