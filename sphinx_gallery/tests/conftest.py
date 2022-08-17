@@ -4,11 +4,11 @@ Pytest fixtures
 """
 from __future__ import division, absolute_import, print_function
 
-import collections
 from contextlib import contextmanager
 from io import StringIO
 import os
 import shutil
+from unittest.mock import Mock
 
 import pytest
 
@@ -16,8 +16,7 @@ import sphinx
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
-from sphinx_gallery import (docs_resolv, gen_gallery, gen_rst, utils,
-                            sphinx_compatibility, py_source_parser)
+from sphinx_gallery import docs_resolv, gen_gallery, gen_rst, py_source_parser
 from sphinx_gallery.scrapers import _import_matplotlib
 from sphinx_gallery.utils import _get_image
 
@@ -27,40 +26,10 @@ def pytest_report_header(config, startdir):
     return 'Sphinx:  %s (%s)' % (sphinx.__version__, sphinx.__file__)
 
 
-Params = collections.namedtuple('Params', 'args kwargs')
-
-
-class FakeSphinxApp:
-    def __init__(self):
-        self.calls = collections.defaultdict(list)
-
-    def status_iterator(self, *args, **kwargs):
-        self.calls['status_iterator'].append(Params(args, kwargs))
-        for it in args[0]:
-            yield it
-
-    def warning(self, *args, **kwargs):
-        self.calls['warning'].append(Params(args, kwargs))
-
-    def warn(self, *args, **kwargs):
-        self.calls['warn'].append(Params(args, kwargs))
-
-    def info(self, *args, **kwargs):
-        self.calls['info'].append(Params(args, kwargs))
-
-    def verbose(self, *args, **kwargs):
-        self.calls['verbose'].append(Params(args, kwargs))
-
-    def debug(self, *args, **kwargs):
-        self.calls['debug'].append(Params(args, kwargs))
-
-
 @pytest.fixture
 def gallery_conf(tmpdir):
     """Set up a test sphinx-gallery configuration."""
-    app = utils.Bunch()
-    app.add_css_file = lambda x: None
-    app.config = dict(source_suffix={'.rst': None})
+    app = Mock(spec=Sphinx, config=dict(source_suffix={'.rst': None}))
     gallery_conf = gen_gallery._complete_gallery_conf(
         {}, str(tmpdir), True, False, app=app)
     gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
@@ -68,18 +37,8 @@ def gallery_conf(tmpdir):
 
 
 @pytest.fixture
-def fakesphinxapp():
-    orig_app = sphinx_compatibility._app
-    sphinx_compatibility._app = app = FakeSphinxApp()
-    try:
-        yield app
-    finally:
-        sphinx_compatibility._app = orig_app
-
-
-@pytest.fixture
 def log_collector(monkeypatch):
-    app = FakeSphinxApp()
+    app = Mock(spec=Sphinx, name='FakeSphinxApp')()
     monkeypatch.setattr(docs_resolv, 'logger', app)
     monkeypatch.setattr(gen_gallery, 'logger', app)
     monkeypatch.setattr(py_source_parser, 'logger', app)
@@ -198,7 +157,6 @@ class SphinxAppWrapper(object):
         with docutils_namespace():
             app = Sphinx(self.srcdir, self.confdir, self.outdir,
                          self.doctreedir, self.buildername, **self.kwargs)
-            sphinx_compatibility._app = app
             yield app
 
     def build_sphinx_app(self, *args, **kwargs):

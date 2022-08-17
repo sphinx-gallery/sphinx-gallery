@@ -20,12 +20,13 @@ import shutil
 from urllib.parse import quote
 
 from sphinx.errors import ConfigError
+import sphinx.util
 
 from .utils import replace_py_ipynb
-from . import sphinx_compatibility, glr_path_static
+from . import glr_path_static
 
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 def gen_binder_url(fpath, binder_conf, gallery_conf):
@@ -204,7 +205,7 @@ def _copy_binder_notebooks(app):
     if not isinstance(gallery_dirs, (list, tuple)):
         gallery_dirs = [gallery_dirs]
 
-    iterator = sphinx_compatibility.status_iterator(
+    iterator = sphinx.util.status_iterator(
         gallery_dirs, 'copying binder notebooks...', length=len(gallery_dirs))
 
     for i_folder in iterator:

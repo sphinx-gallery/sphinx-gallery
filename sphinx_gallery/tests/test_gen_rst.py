@@ -360,8 +360,8 @@ def test_fail_example(gallery_conf, failing_code, want,
 
     sg.generate_file_rst('raise.py', gallery_conf['gallery_dir'],
                          gallery_conf['examples_dir'], gallery_conf)
-    assert len(log_collector.calls['warning']) == 1
-    msg = log_collector.calls['warning'][0].args[2]
+    log_collector.warning.assert_called_once()
+    msg = log_collector.warning.call_args[0][2]
     assert want in msg
     assert 'gen_gallery' not in msg
     # can only check that gen_rst is removed on non-input ones
@@ -549,7 +549,7 @@ def test_exclude_implicit(gallery_conf,
 
 
 @pytest.mark.parametrize('ext', ('.txt', '.rst', '.bad'))
-def test_gen_dir_rst(gallery_conf, fakesphinxapp, ext):
+def test_gen_dir_rst(gallery_conf, ext):
     """Test gen_dir_rst."""
     print(os.listdir(gallery_conf['examples_dir']))
     fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
@@ -993,9 +993,9 @@ def test_full_line(log_collector_wrap):
     tee.write('Output\n')
     tee.flush()
     assert output_file.getvalue() == 'Output\n'
-    assert len(log_collector.calls['verbose']) == 2
-    assert src_filename in log_collector.calls['verbose'][0].args
-    assert 'Output' in log_collector.calls['verbose'][1].args
+    assert log_collector.verbose.call_count == 2
+    assert src_filename in log_collector.verbose.call_args_list[0][0]
+    assert 'Output' in log_collector.verbose.call_args_list[1][0]
 
 
 def test_incomplete_line_with_flush(log_collector_wrap):
@@ -1003,13 +1003,13 @@ def test_incomplete_line_with_flush(log_collector_wrap):
     log_collector, src_filename, tee, output_file = log_collector_wrap
     tee.write('Output')
     assert output_file.getvalue() == 'Output'
-    assert len(log_collector.calls['verbose']) == 1
-    assert src_filename in log_collector.calls['verbose'][0].args
+    log_collector.verbose.assert_called_once()
+    assert src_filename in log_collector.verbose.call_args[0]
 
     # ... should appear when flushed.
     tee.flush()
-    assert len(log_collector.calls['verbose']) == 2
-    assert 'Output' in log_collector.calls['verbose'][1].args
+    assert log_collector.verbose.call_count == 2
+    assert 'Output' in log_collector.verbose.call_args_list[1][0]
 
 
 def test_incomplete_line_with_more_output(log_collector_wrap):
@@ -1017,15 +1017,15 @@ def test_incomplete_line_with_more_output(log_collector_wrap):
     log_collector, src_filename, tee, output_file = log_collector_wrap
     tee.write('Output')
     assert output_file.getvalue() == 'Output'
-    assert len(log_collector.calls['verbose']) == 1
-    assert src_filename in log_collector.calls['verbose'][0].args
+    log_collector.verbose.assert_called_once()
+    assert src_filename in log_collector.verbose.call_args[0]
 
     # ... should appear when more data is written.
     tee.write('\nMore output\n')
     assert output_file.getvalue() == 'Output\nMore output\n'
-    assert len(log_collector.calls['verbose']) == 3
-    assert 'Output' in log_collector.calls['verbose'][1].args
-    assert 'More output' in log_collector.calls['verbose'][2].args
+    assert log_collector.verbose.call_count == 3
+    assert 'Output' in log_collector.verbose.call_args_list[1][0]
+    assert 'More output' in log_collector.verbose.call_args_list[2][0]
 
 
 def test_multi_line(log_collector_wrap):
@@ -1033,11 +1033,10 @@ def test_multi_line(log_collector_wrap):
     tee.write('first line\rsecond line\nthird line')
     assert (output_file.getvalue() ==
             'first line\rsecond line\nthird line')
-    verbose_calls = log_collector.calls['verbose']
-    assert len(verbose_calls) == 3
-    assert src_filename in verbose_calls[0].args
-    assert 'first line' in verbose_calls[1].args
-    assert 'second line' in verbose_calls[2].args
+    assert log_collector.verbose.call_count == 3
+    assert src_filename in log_collector.verbose.call_args_list[0][0]
+    assert 'first line' in log_collector.verbose.call_args_list[1][0]
+    assert 'second line' in log_collector.verbose.call_args_list[2][0]
     assert tee.logger_buffer == 'third line'
 
 

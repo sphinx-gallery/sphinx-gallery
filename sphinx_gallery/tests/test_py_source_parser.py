@@ -54,11 +54,11 @@ def test_get_docstring_and_rest(unicode_sample, tmpdir, monkeypatch):
 def test_extract_file_config(content, file_conf, log_collector):
     if file_conf is None:
         assert sg.extract_file_config(content) == {}
-        assert len(log_collector.calls['warning']) == 1
-        assert '1foo' == log_collector.calls['warning'][0].args[2]
+        log_collector.warning.assert_called_once()
+        assert '1foo' == log_collector.warning.call_args[0][2]
     else:
         assert sg.extract_file_config(content) == file_conf
-        assert len(log_collector.calls['warning']) == 0
+        log_collector.warning.assert_not_called()
 
 
 @pytest.mark.parametrize('contents, result', [

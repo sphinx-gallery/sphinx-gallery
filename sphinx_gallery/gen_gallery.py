@@ -22,8 +22,9 @@ import pathlib
 from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.errors import ConfigError, ExtensionError
+import sphinx.util
 from sphinx.util.console import red
-from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
+from . import glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5, _has_optipng, _has_pypandoc
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
@@ -104,7 +105,7 @@ DEFAULT_GALLERY_CONF = {
     'missing_doc_ignore': '__.*__',
 }
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 def _bool_eval(x):
@@ -1102,8 +1103,6 @@ def get_default_config_value(key):
 
 def setup(app):
     """Setup Sphinx-Gallery sphinx extension"""
-    sphinx_compatibility._app = app
-
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')

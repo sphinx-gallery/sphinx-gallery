@@ -16,7 +16,7 @@ import tokenize
 from textwrap import dedent
 
 from sphinx.errors import ExtensionError
-from .sphinx_compatibility import getLogger
+from sphinx.util.logging import getLogger
 
 logger = getLogger('sphinx-gallery')
 

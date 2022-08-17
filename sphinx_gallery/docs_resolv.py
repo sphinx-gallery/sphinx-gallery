@@ -21,11 +21,10 @@ from urllib.error import HTTPError, URLError
 
 from sphinx.errors import ExtensionError
 from sphinx.search import js_index
+import sphinx.util
 
-from . import sphinx_compatibility
 
-
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 def _get_data(url):
@@ -345,7 +344,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     flat = [[dirpath, filename]
             for dirpath, _, filenames in os.walk(html_gallery_dir)
             for filename in filenames]
-    iterator = sphinx_compatibility.status_iterator(
+    iterator = sphinx.util.status_iterator(
         flat, 'embedding documentation hyperlinks for %s... ' % gallery_dir,
         color='fuchsia', length=len(flat),
         stringify_func=lambda x: os.path.basename(x[1]))
