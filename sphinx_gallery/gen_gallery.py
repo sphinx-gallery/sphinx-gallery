@@ -25,7 +25,7 @@ from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
 from sphinx.util.console import red
 from . import glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5, _has_optipng, _has_pypandoc
+from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
@@ -708,15 +708,6 @@ def init_api_usage(gallery_dir):
         pass
 
 
-def _has_graphviz():
-    try:
-        import graphviz  # noqa F401
-    except ImportError:
-        logger.info('`graphviz` required for graphical visualization')
-        return False
-    return True
-
-
 def _make_graph(fname, entries, gallery_conf):
     import graphviz
     dg = graphviz.Digraph(filename=fname,
@@ -797,7 +788,6 @@ def write_api_entry_usage(app, docname, source):
         return
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
                                       gallery_conf['backreferences_dir'])
-    has_graphviz = _has_graphviz()
 
     example_files = set.union(
         *[gallery_conf['api_entries'][obj_type]
@@ -853,6 +843,7 @@ def write_api_entry_usage(app, docname, source):
         os.path.join(app.builder.outdir, '_graphs'), app.builder.srcdir)
     os.makedirs(dot_dir, exist_ok=True)
 
+    has_graphviz = _has_graphviz()
     if has_graphviz and gallery_conf['unused_api_entries']:
         source[0] += (f'.. graphviz:: {dot_dir}/sg_api_unused.dot\n'
                       '    :alt: API unused entries graph\n'
@@ -882,22 +873,11 @@ def write_api_entry_usage(app, docname, source):
                 f'    :alt: {module} usage graph\n'
                 '    :layout: neato\n\n')
 
+    if has_graphviz and gallery_conf['unused_api_entries']:
+        _make_graph(os.path.join(dot_dir, 'sg_api_unused.dot'),
+                    gallery_conf['unused_api_entries'], gallery_conf)
 
-def write_api_entry_usage_graphs(app, exception):
-    if not _has_graphviz():
-        return
-    gallery_conf = app.config.sphinx_gallery_conf
-
-    dot_dir = os.path.relpath(
-        os.path.join(app.builder.outdir, '_graphs'), app.builder.srcdir)
-    unused_dot_fname = os.path.join(dot_dir, 'sg_api_unused.dot')
-    used_dot_fname = os.path.join(dot_dir, '{}_sg_api_used.dot')
-
-    if gallery_conf['unused_api_entries']:
-        _make_graph(unused_dot_fname, gallery_conf['unused_api_entries'],
-                    gallery_conf)
-
-    if gallery_conf['used_api_entries']:
+    if has_graphviz and gallery_conf['used_api_entries']:
         used_modules = set([os.path.splitext(entry)[0]
                             for entry in gallery_conf['used_api_entries']])
         for module in used_modules:
@@ -905,7 +885,8 @@ def write_api_entry_usage_graphs(app, exception):
             entries = {entry: ref for entry, ref in
                        gallery_conf['used_api_entries'].items()
                        if os.path.splitext(entry)[0] == module}
-            _make_graph(used_dot_fname.format(module), entries, gallery_conf)
+            _make_graph(os.path.join(dot_dir, f'{module}_sg_api_used.dot'),
+                        entries, gallery_conf)
 
 
 def clean_rst(app, exception):
@@ -1149,7 +1130,6 @@ def setup(app):
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     app.connect('build-finished', clean_rst)
-    app.connect('build-finished', write_api_entry_usage_graphs)
     metadata = {'parallel_read_safe': True,
                 'parallel_write_safe': True,
                 'version': _sg_version}

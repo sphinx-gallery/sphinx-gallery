@@ -19,7 +19,7 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
-                                  _has_pypandoc)
+                                  _has_pypandoc, _has_graphviz)
 
 import pytest
 
@@ -99,11 +99,7 @@ def test_api_usage(sphinx_app):
     assert op.isfile(api_html)
     with codecs.open(api_html, 'r', 'utf-8') as fid:
         content = fid.read()
-    try:
-        import graphviz  # noqa F402
-        has_graphviz = True
-    except ImportError:
-        has_graphviz = False
+    has_graphviz = _has_graphviz()
     # spot check references
     assert 'href="auto_examples/plot_numpy_matplotlib.html' in content
     # check used and unused
