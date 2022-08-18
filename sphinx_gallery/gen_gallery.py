@@ -840,7 +840,7 @@ def write_api_entry_usage(app, docname, source):
     source[0] += '\n\n'
 
     dot_dir = os.path.relpath(
-        os.path.join(app.builder.outdir, '_images'), app.builder.srcdir)
+        os.path.join(app.builder.outdir, '_graphs'), app.builder.srcdir)
     os.makedirs(dot_dir, exist_ok=True)
 
     has_graphviz = _has_graphviz()
