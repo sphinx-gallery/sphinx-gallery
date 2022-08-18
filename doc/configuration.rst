@@ -58,6 +58,7 @@ file:
 - ``log_level`` (:ref:`log_level`)
 - ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
 - ``nested_sections`` (:ref:`nested_sections`)
+- ``missing_doc_ignore`` (:ref:`missing_doc_ignore`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -1861,3 +1862,15 @@ This index file will contain descriptions for the whole gallery as well as for
 each subsection, and a specific toctree for each subsection.
 In particular, sidebars generated using these toctrees might not reflect the
 actual section / folder structure.
+
+.. _missing_doc_ignore:
+
+Ignoring API entries
+====================
+
+By default, ``missing_doc_ignore='__.*__'`` ignores files that match this
+regular expression in documenting the usage of API entries within the
+example gallery. This regular expression can be modified to ignore
+any kind of file that should not be considered. The default regular
+expression ignores functions like ``__len__()`` for which it may not be
+desirable to document if they are used in examples.

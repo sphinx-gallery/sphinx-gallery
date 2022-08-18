@@ -91,10 +91,9 @@ def test_api_usage(sphinx_app):
     """Test that an api usage page is created."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
-    # the rst file is empty, all the content is added
-    # in post-processing
+    # the rst file was empty but is removed in post-processing
     api_rst = op.join(src_dir, 'sg_api_usage.rst')
-    assert op.isfile(api_rst)
+    assert not op.isfile(api_rst)
     # HTML output
     api_html = op.join(out_dir, 'sg_api_usage.html')
     assert op.isfile(api_html)
