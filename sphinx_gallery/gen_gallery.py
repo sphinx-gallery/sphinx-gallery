@@ -808,8 +808,8 @@ def write_api_entry_usage(app, docname, source):
             return 'func'
 
     # find used and unused API entries
-    gallery_conf['unused_api_entries'] = list()
-    gallery_conf['used_api_entries'] = dict()
+    unused_api_entries = list()
+    used_api_entries = dict()
     for entry in example_files:
         # don't include built-in methods etc.
         if re.match(gallery_conf['missing_doc_ignore'], entry) is not None:
@@ -821,35 +821,35 @@ def write_api_entry_usage(app, docname, source):
             example_fname = os.path.splitext(example_fname)[0]
         assert os.path.isfile(example_fname)
         if os.path.getsize(example_fname) == 0:
-            gallery_conf['unused_api_entries'].append(entry)
+            unused_api_entries.append(entry)
         else:
-            gallery_conf['used_api_entries'][entry] = list()
+            used_api_entries[entry] = list()
             with open(example_fname, 'r', encoding='utf-8') as fid2:
                 for line in fid2:
                     if line.startswith('  :ref:'):
                         example_name = line.split('`')[1]
-                        gallery_conf['used_api_entries'][entry].append(
+                        used_api_entries[entry].append(
                             example_name)
 
     source[0] = SPHX_GLR_ORPHAN.format('sphx_glr_sg_api_usage')
 
     title = 'Unused API Entries'
     source[0] += title + '\n' + '^' * len(title) + '\n\n'
-    for entry in sorted(gallery_conf['unused_api_entries']):
+    for entry in sorted(unused_api_entries):
         source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n'
     source[0] += '\n\n'
 
     dot_dir = os.path.relpath(
-        os.path.join(app.builder.outdir, '_graphs'), app.builder.srcdir)
+        os.path.join(app.builder.outdir, '_images'), app.builder.srcdir)
     os.makedirs(dot_dir, exist_ok=True)
 
     has_graphviz = _has_graphviz()
-    if has_graphviz and gallery_conf['unused_api_entries']:
+    if has_graphviz and unused_api_entries:
         source[0] += (f'.. graphviz:: {dot_dir}/sg_api_unused.dot\n'
                       '    :alt: API unused entries graph\n'
                       '    :layout: neato\n\n')
 
-    used_count = len(gallery_conf['used_api_entries'])
+    used_count = len(used_api_entries)
     used_percentage = used_count / total_count
     source[0] += ('\nAPI entries used: '
                   f'{round(used_percentage * 100, 2)}% '
@@ -857,15 +857,15 @@ def write_api_entry_usage(app, docname, source):
 
     title = 'Used API Entries'
     source[0] += title + '\n' + '^' * len(title) + '\n\n'
-    for entry in sorted(gallery_conf['used_api_entries']):
+    for entry in sorted(used_api_entries):
         source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
-        for ref in gallery_conf['used_api_entries'][entry]:
+        for ref in used_api_entries[entry]:
             source[0] += f'  - :ref:`{ref}`\n'
         source[0] += '\n\n'
 
-    if has_graphviz and gallery_conf['used_api_entries']:
+    if has_graphviz and used_api_entries:
         used_modules = set([os.path.splitext(entry)[0]
-                            for entry in gallery_conf['used_api_entries']])
+                            for entry in used_api_entries])
         for module in sorted(used_modules):
             source[0] += (
                 f'{module}\n' + '^' * len(module) + '\n'
@@ -873,17 +873,17 @@ def write_api_entry_usage(app, docname, source):
                 f'    :alt: {module} usage graph\n'
                 '    :layout: neato\n\n')
 
-    if has_graphviz and gallery_conf['unused_api_entries']:
+    if has_graphviz and unused_api_entries:
         _make_graph(os.path.join(dot_dir, 'sg_api_unused.dot'),
-                    gallery_conf['unused_api_entries'], gallery_conf)
+                    unused_api_entries, gallery_conf)
 
-    if has_graphviz and gallery_conf['used_api_entries']:
+    if has_graphviz and used_api_entries:
         used_modules = set([os.path.splitext(entry)[0]
-                            for entry in gallery_conf['used_api_entries']])
+                            for entry in used_api_entries])
         for module in used_modules:
             logger.info(f'Making API usage graph for {module}')
             entries = {entry: ref for entry, ref in
-                       gallery_conf['used_api_entries'].items()
+                       used_api_entries.items()
                        if os.path.splitext(entry)[0] == module}
             _make_graph(os.path.join(dot_dir, f'{module}_sg_api_used.dot'),
                         entries, gallery_conf)
