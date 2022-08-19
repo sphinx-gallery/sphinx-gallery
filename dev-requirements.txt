@@ -13,4 +13,3 @@ check-manifest
 plotly
 absl-py
 graphviz
-sphinx_toolbox
