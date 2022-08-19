@@ -418,11 +418,16 @@ def test_backreferences_examples_html(sphinx_app):
     n_documented = lines.count('<dt class="sig sig-object py"')
     # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
     assert n_documented == 5
-    n_mini = lines.count('Examples using ')
     # identify_names, DummyClass, NameFinder (3); once doc, once left bar (x2)
+    n_mini = lines.count('Examples using ')
     assert n_mini == 6
+    # only 3 actual mini-gallery divs
     n_div = lines.count('<div class="sphx-glr-thumbnails')
     assert n_div == 3
+    # 3 documented uses
+    n_thumb = lines.count('<div class="sphx-glr-thumbcontainer')
+    assert n_thumb == 3
+    # matched opening/closing divs
     n_open = lines.count('<div')
     n_close = lines.count('</div')
     assert n_open == n_close  # should always be equal
