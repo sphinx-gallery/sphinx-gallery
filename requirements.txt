@@ -1,1 +1,1 @@
-sphinx>=3
+sphinx>=1.8.3
