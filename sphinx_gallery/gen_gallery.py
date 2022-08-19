@@ -839,13 +839,9 @@ def write_api_entry_usage(app, docname, source):
         source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n'
     source[0] += '\n\n'
 
-    dot_dir = os.path.relpath(
-        os.path.join(app.builder.outdir, '_graphs'), app.builder.srcdir)
-    os.makedirs(dot_dir, exist_ok=True)
-
     has_graphviz = _has_graphviz()
     if has_graphviz and unused_api_entries:
-        source[0] += (f'.. graphviz:: {dot_dir}/sg_api_unused.dot\n'
+        source[0] += (f'.. graphviz:: ./sg_api_unused.dot\n'
                       '    :alt: API unused entries graph\n'
                       '    :layout: neato\n\n')
 
@@ -869,12 +865,12 @@ def write_api_entry_usage(app, docname, source):
         for module in sorted(used_modules):
             source[0] += (
                 f'{module}\n' + '^' * len(module) + '\n'
-                f'.. graphviz:: {dot_dir}/{module}_sg_api_used.dot\n'
+                f'.. graphviz:: ./{module}_sg_api_used.dot\n'
                 f'    :alt: {module} usage graph\n'
                 '    :layout: neato\n\n')
 
     if has_graphviz and unused_api_entries:
-        _make_graph(os.path.join(dot_dir, 'sg_api_unused.dot'),
+        _make_graph(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'),
                     unused_api_entries, gallery_conf)
 
     if has_graphviz and used_api_entries:
@@ -885,13 +881,19 @@ def write_api_entry_usage(app, docname, source):
             entries = {entry: ref for entry, ref in
                        used_api_entries.items()
                        if os.path.splitext(entry)[0] == module}
-            _make_graph(os.path.join(dot_dir, f'{module}_sg_api_used.dot'),
+            _make_graph(os.path.join(app.builder.srcdir,
+                                     f'{module}_sg_api_used.dot'),
                         entries, gallery_conf)
 
 
-def clean_rst(app, exception):
+def clean_files(app, exception):
     if os.path.isfile(os.path.join(app.builder.srcdir, 'sg_api_usage.rst')):
         os.remove(os.path.join(app.builder.srcdir, 'sg_api_usage.rst'))
+    if os.path.isfile(os.path.join(app.builder.srcdir, 'sg_api_unused.dot')):
+        os.remove(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'))
+    for file in os.listdir(app.builder.srcdir):
+        if 'sg_api_used.dot' in file:
+            os.remove(os.path.join(app.builder.srcdir, file))
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
@@ -1129,7 +1131,7 @@ def setup(app):
     app.connect('build-finished', copy_binder_files)
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
-    app.connect('build-finished', clean_rst)
+    app.connect('build-finished', clean_files)
     metadata = {'parallel_read_safe': True,
                 'parallel_write_safe': True,
                 'version': _sg_version}
