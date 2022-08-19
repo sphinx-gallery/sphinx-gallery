@@ -97,7 +97,7 @@ stages:
         conda_python37_sphinx183:
           DISTRIB: 'conda'
           PYTHON_VERSION: '3.7'
-          SPHINX_VERSION: '1.8.3'
+          SPHINX_VERSION: '3'
           LOCALE: 'C'
         conda_python38_sphinxDev:
           DISTRIB: 'conda'
