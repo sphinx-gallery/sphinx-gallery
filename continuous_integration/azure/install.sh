@@ -15,9 +15,9 @@ if [ "$DISTRIB" == "conda" ]; then
     echo "##vso[task.prependpath]$CONDA/bin"
     export PATH=${CONDA}/bin:${PATH}
     CONDA_TO_INSTALL="$@"
-    CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz sphinx_toolbox sphinx_rtd_theme"
+    CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz"
     PIP_DEPENDENCIES="$@"
-    PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
+    PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme sphinx_toolbox check-manifest"
     if [ "$PYTHON_VERSION" != "3.7" -o "$LOCALE" != "C" ]; then
         CONDA_TO_INSTALL="$CONDA_TO_INSTALL mayavi memory_profiler ipython pypandoc"
     fi
