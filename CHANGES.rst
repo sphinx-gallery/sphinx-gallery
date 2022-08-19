@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+v0.12.0
+-------
+
+Support for Sphinx < 3 dropped in this release. Requirement is Sphinx >= 3.
+
+**Fixed bugs:**
+
+-  BUG: Fix single column example `#993 <https://github.com/sphinx-gallery/sphinx-gallery/pull/993>`__ (`larsoner <https://github.com/larsoner>`__)
+
+
 v0.11.0
 -------
 

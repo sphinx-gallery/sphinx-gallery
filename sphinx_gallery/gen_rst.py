@@ -42,7 +42,8 @@ from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
                     optipng)
 from . import glr_path_static
 from .backreferences import (_write_backreferences, _thumbnail_div,
-                             identify_names)
+                             identify_names, THUMBNAIL_PARENT_DIV,
+                             THUMBNAIL_PARENT_DIV_CLOSE)
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (split_code_and_text_blocks,
                                remove_config_comments,
@@ -346,21 +347,6 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
             "of the expected file extensions {1}. Please write one to "
             "introduce your gallery.".format(dir_, extensions))
     return None
-
-
-THUMBNAIL_PARENT_DIV = """
-.. raw:: html
-
-    <div class="sphx-glr-thumbnails">
-
-"""
-
-THUMBNAIL_PARENT_DIV_CLOSE = """
-.. raw:: html
-
-    </div>
-
-"""
 
 
 def generate_dir_rst(
