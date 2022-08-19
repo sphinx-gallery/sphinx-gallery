@@ -395,7 +395,7 @@ def test_backreferences(sphinx_app):
     ('sphinx_gallery.sorting.ExplicitOrder.examples',
      'plot_second_future_imports'),
 ])
-def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
+def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
     """Test linking to mini-galleries using backreferences_dir."""
     backref_dir = sphinx_app.srcdir
     examples_rst = op.join(backref_dir, 'gen_modules', 'backreferences',
@@ -403,24 +403,29 @@ def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
     with codecs.open(examples_rst, 'r', 'utf-8') as fid:
         lines = fid.read()
     assert example_used_in in lines
+    # check the .. raw:: html div count
+    n_open = lines.count('<div')
+    n_close = lines.count('</div')
+    assert n_open == n_close
 
 
-def test_backreferences_divs(sphinx_app):
+def test_backreferences_examples_html(sphinx_app):
     """Test linking to mini-galleries using backreferences_dir."""
-    backref_dir = sphinx_app.outdir
     backref_file = op.join(sphinx_app.outdir, 'gen_modules',
                            'sphinx_gallery.backreferences.html')
     with codecs.open(backref_file, 'r', 'utf-8') as fid:
         lines = fid.read()
     n_documented = lines.count('<dt class="sig sig-object py"')
-    assert n_documented == 3  # identify_names, DummyClass, NameFinder
+    # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
+    assert n_documented == 5
     n_mini = lines.count('Examples using ')
-    assert n_mini == n_documented
+    # identify_names, DummyClass, NameFinder (3); once doc, once left bar (x2)
+    assert n_mini == 6
     n_div = lines.count('<div class="sphx-glr-thumbnails')
-    assert n_div == n_documented
+    assert n_div == 3
     n_open = lines.count('<div')
     n_close = lines.count('</div')
-    assert n_open == n_close
+    assert n_open == n_close  # should always be equal
 
 
 def test_logging_std_nested(sphinx_app):
