@@ -415,7 +415,9 @@ def test_backreferences_examples_html(sphinx_app):
                            'sphinx_gallery.backreferences.html')
     with codecs.open(backref_file, 'r', 'utf-8') as fid:
         lines = fid.read()
-    regex = re.compile(r'<dt class.*sig sig-object.*>')
+    # Class properties not properly checked on older Sphinx (e.g. 3)
+    # so let's use the "id" instead
+    regex = re.compile(r'<dt[ \S]*id="sphinx_gallery.backreferences.[ \S]*>')
     n_documented = len(regex.findall(lines))
     possible = '\n'.join(line for line in lines.split('\n') if '<dt ' in line)
     # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
