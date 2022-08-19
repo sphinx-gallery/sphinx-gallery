@@ -415,9 +415,11 @@ def test_backreferences_examples_html(sphinx_app):
                            'sphinx_gallery.backreferences.html')
     with codecs.open(backref_file, 'r', 'utf-8') as fid:
         lines = fid.read()
-    n_documented = lines.count('<dt class="sig sig-object py"')
+    regex = re.compile(r'<dt class.*sig sig-object.*>')
+    n_documented = len(regex.findall(lines))
+    possible = '\n'.join(line for line in lines.split('\n') if '<dt ' in line)
     # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
-    assert n_documented == 5
+    assert n_documented == 5, possible
     # identify_names, DummyClass, NameFinder (3); once doc, once left bar (x2)
     n_mini = lines.count('Examples using ')
     assert n_mini == 6
