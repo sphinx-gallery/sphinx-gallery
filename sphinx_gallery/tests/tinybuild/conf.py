@@ -58,6 +58,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
     'sphinx.ext.graphviz',
+    'sphinx_toolbox.collapse',
 ]
 templates_path = ['_templates']
 autosummary_generate = True

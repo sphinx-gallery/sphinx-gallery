@@ -852,10 +852,17 @@ def write_api_entry_usage(app, docname, source):
                   f'({used_count}/{total_count})\n\n')
 
     title = 'Used API Entries'
-    source[0] += title + '\n' + '^' * len(title) + '\n\n'
+    if 'sphinx_toolbox.collapse' in app.extensions:
+        source[0] += f'.. collapse::  {title}\n\n'  # make used API collapsed
+    else:
+        source[0] += title + '\n' + '^' * len(title) + '\n\n'
     for entry in sorted(used_api_entries):
+        if 'sphinx_toolbox.collapse' in app.extensions:
+            source[0] += '  '  # entra indent for collapse
         source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
         for ref in used_api_entries[entry]:
+            if 'sphinx_toolbox.collapse' in app.extensions:
+                source[0] += '  '  # entra indent for collapse
             source[0] += f'  - :ref:`{ref}`\n'
         source[0] += '\n\n'
 
