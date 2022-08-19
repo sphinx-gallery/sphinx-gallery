@@ -425,7 +425,7 @@ def test_backreferences(sphinx_app):
     ('sphinx_gallery.sorting.ExplicitOrder.examples',
      'plot_second_future_imports'),
 ])
-def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
+def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
     """Test linking to mini-galleries using backreferences_dir."""
     backref_dir = sphinx_app.srcdir
     examples_rst = op.join(backref_dir, 'gen_modules', 'backreferences',
@@ -433,6 +433,38 @@ def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
     with codecs.open(examples_rst, 'r', 'utf-8') as fid:
         lines = fid.read()
     assert example_used_in in lines
+    # check the .. raw:: html div count
+    n_open = lines.count('<div')
+    n_close = lines.count('</div')
+    assert n_open == n_close
+
+
+def test_backreferences_examples_html(sphinx_app):
+    """Test linking to mini-galleries using backreferences_dir."""
+    backref_file = op.join(sphinx_app.outdir, 'gen_modules',
+                           'sphinx_gallery.backreferences.html')
+    with codecs.open(backref_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    # Class properties not properly checked on older Sphinx (e.g. 3)
+    # so let's use the "id" instead
+    regex = re.compile(r'<dt[ \S]*id="sphinx_gallery.backreferences.[ \S]*>')
+    n_documented = len(regex.findall(lines))
+    possible = '\n'.join(line for line in lines.split('\n') if '<dt ' in line)
+    # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
+    assert n_documented == 5, possible
+    # identify_names, DummyClass, NameFinder (3); once doc, once left bar (x2)
+    n_mini = lines.count('Examples using ')
+    assert n_mini == 6
+    # only 3 actual mini-gallery divs
+    n_div = lines.count('<div class="sphx-glr-thumbnails')
+    assert n_div == 3
+    # 3 documented uses
+    n_thumb = lines.count('<div class="sphx-glr-thumbcontainer')
+    assert n_thumb == 3
+    # matched opening/closing divs
+    n_open = lines.count('<div')
+    n_close = lines.count('</div')
+    assert n_open == n_close  # should always be equal
 
 
 def test_logging_std_nested(sphinx_app):
@@ -653,7 +685,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '(8|9|10|11)'
+    n_ch = '(7|8|9|10|11)'
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'

@@ -67,7 +67,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     python3 -m pip install -r dev-requirements.txt | cat
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    python3 -m pip install sphinx==1.8.3 "jinja2<=3.0.3"
+    python3 -m pip install sphinx==3 "jinja2<=3.0.3"
     python3 setup.py install --user
     python3 -m pip list
 else

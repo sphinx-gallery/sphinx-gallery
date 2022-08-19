@@ -23,7 +23,21 @@ import sphinx.util
 
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
-from .directives import THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE
+
+
+THUMBNAIL_PARENT_DIV = """
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+"""
+
+THUMBNAIL_PARENT_DIV_CLOSE = """
+.. raw:: html
+
+    </div>
+
+"""
 
 
 class DummyClass(object):
@@ -311,6 +325,7 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write('\n\n' + heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
+                ex_file.write('\n\n.. start-sphx-glr-thumbnails\n\n')
                 # Open a div which will contain all thumbnails
                 # (it will be closed in _finalize_backreferences)
                 ex_file.write(THUMBNAIL_PARENT_DIV)

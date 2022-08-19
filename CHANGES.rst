@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+v0.11.1
+-------
+
+Support for Sphinx < 3 dropped in this release. Requirement is Sphinx >= 3.
+
+**Fixed bugs:**
+
+-  BUG: Fix single column example `#993 <https://github.com/sphinx-gallery/sphinx-gallery/pull/993>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Implemented enhancements:**
+
+- Use Mock more in tests `#986 <https://github.com/sphinx-gallery/sphinx-gallery/pull/986>`__ (`QuLogic <https://github.com/QuLogic>`__)
+- Remove old sphinx compatibility code `#985 <https://github.com/sphinx-gallery/sphinx-gallery/pull/985>`__ (`QuLogic <https://github.com/QuLogic>`__)
+
 v0.11.0
 -------
 
