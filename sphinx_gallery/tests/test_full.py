@@ -405,6 +405,24 @@ def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
     assert example_used_in in lines
 
 
+def test_backreferences_divs(sphinx_app):
+    """Test linking to mini-galleries using backreferences_dir."""
+    backref_dir = sphinx_app.outdir
+    backref_file = op.join(sphinx_app.outdir, 'gen_modules',
+                           'sphinx_gallery.backreferences.html')
+    with codecs.open(backref_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    n_documented = lines.count('<dt class="sig sig-object py"')
+    assert n_documented == 3  # identify_names, DummyClass, NameFinder
+    n_mini = lines.count('Examples using ')
+    assert n_mini == n_documented
+    n_div = lines.count('<div class="sphx-glr-thumbnails')
+    assert n_div == n_documented
+    n_open = lines.count('<div')
+    n_close = lines.count('</div')
+    assert n_open == n_close
+
+
 def test_logging_std_nested(sphinx_app):
     """Test that nested stdout/stderr uses within a given script work."""
     log_rst = op.join(
