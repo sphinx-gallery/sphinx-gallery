@@ -854,14 +854,14 @@ def write_api_entry_usage(app, docname, source):
     title = 'Used API Entries'
     source[0] += (f'.. raw:: html\n\n'
                   '  <details>\n\n'
-                  f'  {title}' + '\n' + '^' * len(title) + '\n\n')
+                  f'  <summary>{title}</summary>\n\n')
     for entry in sorted(used_api_entries):
-        source[0] += f'  - :{get_entry_type(entry)}:`{entry}`\n\n'
+        source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
         for ref in used_api_entries[entry]:
-            source[0] += f'    - :ref:`{ref}`\n'
-        source[0] += ('\n\n'
-                      '.. raw:: html\n\n'
-                      '  </details>\n\n')
+            source[0] += f'  - :ref:`{ref}`\n'
+        source[0] += '\n\n'
+
+    source[0] += '.. raw:: html\n\n  </details>\n\n'
 
     if has_graphviz and used_api_entries:
         used_modules = set([os.path.splitext(entry)[0]
