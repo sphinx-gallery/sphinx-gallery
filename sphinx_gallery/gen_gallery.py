@@ -841,7 +841,7 @@ def write_api_entry_usage(app, docname, source):
 
     has_graphviz = _has_graphviz()
     if has_graphviz and unused_api_entries:
-        source[0] += (f'.. graphviz:: ./sg_api_unused.dot\n'
+        source[0] += ('.. graphviz:: ./sg_api_unused.dot\n'
                       '    :alt: API unused entries graph\n'
                       '    :layout: neato\n\n')
 
