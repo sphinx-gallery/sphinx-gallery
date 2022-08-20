@@ -181,6 +181,7 @@ def _has_graphviz():
     try:
         import graphviz  # noqa F401
     except ImportError as exc:
-        logger.info('`graphviz` required for graphical visualization')
+        logger.info('`graphviz` required for graphical visualization '
+                    f'but could not be imported, got: {exc}')
         return False
     return True
