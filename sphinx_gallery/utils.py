@@ -180,7 +180,8 @@ def _has_pypandoc():
 def _has_graphviz():
     try:
         import graphviz  # noqa F401
-    except ImportError:
-        logger.info('`graphviz` required for graphical visualization')
+    except ImportError as exc:
+        logger.info('`graphviz` required for graphical visualization '
+                    f'but could not be imported, got: {exc}')
         return False
     return True
