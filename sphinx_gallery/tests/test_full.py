@@ -106,14 +106,14 @@ def test_api_usage(sphinx_app):
     if has_graphviz:
         assert 'alt="API unused entries graph"' in content
         if sphinx_app.config.sphinx_gallery_conf['show_api_usage']:
-            assert 'alt="sphinx_gallery.scrapers usage graph"' in content
+            assert 'alt="sphinx_gallery usage graph"' in content
         else:
-            assert 'alt="sphinx_gallery.scrapers usage graph"' not in content
+            assert 'alt="sphinx_gallery usage graph"' not in content
         # check graph output
         assert 'src="_images/graphviz-' in content
     else:
         assert 'alt="API unused entries graph"' not in content
-        assert 'alt="sphinx_gallery.scrapers usage graph"' not in content
+        assert 'alt="sphinx_gallery usage graph"' not in content
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('examples', 'plot_numpy_matplotlib.py')
