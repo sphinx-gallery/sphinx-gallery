@@ -101,7 +101,8 @@ def test_api_usage(sphinx_app):
         content = fid.read()
     has_graphviz = _has_graphviz()
     # spot check references
-    assert 'href="auto_examples/plot_numpy_matplotlib.html' in content
+    assert ('href="gen_modules/sphinx_gallery.gen_gallery.html'
+            '#sphinx_gallery.gen_gallery.setup"') in content
     # check used and unused
     if has_graphviz:
         assert 'alt="API unused entries graph"' in content
