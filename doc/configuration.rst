@@ -59,7 +59,7 @@ file:
 - ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
 - ``nested_sections`` (:ref:`nested_sections`)
 - ``missing_doc_ignore`` (:ref:`missing_doc_ignore`)
-- ``show_api_usage_graphs`` (:ref:`show_api_usage_graphs`)
+- ``show_api_usage`` (:ref:`show_api_usage`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -1876,14 +1876,14 @@ any kind of file that should not be considered. The default regular
 expression ignores functions like ``__len__()`` for which it may not be
 desirable to document if they are used in examples.
 
-.. _show_api_usage_graphs:
+.. _show_api_usage:
 
-Showing API Usage Graphs
-========================
+Showing API Usage
+=================
 
 Optionally, graphs can be made of the usage of each API entry in examples
 grouped by module. In large projects, there are many modules so this is
-set to ``False`` by default. Setting ``show_api_usage_graphs`` to ``True``
+set to ``False`` by default. Setting ``show_api_usage`` to ``True``
 will make one graph per module with all of the API entries connected to
 the example that they are used in. This could be helpful for making a map
 of where to look in a project if you want to learn about a particular

@@ -103,7 +103,7 @@ DEFAULT_GALLERY_CONF = {
     'nested_sections': True,
     'prefer_full_module': [],
     'missing_doc_ignore': '__.*__',
-    'show_api_usage_graphs': False,
+    'show_api_usage': False,
 }
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
@@ -814,7 +814,7 @@ def write_api_entry_usage(app, docname, source):
     for entry in example_files:
         # don't include built-in methods etc.
         if re.match(gallery_conf['missing_doc_ignore'],
-                    os.path.splitext(entry)[-1]) is not None:
+                    entry.split('.')[-1]) is not None:
             continue
         # check if backreferences empty
         example_fname = os.path.join(
@@ -853,19 +853,20 @@ def write_api_entry_usage(app, docname, source):
                   f'{round(used_percentage * 100, 2)}% '
                   f'({used_count}/{total_count})\n\n')
 
-    title = 'Used API Entries'
-    source[0] += (f'.. raw:: html\n\n'
-                  '  <details>\n\n'
-                  f'  <summary>{title}</summary>\n\n')
-    for entry in sorted(used_api_entries):
-        source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
-        for ref in used_api_entries[entry]:
-            source[0] += f'  - :ref:`{ref}`\n'
-        source[0] += '\n\n'
+    if has_graphviz and unused_api_entries:
+        _make_graph(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'),
+                    unused_api_entries, gallery_conf)
 
-    if has_graphviz and gallery_conf['show_api_usage_graphs'] and \
-            used_api_entries:
-        used_modules = set([os.path.splitext(entry)[0]
+    if gallery_conf['show_api_usage'] and has_graphviz and used_api_entries:
+        title = 'Used API Entries'
+        source[0] += title + '\n' + '^' * len(title) + '\n\n'
+        for entry in sorted(used_api_entries):
+            source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
+            for ref in used_api_entries[entry]:
+                source[0] += f'  - :ref:`{ref}`\n'
+            source[0] += '\n\n'
+
+        used_modules = set([entry.split('.')[0]
                             for entry in used_api_entries])
         for module in sorted(used_modules):
             source[0] += (
@@ -874,21 +875,11 @@ def write_api_entry_usage(app, docname, source):
                 f'    :alt: {module} usage graph\n'
                 '    :layout: neato\n\n')
 
-    source[0] += '.. raw:: html\n\n  </details>\n\n'
-
-    if has_graphviz and unused_api_entries:
-        _make_graph(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'),
-                    unused_api_entries, gallery_conf)
-
-    if has_graphviz and gallery_conf['show_api_usage_graphs'] and \
-            used_api_entries:
-        used_modules = set([os.path.splitext(entry)[0]
-                            for entry in used_api_entries])
         for module in used_modules:
             logger.info(f'Making API usage graph for {module}')
             entries = {entry: ref for entry, ref in
                        used_api_entries.items()
-                       if os.path.splitext(entry)[0] == module}
+                       if entry.split('.')[0] == module}
             _make_graph(os.path.join(app.builder.srcdir,
                                      f'{module}_sg_api_used.dot'),
                         entries, gallery_conf)
