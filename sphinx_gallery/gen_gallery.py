@@ -870,7 +870,7 @@ def write_api_entry_usage(app, docname, source):
                             for entry in used_api_entries])
         for module in sorted(used_modules):
             source[0] += (
-                f'{module}\n' + '^' * len(module) + '\n'
+                f'{module}\n' + '^' * len(module) + '\n\n'
                 f'.. graphviz:: ./{module}_sg_api_used.dot\n'
                 f'    :alt: {module} usage graph\n'
                 '    :layout: neato\n\n')

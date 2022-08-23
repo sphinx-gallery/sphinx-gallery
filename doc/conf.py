@@ -398,6 +398,7 @@ sphinx_gallery_conf = {
     'matplotlib_animations': True,
     'image_srcset': ["2x"],
     'nested_sections': False,
+    'show_api_usage': True,
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show
