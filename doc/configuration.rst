@@ -1869,7 +1869,7 @@ actual section / folder structure.
 Ignoring API entries
 ====================
 
-By default, ``missing_doc_ignore='__.*__'`` ignores files that match this
+By default, ``missing_doc_ignore='.*__.*__'`` ignores files that match this
 regular expression in documenting the usage of API entries within the
 example gallery. This regular expression can be modified to ignore
 any kind of file that should not be considered. The default regular

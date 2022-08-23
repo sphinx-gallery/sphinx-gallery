@@ -102,7 +102,7 @@ DEFAULT_GALLERY_CONF = {
     'line_numbers': False,
     'nested_sections': True,
     'prefer_full_module': [],
-    'missing_doc_ignore': '__.*__',
+    'missing_doc_ignore': '.*__.*__',
     'show_api_usage': False,
 }
 
@@ -813,8 +813,7 @@ def write_api_entry_usage(app, docname, source):
     used_api_entries = dict()
     for entry in example_files:
         # don't include built-in methods etc.
-        if re.match(gallery_conf['missing_doc_ignore'],
-                    entry.split('.')[-1]) is not None:
+        if re.match(gallery_conf['missing_doc_ignore'], entry) is not None:
             continue
         # check if backreferences empty
         example_fname = os.path.join(
