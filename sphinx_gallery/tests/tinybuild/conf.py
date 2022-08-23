@@ -102,6 +102,7 @@ sphinx_gallery_conf = {
     'pypandoc': True,
     'image_srcset': ["2x"],
     'exclude_implicit_doc': ['figure_rst'],
+    'show_api_usage': True,
 }
 nitpicky = True
 highlight_language = 'python3'
