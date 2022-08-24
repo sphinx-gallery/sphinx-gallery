@@ -804,8 +804,7 @@ def write_api_entry_usage(app, docname, source):
           for obj_type in ('class', 'method', 'function')
           if obj_type in gallery_conf['api_entries']])
 
-    total_count = len(example_files)
-    if total_count == 0:
+    if len(example_files) == 0:
         return
 
     def get_entry_type(entry):
@@ -856,6 +855,7 @@ def write_api_entry_usage(app, docname, source):
                       '    :layout: neato\n\n')
 
     used_count = len(used_api_entries)
+    total_count = used_count + len(unused_api_entries)
     used_percentage = used_count / total_count
     source[0] += ('\nAPI entries used: '
                   f'{round(used_percentage * 100, 2)}% '
