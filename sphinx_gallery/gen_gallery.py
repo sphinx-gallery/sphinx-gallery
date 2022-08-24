@@ -381,6 +381,15 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
+    # check API usage
+    if not isinstance(gallery_conf['missing_doc_ignore'], str):
+        raise ConfigError('gallery_conf["missing_doc_ignore"] must be str, '
+                          'got %s' % type(gallery_conf['missing_doc_ignore']))
+
+    if not isinstance(gallery_conf['show_api_usage'], bool):
+        raise ConfigError('gallery_conf["show_api_usage"] must be bool, '
+                          'got %s' % type(gallery_conf['show_api_usage']))
+
     _update_gallery_conf(gallery_conf)
 
     return gallery_conf

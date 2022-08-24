@@ -113,6 +113,16 @@ def test_bad_css(sphinx_app_wrapper, err_class, err_match):
         sphinx_app_wrapper.create_sphinx_app()
 
 
+def test_bad_api():
+    """Test that we raise an error for bad API usage arguments."""
+    sphinx_gallery_conf = dict(missing_doc_ignore=('foo',))
+    with pytest.raises(ConfigError, match='.*must be str.*'):
+        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+    sphinx_gallery_conf = dict(show_api_usage='foo')
+    with pytest.raises(ConfigError, match='.*must be bool.*'):
+        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+
+
 @pytest.mark.conf_file(content="""
 sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('gen_modules', 'backreferences'),
