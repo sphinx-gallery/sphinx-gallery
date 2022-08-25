@@ -1879,8 +1879,7 @@ module. Note: documentation and graphs of which API examples are *un*used
 will always be made, only the documentation and graphs of which
 examples each API entry are used in is controlled by this configuration
 parameter. ``graphviz`` is required for making the unused and used API
-entry graphs. See the
-`sphinx_gallery documentation <sg_api_usage.html>`_ for
+entry graphs. See the `Shinx-Gallery documentation <sg_api_usage.html>`_ for
 example.
 
 .. _api_usage_ignore:
