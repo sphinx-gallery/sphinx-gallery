@@ -24,7 +24,7 @@ CSS pseudo-elements instead of additional real text. For more details, see
 
 **Implemented enhancements:**
 
-Nesting gallery sections (i.e. gallery subfolders) was implemented in`#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. This feature can be disabled (see config option ``nested_sections`` in the documentation) if the previous behaviour is prefered (`alexisthual <https://github.com/alexisthual>`__)
+Nesting gallery sections (i.e. gallery subfolders) was implemented in `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. This feature can be disabled (see config option ``nested_sections`` in the documentation) if the previous behaviour is prefered (`alexisthual <https://github.com/alexisthual>`__)
 
 Tooltips now overlay gallery items `commit 36166cd <https://github.com/sphinx-gallery/sphinx-gallery/pull/944/commits/36166cd2fc2b43ecbd585654cfe8745f3a1b3f64>`__. Custom CSS might need to be adapted (`alexisthual <https://github.com/alexisthual>`__).
 
