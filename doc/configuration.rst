@@ -1875,11 +1875,11 @@ set to ``False`` by default. Setting ``show_api_usage`` to ``True``
 will make one graph per module showing all of the API entries connected to
 the example that they are used in. This could be helpful for making a map
 of which examples to look at if you want to learn about a particular
-module. Note: documentation and graphs of which API examples are *un*used
+module. Note: documentation and graphs of which API examples are unused
 will always be made, only the documentation and graphs of which
 examples each API entry are used in is controlled by this configuration
 parameter. ``graphviz`` is required for making the unused and used API
-entry graphs. See the `Shinx-Gallery documentation <sg_api_usage.html>`_ for
+entry graphs. See the `Sphinx-Gallery documentation <sg_api_usage.html>`_ for
 example.
 
 .. _api_usage_ignore:
