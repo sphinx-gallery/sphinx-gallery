@@ -102,7 +102,7 @@ DEFAULT_GALLERY_CONF = {
     'line_numbers': False,
     'nested_sections': True,
     'prefer_full_module': [],
-    'missing_doc_ignore': '.*__.*__',
+    'api_usage_ignore': '.*__.*__',
     'show_api_usage': False,
 }
 
@@ -382,9 +382,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             gallery_conf['app'].add_css_file(css + '.css')
 
     # check API usage
-    if not isinstance(gallery_conf['missing_doc_ignore'], str):
-        raise ConfigError('gallery_conf["missing_doc_ignore"] must be str, '
-                          'got %s' % type(gallery_conf['missing_doc_ignore']))
+    if not isinstance(gallery_conf['api_usage_ignore'], str):
+        raise ConfigError('gallery_conf["api_usage_ignore"] must be str, '
+                          'got %s' % type(gallery_conf['api_usage_ignore']))
 
     if not isinstance(gallery_conf['show_api_usage'], bool):
         raise ConfigError('gallery_conf["show_api_usage"] must be bool, '
@@ -719,6 +719,19 @@ def init_api_usage(gallery_dir):
 
 
 def _make_graph(fname, entries, gallery_conf):
+    """Make a graph of unused and used API entries.
+
+    The used API entries themselves are documented in the list, so
+    for the graph, we'll focus on the number of unused API entries
+    per modules. Modules with lots of unused entries will be colored
+    red, those with no unused entries will be colored green and
+    modules with intermediate unused entries will be colored yellow.
+
+    The API entries that are used are shown with one graph per module.
+    That way you can see the examples that each API entry is used in
+    for that module (if this was done for the whole project at once,
+    the graph would get too large very large quickly).
+    """
     import graphviz
     dg = graphviz.Digraph(filename=fname,
                           node_attr={'color': 'lightblue2',
@@ -727,7 +740,7 @@ def _make_graph(fname, entries, gallery_conf):
 
     if isinstance(entries, list):
         connections = set()
-        lut = dict()
+        lut = dict()  # look up table for connections so they don't repeat
         structs = [entry.split('.') for entry in entries]
         for struct in sorted(structs, key=len):
             for level in range(len(struct) - 2):
@@ -788,6 +801,19 @@ def _make_graph(fname, entries, gallery_conf):
 
 
 def write_api_entry_usage(app, docname, source):
+    """Write an html page describing which API entries are used and unused.
+
+    To document and graph only those API entries that are used by
+    autodoc, we have to wait for autodoc to finish and hook into the
+    ``source-read`` event. This intercepts the text from the rst such
+    that it can be modified. Since, we only touched an empty file,
+    we have to add 1) a list of all the API entries that are unused
+    and a graph of the number of unused API entries per module and 2)
+    a list of API entries that are used in examples, each with a sub-list
+    of which examples that API entry is used in, and a graph that
+    connects all of the API entries in a module to the examples
+    that they are used in.
+    """
     gallery_conf = app.config.sphinx_gallery_conf
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
@@ -821,7 +847,7 @@ def write_api_entry_usage(app, docname, source):
     used_api_entries = dict()
     for entry in example_files:
         # don't include built-in methods etc.
-        if re.match(gallery_conf['missing_doc_ignore'], entry) is not None:
+        if re.match(gallery_conf['api_usage_ignore'], entry) is not None:
             continue
         # check if backreferences empty
         example_fname = os.path.join(

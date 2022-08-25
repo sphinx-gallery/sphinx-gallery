@@ -115,7 +115,7 @@ def test_bad_css(sphinx_app_wrapper, err_class, err_match):
 
 def test_bad_api():
     """Test that we raise an error for bad API usage arguments."""
-    sphinx_gallery_conf = dict(missing_doc_ignore=('foo',))
+    sphinx_gallery_conf = dict(api_usage_ignore=('foo',))
     with pytest.raises(ConfigError, match='.*must be str.*'):
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
     sphinx_gallery_conf = dict(show_api_usage='foo')
