@@ -723,10 +723,10 @@ def _make_graph(fname, entries, gallery_conf):
 
     The used API entries themselves are documented in the list, so
     for the graph, we'll focus on the number of unused API entries
-    per modules. Modules with lots of unused entries will be colored
-    red, those with less will be colored orange, those with only a few
-    will be colored yellow and those with no unused entries will be
-    colored green.
+    per modules. Modules with lots of unused entries (11+) will be colored
+    red, those with less (6+) will be colored orange, those with only a few
+    (1-5) will be colored yellow and those with no unused entries will be
+    colored blue.
 
     The API entries that are used are shown with one graph per module.
     That way you can see the examples that each API entry is used in
