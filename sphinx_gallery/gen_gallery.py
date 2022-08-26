@@ -792,8 +792,6 @@ def _make_graph(fname, entries, gallery_conf):
             dg.node(entry)
             dg.attr('node', color='yellow')
             for ref in refs:
-                # remove sphx_glr_auto_xxx
-                ref = '_'.join(ref.split('_')[3:])
                 dg.node(ref)
                 dg.edge(entry, ref)
 
@@ -842,8 +840,11 @@ def write_api_entry_usage(app, docname, source):
     # to in a gallery directory, e.g. auto_examples), it runs last
     # which means that all the api entries will be in gallery_conf
     if 'sg_api_usage' not in docname or \
-            'api_entries' not in gallery_conf:
+            'api_entries' not in gallery_conf or \
+            gallery_conf['backreferences_dir'] is None:
         return
+    backreferences_dir = os.path.join(gallery_conf['src_dir'],
+                                      gallery_conf['backreferences_dir'])
 
     example_files = set.union(
         *[gallery_conf['api_entries'][obj_type]
@@ -875,8 +876,25 @@ def write_api_entry_usage(app, docname, source):
         examples = _search_for_entry(entry, gallery_conf['examples_dirs'],
                                      gallery_conf['gallery_dirs'])
         if examples:
-            # format example references, skip first three characters ../
-            used_api_entries[entry] = examples
+            # check if backreferences empty
+            example_fname = os.path.join(
+                backreferences_dir, f'{entry}.examples.new')
+            if not os.path.isfile(example_fname):  # use without new
+                example_fname = os.path.splitext(example_fname)[0]
+            assert os.path.isfile(example_fname)
+            used_api_entries[entry] = list()
+            with open(example_fname, 'r', encoding='utf-8') as fid2:
+                for line in fid2:
+                    if line.startswith('  :ref:'):
+                        example_name = line.split('`')[1].replace(
+                            'sphx_glr_', '')
+                        # remove prefix
+                        for target_dir in gallery_conf['gallery_dirs']:
+                            if example_name.startswith(target_dir):
+                                example_name = \
+                                    example_name[len(target_dir) + 1:]
+                        used_api_entries[entry].append(
+                            example_name)
         else:
             unused_api_entries.append(entry)
 
