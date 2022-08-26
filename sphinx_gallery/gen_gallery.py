@@ -801,6 +801,28 @@ def _make_graph(fname, entries, gallery_conf):
     dg.save(fname)
 
 
+def _search_for_entry(key, dirs, out_dirs):
+    """Return all files containing the search phrase."""
+    short_key = key.split('.')[-1]
+    matches = list()
+    for this_dir, out_dir in zip(dirs, out_dirs):
+        for file_path in os.listdir(this_dir):
+            full_file_path = os.path.join(this_dir, file_path)
+            if os.path.isdir(full_file_path):
+                matches.extend(_search_for_entry(
+                    key, [full_file_path], [os.path.join(out_dir, file_path)]))
+            elif file_path.endswith('.py'):
+                with open(full_file_path, 'r', encoding='utf-8') as fid:
+                    for line in fid:
+                        # must be called or referenced by full name
+                        if short_key + '(' in line or key in line:
+                            ref_name = os.path.join(out_dir, file_path)
+                            matches.append('sphx_glr_{}'.format(
+                                ref_name.replace(os.path.sep, '_')))
+                            break  # don't count number in examples for speed
+    return matches
+
+
 def write_api_entry_usage(app, docname, source):
     """Write an html page describing which API entries are used and unused.
 
@@ -820,11 +842,8 @@ def write_api_entry_usage(app, docname, source):
     # to in a gallery directory, e.g. auto_examples), it runs last
     # which means that all the api entries will be in gallery_conf
     if 'sg_api_usage' not in docname or \
-            'api_entries' not in gallery_conf or \
-            gallery_conf['backreferences_dir'] is None:
+            'api_entries' not in gallery_conf:
         return
-    backreferences_dir = os.path.join(gallery_conf['src_dir'],
-                                      gallery_conf['backreferences_dir'])
 
     example_files = set.union(
         *[gallery_conf['api_entries'][obj_type]
@@ -850,22 +869,16 @@ def write_api_entry_usage(app, docname, source):
         # don't include built-in methods etc.
         if re.match(gallery_conf['api_usage_ignore'], entry) is not None:
             continue
-        # check if backreferences empty
-        example_fname = os.path.join(
-            backreferences_dir, f'{entry}.examples.new')
-        if not os.path.isfile(example_fname):  # use without new
-            example_fname = os.path.splitext(example_fname)[0]
-        assert os.path.isfile(example_fname)
-        if os.path.getsize(example_fname) == 0:
-            unused_api_entries.append(entry)
+        # just search for function/class/method, this may lead to a few
+        # false-positives for functions/classes/methods with the same
+        # name, but for this purpose, that is preferable to false-negatives
+        examples = _search_for_entry(entry, gallery_conf['examples_dirs'],
+                                     gallery_conf['gallery_dirs'])
+        if examples:
+            # format example references, skip first three characters ../
+            used_api_entries[entry] = examples
         else:
-            used_api_entries[entry] = list()
-            with open(example_fname, 'r', encoding='utf-8') as fid2:
-                for line in fid2:
-                    if line.startswith('  :ref:'):
-                        example_name = line.split('`')[1]
-                        used_api_entries[entry].append(
-                            example_name)
+            unused_api_entries.append(entry)
 
     source[0] = SPHX_GLR_ORPHAN.format('sphx_glr_sg_api_usage')
 
