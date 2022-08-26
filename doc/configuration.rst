@@ -58,6 +58,8 @@ file:
 - ``log_level`` (:ref:`log_level`)
 - ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
 - ``nested_sections`` (:ref:`nested_sections`)
+- ``api_usage_ignore`` (:ref:`api_usage_ignore`)
+- ``show_api_usage`` (:ref:`show_api_usage`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -1861,3 +1863,35 @@ This index file will contain descriptions for the whole gallery as well as for
 each subsection, and a specific toctree for each subsection.
 In particular, sidebars generated using these toctrees might not reflect the
 actual section / folder structure.
+
+.. _show_api_usage:
+
+Showing API Usage
+=================
+
+Optionally, graphs can be made of the usage of each API entry in examples,
+grouped by module. In large projects, there are many modules so this is
+set to ``False`` by default. Setting ``show_api_usage`` to ``True``
+will make one graph per module showing all of the API entries connected to
+the example that they are used in. This could be helpful for making a map
+of which examples to look at if you want to learn about a particular
+module. Note: documentation and graphs of which API examples are unused
+will always be made, only the documentation and graphs of which
+examples each API entry are used in is controlled by this configuration
+parameter. ``graphviz`` is required for making the unused and used API
+entry graphs. See the
+`Sphinx-Gallery API usage documentation and graphs <sg_api_usage.html>`_
+for example. This report can be found in the sphinx output directory under
+``sg_api_usage.html``.
+
+.. _api_usage_ignore:
+
+Ignoring API entries
+====================
+
+By default, ``api_usage_ignore='.*__.*__'`` ignores files that match this
+regular expression in documenting and graphing the usage of API entries
+within the example gallery. This regular expression can be modified to
+ignore any kind of file that should not be considered. The default regular
+expression ignores functions like ``__len__()`` for which it may not be
+desirable to document if they are used in examples.

@@ -19,7 +19,7 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
-                                  _has_pypandoc)
+                                  _has_pypandoc, _has_graphviz)
 
 import pytest
 
@@ -27,7 +27,7 @@ N_TOT = 13  # examples (plot_*.py in examples/**)
 
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
-N_RST = 16 + N_TOT + 1  # includes module API pages, etc.
+N_RST = 17 + N_TOT + 1  # includes module API pages, etc.
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
@@ -81,6 +81,40 @@ def test_timings(sphinx_app):
     with codecs.open(timings_html, 'r', 'utf-8') as fid:
         content = fid.read()
     assert 'href="plot_numpy_matplotlib.html' in content
+    # printed
+    status = sphinx_app._status.getvalue()
+    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    assert ('- %s: ' % fname) in status
+
+
+def test_api_usage(sphinx_app):
+    """Test that an api usage page is created."""
+    out_dir = sphinx_app.outdir
+    src_dir = sphinx_app.srcdir
+    # the rst file was empty but is removed in post-processing
+    api_rst = op.join(src_dir, 'sg_api_usage.rst')
+    assert not op.isfile(api_rst)
+    # HTML output
+    api_html = op.join(out_dir, 'sg_api_usage.html')
+    assert op.isfile(api_html)
+    with codecs.open(api_html, 'r', 'utf-8') as fid:
+        content = fid.read()
+    has_graphviz = _has_graphviz()
+    # spot check references
+    assert ('href="gen_modules/sphinx_gallery.gen_gallery.html'
+            '#sphinx_gallery.gen_gallery.setup"') in content
+    # check used and unused
+    if has_graphviz:
+        assert 'alt="API unused entries graph"' in content
+        if sphinx_app.config.sphinx_gallery_conf['show_api_usage']:
+            assert 'alt="sphinx_gallery usage graph"' in content
+        else:
+            assert 'alt="sphinx_gallery usage graph"' not in content
+        # check graph output
+        assert 'src="_images/graphviz-' in content
+    else:
+        assert 'alt="API unused entries graph"' not in content
+        assert 'alt="sphinx_gallery usage graph"' not in content
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('examples', 'plot_numpy_matplotlib.py')
@@ -587,6 +621,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # get extremely unlucky and have identical run times
         # on the one script that gets re-run (because it's a fail)...
         'sg_execution_times',
+        'sg_api_usage',
         'plot_future_imports_broken',
         'plot_scraper_broken'
     )
@@ -654,7 +689,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '(7|8|9|10)'
+    n_ch = '(7|8|9|10|11)'
     want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
@@ -703,6 +738,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
         # get extremely unlucky and have identical run times
         # on the one script above that changes...
         'sg_execution_times',
+        'sg_api_usage',
         # this one will not change even though it was retried
         'plot_future_imports_broken',
         'plot_scraper_broken',
