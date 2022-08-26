@@ -1881,7 +1881,7 @@ examples each API entry are used in is controlled by this configuration
 parameter. ``graphviz`` is required for making the unused and used API
 entry graphs. See the
 `Sphinx-Gallery API usage documentation and graphs <sg_api_usage.html>`_
-for example. This report can be found in the project directory under
+for example. This report can be found in the sphinx output directory under
 ``sg_api_usage.html``.
 
 .. _api_usage_ignore:
