@@ -792,8 +792,6 @@ def _make_graph(fname, entries, gallery_conf):
             dg.node(entry)
             dg.attr('node', color='yellow')
             for ref in refs:
-                # remove sphx_glr_auto_xxx
-                ref = '_'.join(ref.split('_')[3:])
                 dg.node(ref)
                 dg.edge(entry, ref)
 
@@ -892,7 +890,7 @@ def write_api_entry_usage(app, docname, source):
         _make_graph(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'),
                     unused_api_entries, gallery_conf)
 
-    if gallery_conf['show_api_usage'] and has_graphviz and used_api_entries:
+    if gallery_conf['show_api_usage'] and used_api_entries:
         title = 'Used API Entries'
         source[0] += title + '\n' + '^' * len(title) + '\n\n'
         for entry in sorted(used_api_entries):
@@ -901,23 +899,30 @@ def write_api_entry_usage(app, docname, source):
                 source[0] += f'  - :ref:`{ref}`\n'
             source[0] += '\n\n'
 
-        used_modules = set([entry.split('.')[0]
-                            for entry in used_api_entries])
-        for module in sorted(used_modules):
-            source[0] += (
-                f'{module}\n' + '^' * len(module) + '\n\n'
-                f'.. graphviz:: ./{module}_sg_api_used.dot\n'
-                f'    :alt: {module} usage graph\n'
-                '    :layout: neato\n\n')
+        if has_graphviz:
+            used_modules = set([entry.split('.')[0]
+                                for entry in used_api_entries])
+            for module in sorted(used_modules):
+                source[0] += (
+                    f'{module}\n' + '^' * len(module) + '\n\n'
+                    f'.. graphviz:: ./{module}_sg_api_used.dot\n'
+                    f'    :alt: {module} usage graph\n'
+                    '    :layout: neato\n\n')
 
-        for module in used_modules:
-            logger.info(f'Making API usage graph for {module}')
-            entries = {entry: ref for entry, ref in
-                       used_api_entries.items()
-                       if entry.split('.')[0] == module}
-            _make_graph(os.path.join(app.builder.srcdir,
-                                     f'{module}_sg_api_used.dot'),
-                        entries, gallery_conf)
+            for module in used_modules:
+                logger.info(f'Making API usage graph for {module}')
+                # select and format entries for this module
+                entries = dict()
+                for entry, ref in used_api_entries.items():
+                    if entry.split('.')[0] == module:
+                        entry = entry.replace('sphx_glr_', '')
+                        # remove prefix
+                        for target_dir in gallery_conf['gallery_dirs']:
+                            if entry.startswith(target_dir):
+                                entry = entry[len(target_dir) + 1:]
+                _make_graph(os.path.join(app.builder.srcdir,
+                                         f'{module}_sg_api_used.dot'),
+                            entries, gallery_conf)
 
 
 def clean_files(app, exception):
