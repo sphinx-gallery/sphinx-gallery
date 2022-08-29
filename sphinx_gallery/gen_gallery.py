@@ -826,7 +826,7 @@ def write_api_entry_usage(app, docname, source):
 
     example_files = set.union(
         *[gallery_conf['api_entries'][obj_type]
-          for obj_type in ('class', 'method', 'function')
+          for obj_type in ('class', 'function')
           if obj_type in gallery_conf['api_entries']])
 
     if len(example_files) == 0:
@@ -835,6 +835,8 @@ def write_api_entry_usage(app, docname, source):
     def get_entry_type(entry):
         if entry in gallery_conf['api_entries']['class']:
             return 'class'
+        # TO DO: add support for method when examples that they are
+        # used in are properly traced
         elif entry in gallery_conf['api_entries']['method']:
             return 'meth'
         else:
