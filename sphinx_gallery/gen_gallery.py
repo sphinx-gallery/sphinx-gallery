@@ -704,6 +704,8 @@ def write_computation_times(gallery_conf, target_dir, costs):
 
 
 def write_api_entries(app, what, name, obj, options, lines):
+    if not app.config.sphinx_gallery_conf['show_api_usage']:
+        return
     if 'api_entries' not in app.config.sphinx_gallery_conf:
         app.config.sphinx_gallery_conf['api_entries'] = \
             {entry_type: set() for entry_type in
@@ -814,6 +816,8 @@ def write_api_entry_usage(app, docname, source):
     that they are used in.
     """
     gallery_conf = app.config.sphinx_gallery_conf
+    if not gallery_conf['show_api_usage']:
+        return
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
     # which means that all the api entries will be in gallery_conf
@@ -881,7 +885,7 @@ def write_api_entry_usage(app, docname, source):
 
     used_count = len(used_api_entries)
     total_count = used_count + len(unused_api_entries)
-    used_percentage = used_count / total_count
+    used_percentage = used_count / max(total_count, 1)  # avoid div by zero
     source[0] += ('\nAPI entries used: '
                   f'{round(used_percentage * 100, 2)}% '
                   f'({used_count}/{total_count})\n\n')
@@ -890,7 +894,7 @@ def write_api_entry_usage(app, docname, source):
         _make_graph(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'),
                     unused_api_entries, gallery_conf)
 
-    if gallery_conf['show_api_usage'] and used_api_entries:
+    if used_api_entries:
         title = 'Used API Entries'
         source[0] += title + '\n' + '^' * len(title) + '\n\n'
         for entry in sorted(used_api_entries):
