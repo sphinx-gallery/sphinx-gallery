@@ -1869,20 +1869,21 @@ actual section / folder structure.
 Showing API Usage
 =================
 
-Optionally, graphs can be made of the usage of each API entry in examples,
-grouped by module. In large projects, there are many modules so this is
-set to ``False`` by default. Setting ``show_api_usage`` to ``True``
-will make one graph per module showing all of the API entries connected to
-the example that they are used in. This could be helpful for making a map
-of which examples to look at if you want to learn about a particular
-module. Note: documentation and graphs of which API examples are unused
-will always be made, only the documentation and graphs of which
-examples each API entry are used in is controlled by this configuration
-parameter. ``graphviz`` is required for making the unused and used API
-entry graphs. See the
+Graphs and documentation of both unused API entries and the examples that
+each API entry is used in are generated in the sphinx output directory under
+``sg_api_usage.html``. See the
 `Sphinx-Gallery API usage documentation and graphs <sg_api_usage.html>`_
-for example. This report can be found in the sphinx output directory under
-``sg_api_usage.html``.
+for example. In large projects, there are many modules and, since a graph
+of API usage is generated for each module, this can use a lot of resources
+so ``show_api_usage`` is set to ``'unused'`` by default. The unused API
+entries are all shown in one graph so this scales much better for large
+projects. Setting ``show_api_usage`` to ``True`` will make one graph per
+module showing all of the API entries connected to the example that they
+are used in. This could be helpful for making a map of which examples to
+look at if you want to learn about a particular module. Setting
+``show_api_usage`` to ``False`` will not make any graphs or documentation
+about API usage. Note, ``graphviz`` is required for making the unused and
+used API entry graphs. 
 
 .. _api_usage_ignore:
 

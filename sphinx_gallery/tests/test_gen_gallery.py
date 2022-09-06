@@ -119,7 +119,8 @@ def test_bad_api():
     with pytest.raises(ConfigError, match='.*must be str.*'):
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
     sphinx_gallery_conf = dict(show_api_usage='foo')
-    with pytest.raises(ConfigError, match='.*must be bool.*'):
+    with pytest.raises(ConfigError,
+                       match='.*must be True, False or "unused".*'):
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
 
 
