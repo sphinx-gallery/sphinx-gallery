@@ -1,1 +1,7 @@
 sphinx>=3
+matplotlib
+plotly
+pandas
+seaborn
+statsmodels
+sphinx_gallery
