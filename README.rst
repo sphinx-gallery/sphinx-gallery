@@ -1,12 +1,7 @@
 ==============
-Sphinx-Gallery
+ACTM Gallery
 ==============
 
 
 
-Installation
-============
-
-Install via ``pip``
--------------------
 
