@@ -103,7 +103,7 @@ DEFAULT_GALLERY_CONF = {
     'nested_sections': True,
     'prefer_full_module': [],
     'api_usage_ignore': '.*__.*__',
-    'show_api_usage': False,
+    'show_api_usage': 'unused',
 }
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
@@ -386,9 +386,11 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         raise ConfigError('gallery_conf["api_usage_ignore"] must be str, '
                           'got %s' % type(gallery_conf['api_usage_ignore']))
 
-    if not isinstance(gallery_conf['show_api_usage'], bool):
-        raise ConfigError('gallery_conf["show_api_usage"] must be bool, '
-                          'got %s' % type(gallery_conf['show_api_usage']))
+    if not isinstance(gallery_conf['show_api_usage'], bool) and \
+            gallery_conf['show_api_usage'] != 'unused':
+        raise ConfigError(
+            'gallery_conf["show_api_usage"] must be True, False or "unused", '
+            'got %s' % gallery_conf['show_api_usage'])
 
     _update_gallery_conf(gallery_conf)
 
@@ -606,7 +608,7 @@ def generate_gallery_rst(app):
                 fhindex.write(SPHX_GLR_SIG)
 
         _replace_md5(index_rst_new, mode='t')
-    if gallery_conf['show_api_usage']:
+    if gallery_conf['show_api_usage'] is not False:
         init_api_usage(app.builder.srcdir)
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
@@ -705,7 +707,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
 
 
 def write_api_entries(app, what, name, obj, options, lines):
-    if not app.config.sphinx_gallery_conf['show_api_usage']:
+    if app.config.sphinx_gallery_conf['show_api_usage'] is False:
         return
     if 'api_entries' not in app.config.sphinx_gallery_conf:
         app.config.sphinx_gallery_conf['api_entries'] = \
@@ -817,7 +819,7 @@ def write_api_entry_usage(app, docname, source):
     that they are used in.
     """
     gallery_conf = app.config.sphinx_gallery_conf
-    if not gallery_conf['show_api_usage']:
+    if gallery_conf['show_api_usage'] is False:
         return
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
@@ -895,7 +897,7 @@ def write_api_entry_usage(app, docname, source):
         _make_graph(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'),
                     unused_api_entries, gallery_conf)
 
-    if used_api_entries:
+    if gallery_conf['show_api_usage'] is True and used_api_entries:
         title = 'Used API Entries'
         source[0] += title + '\n' + '^' * len(title) + '\n\n'
         for entry in sorted(used_api_entries):
