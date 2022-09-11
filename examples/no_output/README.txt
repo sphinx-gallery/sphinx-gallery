@@ -1,4 +1,4 @@
-.. _no_out_hybrid:
+.. _no_out_examples:
 
 No image output examples
 ------------------------
