@@ -10,3 +10,5 @@ This page consists of the hybrid AI models generated from the ACTM performers. T
     examples/           # base 'Gallery of Examples' directory
     ├── README.txt
     ├── <.py files>
+
+.. _general_examples:
