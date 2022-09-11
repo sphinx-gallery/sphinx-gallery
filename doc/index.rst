@@ -35,7 +35,7 @@ Tutorials, Code Snippets and Models
    :maxdepth: 2
    :caption: Hybrid Model usage and information
 
-   hybridmodels/index
+   auto_examples/index
 
 
 

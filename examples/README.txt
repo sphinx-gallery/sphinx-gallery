@@ -1,4 +1,4 @@
-.. _examples-index:
+.. _hybrid-index:
 
 Gallery of Examples
 ===================
@@ -10,14 +10,14 @@ this gallery looks like this:
 
 .. code-block:: none
 
-    examples/           # base 'Gallery of Examples' directory
+    hybrid/           # base 'Gallery of Examples' directory
     ├── README.txt
     ├── <.py files>
     └── no_output/      # generates the 'No image output examples' sub-gallery
         ├── README.txt
         └── <.py files>
 
-.. _general_examples:
+.. _general_hybrid:
 
 General examples
 ----------------
