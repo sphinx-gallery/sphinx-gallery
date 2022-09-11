@@ -19,11 +19,6 @@ Here is a list of projects in ACTM program and their official documentation link
 * `AIBEDO <https://aibedo.readthedocs.io/en/latest/>`_
 
 
-
-Tutorials, Code Snippets and Models
-===================================
-
-
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials and Code Snippets

@@ -5,8 +5,8 @@
 Spherical Grid Conversion
 =========================
 
-*ACTM Performer:* AIBEDO Team (PARC, UVic and UW)
-*Author:* Haruki Hirasawa (hhirasawa@uvic.ca) 
+* **ACTM Performer:** AIBEDO Team (PARC, UVic and UW);
+* **Author:** Haruki Hirasawa (hhirasawa@uvic.ca) 
 
 We use ``pygsp`` package to interpolate 2D-gridded data into a spherical grid format. This is done in two steps:
 
