@@ -1,6 +1,10 @@
 
 # -*- coding: utf-8 -*-
 """
+
+Spherical Grid Conversion
+=========================
+
 We use ``pygsp`` package to interpolate 2D-gridded data into a spherical grid format. This is done in two steps:
 
 **Step 1:** Generate a text file ("skeleton") with the desired Icosahedral level using our python script 
