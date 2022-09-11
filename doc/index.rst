@@ -28,13 +28,14 @@ Tutorials, Code Snippets and Models
    :maxdepth: 2
    :caption: Tutorials and Code Snippets
 
-   auto_examples/index
    tutorials/index
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Hybrid Model usage and information
+
+   hybridmodels/index
 
 
 
