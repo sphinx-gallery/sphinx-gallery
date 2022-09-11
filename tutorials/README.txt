@@ -1,10 +1,7 @@
 .. _notebook_examples:
 
-Notebook style example
-======================
+Code Snippets
+=============
 
-You can have multiple galleries, each one for different uses. For example,
-one gallery of examples and a different gallery for tutorials.
+This section provides submodules in the form of code snippets. Although, these are developed as part of the tipping point modeling program, the idea to release these in modular chunks is that any climate or geospatial scientist can use for preprocessing or data wrangling task independent of the application. 
 
-This gallery demonstrates the ability of Sphinx-Gallery to transform a file
-with a Jupyter notebook style structure (i.e., with alternating text and code).
