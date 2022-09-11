@@ -21,7 +21,7 @@ Here is a list of projects in ACTM program and their official documentation link
 
 
 Tutorials, Code Snippets and Models
------------------------------------
+===================================
 
 
 .. toctree::
@@ -33,7 +33,7 @@ Tutorials, Code Snippets and Models
 
 .. toctree::
    :maxdepth: 2
-   :caption: Hybrid Model usage and information
+   :caption: Hybrid Models
 
    auto_examples/index
 
