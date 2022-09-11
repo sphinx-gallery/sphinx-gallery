@@ -6,20 +6,24 @@ Welcome to ACTM Gallery
 
 
 
-ACTM Products
-==========================
+ACTM 
+====
 
-* :ref:`projects_list`
+.. toctree::
+   :maxdepth: 2
+   :caption: ACTM Overview and Performers
+
+    projects_list
 
 
 
 ACTM 
-------------------------------------------
+-----
 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Submodule galleries
+   :caption: Submodule Code Snippets
 
    auto_examples/index
    tutorials/index
