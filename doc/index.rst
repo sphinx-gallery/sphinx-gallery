@@ -18,6 +18,7 @@ Here is a list of projects in ACTM program and their official documentation link
 
 * `AIBEDO <https://aibedo.readthedocs.io/en/latest/>`_
 
+* `AI Methods for Solar Radiation Management Research (Colorado State University) <https://github.com/eabarnes1010/actm-sai-csu/>`_
 
 .. toctree::
    :maxdepth: 2
