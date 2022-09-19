@@ -208,6 +208,18 @@ def _sanitize_rst(string):
     string = re.sub(p + r'`([^`]+)`' + e, r'\1\2\3', string)
     # `whatever thing` --> whatever thing
     string = re.sub(p + r'([^`]+)' + e, r'\1\2\3', string)
+
+    # **string** --> string
+    string = re.sub(r'\*\*([^\*]*)\*\*', r'\1', string)
+    # *string* --> string
+    string = re.sub(r'\*([^\*]*)\*', r'\1', string)
+    # `link text <url>`_ --> link text
+    string = re.sub(r'`(.*) <.*>`\_', r'\1', string)
+    # :term:`the term` --> the term
+    string = re.sub(r':term:`(.*)`', r'\1', string)
+    # :ref:`the ref` --> the ref
+    string = re.sub(r':ref:`(.*)`', r'\1', string)
+
     return string
 
 
@@ -242,6 +254,9 @@ def extract_intro_and_title(filename, docstring):
     intro = _sanitize_rst(intro)
     if len(intro) > 95:
         intro = intro[:95] + '...'
+
+    title = _sanitize_rst(title)
+
     return intro, title
 
 
