@@ -21,7 +21,7 @@ REFERENCE = r"""
 .. only:: html
 
   .. image:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
-    :alt: test title
+    :alt:
 
   :ref:`sphx_glr_fake_dir_test_file.py`
 
