@@ -265,7 +265,7 @@ THUMBNAIL_TEMPLATE = """
 .. only:: html
 
   .. image:: /{thumbnail}
-    :alt:
+    :alt: {title}
 
   :ref:`sphx_glr_{ref_name}`
 
