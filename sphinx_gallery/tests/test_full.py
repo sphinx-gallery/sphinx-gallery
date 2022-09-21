@@ -19,7 +19,7 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
-                                  _has_pypandoc)
+                                  _has_pypandoc, _has_graphviz)
 
 import pytest
 
@@ -99,10 +99,22 @@ def test_api_usage(sphinx_app):
     assert op.isfile(api_html)
     with codecs.open(api_html, 'r', 'utf-8') as fid:
         content = fid.read()
+    has_graphviz = _has_graphviz()
     # spot check references
     assert ('href="gen_modules/sphinx_gallery.gen_gallery.html'
             '#sphinx_gallery.gen_gallery.setup"') in content
-
+    # check used and unused
+    if has_graphviz:
+        assert 'alt="API unused entries graph"' in content
+        if sphinx_app.config.sphinx_gallery_conf['show_api_usage']:
+            assert 'alt="sphinx_gallery usage graph"' in content
+        else:
+            assert 'alt="sphinx_gallery usage graph"' not in content
+        # check graph output
+        assert 'src="_images/graphviz-' in content
+    else:
+        assert 'alt="API unused entries graph"' not in content
+        assert 'alt="sphinx_gallery usage graph"' not in content
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('examples', 'plot_numpy_matplotlib.py')
@@ -304,6 +316,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'numpy.arange.html' in lines
     assert 'class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function">' in lines  # noqa: E501
     assert '#module-matplotlib.pyplot' in lines
+    assert 'pyplot.html' in lines
     assert '.html#matplotlib.figure.Figure.tight_layout' in lines
     assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
     assert 'matplotlib_configuration_api.html#matplotlib.RcParams' in lines
@@ -797,21 +810,19 @@ def test_alt_text_thumbnail(sphinx_app):
     generated_examples_index = op.join(out_dir, 'auto_examples', 'index.html')
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         html = fid.read()
+    assert 'alt="&quot;SVG&quot;:-`graphics_`"' in html
     # check backreferences thumbnail, html
     backref_html = op.join(out_dir, 'gen_modules',
                            'sphinx_gallery.backreferences.html')
     with codecs.open(backref_html, 'r', 'utf-8') as fid:
         html = fid.read()
-
-    assert 'alt=""' in html
-
+    assert 'alt="Link to other packages"' in html
     # check gallery index thumbnail, rst
     generated_examples_index = op.join(src_dir, 'auto_examples',
                                        'index.rst')
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         rst = fid.read()
-
-    assert ':alt:\n' in rst
+    assert ':alt: Trivial module to provide a value for plot_numpy_matplotlib.py' in rst  # noqa: E501
 
 
 def test_backreference_labels(sphinx_app):
