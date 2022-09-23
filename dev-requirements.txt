@@ -1,5 +1,5 @@
 sphinx>=3
-sphinx_rtd_theme
+pydata-sphinx-theme
 pytest
 pytest-coverage
 numpy

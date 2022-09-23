@@ -19,7 +19,6 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
-import sphinx_rtd_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -126,13 +125,7 @@ highlight_language = 'python3'
 # a list of builtin themes.
 
 # The theme is set by the make target
-html_theme = os.environ.get('SPHX_GLR_THEME', 'rtd')
-
-# on_rtd is whether we are on readthedocs.org, this line of code grabbed
-# from docs.readthedocs.org
-if html_theme == 'rtd':
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'pydata_sphinx_theme'
 
 
 def setup(app):
@@ -142,10 +135,15 @@ def setup(app):
                         objname='configuration value',
                         indextemplate='pair: %s; configuration value')
 
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-# html_theme_options = {}
+html_theme_options = {
+    'switcher': dict(
+        json_url='https://sphinx-gallery.github.io/dev/_static/switcher.json',
+        version_match='dev' if 'dev' in version else 'stable'),
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -405,11 +403,3 @@ sphinx_gallery_conf = {
 warnings.filterwarnings("ignore", category=UserWarning,
                         message='Matplotlib is currently using agg, which is a'
                                 ' non-GUI backend, so cannot show the figure.')
-
-html_context = {
-    'current_version': 'dev' if 'dev' in version else 'stable',
-    'versions': (
-        ('dev', 'https://sphinx-gallery.github.io/dev'),
-        ('stable', 'https://sphinx-gallery.github.io/stable'),
-    )
-}
