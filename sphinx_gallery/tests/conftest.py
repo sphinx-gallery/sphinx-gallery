@@ -27,8 +27,11 @@ def pytest_report_header(config, startdir):
 @pytest.fixture
 def gallery_conf(tmpdir):
     """Set up a test sphinx-gallery configuration."""
-    app = Mock(spec=Sphinx, config=dict(source_suffix={'.rst': None}),
-               extensions=[])
+    app = Mock(
+        spec=Sphinx,
+        config=dict(source_suffix={".rst": None}, default_role=None),
+        extensions=[],
+    )
     gallery_conf = gen_gallery._fill_gallery_conf_defaults(
         {},  app=app)
     gen_gallery._update_gallery_conf_builder_inited(

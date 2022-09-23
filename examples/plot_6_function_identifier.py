@@ -29,7 +29,7 @@ This functionality is used to add documentation hyperlinks to your code
 import os.path as op  # noqa, analysis:ignore
 import matplotlib.pyplot as plt
 import sphinx_gallery
-from sphinx_gallery.backreferences import identify_names
+from sphinx_gallery.backreferences import identify_names, _make_ref_regex
 from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 
 filename = 'plot_6_function_identifier.py'
@@ -39,7 +39,7 @@ if not op.exists(filename):
 
 _, script_blocks = split_code_and_text_blocks(filename)
 
-names = identify_names(script_blocks)
+names = identify_names(script_blocks, _make_ref_regex())
 
 # %%
 # In the code block above, we use the internal function ``identify_names`` to

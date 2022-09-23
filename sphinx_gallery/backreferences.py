@@ -204,17 +204,22 @@ def _get_short_module_name(module_name, obj_name):
     return short_name
 
 
-# keep in synch w/ configuration.rst "Add mini-galleries for API documentation"
-_regex = re.compile(r':(?:'
-                    r'func|'
-                    r'meth|'
-                    r'attr|'
-                    r'obj|'
-                    r'class):`~?(\S*)`'
-                    )
+def _make_ref_regex(config=None):
+    """Make regex to find reference to python objects."""
+    # keep roles variable in sync values shown in configuration.rst
+    # "Add mini-galleries for API documentation"
+    roles = 'func|meth|attr|obj|class'
+    default_role = config['default_role'] or '' if config else ''
+    def_role_regex = (
+        '|[^:]?' if re.fullmatch(f'(?:py:)?({roles})', default_role) else ''
+    )
+    # reference can have a separate title `title <reference>`,
+    # don't match ``literal`` or `!disabled.references`
+    return (rf'(?::(?:{roles}):{def_role_regex})'        # role prefix
+            r'(?!``)`~?[^!]*?<?([^!~\s<>`]+)>?(?!``)`')  # reference
 
 
-def identify_names(script_blocks, global_variables=None, node=''):
+def identify_names(script_blocks, ref_regex, global_variables=None, node=''):
     """Build a codeobj summary by identifying and resolving used names."""
     if node == '':  # mostly convenience for testing functions
         c = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'code')
@@ -226,7 +231,9 @@ def identify_names(script_blocks, global_variables=None, node=''):
     names = list(finder.get_mapping())
     # Get matches from docstring inspection (explicit matches)
     text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
-    names.extend((x, x, False, False, True) for x in re.findall(_regex, text))
+    names.extend(
+        (x, x, False, False, True) for x in re.findall(ref_regex, text)
+    )
     example_code_obj = collections.OrderedDict()  # order is important
     # Make a list of all guesses, in `_embed_code_links` we will break
     # when we find a match

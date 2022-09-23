@@ -40,8 +40,8 @@ from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
                     optipng)
 from . import glr_path_static
 from .backreferences import (_write_backreferences, _thumbnail_div,
-                             identify_names, THUMBNAIL_PARENT_DIV,
-                             THUMBNAIL_PARENT_DIV_CLOSE)
+                             identify_names, _make_ref_regex,
+                             THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE)
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (split_code_and_text_blocks,
                                remove_config_comments,
@@ -1134,7 +1134,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         global_variables = script_vars['example_globals']
     else:
         global_variables = None
-    example_code_obj = identify_names(script_blocks, global_variables, node)
+    ref_regex = _make_ref_regex(gallery_conf['app'].config)
+    example_code_obj = identify_names(script_blocks, ref_regex,
+                                      global_variables, node)
     if example_code_obj:
         codeobj_fname = target_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:

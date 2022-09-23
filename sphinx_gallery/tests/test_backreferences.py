@@ -66,7 +66,7 @@ def test_thumbnail_div(content, tooltip, is_backref):
     assert html_div == reference
 
 
-def test_identify_names(unicode_sample):
+def test_identify_names(unicode_sample, gallery_conf):
     """Test name identification."""
     expected = {
         'os.path.join':
@@ -95,11 +95,12 @@ def test_identify_names(unicode_sample):
              }],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
-    res = sg.identify_names(script_blocks)
+    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    res = sg.identify_names(script_blocks, ref_regex)
     assert expected == res
 
 
-def test_identify_names_implicit(tmpdir):
+def test_identify_names_implicit(tmpdir, gallery_conf):
     """Test implicit name identification."""
     code_str = b"""
 '''
@@ -148,26 +149,52 @@ h.i.j()
     fname.write(code_str, 'wb')
 
     _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    res = sg.identify_names(script_blocks)
+    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    res = sg.identify_names(script_blocks, ref_regex)
 
     assert expected == res
 
 
-cobj = dict(module='m', module_short='m', name='n', is_class=False, is_explicit=True)
+cobj = dict(
+    module="m", module_short="m", name="n", is_class=False, is_explicit=True
+)
+
+
 @pytest.mark.parametrize(
-    'text, ref, cobj',
+    'text, default_role, ref, cobj',
     [
-        (':func:`m.n`', 'm.n', cobj),
-        (':func:`~m.n`', 'm.n', cobj),
+        (':func:`m.n`', None, 'm.n', cobj),
+        (':func:`~m.n`', 'obj', 'm.n', cobj),
+        (':func:`Title <m.n>`', None, 'm.n', cobj),
+        (':func:`!m.n` or `!t <~m.n>`', None, None, None),
+        ('`m.n`', 'obj', 'm.n', cobj),
+        ('`m.n`', None, None, None),  # see comment below
+        (':ref:`m.n`', None, None, None),
+        ('`m.n`', 'ref', None, None),
+        ('``literal``', 'obj', None, None),
     ],
     ids=[
         'regular',
         'show only last component',
+        'with title',
+        'no link for !',
+        'default_role obj',
+        'no default_role',  # see comment below
+        'non-python role',
+        'non-python default_role',
+        'literal',
     ],
 )
-def test_identify_names_explicit(text, ref, cobj):
-    '''Test explicit name identification.'''
+# the sphinx default value for default_role is None = no change, the docutils
+# default is title-reference (set by the default-role directive), see
+# www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role
+# and docutils.sourceforge.io/docs/ref/rst/roles.html
+def test_identify_names_explicit(text, default_role, ref, cobj, gallery_conf):
+    """Test explicit name identification."""
+    if default_role:
+        gallery_conf['app'].config['default_role'] = default_role
     script_blocks = [('text', text, 1)]
-    expected = {ref: [cobj]}
-    actual = sg.identify_names(script_blocks)
+    expected = {ref: [cobj]} if ref else {}
+    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    actual = sg.identify_names(script_blocks, ref_regex)
     assert expected == actual
