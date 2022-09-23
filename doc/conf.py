@@ -140,6 +140,7 @@ def setup(app):
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
+    'navbar_end': ['version-switcher'],
     'switcher': dict(
         json_url='https://sphinx-gallery.github.io/dev/_static/switcher.json',
         version_match='dev' if 'dev' in version else 'stable'),
