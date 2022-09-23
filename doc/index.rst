@@ -8,7 +8,7 @@ Welcome to Sphinx-Gallery's documentation!
 .. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
     :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
 
-``Sphinx-Gallery`` is a `Sphinx <http://sphinx-doc.org/>`_ extension that builds an HTML
+``Sphinx-Gallery`` is a `Sphinx <https://www.sphinx-doc.org/en/master/>`_ extension that builds an HTML
 gallery of examples from any set of Python scripts.
 
 .. image:: _static/demo.png
