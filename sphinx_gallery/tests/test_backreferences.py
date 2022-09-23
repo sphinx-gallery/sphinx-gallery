@@ -99,8 +99,8 @@ def test_identify_names(unicode_sample):
     assert expected == res
 
 
-def test_identify_names2(tmpdir):
-    """Test more name identification."""
+def test_identify_names_implicit(tmpdir):
+    """Test implicit name identification."""
     code_str = b"""
 '''
 Title
@@ -152,22 +152,22 @@ h.i.j()
 
     assert expected == res
 
-    code_str = b"""
-'''
-Title
------
 
-This example uses :func:`k.l` and :meth:`~m.n`.
-'''
-""" + code_str.split(b"'''")[-1]
-    expected['k.l'] = [{'module': 'k', 'module_short': 'k', 'name': 'l',
-                        'is_class': False, 'is_explicit': True}]
-    expected['m.n'] = [{'module': 'm', 'module_short': 'm', 'name': 'n',
-                        'is_class': False, 'is_explicit': True}]
-
-    fname = tmpdir.join("identify_names.py")
-    fname.write(code_str, 'wb')
-    _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    res = sg.identify_names(script_blocks)
-
-    assert expected == res
+cobj = dict(module='m', module_short='m', name='n', is_class=False, is_explicit=True)
+@pytest.mark.parametrize(
+    'text, ref, cobj',
+    [
+        (':func:`m.n`', 'm.n', cobj),
+        (':func:`~m.n`', 'm.n', cobj),
+    ],
+    ids=[
+        'regular',
+        'show only last component',
+    ],
+)
+def test_identify_names_explicit(text, ref, cobj):
+    '''Test explicit name identification.'''
+    script_blocks = [('text', text, 1)]
+    expected = {ref: [cobj]}
+    actual = sg.identify_names(script_blocks)
+    assert expected == actual
