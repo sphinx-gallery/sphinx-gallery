@@ -260,7 +260,7 @@ package in a module called ``scraper``. Here is the scraper code::
    from glob import glob
    import shutil
    import os
-   from sphinx_gallery.gen_rst import figure_rst
+   from sphinx_gallery.scrapers import figure_rst
 
    class PNGScraper(object):
        def __init__(self):
