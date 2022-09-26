@@ -1106,6 +1106,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
                           fname, intro, title)
 
+    # This can help with garbage collection in some instances
+    if global_variables is not None and '___' in global_variables:
+        del global_variables['___']
     del script_vars, global_variables  # don't keep these during reset
     if executable and gallery_conf['reset_modules_order'] in ['after', 'both']:
         clean_modules(gallery_conf, fname, 'after')
