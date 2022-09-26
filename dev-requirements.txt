@@ -1,4 +1,4 @@
-sphinx >= 3, != 5.2.1
+sphinx >= 3, != 5.2.0
 sphinx_rtd_theme
 pytest
 pytest-coverage
