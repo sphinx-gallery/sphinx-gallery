@@ -151,7 +151,8 @@ of the raw html output, in a process similar to other html-based displays such
 as `jupyter <https://jupyter.org/>`_. If the first option does not work,
 this section describes how to write a custom scraper.
 
-Image scrapers are functions (or callable class instances) that do two things:
+Image scrapers are functions (or callable class instances) that do the following
+things:
 
 1. Collect a list of images created in the latest execution of code.
 2. Write these images to disk in PNG, JPEG, SVG, or GIF format (with .png,
