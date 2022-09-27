@@ -810,19 +810,19 @@ def test_alt_text_thumbnail(sphinx_app):
     generated_examples_index = op.join(out_dir, 'auto_examples', 'index.html')
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         html = fid.read()
-    assert 'alt="&quot;SVG&quot;:-`graphics_`"' in html
+    assert 'alt=""' in html
     # check backreferences thumbnail, html
     backref_html = op.join(out_dir, 'gen_modules',
                            'sphinx_gallery.backreferences.html')
     with codecs.open(backref_html, 'r', 'utf-8') as fid:
         html = fid.read()
-    assert 'alt="Link to other packages"' in html
+    assert 'alt=""' in html
     # check gallery index thumbnail, rst
     generated_examples_index = op.join(src_dir, 'auto_examples',
                                        'index.rst')
     with codecs.open(generated_examples_index, 'r', 'utf-8') as fid:
         rst = fid.read()
-    assert ':alt: Trivial module to provide a value for plot_numpy_matplotlib.py' in rst  # noqa: E501
+    assert ':alt:' in rst
 
 
 def test_backreference_labels(sphinx_app):
