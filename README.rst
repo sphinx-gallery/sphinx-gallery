@@ -99,6 +99,22 @@ you can do:
 
 .. installation-end-content
 
+Contributing
+============
+
+After cloning this repo, run the following commands to install needed dependencies
+in a proper conda environment:
+
+```
+pip install -r requirements.txt -r dev-requirements.txt
+conda install graphviz
+```
+
+Check that you are all set by running
+```
+pytest
+```
+
 Citation
 ========
 
