@@ -18,7 +18,7 @@ using the Sphinx extension Sphinx-Gallery, which will do the following:
   download.
 * Create a gallery with thumbnails for each of these examples
   (such as `the one that scikit-learn
-  <http://scikit-learn.org/stable/auto_examples/index.html>`_ uses).
+  <https://scikit-learn.org/stable/auto_examples/index.html>`_ uses).
 
 A `template repository <https://github.com/sphinx-gallery/sample-project>`_,
 with sample example galleries and basic configurations is also available to
@@ -61,7 +61,7 @@ Let's say your Python project has the following structure:
 * ``doc`` is the Sphinx 'source directory'. It contains the Sphinx base
   configuration files. Default versions of these base files can obtained from
   executing ``sphinx-quickstart`` (more details at `Sphinx-quickstart
-  <http://www.sphinx-doc.org/en/master/usage/quickstart.html>`_). Sphinx
+  <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_). Sphinx
   ``.rst`` source files are generally also placed here (none included in
   our example directory structure above) but these are
   unassociated with Sphinx-Gallery functions.
