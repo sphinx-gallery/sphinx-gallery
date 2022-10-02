@@ -350,10 +350,11 @@ def save_notebook(work_notebook, write_file):
 ###############################################################################
 # Notebook shell utility
 
-def python_to_jupyter_cli(args=None, namespace=None):
+def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
     """Exposes the jupyter notebook renderer to the command line
 
-    Takes the same arguments as ArgumentParser.parse_args
+    Takes the same arguments as ArgumentParser.parse_args.
+    `sphinx_gallery_conf` functions same as in `conf.py`.
     """
     from . import gen_gallery  # To avoid circular import
     parser = argparse.ArgumentParser(
@@ -364,10 +365,22 @@ def python_to_jupyter_cli(args=None, namespace=None):
                         ' (e.g. *.py)')
     args = parser.parse_args(args, namespace)
 
+    # handle `sphinx_gallery_conf`
+    defaults = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
+    if sphinx_gallery_conf is None:
+        sphinx_gallery_conf = defaults
+    else:
+        if not isinstance(sphinx_gallery_conf, dict):
+            raise TypeError("`sphinx_gallery_conf` must be dict, "
+                            "got %s" % type(sphinx_gallery_conf))
+        for name in defaults:
+            if name not in sphinx_gallery_conf:
+                sphinx_gallery_conf[name] = defaults[name]
+
+    # run script
     for src_file in args.python_src_file:
         file_conf, blocks = split_code_and_text_blocks(src_file)
         print('Converting {0}'.format(src_file))
-        gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
         target_dir = os.path.dirname(src_file)
-        example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
+        example_nb = jupyter_notebook(blocks, sphinx_gallery_conf, target_dir)
         save_notebook(example_nb, replace_py_ipynb(src_file))
