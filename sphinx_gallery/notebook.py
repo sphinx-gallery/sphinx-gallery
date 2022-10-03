@@ -366,16 +366,9 @@ def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
     args = parser.parse_args(args, namespace)
 
     # handle `sphinx_gallery_conf`
-    defaults = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
-    if sphinx_gallery_conf is None:
-        sphinx_gallery_conf = defaults
-    else:
-        if not isinstance(sphinx_gallery_conf, dict):
-            raise TypeError("`sphinx_gallery_conf` must be dict, "
-                            "got %s" % type(sphinx_gallery_conf))
-        for name in defaults:
-            if name not in sphinx_gallery_conf:
-                sphinx_gallery_conf[name] = defaults[name]
+    gallery_conf = copy.deepcopy(gen_gallery.DEFAULT_GALLERY_CONF)
+    if sphinx_gallery_conf is not None:
+        gallery_conf.update(sphinx_gallery_conf)
 
     # run script
     for src_file in args.python_src_file:
