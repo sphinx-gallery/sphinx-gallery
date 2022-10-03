@@ -375,5 +375,6 @@ def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
         file_conf, blocks = split_code_and_text_blocks(src_file)
         print('Converting {0}'.format(src_file))
         target_dir = os.path.dirname(src_file)
-        example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
+        example_nb = jupyter_notebook(
+            blocks, copy.deepcopy(gallery_conf), target_dir)
         save_notebook(example_nb, replace_py_ipynb(src_file))
