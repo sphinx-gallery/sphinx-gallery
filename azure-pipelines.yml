@@ -57,13 +57,13 @@ stages:
         set -e
         python --version
         python -m pip install --user --upgrade pip setuptools wheel
-        pip install --user --upgrade --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" vtk
-        # No mayavi as of 2022/10/03 because it fails with latest VTK
-        pip install --user --upgrade --progress-bar off pyvista pyqt5
+        pip install --user --upgrade --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0"
+        # Mayavi does not work with latest VTK on Windows yet
+        pip install --user --upgrade --progress-bar off pyvista pyqt5 mayavi "vtk<9.2"
       displayName: Setup pip environment
     - script: pip list
       displayName: pip list
-    - script: python -c "import pyvista; print(pyvista.Report())"  # ; from mayavi import mlab; mlab.test_plot3d()"
+    - script: python -c "import pyvista; print(pyvista.Report()); from mayavi import mlab; mlab.test_plot3d()"
       displayName: Test 3D
     - script: python setup.py develop --user
       displayName: Install sphinx-gallery
