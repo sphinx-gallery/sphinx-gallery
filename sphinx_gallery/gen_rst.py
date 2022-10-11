@@ -32,6 +32,7 @@ import subprocess
 import sys
 import traceback
 import codeop
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from sphinx.errors import ExtensionError
 import sphinx.util
@@ -427,20 +428,23 @@ def generate_dir_rst(
         sorted_listdir,
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
-    for fname in iterator:
-        intro, title, cost = generate_file_rst(
-            fname, target_dir, src_dir, gallery_conf, seen_backrefs)
-        src_file = os.path.normpath(os.path.join(src_dir, fname))
-        costs.append((cost, src_file))
-        gallery_item_filename = os.path.join(
-            build_target_dir,
-            fname[:-3]
-        ).replace(os.sep, '/')
-        this_entry = _thumbnail_div(
-            target_dir, gallery_conf['src_dir'], fname, intro, title
-        )
-        entries_text.append(this_entry)
-        subsection_toctree_filenames.append("/" + gallery_item_filename)
+
+    with ProcessPoolExecutor(max_workers=8) as executor:
+        future_gen_file = {executor.submit(generate_file_rst, *(fname, target_dir, src_dir, gallery_conf, seen_backrefs)): fname for fname in sorted_listdir}
+        for future in as_completed(future_gen_file):
+            fname = future_gen_file[future][0]
+            intro, title, cost = future.result()
+            src_file = os.path.normpath(os.path.join(src_dir, fname))
+            costs.append((cost, src_file))
+            gallery_item_filename = os.path.join(
+                build_target_dir,
+                fname[:-3]
+            ).replace(os.sep, '/')
+            this_entry = _thumbnail_div(
+                target_dir, gallery_conf['src_dir'], fname, intro, title
+            )
+            entries_text.append(this_entry)
+            subsection_toctree_filenames.append("/" + gallery_item_filename)
 
     for entry_text in entries_text:
         subsection_index_content += entry_text
