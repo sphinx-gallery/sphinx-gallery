@@ -710,10 +710,9 @@ def write_api_entries(app, what, name, obj, options, lines):
     if app.config.sphinx_gallery_conf['show_api_usage'] is False:
         return
     if 'api_entries' not in app.config.sphinx_gallery_conf:
-        app.config.sphinx_gallery_conf['api_entries'] = \
-            {entry_type: set() for entry_type in
-             ('class', 'method', 'function', 'module',
-              'property', 'attribute')}
+        app.config.sphinx_gallery_conf['api_entries'] = dict()
+    if what not in app.config.sphinx_gallery_conf['api_entries']:
+        app.config.sphinx_gallery_conf['api_entries'][what] = set()
     app.config.sphinx_gallery_conf['api_entries'][what].add(name)
 
 
