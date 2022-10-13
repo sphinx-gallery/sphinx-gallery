@@ -103,7 +103,7 @@ DEFAULT_GALLERY_CONF = {
     'nested_sections': True,
     'prefer_full_module': [],
     'api_usage_ignore': '.*__.*__',
-    'show_api_usage': 'unused',
+    'show_api_usage': False,
 }
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
