@@ -403,14 +403,15 @@ def generate_dir_rst(
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
-    # get filenames
-    listdir = [fname for fname in os.listdir(src_dir)
-               if fname.endswith('.py')]
+    # get absolute paths
+    abspaths = [os.path.normpath(os.path.join(src_dir, fname))
+                for fname in os.listdir(src_dir) if fname.endswith('.py')]
     # limit which to look at based on regex (similar to filename_pattern)
-    listdir = [fname for fname in listdir
-               if re.search(gallery_conf['ignore_pattern'],
-                            os.path.normpath(os.path.join(src_dir, fname)))
-               is None]
+    abspaths = [p for p in abspaths
+                if re.search(gallery_conf['ignore_pattern'], p) is None]
+    # get names only
+    listdir = [p.split(os.sep)[-1] for p in abspaths]
+    
     # sort them
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
