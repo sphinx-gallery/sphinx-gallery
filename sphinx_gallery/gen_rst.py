@@ -411,7 +411,7 @@ def generate_dir_rst(
                 if re.search(gallery_conf['ignore_pattern'], p) is None]
     # get names only
     listdir = [p.split(os.sep)[-1] for p in abspaths]
-    
+
     # sort them
     sorted_listdir = sorted(
         listdir, key=gallery_conf['within_subsection_order'](src_dir))
