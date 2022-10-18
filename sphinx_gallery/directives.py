@@ -125,14 +125,14 @@ class ImageSg(images.Image):
         .. image-sg:: /plot_types/basic/images/sphx_glr_bar_001.png
             :alt: bar
             :srcset: /plot_types/basic/images/sphx_glr_bar_001.png,
-                     /plot_types/basic/images/sphx_glr_bar_001_2_0x.png 2.0x
+                     /plot_types/basic/images/sphx_glr_bar_001_2_00x.png 2.00x
             :class: sphx-glr-single-img
 
     The resulting html is::
 
         <img src="sphx_glr_bar_001_hidpi.png"
             srcset="_images/sphx_glr_bar_001.png,
-                    _images/sphx_glr_bar_001_2_0x.png 2x",
+                    _images/sphx_glr_bar_001_2_00x.png 2x",
             alt="bar"
             class="sphx-glr-single-img" />
 
@@ -216,7 +216,7 @@ def visit_imgsg_html(self, node):
         if mult == 0:
             srcsetst += ', '
         else:
-            srcsetst += f' {mult:1.1f}x, '
+            srcsetst += f' {mult:1.2f}x, '
     # trim trailing comma and space...
     srcsetst = srcsetst[:-2]
 

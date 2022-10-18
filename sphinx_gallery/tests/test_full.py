@@ -275,11 +275,11 @@ def test_image_formats(sphinx_app):
             assert op.isfile(file_fname), file_fname
             want_html = 'src="%s"' % (img_fname0,)
             assert want_html in html
-            img_fname2 = ('../_images/sphx_glr_%s_%03d_2_0x.%s' %
+            img_fname2 = ('../_images/sphx_glr_%s_%03d_2_00x.%s' %
                           (ex, num, ext))
             file_fname2 = op.join(generated_examples_dir, img_fname2)
-            want_html = 'srcset="%s, %s 2.0x"' % (img_fname0, img_fname2)
-            if ext in ('png', 'jpg', 'svg'):  # check 2.0x (tests directive)
+            want_html = 'srcset="%s, %s 2.00x"' % (img_fname0, img_fname2)
+            if ext in ('png', 'jpg', 'svg'):  # check 2.00x (tests directive)
                 assert op.isfile(file_fname2), file_fname2
                 assert want_html in html
 
