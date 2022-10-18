@@ -178,7 +178,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             # save other srcset paths, keyed by multiplication factor:
             for mult in srcset_mult_facs:
                 if not (mult == 1):
-                    multst = f'{mult}'.replace('.', '_')
+                    multst = f'{mult:.2f}'.replace('.', '_')
                     name = f"{image_path.stem}_{multst}x{image_path.suffix}"
                     hipath = image_path.parent / PurePosixPath(name)
                     hikwargs = these_kwargs.copy()
