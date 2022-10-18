@@ -485,7 +485,7 @@ def _get_srcset_st(sources_dir, hinames):
         if k == 0:
             srcst += ', '
         else:
-            srcst += f' {k:1.1f}x, '
+            srcst += f' {k:1.2f}x, '
     if srcst[-2:] == ', ':
         srcst = srcst[:-2]
     srcst += ''
