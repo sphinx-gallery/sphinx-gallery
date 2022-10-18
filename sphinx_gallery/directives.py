@@ -216,7 +216,7 @@ def visit_imgsg_html(self, node):
         if mult == 0:
             srcsetst += ', '
         else:
-            srcsetst += f' {mult:1.1f}x, '
+            srcsetst += f' {mult:1.2f}x, '
     # trim trailing comma and space...
     srcsetst = srcsetst[:-2]
 
