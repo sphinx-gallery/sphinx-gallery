@@ -562,8 +562,9 @@ def generate_gallery_rst(app):
 
                 fhindex.write(subsection_index_content)
 
-                # Write subsection toctree in main file
-                # only if nested_sections is False or None
+                # Write subsection toctree in main file only if
+                # nested_sections is False or None, and
+                # toctree filenames were generated for the subsection.
                 if not gallery_conf["nested_sections"]:
                     if len(subsection_toctree_filenames) > 0:
                         subsection_index_toctree = """
@@ -572,7 +573,7 @@ def generate_gallery_rst(app):
 
    %s\n
 """ % "\n   ".join(subsection_toctree_filenames)
-                    fhindex.write(subsection_index_toctree)
+                        fhindex.write(subsection_index_toctree)
                 # Otherwise, a new index.rst.new file should
                 # have been created and it needs to be parsed
                 else:
