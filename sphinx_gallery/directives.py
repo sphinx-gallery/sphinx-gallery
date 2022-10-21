@@ -175,7 +175,14 @@ def _parse_srcset(st):
             srcset[0] = spl[0]
         elif len(spl) == 2:
             mult = spl[1][:-1]
-            srcset[float(mult)] = spl[0]
+            symbol = spl[1][-1]
+            if symbol == 'x':
+                srcset[float(mult)] = spl[0]
+            elif symbol == 'w':
+                srcset[mult] = spl[0]
+            else:
+                raise ValueError('`srcset` supports "x" like "2x" or "w" like '
+                                 '"500w", got "%s"' % st)
         else:
             raise ExtensionError('srcset argument "{entry}" is invalid.')
     return srcset
@@ -215,8 +222,10 @@ def visit_imgsg_html(self, node):
         srcsetst += f'{relpath}'
         if mult == 0:
             srcsetst += ', '
-        else:
+        elif isinstance(mult, float):
             srcsetst += f' {mult:1.2f}x, '
+        else:
+            srcsetst += f' {mult}w, '
     # trim trailing comma and space...
     srcsetst = srcsetst[:-2]
 
@@ -243,8 +252,14 @@ def visit_imgsg_latex(self, node):
         maxmult = -1
         # choose the highest res version for latex:
         for key in srcset.keys():
-            maxmult = max(maxmult, key)
-        node['uri'] = str(PurePosixPath(srcset[maxmult]).name)
+            if isinstance(key, float):
+                maxmult = max(maxmult, key)
+
+        if maxmult != -1:
+            node['uri'] = str(PurePosixPath(srcset[maxmult]).name)
+        else:
+            # if 'w' srcset was used, use base image instead
+            node['uri'] = str(PurePosixPath(list(srcset.values())[0]).name)
 
     self.visit_image(node)
 
@@ -265,8 +280,9 @@ def _copy_images(self, node):
 
     # copy all the sources to the imagedir:
     for mult in srcset:
-        abspath = PurePosixPath(srctop, srcset[mult][1:])
-        shutil.copyfile(abspath, imagedir / abspath.name)
+        if isinstance(mult, float):
+            abspath = PurePosixPath(srctop, srcset[mult][1:])
+            shutil.copyfile(abspath, imagedir / abspath.name)
 
     return imagedir, srcset
 
