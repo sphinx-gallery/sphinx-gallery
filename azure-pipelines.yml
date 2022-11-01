@@ -14,7 +14,7 @@ stages:
   jobs:
     - job: Skip
       pool:
-        vmImage: 'ubuntu-18.04'
+        vmImage: 'ubuntu-latest'
       variables:
         RET: 'true'
       steps:
@@ -86,7 +86,7 @@ stages:
   - job:
     displayName: Linux
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-22.04'
     variables:
       DISPLAY: ':99'
     strategy:

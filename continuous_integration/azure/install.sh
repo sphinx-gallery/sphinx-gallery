@@ -19,7 +19,7 @@ if [ "$DISTRIB" == "conda" ]; then
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
     if [ "$PYTHON_VERSION" != "3.7" -o "$LOCALE" != "C" ]; then
-        CONDA_TO_INSTALL="$CONDA_TO_INSTALL mayavi memory_profiler ipython pypandoc pytest-qt"
+        CONDA_TO_INSTALL="$CONDA_TO_INSTALL memory_profiler ipython pypandoc pytest-qt"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
@@ -62,9 +62,11 @@ elif [ "$DISTRIB" == "nightly" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng graphviz
+    sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng graphviz python3-pyqt5
     python3 -m pip install --upgrade pip setuptools
     python3 -m pip install -r dev-requirements.txt | cat
+    python3 -m pip install "vtk<9.2" mayavi
+    python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
     python3 -m pip install sphinx==3 "jinja2<=3.0.3"
