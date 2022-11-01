@@ -62,10 +62,11 @@ elif [ "$DISTRIB" == "nightly" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng graphviz python3-pyqt5
+    sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng graphviz \
+      libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libopengl0 libegl1 libosmesa6 mesa-utils libxcb-shape0
     python3 -m pip install --upgrade pip setuptools
-    python3 -m pip install -r dev-requirements.txt | cat
-    python3 -m pip install "vtk<9.2" mayavi
+    python3 -m pip install -r dev-requirements.txt
+    python3 -m pip install "vtk<9.2" mayavi pyqt5
     python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
