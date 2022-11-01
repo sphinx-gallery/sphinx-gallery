@@ -19,7 +19,7 @@ if [ "$DISTRIB" == "conda" ]; then
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
     if [ "$PYTHON_VERSION" != "3.7" -o "$LOCALE" != "C" ]; then
-        CONDA_TO_INSTALL="$CONDA_TO_INSTALL mayavi memory_profiler ipython pypandoc"
+        CONDA_TO_INSTALL="$CONDA_TO_INSTALL mayavi memory_profiler ipython pypandoc pytest-qt"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
