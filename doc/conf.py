@@ -361,6 +361,8 @@ except ImportError:
     pass
 else:
     plotly.io.renderers.default = 'sphinx_gallery'
+    examples_dirs.append('../plotly_examples')
+    gallery_dirs.append('auto_plotly_examples')
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
