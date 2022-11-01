@@ -66,7 +66,8 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
       libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libopengl0 libegl1 libosmesa6 mesa-utils libxcb-shape0
     python3 -m pip install --upgrade pip setuptools
     python3 -m pip install -r dev-requirements.txt
-    python3 -m pip install "vtk<9.2" mayavi pyqt5
+    python3 -m pip install "vtk<9.2" pyqt5
+    python3 -m pip install --no-build-isolation mayavi
     python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)

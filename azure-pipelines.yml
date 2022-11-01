@@ -91,22 +91,22 @@ stages:
       DISPLAY: ':99'
     strategy:
       matrix:
-        ubuntu_python37:
+        ubuntu_python38:
           DISTRIB: 'ubuntu'
-          PYTHON_VERSION: '3.7'
+          PYTHON_VERSION: '3.8'
           SPHINXOPTS: ''
-        conda_python37_sphinxOld:
+        conda_python38_sphinxOld:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.7'
-          SPHINX_VERSION: '3'
+          PYTHON_VERSION: '3.8'
+          SPHINX_VERSION: '4'
           LOCALE: 'C'
         conda_python38_sphinxDev:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.8'
+          PYTHON_VERSION: '3.10'
           SPHINX_VERSION: 'dev'
-        python37_minimal:
+        python38_minimal:
           DISTRIB: 'minimal'
-          PYTHON_VERSION: '3.7'
+          PYTHON_VERSION: '3.8'
         pythonNightly:
           DISTRIB: 'nightly'
           PYTHON_VERSION: '3.10'
