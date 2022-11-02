@@ -540,7 +540,7 @@ def generate_gallery_rst(app):
                 subsection_index_files.append(
                     '/'.join([
                         '', gallery_dir, subsection, 'index.rst'
-                    ])
+                    ]).replace(os.sep, '/')  # forward slashes needed inside rst
                 )
 
                 (
