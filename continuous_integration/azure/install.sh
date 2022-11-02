@@ -18,8 +18,8 @@ if [ "$DISTRIB" == "conda" ]; then
     CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz"
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
-    if [ "$PYTHON_VERSION" != "3.7" -o "$LOCALE" != "C" ]; then
-        CONDA_TO_INSTALL="$CONDA_TO_INSTALL memory_profiler ipython pypandoc pytest-qt"
+    if [ "$PYTHON_VERSION" != "3.8" -o "$LOCALE" != "C" ]; then
+        CONDA_TO_INSTALL="$CONDA_TO_INSTALL memory_profiler ipython pypandoc"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
@@ -68,6 +68,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     python3 -m pip install -r dev-requirements.txt
     python3 -m pip install "vtk<9.2" pyqt5
     python3 -m pip install --no-build-isolation mayavi
+    # Make sure that Mayavi works and does not die when making an actual plot (tests Qt + VTK)
     python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
