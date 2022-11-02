@@ -356,11 +356,13 @@ else:
 
 # Set plotly renderer to capture _repr_html_ for sphinx-gallery
 try:
-    import plotly.io.renderers
+    import plotly.io
 except ImportError:
     pass
 else:
     plotly.io.renderers.default = 'sphinx_gallery'
+    examples_dirs.append('../plotly_examples')
+    gallery_dirs.append('auto_plotly_examples')
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:

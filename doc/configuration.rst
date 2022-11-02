@@ -485,16 +485,6 @@ and belonging to the modules listed in ``doc_module``.
 ``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
-Within your sphinx documentation ``.rst`` files, you can easily
-add this reduced version of the Gallery. For example, the rst below adds
-the reduced version of the Gallery for ``numpy.exp``, which includes all
-examples that use the specific function ``numpy.exp``:
-
-.. code-block:: rst
-
-    .. minigallery:: numpy.exp
-        :add-heading:
-
 Sometimes, there are functions that are being used in practically every example
 for the given module, for instance the ``pyplot.show`` or ``pyplot.subplots``
 functions in Matplotlib, so that a large number of often spurious examples will
@@ -507,6 +497,16 @@ To exclude the functions mentioned above you would use
 ``{r'pyplot\.show', r'pyplot\.subplots'}`` (note the escape to match a dot
 instead of any character, if the name is unambiguous you can also write
 ``pyplot.show`` or just ``show``).
+
+Within your sphinx documentation ``.rst`` files, you can easily
+add this reduced version of the Gallery. For example, the rst below adds
+the reduced version of the Gallery for ``numpy.exp``, which includes all
+examples that use the specific function ``numpy.exp``:
+
+.. code-block:: rst
+
+    .. minigallery:: numpy.exp
+        :add-heading:
 
 The ``add-heading`` option adds a heading for the mini-gallery, which will be a
 default generated message if no string is provided as an argument. The example

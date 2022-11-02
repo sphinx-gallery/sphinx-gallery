@@ -113,13 +113,8 @@ def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     """Test file naming when saving figures. Requires mayavi."""
     import numpy as np
     Image = _get_image()
-    try:
-        from mayavi import mlab
-    except ImportError:
-        raise pytest.skip('Mayavi not installed')
+    mlab = pytest.importorskip('mayavi.mlab')
     import matplotlib.pyplot as plt
-    mlab.options.offscreen = True
-
     gallery_conf.update(
         image_scrapers=(matplotlib_scraper, mayavi_scraper))
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
@@ -164,6 +159,7 @@ def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     with Image.open(fname_template.format(3)) as img:
         pixels = np.asarray(img.convert("RGB"))
     assert (pixels == [255, 245, 240]).all()
+    mlab.close(all=True)
 
 
 def _custom_func(x, y, z):
