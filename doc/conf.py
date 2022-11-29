@@ -49,9 +49,7 @@ extensions = [
     'jupyterlite_sphinx',
 ]
 
-# Needs https://github.com/jupyterlite/jupyterlite-sphinx/pull/64 to only show ipynb files
-# jupyterlite_contents = ["./auto_examples/*.ipynb"]
-jupyterlite_contents = [os.path.join(os.getcwd(), "auto_examples")]
+jupyterlite_contents = ["./auto_*examples/*.ipynb", "./tutorials/*.ipynb"]
 # Do not use notebooks as sources for the documentation
 jupyterlite_bind_ipynb_suffix = False
 
