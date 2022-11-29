@@ -1,8 +1,22 @@
 Change Log
 ==========
 
-Next version
-------------
+v0.11.1
+-------
+
+Support for Sphinx < 3 dropped in this release. Requirement is Sphinx >= 3.
+
+**Fixed bugs:**
+
+-  BUG: Fix single column example `#993 <https://github.com/sphinx-gallery/sphinx-gallery/pull/993>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Implemented enhancements:**
+
+- Use Mock more in tests `#986 <https://github.com/sphinx-gallery/sphinx-gallery/pull/986>`__ (`QuLogic <https://github.com/QuLogic>`__)
+- Remove old sphinx compatibility code `#985 <https://github.com/sphinx-gallery/sphinx-gallery/pull/985>`__ (`QuLogic <https://github.com/QuLogic>`__)
+
+v0.11.0
+-------
 
 In this version, the "Out:" prefix applied to code outputs is now created from
 CSS pseudo-elements instead of additional real text. For more details, see
@@ -10,15 +24,92 @@ CSS pseudo-elements instead of additional real text. For more details, see
 
 **Implemented enhancements:**
 
--  Nest gallery sections (ie gallery subfolders) `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. This feature can be disabled (see config option ``nested_sections`` in the documentation) if the previous behaviour is prefered (`alexisthual <https://github.com/alexisthual>`__)
--  Tooltips now overlay gallery items `commit 36166cd <https://github.com/sphinx-gallery/sphinx-gallery/pull/944/commits/36166cd2fc2b43ecbd585654cfe8745f3a1b3f64>`__. Custom CSS might need to be adapted (`alexisthual <https://github.com/alexisthual>`__)
+Nesting gallery sections (i.e. gallery subfolders) was implemented in `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__. This feature can be disabled (see config option ``nested_sections`` in the documentation) if the previous behaviour is prefered (`alexisthual <https://github.com/alexisthual>`__)
+
+Tooltips now overlay gallery items `commit 36166cd <https://github.com/sphinx-gallery/sphinx-gallery/pull/944/commits/36166cd2fc2b43ecbd585654cfe8745f3a1b3f64>`__. Custom CSS might need to be adapted (`alexisthual <https://github.com/alexisthual>`__).
+
+-  Problem in section and example title level in subgalleries `#935 <https://github.com/sphinx-gallery/sphinx-gallery/issues/935>`__
+-  Add ability to write nested ``index.rst`` `#855 <https://github.com/sphinx-gallery/sphinx-gallery/issues/855>`__
+-  Optional usage of ``module`` instead of ``module_short`` when doing backreferencing `#950 <https://github.com/sphinx-gallery/sphinx-gallery/pull/950>`__ (`ExtremOPS <https://github.com/ExtremOPS>`__)
+-  ENH: Better dark mode support `#948 <https://github.com/sphinx-gallery/sphinx-gallery/pull/948>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Store API reference examples thumbnails in common div `#946 <https://github.com/sphinx-gallery/sphinx-gallery/pull/946>`__ (`alexisthual <https://github.com/alexisthual>`__)
+-  Add flag to ignore code blocks in Python source parser `#941 <https://github.com/sphinx-gallery/sphinx-gallery/pull/941>`__ (`guberti <https://github.com/guberti>`__)
+-  Improve Jupyter notebook converter’s handling of code blocks `#940 <https://github.com/sphinx-gallery/sphinx-gallery/pull/940>`__ (`guberti <https://github.com/guberti>`__)
+-  [MRG] Changelog regarding nested sections `#926 <https://github.com/sphinx-gallery/sphinx-gallery/pull/926>`__ (`alexisthual <https://github.com/alexisthual>`__)
+-  Possibility to exclude implicit backreferences `#908 <https://github.com/sphinx-gallery/sphinx-gallery/pull/908>`__ (`StefRe <https://github.com/StefRe>`__)
+-  [MRG] Handle nested structures `#904 <https://github.com/sphinx-gallery/sphinx-gallery/pull/904>`__ (`alexisthual <https://github.com/alexisthual>`__)
+-  Use pseudo-elements for ‘Out:’ prefixing `#896 <https://github.com/sphinx-gallery/sphinx-gallery/pull/896>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  FIX: Fix for latest pytest `#894 <https://github.com/sphinx-gallery/sphinx-gallery/pull/894>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Config capture_repr on file-by-file basis `#891 <https://github.com/sphinx-gallery/sphinx-gallery/pull/891>`__ (`StefRe <https://github.com/StefRe>`__)
 
 **Fixed bugs:**
 
--  Display gallery items using CSS grid instead of  ``float`` property `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__, see `migration guide <https://github.com/sphinx-gallery/sphinx-gallery/pull/906#issuecomment-1019542067>`__ to adapt custom CSS for thumbnails (`alexisthual <https://github.com/alexisthual>`__)
+We now display gallery items using CSS grid instead of  ``float`` property `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__, see `migration guide <https://github.com/sphinx-gallery/sphinx-gallery/pull/906#issuecomment-1019542067>`__ to adapt custom CSS for thumbnails (`alexisthual <https://github.com/alexisthual>`__)
+
+-  BUG: Hotfix for docopts_url `#980 <https://github.com/sphinx-gallery/sphinx-gallery/pull/980>`__ (`larsoner <https://github.com/larsoner>`__)
+-  BUG: Fix bug with clicking examples `#973 <https://github.com/sphinx-gallery/sphinx-gallery/pull/973>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Remove test examples for seaborn warning `#971 <https://github.com/sphinx-gallery/sphinx-gallery/pull/971>`__ (`lesteve <https://github.com/lesteve>`__)
+-  Fix typo `#970 <https://github.com/sphinx-gallery/sphinx-gallery/pull/970>`__ (`tkoyama010 <https://github.com/tkoyama010>`__)
+-  Avoid matplotlib warnings in seaborn reset_module `#969 <https://github.com/sphinx-gallery/sphinx-gallery/pull/969>`__ (`lesteve <https://github.com/lesteve>`__)
+-  Fix Tensorflow/Abseil compatibility `#961 <https://github.com/sphinx-gallery/sphinx-gallery/pull/961>`__ (`guberti <https://github.com/guberti>`__)
+-  syntax error fix in sphinx_gallery.downloads `#951 <https://github.com/sphinx-gallery/sphinx-gallery/pull/951>`__ (`photoniker <https://github.com/photoniker>`__)
+-  Merge toctrees containing subcategories indices and examples without … `#944 <https://github.com/sphinx-gallery/sphinx-gallery/pull/944>`__ (`alexisthual <https://github.com/alexisthual>`__)
+-  Fix rendering of embedded URIs in Python notebooks `#943 <https://github.com/sphinx-gallery/sphinx-gallery/pull/943>`__ (`guberti <https://github.com/guberti>`__)
+-  FIX: Fix for dep `#938 <https://github.com/sphinx-gallery/sphinx-gallery/pull/938>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Fix typos `#934 <https://github.com/sphinx-gallery/sphinx-gallery/pull/934>`__ (`kianmeng <https://github.com/kianmeng>`__)
+-  MAINT: Fix CIs `#932 <https://github.com/sphinx-gallery/sphinx-gallery/pull/932>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Use -nWT –keep-going on Azure `#924 <https://github.com/sphinx-gallery/sphinx-gallery/pull/924>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Ensures right builder conifg `#922 <https://github.com/sphinx-gallery/sphinx-gallery/pull/922>`__ (`ExtremOPS <https://github.com/ExtremOPS>`__)
+-  MAINT: Fix CIs `#920 <https://github.com/sphinx-gallery/sphinx-gallery/pull/920>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Clean up namespace `#917 <https://github.com/sphinx-gallery/sphinx-gallery/pull/917>`__ (`larsoner <https://github.com/larsoner>`__)
+-  FIX: Azure `#915 <https://github.com/sphinx-gallery/sphinx-gallery/pull/915>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [WIP] Bugfix missing parent div for mini gallery `#914 <https://github.com/sphinx-gallery/sphinx-gallery/pull/914>`__ (`alexisthual <https://github.com/alexisthual>`__)
+-  Honor show_signature `#909 <https://github.com/sphinx-gallery/sphinx-gallery/pull/909>`__ (`jschueller <https://github.com/jschueller>`__)
+-  Css grid for thumbnails `#906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`__ (`alexisthual <https://github.com/alexisthual>`__)
+-  Fix matplotlib intersphinx url `#902 <https://github.com/sphinx-gallery/sphinx-gallery/pull/902>`__ (`StefRe <https://github.com/StefRe>`__)
+-  FIX: Pin pyvista `#901 <https://github.com/sphinx-gallery/sphinx-gallery/pull/901>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Fix matplotlib resetter \_reset_matplotlib `#890 <https://github.com/sphinx-gallery/sphinx-gallery/pull/890>`__ (`StefRe <https://github.com/StefRe>`__)
+-  Fix “Out” layout for pydata-sphinx-theme `#886 <https://github.com/sphinx-gallery/sphinx-gallery/pull/886>`__ (`timhoffm <https://github.com/timhoffm>`__)
+
+**Documentation updates**
+
+-  added RADIS in Who uses Sphinx-gallery ? `#979 <https://github.com/sphinx-gallery/sphinx-gallery/pull/979>`__ (`erwanp <https://github.com/erwanp>`__)
+-  add Tonic to list of sphinx-gallery users `#972 <https://github.com/sphinx-gallery/sphinx-gallery/pull/972>`__ (`biphasic <https://github.com/biphasic>`__)
+-  Add Apache TVM to user projects list `#942 <https://github.com/sphinx-gallery/sphinx-gallery/pull/942>`__ (`guberti <https://github.com/guberti>`__)
+-  DOC: fix rst link syntax in changelog `#925 <https://github.com/sphinx-gallery/sphinx-gallery/pull/925>`__ (`GaelVaroquaux <https://github.com/GaelVaroquaux>`__)
+-  add GitHub URL for PyPi `#923 <https://github.com/sphinx-gallery/sphinx-gallery/pull/923>`__ (`andriyor <https://github.com/andriyor>`__)
+-  Add Biotite to list of user projects `#919 <https://github.com/sphinx-gallery/sphinx-gallery/pull/919>`__ (`padix-key <https://github.com/padix-key>`__)
+-  MAINT: Remove LooseVersion `#916 <https://github.com/sphinx-gallery/sphinx-gallery/pull/916>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC Fix example “Identifying function names in a script” `#903 <https://github.com/sphinx-gallery/sphinx-gallery/pull/903>`__ (`StefRe <https://github.com/StefRe>`__)
+-  DOC Update docs for Adding mini-galleries for API documentation `#899 <https://github.com/sphinx-gallery/sphinx-gallery/pull/899>`__ (`StefRe <https://github.com/StefRe>`__)
+-  Add PyVista examples! `#888 <https://github.com/sphinx-gallery/sphinx-gallery/pull/888>`__ (`banesullivan <https://github.com/banesullivan>`__)
+-  Fix a few links in project lists `#883 <https://github.com/sphinx-gallery/sphinx-gallery/pull/883>`__ (`ixjlyons <https://github.com/ixjlyons>`__)
 
 **Closed issues:**
 
+-  Matplotlib warnings in seaborn example: “Trying to register the cmap which already exists” `#968 <https://github.com/sphinx-gallery/sphinx-gallery/issues/968>`__
+-  reference_url failure in sphinx version > 5 `#967 <https://github.com/sphinx-gallery/sphinx-gallery/issues/967>`__
+-  Send feedback `#963 <https://github.com/sphinx-gallery/sphinx-gallery/issues/963>`__
+-  disable download buttons `#949 <https://github.com/sphinx-gallery/sphinx-gallery/issues/949>`__
+-  Specify Target of ``reference_url`` `#947 <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
+-  Display bug for examples mentioning a given API reference `#945 <https://github.com/sphinx-gallery/sphinx-gallery/issues/945>`__
+-  Subfolder Examples appearing in main TOC `#939 <https://github.com/sphinx-gallery/sphinx-gallery/issues/939>`__
+-  Sphinx-gallery generating huge rst files `#929 <https://github.com/sphinx-gallery/sphinx-gallery/issues/929>`__
+-  Broken plot links if sphinx uses ``htmldir`` `#921 <https://github.com/sphinx-gallery/sphinx-gallery/issues/921>`__
+-  Distorted gallery overview `#918 <https://github.com/sphinx-gallery/sphinx-gallery/issues/918>`__
+-  mini-gallery not shown in grid `#911 <https://github.com/sphinx-gallery/sphinx-gallery/issues/911>`__
+-  0.10.1: pep517 build warnings `#907 <https://github.com/sphinx-gallery/sphinx-gallery/issues/907>`__
+-  Make thumbnails grid- and flexbox-compatible `#905 <https://github.com/sphinx-gallery/sphinx-gallery/issues/905>`__
+-  DOC: Example “Identifying function names in a script” `#900 <https://github.com/sphinx-gallery/sphinx-gallery/issues/900>`__
+-  Limit adding mini-galleries for API docs to explicitly referred to items only `#898 <https://github.com/sphinx-gallery/sphinx-gallery/issues/898>`__
+-  Documentation “Add mini-galleries for API documentation” `#897 <https://github.com/sphinx-gallery/sphinx-gallery/issues/897>`__
+-  TestLoggingTee failing pytest v7.0.0rc1 `#893 <https://github.com/sphinx-gallery/sphinx-gallery/issues/893>`__
+-  Resetting matplotlib module `#889 <https://github.com/sphinx-gallery/sphinx-gallery/issues/889>`__
+-  Thumbnail for non plot examples `#887 <https://github.com/sphinx-gallery/sphinx-gallery/issues/887>`__
+-  Looking for backrefrences “..examples” files instead of “.examples” files `#885 <https://github.com/sphinx-gallery/sphinx-gallery/issues/885>`__
+-  Build gallery from .ipynb files only `#882 <https://github.com/sphinx-gallery/sphinx-gallery/issues/882>`__
+-  Examples showing at the top instead of interlaced in-between every class `#876 <https://github.com/sphinx-gallery/sphinx-gallery/issues/876>`__
+-  Creating API mini-gallery using autosummary recursive option `#797 <https://github.com/sphinx-gallery/sphinx-gallery/issues/797>`__
 
 **Merged pull requests:**
 

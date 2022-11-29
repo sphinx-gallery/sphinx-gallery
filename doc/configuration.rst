@@ -58,6 +58,8 @@ file:
 - ``log_level`` (:ref:`log_level`)
 - ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
 - ``nested_sections`` (:ref:`nested_sections`)
+- ``api_usage_ignore`` (:ref:`api_usage_ignore`)
+- ``show_api_usage`` (:ref:`show_api_usage`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -483,16 +485,6 @@ and belonging to the modules listed in ``doc_module``.
 ``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
-Within your sphinx documentation ``.rst`` files, you can easily
-add this reduced version of the Gallery. For example, the rst below adds
-the reduced version of the Gallery for ``numpy.exp``, which includes all
-examples that use the specific function ``numpy.exp``:
-
-.. code-block:: rst
-
-    .. minigallery:: numpy.exp
-        :add-heading:
-
 Sometimes, there are functions that are being used in practically every example
 for the given module, for instance the ``pyplot.show`` or ``pyplot.subplots``
 functions in Matplotlib, so that a large number of often spurious examples will
@@ -505,6 +497,16 @@ To exclude the functions mentioned above you would use
 ``{r'pyplot\.show', r'pyplot\.subplots'}`` (note the escape to match a dot
 instead of any character, if the name is unambiguous you can also write
 ``pyplot.show`` or just ``show``).
+
+Within your sphinx documentation ``.rst`` files, you can easily
+add this reduced version of the Gallery. For example, the rst below adds
+the reduced version of the Gallery for ``numpy.exp``, which includes all
+examples that use the specific function ``numpy.exp``:
+
+.. code-block:: rst
+
+    .. minigallery:: numpy.exp
+        :add-heading:
 
 The ``add-heading`` option adds a heading for the mini-gallery, which will be a
 default generated message if no string is provided as an argument. The example
@@ -530,9 +532,9 @@ Auto-documenting your API with links to examples
 
 The previous feature can be automated for all your modules combining
 it with the standard sphinx extensions `autodoc
-<http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
-<http://sphinx-doc.org/ext/autosummary.html>`_. First enable them in your
-``conf.py`` extensions list::
+<https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html>`_ and
+`autosummary <https://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html>`_.
+First enable them in your ``conf.py`` extensions list::
 
     import sphinx_gallery
     extensions = [
@@ -545,10 +547,10 @@ it with the standard sphinx extensions `autodoc
     # generate autosummary even if no references
     autosummary_generate = True
 
-`autodoc <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
-<http://sphinx-doc.org/ext/autosummary.html>`_ are very powerful
-extensions, please read about them. In this example we'll explain how
-the :ref:`sphx_glr_api_reference` is automatically generated. The
+`autodoc <https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html>`_ and
+`autosummary <https://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html>`_
+are very powerful extensions, please read about them. In this example we'll
+explain how the :ref:`sphx_glr_api_reference` is automatically generated. The
 documentation is done at the module level. We first start with the
 ``reference.rst`` file
 
@@ -1017,7 +1019,7 @@ If you host your documentation on a GitHub repository, it is possible to
 auto-generate a Binder link for each notebook. Clicking this link will
 take users to a live version of the Jupyter notebook where they may
 run the code interactively. For more information see the `Binder documentation
-<https://docs.mybinder.org>`__.
+<https://mybinder.readthedocs.io/en/latest/>`__.
 
 .. warning::
 
@@ -1082,7 +1084,7 @@ dependencies (type: list)
   ``requirements.txt`` file. These will be copied into a folder  called
   ``binder/`` in your built documentation folder. For a list of all the possible
   dependency files you can use, see `the Binder configuration documentation
-  <https://mybinder.readthedocs.io/en/latest/config_files.html#config-files>`_.
+  <https://mybinder.readthedocs.io/en/latest/using/config_files.html>`_.
 filepath_prefix (type: string | None, default: ``None``)
   A prefix to append to the filepath in the Binder links. You should use this if
   you will store your built documentation in a sub-folder of a repository,
@@ -1110,8 +1112,9 @@ Binder links will point to these notebooks.
    independently build your documentation and host it on a GitHub branch
    as well as building it with readthedocs.
 
-See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
-for an example that uses the `public Binder server <http://mybinder.org>`_.
+See the Sphinx-Gallery `Sphinx configuration file
+<https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
+for an example that uses the `public Binder server <https://mybinder.org>`_.
 
 .. _promote_jupyter_magic:
 
@@ -1800,7 +1803,7 @@ method which would thus be captured. You can prevent this by:
 The unwanted string output will not occur if ``'capture_repr'`` is an empty
 tuple or does not contain ``__repr__`` or ``__str__``.
 
-.. _regular expressions: https://docs.python.org/library/re.html
+.. _regular expressions: https://docs.python.org/3/library/re.html
 
 Prevent capture of certain classes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1861,3 +1864,36 @@ This index file will contain descriptions for the whole gallery as well as for
 each subsection, and a specific toctree for each subsection.
 In particular, sidebars generated using these toctrees might not reflect the
 actual section / folder structure.
+
+.. _show_api_usage:
+
+Showing API Usage
+=================
+
+Graphs and documentation of both unused API entries and the examples that
+each API entry is used in are generated in the sphinx output directory under
+``sg_api_usage.html``. See the
+`Sphinx-Gallery API usage documentation and graphs <sg_api_usage.html>`_
+for example. In large projects, there are many modules and, since a graph
+of API usage is generated for each module, this can use a lot of resources
+so ``show_api_usage`` is set to ``'unused'`` by default. The unused API
+entries are all shown in one graph so this scales much better for large
+projects. Setting ``show_api_usage`` to ``True`` will make one graph per
+module showing all of the API entries connected to the example that they
+are used in. This could be helpful for making a map of which examples to
+look at if you want to learn about a particular module. Setting
+``show_api_usage`` to ``False`` will not make any graphs or documentation
+about API usage. Note, ``graphviz`` is required for making the unused and
+used API entry graphs. 
+
+.. _api_usage_ignore:
+
+Ignoring API entries
+====================
+
+By default, ``api_usage_ignore='.*__.*__'`` ignores files that match this
+regular expression in documenting and graphing the usage of API entries
+within the example gallery. This regular expression can be modified to
+ignore any kind of file that should not be considered. The default regular
+expression ignores functions like ``__len__()`` for which it may not be
+desirable to document if they are used in examples.

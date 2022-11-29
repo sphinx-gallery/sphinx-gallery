@@ -19,7 +19,7 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
-                                  _has_pypandoc)
+                                  _has_pypandoc, _has_graphviz)
 
 import pytest
 
@@ -27,7 +27,7 @@ N_TOT = 13  # examples (plot_*.py in examples/**)
 
 N_FAILING = 2
 N_GOOD = N_TOT - N_FAILING
-N_RST = 16 + N_TOT + 1  # includes module API pages, etc.
+N_RST = 17 + N_TOT + 1  # includes module API pages, etc.
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
@@ -81,6 +81,40 @@ def test_timings(sphinx_app):
     with codecs.open(timings_html, 'r', 'utf-8') as fid:
         content = fid.read()
     assert 'href="plot_numpy_matplotlib.html' in content
+    # printed
+    status = sphinx_app._status.getvalue()
+    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    assert ('- %s: ' % fname) in status
+
+
+def test_api_usage(sphinx_app):
+    """Test that an api usage page is created."""
+    out_dir = sphinx_app.outdir
+    src_dir = sphinx_app.srcdir
+    # the rst file was empty but is removed in post-processing
+    api_rst = op.join(src_dir, 'sg_api_usage.rst')
+    assert not op.isfile(api_rst)
+    # HTML output
+    api_html = op.join(out_dir, 'sg_api_usage.html')
+    assert op.isfile(api_html)
+    with codecs.open(api_html, 'r', 'utf-8') as fid:
+        content = fid.read()
+    has_graphviz = _has_graphviz()
+    # spot check references
+    assert ('href="gen_modules/sphinx_gallery.gen_gallery.html'
+            '#sphinx_gallery.gen_gallery.setup"') in content
+    # check used and unused
+    if has_graphviz:
+        assert 'alt="API unused entries graph"' in content
+        if sphinx_app.config.sphinx_gallery_conf['show_api_usage']:
+            assert 'alt="sphinx_gallery usage graph"' in content
+        else:
+            assert 'alt="sphinx_gallery usage graph"' not in content
+        # check graph output
+        assert 'src="_images/graphviz-' in content
+    else:
+        assert 'alt="API unused entries graph"' not in content
+        assert 'alt="sphinx_gallery usage graph"' not in content
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('examples', 'plot_numpy_matplotlib.py')
@@ -241,11 +275,11 @@ def test_image_formats(sphinx_app):
             assert op.isfile(file_fname), file_fname
             want_html = 'src="%s"' % (img_fname0,)
             assert want_html in html
-            img_fname2 = ('../_images/sphx_glr_%s_%03d_2_0x.%s' %
+            img_fname2 = ('../_images/sphx_glr_%s_%03d_2_00x.%s' %
                           (ex, num, ext))
             file_fname2 = op.join(generated_examples_dir, img_fname2)
-            want_html = 'srcset="%s, %s 2.0x"' % (img_fname0, img_fname2)
-            if ext in ('png', 'jpg', 'svg'):  # check 2.0x (tests directive)
+            want_html = 'srcset="%s, %s 2.00x"' % (img_fname0, img_fname2)
+            if ext in ('png', 'jpg', 'svg'):  # check 2.00x (tests directive)
                 assert op.isfile(file_fname2), file_fname2
                 assert want_html in html
 
@@ -282,7 +316,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'numpy.arange.html' in lines
     assert 'class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function">' in lines  # noqa: E501
     assert '#module-matplotlib.pyplot' in lines
-    assert 'pyplot.html' in lines
+    assert 'pyplot.html' in lines or 'pyplot_summary.html' in lines
     assert '.html#matplotlib.figure.Figure.tight_layout' in lines
     assert 'matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot' in lines
     assert 'matplotlib_configuration_api.html#matplotlib.RcParams' in lines
@@ -395,7 +429,7 @@ def test_backreferences(sphinx_app):
     ('sphinx_gallery.sorting.ExplicitOrder.examples',
      'plot_second_future_imports'),
 ])
-def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
+def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
     """Test linking to mini-galleries using backreferences_dir."""
     backref_dir = sphinx_app.srcdir
     examples_rst = op.join(backref_dir, 'gen_modules', 'backreferences',
@@ -403,6 +437,38 @@ def test_backreferences_examples(sphinx_app, rst_file, example_used_in):
     with codecs.open(examples_rst, 'r', 'utf-8') as fid:
         lines = fid.read()
     assert example_used_in in lines
+    # check the .. raw:: html div count
+    n_open = lines.count('<div')
+    n_close = lines.count('</div')
+    assert n_open == n_close
+
+
+def test_backreferences_examples_html(sphinx_app):
+    """Test linking to mini-galleries using backreferences_dir."""
+    backref_file = op.join(sphinx_app.outdir, 'gen_modules',
+                           'sphinx_gallery.backreferences.html')
+    with codecs.open(backref_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    # Class properties not properly checked on older Sphinx (e.g. 3)
+    # so let's use the "id" instead
+    regex = re.compile(r'<dt[ \S]*id="sphinx_gallery.backreferences.[ \S]*>')
+    n_documented = len(regex.findall(lines))
+    possible = '\n'.join(line for line in lines.split('\n') if '<dt ' in line)
+    # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
+    assert n_documented == 5, possible
+    # identify_names, DummyClass, NameFinder (3); once doc, once left bar (x2)
+    n_mini = lines.count('Examples using ')
+    assert n_mini == 6
+    # only 3 actual mini-gallery divs
+    n_div = lines.count('<div class="sphx-glr-thumbnails')
+    assert n_div == 3
+    # 3 documented uses
+    n_thumb = lines.count('<div class="sphx-glr-thumbcontainer')
+    assert n_thumb == 3
+    # matched opening/closing divs
+    n_open = lines.count('<div')
+    n_close = lines.count('</div')
+    assert n_open == n_close  # should always be equal
 
 
 def test_logging_std_nested(sphinx_app):
@@ -555,6 +621,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         # get extremely unlucky and have identical run times
         # on the one script that gets re-run (because it's a fail)...
         'sg_execution_times',
+        'sg_api_usage',
         'plot_future_imports_broken',
         'plot_scraper_broken'
     )
@@ -622,8 +689,8 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '(8|9|10)'
-    want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
+    n_ch = '(7|8|9|10|11)'
+    want = f'.*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*'
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
             % (out_of, excluding))
@@ -671,6 +738,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
         # get extremely unlucky and have identical run times
         # on the one script above that changes...
         'sg_execution_times',
+        'sg_api_usage',
         # this one will not change even though it was retried
         'plot_future_imports_broken',
         'plot_scraper_broken',

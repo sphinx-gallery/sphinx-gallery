@@ -15,10 +15,11 @@ import os
 from shutil import move, copyfile
 import subprocess
 
-from . import sphinx_compatibility
 from sphinx.errors import ExtensionError
+import sphinx.util
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 def _get_image():
@@ -164,14 +165,6 @@ def _replace_md5(fname_new, fname_old=None, method='move', mode='b'):
     assert os.path.isfile(fname_old)
 
 
-class Bunch(dict):
-    """Dictionary-like object that exposes its keys as attributes."""
-
-    def __init__(self, **kwargs):  # noqa: D102
-        dict.__init__(self, kwargs)
-        self.__dict__ = self
-
-
 def _has_pypandoc():
     """Check if pypandoc package available."""
     try:
@@ -182,3 +175,13 @@ def _has_pypandoc():
         return None, None
     else:
         return True, version
+
+
+def _has_graphviz():
+    try:
+        import graphviz  # noqa F401
+    except ImportError as exc:
+        logger.info('`graphviz` required for graphical visualization '
+                    f'but could not be imported, got: {exc}')
+        return False
+    return True

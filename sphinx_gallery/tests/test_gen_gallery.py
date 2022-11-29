@@ -14,7 +14,8 @@ import pytest
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
-    collect_gallery_files, write_computation_times, _complete_gallery_conf)
+    collect_gallery_files, write_computation_times, _complete_gallery_conf,
+    write_api_entry_usage)
 
 
 def test_bad_config():
@@ -110,6 +111,17 @@ def test_bad_reset_modules_order(sphinx_app_wrapper, err_class, err_match):
 def test_bad_css(sphinx_app_wrapper, err_class, err_match):
     with pytest.raises(err_class, match=err_match):
         sphinx_app_wrapper.create_sphinx_app()
+
+
+def test_bad_api():
+    """Test that we raise an error for bad API usage arguments."""
+    sphinx_gallery_conf = dict(api_usage_ignore=('foo',))
+    with pytest.raises(ConfigError, match='.*must be str.*'):
+        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+    sphinx_gallery_conf = dict(show_api_usage='foo')
+    with pytest.raises(ConfigError,
+                       match='.*must be True, False or "unused".*'):
+        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
 
 
 @pytest.mark.conf_file(content="""
@@ -459,6 +471,11 @@ def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
 
 def test_write_computation_times_noop():
     write_computation_times(None, None, [[[0]]])
+
+
+def test_write_api_usage_noop(sphinx_app_wrapper):
+    write_api_entry_usage(
+        sphinx_app_wrapper.create_sphinx_app(), list(), None)
 
 
 @pytest.mark.conf_file(content="""

@@ -19,11 +19,25 @@ import re
 import warnings
 
 from sphinx.errors import ExtensionError
+import sphinx.util
 
-from . import sphinx_compatibility
 from .scrapers import _find_image_ext
 from .utils import _replace_md5
-from .directives import THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE
+
+
+THUMBNAIL_PARENT_DIV = """
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+"""
+
+THUMBNAIL_PARENT_DIV_CLOSE = """
+.. raw:: html
+
+    </div>
+
+"""
 
 
 class DummyClass(object):
@@ -194,10 +208,10 @@ def _get_short_module_name(module_name, obj_name):
 
 # keep in synch w/ configuration.rst "Add mini-galleries for API documentation"
 _regex = re.compile(r':(?:'
-                    r'func(?:tion)?|'
-                    r'meth(?:od)?|'
-                    r'attr(?:ibute)?|'
-                    r'obj(?:ect)?|'
+                    r'func|'
+                    r'meth|'
+                    r'attr|'
+                    r'obj|'
                     r'class):`~?(\S*)`'
                     )
 
@@ -311,6 +325,7 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write('\n\n' + heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
+                ex_file.write('\n\n.. start-sphx-glr-thumbnails\n\n')
                 # Open a div which will contain all thumbnails
                 # (it will be closed in _finalize_backreferences)
                 ex_file.write(THUMBNAIL_PARENT_DIV)
@@ -322,7 +337,7 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
 
 def _finalize_backreferences(seen_backrefs, gallery_conf):
     """Replace backref files only if necessary."""
-    logger = sphinx_compatibility.getLogger('sphinx-gallery')
+    logger = sphinx.util.logging.getLogger('sphinx-gallery')
     if gallery_conf['backreferences_dir'] is None:
         return
 

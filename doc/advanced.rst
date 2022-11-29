@@ -151,7 +151,8 @@ of the raw html output, in a process similar to other html-based displays such
 as `jupyter <https://jupyter.org/>`_. If the first option does not work,
 this section describes how to write a custom scraper.
 
-Image scrapers are functions (or callable class instances) that do two things:
+Image scrapers are functions (or callable class instances) that do the following
+things:
 
 1. Collect a list of images created in the latest execution of code.
 2. Write these images to disk in PNG, JPEG, SVG, or GIF format (with .png,
@@ -260,7 +261,7 @@ package in a module called ``scraper``. Here is the scraper code::
    from glob import glob
    import shutil
    import os
-   from sphinx_gallery.gen_rst import figure_rst
+   from sphinx_gallery.scrapers import figure_rst
 
    class PNGScraper(object):
        def __init__(self):
@@ -426,6 +427,9 @@ For example, list any path(s) that contain your custom static files, using the
 ``html_static_path`` configuration, in your ``conf.py`` file::
 
     html_static_path = ['_static']
+    # Custom CSS paths should either relative to html_static_path
+    # or fully qualified paths (eg. https://...)
+    html_css_files = ['my_custom.css', 'other_change.css']
 
 The default Sphinx-Gallery ``.css`` files are copied to your build **after**
 files in your ``html_static_path`` config. This means that files in your
@@ -435,16 +439,28 @@ files are prepended with 'sg\_' (e.g., 'sg_gallery.css'). More details on
 this can be found in `PR #845
 <https://github.com/sphinx-gallery/sphinx-gallery/pull/845>`_.
 
-Custom css can be used to alter the appearance of
+Custom css can be used for example to alter the appearance of
 :ref:`code links <stylizing_code_links>` and
-:ref:`thumbnail size <setting_thumbnail_size>`. You can also do things like hide
-the download buttons in the example headers, e.g., using:
+:ref:`thumbnail size <setting_thumbnail_size>`.
+
+Hide the download buttons in the example headers
+------------------------------------------------
 
 .. code-block:: css
 
     div.sphx-glr-download-link-note {
         height: 0px;
         visibility: hidden;
+    }
+
+Disable thumbnail text on hover
+-------------------------------
+
+.. code-block:: css
+
+    .sphx-glr-thumbcontainer[tooltip]:hover::before,
+    .sphx-glr-thumbcontainer[tooltip]:hover::after {
+        display: none;
     }
 
 Using (only) Sphinx-Gallery styles

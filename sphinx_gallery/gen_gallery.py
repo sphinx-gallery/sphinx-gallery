@@ -22,9 +22,10 @@ import pathlib
 from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.errors import ConfigError, ExtensionError
+import sphinx.util
 from sphinx.util.console import red
-from . import sphinx_compatibility, glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5, _has_optipng, _has_pypandoc
+from . import glr_path_static, __version__ as _sg_version
+from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
@@ -102,9 +103,11 @@ DEFAULT_GALLERY_CONF = {
     'line_numbers': False,
     'nested_sections': True,
     'prefer_full_module': [],
+    'api_usage_ignore': '.*__.*__',
+    'show_api_usage': False,
 }
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 def _bool_eval(x):
@@ -379,6 +382,17 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
+    # check API usage
+    if not isinstance(gallery_conf['api_usage_ignore'], str):
+        raise ConfigError('gallery_conf["api_usage_ignore"] must be str, '
+                          'got %s' % type(gallery_conf['api_usage_ignore']))
+
+    if not isinstance(gallery_conf['show_api_usage'], bool) and \
+            gallery_conf['show_api_usage'] != 'unused':
+        raise ConfigError(
+            'gallery_conf["show_api_usage"] must be True, False or "unused", '
+            'got %s' % gallery_conf['show_api_usage'])
+
     _update_gallery_conf(gallery_conf)
 
     return gallery_conf
@@ -527,7 +541,7 @@ def generate_gallery_rst(app):
                 subsection_index_files.append(
                     '/'.join([
                         '', gallery_dir, subsection, 'index.rst'
-                    ])
+                    ]).replace(os.sep, '/')  # fwd slashes needed inside rst
                 )
 
                 (
@@ -549,8 +563,9 @@ def generate_gallery_rst(app):
 
                 fhindex.write(subsection_index_content)
 
-                # Write subsection toctree in main file
-                # only if nested_sections is False or None
+                # Write subsection toctree in main file only if
+                # nested_sections is False or None, and
+                # toctree filenames were generated for the subsection.
                 if not gallery_conf["nested_sections"]:
                     if len(subsection_toctree_filenames) > 0:
                         subsection_index_toctree = """
@@ -559,7 +574,7 @@ def generate_gallery_rst(app):
 
    %s\n
 """ % "\n   ".join(subsection_toctree_filenames)
-                    fhindex.write(subsection_index_toctree)
+                        fhindex.write(subsection_index_toctree)
                 # Otherwise, a new index.rst.new file should
                 # have been created and it needs to be parsed
                 else:
@@ -595,6 +610,8 @@ def generate_gallery_rst(app):
                 fhindex.write(SPHX_GLR_SIG)
 
         _replace_md5(index_rst_new, mode='t')
+    if gallery_conf['show_api_usage'] is not False:
+        init_api_usage(app.builder.srcdir)
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf['plot_gallery']:
@@ -615,11 +632,14 @@ def generate_gallery_rst(app):
         write_junit_xml(gallery_conf, app.builder.outdir, costs)
 
 
-SPHX_GLR_COMP_TIMES = """
+SPHX_GLR_ORPHAN = """
 :orphan:
 
 .. _{0}:
 
+"""
+
+SPHX_GLR_COMP_TIMES = SPHX_GLR_ORPHAN + """
 Computation times
 =================
 """
@@ -686,6 +706,241 @@ def write_computation_times(gallery_conf, target_dir, costs):
             assert len(text) == len(hline)
             fid.write(text)
             fid.write(hline)
+
+
+def write_api_entries(app, what, name, obj, options, lines):
+    if app.config.sphinx_gallery_conf['show_api_usage'] is False:
+        return
+    if 'api_entries' not in app.config.sphinx_gallery_conf:
+        app.config.sphinx_gallery_conf['api_entries'] = dict()
+    if what not in app.config.sphinx_gallery_conf['api_entries']:
+        app.config.sphinx_gallery_conf['api_entries'][what] = set()
+    app.config.sphinx_gallery_conf['api_entries'][what].add(name)
+
+
+def init_api_usage(gallery_dir):
+    with codecs.open(os.path.join(gallery_dir, 'sg_api_usage.rst'), 'w',
+                     encoding='utf-8'):
+        pass
+
+
+def _make_graph(fname, entries, gallery_conf):
+    """Make a graph of unused and used API entries.
+
+    The used API entries themselves are documented in the list, so
+    for the graph, we'll focus on the number of unused API entries
+    per modules. Modules with lots of unused entries (11+) will be colored
+    red, those with less (6+) will be colored orange, those with only a few
+    (1-5) will be colored yellow and those with no unused entries will be
+    colored blue.
+
+    The API entries that are used are shown with one graph per module.
+    That way you can see the examples that each API entry is used in
+    for that module (if this was done for the whole project at once,
+    the graph would get too large very large quickly).
+    """
+    import graphviz
+    dg = graphviz.Digraph(filename=fname,
+                          node_attr={'color': 'lightblue2',
+                                     'style': 'filled',
+                                     'fontsize': '40'})
+
+    if isinstance(entries, list):
+        connections = set()
+        lut = dict()  # look up table for connections so they don't repeat
+        structs = [entry.split('.') for entry in entries]
+        for struct in sorted(structs, key=len):
+            for level in range(len(struct) - 2):
+                if (struct[level], struct[level + 1]) in connections:
+                    continue
+                connections.add((struct[level], struct[level + 1]))
+                node_from = lut[struct[level]] if \
+                    struct[level] in lut else struct[level]
+                dg.attr('node', color='lightblue2')
+                dg.node(node_from)
+                node_to = struct[level + 1]
+                # count, don't show leaves
+                if len(struct) - 3 == level:
+                    leaf_count = 0
+                    for struct2 in structs:
+                        # find structures of the same length as struct
+                        if len(struct2) != level + 3:
+                            continue
+                        # find structures with two entries before
+                        # the leaf that are the same as struct
+                        if all([struct2[level2] == struct[level2]
+                                for level2 in range(level + 2)]):
+                            leaf_count += 1
+                    node_to += f'\n({leaf_count})'
+                    lut[struct[level + 1]] = node_to
+                    if leaf_count > 10:
+                        color = 'red'
+                    elif leaf_count > 5:
+                        color = 'orange'
+                    else:
+                        color = 'yellow'
+                    dg.attr('node', color=color)
+                else:
+                    dg.attr('node', color='lightblue2')
+                dg.node(node_to)
+                dg.edge(node_from, node_to)
+        # add modules with all API entries
+        dg.attr('node', color='lightblue2')
+        for module in gallery_conf['api_entries']['module']:
+            struct = module.split('.')
+            for i in range(len(struct) - 1):
+                if struct[i + 1] not in lut:
+                    dg.edge(struct[i], struct[i + 1])
+    else:
+        assert isinstance(entries, dict)
+        for entry, refs in entries.items():
+            dg.attr('node', color='lightblue2')
+            dg.node(entry)
+            dg.attr('node', color='yellow')
+            for ref in refs:
+                dg.node(ref)
+                dg.edge(entry, ref)
+
+    dg.attr(overlap='scale')
+    dg.save(fname)
+
+
+def write_api_entry_usage(app, docname, source):
+    """Write an html page describing which API entries are used and unused.
+
+    To document and graph only those API entries that are used by
+    autodoc, we have to wait for autodoc to finish and hook into the
+    ``source-read`` event. This intercepts the text from the rst such
+    that it can be modified. Since, we only touched an empty file,
+    we have to add 1) a list of all the API entries that are unused
+    and a graph of the number of unused API entries per module and 2)
+    a list of API entries that are used in examples, each with a sub-list
+    of which examples that API entry is used in, and a graph that
+    connects all of the API entries in a module to the examples
+    that they are used in.
+    """
+    gallery_conf = app.config.sphinx_gallery_conf
+    if gallery_conf['show_api_usage'] is False:
+        return
+    # since this is done at the gallery directory level (as opposed
+    # to in a gallery directory, e.g. auto_examples), it runs last
+    # which means that all the api entries will be in gallery_conf
+    if 'sg_api_usage' not in docname or \
+            'api_entries' not in gallery_conf or \
+            gallery_conf['backreferences_dir'] is None:
+        return
+    backreferences_dir = os.path.join(gallery_conf['src_dir'],
+                                      gallery_conf['backreferences_dir'])
+
+    example_files = set.union(
+        *[gallery_conf['api_entries'][obj_type]
+          for obj_type in ('class', 'method', 'function')
+          if obj_type in gallery_conf['api_entries']])
+
+    if len(example_files) == 0:
+        return
+
+    def get_entry_type(entry):
+        if entry in gallery_conf['api_entries']['class']:
+            return 'class'
+        elif entry in gallery_conf['api_entries']['method']:
+            return 'meth'
+        else:
+            assert entry in gallery_conf['api_entries']['function']
+            return 'func'
+
+    # find used and unused API entries
+    unused_api_entries = list()
+    used_api_entries = dict()
+    for entry in example_files:
+        # don't include built-in methods etc.
+        if re.match(gallery_conf['api_usage_ignore'], entry) is not None:
+            continue
+        # check if backreferences empty
+        example_fname = os.path.join(
+            backreferences_dir, f'{entry}.examples.new')
+        if not os.path.isfile(example_fname):  # use without new
+            example_fname = os.path.splitext(example_fname)[0]
+        assert os.path.isfile(example_fname)
+        if os.path.getsize(example_fname) == 0:
+            unused_api_entries.append(entry)
+        else:
+            used_api_entries[entry] = list()
+            with open(example_fname, 'r', encoding='utf-8') as fid2:
+                for line in fid2:
+                    if line.startswith('  :ref:'):
+                        example_name = line.split('`')[1]
+                        used_api_entries[entry].append(
+                            example_name)
+
+    source[0] = SPHX_GLR_ORPHAN.format('sphx_glr_sg_api_usage')
+
+    title = 'Unused API Entries'
+    source[0] += title + '\n' + '^' * len(title) + '\n\n'
+    for entry in sorted(unused_api_entries):
+        source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n'
+    source[0] += '\n\n'
+
+    has_graphviz = _has_graphviz()
+    if has_graphviz and unused_api_entries:
+        source[0] += ('.. graphviz:: ./sg_api_unused.dot\n'
+                      '    :alt: API unused entries graph\n'
+                      '    :layout: neato\n\n')
+
+    used_count = len(used_api_entries)
+    total_count = used_count + len(unused_api_entries)
+    used_percentage = used_count / max(total_count, 1)  # avoid div by zero
+    source[0] += ('\nAPI entries used: '
+                  f'{round(used_percentage * 100, 2)}% '
+                  f'({used_count}/{total_count})\n\n')
+
+    if has_graphviz and unused_api_entries:
+        _make_graph(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'),
+                    unused_api_entries, gallery_conf)
+
+    if gallery_conf['show_api_usage'] is True and used_api_entries:
+        title = 'Used API Entries'
+        source[0] += title + '\n' + '^' * len(title) + '\n\n'
+        for entry in sorted(used_api_entries):
+            source[0] += f'- :{get_entry_type(entry)}:`{entry}`\n\n'
+            for ref in used_api_entries[entry]:
+                source[0] += f'  - :ref:`{ref}`\n'
+            source[0] += '\n\n'
+
+        if has_graphviz:
+            used_modules = set([entry.split('.')[0]
+                                for entry in used_api_entries])
+            for module in sorted(used_modules):
+                source[0] += (
+                    f'{module}\n' + '^' * len(module) + '\n\n'
+                    f'.. graphviz:: ./{module}_sg_api_used.dot\n'
+                    f'    :alt: {module} usage graph\n'
+                    '    :layout: neato\n\n')
+
+            for module in used_modules:
+                logger.info(f'Making API usage graph for {module}')
+                # select and format entries for this module
+                entries = dict()
+                for entry, ref in used_api_entries.items():
+                    if entry.split('.')[0] == module:
+                        entry = entry.replace('sphx_glr_', '')
+                        # remove prefix
+                        for target_dir in gallery_conf['gallery_dirs']:
+                            if entry.startswith(target_dir):
+                                entry = entry[len(target_dir) + 1:]
+                _make_graph(os.path.join(app.builder.srcdir,
+                                         f'{module}_sg_api_used.dot'),
+                            entries, gallery_conf)
+
+
+def clean_files(app, exception):
+    if os.path.isfile(os.path.join(app.builder.srcdir, 'sg_api_usage.rst')):
+        os.remove(os.path.join(app.builder.srcdir, 'sg_api_usage.rst'))
+    if os.path.isfile(os.path.join(app.builder.srcdir, 'sg_api_unused.dot')):
+        os.remove(os.path.join(app.builder.srcdir, 'sg_api_unused.dot'))
+    for file in os.listdir(app.builder.srcdir):
+        if 'sg_api_used.dot' in file:
+            os.remove(os.path.join(app.builder.srcdir, file))
 
 
 def write_junit_xml(gallery_conf, target_dir, costs):
@@ -904,14 +1159,14 @@ def get_default_config_value(key):
 
 def setup(app):
     """Setup Sphinx-Gallery sphinx extension"""
-    sphinx_compatibility._app = app
-
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
+        app.connect('autodoc-process-docstring', write_api_entries)
+        app.connect('source-read', write_api_entry_usage)
 
     # Add the custom directive
     app.add_directive('minigallery', MiniGallery)
@@ -923,6 +1178,7 @@ def setup(app):
     app.connect('build-finished', copy_binder_files)
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
+    app.connect('build-finished', clean_files)
     metadata = {'parallel_read_safe': True,
                 'parallel_write_safe': True,
                 'version': _sg_version}

@@ -39,7 +39,7 @@ Prepare for release
 1. Update ``CHANGES.rst``
 
     1. Use `github_changelog_generator
-       <https://github.com/skywinder/github-changelog-generator#installation>`_ to
+       <https://github.com/github-changelog-generator/github-changelog-generator#installation>`_ to
        gather all merged pull requests and closed issues during the development
        cycle. You will likely need to `generate a Github token <https://github.com/settings/tokens/new?description=GitHub%20Changelog%20Generator%20token>`_
        as Github only allows 50 unauthenticated requests per hour. In the
@@ -87,19 +87,21 @@ Finalize the release
 
 1. Create the new release on PyPI
 
-   * Build a source distribution::
+   * Build a source distribution and an ``any`` wheel::
 
-        python setup.py sdist
+        git clean -xdf
+        python setup.py sdist bdist_wheel
 
    * Check the release::
 
-        twine check dist/sphinx-gallery-<version>.tar.gz
+        twine check dist/sphinx-gallery-<version>.*
 
-     ``<version>`` should be the release version, e.g., ``0.7.0``.
+     ``<version>`` should be the release version, e.g., ``0.7.0``, and it
+     should check both the source distribution and the wheel.
 
    * Upload to PyPI::
 
-        twine upload dist/sphinx-gallery-<version>.tar.gz
+        twine upload dist/*
 
      Again, ``<version>`` should be the release version, e.g., ``0.7.0``.
 

@@ -14,21 +14,6 @@ from docutils.parsers.rst.directives import images
 from sphinx.errors import ExtensionError
 
 
-THUMBNAIL_PARENT_DIV = """
-.. raw:: html
-
-    <div class="sphx-glr-thumbnails">
-
-"""
-
-THUMBNAIL_PARENT_DIV_CLOSE = """
-.. raw:: html
-
-    </div>
-
-"""
-
-
 class MiniGallery(Directive):
     """
     Custom directive to insert a mini-gallery
@@ -87,21 +72,18 @@ class MiniGallery(Directive):
         if not any(has_backrefs(obj) for obj in obj_list):
             return []
 
-        # Add div containing all thumbnails;
-        # this is helpful for controlling grid or flexbox behaviours
-        lines.append(THUMBNAIL_PARENT_DIV)
-
-        # Insert the backreferences file(s) using the `include` directive
+        # Insert the backreferences file(s) using the `include` directive.
+        # This already includes the opening <div class="sphx-glr-thumbnails">
+        # and its closing </div>.
         for obj in obj_list:
             path = os.path.join('/',  # Sphinx treats this as the source dir
                                 backreferences_dir,
                                 '{}.examples'.format(obj))
 
-            # Always remove the heading (first 5 lines) from the file
-            lines.append('.. include:: {}\n    :start-line: 5'.format(path))
-
-        # Close thumbnail parent div
-        lines.append(THUMBNAIL_PARENT_DIV_CLOSE)
+            # Always remove the heading from the file
+            lines.append("""\
+.. include:: {}
+    :start-after: start-sphx-glr-thumbnails""".format(path))
 
         # Parse the assembly of `include` and `raw` directives
         text = '\n'.join(lines)
@@ -143,14 +125,14 @@ class ImageSg(images.Image):
         .. image-sg:: /plot_types/basic/images/sphx_glr_bar_001.png
             :alt: bar
             :srcset: /plot_types/basic/images/sphx_glr_bar_001.png,
-                     /plot_types/basic/images/sphx_glr_bar_001_2_0x.png 2.0x
+                     /plot_types/basic/images/sphx_glr_bar_001_2_00x.png 2.00x
             :class: sphx-glr-single-img
 
     The resulting html is::
 
         <img src="sphx_glr_bar_001_hidpi.png"
             srcset="_images/sphx_glr_bar_001.png,
-                    _images/sphx_glr_bar_001_2_0x.png 2x",
+                    _images/sphx_glr_bar_001_2_00x.png 2x",
             alt="bar"
             class="sphx-glr-single-img" />
 
@@ -234,7 +216,7 @@ def visit_imgsg_html(self, node):
         if mult == 0:
             srcsetst += ', '
         else:
-            srcsetst += f' {mult:1.1f}x, '
+            srcsetst += f' {mult:1.2f}x, '
     # trim trailing comma and space...
     srcsetst = srcsetst[:-2]
 

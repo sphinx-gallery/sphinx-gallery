@@ -34,15 +34,16 @@ import traceback
 import codeop
 
 from sphinx.errors import ExtensionError
+import sphinx.util
 
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
 from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
                     optipng)
 from . import glr_path_static
-from . import sphinx_compatibility
 from .backreferences import (_write_backreferences, _thumbnail_div,
-                             identify_names)
+                             identify_names, THUMBNAIL_PARENT_DIV,
+                             THUMBNAIL_PARENT_DIV_CLOSE)
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (split_code_and_text_blocks,
                                remove_config_comments,
@@ -51,7 +52,7 @@ from .py_source_parser import (split_code_and_text_blocks,
 from .notebook import jupyter_notebook, save_notebook
 from .binder import check_binder_conf, gen_binder_rst, gen_lite_rst
 
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 ###############################################################################
@@ -350,21 +351,6 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
     return None
 
 
-THUMBNAIL_PARENT_DIV = """
-.. raw:: html
-
-    <div class="sphx-glr-thumbnails">
-
-"""
-
-THUMBNAIL_PARENT_DIV_CLOSE = """
-.. raw:: html
-
-    </div>
-
-"""
-
-
 def generate_dir_rst(
     src_dir,
     target_dir,
@@ -439,7 +425,7 @@ def generate_dir_rst(
     costs = []
     subsection_toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    iterator = sphinx_compatibility.status_iterator(
+    iterator = sphinx.util.status_iterator(
         sorted_listdir,
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
@@ -1122,6 +1108,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
                           fname, intro, title)
 
+    # This can help with garbage collection in some instances
+    if global_variables is not None and '___' in global_variables:
+        del global_variables['___']
     del script_vars, global_variables  # don't keep these during reset
     if executable and gallery_conf['reset_modules_order'] in ['after', 'both']:
         clean_modules(gallery_conf, fname, 'after')
@@ -1141,7 +1130,7 @@ EXAMPLE_HEADER = """
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_{1}>`
+        :ref:`Go to the end <sphx_glr_download_{1}>`
         to download the full example code{2}
 
 .. rst-class:: sphx-glr-example-title

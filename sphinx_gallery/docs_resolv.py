@@ -21,11 +21,10 @@ from urllib.error import HTTPError, URLError
 
 from sphinx.errors import ExtensionError
 from sphinx.search import js_index
+import sphinx.util
 
-from . import sphinx_compatibility
 
-
-logger = sphinx_compatibility.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
 
 def _get_data(url):
@@ -150,7 +149,7 @@ class SphinxDocLinkResolver(object):
                     'URLs (doc_url cannot be absolute)')
             index_url = doc_url + '/'
             searchindex_url = doc_url + '/searchindex.js'
-            docopts_url = doc_url + '_static/documentation_options.js'
+            docopts_url = doc_url + '/_static/documentation_options.js'
         else:
             index_url = os.path.join(doc_url, 'index.html')
             searchindex_url = os.path.join(doc_url, 'searchindex.js')
@@ -345,7 +344,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     flat = [[dirpath, filename]
             for dirpath, _, filenames in os.walk(html_gallery_dir)
             for filename in filenames]
-    iterator = sphinx_compatibility.status_iterator(
+    iterator = sphinx.util.status_iterator(
         flat, 'embedding documentation hyperlinks for %s... ' % gallery_dir,
         color='fuchsia', length=len(flat),
         stringify_func=lambda x: os.path.basename(x[1]))

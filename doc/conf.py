@@ -45,6 +45,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx_gallery.gen_gallery',
+    'sphinx.ext.graphviz',
     'jupyterlite_sphinx',
 ]
 
@@ -360,11 +361,13 @@ else:
 
 # Set plotly renderer to capture _repr_html_ for sphinx-gallery
 try:
-    import plotly.io.renderers
+    import plotly.io
 except ImportError:
     pass
 else:
     plotly.io.renderers.default = 'sphinx_gallery'
+    examples_dirs.append('../plotly_examples')
+    gallery_dirs.append('auto_plotly_examples')
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
@@ -403,6 +406,7 @@ sphinx_gallery_conf = {
     'matplotlib_animations': True,
     'image_srcset': ["2x"],
     'nested_sections': False,
+    'show_api_usage': True,
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show

@@ -57,6 +57,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
+    'sphinx.ext.graphviz',
 ]
 templates_path = ['_templates']
 autosummary_generate = True
@@ -101,6 +102,7 @@ sphinx_gallery_conf = {
     'pypandoc': True,
     'image_srcset': ["2x"],
     'exclude_implicit_doc': ['figure_rst'],
+    'show_api_usage': True,
 }
 nitpicky = True
 highlight_language = 'python3'
