@@ -57,7 +57,7 @@ stages:
         set -e
         python --version
         python -m pip install --user --upgrade pip setuptools wheel
-        pip install --user --upgrade --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" jupyterlite-sphinx
+        pip install --user --upgrade --progress-bar off --upgrade "ipython!=8.7.0" numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" jupyterlite-sphinx
         # Mayavi does not work with latest VTK on Windows yet
         pip install --user --upgrade --progress-bar off pyvista pyqt5 mayavi plotly "vtk<9.2"
       displayName: Setup pip environment
