@@ -17,7 +17,7 @@ if [ "$DISTRIB" == "conda" ]; then
     CONDA_TO_INSTALL="$@"
     CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz"
     PIP_DEPENDENCIES="$@"
-    PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest" jupyterlite-sphinx
+    PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest jupyterlite-sphinx"
     if [ "$PYTHON_VERSION" != "3.8" -o "$LOCALE" != "C" ]; then
         CONDA_TO_INSTALL="$CONDA_TO_INSTALL memory_profiler ipython pypandoc"
     fi
