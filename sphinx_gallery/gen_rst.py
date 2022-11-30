@@ -184,8 +184,6 @@ def codestr2rst(codestr, lang='python', lineno=None):
     else:
         lineno = ''
     code_directive = ".. code-block:: {0}\n{1}\n".format(lang, lineno)
-    # code_directive = ".. replite::\n"
-    # code_directive = code_directive + f"    :kernel: {lang}\n\n"
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
