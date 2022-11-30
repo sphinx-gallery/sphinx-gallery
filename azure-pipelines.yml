@@ -76,6 +76,9 @@ stages:
       displayName: Remove keys incompatible with this Windows build
     - bash: make -C doc html
       displayName: make html
+    - bash: bash <(curl -s https://codecov.io/bash)
+      displayName: 'Codecov'
+      condition: succeededOrFailed()
     - task: PublishTestResults@2
       inputs:
         testResultsFiles: 'junit-*.xml'
@@ -143,3 +146,6 @@ stages:
       inputs:
         filePath: continuous_integration/azure/test_script.sh
       displayName: Run test_script.sh
+    - bash: bash <(curl -s https://codecov.io/bash)
+      displayName: 'Codecov'
+      condition: succeededOrFailed()
