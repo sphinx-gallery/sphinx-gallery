@@ -14,3 +14,4 @@ check-manifest
 plotly
 absl-py
 graphviz
+packaging
