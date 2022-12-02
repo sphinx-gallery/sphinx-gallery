@@ -32,7 +32,6 @@ import subprocess
 import sys
 import traceback
 import codeop
-from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from sphinx.errors import ExtensionError
 import sphinx.util
@@ -429,22 +428,32 @@ def generate_dir_rst(
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
 
-    with ProcessPoolExecutor(max_workers=8) as executor:
-        future_gen_file = {executor.submit(generate_file_rst, *(fname, target_dir, src_dir, gallery_conf, seen_backrefs)): fname for fname in sorted_listdir}
-        for future in as_completed(future_gen_file):
-            fname = future_gen_file[future][0]
-            intro, title, cost = future.result()
-            src_file = os.path.normpath(os.path.join(src_dir, fname))
-            costs.append((cost, src_file))
-            gallery_item_filename = os.path.join(
-                build_target_dir,
-                fname[:-3]
-            ).replace(os.sep, '/')
-            this_entry = _thumbnail_div(
-                target_dir, gallery_conf['src_dir'], fname, intro, title
-            )
-            entries_text.append(this_entry)
-            subsection_toctree_filenames.append("/" + gallery_item_filename)
+    try:
+        from pathos.pools import ProcessPool
+        has_pathos = True
+    except ImportError:
+        has_pathos = False
+    if gallery_conf['parallel'] and has_pathos:
+        pool = ProcessPool()
+        inputs = [(fname, target_dir, src_dir, gallery_conf, seen_backrefs) for fname in iterator]
+        results = pool.map(lambda x:generate_file_rst(*x), inputs)
+    else:
+        results = [generate_file_rst(*(fname, target_dir, src_dir, gallery_conf, seen_backrefs)) for fname in iterator]
+
+    for i in range(len(results)):
+        fname = sorted_listdir[i]
+        intro, title, cost = results[i]
+        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        costs.append((cost, src_file))
+        gallery_item_filename = os.path.join(
+            build_target_dir,
+            fname[:-3]
+        ).replace(os.sep, '/')
+        this_entry = _thumbnail_div(
+            target_dir, gallery_conf['src_dir'], fname, intro, title
+        )
+        entries_text.append(this_entry)
+        subsection_toctree_filenames.append("/" + gallery_item_filename)
 
     for entry_text in entries_text:
         subsection_index_content += entry_text

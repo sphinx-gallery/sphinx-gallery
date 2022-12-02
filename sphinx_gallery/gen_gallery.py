@@ -104,6 +104,7 @@ DEFAULT_GALLERY_CONF = {
     'prefer_full_module': [],
     'api_usage_ignore': '.*__.*__',
     'show_api_usage': False,
+    'parallel': False,
 }
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
