@@ -427,9 +427,22 @@ def generate_dir_rst(
         sorted_listdir,
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
-    for fname in iterator:
-        intro, title, cost = generate_file_rst(
-            fname, target_dir, src_dir, gallery_conf, seen_backrefs)
+
+    try:
+        from pathos.pools import ProcessPool
+        has_pathos = True
+    except ImportError:
+        has_pathos = False
+    if gallery_conf['parallel'] and has_pathos:
+        pool = ProcessPool()
+        inputs = [(fname, target_dir, src_dir, gallery_conf, seen_backrefs) for fname in iterator]
+        results = pool.map(lambda x:generate_file_rst(*x), inputs)
+    else:
+        results = [generate_file_rst(*(fname, target_dir, src_dir, gallery_conf, seen_backrefs)) for fname in iterator]
+
+    for i in range(len(results)):
+        fname = sorted_listdir[i]
+        intro, title, cost = results[i]
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append((cost, src_file))
         gallery_item_filename = os.path.join(
