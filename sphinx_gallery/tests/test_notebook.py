@@ -16,6 +16,7 @@ import re
 import base64
 import shutil
 import textwrap
+import unittest.mock
 
 from sphinx.errors import ExtensionError
 
@@ -206,6 +207,35 @@ def test_headings():
     assert "\n# Centered\n" in text
     assert "#\nBlank heading above." not in text
     assert "# White space above\n" in text
+
+
+def test_include_inlining():
+    """Make sure files from include directives are inserted."""
+
+    # The included file might contain additional directives.
+    mocked_data = unittest.mock.mock_open(read_data=textwrap.dedent("""
+        This is text from base/path/dummy_file.txt
+
+        This is :math:`some` math to check follow-on cleanup.
+    """).lstrip())
+    rst = textwrap.dedent("""
+        Regular text
+            .. include:: dummy_file.txt
+
+        More regular text
+    """)
+
+    # The include directive is indented, so the output will be too.
+    with unittest.mock.patch("builtins.open", mocked_data):
+        assert rst2md(rst, {}, "base/path", {}) == textwrap.dedent("""
+            Regular text
+                This is text from base/path/dummy_file.txt
+
+                This is $some$ math to check follow-on cleanup.
+
+            More regular text
+        """)
+    mocked_data.assert_called_with("base/path/dummy_file.txt")
 
 
 def test_cell_magic_promotion():

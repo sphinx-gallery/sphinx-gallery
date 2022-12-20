@@ -118,6 +118,17 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
         Note that ``over_char`` is `None` when only underline is present.
     """
 
+    include_re = re.compile(r"^([ \t]*)\.\. include::\s*(.+)\n", flags=re.M)
+
+    def load_include(match):
+        full_path = os.path.join(target_dir, match.group(2))
+        with open(full_path) as file:
+            lines = file.read()
+        indented = textwrap.indent(lines, match.group(1))
+        return indented
+
+    text = re.sub(include_re, load_include, text)
+
     # Characters recommended for use with headings
     # https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html#sections
     adornment_characters = "=`:.'\"~^_*+#<>-"
