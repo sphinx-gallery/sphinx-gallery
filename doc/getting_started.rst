@@ -27,7 +27,7 @@ help you get started.
 .. note::
    Working `sphinx
    builders <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#options>`_
-   for sphinx_gallery include `html` and `latex`.
+   for sphinx_gallery include `html`, `dirhtml` and `latex`.
 
 
 .. _set_up_your_project:
