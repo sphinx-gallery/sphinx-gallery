@@ -18,8 +18,8 @@ if [ "$DISTRIB" == "conda" ]; then
     CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz"
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
-    if [ "$PYTHON_VERSION" != "3.7" -o "$LOCALE" != "C" ]; then
-        CONDA_TO_INSTALL="$CONDA_TO_INSTALL mayavi memory_profiler ipython pypandoc"
+    if [ "$PYTHON_VERSION" != "3.8" -o "$LOCALE" != "C" ]; then
+        CONDA_TO_INSTALL="$CONDA_TO_INSTALL memory_profiler \"ipython!=8.7.0\" pypandoc"
     fi
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
@@ -62,9 +62,14 @@ elif [ "$DISTRIB" == "nightly" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     python -m pip install --upgrade . pytest pytest-cov coverage
 elif [ "$DISTRIB" == "ubuntu" ]; then
-    sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng graphviz
-    python3 -m pip install --upgrade pip setuptools
-    python3 -m pip install -r dev-requirements.txt | cat
+    sudo apt-get install --fix-missing python3-numpy python3-matplotlib python3-pip python3-coverage optipng graphviz \
+      libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libopengl0 libegl1 libosmesa6 mesa-utils libxcb-shape0
+    python3 -m pip install --upgrade pip setuptools wheel
+    python3 -m pip install -r dev-requirements.txt
+    python3 -m pip install "vtk<9.2" pyqt5
+    python3 -m pip install --no-build-isolation mayavi
+    # Make sure that Mayavi works and does not die when making an actual plot (tests Qt + VTK)
+    python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
     python3 -m pip install sphinx==3 "jinja2<=3.0.3"

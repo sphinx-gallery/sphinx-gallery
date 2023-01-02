@@ -14,7 +14,7 @@ stages:
   jobs:
     - job: Skip
       pool:
-        vmImage: 'ubuntu-18.04'
+        vmImage: 'ubuntu-latest'
       variables:
         RET: 'true'
       steps:
@@ -57,9 +57,9 @@ stages:
         set -e
         python --version
         python -m pip install --user --upgrade pip setuptools wheel
-        pip install --user --upgrade --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0"
+        pip install --user --upgrade --progress-bar off --upgrade "ipython!=8.7.0" numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0"
         # Mayavi does not work with latest VTK on Windows yet
-        pip install --user --upgrade --progress-bar off pyvista pyqt5 mayavi "vtk<9.2"
+        pip install --user --upgrade --progress-bar off pyvista pyqt5 mayavi plotly "vtk<9.2"
       displayName: Setup pip environment
     - script: pip list
       displayName: pip list
@@ -76,6 +76,9 @@ stages:
       displayName: Remove keys incompatible with this Windows build
     - bash: make -C doc html
       displayName: make html
+    - bash: bash <(curl -s https://codecov.io/bash)
+      displayName: 'Codecov'
+      condition: succeededOrFailed()
     - task: PublishTestResults@2
       inputs:
         testResultsFiles: 'junit-*.xml'
@@ -86,27 +89,27 @@ stages:
   - job:
     displayName: Linux
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-22.04'
     variables:
       DISPLAY: ':99'
     strategy:
       matrix:
-        ubuntu_python37:
+        ubuntu_python38:
           DISTRIB: 'ubuntu'
-          PYTHON_VERSION: '3.7'
+          PYTHON_VERSION: '3.8'
           SPHINXOPTS: ''
-        conda_python37_sphinxOld:
+        conda_python38_sphinxOld:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.7'
-          SPHINX_VERSION: '3'
+          PYTHON_VERSION: '3.8'
+          SPHINX_VERSION: '4'
           LOCALE: 'C'
         conda_python38_sphinxDev:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.8'
+          PYTHON_VERSION: '3.10'
           SPHINX_VERSION: 'dev'
-        python37_minimal:
+        python38_minimal:
           DISTRIB: 'minimal'
-          PYTHON_VERSION: '3.7'
+          PYTHON_VERSION: '3.8'
         pythonNightly:
           DISTRIB: 'nightly'
           PYTHON_VERSION: '3.10'
@@ -143,3 +146,6 @@ stages:
       inputs:
         filePath: continuous_integration/azure/test_script.sh
       displayName: Run test_script.sh
+    - bash: bash <(curl -s https://codecov.io/bash)
+      displayName: 'Codecov'
+      condition: succeededOrFailed()
