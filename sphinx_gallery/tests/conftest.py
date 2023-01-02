@@ -163,6 +163,15 @@ class SphinxAppWrapper(object):
         with self.create_sphinx_app_context() as app:
             # building should be done in the same docutils_namespace context
             app.build(*args, **kwargs)
+        if hasattr(app, '_warning'):
+            # Clean up the output (sphinx can add irrelevant warnings...)
+            got = app._warning.getvalue()
+            ignore = """\
+WARNING: while setting up extension sphinx.addnodes: node class 'meta' is already registered, its visitors will be overridden
+"""  # noqa:E501
+            for line in ignore.split('\n'):
+                got = got.replace(line, '')
+            app._warning = StringIO(got)
         return app
 
 
