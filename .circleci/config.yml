@@ -40,8 +40,9 @@ jobs:
           name: Pip
           # PyVista 0.33 needs VTK >= 9.0.1, but Mayavi breaks with 9.1... so just pin PyVista for now
           command: |
-            pip install --progress-bar off --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3" "vtk<9.2"
-            pip install --progress-bar off --user seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest traits mayavi pyvista memory_profiler "ipython!=8.7.0" plotly graphviz
+            pip install --progress-bar off --user --upgrade --only-binary ":all:" pip setuptools
+            pip install --progress-bar off --user --upgrade --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3" vtk
+            pip install --progress-bar off --user --upgrade seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest traits mayavi pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18"
       - save_cache:
           key: cache-pip
           paths:
