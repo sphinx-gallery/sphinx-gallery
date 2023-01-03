@@ -36,40 +36,19 @@ N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory, req_mpl, req_pil):
-    # Skip if numpy not installed
-    pytest.importorskip("numpy")
-
-    temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
-    src_dir = op.join(op.dirname(__file__), 'tinybuild')
-
-    def ignore(src, names):
-        return ('_build', 'gen_modules', 'auto_examples')
-
-    shutil.copytree(src_dir, temp_dir, ignore=ignore)
-    # For testing iteration, you can get similar behavior just doing `make`
-    # inside the tinybuild directory
-    src_dir = temp_dir
-    conf_dir = temp_dir
-    out_dir = op.join(temp_dir, '_build', 'html')
-    toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
-    # Avoid warnings about re-registration, see:
-    # https://github.com/sphinx-doc/sphinx/issues/5038
-    with docutils_namespace():
-        app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                     buildername='html', status=StringIO(),
-                     warning=StringIO())
-        # need to build within the context manager
-        # for automodule and backrefs to work
-        app.build(False, [])
-    return app
+    return _sphinx_app(tmpdir_factory, 'html')
 
 
 @pytest.fixture(scope='module')
 def sphinx_dirhtml_app(tmpdir_factory, req_mpl, req_pil):
+    return _sphinx_app(tmpdir_factory, 'dirhtml')
+
+
+def _sphinx_app(tmpdir_factory, buildername):
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
-    temp_dir = (tmpdir_factory.getbasetemp() / 'root_dirhtml').strpath
+    temp_dir = (tmpdir_factory.getbasetemp() / f'root_{buildername}').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
     def ignore(src, names):
@@ -80,13 +59,13 @@ def sphinx_dirhtml_app(tmpdir_factory, req_mpl, req_pil):
     # inside the tinybuild directory
     src_dir = temp_dir
     conf_dir = temp_dir
-    out_dir = op.join(temp_dir, '_build', 'dirhtml')
+    out_dir = op.join(temp_dir, '_build', buildername)
     toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
         app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                     buildername='dirhtml', status=StringIO(),
+                     buildername=buildername, status=StringIO(),
                      warning=StringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
