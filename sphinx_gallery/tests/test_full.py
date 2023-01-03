@@ -64,6 +64,36 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
     return app
 
 
+@pytest.fixture(scope='module')
+def sphinx_dirhtml_app(tmpdir_factory, req_mpl, req_pil):
+    # Skip if numpy not installed
+    pytest.importorskip("numpy")
+
+    temp_dir = (tmpdir_factory.getbasetemp() / 'root_dirhtml').strpath
+    src_dir = op.join(op.dirname(__file__), 'tinybuild')
+
+    def ignore(src, names):
+        return ('_build', 'gen_modules', 'auto_examples')
+
+    shutil.copytree(src_dir, temp_dir, ignore=ignore)
+    # For testing iteration, you can get similar behavior just doing `make`
+    # inside the tinybuild directory
+    src_dir = temp_dir
+    conf_dir = temp_dir
+    out_dir = op.join(temp_dir, '_build', 'dirhtml')
+    toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
+    # Avoid warnings about re-registration, see:
+    # https://github.com/sphinx-doc/sphinx/issues/5038
+    with docutils_namespace():
+        app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
+                     buildername='dirhtml', status=StringIO(),
+                     warning=StringIO())
+        # need to build within the context manager
+        # for automodule and backrefs to work
+        app.build(False, [])
+    return app
+
+
 def test_timings(sphinx_app):
     """Test that a timings page is created."""
     out_dir = sphinx_app.outdir
@@ -782,6 +812,20 @@ def test_error_messages(sphinx_app, name, want):
     rst = rst.replace('\n', ' ')
     assert re.match(want, rst) is not None
 
+@pytest.mark.parametrize('name, want', [
+    ('future/plot_future_imports_broken',
+     '.*RuntimeError.*Forcing this example to fail on Python 3.*'),
+    ('plot_scraper_broken',
+     '.*ValueError.*zero-size array to reduction.*'),
+])
+def test_error_messages_dirhtml(sphinx_dirhtml_app, name, want):
+    """Test that informative error messages are added."""
+    src_dir = sphinx_dirhtml_app.srcdir
+    example_rst = op.join(src_dir, 'auto_examples', name + '.rst')
+    with codecs.open(example_rst, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    rst = rst.replace('\n', ' ')
+    assert re.match(want, rst) is not None
 
 def test_alt_text_image(sphinx_app):
     """Test alt text for matplotlib images in html and rst"""
