@@ -461,8 +461,10 @@ def test_remove_config_comments(gallery_conf, req_pil):
     assert '# sphinx_gallery_defer_figures' not in rst
 
 
-def test_remove_ignore_blocks(gallery_conf, req_pil):
+@pytest.mark.parametrize("remove_config_comments", [True, False])
+def test_remove_ignore_blocks(gallery_conf, req_pil, remove_config_comments):
     """Test removal of ignore blocks."""
+    gallery_conf['remove_config_comments'] = remove_config_comments
     rst = _generate_rst(gallery_conf, 'test.py', CONTENT)
     assert 'pass # Will be run but not rendered' in CONTENT
     assert 'pass # Will be run but not rendered' not in rst
