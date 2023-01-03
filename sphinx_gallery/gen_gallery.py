@@ -464,13 +464,6 @@ def generate_gallery_rst(app):
     Eventually, we create a toctree in the current index file
     which points to section index files.
     """
-    blocked_builder = ['dirhtml']
-    if app.builder.name in blocked_builder:
-        msg = (
-            f'Builder is set to {repr(app.builder.name)}. sphinx_gallery does '
-            f'not work for any of the following: {[blocked_builder]}'
-        )
-        raise ConfigError(msg)
 
     logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
