@@ -205,7 +205,7 @@ def visit_imgsg_html(self, node):
     imagerel = os.path.relpath(imagedir, os.path.dirname(dest))
     if self.builder.name == "dirhtml":
         imagerel = os.path.join('..', imagerel, '')
-    else: # html
+    else:  # html
         imagerel = os.path.join(imagerel, '')
 
     if '\\' in imagerel:
