@@ -791,6 +791,7 @@ def test_error_messages(sphinx_app, name, want):
     rst = rst.replace('\n', ' ')
     assert re.match(want, rst) is not None
 
+
 @pytest.mark.parametrize('name, want', [
     ('future/plot_future_imports_broken',
      '.*RuntimeError.*Forcing this example to fail on Python 3.*'),
@@ -805,6 +806,7 @@ def test_error_messages_dirhtml(sphinx_dirhtml_app, name, want):
         rst = fid.read()
     rst = rst.replace('\n', ' ')
     assert re.match(want, rst) is not None
+
 
 def test_alt_text_image(sphinx_app):
     """Test alt text for matplotlib images in html and rst"""
