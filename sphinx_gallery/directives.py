@@ -201,9 +201,13 @@ def visit_imgsg_html(self, node):
     # /doc/build/html/examples/subd
     dest = os.path.join(desttop, relsource)
 
-    # ../../_images/
+    # ../../_images/ for dirhtml and ../_images/ for html
     imagerel = os.path.relpath(imagedir, os.path.dirname(dest))
-    imagerel = os.path.join(imagerel, '')
+    if self.builder.name == "dirhtml":
+        imagerel = os.path.join('..', imagerel, '')
+    else:  # html
+        imagerel = os.path.join(imagerel, '')
+
     if '\\' in imagerel:
         imagerel = imagerel.replace('\\', '/')
     # make srcset str.  Need to change all the prefixes!

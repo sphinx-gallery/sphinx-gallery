@@ -72,7 +72,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
-    python3 -m pip install sphinx==3 "jinja2<=3.0.3"
+    python3 -m pip install "sphinx<4" "jinja2<=3.0.3"
     python3 setup.py install --user
     python3 -m pip list
 else
