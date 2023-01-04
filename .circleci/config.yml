@@ -42,7 +42,7 @@ jobs:
           command: |
             pip install --progress-bar off --user --upgrade --only-binary ":all:" pip setuptools
             pip install --progress-bar off --user --upgrade --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3" vtk
-            pip install --progress-bar off --user --upgrade seaborn statsmodels sphinx_rtd_theme jupyterlite-sphinx pillow joblib sphinx pytest traits mayavi pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18"
+            pip install --progress-bar off --user --upgrade seaborn statsmodels sphinx_rtd_theme pillow joblib sphinx pytest traits mayavi pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18" jupyterlite-sphinx
       - save_cache:
           key: cache-pip
           paths:
