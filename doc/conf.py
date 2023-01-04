@@ -49,8 +49,13 @@ extensions = [
     'jupyterlite_sphinx',
 ]
 
-jupyterlite_contents = ["./auto_*examples/*.ipynb", "./tutorials/*.ipynb"]
-# Do not use notebooks as sources for the documentation
+# TODO hack I know in advance where notebooks are going to be copied for
+# binder, it should probably be set somewhere else
+jupyterlite_contents = ["_build/html/notebooks"]
+
+# Do not use notebooks as sources for the documentation. See
+# https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
+# for more details
 jupyterlite_bind_ipynb_suffix = False
 
 # Add any paths that contain templates here, relative to this directory.

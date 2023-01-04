@@ -1250,8 +1250,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
 
     jupyterlite_rst = ''
     if gallery_conf['jupyterlite']:
-        jupyterlite_rst = gen_lite_rst(example_file, replace_py_ipynb(fname),
-                                       gallery_conf)
+        jupyterlite_rst = gen_lite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, '  ')  # need an extra two
 
     example_rst += CODE_DOWNLOAD.format(fname,

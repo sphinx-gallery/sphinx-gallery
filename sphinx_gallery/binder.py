@@ -132,7 +132,7 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     return rst
 
 
-def gen_lite_rst(fpath, notebook_file, gallery_conf):
+def gen_lite_rst(fpath, gallery_conf):
     """Generate the RST + link for the Binder badge.
 
     Parameters
@@ -149,7 +149,9 @@ def gen_lite_rst(fpath, notebook_file, gallery_conf):
     rst : str
         The reStructuredText for the JupyterLite badge that links to this file.
     """
-    lite_url = f"../lite/lab/index.html?path={notebook_file}"
+    relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
+    notebook_location = relative_link.replace('.py', '.ipynb')
+    lite_url = f"../lite/lab/index.html?path={notebook_location}"
     physical_path = os.path.join(
         os.path.dirname(fpath), 'images', 'jupyterlite_badge.svg')
     os.makedirs(os.path.dirname(physical_path), exist_ok=True)
