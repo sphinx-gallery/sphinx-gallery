@@ -49,10 +49,6 @@ extensions = [
     'jupyterlite_sphinx',
 ]
 
-# TODO hack I know in advance where notebooks are going to be copied for
-# binder, it should probably be set somewhere else
-jupyterlite_contents = ["_build/html/notebooks"]
-
 # Do not use notebooks as sources for the documentation. See
 # https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
 # for more details
@@ -145,12 +141,26 @@ if html_theme == 'rtd':
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 
+def set_jupyterlite_contents(app, config):
+    # TODO still hacky since it relies on binder being enabled and matching the
+    # location in the notebooks in sphinx_gallery.binder._copy_binder_notebooks
+    jupyterlite_contents = [
+        os.path.join(
+            app.outdir,
+            app.config.sphinx_gallery_conf['binder']['notebooks_dir']
+        )
+    ]
+    app.config.jupyterlite_contents = jupyterlite_contents
+
+
 def setup(app):
     """Sphinx setup function."""
     app.add_css_file('theme_override.css')
     app.add_object_type('confval', 'confval',
                         objname='configuration value',
                         indextemplate='pair: %s; configuration value')
+
+    app.connect('config-inited', set_jupyterlite_contents)
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
