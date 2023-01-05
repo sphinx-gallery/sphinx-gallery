@@ -50,7 +50,9 @@ from .py_source_parser import (split_code_and_text_blocks,
                                remove_ignore_blocks)
 
 from .notebook import jupyter_notebook, save_notebook
-from .binder import check_binder_conf, gen_binder_rst, gen_lite_rst
+from .binder import check_binder_conf, gen_binder_rst
+from .jupyterlite import gen_jupyterlite_rst
+
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
@@ -1250,7 +1252,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
 
     jupyterlite_rst = ''
     if gallery_conf['jupyterlite']:
-        jupyterlite_rst = gen_lite_rst(example_file, gallery_conf)
+        jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, '  ')  # need an extra two
 
     example_rst += CODE_DOWNLOAD.format(fname,
