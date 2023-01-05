@@ -152,7 +152,7 @@ def set_jupyterlite_contents(app, config):
     ]
     app.config.jupyterlite_contents = jupyterlite_contents
     # TODO somehow jupyterlite_bind_ipynb_suffix = False is ignored?
-    app.registry.source_suffix.pop('.ipynb')
+    app.registry.source_suffix.pop('.ipynb', None)
 
 
 def setup(app):

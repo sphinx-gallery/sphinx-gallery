@@ -49,4 +49,3 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
         "      :alt: Launch JupyterLite\n"
         "      :width: 150 px\n").format(lite_url)
     return rst
-
