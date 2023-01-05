@@ -60,7 +60,7 @@ jobs:
           command: |
             python setup.py develop --user
 
-      - run: python setup.py build_sphinx -nW
+      - run: python setup.py build_sphinx -nW --keep-going
       - store_artifacts:
           path: doc/_build/html/
           destination: rtd_html
