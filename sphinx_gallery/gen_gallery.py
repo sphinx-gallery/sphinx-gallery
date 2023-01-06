@@ -68,7 +68,7 @@ DEFAULT_GALLERY_CONF = {
     # 'plot_gallery' also accepts strings that evaluate to a bool, e.g. "True",
     # "False", "1", "0" so that they can be easily set via command line
     # switches of sphinx-build
-    'plot_gallery': True,
+    'plot_gallery': 'True',
     'download_all_examples': True,
     'abort_on_example_error': False,
     'only_warn_on_example_error': False,
