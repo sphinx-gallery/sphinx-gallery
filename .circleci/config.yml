@@ -91,7 +91,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "aa:70:d9:6b:35:74:50:d1:f7:73:fb:3d:3c:79:cd:5c"
+            - "87:18:18:25:10:8c:29:0f:25:bd:28:b1:4f:cd:af:96"
       - attach_workspace:
           at: rtd_html
       - run: ./.circleci/docs_deploy.sh rtd_html dev
@@ -103,7 +103,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "aa:70:d9:6b:35:74:50:d1:f7:73:fb:3d:3c:79:cd:5c"
+            - "87:18:18:25:10:8c:29:0f:25:bd:28:b1:4f:cd:af:96"
       - attach_workspace:
           at: rtd_html
       - run: ./.circleci/docs_deploy.sh rtd_html stable
