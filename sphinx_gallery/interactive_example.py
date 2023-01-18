@@ -331,7 +331,14 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     """
     relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
     notebook_location = relative_link.replace('.py', '.ipynb')
-    lite_url = f"../lite/lab/index.html?path={notebook_location}"
+
+    if gallery_conf["jupyterlite"].get("use_jupyter_lab", True):
+        lite_root_url = "../lite/lab"
+    else:
+        lite_root_url = "../lite/retro/notebooks"
+
+    lite_url = f"{lite_root_url}/?path={notebook_location}"
+
     # Similar work-around for badge file as in
     # gen_binder_rst
     physical_path = os.path.join(

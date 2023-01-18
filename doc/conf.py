@@ -393,9 +393,8 @@ sphinx_gallery_conf = {
                'use_jupyter_lab': True,
                },
     'jupyterlite': {
-        # TODO
-        # use_jupyter_lab: True,
         'contents': 'jupyterlite_contents'
+        'use_jupyter_lab': True,
     },
     'show_memory': True,
     'promote_jupyter_magic': False,

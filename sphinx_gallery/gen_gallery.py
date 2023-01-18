@@ -59,7 +59,6 @@ DEFAULT_GALLERY_CONF = {
     'within_subsection_order': NumberOfCodeLinesSortKey,
     'gallery_dirs': 'auto_examples',
     'backreferences_dir': None,
-    'jupyterlite': False,
     'doc_module': (),
     'exclude_implicit_doc': {},
     'reference_url': {},
@@ -82,6 +81,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
+    'jupyterlite': {},
     'promote_jupyter_magic': False,
     'image_scrapers': ('matplotlib',),
     'compress_images': (),
@@ -835,7 +835,6 @@ def write_api_entry_usage(app, docname, source):
         return
 
     def get_entry_type(entry):
-        logger.info(gallery_conf['api_entries'])
         if entry in gallery_conf['api_entries']['class']:
             return 'class'
         elif entry in gallery_conf['api_entries']['method']:
