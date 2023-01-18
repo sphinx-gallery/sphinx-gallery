@@ -49,11 +49,6 @@ extensions = [
     'jupyterlite_sphinx',
 ]
 
-# Do not use notebooks as sources for the documentation. See
-# https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
-# for more details
-jupyterlite_bind_ipynb_suffix = False
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -141,28 +136,12 @@ if html_theme == 'rtd':
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 
-def set_jupyterlite_contents(app, config):
-    # TODO still hacky since it relies on binder being enabled and matching the
-    # location in the notebooks in sphinx_gallery.binder._copy_binder_notebooks
-    jupyterlite_contents = [
-        os.path.join(
-            app.outdir,
-            app.config.sphinx_gallery_conf['binder']['notebooks_dir']
-        )
-    ]
-    app.config.jupyterlite_contents = jupyterlite_contents
-    # TODO somehow jupyterlite_bind_ipynb_suffix = False is ignored?
-    app.registry.source_suffix.pop('.ipynb', None)
-
-
 def setup(app):
     """Sphinx setup function."""
     app.add_css_file('theme_override.css')
     app.add_object_type('confval', 'confval',
                         objname='configuration value',
                         indextemplate='pair: %s; configuration value')
-
-    app.connect('config-inited', set_jupyterlite_contents)
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -396,7 +375,6 @@ sphinx_gallery_conf = {
     'reference_url': {
         'sphinx_gallery': None,
     },
-    'jupyterlite': True,
     'examples_dirs': examples_dirs,
     'gallery_dirs': gallery_dirs,
     'image_scrapers': image_scrapers,
@@ -414,6 +392,11 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
+    'jupyterlite': {
+        # TODO
+        # use_jupyter_lab: True,
+        'contents': 'jupyterlite_contents'
+    },
     'show_memory': True,
     'promote_jupyter_magic': False,
     'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),

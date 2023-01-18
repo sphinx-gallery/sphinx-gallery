@@ -33,9 +33,10 @@ from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .binder import copy_binder_files, check_binder_conf
+from .interactive_example import copy_binder_files, check_binder_conf
+from .interactive_example import set_jupyterlite_contents
+from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
-
 
 _KNOWN_CSS = ('sg_gallery', 'sg_gallery-binder', 'sg_gallery-dataframe',
               'sg_gallery-rendered-html')
@@ -834,6 +835,7 @@ def write_api_entry_usage(app, docname, source):
         return
 
     def get_entry_type(entry):
+        logger.info(gallery_conf['api_entries'])
         if entry in gallery_conf['api_entries']['class']:
             return 'class'
         elif entry in gallery_conf['api_entries']['method']:
@@ -1156,6 +1158,8 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
+    app.connect('config-inited', set_jupyterlite_contents)
+
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
         app.connect('autodoc-process-docstring', write_api_entries)
@@ -1169,6 +1173,8 @@ def setup(app):
 
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)
+    app.connect('build-finished', create_jupyterlite_contents)
+
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     app.connect('build-finished', clean_files)

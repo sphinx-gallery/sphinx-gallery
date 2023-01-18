@@ -310,7 +310,7 @@ sphinx_gallery_conf = {
 }""")
 def test_binder_copy_files(sphinx_app_wrapper, tmpdir):
     """Test that notebooks are copied properly."""
-    from sphinx_gallery.binder import copy_binder_files
+    from sphinx_gallery.interactive_example import copy_binder_files
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
     # Create requirements file

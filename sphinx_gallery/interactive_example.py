@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 # Author: Chris Holdgraf
 # License: 3-clause BSD
-"""
-Binder utility functions
-========================
+"""Binder and Jupyterlite utility functions
+========================================
 
-Integration with Binder is on an experimental stage. Note that this API may
-change in the future.
+Integration with Binder and Jupyterlite is on an experimental stage. Note that
+this API may change in the future.
 
 .. warning::
 
@@ -267,3 +266,86 @@ def check_binder_conf(binder_conf):
             'for Sphinx-Gallery. A path to at least one of these files '
             'must exist in your Binder dependencies.')
     return binder_conf
+
+
+def set_jupyterlite_contents(app, config):
+    jupyterlite_contents = [
+        os.path.join(
+            app.outdir,
+            config.sphinx_gallery_conf['jupyterlite']['contents']
+        )
+    ]
+    config.jupyterlite_contents = jupyterlite_contents
+    # Do not use notebooks as sources for the documentation. See
+    # https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
+    # for more details
+    config.jupyterlite_bind_ipynb_suffix = False
+
+
+def create_jupyterlite_contents(app, exception):
+    if exception is not None:
+        return
+
+    if app.builder.name not in ['html', 'readthedocs']:
+        return
+
+    logger.info('copying Jupyterlite contents ...', color='white')
+
+    gallery_conf = app.config.sphinx_gallery_conf
+    gallery_dirs = gallery_conf.get('gallery_dirs')
+    jupyterlite_conf = gallery_conf.get('jupyterlite')
+    contents_dir = os.path.join(app.outdir, jupyterlite_conf.get('contents'))
+
+    shutil.rmtree(contents_dir, ignore_errors=True)
+    os.makedirs(contents_dir)
+
+    if not isinstance(gallery_dirs, (list, tuple)):
+        gallery_dirs = [gallery_dirs]
+
+    iterator = sphinx.util.status_iterator(
+        gallery_dirs, 'Copying Jupyterlite contents ...',
+        length=len(gallery_dirs))
+
+    for i_folder in iterator:
+        shutil.copytree(os.path.join(app.srcdir, i_folder),
+                        os.path.join(contents_dir, i_folder),
+                        ignore=_remove_ipynb_files)
+
+
+def gen_jupyterlite_rst(fpath, gallery_conf):
+    """Generate the RST + link for the Binder badge.
+
+    Parameters
+    ----------
+    fpath: str
+        The path to the `.ipynb` file for which a JupyterLite badge will be
+        generated.
+
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary.
+
+    Returns
+    -------
+    rst : str
+        The reStructuredText for the JupyterLite badge that links to this file.
+    """
+    relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
+    notebook_location = relative_link.replace('.py', '.ipynb')
+    lite_url = f"../lite/lab/index.html?path={notebook_location}"
+    # Similar work-around for badge file as in
+    # gen_binder_rst
+    physical_path = os.path.join(
+        os.path.dirname(fpath), 'images', 'jupyterlite_badge.svg')
+    os.makedirs(os.path.dirname(physical_path), exist_ok=True)
+    if not os.path.isfile(physical_path):
+        shutil.copyfile(
+            os.path.join(glr_path_static(), 'jupyterlite_badge.svg'),
+            physical_path)
+    rst = (
+        "\n"
+        "  .. container:: lite-badge\n\n"
+        "    .. image:: images/jupyterlite_badge.svg\n"
+        "      :target: {}\n"
+        "      :alt: Launch JupyterLite\n"
+        "      :width: 150 px\n").format(lite_url)
+    return rst

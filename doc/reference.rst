@@ -28,7 +28,7 @@ every module.
    notebook
    downloads
    sorting
-   binder
+   interactive_example
    directives
 
 .. currentmodule:: sphinx_gallery.utils

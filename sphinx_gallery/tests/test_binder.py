@@ -12,8 +12,8 @@ import os
 import pytest
 
 from sphinx.errors import ConfigError
-from sphinx_gallery.binder import (gen_binder_url, check_binder_conf,
-                                   _copy_binder_reqs, gen_binder_rst)
+from sphinx_gallery.interactive_example import (
+    gen_binder_url, check_binder_conf, _copy_binder_reqs, gen_binder_rst)
 
 
 def test_binder():
