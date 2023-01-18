@@ -275,7 +275,6 @@ def set_jupyterlite_contents(app, config):
     if not jupyterlite_conf:
         return
 
-    logger.info(jupyterlite_conf)
     jupyterlite_contents = [
         os.path.join(
             app.outdir,
@@ -372,7 +371,8 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
 def check_jupyterlite_conf(jupyterlite_conf):
     """Check to make sure that the Binder configuration is correct."""
     if not isinstance(jupyterlite_conf, (dict, bool)):
-        raise ConfigError('`jupyterlite_conf` must be a dictionary or a boolean')
+        raise ConfigError(
+            '`jupyterlite_conf` must be a dictionary or a boolean')
 
     if not jupyterlite_conf:
         return jupyterlite_conf

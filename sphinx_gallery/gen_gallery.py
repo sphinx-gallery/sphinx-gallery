@@ -376,7 +376,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf['binder'] = check_binder_conf(gallery_conf['binder'])
 
     # jupyterlite
-    gallery_conf['jupyterlite'] = check_jupyterlite_conf(gallery_conf['jupyterlite'])
+    gallery_conf['jupyterlite'] = check_jupyterlite_conf(
+        gallery_conf['jupyterlite'])
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'
@@ -1174,7 +1175,6 @@ def setup(app):
     app.add_directive("image-sg", ImageSg)
 
     imagesg_addnode(app)
-
 
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)
