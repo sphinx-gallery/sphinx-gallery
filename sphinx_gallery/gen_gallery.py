@@ -33,7 +33,9 @@ from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .interactive_example import copy_binder_files, check_binder_conf
+from .interactive_example import (
+    copy_binder_files, check_binder_conf, check_jupyterlite_conf
+)
 from .interactive_example import set_jupyterlite_contents
 from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
@@ -81,7 +83,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
-    'jupyterlite': {},
+    'jupyterlite': False,
     'promote_jupyter_magic': False,
     'image_scrapers': ('matplotlib',),
     'compress_images': (),
@@ -372,6 +374,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
 
     # binder
     gallery_conf['binder'] = check_binder_conf(gallery_conf['binder'])
+
+    # jupyterlite
+    gallery_conf['jupyterlite'] = check_jupyterlite_conf(gallery_conf['jupyterlite'])
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'
@@ -1169,6 +1174,7 @@ def setup(app):
     app.add_directive("image-sg", ImageSg)
 
     imagesg_addnode(app)
+
 
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)

@@ -392,10 +392,7 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
-    'jupyterlite': {
-        'contents': 'jupyterlite_contents',
-        'use_jupyter_lab': True,
-    },
+    'jupyterlite': True,
     'show_memory': True,
     'promote_jupyter_magic': False,
     'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),

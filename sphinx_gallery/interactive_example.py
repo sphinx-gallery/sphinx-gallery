@@ -269,17 +269,24 @@ def check_binder_conf(binder_conf):
 
 
 def set_jupyterlite_contents(app, config):
+    jupyterlite_conf = check_jupyterlite_conf(
+        config.sphinx_gallery_conf.get('jupyterlite', False))
+
+    if not jupyterlite_conf:
+        return
+
+    logger.info(jupyterlite_conf)
     jupyterlite_contents = [
         os.path.join(
             app.outdir,
-            config.sphinx_gallery_conf['jupyterlite']['contents']
+            jupyterlite_conf['contents']
         )
     ]
-    config.jupyterlite_contents = jupyterlite_contents
+    app.config.jupyterlite_contents = jupyterlite_contents
     # Do not use notebooks as sources for the documentation. See
     # https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
     # for more details
-    config.jupyterlite_bind_ipynb_suffix = False
+    app.config.jupyterlite_bind_ipynb_suffix = False
 
 
 def create_jupyterlite_contents(app, exception):
@@ -289,11 +296,15 @@ def create_jupyterlite_contents(app, exception):
     if app.builder.name not in ['html', 'readthedocs']:
         return
 
+    gallery_conf = app.config.sphinx_gallery_conf
+    jupyterlite_conf = gallery_conf.get('jupyterlite', False)
+
+    if not jupyterlite_conf:
+        return
+
     logger.info('copying Jupyterlite contents ...', color='white')
 
-    gallery_conf = app.config.sphinx_gallery_conf
     gallery_dirs = gallery_conf.get('gallery_dirs')
-    jupyterlite_conf = gallery_conf.get('jupyterlite')
     contents_dir = os.path.join(app.outdir, jupyterlite_conf.get('contents'))
 
     shutil.rmtree(contents_dir, ignore_errors=True)
@@ -356,3 +367,20 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
         "      :alt: Launch JupyterLite\n"
         "      :width: 150 px\n").format(lite_url)
     return rst
+
+
+def check_jupyterlite_conf(jupyterlite_conf):
+    """Check to make sure that the Binder configuration is correct."""
+    if not isinstance(jupyterlite_conf, (dict, bool)):
+        raise ConfigError('`jupyterlite_conf` must be a dictionary or a boolean')
+
+    if not jupyterlite_conf:
+        return jupyterlite_conf
+
+    if jupyterlite_conf is True:
+        jupyterlite_conf = {}
+
+    jupyterlite_conf.setdefault('contents', 'jupyterlite_contents')
+    jupyterlite_conf.setdefault('use_jupyter_lab', True)
+
+    return jupyterlite_conf
