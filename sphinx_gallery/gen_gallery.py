@@ -36,7 +36,7 @@ from .sorting import NumberOfCodeLinesSortKey
 from .interactive_example import (
     copy_binder_files, check_binder_conf, check_jupyterlite_conf
 )
-from .interactive_example import set_jupyterlite_contents
+from .interactive_example import configure_jupyterlite_sphinx
 from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
 
@@ -83,7 +83,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
-    'jupyterlite': False,
+    'jupyterlite': {},
     'promote_jupyter_magic': False,
     'image_scrapers': ('matplotlib',),
     'compress_images': (),
@@ -1163,7 +1163,10 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
-    app.connect('config-inited', set_jupyterlite_contents)
+    # To be on the safe side, set small priority value, so that
+    # configure_jupyterlite_sphinx is called before jupyterlite_sphinx
+    # config-inited
+    app.connect('config-inited', configure_jupyterlite_sphinx, priority=100)
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)

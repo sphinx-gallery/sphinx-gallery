@@ -1251,7 +1251,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         binder_badge_rst = indent(binder_badge_rst, '  ')  # need an extra two
 
     jupyterlite_rst = ''
-    if gallery_conf['jupyterlite']:
+    if gallery_conf.get('jupyterlite') is not None:
         jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, '  ')  # need an extra two
 
