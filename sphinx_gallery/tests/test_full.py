@@ -985,7 +985,7 @@ def test_binder_logo_exists(sphinx_app):
     root = op.join(sphinx_app.outdir, 'auto_examples')
     with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
         html = fid.read()
-    path = re.match(r'.*<img alt="Launch binder" src="(.*)" width=.*\/>.*',
+    path = re.match(r'.*<img alt="Launch binder" src="([^"]*)" width=.*\/>.*',
                     html, re.DOTALL)
     assert path is not None
     path = path.groups()[0]
