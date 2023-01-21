@@ -1246,10 +1246,11 @@ def save_rst_example(example_rst, example_file, time_elapsed,
         binder_badge_rst = indent(binder_badge_rst, '  ')  # need an extra two
 
     fname = os.path.basename(example_file)
-    example_rst += CODE_DOWNLOAD.format(fname,
-                                        replace_py_ipynb(fname),
-                                        binder_badge_rst,
-                                        ref_fname)
+    if gallery_conf['show_code_download']:
+        example_rst += CODE_DOWNLOAD.format(fname,
+                                            replace_py_ipynb(fname),
+                                            binder_badge_rst,
+                                            ref_fname)
     if gallery_conf['show_signature']:
         example_rst += SPHX_GLR_SIG
 

@@ -59,6 +59,7 @@ file:
 - ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
 - ``nested_sections`` (:ref:`nested_sections`)
 - ``api_usage_ignore`` (:ref:`api_usage_ignore`)
+- ``show_code_download`` (:ref:`show_code_download`)
 - ``show_api_usage`` (:ref:`show_api_usage`)
 
 Some options can also be set or overridden on a file-by-file basis:
@@ -367,6 +368,23 @@ In addition, multiple convenience classes are provided for use with
 - :class:`sphinx_gallery.sorting.FileSizeSortKey` to sort by file size.
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
+
+.. _show_code_download:
+
+Download Python/Jupyter source code
+====================================
+To not have the two download buttons::
+
+    Download Python source code: <Python_file.py>
+
+    Download Jupyter notebook: <Jupyter_file.ipynb>
+
+You can use the configuration key ``show_code_download``::
+
+    sphinx_gallery_conf = {
+        ...
+        'show_code_download'  : False,
+    }
 
 
 .. _link_to_documentation:
