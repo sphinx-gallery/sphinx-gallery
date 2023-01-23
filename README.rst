@@ -78,7 +78,7 @@ Sphinx-Gallery will not manage its dependencies when installing, thus
 you are required to install them manually. Our minimal dependency
 is:
 
-* Sphinx >= 3
+* Sphinx >= 4
 
 Sphinx-Gallery has also support for packages like:
 
