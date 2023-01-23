@@ -140,8 +140,10 @@ stages:
       displayName: Install Ubuntu dependencies and start Xvfb
     - bash: |
         ./continuous_integration/azure/install.sh
+      displayName: Run install.sh
     - bash: |
         ./continuous_integration/azure/test_script.sh
+      displayName: Run test_script.sh
     - bash: bash <(curl -s https://codecov.io/bash)
       displayName: 'Codecov'
       condition: succeededOrFailed()
