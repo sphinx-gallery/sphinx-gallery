@@ -138,14 +138,10 @@ stages:
         sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 optipng xvfb
         /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
       displayName: Install Ubuntu dependencies and start Xvfb
-    - task: Bash@3
-      inputs:
-        filePath: continuous_integration/azure/install.sh
-      displayName: Run install.sh
-    - task: Bash@3
-      inputs:
-        filePath: continuous_integration/azure/test_script.sh
-      displayName: Run test_script.sh
+    - bash: |
+        ./continuous_integration/azure/install.sh
+    - bash: |
+        ./continuous_integration/azure/test_script.sh
     - bash: bash <(curl -s https://codecov.io/bash)
       displayName: 'Codecov'
       condition: succeededOrFailed()
