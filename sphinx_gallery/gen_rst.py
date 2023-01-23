@@ -1046,16 +1046,18 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
                 if not os.path.isfile(path):
                     copyfile(stock_img, path)
 
+    # Ignore blocks must be processed before the
+    # remaining config comments are removed.
+    script_blocks = [
+        (label, remove_ignore_blocks(content), line_number)
+        for label, content, line_number in script_blocks
+    ]
+
     if gallery_conf['remove_config_comments']:
         script_blocks = [
             (label, remove_config_comments(content), line_number)
             for label, content, line_number in script_blocks
         ]
-
-    script_blocks = [
-        (label, remove_ignore_blocks(content), line_number)
-        for label, content, line_number in script_blocks
-    ]
 
     # Remove final empty block, which can occur after config comments
     # are removed
@@ -1106,6 +1108,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
                           fname, intro, title)
 
+    # This can help with garbage collection in some instances
+    if global_variables is not None and '___' in global_variables:
+        del global_variables['___']
     del script_vars, global_variables  # don't keep these during reset
     if executable and gallery_conf['reset_modules_order'] in ['after', 'both']:
         clean_modules(gallery_conf, fname, 'after')
@@ -1125,7 +1130,7 @@ EXAMPLE_HEADER = """
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_{1}>`
+        :ref:`Go to the end <sphx_glr_download_{1}>`
         to download the full example code{2}
 
 .. rst-class:: sphx-glr-example-title

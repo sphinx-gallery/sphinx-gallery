@@ -68,7 +68,7 @@ DEFAULT_GALLERY_CONF = {
     # 'plot_gallery' also accepts strings that evaluate to a bool, e.g. "True",
     # "False", "1", "0" so that they can be easily set via command line
     # switches of sphinx-build
-    'plot_gallery': True,
+    'plot_gallery': 'True',
     'download_all_examples': True,
     'abort_on_example_error': False,
     'only_warn_on_example_error': False,
@@ -103,7 +103,7 @@ DEFAULT_GALLERY_CONF = {
     'nested_sections': True,
     'prefer_full_module': [],
     'api_usage_ignore': '.*__.*__',
-    'show_api_usage': 'unused',
+    'show_api_usage': False,
 }
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
@@ -464,13 +464,6 @@ def generate_gallery_rst(app):
     Eventually, we create a toctree in the current index file
     which points to section index files.
     """
-    blocked_builder = ['dirhtml']
-    if app.builder.name in blocked_builder:
-        msg = (
-            f'Builder is set to {repr(app.builder.name)}. sphinx_gallery does '
-            f'not work for any of the following: {[blocked_builder]}'
-        )
-        raise ConfigError(msg)
 
     logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
@@ -540,7 +533,7 @@ def generate_gallery_rst(app):
                 subsection_index_files.append(
                     '/'.join([
                         '', gallery_dir, subsection, 'index.rst'
-                    ])
+                    ]).replace(os.sep, '/')  # fwd slashes needed inside rst
                 )
 
                 (
@@ -562,8 +555,9 @@ def generate_gallery_rst(app):
 
                 fhindex.write(subsection_index_content)
 
-                # Write subsection toctree in main file
-                # only if nested_sections is False or None
+                # Write subsection toctree in main file only if
+                # nested_sections is False or None, and
+                # toctree filenames were generated for the subsection.
                 if not gallery_conf["nested_sections"]:
                     if len(subsection_toctree_filenames) > 0:
                         subsection_index_toctree = """
@@ -572,7 +566,7 @@ def generate_gallery_rst(app):
 
    %s\n
 """ % "\n   ".join(subsection_toctree_filenames)
-                    fhindex.write(subsection_index_toctree)
+                        fhindex.write(subsection_index_toctree)
                 # Otherwise, a new index.rst.new file should
                 # have been created and it needs to be parsed
                 else:
@@ -710,10 +704,9 @@ def write_api_entries(app, what, name, obj, options, lines):
     if app.config.sphinx_gallery_conf['show_api_usage'] is False:
         return
     if 'api_entries' not in app.config.sphinx_gallery_conf:
-        app.config.sphinx_gallery_conf['api_entries'] = \
-            {entry_type: set() for entry_type in
-             ('class', 'method', 'function', 'module',
-              'property', 'attribute')}
+        app.config.sphinx_gallery_conf['api_entries'] = dict()
+    if what not in app.config.sphinx_gallery_conf['api_entries']:
+        app.config.sphinx_gallery_conf['api_entries'][what] = set()
     app.config.sphinx_gallery_conf['api_entries'][what].add(name)
 
 

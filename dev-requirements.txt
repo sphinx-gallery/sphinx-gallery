@@ -1,4 +1,4 @@
-sphinx>=3
+sphinx >= 3, != 5.2.0
 pydata-sphinx-theme
 pytest
 pytest-coverage
@@ -8,8 +8,10 @@ pillow
 seaborn
 statsmodels
 joblib
+importlib-metadata <5.0
 flake8
 check-manifest
 plotly
 absl-py
 graphviz
+packaging
