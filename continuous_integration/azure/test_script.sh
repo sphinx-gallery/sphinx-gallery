@@ -4,7 +4,7 @@
 #
 # License: 3-clause BSD
 
-set -e
+set -eo pipefail
 
 if [ "$DISTRIB" == "ubuntu" ]; then
     python3 -m pytest sphinx_gallery -v --tb=short

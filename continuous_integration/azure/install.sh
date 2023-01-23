@@ -6,7 +6,7 @@
 #
 # License: 3-clause BSD
 
-set -e
+set -eo pipefail
 
 if [ "$DISTRIB" == "conda" ]; then
     # wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh --progress=dot:mega
