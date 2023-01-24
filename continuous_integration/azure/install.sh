@@ -14,10 +14,8 @@ if [ "$DISTRIB" == "conda" ]; then
     # source ~/miniconda/etc/profile.d/conda.sh
     echo "##vso[task.prependpath]$CONDA/bin"
     export PATH=${CONDA}/bin:${PATH}
-    CONDA_TO_INSTALL="$@"
-    CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz memory_profiler \"ipython!=8.7.0\" pypandoc"
-    PIP_DEPENDENCIES="$@"
-    PIP_DEPENDENCIES="$PIP_DEPENDENCIES pydata-sphinx-theme check-manifest"
+    CONDA_TO_INSTALL="python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz memory_profiler \"ipython!=8.7.0\" pypandoc"
+    PIP_DEPENDENCIES="pydata-sphinx-theme check-manifest"
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<6 jinja2<=3.0.3"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
@@ -25,7 +23,7 @@ if [ "$DISTRIB" == "conda" ]; then
         # TODO: Can't use dev until pydata-sphinx-theme supports it!
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<6 black"  # https://api.github.com/repos/sphinx-doc/sphinx/zipball/master
     else
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION} jinja2<=3.0.3"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx=${SPHINX_VERSION} jinja2<=3.0.3"
     fi
     source activate base
     conda install --yes -c conda-forge $CONDA_TO_INSTALL

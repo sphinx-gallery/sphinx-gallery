@@ -103,7 +103,7 @@ stages:
           LOCALE: 'C'
         conda_python39_sphinxOld:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.9'
+          PYTHON_VERSION: '3.10'
           SPHINX_VERSION: '4'
         conda_python310_sphinxDev:
           DISTRIB: 'conda'
