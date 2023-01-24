@@ -10,3 +10,4 @@ frequently asked questions, and utilities.
    advanced
    faq
    utils
+   reference
