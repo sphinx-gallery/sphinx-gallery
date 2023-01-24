@@ -22,8 +22,11 @@ if [ "$DISTRIB" == "conda" ]; then
         # It is a mystery to me why we need black, but we get an error with sphinx that it's needed at the end of the build...
         # TODO: Can't use dev until pydata-sphinx-theme supports it!
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<6 black"  # https://api.github.com/repos/sphinx-doc/sphinx/zipball/master
+    elif [ "$SPHINX_VERSION" == "old" ]; then
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<5 jinja2<=3.0.3"
     else
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx~=${SPHINX_VERSION} jinja2<=3.0.3"
+        echo "Error: unknown sphinx version: \"$SPHINX_VERSION\""
+        exit 1
     fi
     source activate base
     conda install --yes -c conda-forge $CONDA_TO_INSTALL
