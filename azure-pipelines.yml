@@ -40,7 +40,7 @@ stages:
     strategy:
       matrix:
         Python39:
-          PYTHON_VERSION: '3.9'
+          PYTHON_VERSION: '3.10'
 
     steps:
     - task: UsePythonVersion@0
@@ -94,16 +94,16 @@ stages:
       DISPLAY: ':99'
     strategy:
       matrix:
-        ubuntu_python38:
+        ubuntu_python310:
           DISTRIB: 'ubuntu'
-          PYTHON_VERSION: '3.8'
+          PYTHON_VERSION: '3.10'
           SPHINXOPTS: ''
-        conda_python38_sphinxOld:
+        conda_python310_sphinxOld:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.8'
+          PYTHON_VERSION: '3.10'
           SPHINX_VERSION: '4'
           LOCALE: 'C'
-        conda_python38_sphinxDev:
+        conda_python310_sphinxDev:
           DISTRIB: 'conda'
           PYTHON_VERSION: '3.10'
           SPHINX_VERSION: 'dev'
