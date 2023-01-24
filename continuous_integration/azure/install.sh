@@ -23,7 +23,7 @@ if [ "$DISTRIB" == "conda" ]; then
         # TODO: Can't use dev until pydata-sphinx-theme supports it!
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<6 black"  # https://api.github.com/repos/sphinx-doc/sphinx/zipball/master
     else
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx=${SPHINX_VERSION} jinja2<=3.0.3"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx~=${SPHINX_VERSION} jinja2<=3.0.3"
     fi
     source activate base
     conda install --yes -c conda-forge $CONDA_TO_INSTALL
