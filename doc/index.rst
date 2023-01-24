@@ -47,49 +47,20 @@ Citation
 If you would like to cite Sphinx-Gallery you can do so using our `Zenodo
 deposit <https://zenodo.org/record/3838216>`_.
 
-Sphinx-Gallery Show: :ref:`examples-index`
-------------------------------------------
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Using Sphinx Gallery
-
-   getting_started
-   syntax
-   configuration
-   projects_list
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Advanced usage and information
-
-   advanced
-   faq
-   utils
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Example galleries
-
-   auto_examples/index
-   tutorials/index
-   auto_mayavi_examples/index
-   auto_plotly_examples/index
-   auto_pyvista_examples/index
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API and developer reference
-
-   reference
-   changes
-   Fork Sphinx-Gallery on Github <https://github.com/sphinx-gallery/sphinx-gallery>
-
-
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. This sets the top-level (middle) header items of pydata-sphinx-theme
+
+.. toctree::
+   :hidden:
+
+   User guide <usage>
+   Advanced <advanced_index>
+   Example galleries <galleries>
+   API <reference>
+   Changelog <changes>

@@ -140,12 +140,25 @@ def setup(app):
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'navbar_center': [],
-    'show_toc_level': 1,
+    'navbar_center': ['navbar-nav'],
+    'show_toc_level': 2,
+    'show_nav_level': 2,
     'navbar_end': ['theme-switcher', 'version-switcher', 'navbar-icon-links'],
+    'logo': {
+        'text': '🖼️ Sphinx-Gallery',
+    },
     'switcher': dict(
         json_url='https://sphinx-gallery.github.io/dev/_static/switcher.json',
-        version_match='dev' if 'dev' in version else 'stable'),
+        version_match='dev' if 'dev' in version else 'stable',
+    ),
+    "github_url": "https://github.com/sphinx-gallery/sphinx-gallery",
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/sphinx-gallery",
+            "icon": "fa-solid fa-box",
+        },
+    ],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -187,7 +200,9 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    'reference': [],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

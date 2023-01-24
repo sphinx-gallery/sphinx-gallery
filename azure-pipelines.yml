@@ -49,17 +49,19 @@ stages:
         architecture: 'x64'
         addToPath: true
     - bash: |
-        set -e
+        set -eo pipefail
         git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
         powershell gl-ci-helpers/appveyor/install_opengl.ps1
       displayName: Install OpenGL
     - bash: |
-        set -e
+        set -eo pipefail
         python --version
         python -m pip install --user --upgrade pip setuptools wheel
         pip install --user --upgrade --progress-bar off --upgrade "ipython!=8.7.0" numpy seaborn statsmodels matplotlib "sphinx<6" pillow pytest pytest-cov pydata-sphinx-theme joblib "plotly>=4.0"
-        # Mayavi does not work with latest VTK on Windows yet
-        pip install --user --upgrade --progress-bar off pyvista pyqt5 mayavi plotly "vtk<9.2"
+        echo "Qt, plotly, VTK"
+        pip install --user --upgrade --progress-bar off pyvista pyqt5 plotly vtk
+        echo "Mayavi"
+        pip install --user --upgrade --progress-bar off --no-build-isolation mayavi
       displayName: Setup pip environment
     - script: pip list
       displayName: pip list
@@ -70,7 +72,7 @@ stages:
     - script: pytest --tb=short sphinx_gallery
       displayName: pytest
     - bash: |
-        set -e
+        set -eo pipefail
         sed -i '/show_memory/d' doc/conf.py
         sed -i '/compress_images/d' doc/conf.py
       displayName: Remove keys incompatible with this Windows build
