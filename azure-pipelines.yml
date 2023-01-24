@@ -99,7 +99,6 @@ stages:
         ubuntu_python310:
           DISTRIB: 'ubuntu'
           PYTHON_VERSION: '3.10'
-          SPHINXOPTS: ''
           LOCALE: 'C'
         conda_python310_sphinxOld:
           DISTRIB: 'conda'
