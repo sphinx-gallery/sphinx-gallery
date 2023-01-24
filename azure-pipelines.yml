@@ -99,9 +99,9 @@ stages:
           PYTHON_VERSION: '3.10'
           SPHINXOPTS: ''
           LOCALE: 'C'
-        conda_python310_sphinxOld:
+        conda_python39_sphinxOld:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.10'
+          PYTHON_VERSION: '3.9'
           SPHINX_VERSION: '4'
         conda_python310_sphinxDev:
           DISTRIB: 'conda'

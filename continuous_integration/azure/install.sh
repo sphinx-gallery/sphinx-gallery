@@ -63,7 +63,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
       libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libopengl0 libegl1 libosmesa6 mesa-utils libxcb-shape0
     python3 -m pip install --upgrade pip setuptools wheel
     python3 -m pip install -r dev-requirements.txt
-    python3 -m pip install "vtk<9.2" pyqt5
+    python3 -m pip install vtk pyqt5
     python3 -m pip install --no-build-isolation mayavi
     # Make sure that Mayavi works and does not die when making an actual plot (tests Qt + VTK)
     python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
