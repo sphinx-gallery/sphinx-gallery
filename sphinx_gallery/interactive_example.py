@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # Author: Chris Holdgraf
 # License: 3-clause BSD
-"""Binder and Jupyterlite utility functions
+"""
+Binder and Jupyterlite utility functions
 ========================================
 
 Integration with Binder and Jupyterlite is on an experimental stage. Note that
