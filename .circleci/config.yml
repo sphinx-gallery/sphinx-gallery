@@ -67,7 +67,7 @@ jobs:
       - store_test_results:
           path: doc/_build/html/
 
-      - run: sphinx-build sphinx_gallery/tests/tinybuild/ tiny_html
+      - run: sphinx-build sphinx_gallery/tests/tinybuild/doc tiny_html
       - store_artifacts:
           path: tiny_html
           destination: tiny_html
@@ -75,9 +75,9 @@ jobs:
       - run:
           name: latexpdf
           command: |
-            cd sphinx_gallery/tests/tinybuild/ && make clean && make latexpdf
+            cd sphinx_gallery/tests/tinybuild/doc && make clean && make latexpdf
       - store_artifacts:
-          path: sphinx_gallery/tests/tinybuild/_build/latex/
+          path: sphinx_gallery/tests/tinybuild/doc/_build/latex/
           destination: latex
 
       - persist_to_workspace:

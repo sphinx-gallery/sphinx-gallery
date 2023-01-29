@@ -27,16 +27,19 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 import pytest
 
 # file inventory for tinybuild:
-N_EXAMPLES = 13  # total number of plot_*.py files in tinybuild/examples
+
+# total number of plot_*.py files in tinybuild/examples + examples_rst_index
+# + examples_with_rst
+N_EXAMPLES = 13
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # indices SG generates + examples/local_module (extra non-plot*.py file)
+# + examples_rst_index + examples_with_rst
 N_INDEX = 2 + 1
-# SG execution times
+# SG execution times (example, + examples_rst_index + examples_with_rst)
 N_EXECUTE = 2
-# gen_modules + index.rst + minigallery.rst + sg_api_usage +
-# examples/future/README
-N_OTHER = 9 + 2 + 2
+# gen_modules + index.rst + minigallery.rst + sg_api_usage
+N_OTHER = 9 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_INDEX + N_EXECUTE + N_OTHER
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
@@ -63,15 +66,14 @@ def _sphinx_app(tmpdir_factory, buildername):
 
     shutil.copytree(src_dir, temp_dir, ignore=ignore)
     # For testing iteration, you can get similar behavior just doing `make`
-    # inside the tinybuild directory
-    src_dir = temp_dir
-    conf_dir = temp_dir
-    out_dir = op.join(temp_dir, '_build', buildername)
-    toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
+    # inside the tinybuild/doc directory
+    conf_dir = op.join(temp_dir, 'doc')
+    out_dir = op.join(conf_dir, '_build', buildername)
+    toctrees_dir = op.join(conf_dir, '_build', 'toctrees')
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
-        app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
+        app = Sphinx(conf_dir, conf_dir, out_dir, toctrees_dir,
                      buildername=buildername, status=StringIO(),
                      warning=StringIO())
         # need to build within the context manager
@@ -84,6 +86,7 @@ def test_timings(sphinx_app):
     """Test that a timings page is created."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
+
     # local folder
     timings_rst = op.join(src_dir, 'auto_examples',
                           'sg_execution_times.rst')
@@ -102,7 +105,7 @@ def test_timings(sphinx_app):
     assert 'href="plot_numpy_matplotlib.html' in content
     # printed
     status = sphinx_app._status.getvalue()
-    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    fname = op.join('..', 'examples', 'plot_numpy_matplotlib.py')
     assert ('- %s: ' % fname) in status
 
 
@@ -136,7 +139,7 @@ def test_api_usage(sphinx_app):
         assert 'alt="sphinx_gallery usage graph"' not in content
     # printed
     status = sphinx_app._status.getvalue()
-    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    fname = op.join('..', 'examples', 'plot_numpy_matplotlib.py')
     assert ('- %s: ' % fname) in status
 
 
@@ -166,14 +169,16 @@ def test_junit(sphinx_app, tmpdir):
     assert '<failure message' not in contents
     src_dir = sphinx_app.srcdir
     new_src_dir = op.join(str(tmpdir), 'src')
-    shutil.copytree(src_dir, new_src_dir)
+    shutil.copytree(op.join(src_dir, '../'), new_src_dir)
     del src_dir
+    new_src_dir = op.join(new_src_dir, 'doc')
     new_out_dir = op.join(new_src_dir, '_build', 'html')
     new_toctree_dir = op.join(new_src_dir, '_build', 'toctrees')
-    passing_fname = op.join(new_src_dir, 'examples',
+    passing_fname = op.join(new_src_dir, '../examples',
                             'plot_numpy_matplotlib.py')
-    failing_fname = op.join(new_src_dir, 'examples', 'future',
+    failing_fname = op.join(new_src_dir, '../examples', 'future',
                             'plot_future_imports_broken.py')
+    print('Names', passing_fname, failing_fname)
     shutil.move(passing_fname, passing_fname + '.temp')
     shutil.move(failing_fname, passing_fname)
     shutil.move(passing_fname + '.temp', failing_fname)
@@ -534,7 +539,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     lines = [line for line in status.split('\n') if 'removed' in line]
     want = '.*%s added, 0 changed, 0 removed.*' % (N_RST,)
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
-    want = '.*targets for 3 source files that are out of date$.*'
+    want = '.*targets for 2 source files that are out of date$.*'
     lines = [line for line in status.split('\n') if 'out of date' in line]
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     lines = [line for line in status.split('\n') if 'on MD5' in line]
@@ -679,7 +684,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     time.sleep(0.1)
     confoverrides = dict()
     if how == 'modify':
-        fname = op.join(src_dir, 'examples', 'plot_numpy_matplotlib.py')
+        fname = op.join(src_dir, '../examples', 'plot_numpy_matplotlib.py')
         with codecs.open(fname, 'r', 'utf-8') as fid:
             lines = fid.readlines()
         with codecs.open(fname, 'w', 'utf-8') as fid:

@@ -286,7 +286,7 @@ def test_notebook_images_data_uri(gallery_conf):
         gallery_conf['src_dir'], gallery_conf['gallery_dirs'])
 
     test_image = os.path.join(
-        os.path.dirname(__file__), 'tinybuild',
+        os.path.dirname(__file__), 'tinybuild', 'doc',
         '_static_nonstandard', 'demo.png')
     # For windows we need to copy this to tmpdir because if tmpdir and this
     # file are on different drives there is no relpath between them

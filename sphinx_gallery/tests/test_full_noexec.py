@@ -24,16 +24,16 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
 
     shutil.copytree(src_dir, temp_dir, ignore=ignore)
     # For testing iteration, you can get similar behavior just doing `make`
-    # inside the tinybuild directory
+    # inside the tinybuild/doc directory
     src_dir = temp_dir
-    conf_dir = temp_dir
-    out_dir = op.join(temp_dir, '_build', 'html')
-    toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
+    conf_dir = op.join(temp_dir, 'doc')
+    out_dir = op.join(conf_dir, '_build', 'html')
+    toctrees_dir = op.join(temp_dir, 'doc', '_build', 'toctrees')
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     confoverrides = {'sphinx_gallery_conf.plot_gallery': 0, }
     with docutils_namespace():
-        app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
+        app = Sphinx(conf_dir, conf_dir, out_dir, toctrees_dir,
                      buildername='html', confoverrides=confoverrides,
                      status=StringIO(), warning=StringIO())
         # need to build within the context manager
