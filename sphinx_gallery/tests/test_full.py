@@ -26,11 +26,18 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 
 import pytest
 
-N_TOT = 13  # examples (plot_*.py in examples/**)
-
+# file inventory for tinybuild:
+N_EXAMPLES = 13  # total number of plot_*.py files in tinybuild/examples
 N_FAILING = 2
-N_GOOD = N_TOT - N_FAILING
-N_RST = 17 + N_TOT + 1  # includes module API pages, etc.
+N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
+# indices SG generates + examples/local_module (extra non-plot*.py file)
+N_INDEX = 2 + 1
+# SG execution times
+N_EXECUTE = 2
+# gen_modules + index.rst + minigallery.rst + sg_api_usage +
+# examples/future/README
+N_OTHER = 9 + 2 + 2
+N_RST = N_EXAMPLES + N_INDEX + N_EXECUTE + N_OTHER
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
 
@@ -153,7 +160,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="%d"' % (N_TOT,) in contents
+    assert 'tests="%d"' % (N_EXAMPLES,) in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
@@ -198,7 +205,7 @@ def test_run_sphinx(sphinx_app):
     generated_examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(generated_examples_dir)
     status = sphinx_app._status.getvalue()
-    assert 'executed %d out of %d' % (N_GOOD, N_TOT) in status
+    assert 'executed %d out of %d' % (N_GOOD, N_EXAMPLES) in status
     assert 'after excluding 0' in status
     # intentionally have a bad URL in references
     warning = sphinx_app._warning.getvalue()
@@ -532,7 +539,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     lines = [line for line in status.split('\n') if 'on MD5' in line]
     want = ('.*executed %d out of %d.*after excluding 0 files.*based on MD5.*'
-            % (N_GOOD, N_TOT))
+            % (N_GOOD, N_EXAMPLES))
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     old_src_dir = (tmpdir_factory.getbasetemp() / 'root_old').strpath
     shutil.copytree(sphinx_app.srcdir, old_src_dir)
