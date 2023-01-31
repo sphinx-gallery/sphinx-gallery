@@ -15,18 +15,14 @@ if [ "$DISTRIB" == "conda" ]; then
     echo "##vso[task.prependpath]$CONDA/bin"
     export PATH=${CONDA}/bin:${PATH}
     CONDA_TO_INSTALL="$@"
-    CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz"
+    CONDA_TO_INSTALL="$CONDA_TO_INSTALL python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz memory_profiler 'ipython!=8.7.0' pypandoc"
     PIP_DEPENDENCIES="$@"
     PIP_DEPENDENCIES="$PIP_DEPENDENCIES sphinx_rtd_theme check-manifest"
-    if [ "$PYTHON_VERSION" != "3.8" -o "$LOCALE" != "C" ]; then
-        CONDA_TO_INSTALL="$CONDA_TO_INSTALL memory_profiler \"ipython!=8.7.0\" pypandoc"
-    fi
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
         # It is a mystery to me why we need black, but we get an error with sphinx that it's needed at the end of the build...
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master black"
-        CONDA_TO_INSTALL="$CONDA_TO_INSTALL libiconv"
     else
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION} jinja2<=3.0.3"
     fi
@@ -66,7 +62,7 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
       libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libopengl0 libegl1 libosmesa6 mesa-utils libxcb-shape0
     python3 -m pip install --upgrade pip setuptools wheel
     python3 -m pip install -r dev-requirements.txt
-    python3 -m pip install "vtk<9.2" pyqt5
+    python3 -m pip install "vtk<9.2" "pyqt5!=5.15.8"
     python3 -m pip install --no-build-isolation mayavi
     # Make sure that Mayavi works and does not die when making an actual plot (tests Qt + VTK)
     python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
