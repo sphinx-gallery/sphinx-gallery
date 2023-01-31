@@ -97,15 +97,11 @@ stages:
           DISTRIB: 'ubuntu'
           PYTHON_VERSION: '3.8'
           SPHINXOPTS: ''
-        conda_python39_sphinxOld:
-          DISTRIB: 'conda'
-          PYTHON_VERSION: '3.9'
-          SPHINX_VERSION: '4'
-          LOCALE: 'C'
         conda_python310_sphinxDev:
           DISTRIB: 'conda'
           PYTHON_VERSION: '3.10'
           SPHINX_VERSION: 'dev'
+          LOCALE: 'C'
         python38_minimal:
           DISTRIB: 'minimal'
           PYTHON_VERSION: '3.8'
