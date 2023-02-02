@@ -19,6 +19,7 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
+from sphinx_gallery.scrapers import matplotlib_scraper
 import sphinx_rtd_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -317,13 +318,16 @@ examples_dirs = ['../examples', '../tutorials']
 gallery_dirs = ['auto_examples', 'tutorials']
 
 
-image_scrapers = ('matplotlib',)
+def matplotlib_transparent(*args, **kwargs):
+    return matplotlib_scraper(*args, transparent=True, **kwargs)
+
+image_scrapers = (matplotlib_transparent,)
 try:
     # Run the mayavi examples and find the mayavi figures if mayavi is
     # installed
     from mayavi import mlab
 except Exception:  # can raise all sorts of errors
-    image_scrapers = ('matplotlib',)
+    image_scrapers = (matplotlib_transparent,)
 else:
     image_scrapers += ('mayavi',)
     examples_dirs.append('../mayavi_examples')
