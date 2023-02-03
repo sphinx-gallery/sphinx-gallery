@@ -290,10 +290,10 @@ def configure_jupyterlite_sphinx(app, config):
     # for more details
     config.jupyterlite_bind_ipynb_suffix = False
 
-    # TODO somehow jupyterlite_bind_ipynb_suffix = False is ignored?
-    print('debug source_suffix', '.ipynb' in app.registry.source_suffix,
-          list(app.registry.source_suffix))
-    # app.registry.source_suffix.pop('.ipynb', None)
+    # XXX Latest version of jupyterlite-sphinx (0.7.2) pins sphinx>=4,<5 so in
+    # some builds we are getting jupyterlite-sphinx 0.4.0 which does not use
+    # jupyterlite_bind_ipynb_suffix. In this case, we remove ".ipynb" by hand
+    app.registry.source_suffix.pop('.ipynb', None)
 
 
 def create_jupyterlite_contents(app, exception):
@@ -312,7 +312,7 @@ def create_jupyterlite_contents(app, exception):
 
     logger.info('copying Jupyterlite contents ...', color='white')
     gallery_dirs = gallery_conf.get('gallery_dirs')
-    contents_dir = os.path.join(app.outdir, jupyterlite_conf['contents'])
+    contents_dir = os.path.join(app.outdir, 'jupyterlite_contents')
 
     shutil.rmtree(contents_dir, ignore_errors=True)
     os.makedirs(contents_dir)
