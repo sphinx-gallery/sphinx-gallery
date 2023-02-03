@@ -274,9 +274,6 @@ def configure_jupyterlite_sphinx(app, config):
     if not jupyterlite_is_enabled:
         return
 
-    jupyterlite_conf = check_jupyterlite_conf(
-        config.sphinx_gallery_conf.get('jupyterlite'))
-
     jupyterlite_contents = [
         os.path.join(
             app.outdir,
