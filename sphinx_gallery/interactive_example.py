@@ -293,7 +293,7 @@ def configure_jupyterlite_sphinx(app, config):
     # TODO somehow jupyterlite_bind_ipynb_suffix = False is ignored?
     print('debug source_suffix', '.ipynb' in app.registry.source_suffix,
           list(app.registry.source_suffix))
-    app.registry.source_suffix.pop('.ipynb', None)
+    # app.registry.source_suffix.pop('.ipynb', None)
 
 
 def create_jupyterlite_contents(app, exception):
