@@ -305,7 +305,6 @@ def create_jupyterlite_contents(app, exception):
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    jupyterlite_conf = gallery_conf['jupyterlite']
 
     logger.info('copying Jupyterlite contents ...', color='white')
     gallery_dirs = gallery_conf.get('gallery_dirs')
