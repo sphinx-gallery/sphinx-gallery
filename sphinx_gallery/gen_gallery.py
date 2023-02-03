@@ -1166,7 +1166,7 @@ def setup(app):
     # To be on the safe side, set small priority value, so that
     # configure_jupyterlite_sphinx is called before jupyterlite_sphinx
     # config-inited
-    app.connect('config-inited', configure_jupyterlite_sphinx, priority=5)
+    app.connect('config-inited', configure_jupyterlite_sphinx, priority=100)
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
