@@ -495,3 +495,44 @@ def test_pypandoc_config_keys(sphinx_app_wrapper):
                        match="'pypandoc' only accepts the following key "
                              "values:"):
         parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+
+
+@pytest.mark.conf_file(content="""
+extensions += ['jupyterlite_sphinx']
+
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+}""")
+def test_create_jupyterlite_contents(sphinx_app_wrapper, tmpdir):
+    """Test that JupyterLite contents are created properly."""
+    from sphinx_gallery.interactive_example import create_jupyterlite_contents
+
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    gallery_conf = sphinx_app.config.sphinx_gallery_conf
+
+    create_jupyterlite_contents(sphinx_app, exception=None)
+
+    for i_file in ['plot_1', 'plot_2', 'plot_3']:
+        assert os.path.exists(os.path.join(
+            sphinx_app.outdir, 'jupyterlite_contents',
+            gallery_conf['gallery_dirs'][0], i_file + '.ipynb'))
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+}""")
+def test_create_jupyterlite_contents_without_jupyterlite_sphinx_loaded(
+        sphinx_app_wrapper, tmpdir):
+    """Test JupyterLite contents creation without jupyterlite_sphinx loaded"""
+    from sphinx_gallery.interactive_example import create_jupyterlite_contents
+
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
+    create_jupyterlite_contents(sphinx_app, exception=None)
+    assert not os.path.exists(os.path.join(
+        sphinx_app.outdir, 'jupyterlite_contents'))
