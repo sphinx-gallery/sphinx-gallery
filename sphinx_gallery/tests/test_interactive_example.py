@@ -8,12 +8,14 @@ from __future__ import division, absolute_import, print_function
 
 from copy import deepcopy
 import os
+import re
 
 import pytest
 
 from sphinx.errors import ConfigError
 from sphinx_gallery.interactive_example import (
-    gen_binder_url, check_binder_conf, _copy_binder_reqs, gen_binder_rst)
+    gen_binder_url, check_binder_conf, _copy_binder_reqs, gen_binder_rst,
+    gen_jupyterlite_rst, check_jupyterlite_conf)
 
 
 def test_binder():
@@ -147,4 +149,31 @@ def test_gen_binder_rst(tmpdir):
     assert alt_rst in rst
     image_fname = os.path.join(
         os.path.dirname(file_path), 'images', 'binder_badge_logo.svg')
+    assert os.path.isfile(image_fname)
+
+
+@pytest.mark.parametrize('use_jupyter_lab', [True, False])
+def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
+    """Check binder rst generated correctly."""
+    gallery_conf = {
+        'gallery_dirs': [str(tmpdir)], 'src_dir': 'blahblah',
+        'jupyterlite': {'use_jupyter_lab': use_jupyter_lab}}
+    file_path = str(tmpdir.join('blahblah', 'mydir', 'myfile.py'))
+    orig_dir = os.getcwd()
+    os.chdir(str(tmpdir))
+    try:
+        rst = gen_jupyterlite_rst(file_path, gallery_conf)
+    finally:
+        os.chdir(orig_dir)
+    image_rst = ' .. image:: images/jupyterlite_badge_logo.svg'
+    if use_jupyter_lab:
+        target_rst = ':target: .+lite/lab.+path=mydir/myfile.ipynb'
+    else:
+        target_rst = ':target: .+lite/retro/notebooks.+path=mydir/myfile.ipynb'
+    alt_rst = ':alt: Launch JupyterLite'
+    assert image_rst in rst
+    assert re.search(target_rst, rst)
+    assert alt_rst in rst
+    image_fname = os.path.join(
+        os.path.dirname(file_path), 'images', 'jupyterlite_badge_logo.svg')
     assert os.path.isfile(image_fname)

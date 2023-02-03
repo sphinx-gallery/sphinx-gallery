@@ -280,7 +280,7 @@ def configure_jupyterlite_sphinx(app, config):
     jupyterlite_contents = [
         os.path.join(
             app.outdir,
-            jupyterlite_conf['contents']
+            'jupyterlite_contents'
         )
     ]
 
@@ -289,9 +289,6 @@ def configure_jupyterlite_sphinx(app, config):
     # https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
     # for more details
     config.jupyterlite_bind_ipynb_suffix = False
-
-    # TODO are there other settings that we want to forward to
-    # jupyterlite_sphinx maybe key -> jupyterlite_key
 
     # TODO somehow jupyterlite_bind_ipynb_suffix = False is ignored?
     print('debug source_suffix', '.ipynb' in app.registry.source_suffix,
@@ -363,16 +360,16 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     # Similar work-around for badge file as in
     # gen_binder_rst
     physical_path = os.path.join(
-        os.path.dirname(fpath), 'images', 'jupyterlite_badge.svg')
+        os.path.dirname(fpath), 'images', 'jupyterlite_badge_logo.svg')
     os.makedirs(os.path.dirname(physical_path), exist_ok=True)
     if not os.path.isfile(physical_path):
         shutil.copyfile(
-            os.path.join(glr_path_static(), 'jupyterlite_badge.svg'),
+            os.path.join(glr_path_static(), 'jupyterlite_badge_logo.svg'),
             physical_path)
     rst = (
         "\n"
         "  .. container:: lite-badge\n\n"
-        "    .. image:: images/jupyterlite_badge.svg\n"
+        "    .. image:: images/jupyterlite_badge_logo.svg\n"
         "      :target: {}\n"
         "      :alt: Launch JupyterLite\n"
         "      :width: 150 px\n").format(lite_url)
@@ -388,7 +385,6 @@ def check_jupyterlite_conf(jupyterlite_conf):
         raise ConfigError(
             '`jupyterlite_conf` must be a dictionary')
 
-    jupyterlite_conf.setdefault('contents', 'jupyterlite_contents')
     jupyterlite_conf.setdefault('use_jupyter_lab', True)
 
     return jupyterlite_conf
