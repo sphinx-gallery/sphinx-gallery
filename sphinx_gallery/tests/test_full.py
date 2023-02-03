@@ -1014,8 +1014,6 @@ def test_interactive_example_logo_exists(sphinx_app):
     img_fname = op.abspath(op.join(root, path))
     assert 'jupyterlite_badge_logo' in img_fname  # can have numbers appended
     assert op.isfile(img_fname)
-    # TODO check that jupyterlite contents have been created and contains
-    # notebooks???
 
 
 def test_defer_figures(sphinx_app):
