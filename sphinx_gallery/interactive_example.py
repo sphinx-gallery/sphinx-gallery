@@ -345,6 +345,8 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     """
     relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
     notebook_location = relative_link.replace('.py', '.ipynb')
+    # Make sure we have the right slashes (in case we're on Windows)
+    notebook_location = notebook_location.replace(os.path.sep, '/')
 
     if gallery_conf["jupyterlite"].get("use_jupyter_lab", True):
         lite_root_url = "../lite/lab"
