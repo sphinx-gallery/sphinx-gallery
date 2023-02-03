@@ -287,11 +287,6 @@ def configure_jupyterlite_sphinx(app, config):
     # for more details
     config.jupyterlite_bind_ipynb_suffix = False
 
-    # XXX Latest version of jupyterlite-sphinx (0.7.2) pins sphinx>=4,<5 so in
-    # some builds we are getting jupyterlite-sphinx 0.4.0 which does not use
-    # jupyterlite_bind_ipynb_suffix. In this case, we remove ".ipynb" by hand
-    app.registry.source_suffix.pop('.ipynb', None)
-
 
 def create_jupyterlite_contents(app, exception):
     if exception is not None:
