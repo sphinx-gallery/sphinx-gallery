@@ -272,7 +272,7 @@ def check_binder_conf(binder_conf):
 def configure_jupyterlite_sphinx(app, config):
     is_jupyterlite_enabled = (
         'jupyterlite_sphinx' in app.extensions
-        and config.sphinx_gallery_conf.get('jupyterlite') is not None
+        and config.sphinx_gallery_conf.get('jupyterlite', {}) is not None
     )
     if not is_jupyterlite_enabled:
         return
