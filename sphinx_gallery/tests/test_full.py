@@ -1022,7 +1022,9 @@ def test_download_and_interactive_note(sphinx_app):
     with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
         html = fid.read()
 
-    pattern = r"to download the full example.+in your browser via JupyterLite or Binder"
+    pattern = (
+        r"to download the full example.+"
+        r"in your browser via JupyterLite or Binder")
     assert re.search(pattern, html)
 
 

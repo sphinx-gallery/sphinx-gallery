@@ -1235,7 +1235,8 @@ def save_rst_example(example_rst, example_file, time_elapsed,
 
     interactive_example_text = ""
     if is_binder_enabled or is_jupyterlite_enabled:
-        interactive_example_text += " or to run this example in your browser via "
+        interactive_example_text += (
+            " or to run this example in your browser via ")
 
     if is_binder_enabled and is_jupyterlite_enabled:
         interactive_example_text += "JupyterLite or Binder"
