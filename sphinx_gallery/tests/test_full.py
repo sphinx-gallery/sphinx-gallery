@@ -1016,6 +1016,16 @@ def test_interactive_example_logo_exists(sphinx_app):
     assert op.isfile(img_fname)
 
 
+def test_download_and_interactive_note(sphinx_app):
+    """Test text saying go to the end to download code or run the example."""
+    root = op.join(sphinx_app.outdir, 'auto_examples')
+    with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
+        html = fid.read()
+
+    pattern = r"to download the full example.+in your browser via JupyterLite or Binder"
+    assert re.search(pattern, html)
+
+
 def test_defer_figures(sphinx_app):
     """Test the deferring of figures."""
     root = op.join(sphinx_app.outdir, 'auto_examples')

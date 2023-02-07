@@ -270,8 +270,8 @@ def check_binder_conf(binder_conf):
 
 
 def configure_jupyterlite_sphinx(app, config):
-    jupyterlite_is_enabled = 'jupyterlite_sphinx' in app.extensions
-    if not jupyterlite_is_enabled:
+    is_jupyterlite_enabled = 'jupyterlite_sphinx' in app.extensions
+    if not is_jupyterlite_enabled:
         return
 
     jupyterlite_contents = [
@@ -372,7 +372,7 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
 def check_jupyterlite_conf(jupyterlite_conf):
     """Check to make sure that the Binder configuration is correct."""
     if jupyterlite_conf is None:
-        jupyterlite_conf = {}
+        return None
 
     if not isinstance(jupyterlite_conf, dict):
         raise ConfigError(

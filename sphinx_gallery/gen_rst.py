@@ -51,7 +51,7 @@ from .py_source_parser import (split_code_and_text_blocks,
 
 from .notebook import jupyter_notebook, save_notebook
 from .interactive_example import check_binder_conf, gen_binder_rst
-from .interactive_example import gen_jupyterlite_rst
+from .interactive_example import check_jupyterlite_conf, gen_jupyterlite_rst
 
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
@@ -1227,11 +1227,24 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     ref_fname = example_fname.replace(os.path.sep, "_")
 
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
+    is_binder_enabled = len(binder_conf) > 0
 
-    binder_text = (" or to run this example in your browser via Binder"
-                   if len(binder_conf) else "")
+    jupyterlite_conf = gallery_conf.get('jupyterlite')
+    is_jupyterlite_enabled = jupyterlite_conf is not None
+
+    interactive_example_text = ""
+    if is_binder_enabled or is_jupyterlite_enabled:
+        interactive_example_text += " or to run this example in your browser via "
+
+    if is_binder_enabled and is_jupyterlite_enabled:
+        interactive_example_text += "JupyterLite or Binder"
+    elif is_binder_enabled:
+        interactive_example_text += "Binder"
+    elif is_jupyterlite_enabled:
+        interactive_example_text += "JupyterLite"
+
     example_rst = EXAMPLE_HEADER.format(
-        example_fname, ref_fname, binder_text) + example_rst
+        example_fname, ref_fname, interactive_example_text) + example_rst
 
     if time_elapsed >= gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)
@@ -1245,13 +1258,13 @@ def save_rst_example(example_rst, example_file, time_elapsed,
 
     # Generate a binder URL if specified
     binder_badge_rst = ''
-    if len(binder_conf) > 0:
+    if is_binder_enabled:
         binder_badge_rst += gen_binder_rst(example_file, binder_conf,
                                            gallery_conf)
         binder_badge_rst = indent(binder_badge_rst, '  ')  # need an extra two
 
     jupyterlite_rst = ''
-    if gallery_conf.get('jupyterlite') is not None:
+    if is_jupyterlite_enabled:
         jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, '  ')  # need an extra two
 
