@@ -377,7 +377,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
 
     # jupyterlite
     gallery_conf['jupyterlite'] = check_jupyterlite_conf(
-        gallery_conf['jupyterlite'])
+        gallery_conf.get('jupyterlite'), app=app)
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'

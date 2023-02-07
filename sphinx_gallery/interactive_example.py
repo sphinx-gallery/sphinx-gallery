@@ -270,10 +270,14 @@ def check_binder_conf(binder_conf):
 
 
 def configure_jupyterlite_sphinx(app, config):
-    is_jupyterlite_enabled = 'jupyterlite_sphinx' in app.extensions
+    is_jupyterlite_enabled = (
+        'jupyterlite_sphinx' in app.extensions
+        and config.sphinx_gallery_conf.get('jupyterlite') is not None
+    )
     if not is_jupyterlite_enabled:
         return
 
+    # Configure default for jupyterlite_sphinx extension
     jupyterlite_contents = [
         os.path.join(
             app.outdir,
@@ -295,8 +299,8 @@ def create_jupyterlite_contents(app, exception):
     if app.builder.name not in ['html', 'readthedocs']:
         return
 
-    jupyterlite_is_enabled = 'jupyterlite_sphinx' in app.extensions
-    if not jupyterlite_is_enabled:
+    is_jupyterlite_enabled = 'jupyterlite_sphinx' in app.extensions
+    if not is_jupyterlite_enabled:
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
@@ -369,9 +373,18 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     return rst
 
 
-def check_jupyterlite_conf(jupyterlite_conf):
+def check_jupyterlite_conf(jupyterlite_conf, app=None):
     """Check to make sure that the Binder configuration is correct."""
-    if jupyterlite_conf is None:
+    # app=None can happen for testing
+    if app is None:
+        is_jupyterlite_disabled = True
+    else:
+        is_jupyterlite_disabled = (
+            'jupyterlite_sphinx' not in app.extensions
+            or jupyterlite_conf is None
+        )
+
+    if is_jupyterlite_disabled:
         return None
 
     if not isinstance(jupyterlite_conf, dict):

@@ -58,6 +58,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
     'sphinx.ext.graphviz',
+    'jupyterlite_sphinx'
 ]
 templates_path = ['_templates']
 autosummary_generate = True

@@ -177,3 +177,7 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
     image_fname = os.path.join(
         os.path.dirname(file_path), 'images', 'jupyterlite_badge_logo.svg')
     assert os.path.isfile(image_fname)
+
+# TODO Test the logic in check_jupyterlite_conf
+# - jupyterlite_sphinx + jupyterlite_conf not specified => enabled
+# - jupyterlite_sphinx + jupyterlite_conf explicit None => disabled
