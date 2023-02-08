@@ -1124,16 +1124,36 @@ Generate JupyterLite links for gallery notebooks (experimental)
 
 Sphinx-Gallery automatically generates Jupyter notebooks for any examples built
 with the gallery. `JupyterLite <https://jupyterlite.readthedocs.io>`__ makes it
-possible to run an example in your browser. TODO mention difference with Binder?
+possible to run an example in your browser. The functionality is quite similar
+to Binder in the sense that you will get a Jupyter environment where you can
+run the example interactively as a notebook. The main difference with Binder
+are:
+- with JupyterLite, the example actually runs in your browser, there is no need
+  for a separate machine in the cloud to run your Python code. That means that
+  starting a Jupyter server is genrally quicker, no need to wait for the Binder
+  image to be built
+- with JupyterLite the first imports take time. At the time of writing
+  (February 2023) ``import scipy`` can take ~15-30s. Some innocuously looking
+  Python code may just not work and break in an unexpected fashion. The Jupyter
+  kernel is based on Pyodide, see some `here
+  <https://pyodide.org/en/latest/usage/wasm-constraints.html>`__ for some
+  Pyodide limitations.
+- with JupyterLite environments are not as flexible as Binder, for example you
+  can not use a docker image but only the default `Pyodide
+  <https://pyodide.org/en/stable/index.html>`__ environment. That means that
+  some non pure-Python packages may not be available, see list of `available
+  packages in Pyodide
+  <https://pyodide.org/en/stable/usage/packages-in-pyodide.html>`__
 
 .. warning::
 
-   JupyterLite is still beta technology, so there may be instability in the
-   experience of users who click JupyterLite links.
+   JupyterLite is still beta technology and less mature than Binder, so there
+   may be instability or unexpected behaviour in the experience of users who
+   click JupyterLite links.
 
-In order to enable JupyterLite links with Sphinx-Gallery, you must install
-`jupyterlite-sphinx <https://jupyterlite-sphinx.readthedocs.io>`_ and add it to
-your extensions in ``conf.py``::
+In order to enable JupyterLite links with Sphinx-Gallery, you must install the
+`jupyterlite-sphinx <https://jupyterlite-sphinx.readthedocs.io>`_ package and
+add it to your extensions in ``conf.py``::
 
     extensions = [
         ...,
@@ -1142,16 +1162,35 @@ your extensions in ``conf.py``::
         'jupyterlite_sphinx',
     ]
 
-- TODO indicates that jupyterlite_sphinx can be set-up as per its doc via its specific variable
-- TODO indicates that jupyterlite_sphinx contents is jupyterlite_contents by default in the build dir
-- TODO indicate that jupyterlite build will be called
-- TODO clean-up copy and paste from Binder paragraph
+You can configure JupyterLite integration by setting
+``sphinx_gallery_conf['jupyterlite']`` in ``conf.py`` like this::
+
+    sphinx_gallery_conf = {
+      ...
+      'jupyterlite': {
+         'use_jupyter_lab': <bool> # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
+         }
+    }
+
+Below is a more complete explanation of each field.
+
+use_jupyter_lab (type: bool, default: ``True``)
+  Whether the default interface activated by the JupyterLite link will be for
+  Jupyter Lab or the RetroLab Notebook interface.
+
+
+You can set variables in ``conf.py`` to configure ``jupyterlite-sphinx``,
+see its `doc <https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html>`__
+for more details.
 
 If a Sphinx-Gallery configuration for JupyterLite is discovered, the following
 extra things will happen:
 
+- configure ``jupyterlite-sphinx`` to some reasonable defaults, e.g. set
+  ``jupyterlite_contents`` to be a subfolder in the build output directory and
+  ``jupyterlite_bind_ipynb_suffix = False``.
 1. The built Jupyter Notebooks from the documentation will be copied to a
-   folder called ``<jupyterlite_contents/>`` at the root of
+   folder called ``jupyterlite_contents/`` at the root of
    your built documentation (they will follow the same folder hierarchy within
    the notebooks directory folder.
 2. The rST output of each Sphinx-Gallery example will now have a
@@ -1159,16 +1198,18 @@ extra things will happen:
 3. That button will point to a JupyterLite link which will start a Jupyter
    server in your browser with the current example as notebook
 
-Below is a more complete explanation of each field.
+If, for some reason, you want to enable the ``jupyterlite-sphinx`` extension
+but not use sphinx-gallery Jupyterlite integration you can do::
 
-use_jupyter_lab (type: bool, default: ``False``)
-  Whether the default interface activated by the JupyterLite link will be for
-  Jupyter Lab or the RetroLab Notebook interface.
+    extensions = [
+        ...,
+        jupyterlite_sphinx,
+    ]
 
-TODO not quite correct. Each generated Jupyter Notebook will be copied to the
-folder specified in ``notebooks_dir``. This will be a subfolder of the sphinx
-output directory and included with your site build. JupyterLite links will
-point to these notebooks.
+    sphinx_gallery_conf = {
+      ...
+      'jupyterlite': None
+    }
 
 See the Sphinx-Gallery `Sphinx configuration file
 <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
