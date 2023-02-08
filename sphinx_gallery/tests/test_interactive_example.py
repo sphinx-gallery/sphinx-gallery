@@ -200,7 +200,8 @@ def test_check_jupyterlite_conf():
         'use_jupyter_lab': False
     }
     expected = {
-        'jupyterlite_contents': 'srcdir/this_is_the_contents_dir',
+        'jupyterlite_contents': os.path.join(
+            'srcdir', 'this_is_the_contents_dir'),
         'use_jupyter_lab': False
     }
 

@@ -401,7 +401,8 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
 
     result = {}
     result['use_jupyter_lab'] = jupyterlite_conf.get('use_jupyter_lab', True)
-    result['jupyterlite_contents'] = jupyterlite_conf.get('jupyterlite_contents', 'jupyterlite_contents')
+    result['jupyterlite_contents'] = jupyterlite_conf.get(
+        'jupyterlite_contents', 'jupyterlite_contents')
     result['jupyterlite_contents'] = os.path.join(
         app.srcdir,
         result['jupyterlite_contents'])
