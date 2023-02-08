@@ -36,7 +36,8 @@ from .sorting import NumberOfCodeLinesSortKey
 from .interactive_example import (
     copy_binder_files, check_binder_conf, check_jupyterlite_conf
 )
-from .interactive_example import configure_jupyterlite_sphinx
+from .interactive_example import pre_configure_jupyterlite_sphinx
+from .interactive_example import post_configure_jupyterlite_sphinx
 from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
 
@@ -376,8 +377,10 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     gallery_conf['binder'] = check_binder_conf(gallery_conf['binder'])
 
     # jupyterlite
+    print('_complete_gallery_conf', gallery_conf.get('jupyterlite'))
     gallery_conf['jupyterlite'] = check_jupyterlite_conf(
-        gallery_conf.get('jupyterlite'), app=app)
+        gallery_conf.get('jupyterlite', {}), app)
+
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'
@@ -1166,7 +1169,8 @@ def setup(app):
     # To be on the safe side, set small priority value, so that
     # configure_jupyterlite_sphinx is called before jupyterlite_sphinx
     # config-inited
-    app.connect('config-inited', configure_jupyterlite_sphinx, priority=100)
+    app.connect('config-inited', pre_configure_jupyterlite_sphinx, priority=100)
+    app.connect('config-inited', post_configure_jupyterlite_sphinx, priority=900)
 
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)

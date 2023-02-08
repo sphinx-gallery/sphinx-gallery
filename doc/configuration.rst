@@ -1169,6 +1169,7 @@ You can configure JupyterLite integration by setting
     sphinx_gallery_conf = {
       ...
       'jupyterlite': {
+         'jupyterlite_contents': <str> # JupyterLite contents where to copy the example notebooks (relative to Sphinx source directory)
          'use_jupyter_lab': <bool> # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
          }
     }
@@ -1179,21 +1180,23 @@ use_jupyter_lab (type: bool, default: ``True``)
   Whether the default interface activated by the JupyterLite link will be for
   Jupyter Lab or the RetroLab Notebook interface.
 
+jupyterlite_contents (type: string, default: ``jupyterlite_contents``) The name
+  of a folder where the built Jupyter notebooks will be copied, relative to the
+  Sphinx source directory. This is used as Jupyterlite contents.
 
-You can set variables in ``conf.py`` to configure ``jupyterlite-sphinx``,
-see its `doc <https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html>`__
-for more details.
+You can set variables in ``conf.py`` to configure ``jupyterlite-sphinx``, see
+its `jupyterlite-sphinx doc
+<https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html>`__ for
+more details.
 
 If a Sphinx-Gallery configuration for JupyterLite is discovered, the following
 extra things will happen:
 
-1. Configure ``jupyterlite-sphinx`` to some reasonable defaults, e.g. set
-   ``jupyterlite_contents`` to be a subfolder in the build output directory and
+1. Configure ``jupyterlite-sphinx`` with some reasonable defaults, e.g. set
    ``jupyterlite_bind_ipynb_suffix = False``.
 2. The built Jupyter Notebooks from the documentation will be copied to a
-   folder called ``jupyterlite_contents/`` at the root of
-   your built documentation (they will follow the same folder hierarchy within
-   the notebooks directory folder.
+   folder called ``<jupyterlite_contents>/`` (relative to Sphinx source
+   directory)
 3. The rST output of each Sphinx-Gallery example will now have a
    ``launch JupyterLite`` button in it.
 4. That button will point to a JupyterLite link which will start a Jupyter

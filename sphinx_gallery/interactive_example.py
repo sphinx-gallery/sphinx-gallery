@@ -269,7 +269,7 @@ def check_binder_conf(binder_conf):
     return binder_conf
 
 
-def configure_jupyterlite_sphinx(app, config):
+def pre_configure_jupyterlite_sphinx(app, config):
     is_jupyterlite_enabled = (
         'jupyterlite_sphinx' in app.extensions
         and config.sphinx_gallery_conf.get('jupyterlite', {}) is not None
@@ -277,19 +277,25 @@ def configure_jupyterlite_sphinx(app, config):
     if not is_jupyterlite_enabled:
         return
 
-    # Configure default for jupyterlite_sphinx extension
-    jupyterlite_contents = [
-        os.path.join(
-            app.outdir,
-            'jupyterlite_contents'
-        )
-    ]
-
-    config.jupyterlite_contents = jupyterlite_contents
     # Do not use notebooks as sources for the documentation. See
     # https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
     # for more details
     config.jupyterlite_bind_ipynb_suffix = False
+
+
+def post_configure_jupyterlite_sphinx(app, config):
+    config.sphinx_gallery_conf['jupyterlite'] = check_jupyterlite_conf(
+        config.sphinx_gallery_conf.get('jupyterlite', {}), app)
+
+    if config.sphinx_gallery_conf['jupyterlite'] is None:
+        return
+
+    if config.jupyterlite_contents is None:
+        config.jupyterlite_contents = []
+
+    # Append to jupyterlite_contents in case they have been set in conf.py
+    config.jupyterlite_contents.append(
+        config.sphinx_gallery_conf['jupyterlite']['jupyterlite_contents'])
 
 
 def create_jupyterlite_contents(app, exception):
@@ -299,15 +305,17 @@ def create_jupyterlite_contents(app, exception):
     if app.builder.name not in ['html', 'readthedocs']:
         return
 
-    is_jupyterlite_enabled = 'jupyterlite_sphinx' in app.extensions
+    gallery_conf = app.config.sphinx_gallery_conf
+    is_jupyterlite_enabled = (
+        'jupyterlite_sphinx' in app.extensions
+        and gallery_conf['jupyterlite'] is not None)
+
     if not is_jupyterlite_enabled:
         return
 
-    gallery_conf = app.config.sphinx_gallery_conf
-
     logger.info('copying Jupyterlite contents ...', color='white')
     gallery_dirs = gallery_conf.get('gallery_dirs')
-    contents_dir = os.path.join(app.outdir, 'jupyterlite_contents')
+    contents_dir = gallery_conf['jupyterlite']['jupyterlite_contents']
 
     shutil.rmtree(contents_dir, ignore_errors=True)
     os.makedirs(contents_dir)
@@ -373,8 +381,8 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     return rst
 
 
-def check_jupyterlite_conf(jupyterlite_conf, app=None):
-    """Check to make sure that the Binder configuration is correct."""
+def check_jupyterlite_conf(jupyterlite_conf, app):
+    """Return full JupyterLite configuration with defaults"""
     # app=None can happen for testing
     if app is None:
         is_jupyterlite_disabled = True
@@ -391,6 +399,11 @@ def check_jupyterlite_conf(jupyterlite_conf, app=None):
         raise ConfigError(
             '`jupyterlite_conf` must be a dictionary')
 
-    jupyterlite_conf.setdefault('use_jupyter_lab', True)
+    result = {}
+    result['use_jupyter_lab'] = jupyterlite_conf.get('use_jupyter_lab', True)
+    result['jupyterlite_contents'] = jupyterlite_conf.get('jupyterlite_contents', 'jupyterlite_contents')
+    result['jupyterlite_contents'] = os.path.join(
+        app.srcdir,
+        result['jupyterlite_contents'])
 
-    return jupyterlite_conf
+    return result

@@ -1229,8 +1229,8 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
     is_binder_enabled = len(binder_conf) > 0
 
-    jupyterlite_conf = check_jupyterlite_conf(gallery_conf.get('jupyterlite'),
-                                              app=gallery_conf.get('app'))
+    jupyterlite_conf = check_jupyterlite_conf(gallery_conf.get('jupyterlite', {}),
+                                              gallery_conf['app'])
     is_jupyterlite_enabled = jupyterlite_conf is not None
 
     interactive_example_text = ""

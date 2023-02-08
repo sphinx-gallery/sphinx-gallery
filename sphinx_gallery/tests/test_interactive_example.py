@@ -9,13 +9,15 @@ from __future__ import division, absolute_import, print_function
 from copy import deepcopy
 import os
 import re
+from unittest.mock import Mock
 
 import pytest
 
+from sphinx.application import Sphinx
 from sphinx.errors import ConfigError
 from sphinx_gallery.interactive_example import (
     gen_binder_url, check_binder_conf, _copy_binder_reqs, gen_binder_rst,
-    gen_jupyterlite_rst)
+    gen_jupyterlite_rst, check_jupyterlite_conf)
 
 
 def test_binder():
@@ -178,6 +180,28 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
         os.path.dirname(file_path), 'images', 'jupyterlite_badge_logo.svg')
     assert os.path.isfile(image_fname)
 
-# TODO Test the logic in check_jupyterlite_conf
-# - jupyterlite_sphinx + jupyterlite_conf not specified => enabled
-# - jupyterlite_sphinx + jupyterlite_conf explicit None => disabled
+
+def test_check_jupyterlite_conf():
+    app = Mock(spec=Sphinx, config=dict(source_suffix={'.rst': None}),
+               extensions=[], srcdir='srcdir')
+
+    assert check_jupyterlite_conf(None, app) is None
+    assert check_jupyterlite_conf({}, app) is None
+
+    app.extensions = ['jupyterlite_sphinx']
+    assert check_jupyterlite_conf(None, app) is None
+    assert check_jupyterlite_conf({}, app) == {
+        'jupyterlite_contents': 'srcdir/jupyterlite_contents',
+        'use_jupyter_lab': True
+    }
+
+    conf = {
+        'jupyterlite_contents': 'this_is_the_contents_dir',
+        'use_jupyter_lab': False
+    }
+    expected = {
+        'jupyterlite_contents': 'srcdir/this_is_the_contents_dir',
+        'use_jupyter_lab': False
+    }
+
+    assert check_jupyterlite_conf(conf, app) == expected
