@@ -191,7 +191,7 @@ def test_check_jupyterlite_conf():
     app.extensions = ['jupyterlite_sphinx']
     assert check_jupyterlite_conf(None, app) is None
     assert check_jupyterlite_conf({}, app) == {
-        'jupyterlite_contents': 'srcdir/jupyterlite_contents',
+        'jupyterlite_contents': os.path.join('srcdir', 'jupyterlite_contents'),
         'use_jupyter_lab': True
     }
 
