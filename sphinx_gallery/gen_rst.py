@@ -335,6 +335,11 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
 
 
 def _get_readme(dir_, gallery_conf, raise_error=True):
+    # first check if there is an index.rst:
+    fpth = os.path.join(dir_, 'index.rst')
+    if os.path.isfile(fpth):
+        return None
+    # now look for README.txt, README.rst etc...
     extensions = ['.txt'] + sorted(gallery_conf['app'].config['source_suffix'])
     for ext in extensions:
         for fname in ('README', 'readme'):
@@ -393,10 +398,14 @@ def generate_dir_rst(
 
     subsection_index_content = ""
     subsection_readme_fname = _get_readme(src_dir, gallery_conf)
-
-    with codecs.open(subsection_readme_fname, 'r', encoding='utf-8') as fid:
-        subsection_readme_content = fid.read()
-        subsection_index_content += subsection_readme_content
+    have_index_rst = False
+    if subsection_readme_fname:
+        with codecs.open(subsection_readme_fname,
+                         'r', encoding='utf-8') as fid:
+            subsection_readme_content = fid.read()
+            subsection_index_content += subsection_readme_content
+    else:
+        have_index_rst = True
 
     # Add empty lines to avoid bug in issue #165
     subsection_index_content += "\n\n"
@@ -476,6 +485,25 @@ def generate_dir_rst(
    %s\n
 """ % "\n   ".join(subsection_toctree_filenames)
                 findex.write(subsection_index_toctree)
+
+    if have_index_rst:
+        # the user has supplied index.rst, so blank out the content
+        subsection_index_content = None
+
+    # Copy over any other files.
+    copyregex = gallery_conf.get('copyfile_regex')
+    if copyregex:
+        listdir = [fname for fname in os.listdir(src_dir) if
+                   re.match(copyregex, fname)]
+        readme = _get_readme(src_dir, gallery_conf, raise_error=False)
+        # don't copy over the readme
+        if readme:
+            listdir = [fname for fname in listdir if
+                       fname != os.path.basename(readme)]
+        for fname in listdir:
+            src_file = os.path.normpath(os.path.join(src_dir, fname))
+            target_file = os.path.join(target_dir, fname)
+            _replace_md5(src_file, fname_old=target_file, method='copy')
 
     return (
         subsection_index_path,

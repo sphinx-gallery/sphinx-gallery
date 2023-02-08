@@ -60,6 +60,7 @@ file:
 - ``nested_sections`` (:ref:`nested_sections`)
 - ``api_usage_ignore`` (:ref:`api_usage_ignore`)
 - ``show_api_usage`` (:ref:`show_api_usage`)
+- ``copyfile_regex`` (:ref:`manual_passthrough`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -409,14 +410,14 @@ point to the directory containing ``searchindex.js``, such as
 If you wish to do the same for ordinary RST documentation,
 see :ref:`plain_rst`.
 
-If you are using inheritance for your documented code and you are experience 
-wrong links in the sense that the links point to the base class of an object 
-instead of the child, the option ``prefer_full_module`` might solve your issue. 
-Have also a look at `the GitHub 
+If you are using inheritance for your documented code and you are experience
+wrong links in the sense that the links point to the base class of an object
+instead of the child, the option ``prefer_full_module`` might solve your issue.
+Have also a look at `the GitHub
 issue <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
 implementing this option for more context.
 
-To make this work in your documentation you need to include to the 
+To make this work in your documentation you need to include to the
 configuration
 dictionary within your Sphinx ``conf.py`` file::
 
@@ -429,8 +430,8 @@ dictionary within your Sphinx ``conf.py`` file::
         ]
     }
 
-In the above examples all modules matching the string ``'yourmodule.*+\d{4}'`` 
-would use the full module name when creating the links. All other use the 
+In the above examples all modules matching the string ``'yourmodule.*+\d{4}'``
+would use the full module name when creating the links. All other use the
 (default) way of linking.
 
 .. _references_to_examples:
@@ -1865,6 +1866,44 @@ each subsection, and a specific toctree for each subsection.
 In particular, sidebars generated using these toctrees might not reflect the
 actual section / folder structure.
 
+.. _manual_passthrough:
+
+Manually passing files
+======================
+
+By default, Sphinx-Gallery creates all the files that are written in the
+sphinx-build directory, either by generating rst and images from a ``*.py``
+in the gallery-source, or from  creating ``index.rst`` from ``README.txt``
+in the gallery-source.  However, sometimes it is desirable to pass files
+from the gallery-source to the sphinx-build.  For example, you may want
+to pass an image that a gallery refers to, but does not generate itself.
+You may also want to pass raw rst from the gallery-source to the
+sphinx-build, because that material fits in thematically with your gallery,
+but is easier to write as rst.  To accomodate this, you may set
+``copyfile_regex`` in ``sphinx_gallery_conf``.  The following copies
+across rst files.
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        ...
+       'copyfile_regex': r'.*\.rst',
+    }
+
+Note that if you copy across files rst files, for instance, it is your
+responsibility to ensure that they are in a sphinx ``toctree`` somewhere
+in your document.  You can, of course, add a ``toctree`` to your
+``README.txt``.
+
+Manually passing ``index.rst``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want control over the gallery (or subgallery) ``index.rst``, you
+can bypass Sphinx-Gallery creating it from ``README.txt`` by including
+it in the gallery-source instead of the README.  If you do this, you are
+responsible for building your own ``toctree`` in that index or elsewhere
+that includes the gallery items.
+
 .. _show_api_usage:
 
 Showing API Usage
@@ -1884,7 +1923,7 @@ are used in. This could be helpful for making a map of which examples to
 look at if you want to learn about a particular module. Setting
 ``show_api_usage`` to ``False`` will not make any graphs or documentation
 about API usage. Note, ``graphviz`` is required for making the unused and
-used API entry graphs. 
+used API entry graphs.
 
 .. _api_usage_ignore:
 
