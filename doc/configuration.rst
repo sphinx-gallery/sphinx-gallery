@@ -1128,6 +1128,7 @@ possible to run an example in your browser. The functionality is quite similar
 to Binder in the sense that you will get a Jupyter environment where you can
 run the example interactively as a notebook. The main difference with Binder
 are:
+
 - with JupyterLite, the example actually runs in your browser, there is no need
   for a separate machine in the cloud to run your Python code. That means that
   starting a Jupyter server is genrally quicker, no need to wait for the Binder
@@ -1143,7 +1144,7 @@ are:
   <https://pyodide.org/en/stable/index.html>`__ environment. That means that
   some non pure-Python packages may not be available, see list of `available
   packages in Pyodide
-  <https://pyodide.org/en/stable/usage/packages-in-pyodide.html>`__
+  <https://pyodide.org/en/stable/usage/packages-in-pyodide.html>`__.
 
 .. warning::
 
@@ -1186,16 +1187,16 @@ for more details.
 If a Sphinx-Gallery configuration for JupyterLite is discovered, the following
 extra things will happen:
 
-- configure ``jupyterlite-sphinx`` to some reasonable defaults, e.g. set
-  ``jupyterlite_contents`` to be a subfolder in the build output directory and
-  ``jupyterlite_bind_ipynb_suffix = False``.
-1. The built Jupyter Notebooks from the documentation will be copied to a
+1. Configure ``jupyterlite-sphinx`` to some reasonable defaults, e.g. set
+   ``jupyterlite_contents`` to be a subfolder in the build output directory and
+   ``jupyterlite_bind_ipynb_suffix = False``.
+2. The built Jupyter Notebooks from the documentation will be copied to a
    folder called ``jupyterlite_contents/`` at the root of
    your built documentation (they will follow the same folder hierarchy within
    the notebooks directory folder.
-2. The rST output of each Sphinx-Gallery example will now have a
+3. The rST output of each Sphinx-Gallery example will now have a
    ``launch JupyterLite`` button in it.
-3. That button will point to a JupyterLite link which will start a Jupyter
+4. That button will point to a JupyterLite link which will start a Jupyter
    server in your browser with the current example as notebook
 
 If, for some reason, you want to enable the ``jupyterlite-sphinx`` extension
