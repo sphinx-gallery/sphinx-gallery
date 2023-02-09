@@ -1898,11 +1898,14 @@ in your document.  You can, of course, add a ``toctree`` to your
 Manually passing ``index.rst``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you want control over the gallery (or subgallery) ``index.rst``, you
-can bypass Sphinx-Gallery creating it from ``README.txt`` by including
-it in the gallery-source instead of the README.  If you do this, you are
-responsible for building your own ``toctree`` in that index or elsewhere
-that includes the gallery items.
+You can bypass Sphinx-Gallery automatically creating an  ``index.rst`` from a
+``README.txt`` in a gallery directory or subdirectory. If your
+``copyfile_regex`` includes ``index.rst``, and you have an ``index.rst`` in the
+gallery-source instead of the README, Sphinx-Gallery will use that instead of
+the index it automatically makes.  If you do this, you are responsible for
+adding your own Sphinx ``toctree`` in that index (or elsewhere in your Sphinx
+documentation) that includes any gallery items or other files in that
+directory.
 
 .. _show_api_usage:
 

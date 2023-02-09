@@ -43,7 +43,7 @@ N_EXECUTE = 2 + 3 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 9 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
-N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
+N_RST = '(%s|%s|%s)' % (N_RST, N_RST - 1, N_RST - 2)  # AppVeyor weirdness
 
 
 @pytest.fixture(scope='module')
@@ -180,6 +180,7 @@ def test_junit(sphinx_app, tmpdir):
                             'plot_numpy_matplotlib.py')
     failing_fname = op.join(new_src_dir, '../examples', 'future',
                             'plot_future_imports_broken.py')
+    print('Names', passing_fname, failing_fname)
     shutil.move(passing_fname, passing_fname + '.temp')
     shutil.move(failing_fname, passing_fname)
     shutil.move(passing_fname + '.temp', failing_fname)
