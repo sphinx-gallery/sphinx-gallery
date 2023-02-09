@@ -335,10 +335,12 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
 
 
 def _get_readme(dir_, gallery_conf, raise_error=True):
-    # first check if there is an index.rst:
-    fpth = os.path.join(dir_, 'index.rst')
-    if os.path.isfile(fpth):
-        return None
+    # first check if there is an index.rst and that index.rst is in the
+    # copyfile regexp:
+    if re.match(gallery_conf['copyfile_regex'], 'index.rst'):
+        fpth = os.path.join(dir_, 'index.rst')
+        if os.path.isfile(fpth):
+            return None
     # now look for README.txt, README.rst etc...
     extensions = ['.txt'] + sorted(gallery_conf['app'].config['source_suffix'])
     for ext in extensions:
@@ -460,7 +462,7 @@ def generate_dir_rst(
     # Write subsection index file
     # only if nested_sections is True
     subsection_index_path = None
-    if gallery_conf["nested_sections"] is True:
+    if gallery_conf["nested_sections"] is True and not have_index_rst:
         subsection_index_path = os.path.join(target_dir, 'index.rst.new')
         with codecs.open(subsection_index_path, 'w', encoding='utf-8') as (
             findex

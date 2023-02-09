@@ -37,11 +37,11 @@ N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 N_PASS = 0 + 2
 # indices SG generates  (extra non-plot*.py file)
 # + examples_rst_index + examples_with_rst
-N_INDEX = 2 + 1 + 3 + 1
+N_INDEX = 2 + 1 + 3
 # SG execution times (example, + examples_rst_index + examples_with_rst)
-N_EXECUTE = 2 + 1 + 1
+N_EXECUTE = 2 + 3 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
-N_OTHER = 9 + 1 + 1 + 1
+N_OTHER = 9 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
 N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
 
@@ -165,7 +165,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="%d"' % (N_GOOD,) in contents
+    assert 'tests="%d"' % (N_EXAMPLES,) in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
@@ -721,7 +721,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '(7|8|9|10|11)'
+    n_ch = '(7|8|9|10|11|12)'
     want = f'.*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*'
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'

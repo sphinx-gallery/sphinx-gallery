@@ -14,7 +14,7 @@ Subtopic one
 ============
 .. toctree::
 
-    examp_subdir1/plot_sub1
+    examp_subdir1/index
 
 Subtopic two
 ============
