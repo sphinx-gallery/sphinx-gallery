@@ -1,7 +1,7 @@
 .. _examples-index:
 
-Gallery of Examples
-===================
+Matplotlib Gallery (and basics)
+===============================
 
 This page consists of the 'General example' gallery and a sub-gallery,
 'No image output examples'. This sub-gallery is generated from a

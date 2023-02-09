@@ -1,8 +1,8 @@
 .. _python_script_syntax:
 
-=======================================================
-How to structure your Python scripts for Sphinx-Gallery
-=======================================================
+=============================================
+Structuring Python scripts for Sphinx-Gallery
+=============================================
 
 This page describes the structure and syntax that can be used in Python scripts
 to generate rendered HTML gallery pages.

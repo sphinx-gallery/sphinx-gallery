@@ -1,5 +1,5 @@
-sphinx >= 3, != 5.2.0
-sphinx_rtd_theme
+sphinx >= 3, != 5.2.0, < 6
+pydata-sphinx-theme
 pytest
 pytest-coverage
 numpy

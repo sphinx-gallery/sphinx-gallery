@@ -4,8 +4,12 @@
 Sphinx-Gallery API Reference
 ============================
 
-The complete Sphinx-Gallery project is automatically documented for
-every module.
+.. note:: 
+   Sphinx-Gallery is typically used indirectly via Sphinx execution and
+   configuration variables, see :ref:`configuration` for how to do this.
+   However, as a standard  Python project, we document many functions and
+   classes as well below, even though these will typically not be needed
+   by end users.
 
 .. currentmodule:: sphinx_gallery
 
