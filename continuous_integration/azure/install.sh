@@ -17,11 +17,10 @@ if [ "$DISTRIB" == "conda" ]; then
     CONDA_TO_INSTALL="python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz memory_profiler \"ipython!=8.7.0\" pypandoc"
     PIP_DEPENDENCIES="pydata-sphinx-theme check-manifest"
     if [ "$SPHINX_VERSION" == "" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<6 jinja2<=3.0.3"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
         # It is a mystery to me why we need black, but we get an error with sphinx that it's needed at the end of the build...
-        # TODO: Can't use dev until pydata-sphinx-theme supports it!
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<6 black"  # https://api.github.com/repos/sphinx-doc/sphinx/zipball/master
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} black https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     elif [ "$SPHINX_VERSION" == "old" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<5 jinja2<=3.0.3"
     else
@@ -54,7 +53,7 @@ elif [ "$DISTRIB" == "nightly" ]; then
     # pip install --no-use-pep517 -q https://api.github.com/repos/matplotlib/matplotlib/zipball/master
     #
     # So for now we'll just live without NumPy.
-    pip install -q --upgrade --pre "sphinx<6" joblib pytest-cov pygments colorama "jinja2>=2.3" markupsafe>=1.1
+    pip install -q --upgrade --pre sphinx joblib pytest-cov pygments colorama "jinja2>=2.3" markupsafe>=1.1
     pip install -q .
     pip list
 elif [ "$DISTRIB" == "minimal" ]; then

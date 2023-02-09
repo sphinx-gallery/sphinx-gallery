@@ -57,7 +57,8 @@ stages:
         set -eo pipefail
         python --version
         python -m pip install --user --upgrade pip setuptools wheel
-        pip install --user --upgrade --progress-bar off --upgrade "ipython!=8.7.0" numpy seaborn statsmodels matplotlib "sphinx<6" pillow pytest pytest-cov pydata-sphinx-theme joblib "plotly>=4.0"
+        pip install --user --upgrade --progress-bar off "ipython!=8.7.0" numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov joblib "plotly>=4.0"
+        pip install --user --upgrade --progress-bar off --pre pydata-sphinx-theme
         echo "Qt, plotly, VTK"
         pip install --user --upgrade --progress-bar off pyvista pyqt5 plotly vtk
         echo "Mayavi"
