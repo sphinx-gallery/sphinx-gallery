@@ -11,9 +11,12 @@ Sphinx-Gallery
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4718153.svg
     :target: https://doi.org/10.5281/zenodo.4718153
 
+.. tagline-begin-content
 
-A Sphinx extension that builds an HTML version of any Python
-script and puts it into an examples gallery.
+A `Sphinx <https://www.sphinx-doc.org/en/master/>`_ extension that builds an
+HTML gallery of examples from any set of Python scripts.
+
+.. tagline-end-content
 
 .. image:: doc/_static/demo.png
    :width: 80%
@@ -59,16 +62,15 @@ Who uses Sphinx-Gallery
 
 .. projects_list_end
 
-
-.. installation-begin-content
-
 Installation
 ============
 
 Install via ``pip``
 -------------------
 
-You can do a direct install via pip by using:
+.. installation-begin-content
+
+You can do a direct install via `pip`` by using:
 
 .. code-block:: bash
 
@@ -76,19 +78,14 @@ You can do a direct install via pip by using:
 
 Sphinx-Gallery will not manage its dependencies when installing, thus
 you are required to install them manually. Our minimal dependency
-is:
+is **Sphinx >= 4**.
 
-* Sphinx >= 3
+Sphinx-Gallery has also support for scraping images from packages like
+Matplotlib, Seaborn, and Mayavi. For much of this functionality, you will need
+``pillow``. We also recommend installing system ``optipng`` binaries to reduce
+the file sizes of the generated PNG files.
 
-Sphinx-Gallery has also support for packages like:
-
-* Matplotlib
-* Seaborn
-* Mayavi
-
-For much of this functionality, you will need ``pillow``. We also recommend
-installing system ``optipng`` binaries to reduce the file sizes of the
-generated PNG files.
+.. installation-end-content
 
 Install as a Sphinx-Gallery developer
 -------------------------------------
@@ -105,10 +102,13 @@ you can do:
     $ pip install -r dev-requirements.txt
     $ pip install -e .
 
-.. installation-end-content
 
-Citation
-========
+How to cite
+===========
+
+.. citation-begin-content
 
 If you would like to cite Sphinx-Gallery you can do so using our `Zenodo
 deposit <https://zenodo.org/record/3838216>`_.
+
+.. citation-end-content

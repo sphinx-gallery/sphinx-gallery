@@ -1,7 +1,7 @@
 .. _notebook_examples:
 
-Notebook style example
-======================
+Notebook-style Narrative Gallery
+================================
 
 You can have multiple galleries, each one for different uses. For example,
 one gallery of examples and a different gallery for tutorials.

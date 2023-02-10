@@ -1,8 +1,7 @@
 .. _mayavi-examples-index:
 
-Gallery of Examples using Mayavi
-================================
-
+Mayavi Gallery
+==============
 
 .. _general_mayavi_examples:
 
