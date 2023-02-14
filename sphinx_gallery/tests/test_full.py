@@ -30,18 +30,20 @@ import pytest
 
 # total number of plot_*.py files in tinybuild/examples + examples_rst_index
 # + examples_with_rst
-N_EXAMPLES = 13
+N_EXAMPLES = 13 + 3 + 2
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
-# indices SG generates + examples/local_module (extra non-plot*.py file)
+# passthroughs examples_rst_index, examples_with_rst
+N_PASS = 0 + 2
+# indices SG generates  (extra non-plot*.py file)
 # + examples_rst_index + examples_with_rst
-N_INDEX = 2 + 1
+N_INDEX = 2 + 1 + 3
 # SG execution times (example, + examples_rst_index + examples_with_rst)
-N_EXECUTE = 2
-# gen_modules + index.rst + minigallery.rst + sg_api_usage
-N_OTHER = 9 + 1 + 1 + 1
-N_RST = N_EXAMPLES + N_INDEX + N_EXECUTE + N_OTHER
-N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
+N_EXECUTE = 2 + 3 + 1
+# gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
+N_OTHER = 9 + 1 + 1 + 1 + 1
+N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
+N_RST = '(%s|%s|%s)' % (N_RST, N_RST - 1, N_RST - 2)  # AppVeyor weirdness
 
 
 @pytest.fixture(scope='module')
@@ -207,6 +209,8 @@ def test_run_sphinx(sphinx_app):
     out_files = os.listdir(out_dir)
     assert 'index.html' in out_files
     assert 'auto_examples' in out_files
+    assert 'auto_examples_with_rst' in out_files
+    assert 'auto_examples_rst_index' in out_files
     generated_examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(generated_examples_dir)
     status = sphinx_app._status.getvalue()
@@ -718,7 +722,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '(7|8|9|10|11)'
+    n_ch = '(7|8|9|10|11|12)'
     want = f'.*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*'
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'

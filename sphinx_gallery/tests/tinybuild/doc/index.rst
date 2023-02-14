@@ -36,3 +36,5 @@ This tests that mini-gallery reference labels work:
    :maxdepth: 2
 
    auto_examples/index.rst
+   auto_examples_with_rst/index.rst
+   auto_examples_rst_index/index.rst
