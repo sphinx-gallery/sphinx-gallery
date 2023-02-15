@@ -462,8 +462,7 @@ def _format_toctree(items, includehidden=False):
 
     st = """
 .. toctree::
-   :hidden:
-"""
+   :hidden:"""
     if includehidden:
         st += """
    :includehidden:
@@ -548,8 +547,7 @@ def generate_gallery_rst(app):
         # Write toctree with gallery items from gallery root folder
         if len(this_toctree_items) > 0:
             this_toctree = _format_toctree(this_toctree_items)
-
-        indexst += this_toctree
+            indexst += this_toctree
 
         # list all paths to subsection index files in this array
         subsection_index_files = []
