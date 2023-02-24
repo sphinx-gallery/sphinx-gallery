@@ -326,6 +326,8 @@ output formats. To use SVG, you can do::
 You can also use different formats on a per-image basis, but this requires
 writing a customized scraper class or function.
 
+.. _mayavi_scraper:
+
 Example 4: Mayavi scraper
 -------------------------
 Historically, sphinx-gallery supported scraping Mayavi figures as well as
