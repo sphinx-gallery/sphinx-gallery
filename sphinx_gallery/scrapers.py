@@ -20,7 +20,7 @@ import sys
 import re
 from textwrap import indent
 from pathlib import PurePosixPath
-from warnings import filterwarnings
+from warnings import filterwarnings, warn
 
 from sphinx.errors import ExtensionError
 from .utils import scale_image, optipng
@@ -255,6 +255,18 @@ def mayavi_scraper(block, block_vars, gallery_conf):
         The ReSTructuredText that will be rendered to HTML containing
         the images. This is often produced by :func:`figure_rst`.
     """
+    _mayavi_warn()
+    return _mayavi_scraper(block, block_vars, gallery_conf)
+
+
+def _mayavi_warn():
+    warn(
+        'mayavi_scraper is deprecated and will be removed in 0.12.0. '
+        'Use custom scraping code instead -- see our updated documentation.',
+        DeprecationWarning, stacklevel=4)
+
+
+def _mayavi_scraper(block, block_vars, gallery_conf):
     from mayavi import mlab
     image_path_iterator = block_vars['image_path_iterator']
     image_paths = list()

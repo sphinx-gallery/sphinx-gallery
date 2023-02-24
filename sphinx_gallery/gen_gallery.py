@@ -29,7 +29,8 @@ from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
-from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
+from .scrapers import (
+    _scraper_dict, _reset_dict, _import_matplotlib, _mayavi_warn)
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
@@ -235,6 +236,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     for si, scraper in enumerate(scrapers):
         if isinstance(scraper, str):
             if scraper in _scraper_dict:
+                if scraper == 'mayavi':
+                    _mayavi_warn()
                 scraper = _scraper_dict[scraper]
             else:
                 orig_scraper = scraper
