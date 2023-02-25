@@ -29,7 +29,8 @@ from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
-from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
+from .scrapers import (
+    _scraper_dict, _reset_dict, _import_matplotlib, _MAYAVI_WARN)
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
@@ -235,6 +236,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     for si, scraper in enumerate(scrapers):
         if isinstance(scraper, str):
             if scraper in _scraper_dict:
+                if scraper == 'mayavi':
+                    logger.warning(_MAYAVI_WARN)
                 scraper = _scraper_dict[scraper]
             else:
                 orig_scraper = scraper
@@ -856,9 +859,9 @@ def write_api_entry_usage(app, docname, source):
         return
 
     def get_entry_type(entry):
-        if entry in gallery_conf['api_entries']['class']:
+        if entry in gallery_conf['api_entries'].get('class', []):
             return 'class'
-        elif entry in gallery_conf['api_entries']['method']:
+        elif entry in gallery_conf['api_entries'].get('method', []):
             return 'meth'
         else:
             assert entry in gallery_conf['api_entries']['function']

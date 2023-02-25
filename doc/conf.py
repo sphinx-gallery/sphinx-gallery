@@ -19,6 +19,7 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
+from sphinx_gallery.scrapers import _MayaviScraper
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -341,7 +342,7 @@ try:
 except Exception:  # can raise all sorts of errors
     image_scrapers = ('matplotlib',)
 else:
-    image_scrapers += ('mayavi',)
+    image_scrapers += (_MayaviScraper(),)
     examples_dirs.append('../mayavi_examples')
     gallery_dirs.append('auto_mayavi_examples')
     # Do not pop up any mayavi windows while running the

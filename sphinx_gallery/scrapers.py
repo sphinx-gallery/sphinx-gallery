@@ -20,7 +20,7 @@ import sys
 import re
 from textwrap import indent
 from pathlib import PurePosixPath
-from warnings import filterwarnings
+from warnings import filterwarnings, warn
 
 from sphinx.errors import ExtensionError
 from .utils import scale_image, optipng
@@ -240,6 +240,11 @@ def _anim_rst(anim, image_path, gallery_conf):
 def mayavi_scraper(block, block_vars, gallery_conf):
     """Scrape Mayavi images.
 
+    .. warning::
+         mayavi_scraper is deprecated and will be removed in 0.13.0.
+         Use custom scraping code instead -- see the updated sphinx_gallery
+         documentation for details.
+
     Parameters
     ----------
     block : tuple
@@ -255,28 +260,44 @@ def mayavi_scraper(block, block_vars, gallery_conf):
         The ReSTructuredText that will be rendered to HTML containing
         the images. This is often produced by :func:`figure_rst`.
     """
-    from mayavi import mlab
-    image_path_iterator = block_vars['image_path_iterator']
-    image_paths = list()
-    e = mlab.get_engine()
-    for scene, image_path in zip(e.scenes, image_path_iterator):
-        try:
-            mlab.savefig(image_path, figure=scene)
-        except Exception:
-            mlab.close(all=True)
-            raise
-        # make sure the image is not too large
-        scale_image(image_path, image_path, 850, 999)
-        if 'images' in gallery_conf['compress_images']:
-            optipng(image_path, gallery_conf['compress_images_args'])
-        image_paths.append(image_path)
-    mlab.close(all=True)
-    return figure_rst(image_paths, gallery_conf['src_dir'])
+    warn(_MAYAVI_WARN, FutureWarning, stacklevel=2)
+    return _MayaviScraper()(block, block_vars, gallery_conf)
+
+
+_MAYAVI_WARN = (
+    'mayavi_scraper is deprecated and will be removed in 0.13.0. '
+    'Use custom scraping code instead -- see the updated sphinx_gallery '
+    'documentation for details.'
+)
+
+
+class _MayaviScraper():
+    def __repr__(self):
+        return 'MayaviScraper'
+
+    def __call__(self, block, block_vars, gallery_conf):
+        from mayavi import mlab
+        image_path_iterator = block_vars['image_path_iterator']
+        image_paths = list()
+        e = mlab.get_engine()
+        for scene, image_path in zip(e.scenes, image_path_iterator):
+            try:
+                mlab.savefig(image_path, figure=scene)
+            except Exception:
+                mlab.close(all=True)
+                raise
+            # make sure the image is not too large
+            scale_image(image_path, image_path, 850, 999)
+            if 'images' in gallery_conf['compress_images']:
+                optipng(image_path, gallery_conf['compress_images_args'])
+            image_paths.append(image_path)
+        mlab.close(all=True)
+        return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
 _scraper_dict = dict(
     matplotlib=matplotlib_scraper,
-    mayavi=mayavi_scraper,
+    mayavi=_MayaviScraper(),
 )
 
 

@@ -125,7 +125,8 @@ def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     plt.axes([-0.1, -0.1, 1.2, 1.2])
     plt.pcolor([[0]], cmap='Greens')
     mlab.test_plot3d()
-    image_rst = save_figures(block, block_vars, gallery_conf)
+    with pytest.warns(FutureWarning, match=r'mayavi_scraper.* in 0\.13*'):
+        image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(plt.get_fignums()) == 0
     assert len(image_path_iterator) == 2
     assert '/image0.png' not in image_rst
