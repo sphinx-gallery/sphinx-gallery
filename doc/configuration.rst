@@ -1204,6 +1204,12 @@ a default::
 The highest precedence is always given to the `-D` flag of the
 ``sphinx-build`` command.
 
+.. note::
+
+   If adding ``html-noplot`` to your ``Makefile``, you will also need to
+   explicitly set the default value for ``plot_gallery`` in the
+   ``sphinx_gallery_conf`` dictionary inside your ``conf.py`` file to avoid
+   a sphinx configuration warning.
 
 .. _compress_images:
 
