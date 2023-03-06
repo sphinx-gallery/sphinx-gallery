@@ -585,6 +585,9 @@ def generate_gallery_rst(app):
                 ] + [''])
 
                 indexst += subsection_index_content
+                has_readme_subsection = True
+            else:
+                has_readme_subsection = False
 
             # Write subsection toctree in main file only if
             # nested_sections is False or None, and
@@ -596,7 +599,7 @@ def generate_gallery_rst(app):
                     indexst += subsection_index_toctree
             # Otherwise, a new index.rst.new file should
             # have been created and it needs to be parsed
-            elif has_readme:
+            elif has_readme_subsection:
                 _replace_md5(subsection_index_path, mode='t')
 
             costs += subsection_costs

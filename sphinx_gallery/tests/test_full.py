@@ -213,6 +213,13 @@ def test_run_sphinx(sphinx_app):
     assert 'auto_examples_rst_index' in out_files
     generated_examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(generated_examples_dir)
+    # make sure that indices are properly being passed forward...
+    files_to_check = ['auto_examples_rst_index/examp_subdir1/index.html',
+                      'auto_examples_rst_index/examp_subdir2/index.html',
+                      'auto_examples_rst_index/index.html',
+                      ]
+    for f in files_to_check:
+        assert op.isfile(out_dir + '/' + f)
     status = sphinx_app._status.getvalue()
     assert 'executed %d out of %d' % (N_GOOD, N_EXAMPLES) in status
     assert 'after excluding 0' in status
