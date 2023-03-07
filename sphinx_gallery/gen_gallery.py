@@ -51,6 +51,7 @@ class DefaultResetArgv:
 
 
 DEFAULT_GALLERY_CONF = {
+    'show_code_download': True,
     'filename_pattern': re.escape(os.sep) + 'plot',
     'ignore_pattern': r'__init__\.py',
     'examples_dirs': os.path.join('..', 'examples'),
