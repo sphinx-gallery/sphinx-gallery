@@ -87,8 +87,8 @@ the file sizes of the generated PNG files.
 
 .. installation-end-content
 
-Install as a Sphinx-Gallery developer
--------------------------------------
+Contributing
+============
 
 You can get the latest development source from our `Github repository
 <https://github.com/sphinx-gallery/sphinx-gallery>`_. You need
@@ -99,25 +99,16 @@ you can do:
 
     $ git clone https://github.com/sphinx-gallery/sphinx-gallery
     $ cd sphinx-gallery
-    $ pip install -r dev-requirements.txt
+    $ pip install -r requirements.txt -r dev-requirements.txt
+    $ conda install graphviz  # if using conda, you can get graphviz this way
     $ pip install -e .
 
 
-Contributing
-============
+Check that you are all set by running:
 
-After cloning this repo, run the following commands to install needed dependencies
-in a proper conda environment:
+.. code-block:: console
 
-```
-pip install -r requirements.txt -r dev-requirements.txt
-conda install graphviz
-```
-
-Check that you are all set by running
-```
-pytest
-```
+    $ pytest sphinx_gallery
 
 How to cite
 ===========
