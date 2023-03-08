@@ -100,30 +100,7 @@ Prepare for release
 Finalize the release
 --------------------
 
-1. Create the new release on PyPI
-
-   * Build a source distribution and an ``any`` wheel::
-
-        git clean -xdf
-        python setup.py sdist bdist_wheel
-
-   * Check the release::
-
-        twine check dist/sphinx-gallery-<version>.*
-
-     ``<version>`` should be the release version, e.g., ``0.7.0``, and it
-     should check both the source distribution and the wheel.
-
-   * Upload to PyPI::
-
-        twine upload dist/*
-
-     Again, ``<version>`` should be the release version, e.g., ``0.7.0``.
-
-   * Confirm that the new version of Sphinx Gallery
-     `is posted to pypi <https://pypi.org/project/sphinx-gallery/>`_.
-
-2. Create a new release on GitHub
+1. Create a new release on GitHub
 
    * Go to the `Draft a new release <https://github.com/sphinx-gallery/sphinx-gallery/releases/new>`_ page.
    * The **tag version** is whatever the version is in ``__init__.py`` prepended with ``v``. E.g., ``v0.7.0``.
@@ -131,9 +108,11 @@ Finalize the release
    * The **description** should contain the markdown changelog
      you generated above (in the ``CHANGELOG.md`` file).
    * Click **Publish release** when you are done.
+   * Confirm that the new version of Sphinx Gallery
+     `is posted to PyPI <https://pypi.org/project/sphinx-gallery/#history>`_.
 
-3. Now that the releases are complete, we need to switch the "master" branch back into a developer
-   mode. Bump the `Sphinx Gallery version number <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinx_gallery/__init__.py>`_
+2. Now that the releases are complete, we need to switch the `master`` branch
+   back into a developer mode. Bump the `Sphinx Gallery version number <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinx_gallery/__init__.py>`_
    to the next minor (or major) release and append ``.dev0`` to the end, and make a PR for this change.
 
-4. Celebrate! You've just released a new version of Sphinx Gallery!
+3. Celebrate! You've just released a new version of Sphinx Gallery!
