@@ -16,6 +16,7 @@ from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
     collect_gallery_files, write_computation_times, _complete_gallery_conf,
     write_api_entry_usage)
+from sphinx_gallery.interactive_example import create_jupyterlite_contents
 
 
 def test_bad_config():
@@ -26,13 +27,6 @@ def test_bad_config():
     sphinx_gallery_conf = dict(n_subsection_order='')
     with pytest.raises(ConfigError, match=r"did you mean one of \['subsection_order', 'within_.*"):  # noqa: E501
         _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
-
-
-def test_bad_builder(sphinx_app_wrapper):
-    """Test that we raise an error for a bad builder."""
-    sphinx_app_wrapper.buildername = 'dirhtml'
-    with pytest.raises(ConfigError, match=".*dirhtml.*sphinx_gallery does not work.*"):  # noqa: E501
-        sphinx_app_wrapper.create_sphinx_app()
 
 
 def test_default_config(sphinx_app_wrapper):
@@ -315,9 +309,9 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'ntbk_folder',
                'dependencies': 'requirements.txt'}
 }""")
-def test_binder_copy_files(sphinx_app_wrapper, tmpdir):
+def test_binder_copy_files(sphinx_app_wrapper):
     """Test that notebooks are copied properly."""
-    from sphinx_gallery.binder import copy_binder_files
+    from sphinx_gallery.interactive_example import copy_binder_files
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
     # Create requirements file
@@ -502,3 +496,82 @@ def test_pypandoc_config_keys(sphinx_app_wrapper):
                        match="'pypandoc' only accepts the following key "
                              "values:"):
         parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+
+
+@pytest.mark.conf_file(content="""
+extensions += ['jupyterlite_sphinx']
+
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+}""")
+def test_create_jupyterlite_contents(sphinx_app_wrapper):
+    """Test that JupyterLite contents are created properly."""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    gallery_conf = sphinx_app.config.sphinx_gallery_conf
+
+    create_jupyterlite_contents(sphinx_app, exception=None)
+
+    for i_file in ['plot_1', 'plot_2', 'plot_3']:
+        assert os.path.exists(os.path.join(
+            sphinx_app.srcdir, 'jupyterlite_contents',
+            gallery_conf['gallery_dirs'][0], i_file + '.ipynb'))
+
+
+@pytest.mark.conf_file(content="""
+extensions += ['jupyterlite_sphinx']
+
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+    'jupyterlite': {'jupyterlite_contents': 'this_is_the_contents_dir'}
+}""")
+def test_create_jupyterlite_contents_non_default_contents(sphinx_app_wrapper):
+    """Test that JupyterLite contents are created properly."""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    gallery_conf = sphinx_app.config.sphinx_gallery_conf
+
+    create_jupyterlite_contents(sphinx_app, exception=None)
+
+    for i_file in ['plot_1', 'plot_2', 'plot_3']:
+        assert os.path.exists(os.path.join(
+            sphinx_app.srcdir, 'this_is_the_contents_dir',
+            gallery_conf['gallery_dirs'][0], i_file + '.ipynb'))
+
+
+@pytest.mark.conf_file(content="""
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+}""")
+def test_create_jupyterlite_contents_without_jupyterlite_sphinx_loaded(
+        sphinx_app_wrapper):
+    """Test JupyterLite contents creation without jupyterlite_sphinx loaded"""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
+    create_jupyterlite_contents(sphinx_app, exception=None)
+    assert not os.path.exists(os.path.join(
+        sphinx_app.srcdir, 'jupyterlite_contents'))
+
+
+@pytest.mark.conf_file(content="""
+extensions += ['jupyterlite_sphinx']
+
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+    'jupyterlite': None,
+}""")
+def test_create_jupyterlite_contents_with_jupyterlite_disabled_via_config(
+        sphinx_app_wrapper):
+    """Test JupyterLite contents creation with jupyterlite_sphinx loaded but
+JupyterLite disabled via config"""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
+    create_jupyterlite_contents(sphinx_app, exception=None)
+    assert not os.path.exists(os.path.join(
+        sphinx_app.outdir, 'jupyterlite_contents'))

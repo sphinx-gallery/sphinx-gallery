@@ -80,11 +80,11 @@ def test_save_matplotlib_figures_hidpi(gallery_conf):
 
     fname = f'/image1.{ext}'
     assert fname in image_rst
-    assert f'/image1_2_0x.{ext} 2.0x' in image_rst
+    assert f'/image1_2_00x.{ext} 2.00x' in image_rst
 
     assert len(image_path_iterator) == 1
     fname = gallery_conf['gallery_dir'] + fname
-    fnamehi = gallery_conf['gallery_dir'] + f'/image1_2_0x.{ext}'
+    fnamehi = gallery_conf['gallery_dir'] + f'/image1_2_00x.{ext}'
 
     assert os.path.isfile(fname)
     assert os.path.isfile(fnamehi)
@@ -103,7 +103,7 @@ def test_save_matplotlib_figures_hidpi(gallery_conf):
 
         fname = gallery_conf['gallery_dir'] + fname
         assert os.path.isfile(fname)
-        fname = f'/image{ii}_2_0x.{ext}'
+        fname = f'/image{ii}_2_00x.{ext}'
         assert fname in image_rst
         fname = gallery_conf['gallery_dir'] + fname
         assert os.path.isfile(fname)
@@ -113,13 +113,8 @@ def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     """Test file naming when saving figures. Requires mayavi."""
     import numpy as np
     Image = _get_image()
-    try:
-        from mayavi import mlab
-    except ImportError:
-        raise pytest.skip('Mayavi not installed')
+    mlab = pytest.importorskip('mayavi.mlab')
     import matplotlib.pyplot as plt
-    mlab.options.offscreen = True
-
     gallery_conf.update(
         image_scrapers=(matplotlib_scraper, mayavi_scraper))
     fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
@@ -130,7 +125,8 @@ def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     plt.axes([-0.1, -0.1, 1.2, 1.2])
     plt.pcolor([[0]], cmap='Greens')
     mlab.test_plot3d()
-    image_rst = save_figures(block, block_vars, gallery_conf)
+    with pytest.warns(FutureWarning, match=r'mayavi_scraper.* in 0\.13*'):
+        image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(plt.get_fignums()) == 0
     assert len(image_path_iterator) == 2
     assert '/image0.png' not in image_rst
@@ -164,6 +160,7 @@ def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
     with Image.open(fname_template.format(3)) as img:
         pixels = np.asarray(img.convert("RGB"))
     assert (pixels == [255, 245, 240]).all()
+    mlab.close(all=True)
 
 
 def _custom_func(x, y, z):
@@ -265,17 +262,17 @@ def test_figure_rst(ext):
 def test_figure_rst_srcset(ext):
     """Testing rst of images"""
     figure_list = ['sphx_glr_plot_1.' + ext]
-    hipaths = [{0: 'sphx_glr_plot_1.png', 2.0: 'sphx_glr_plot_1_2_0.png'}]
+    hipaths = [{0: 'sphx_glr_plot_1.png', 2.0: 'sphx_glr_plot_1_2_00.png'}]
     image_rst = figure_rst(figure_list, '.', srcsetpaths=hipaths)
     single_image = f"""
 .. image-sg:: /sphx_glr_plot_1.{ext}
    :alt: pl
-   :srcset: /sphx_glr_plot_1.{ext}, /sphx_glr_plot_1_2_0.{ext} 2.0x
+   :srcset: /sphx_glr_plot_1.{ext}, /sphx_glr_plot_1_2_00.{ext} 2.00x
    :class: sphx-glr-single-img
 """
     assert image_rst == single_image
 
-    hipaths += [{0: 'second.png', 2.0: 'second_2_0.png'}]
+    hipaths += [{0: 'second.png', 2.0: 'second_2_00.png'}]
     image_rst = figure_rst(figure_list + ['second.' + ext], '.',
                            srcsetpaths=hipaths+[])
 
@@ -287,14 +284,14 @@ def test_figure_rst_srcset(ext):
 
       .. image-sg:: /sphx_glr_plot_1.{ext}
           :alt: pl
-          :srcset: /sphx_glr_plot_1.png, /sphx_glr_plot_1_2_0.png 2.0x
+          :srcset: /sphx_glr_plot_1.png, /sphx_glr_plot_1_2_00.png 2.00x
           :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /second.{ext}
           :alt: pl
-          :srcset: /second.{ext}, /second_2_0.{ext} 2.0x
+          :srcset: /second.{ext}, /second_2_00.{ext} 2.00x
           :class: sphx-glr-multi-img
 """
     assert image_rst == image_list_rst

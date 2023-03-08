@@ -20,7 +20,7 @@ import sys
 import re
 from textwrap import indent
 from pathlib import PurePosixPath
-from warnings import filterwarnings
+from warnings import filterwarnings, warn
 
 from sphinx.errors import ExtensionError
 from .utils import scale_image, optipng
@@ -178,7 +178,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             # save other srcset paths, keyed by multiplication factor:
             for mult in srcset_mult_facs:
                 if not (mult == 1):
-                    multst = f'{mult}'.replace('.', '_')
+                    multst = f'{mult:.2f}'.replace('.', '_')
                     name = f"{image_path.stem}_{multst}x{image_path.suffix}"
                     hipath = image_path.parent / PurePosixPath(name)
                     hikwargs = these_kwargs.copy()
@@ -240,6 +240,11 @@ def _anim_rst(anim, image_path, gallery_conf):
 def mayavi_scraper(block, block_vars, gallery_conf):
     """Scrape Mayavi images.
 
+    .. warning::
+         mayavi_scraper is deprecated and will be removed in 0.13.0.
+         Use custom scraping code instead -- see the updated sphinx_gallery
+         documentation for details.
+
     Parameters
     ----------
     block : tuple
@@ -255,28 +260,44 @@ def mayavi_scraper(block, block_vars, gallery_conf):
         The ReSTructuredText that will be rendered to HTML containing
         the images. This is often produced by :func:`figure_rst`.
     """
-    from mayavi import mlab
-    image_path_iterator = block_vars['image_path_iterator']
-    image_paths = list()
-    e = mlab.get_engine()
-    for scene, image_path in zip(e.scenes, image_path_iterator):
-        try:
-            mlab.savefig(image_path, figure=scene)
-        except Exception:
-            mlab.close(all=True)
-            raise
-        # make sure the image is not too large
-        scale_image(image_path, image_path, 850, 999)
-        if 'images' in gallery_conf['compress_images']:
-            optipng(image_path, gallery_conf['compress_images_args'])
-        image_paths.append(image_path)
-    mlab.close(all=True)
-    return figure_rst(image_paths, gallery_conf['src_dir'])
+    warn(_MAYAVI_WARN, FutureWarning, stacklevel=2)
+    return _MayaviScraper()(block, block_vars, gallery_conf)
+
+
+_MAYAVI_WARN = (
+    'mayavi_scraper is deprecated and will be removed in 0.13.0. '
+    'Use custom scraping code instead -- see the updated sphinx_gallery '
+    'documentation for details.'
+)
+
+
+class _MayaviScraper():
+    def __repr__(self):
+        return 'MayaviScraper'
+
+    def __call__(self, block, block_vars, gallery_conf):
+        from mayavi import mlab
+        image_path_iterator = block_vars['image_path_iterator']
+        image_paths = list()
+        e = mlab.get_engine()
+        for scene, image_path in zip(e.scenes, image_path_iterator):
+            try:
+                mlab.savefig(image_path, figure=scene)
+            except Exception:
+                mlab.close(all=True)
+                raise
+            # make sure the image is not too large
+            scale_image(image_path, image_path, 850, 999)
+            if 'images' in gallery_conf['compress_images']:
+                optipng(image_path, gallery_conf['compress_images_args'])
+            image_paths.append(image_path)
+        mlab.close(all=True)
+        return figure_rst(image_paths, gallery_conf['src_dir'])
 
 
 _scraper_dict = dict(
     matplotlib=matplotlib_scraper,
-    mayavi=mayavi_scraper,
+    mayavi=_MayaviScraper(),
 )
 
 
@@ -409,7 +430,7 @@ def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None):
         empty, then srcset field is populated with the figure path.
         (see ``image_srcset`` configuration option).  Otherwise,
         each dict is of the form
-        {0: /images/image.png, 2.0: /images/image_2_0x.png}
+        {0: /images/image.png, 2.0: /images/image_2_00x.png}
         where the key is the multiplication factor and the contents
         the path to the image created above.
 
@@ -421,7 +442,7 @@ def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None):
     The rst code will have a custom ``image-sg`` directive that allows
     multiple resolution images to be served e.g.:
     ``:srcset: /plot_types/imgs/img_001.png,
-      /plot_types/imgs/img_2_0x.png 2.0x``
+      /plot_types/imgs/img_2_00x.png 2.00x``
 
     """
 
@@ -472,10 +493,10 @@ def _get_srcset_st(sources_dir, hinames):
     ie. sources_dir might be /home/sample-proj/source,
     hinames posix paths to
     0: /home/sample-proj/source/plot_types/images/img1.png,
-    2.0: /home/sample-proj/source/plot_types/images/img1_2_0x.png,
+    2.0: /home/sample-proj/source/plot_types/images/img1_2_00x.png,
     The result will be:
     '/plot_types/basic/images/sphx_glr_pie_001.png,
-    /plot_types/basic/images/sphx_glr_pie_001_2_0x.png 2.0x'
+    /plot_types/basic/images/sphx_glr_pie_001_2_00x.png 2.00x'
     """
     srcst = ''
     for k in hinames.keys():
@@ -485,7 +506,7 @@ def _get_srcset_st(sources_dir, hinames):
         if k == 0:
             srcst += ', '
         else:
-            srcst += f' {k:1.1f}x, '
+            srcst += f' {k:1.2f}x, '
     if srcst[-2:] == ', ':
         srcst = srcst[:-2]
     srcst += ''

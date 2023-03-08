@@ -1,8 +1,8 @@
 .. _python_script_syntax:
 
-=======================================================
-How to structure your Python scripts for Sphinx-Gallery
-=======================================================
+=============================================
+Structuring Python scripts for Sphinx-Gallery
+=============================================
 
 This page describes the structure and syntax that can be used in Python scripts
 to generate rendered HTML gallery pages.
@@ -80,15 +80,15 @@ The ``#%%`` and ``# %%`` syntax is consistent with the 'code block' (or
 'code cell') separator syntax in `Visual Studio Code Python extension
 <https://code.visualstudio.com/docs/python/jupyter-support-py#_jupyter-code-cells>`_,
 `Visual Studio Python Tools
-<https://docs.microsoft.com/en-us/visualstudio/python/python-interactive-repl-in-visual-studio?view=vs-2019#work-with-code-cells>`_,
+<https://learn.microsoft.com/en-us/visualstudio/python/python-interactive-repl-in-visual-studio?view=vs-2019#work-with-code-cells>`_,
 `Jupytext
 <https://jupytext.readthedocs.io/en/latest/formats.html#the-percent-format>`_,
 `Pycharm Professional
 <https://www.jetbrains.com/help/pycharm/running-jupyter-notebook-cells.html>`_,
 `Hydrogen plugin (for Atom)
-<https://nteract.gitbooks.io/hydrogen/docs/Usage/Cells.html#example-definitions>`_
+<https://nteract.gitbooks.io/hydrogen/content/docs/Usage/Cells.html#example-definitions>`_
 and `Spyder
-<https://docs.spyder-ide.org/editor.html#defining-code-cells>`_.
+<https://docs.spyder-ide.org/current/panes/editor.html#defining-code-cells>`_.
 Note that although the documentation of these editors/IDEs
 may only mention one of ``#%%`` or ``# %%``, in practice both
 work. With these editors/IDEs, ``#%%`` or
@@ -147,4 +147,4 @@ so examples written in plain RST files are not supported.
 If you're looking to generate hyperlinks for functions (linking to their
 corresponding online documentation) in code blocks of ordinary RST
 documentation, you might find
-`sphinx-codeautolink <https://sphinx-codeautolink.rtfd.io>`_ helpful.
+`sphinx-codeautolink <https://sphinx-codeautolink.readthedocs.io/en/latest/>`_ helpful.

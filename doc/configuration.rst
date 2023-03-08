@@ -50,6 +50,7 @@ file:
 - ``show_memory`` (:ref:`show_memory`)
 - ``show_signature`` (:ref:`show_signature`)
 - ``binder`` (:ref:`binder_links`)
+- ``jupyterlite`` (:ref:`jupyterlite`)
 - ``promote_jupyter_magic`` (:ref:`promote_jupyter_magic`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``notebook_images`` (:ref:`notebook_images`)
@@ -60,6 +61,7 @@ file:
 - ``nested_sections`` (:ref:`nested_sections`)
 - ``api_usage_ignore`` (:ref:`api_usage_ignore`)
 - ``show_api_usage`` (:ref:`show_api_usage`)
+- ``copyfile_regex`` (:ref:`manual_passthrough`)
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -409,14 +411,14 @@ point to the directory containing ``searchindex.js``, such as
 If you wish to do the same for ordinary RST documentation,
 see :ref:`plain_rst`.
 
-If you are using inheritance for your documented code and you are experience 
-wrong links in the sense that the links point to the base class of an object 
-instead of the child, the option ``prefer_full_module`` might solve your issue. 
-Have also a look at `the GitHub 
+If you are using inheritance for your documented code and you are experience
+wrong links in the sense that the links point to the base class of an object
+instead of the child, the option ``prefer_full_module`` might solve your issue.
+Have also a look at `the GitHub
 issue <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
 implementing this option for more context.
 
-To make this work in your documentation you need to include to the 
+To make this work in your documentation you need to include to the
 configuration
 dictionary within your Sphinx ``conf.py`` file::
 
@@ -429,8 +431,8 @@ dictionary within your Sphinx ``conf.py`` file::
         ]
     }
 
-In the above examples all modules matching the string ``'yourmodule.*+\d{4}'`` 
-would use the full module name when creating the links. All other use the 
+In the above examples all modules matching the string ``'yourmodule.*+\d{4}'``
+would use the full module name when creating the links. All other use the
 (default) way of linking.
 
 .. _references_to_examples:
@@ -485,16 +487,6 @@ and belonging to the modules listed in ``doc_module``.
 ``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
-Within your sphinx documentation ``.rst`` files, you can easily
-add this reduced version of the Gallery. For example, the rst below adds
-the reduced version of the Gallery for ``numpy.exp``, which includes all
-examples that use the specific function ``numpy.exp``:
-
-.. code-block:: rst
-
-    .. minigallery:: numpy.exp
-        :add-heading:
-
 Sometimes, there are functions that are being used in practically every example
 for the given module, for instance the ``pyplot.show`` or ``pyplot.subplots``
 functions in Matplotlib, so that a large number of often spurious examples will
@@ -507,6 +499,16 @@ To exclude the functions mentioned above you would use
 ``{r'pyplot\.show', r'pyplot\.subplots'}`` (note the escape to match a dot
 instead of any character, if the name is unambiguous you can also write
 ``pyplot.show`` or just ``show``).
+
+Within your sphinx documentation ``.rst`` files, you can easily
+add this reduced version of the Gallery. For example, the rst below adds
+the reduced version of the Gallery for ``numpy.exp``, which includes all
+examples that use the specific function ``numpy.exp``:
+
+.. code-block:: rst
+
+    .. minigallery:: numpy.exp
+        :add-heading:
 
 The ``add-heading`` option adds a heading for the mini-gallery, which will be a
 default generated message if no string is provided as an argument. The example
@@ -532,9 +534,9 @@ Auto-documenting your API with links to examples
 
 The previous feature can be automated for all your modules combining
 it with the standard sphinx extensions `autodoc
-<http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
-<http://sphinx-doc.org/ext/autosummary.html>`_. First enable them in your
-``conf.py`` extensions list::
+<https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html>`_ and
+`autosummary <https://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html>`_.
+First enable them in your ``conf.py`` extensions list::
 
     import sphinx_gallery
     extensions = [
@@ -547,10 +549,10 @@ it with the standard sphinx extensions `autodoc
     # generate autosummary even if no references
     autosummary_generate = True
 
-`autodoc <http://sphinx-doc.org/ext/autodoc.html>`_ and `autosummary
-<http://sphinx-doc.org/ext/autosummary.html>`_ are very powerful
-extensions, please read about them. In this example we'll explain how
-the :ref:`sphx_glr_api_reference` is automatically generated. The
+`autodoc <https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html>`_ and
+`autosummary <https://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html>`_
+are very powerful extensions, please read about them. In this example we'll
+explain how the :ref:`sphx_glr_api_reference` is automatically generated. The
 documentation is done at the module level. We first start with the
 ``reference.rst`` file
 
@@ -1019,7 +1021,7 @@ If you host your documentation on a GitHub repository, it is possible to
 auto-generate a Binder link for each notebook. Clicking this link will
 take users to a live version of the Jupyter notebook where they may
 run the code interactively. For more information see the `Binder documentation
-<https://docs.mybinder.org>`__.
+<https://mybinder.readthedocs.io/en/latest/>`__.
 
 .. warning::
 
@@ -1084,7 +1086,7 @@ dependencies (type: list)
   ``requirements.txt`` file. These will be copied into a folder  called
   ``binder/`` in your built documentation folder. For a list of all the possible
   dependency files you can use, see `the Binder configuration documentation
-  <https://mybinder.readthedocs.io/en/latest/config_files.html#config-files>`_.
+  <https://mybinder.readthedocs.io/en/latest/using/config_files.html>`_.
 filepath_prefix (type: string | None, default: ``None``)
   A prefix to append to the filepath in the Binder links. You should use this if
   you will store your built documentation in a sub-folder of a repository,
@@ -1112,8 +1114,111 @@ Binder links will point to these notebooks.
    independently build your documentation and host it on a GitHub branch
    as well as building it with readthedocs.
 
-See the Sphinx-Gallery `Sphinx configuration file <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
-for an example that uses the `public Binder server <http://mybinder.org>`_.
+See the Sphinx-Gallery `Sphinx configuration file
+<https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
+for an example that uses the `public Binder server <https://mybinder.org>`_.
+
+.. _jupyterlite:
+
+Generate JupyterLite links for gallery notebooks (experimental)
+===============================================================
+
+Sphinx-Gallery automatically generates Jupyter notebooks for any examples built
+with the gallery. `JupyterLite <https://jupyterlite.readthedocs.io>`__ makes it
+possible to run an example in your browser. The functionality is quite similar
+to Binder in the sense that you will get a Jupyter environment where you can
+run the example interactively as a notebook. The main difference with Binder
+are:
+
+- with JupyterLite, the example actually runs in your browser, there is no need
+  for a separate machine in the cloud to run your Python code. That means that
+  starting a Jupyter server is genrally quicker, no need to wait for the Binder
+  image to be built
+- with JupyterLite the first imports take time. At the time of writing
+  (February 2023) ``import scipy`` can take ~15-30s. Some innocuously looking
+  Python code may just not work and break in an unexpected fashion. The Jupyter
+  kernel is based on Pyodide, see some `here
+  <https://pyodide.org/en/latest/usage/wasm-constraints.html>`__ for some
+  Pyodide limitations.
+- with JupyterLite environments are not as flexible as Binder, for example you
+  can not use a docker image but only the default `Pyodide
+  <https://pyodide.org/en/stable/index.html>`__ environment. That means that
+  some non pure-Python packages may not be available, see list of `available
+  packages in Pyodide
+  <https://pyodide.org/en/stable/usage/packages-in-pyodide.html>`__.
+
+.. warning::
+
+   JupyterLite is still beta technology and less mature than Binder, so there
+   may be instability or unexpected behaviour in the experience of users who
+   click JupyterLite links.
+
+In order to enable JupyterLite links with Sphinx-Gallery, you must install the
+`jupyterlite-sphinx <https://jupyterlite-sphinx.readthedocs.io>`_ package and
+add it to your extensions in ``conf.py``::
+
+    extensions = [
+        ...,
+        ...,
+        ...,
+        'jupyterlite_sphinx',
+    ]
+
+You can configure JupyterLite integration by setting
+``sphinx_gallery_conf['jupyterlite']`` in ``conf.py`` like this::
+
+    sphinx_gallery_conf = {
+      ...
+      'jupyterlite': {
+         'jupyterlite_contents': <str> # JupyterLite contents where to copy the example notebooks (relative to Sphinx source directory)
+         'use_jupyter_lab': <bool> # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
+         }
+    }
+
+Below is a more complete explanation of each field.
+
+use_jupyter_lab (type: bool, default: ``True``)
+  Whether the default interface activated by the JupyterLite link will be for
+  Jupyter Lab or the RetroLab Notebook interface.
+
+jupyterlite_contents (type: string, default: ``jupyterlite_contents``) The name
+  of a folder where the built Jupyter notebooks will be copied, relative to the
+  Sphinx source directory. This is used as Jupyterlite contents.
+
+You can set variables in ``conf.py`` to configure ``jupyterlite-sphinx``, see
+its `jupyterlite-sphinx doc
+<https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html>`__ for
+more details.
+
+If a Sphinx-Gallery configuration for JupyterLite is discovered, the following
+extra things will happen:
+
+1. Configure ``jupyterlite-sphinx`` with some reasonable defaults, e.g. set
+   ``jupyterlite_bind_ipynb_suffix = False``.
+2. The built Jupyter Notebooks from the documentation will be copied to a
+   folder called ``<jupyterlite_contents>/`` (relative to Sphinx source
+   directory)
+3. The rST output of each Sphinx-Gallery example will now have a
+   ``launch JupyterLite`` button in it.
+4. That button will point to a JupyterLite link which will start a Jupyter
+   server in your browser with the current example as notebook
+
+If, for some reason, you want to enable the ``jupyterlite-sphinx`` extension
+but not use sphinx-gallery Jupyterlite integration you can do::
+
+    extensions = [
+        ...,
+        jupyterlite_sphinx,
+    ]
+
+    sphinx_gallery_conf = {
+      ...
+      'jupyterlite': None
+    }
+
+See the Sphinx-Gallery `Sphinx configuration file
+<https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
+for an example that uses the JupyterLite integration.
 
 .. _promote_jupyter_magic:
 
@@ -1196,12 +1301,18 @@ a default::
 
     sphinx_gallery_conf = {
         ...
-        'plot_gallery': False,
+        'plot_gallery': 'False',
     }
 
 The highest precedence is always given to the `-D` flag of the
 ``sphinx-build`` command.
 
+.. note::
+
+   If adding ``html-noplot`` to your ``Makefile``, you will also need to
+   explicitly set the default value for ``plot_gallery`` in the
+   ``sphinx_gallery_conf`` dictionary inside your ``conf.py`` file to avoid
+   a sphinx configuration warning.
 
 .. _compress_images:
 
@@ -1457,8 +1568,8 @@ so they will not be overwritten.
 
 .. note::
     This configuration **only** works when the example is set to not execute
-    (i.e., the ``plot_gallery`` is False, the example is in `ignore_pattern`
-    or the example is not in ``filename_pattern`` - see
+    (i.e., the ``plot_gallery`` is ``'False'``, the example is in
+    `ignore_pattern` or the example is not in ``filename_pattern`` - see
     :ref:`filename/ignore patterns <build_pattern>`). This means that you will
     not need to remove any ``sphinx_gallery_dummy_images`` lines in your
     examples when you switch to building your gallery with execution.
@@ -1802,7 +1913,7 @@ method which would thus be captured. You can prevent this by:
 The unwanted string output will not occur if ``'capture_repr'`` is an empty
 tuple or does not contain ``__repr__`` or ``__str__``.
 
-.. _regular expressions: https://docs.python.org/library/re.html
+.. _regular expressions: https://docs.python.org/3/library/re.html
 
 Prevent capture of certain classes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1864,6 +1975,47 @@ each subsection, and a specific toctree for each subsection.
 In particular, sidebars generated using these toctrees might not reflect the
 actual section / folder structure.
 
+.. _manual_passthrough:
+
+Manually passing files
+======================
+
+By default, Sphinx-Gallery creates all the files that are written in the
+sphinx-build directory, either by generating rst and images from a ``*.py``
+in the gallery-source, or from  creating ``index.rst`` from ``README.txt``
+in the gallery-source.  However, sometimes it is desirable to pass files
+from the gallery-source to the sphinx-build.  For example, you may want
+to pass an image that a gallery refers to, but does not generate itself.
+You may also want to pass raw rst from the gallery-source to the
+sphinx-build, because that material fits in thematically with your gallery,
+but is easier to write as rst.  To accomodate this, you may set
+``copyfile_regex`` in ``sphinx_gallery_conf``.  The following copies
+across rst files.
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+        ...
+       'copyfile_regex': r'.*\.rst',
+    }
+
+Note that if you copy across files rst files, for instance, it is your
+responsibility to ensure that they are in a sphinx ``toctree`` somewhere
+in your document.  You can, of course, add a ``toctree`` to your
+``README.txt``.
+
+Manually passing ``index.rst``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can bypass Sphinx-Gallery automatically creating an  ``index.rst`` from a
+``README.txt`` in a gallery directory or subdirectory. If your
+``copyfile_regex`` includes ``index.rst``, and you have an ``index.rst`` in the
+gallery-source instead of the README, Sphinx-Gallery will use that instead of
+the index it automatically makes.  If you do this, you are responsible for
+adding your own Sphinx ``toctree`` in that index (or elsewhere in your Sphinx
+documentation) that includes any gallery items or other files in that
+directory.
+
 .. _show_api_usage:
 
 Showing API Usage
@@ -1883,7 +2035,7 @@ are used in. This could be helpful for making a map of which examples to
 look at if you want to learn about a particular module. Setting
 ``show_api_usage`` to ``False`` will not make any graphs or documentation
 about API usage. Note, ``graphviz`` is required for making the unused and
-used API entry graphs. 
+used API entry graphs.
 
 .. _api_usage_ignore:
 

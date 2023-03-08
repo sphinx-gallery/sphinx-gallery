@@ -14,7 +14,7 @@ stages:
   jobs:
     - job: Skip
       pool:
-        vmImage: 'ubuntu-18.04'
+        vmImage: 'ubuntu-latest'
       variables:
         RET: 'true'
       steps:
@@ -40,7 +40,7 @@ stages:
     strategy:
       matrix:
         Python39:
-          PYTHON_VERSION: '3.9'
+          PYTHON_VERSION: '3.10'
 
     steps:
     - task: UsePythonVersion@0
@@ -49,16 +49,20 @@ stages:
         architecture: 'x64'
         addToPath: true
     - bash: |
-        set -e
+        set -eo pipefail
         git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
         powershell gl-ci-helpers/appveyor/install_opengl.ps1
       displayName: Install OpenGL
     - bash: |
-        set -e
+        set -eo pipefail
         python --version
         python -m pip install --user --upgrade pip setuptools wheel
-        pip install --user --upgrade --progress-bar off --upgrade ipython numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov sphinx_rtd_theme joblib "plotly>=4.0" vtk
-        pip install --user --upgrade --progress-bar off pyvista mayavi pyqt5
+        pip install --user --upgrade --progress-bar off "ipython!=8.7.0" numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov joblib "plotly>=4.0"
+        pip install --user --upgrade --progress-bar off --pre pydata-sphinx-theme
+        echo "Qt, plotly, VTK"
+        pip install --user --upgrade --progress-bar off pyvista "pyqt5!=5.15.8" plotly vtk jupyterlite-sphinx
+        echo "Mayavi"
+        pip install --user --upgrade --progress-bar off --no-build-isolation mayavi
       displayName: Setup pip environment
     - script: pip list
       displayName: pip list
@@ -69,12 +73,15 @@ stages:
     - script: pytest --tb=short sphinx_gallery
       displayName: pytest
     - bash: |
-        set -e
+        set -eo pipefail
         sed -i '/show_memory/d' doc/conf.py
         sed -i '/compress_images/d' doc/conf.py
       displayName: Remove keys incompatible with this Windows build
     - bash: make -C doc html
       displayName: make html
+    - bash: bash <(curl -s https://codecov.io/bash)
+      displayName: 'Codecov'
+      condition: succeededOrFailed()
     - task: PublishTestResults@2
       inputs:
         testResultsFiles: 'junit-*.xml'
@@ -85,27 +92,26 @@ stages:
   - job:
     displayName: Linux
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-22.04'
     variables:
       DISPLAY: ':99'
     strategy:
       matrix:
-        ubuntu_python37:
+        ubuntu_python310:
           DISTRIB: 'ubuntu'
-          PYTHON_VERSION: '3.7'
-          SPHINXOPTS: ''
-        conda_python37_sphinxOld:
-          DISTRIB: 'conda'
-          PYTHON_VERSION: '3.7'
-          SPHINX_VERSION: '3'
+          PYTHON_VERSION: '3.10'
           LOCALE: 'C'
-        conda_python38_sphinxDev:
+        conda_python310_sphinxOld:
           DISTRIB: 'conda'
-          PYTHON_VERSION: '3.8'
+          PYTHON_VERSION: '3.10'
+          SPHINX_VERSION: 'old'
+        conda_python310_sphinxDev:
+          DISTRIB: 'conda'
+          PYTHON_VERSION: '3.10'
           SPHINX_VERSION: 'dev'
-        python37_minimal:
+        python38_minimal:
           DISTRIB: 'minimal'
-          PYTHON_VERSION: '3.7'
+          PYTHON_VERSION: '3.8'
         pythonNightly:
           DISTRIB: 'nightly'
           PYTHON_VERSION: '3.10'
@@ -134,11 +140,12 @@ stages:
         sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 optipng xvfb
         /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
       displayName: Install Ubuntu dependencies and start Xvfb
-    - task: Bash@3
-      inputs:
-        filePath: continuous_integration/azure/install.sh
+    - bash: |
+        ./continuous_integration/azure/install.sh
       displayName: Run install.sh
-    - task: Bash@3
-      inputs:
-        filePath: continuous_integration/azure/test_script.sh
+    - bash: |
+        ./continuous_integration/azure/test_script.sh
       displayName: Run test_script.sh
+    - bash: bash <(curl -s https://codecov.io/bash)
+      displayName: 'Codecov'
+      condition: succeededOrFailed()

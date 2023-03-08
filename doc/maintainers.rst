@@ -39,7 +39,7 @@ Prepare for release
 1. Update ``CHANGES.rst``
 
     1. Use `github_changelog_generator
-       <https://github.com/skywinder/github-changelog-generator#installation>`_ to
+       <https://github.com/github-changelog-generator/github-changelog-generator#installation>`_ to
        gather all merged pull requests and closed issues during the development
        cycle. You will likely need to `generate a Github token <https://github.com/settings/tokens/new?description=GitHub%20Changelog%20Generator%20token>`_
        as Github only allows 50 unauthenticated requests per hour. In the

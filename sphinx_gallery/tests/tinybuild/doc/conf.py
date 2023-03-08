@@ -58,6 +58,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
     'sphinx.ext.graphviz',
+    'jupyterlite_sphinx'
 ]
 templates_path = ['_templates']
 autosummary_generate = True
@@ -84,16 +85,18 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
-    'examples_dirs': ['examples/'],
+    'examples_dirs': ['../examples/', '../examples_with_rst/',
+                      '../examples_rst_index'],
     'reset_argv': ResetArgv(),
     'reset_modules': (MockScrapeProblem(), 'matplotlib'),
-    'gallery_dirs': ['auto_examples'],
+    'gallery_dirs': ['auto_examples', 'auto_examples_with_rst',
+                     'auto_examples_rst_index'],
     'backreferences_dir': 'gen_modules/backreferences',
     'within_subsection_order': FileNameSortKey,
     'image_scrapers': (matplotlib_format_scraper(),),
     'expected_failing_examples': [
-        'examples/future/plot_future_imports_broken.py',
-        'examples/plot_scraper_broken.py',
+        '../examples/future/plot_future_imports_broken.py',
+        '../examples/plot_scraper_broken.py',
     ],
     'show_memory': True,
     'compress_images': ('images', 'thumbnails'),
@@ -103,6 +106,7 @@ sphinx_gallery_conf = {
     'image_srcset': ["2x"],
     'exclude_implicit_doc': ['figure_rst'],
     'show_api_usage': True,
+    'copyfile_regex': r'.*\.rst',
 }
 nitpicky = True
 highlight_language = 'python3'

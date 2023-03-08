@@ -11,9 +11,12 @@ Sphinx-Gallery
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4718153.svg
     :target: https://doi.org/10.5281/zenodo.4718153
 
+.. tagline-begin-content
 
-A Sphinx extension that builds an HTML version of any Python
-script and puts it into an examples gallery.
+A `Sphinx <https://www.sphinx-doc.org/en/master/>`_ extension that builds an
+HTML gallery of examples from any set of Python scripts.
+
+.. tagline-end-content
 
 .. image:: doc/_static/demo.png
    :width: 80%
@@ -23,25 +26,30 @@ Who uses Sphinx-Gallery
 =======================
 
 * `Sphinx-Gallery <https://sphinx-gallery.github.io/stable/auto_examples/index.html>`_
-* `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
-* `Nilearn <https://nilearn.github.io/auto_examples/index.html>`_
-* `MNE-python <https://www.martinos.org/mne/stable/auto_examples/index.html>`_
+
+.. projects_list_start
+
+* `Scikit-learn <http://scikit-learn.org/stable/auto_examples/index.html>`_
+* `Nilearn <https://nilearn.github.io/stable/auto_examples/index.html>`_
+* `MNE-python <https://mne.tools/stable/auto_examples/index.html>`_
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
-* `GIMLi <http://www.pygimli.org/_examples_auto/index.html>`_
-* `Nestle <https://kbarbary.github.io/nestle/examples/index.html>`_
+* `GIMLi <https://www.pygimli.org/_examples_auto/index.html>`_
+* `Nestle <http://kylebarbary.com/nestle/examples/index.html>`_
 * `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
-* `scikit-image <http://scikit-image.org/docs/dev/auto_examples/>`_
-* `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
-* `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
+* `scikit-image <https://scikit-image.org/docs/dev/auto_examples/>`_
+* `Astropy <https://docs.astropy.org/en/stable/generated/examples/index.html>`_
+* `SunPy <https://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
 * `PySurfer <https://pysurfer.github.io/>`_
-* `Matplotlib <https://matplotlib.org/index.html>`_ `Examples <https://matplotlib.org/gallery/index.html>`_ and `Tutorials  <https://matplotlib.org/tutorials/index.html>`__
-* `PyTorch tutorials <http://pytorch.org/tutorials>`_
-* `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
+* `Matplotlib <https://matplotlib.org/stable/index.html>`_:
+  `Examples <https://matplotlib.org/stable/gallery/index.html>`_ and
+  `Tutorials <https://matplotlib.org/stable/tutorials/index.html>`_
+* `PyTorch tutorials <https://pytorch.org/tutorials>`_
+* `Cartopy <https://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
-* `SimPEG <http://docs.simpeg.xyz/content/examples/>`_
+* `SimPEG <https://docs.simpeg.xyz/content/examples/>`_
 * `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
-* `Fury <http://fury.gl/latest/auto_examples/index.html>`_
-* `NetworkX <https://networkx.github.io/documentation/stable/auto_examples/index.html>`_
+* `Fury <https://fury.gl/latest/auto_examples/index.html>`_
+* `NetworkX <https://networkx.org/documentation/stable/auto_examples/index.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 * `Auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
 * `OpenML-Python <https://openml.github.io/openml-python/main/examples/index.html>`_
@@ -52,7 +60,7 @@ Who uses Sphinx-Gallery
 * `Tonic <https://tonic.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `Radis <https://radis.readthedocs.io/en/latest/auto_examples/index.html>`_
 
-.. installation-begin-content
+.. projects_list_end
 
 Installation
 ============
@@ -60,7 +68,9 @@ Installation
 Install via ``pip``
 -------------------
 
-You can do a direct install via pip by using:
+.. installation-begin-content
+
+You can do a direct install via `pip`` by using:
 
 .. code-block:: bash
 
@@ -68,19 +78,14 @@ You can do a direct install via pip by using:
 
 Sphinx-Gallery will not manage its dependencies when installing, thus
 you are required to install them manually. Our minimal dependency
-is:
+is **Sphinx >= 4**.
 
-* Sphinx >= 3
+Sphinx-Gallery has also support for scraping images from packages like
+Matplotlib, Seaborn, and Mayavi. For much of this functionality, you will need
+``pillow``. We also recommend installing system ``optipng`` binaries to reduce
+the file sizes of the generated PNG files.
 
-Sphinx-Gallery has also support for packages like:
-
-* Matplotlib
-* Seaborn
-* Mayavi
-
-For much of this functionality, you will need ``pillow``. We also recommend
-installing system ``optipng`` binaries to reduce the file sizes of the
-generated PNG files.
+.. installation-end-content
 
 Install as a Sphinx-Gallery developer
 -------------------------------------
@@ -97,7 +102,6 @@ you can do:
     $ pip install -r dev-requirements.txt
     $ pip install -e .
 
-.. installation-end-content
 
 Contributing
 ============
@@ -115,8 +119,12 @@ Check that you are all set by running
 pytest
 ```
 
-Citation
-========
+How to cite
+===========
+
+.. citation-begin-content
 
 If you would like to cite Sphinx-Gallery you can do so using our `Zenodo
 deposit <https://zenodo.org/record/3838216>`_.
+
+.. citation-end-content

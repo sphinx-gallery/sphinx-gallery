@@ -3,11 +3,10 @@
 Example with the plotly graphing library
 ========================================
 
-Sphinx-Gallery supports examples made with the
-`plotly library <https://plotly.com/python/>`_. Sphinx-Gallery is able to
-capture the ``_repr_html_`` of plotly figure objects (see :ref:`capture_repr`).
-To display the figure, the last line in your code block should therefore be
-the plotly figure object.
+Sphinx-Gallery supports examples made with the `plotly library`_.
+Sphinx-Gallery is able to capture the ``_repr_html_`` of plotly figure objects
+(see :ref:`capture_repr`). To display the figure, the last line in your code
+block should therefore be the plotly figure object.
 
 In order to use plotly, the ``conf.py`` of the project should include the
 following lines to select the appropriate plotly renderer::
@@ -23,6 +22,8 @@ renderer, and add ``plotly.io._sg_scraper.plotly_sg_scraper`` to the list of
 
 This tutorial gives a few examples of plotly figures, starting with its
 high-level API `plotly express <https://plotly.com/python/plotly-express/>`_.
+
+.. _plotly library: https://plotly.com/python/
 """
 import plotly.express as px
 import numpy as np

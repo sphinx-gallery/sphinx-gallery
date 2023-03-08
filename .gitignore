@@ -58,6 +58,7 @@ junit-results.xml
 doc/_build/
 doc/auto_examples
 doc/auto_mayavi_examples
+doc/auto_plotly_examples
 doc/auto_pyvista_examples
 doc/tutorials/
 doc/gen_modules/
@@ -81,3 +82,6 @@ target/
 
 # Jupyter notebooks
 .ipynb_checkpoints
+
+# Default JupyterLite content
+jupyterlite_contents

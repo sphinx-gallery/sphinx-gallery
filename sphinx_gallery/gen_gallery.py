@@ -29,13 +29,18 @@ from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
-from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
+from .scrapers import (
+    _scraper_dict, _reset_dict, _import_matplotlib, _MAYAVI_WARN)
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .binder import copy_binder_files, check_binder_conf
+from .interactive_example import (
+    copy_binder_files, check_binder_conf, check_jupyterlite_conf
+)
+from .interactive_example import pre_configure_jupyterlite_sphinx
+from .interactive_example import post_configure_jupyterlite_sphinx
+from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
-
 
 _KNOWN_CSS = ('sg_gallery', 'sg_gallery-binder', 'sg_gallery-dataframe',
               'sg_gallery-rendered-html')
@@ -68,7 +73,7 @@ DEFAULT_GALLERY_CONF = {
     # 'plot_gallery' also accepts strings that evaluate to a bool, e.g. "True",
     # "False", "1", "0" so that they can be easily set via command line
     # switches of sphinx-build
-    'plot_gallery': True,
+    'plot_gallery': 'True',
     'download_all_examples': True,
     'abort_on_example_error': False,
     'only_warn_on_example_error': False,
@@ -80,6 +85,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
+    'jupyterlite': {},
     'promote_jupyter_magic': False,
     'image_scrapers': ('matplotlib',),
     'compress_images': (),
@@ -103,7 +109,8 @@ DEFAULT_GALLERY_CONF = {
     'nested_sections': True,
     'prefer_full_module': [],
     'api_usage_ignore': '.*__.*__',
-    'show_api_usage': 'unused',
+    'show_api_usage': False,
+    'copyfile_regex': '',
 }
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
@@ -234,6 +241,8 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     for si, scraper in enumerate(scrapers):
         if isinstance(scraper, str):
             if scraper in _scraper_dict:
+                if scraper == 'mayavi':
+                    logger.warning(_MAYAVI_WARN)
                 scraper = _scraper_dict[scraper]
             else:
                 orig_scraper = scraper
@@ -371,6 +380,11 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     # binder
     gallery_conf['binder'] = check_binder_conf(gallery_conf['binder'])
 
+    # jupyterlite
+    print('_complete_gallery_conf', gallery_conf.get('jupyterlite'))
+    gallery_conf['jupyterlite'] = check_jupyterlite_conf(
+        gallery_conf.get('jupyterlite', {}), app)
+
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'
                           % (gallery_conf['css'],))
@@ -397,7 +411,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     return gallery_conf
 
 
-def get_subsections(srcdir, examples_dir, gallery_conf):
+def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
     """Return the list of subsections of a gallery.
 
     Parameters
@@ -408,6 +422,8 @@ def get_subsections(srcdir, examples_dir, gallery_conf):
         path to the examples directory relative to conf.py
     gallery_conf : dict
         The gallery configuration.
+    check_for_index : bool
+        only return subfolders with a ReadMe, default True
 
     Returns
     -------
@@ -415,9 +431,16 @@ def get_subsections(srcdir, examples_dir, gallery_conf):
         sorted list of gallery subsection folder names
     """
     sortkey = gallery_conf['subsection_order']
-    subfolders = [subfolder for subfolder in os.listdir(examples_dir)
-                  if _get_readme(os.path.join(examples_dir, subfolder),
-                                 gallery_conf, raise_error=False) is not None]
+    subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
+    if check_for_index:
+        subfolders = [subfolder for subfolder in subfolders
+                      if _get_readme(os.path.join(examples_dir, subfolder),
+                                     gallery_conf, raise_error=False)
+                      is not None]
+    else:
+        # just make sure its a directory
+        subfolders = [subfolder for subfolder in subfolders
+                      if os.path.isdir(os.path.join(examples_dir, subfolder))]
     base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
     subfolders_with_path = [os.path.join(base_examples_dir_path, item)
                             for item in subfolders]
@@ -447,6 +470,23 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     return list(zip(examples_dirs, gallery_dirs))
 
 
+def _format_toctree(items, includehidden=False):
+    """Format a toc tree"""
+
+    st = """
+.. toctree::
+   :hidden:"""
+    if includehidden:
+        st += """
+   :includehidden:
+"""
+    st += """
+
+   %s\n""" % "\n   ".join(items)
+
+    return st
+
+
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText
 
@@ -464,13 +504,6 @@ def generate_gallery_rst(app):
     Eventually, we create a toctree in the current index file
     which points to section index files.
     """
-    blocked_builder = ['dirhtml']
-    if app.builder.name in blocked_builder:
-        msg = (
-            f'Builder is set to {repr(app.builder.name)}. sphinx_gallery does '
-            f'not work for any of the following: {[blocked_builder]}'
-        )
-        raise ConfigError(msg)
 
     logger.info('generating gallery...', color='white')
     gallery_conf = parse_config(app)
@@ -488,7 +521,6 @@ def generate_gallery_rst(app):
     check_spaces_in_filenames(files)
 
     for examples_dir, gallery_dir in workdirs:
-
         examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
         gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
 
@@ -509,49 +541,51 @@ def generate_gallery_rst(app):
             include_toctree=False,
         )
 
+        has_readme = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
         # We create an index.rst with all examples
         # (this will overwrite the rst file generated by the previous call
         # to generate_dir_rst)
-        index_rst_new = os.path.join(gallery_dir_abs_path, 'index.rst.new')
-        with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
+
+        if this_content:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
-            fhindex.write(":orphan:\n\n" + this_content)
+            indexst = ":orphan:\n\n" + this_content
+        else:
+            # we are not going to use the index.rst.new that gets made here,
+            # but go through the motions to run through all the subsections...
+            indexst = 'Never used!'
 
-            # Write toctree with gallery items from gallery root folder
-            if len(this_toctree_items) > 0:
-                this_toctree = """
-.. toctree::
-   :hidden:
+        # Write toctree with gallery items from gallery root folder
+        if len(this_toctree_items) > 0:
+            this_toctree = _format_toctree(this_toctree_items)
+            indexst += this_toctree
 
-   %s\n
-""" % "\n   ".join(this_toctree_items)
-                fhindex.write(this_toctree)
+        # list all paths to subsection index files in this array
+        subsection_index_files = []
+        subsecs = get_subsections(app.builder.srcdir,
+                                  examples_dir_abs_path, gallery_conf,
+                                  check_for_index=has_readme)
+        for subsection in subsecs:
+            src_dir = os.path.join(examples_dir_abs_path, subsection)
+            target_dir = os.path.join(gallery_dir_abs_path, subsection)
+            subsection_index_files.append(
+                '/'.join([
+                    '', gallery_dir, subsection, 'index.rst'
+                ]).replace(os.sep, '/')  # fwd slashes needed in rst
+            )
 
-            # list all paths to subsection index files in this array
-            subsection_index_files = []
+            (
+                subsection_index_path,
+                subsection_index_content,
+                subsection_costs,
+                subsection_toctree_filenames,
+            ) = generate_dir_rst(
+                src_dir, target_dir, gallery_conf, seen_backrefs
+            )
 
-            for subsection in get_subsections(
-                    app.builder.srcdir, examples_dir_abs_path, gallery_conf):
-                src_dir = os.path.join(examples_dir_abs_path, subsection)
-                target_dir = os.path.join(gallery_dir_abs_path, subsection)
-                subsection_index_files.append(
-                    '/'.join([
-                        '', gallery_dir, subsection, 'index.rst'
-                    ])
-                )
-
-                (
-                    subsection_index_path,
-                    subsection_index_content,
-                    subsection_costs,
-                    subsection_toctree_filenames,
-                ) = generate_dir_rst(
-                    src_dir, target_dir, gallery_conf, seen_backrefs
-                )
-
+            if subsection_index_content:
                 # Filter out tags from subsection content
                 # to prevent tag duplication across the documentation
                 tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
@@ -560,54 +594,53 @@ def generate_gallery_rst(app):
                     if re.match(tag_regex, line) is None
                 ] + [''])
 
-                fhindex.write(subsection_index_content)
+                indexst += subsection_index_content
+                has_readme_subsection = True
+            else:
+                has_readme_subsection = False
 
-                # Write subsection toctree in main file
-                # only if nested_sections is False or None
-                if not gallery_conf["nested_sections"]:
-                    if len(subsection_toctree_filenames) > 0:
-                        subsection_index_toctree = """
-.. toctree::
-   :hidden:
+            # Write subsection toctree in main file only if
+            # nested_sections is False or None, and
+            # toctree filenames were generated for the subsection.
+            if not gallery_conf["nested_sections"]:
+                if len(subsection_toctree_filenames) > 0:
+                    subsection_index_toctree = _format_toctree(
+                        subsection_toctree_filenames)
+                    indexst += subsection_index_toctree
+            # Otherwise, a new index.rst.new file should
+            # have been created and it needs to be parsed
+            elif has_readme_subsection:
+                _replace_md5(subsection_index_path, mode='t')
 
-   %s\n
-""" % "\n   ".join(subsection_toctree_filenames)
-                    fhindex.write(subsection_index_toctree)
-                # Otherwise, a new index.rst.new file should
-                # have been created and it needs to be parsed
-                else:
-                    _replace_md5(subsection_index_path, mode='t')
+            costs += subsection_costs
+            write_computation_times(
+                gallery_conf, target_dir, subsection_costs
+            )
 
-                costs += subsection_costs
-                write_computation_times(
-                    gallery_conf, target_dir, subsection_costs
-                )
+        # generate toctree with subsections
+        if gallery_conf["nested_sections"] is True:
+            subsections_toctree = _format_toctree(
+                subsection_index_files, includehidden=True)
 
-            # generate toctree with subsections
-            if gallery_conf["nested_sections"] is True:
-                subsections_toctree = """
-.. toctree::
-   :hidden:
-   :includehidden:
+            # add toctree to file only if there are subsections
+            if len(subsection_index_files) > 0:
+                indexst += subsections_toctree
 
-   %s\n
-""" % "\n   ".join(subsection_index_files)
-# """ % "\n   ".join(this_toctree_items + subsection_index_files)
+        if gallery_conf['download_all_examples']:
+            download_fhindex = generate_zipfiles(
+                gallery_dir_abs_path, app.builder.srcdir
+            )
+            indexst += download_fhindex
 
-                # add toctree to file only if there are subsections
-                if len(subsection_index_files) > 0:
-                    fhindex.write(subsections_toctree)
+        if (app.config.sphinx_gallery_conf['show_signature']):
+            indexst += SPHX_GLR_SIG
 
-            if gallery_conf['download_all_examples']:
-                download_fhindex = generate_zipfiles(
-                    gallery_dir_abs_path, app.builder.srcdir
-                )
-                fhindex.write(download_fhindex)
+        if has_readme:
+            index_rst_new = os.path.join(gallery_dir_abs_path, 'index.rst.new')
+            with codecs.open(index_rst_new, 'w', encoding='utf-8') as fhindex:
+                fhindex.write(indexst)
+            _replace_md5(index_rst_new, mode='t')
 
-            if (app.config.sphinx_gallery_conf['show_signature']):
-                fhindex.write(SPHX_GLR_SIG)
-
-        _replace_md5(index_rst_new, mode='t')
     if gallery_conf['show_api_usage'] is not False:
         init_api_usage(app.builder.srcdir)
     _finalize_backreferences(seen_backrefs, gallery_conf)
@@ -710,10 +743,9 @@ def write_api_entries(app, what, name, obj, options, lines):
     if app.config.sphinx_gallery_conf['show_api_usage'] is False:
         return
     if 'api_entries' not in app.config.sphinx_gallery_conf:
-        app.config.sphinx_gallery_conf['api_entries'] = \
-            {entry_type: set() for entry_type in
-             ('class', 'method', 'function', 'module',
-              'property', 'attribute')}
+        app.config.sphinx_gallery_conf['api_entries'] = dict()
+    if what not in app.config.sphinx_gallery_conf['api_entries']:
+        app.config.sphinx_gallery_conf['api_entries'][what] = set()
     app.config.sphinx_gallery_conf['api_entries'][what].add(name)
 
 
@@ -840,9 +872,9 @@ def write_api_entry_usage(app, docname, source):
         return
 
     def get_entry_type(entry):
-        if entry in gallery_conf['api_entries']['class']:
+        if entry in gallery_conf['api_entries'].get('class', []):
             return 'class'
-        elif entry in gallery_conf['api_entries']['method']:
+        elif entry in gallery_conf['api_entries'].get('method', []):
             return 'meth'
         else:
             assert entry in gallery_conf['api_entries']['function']
@@ -1162,6 +1194,15 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
+    # set small priority value, so that pre_configure_jupyterlite_sphinx is
+    # called before jupyterlite_sphinx config-inited
+    app.connect(
+        'config-inited', pre_configure_jupyterlite_sphinx, priority=100)
+    # set high priority value, so that post_configure_jupyterlite_sphinx is
+    # called after jupyterlite_sphinx config-inited
+    app.connect(
+        'config-inited', post_configure_jupyterlite_sphinx, priority=900)
+
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
         app.connect('autodoc-process-docstring', write_api_entries)
@@ -1175,6 +1216,8 @@ def setup(app):
 
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)
+    app.connect('build-finished', create_jupyterlite_contents)
+
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     app.connect('build-finished', clean_files)

@@ -15,6 +15,9 @@ import shutil
 import sys
 import time
 
+from packaging.version import Version
+
+from sphinx import __version__ as sphinx_version
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
@@ -23,20 +26,41 @@ from sphinx_gallery.utils import (_get_image, scale_image, _has_optipng,
 
 import pytest
 
-N_TOT = 13  # examples (plot_*.py in examples/**)
+# file inventory for tinybuild:
 
+# total number of plot_*.py files in tinybuild/examples + examples_rst_index
+# + examples_with_rst
+N_EXAMPLES = 13 + 3 + 2
 N_FAILING = 2
-N_GOOD = N_TOT - N_FAILING
-N_RST = 17 + N_TOT + 1  # includes module API pages, etc.
-N_RST = '(%s|%s)' % (N_RST, N_RST - 1)  # AppVeyor weirdness
+N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
+# passthroughs examples_rst_index, examples_with_rst
+N_PASS = 0 + 2
+# indices SG generates  (extra non-plot*.py file)
+# + examples_rst_index + examples_with_rst
+N_INDEX = 2 + 1 + 3
+# SG execution times (example, + examples_rst_index + examples_with_rst)
+N_EXECUTE = 2 + 3 + 1
+# gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
+N_OTHER = 9 + 1 + 1 + 1 + 1
+N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
+N_RST = '(%s|%s|%s)' % (N_RST, N_RST - 1, N_RST - 2)  # AppVeyor weirdness
 
 
 @pytest.fixture(scope='module')
 def sphinx_app(tmpdir_factory, req_mpl, req_pil):
+    return _sphinx_app(tmpdir_factory, 'html')
+
+
+@pytest.fixture(scope='module')
+def sphinx_dirhtml_app(tmpdir_factory, req_mpl, req_pil):
+    return _sphinx_app(tmpdir_factory, 'dirhtml')
+
+
+def _sphinx_app(tmpdir_factory, buildername):
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
-    temp_dir = (tmpdir_factory.getbasetemp() / 'root').strpath
+    temp_dir = (tmpdir_factory.getbasetemp() / f'root_{buildername}').strpath
     src_dir = op.join(op.dirname(__file__), 'tinybuild')
 
     def ignore(src, names):
@@ -44,16 +68,15 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
 
     shutil.copytree(src_dir, temp_dir, ignore=ignore)
     # For testing iteration, you can get similar behavior just doing `make`
-    # inside the tinybuild directory
-    src_dir = temp_dir
-    conf_dir = temp_dir
-    out_dir = op.join(temp_dir, '_build', 'html')
-    toctrees_dir = op.join(temp_dir, '_build', 'toctrees')
+    # inside the tinybuild/doc directory
+    conf_dir = op.join(temp_dir, 'doc')
+    out_dir = op.join(conf_dir, '_build', buildername)
+    toctrees_dir = op.join(conf_dir, '_build', 'toctrees')
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
-        app = Sphinx(src_dir, conf_dir, out_dir, toctrees_dir,
-                     buildername='html', status=StringIO(),
+        app = Sphinx(conf_dir, conf_dir, out_dir, toctrees_dir,
+                     buildername=buildername, status=StringIO(),
                      warning=StringIO())
         # need to build within the context manager
         # for automodule and backrefs to work
@@ -65,6 +88,7 @@ def test_timings(sphinx_app):
     """Test that a timings page is created."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
+
     # local folder
     timings_rst = op.join(src_dir, 'auto_examples',
                           'sg_execution_times.rst')
@@ -83,7 +107,7 @@ def test_timings(sphinx_app):
     assert 'href="plot_numpy_matplotlib.html' in content
     # printed
     status = sphinx_app._status.getvalue()
-    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    fname = op.join('..', 'examples', 'plot_numpy_matplotlib.py')
     assert ('- %s: ' % fname) in status
 
 
@@ -117,7 +141,7 @@ def test_api_usage(sphinx_app):
         assert 'alt="sphinx_gallery usage graph"' not in content
     # printed
     status = sphinx_app._status.getvalue()
-    fname = op.join('examples', 'plot_numpy_matplotlib.py')
+    fname = op.join('..', 'examples', 'plot_numpy_matplotlib.py')
     assert ('- %s: ' % fname) in status
 
 
@@ -141,20 +165,22 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="%d"' % (N_TOT,) in contents
+    assert 'tests="%d"' % (N_EXAMPLES,) in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
     src_dir = sphinx_app.srcdir
     new_src_dir = op.join(str(tmpdir), 'src')
-    shutil.copytree(src_dir, new_src_dir)
+    shutil.copytree(op.join(src_dir, '../'), new_src_dir)
     del src_dir
+    new_src_dir = op.join(new_src_dir, 'doc')
     new_out_dir = op.join(new_src_dir, '_build', 'html')
     new_toctree_dir = op.join(new_src_dir, '_build', 'toctrees')
-    passing_fname = op.join(new_src_dir, 'examples',
+    passing_fname = op.join(new_src_dir, '../examples',
                             'plot_numpy_matplotlib.py')
-    failing_fname = op.join(new_src_dir, 'examples', 'future',
+    failing_fname = op.join(new_src_dir, '../examples', 'future',
                             'plot_future_imports_broken.py')
+    print('Names', passing_fname, failing_fname)
     shutil.move(passing_fname, passing_fname + '.temp')
     shutil.move(failing_fname, passing_fname)
     shutil.move(passing_fname + '.temp', failing_fname)
@@ -183,10 +209,19 @@ def test_run_sphinx(sphinx_app):
     out_files = os.listdir(out_dir)
     assert 'index.html' in out_files
     assert 'auto_examples' in out_files
+    assert 'auto_examples_with_rst' in out_files
+    assert 'auto_examples_rst_index' in out_files
     generated_examples_dir = op.join(out_dir, 'auto_examples')
     assert op.isdir(generated_examples_dir)
+    # make sure that indices are properly being passed forward...
+    files_to_check = ['auto_examples_rst_index/examp_subdir1/index.html',
+                      'auto_examples_rst_index/examp_subdir2/index.html',
+                      'auto_examples_rst_index/index.html',
+                      ]
+    for f in files_to_check:
+        assert op.isfile(out_dir + '/' + f)
     status = sphinx_app._status.getvalue()
-    assert 'executed %d out of %d' % (N_GOOD, N_TOT) in status
+    assert 'executed %d out of %d' % (N_GOOD, N_EXAMPLES) in status
     assert 'after excluding 0' in status
     # intentionally have a bad URL in references
     warning = sphinx_app._warning.getvalue()
@@ -275,11 +310,11 @@ def test_image_formats(sphinx_app):
             assert op.isfile(file_fname), file_fname
             want_html = 'src="%s"' % (img_fname0,)
             assert want_html in html
-            img_fname2 = ('../_images/sphx_glr_%s_%03d_2_0x.%s' %
+            img_fname2 = ('../_images/sphx_glr_%s_%03d_2_00x.%s' %
                           (ex, num, ext))
             file_fname2 = op.join(generated_examples_dir, img_fname2)
-            want_html = 'srcset="%s, %s 2.0x"' % (img_fname0, img_fname2)
-            if ext in ('png', 'jpg', 'svg'):  # check 2.0x (tests directive)
+            want_html = 'srcset="%s, %s 2.00x"' % (img_fname0, img_fname2)
+            if ext in ('png', 'jpg', 'svg'):  # check 2.00x (tests directive)
                 assert op.isfile(file_fname2), file_fname2
                 assert want_html in html
 
@@ -488,12 +523,17 @@ def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
 
     assert ([op.basename(x) for x in list_orig] ==
             [op.basename(x) for x in list_new])
+    # This is probably not totally specific/correct, but this fails on 4.0.0
+    # and not on other builds (e.g., 4.5) so hopefully good enough until we
+    # drop 4.x support
+    good_sphinx = Version(sphinx_version) >= Version('4.1')
     for orig, new in zip(list_orig, list_new):
         check_name = op.splitext(op.basename(orig))[0]
         if check_name.endswith('_codeobj'):
             check_name = check_name[:-8]
         if check_name in different:
-            assert np.abs(op.getmtime(orig) - op.getmtime(new)) > 0.1
+            if good_sphinx:
+                assert np.abs(op.getmtime(orig) - op.getmtime(new)) > 0.1
         elif check_name not in ignore:
             assert_allclose(op.getmtime(orig), op.getmtime(new),
                             atol=1e-3, rtol=1e-20,
@@ -510,12 +550,12 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     lines = [line for line in status.split('\n') if 'removed' in line]
     want = '.*%s added, 0 changed, 0 removed.*' % (N_RST,)
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
-    want = '.*targets for 3 source files that are out of date$.*'
+    want = '.*targets for 2 source files that are out of date$.*'
     lines = [line for line in status.split('\n') if 'out of date' in line]
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     lines = [line for line in status.split('\n') if 'on MD5' in line]
     want = ('.*executed %d out of %d.*after excluding 0 files.*based on MD5.*'
-            % (N_GOOD, N_TOT))
+            % (N_GOOD, N_EXAMPLES))
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     old_src_dir = (tmpdir_factory.getbasetemp() / 'root_old').strpath
     shutil.copytree(sphinx_app.srcdir, old_src_dir)
@@ -655,7 +695,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     time.sleep(0.1)
     confoverrides = dict()
     if how == 'modify':
-        fname = op.join(src_dir, 'examples', 'plot_numpy_matplotlib.py')
+        fname = op.join(src_dir, '../examples', 'plot_numpy_matplotlib.py')
         with codecs.open(fname, 'r', 'utf-8') as fid:
             lines = fid.readlines()
         with codecs.open(fname, 'w', 'utf-8') as fid:
@@ -689,8 +729,8 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
     lines = '\n'.join([how] + lines)
-    n_ch = '(7|8|9|10|11)'
-    want = '.*updating environment:.*0 added, %s changed, 0 removed.*' % n_ch
+    n_ch = '(7|8|9|10|11|12)'
+    want = f'.*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*'
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'
             % (out_of, excluding))
@@ -768,6 +808,22 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
 def test_error_messages(sphinx_app, name, want):
     """Test that informative error messages are added."""
     src_dir = sphinx_app.srcdir
+    example_rst = op.join(src_dir, 'auto_examples', name + '.rst')
+    with codecs.open(example_rst, 'r', 'utf-8') as fid:
+        rst = fid.read()
+    rst = rst.replace('\n', ' ')
+    assert re.match(want, rst) is not None
+
+
+@pytest.mark.parametrize('name, want', [
+    ('future/plot_future_imports_broken',
+     '.*RuntimeError.*Forcing this example to fail on Python 3.*'),
+    ('plot_scraper_broken',
+     '.*ValueError.*zero-size array to reduction.*'),
+])
+def test_error_messages_dirhtml(sphinx_dirhtml_app, name, want):
+    """Test that informative error messages are added."""
+    src_dir = sphinx_dirhtml_app.srcdir
     example_rst = op.join(src_dir, 'auto_examples', name + '.rst')
     with codecs.open(example_rst, 'r', 'utf-8') as fid:
         rst = fid.read()
@@ -947,12 +1003,12 @@ def test_md5_hash(sphinx_app):
     assert actual_md5 == expected_md5
 
 
-def test_binder_logo_exists(sphinx_app):
+def test_interactive_example_logo_exists(sphinx_app):
     """Test that the binder logo path is correct."""
     root = op.join(sphinx_app.outdir, 'auto_examples')
     with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
         html = fid.read()
-    path = re.match(r'.*<img alt="Launch binder" src="(.*)" width=.*\/>.*',
+    path = re.match(r'.*<img alt="Launch binder" src="([^"]*)" width=.*\/>.*',
                     html, re.DOTALL)
     assert path is not None
     path = path.groups()[0]
@@ -960,6 +1016,27 @@ def test_binder_logo_exists(sphinx_app):
     assert 'binder_badge_logo' in img_fname  # can have numbers appended
     assert op.isfile(img_fname)
     assert 'https://mybinder.org/v2/gh/sphinx-gallery/sphinx-gallery.github.io/master?urlpath=lab/tree/notebooks/auto_examples/plot_svg.ipynb' in html  # noqa: E501
+
+    path = re.match(
+        r'.*<img alt="Launch JupyterLite" src="([^"]*)" width=.*\/>.*',
+        html, re.DOTALL)
+    assert path is not None
+    path = path.groups()[0]
+    img_fname = op.abspath(op.join(root, path))
+    assert 'jupyterlite_badge_logo' in img_fname  # can have numbers appended
+    assert op.isfile(img_fname)
+
+
+def test_download_and_interactive_note(sphinx_app):
+    """Test text saying go to the end to download code or run the example."""
+    root = op.join(sphinx_app.outdir, 'auto_examples')
+    with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
+        html = fid.read()
+
+    pattern = (
+        r"to download the full example.+"
+        r"in your browser via JupyterLite or Binder")
+    assert re.search(pattern, html)
 
 
 def test_defer_figures(sphinx_app):

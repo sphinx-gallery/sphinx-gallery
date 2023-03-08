@@ -50,7 +50,9 @@ from .py_source_parser import (split_code_and_text_blocks,
                                remove_ignore_blocks)
 
 from .notebook import jupyter_notebook, save_notebook
-from .binder import check_binder_conf, gen_binder_rst
+from .interactive_example import check_binder_conf, gen_binder_rst
+from .interactive_example import check_jupyterlite_conf, gen_jupyterlite_rst
+
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
@@ -349,6 +351,13 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
 
 
 def _get_readme(dir_, gallery_conf, raise_error=True):
+    # first check if there is an index.rst and that index.rst is in the
+    # copyfile regexp:
+    if re.match(gallery_conf['copyfile_regex'], 'index.rst'):
+        fpth = os.path.join(dir_, 'index.rst')
+        if os.path.isfile(fpth):
+            return None
+    # now look for README.txt, README.rst etc...
     extensions = ['.txt'] + sorted(gallery_conf['app'].config['source_suffix'])
     for ext in extensions:
         for fname in ('README', 'readme'):
@@ -407,10 +416,14 @@ def generate_dir_rst(
 
     subsection_index_content = ""
     subsection_readme_fname = _get_readme(src_dir, gallery_conf)
-
-    with codecs.open(subsection_readme_fname, 'r', encoding='utf-8') as fid:
-        subsection_readme_content = fid.read()
-        subsection_index_content += subsection_readme_content
+    have_index_rst = False
+    if subsection_readme_fname:
+        with codecs.open(subsection_readme_fname,
+                         'r', encoding='utf-8') as fid:
+            subsection_readme_content = fid.read()
+            subsection_index_content += subsection_readme_content
+    else:
+        have_index_rst = True
 
     # Add empty lines to avoid bug in issue #165
     subsection_index_content += "\n\n"
@@ -465,7 +478,7 @@ def generate_dir_rst(
     # Write subsection index file
     # only if nested_sections is True
     subsection_index_path = None
-    if gallery_conf["nested_sections"] is True:
+    if gallery_conf["nested_sections"] is True and not have_index_rst:
         subsection_index_path = os.path.join(target_dir, 'index.rst.new')
         with codecs.open(subsection_index_path, 'w', encoding='utf-8') as (
             findex
@@ -490,6 +503,25 @@ def generate_dir_rst(
    %s\n
 """ % "\n   ".join(subsection_toctree_filenames)
                 findex.write(subsection_index_toctree)
+
+    if have_index_rst:
+        # the user has supplied index.rst, so blank out the content
+        subsection_index_content = None
+
+    # Copy over any other files.
+    copyregex = gallery_conf.get('copyfile_regex')
+    if copyregex:
+        listdir = [fname for fname in os.listdir(src_dir) if
+                   re.match(copyregex, fname)]
+        readme = _get_readme(src_dir, gallery_conf, raise_error=False)
+        # don't copy over the readme
+        if readme:
+            listdir = [fname for fname in listdir if
+                       fname != os.path.basename(readme)]
+        for fname in listdir:
+            src_file = os.path.normpath(os.path.join(src_dir, fname))
+            target_file = os.path.join(target_dir, fname)
+            _replace_md5(src_file, fname_old=target_file, method='copy')
 
     return (
         subsection_index_path,
@@ -1060,16 +1092,18 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
                 if not os.path.isfile(path):
                     copyfile(stock_img, path)
 
+    # Ignore blocks must be processed before the
+    # remaining config comments are removed.
+    script_blocks = [
+        (label, remove_ignore_blocks(content), line_number)
+        for label, content, line_number in script_blocks
+    ]
+
     if gallery_conf['remove_config_comments']:
         script_blocks = [
             (label, remove_config_comments(content), line_number)
             for label, content, line_number in script_blocks
         ]
-
-    script_blocks = [
-        (label, remove_ignore_blocks(content), line_number)
-        for label, content, line_number in script_blocks
-    ]
 
     # Remove final empty block, which can occur after config comments
     # are removed
@@ -1142,7 +1176,7 @@ EXAMPLE_HEADER = """
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_{1}>`
+        :ref:`Go to the end <sphx_glr_download_{1}>`
         to download the full example code{2}
 
 .. rst-class:: sphx-glr-example-title
@@ -1237,31 +1271,55 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     ref_fname = example_fname.replace(os.path.sep, "_")
 
     binder_conf = check_binder_conf(gallery_conf.get('binder'))
+    is_binder_enabled = len(binder_conf) > 0
 
-    binder_text = (" or to run this example in your browser via Binder"
-                   if len(binder_conf) else "")
+    jupyterlite_conf = check_jupyterlite_conf(
+        gallery_conf.get('jupyterlite', {}),
+        gallery_conf['app'])
+    is_jupyterlite_enabled = jupyterlite_conf is not None
+
+    interactive_example_text = ""
+    if is_binder_enabled or is_jupyterlite_enabled:
+        interactive_example_text += (
+            " or to run this example in your browser via ")
+
+    if is_binder_enabled and is_jupyterlite_enabled:
+        interactive_example_text += "JupyterLite or Binder"
+    elif is_binder_enabled:
+        interactive_example_text += "Binder"
+    elif is_jupyterlite_enabled:
+        interactive_example_text += "JupyterLite"
+
     example_rst = EXAMPLE_HEADER.format(
-        example_fname, ref_fname, binder_text) + example_rst
+        example_fname, ref_fname, interactive_example_text) + example_rst
 
     if time_elapsed >= gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)
         example_rst += TIMING_CONTENT.format(time_m, time_s)
+
+    fname = os.path.basename(example_file)
+
     if gallery_conf['show_memory']:
         example_rst += ("**Estimated memory usage:** {0: .0f} MB\n\n"
                         .format(memory_used))
 
     # Generate a binder URL if specified
     binder_badge_rst = ''
-    if len(binder_conf) > 0:
+    if is_binder_enabled:
         binder_badge_rst += gen_binder_rst(example_file, binder_conf,
                                            gallery_conf)
         binder_badge_rst = indent(binder_badge_rst, '  ')  # need an extra two
 
-    fname = os.path.basename(example_file)
+    jupyterlite_rst = ''
+    if is_jupyterlite_enabled:
+        jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
+        jupyterlite_rst = indent(jupyterlite_rst, '  ')  # need an extra two
+
     example_rst += CODE_DOWNLOAD.format(fname,
                                         replace_py_ipynb(fname),
                                         binder_badge_rst,
-                                        ref_fname)
+                                        ref_fname,
+                                        jupyterlite_rst)
     if gallery_conf['show_signature']:
         example_rst += SPHX_GLR_SIG
 

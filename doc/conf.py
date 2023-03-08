@@ -19,7 +19,7 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
-import sphinx_rtd_theme
+from sphinx_gallery.scrapers import _MayaviScraper
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -46,6 +46,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx_gallery.gen_gallery',
     'sphinx.ext.graphviz',
+    'jupyterlite_sphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -126,13 +127,7 @@ highlight_language = 'python3'
 # a list of builtin themes.
 
 # The theme is set by the make target
-html_theme = os.environ.get('SPHX_GLR_THEME', 'rtd')
-
-# on_rtd is whether we are on readthedocs.org, this line of code grabbed
-# from docs.readthedocs.org
-if html_theme == 'rtd':
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'pydata_sphinx_theme'
 
 
 def setup(app):
@@ -142,10 +137,31 @@ def setup(app):
                         objname='configuration value',
                         indextemplate='pair: %s; configuration value')
 
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-# html_theme_options = {}
+html_theme_options = {
+    'navbar_center': ['navbar-nav'],
+    'show_toc_level': 2,
+    'show_nav_level': 2,
+    'navbar_end': ['theme-switcher', 'version-switcher', 'navbar-icon-links'],
+    'logo': {
+        'text': '🖼️ Sphinx-Gallery',
+    },
+    'switcher': dict(
+        json_url='https://sphinx-gallery.github.io/dev/_static/switcher.json',
+        version_match='dev' if 'dev' in version else 'stable',
+    ),
+    "github_url": "https://github.com/sphinx-gallery/sphinx-gallery",
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/sphinx-gallery",
+            "icon": "fa-solid fa-box",
+        },
+    ],
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -186,7 +202,9 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    'reference': [],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -325,7 +343,7 @@ try:
 except Exception:  # can raise all sorts of errors
     image_scrapers = ('matplotlib',)
 else:
-    image_scrapers += ('mayavi',)
+    image_scrapers += (_MayaviScraper(),)
     examples_dirs.append('../mayavi_examples')
     gallery_dirs.append('auto_mayavi_examples')
     # Do not pop up any mayavi windows while running the
@@ -356,11 +374,13 @@ else:
 
 # Set plotly renderer to capture _repr_html_ for sphinx-gallery
 try:
-    import plotly.io.renderers
+    import plotly.io
 except ImportError:
     pass
 else:
     plotly.io.renderers.default = 'sphinx_gallery'
+    examples_dirs.append('../plotly_examples')
+    gallery_dirs.append('auto_plotly_examples')
 
 min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
@@ -405,11 +425,3 @@ sphinx_gallery_conf = {
 warnings.filterwarnings("ignore", category=UserWarning,
                         message='Matplotlib is currently using agg, which is a'
                                 ' non-GUI backend, so cannot show the figure.')
-
-html_context = {
-    'current_version': 'dev' if 'dev' in version else 'stable',
-    'versions': (
-        ('dev', 'https://sphinx-gallery.github.io/dev'),
-        ('stable', 'https://sphinx-gallery.github.io/stable'),
-    )
-}
