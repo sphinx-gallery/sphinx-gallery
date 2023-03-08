@@ -46,21 +46,36 @@ Prepare for release
        command below ``<version>`` is the current (not development) version of
        the package, e.g., ``0.6.0``. We do this because our failing discipline
        of writing in the CHANGES.rst all relevant changes, this helps our
-       memory. It is a good idea to add appropriate labels (e.g., 'BUG') to
+       memory. It is a good idea to add appropriate labels to
        issues and pull requests so they are categorized correctly in the
-       CHANGES.rst generated. ::
+       CHANGES.rst generated. The labels we currently use are:
 
-          github_changelog_generator -u sphinx-gallery -p sphinx-gallery --since-tag=v<version> --token <your-40-digit-token>
+         ``bug``
+           For fixed bugs.
+         ``enhancement``
+           For enhancements
+         ``maintenance``
+           For general project maintenance (e.g., CIs)
+         ``documentation``
+           For documentation improvements.
+
+       The changelog can generated with the following::
+
+          github_changelog_generator --since-tag=v<version> --token <your-40-digit-token>
+
+       To avoid the need to pass ``--token``, you can use ``export CHANGELOG_GITHUB_TOKEN=<your-40-digit-token>`` instead.
 
     2. Edit CHANGELOG.md to look reasonable (it will be used later). It's a
-       good idea to add labels to issues and pull requests so
-       `github_changelog_generator` can correctly categorize them in in the
-       CHANGES.rst file generated.
+       good idea to add labels to issues and pull requests and iteratively
+       re-run `github_changelog_generator` until PRs are correctly categorized
+       in the ``CHANGES.md`` file generated.
 
     3. Propagate the relevant changes to `CHANGES.rst <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/CHANGES.rst>`_.
        You can easily convert it RST with pandoc::
 
           pandoc CHANGELOG.md --wrap=none -o CHANGELOG.rst
+
+       Then copy just the sections to ``CHANGES.rst``.
 
 2. Build the docs cleanly
 
@@ -74,8 +89,8 @@ Prepare for release
 4. Update version
 
      Update the version in ``sphinx_gallery/__init__.py``, which should end in
-     ``.dev0``. You should remove ``.dev0``, and the numbers that remain will
-     become the version for this release.
+     ``.dev0``. You should replace ``.dev0`` with ``0`` to obtain a semantic
+     version (e.g., ``0.12.dev0`` to ``0.12.0``).
 
 5. Open a Pull Request that contains the two changes we've made above
 
