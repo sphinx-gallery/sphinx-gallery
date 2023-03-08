@@ -295,7 +295,7 @@ def test_extract_intro_and_title():
     # Title with punctuation (gh-517)
     intro, title = sg.extract_intro_and_title('<string>',
                                               '    ------------\n"-`Header"-with:; `punct` mark\'s\n----------------')  # noqa: E501
-    assert title == '"-`Header"-with:; `punct` mark\'s'
+    assert title == '"-`Header"-with:; punct mark\'s'
 
     # Long intro paragraph gets shortened
     intro_paragraph = '\n'.join(['this is one line' for _ in range(10)])

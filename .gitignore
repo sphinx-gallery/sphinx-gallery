@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .coverage*
+.vscode
 
 # C extensions
 *.so
