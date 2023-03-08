@@ -37,8 +37,7 @@ file:
 - ``remove_config_comments`` (:ref:`removing_config_comments`)
 - ``download_all_examples`` (:ref:`disable_all_scripts_download`)
 - ``plot_gallery`` (:ref:`without_execution`)
-- ``image_scrapers`` (and the deprecated ``find_mayavi_figures``)
-  (:ref:`image_scrapers`)
+- ``image_scrapers`` (:ref:`image_scrapers`)
 - ``compress_images`` (:ref:`compress_images`)
 - ``image_srcset`` (:ref:`image_srcset`)
 - ``reset_modules`` (:ref:`reset_modules`)
@@ -1393,11 +1392,11 @@ Image scrapers are plugins that allow Sphinx-Gallery to detect images produced
 during execution of your examples, and then embed them into documentation.
 Scrapers can be activated by appending scraper names to the
 ``'image_scrapers'`` tuple in your Sphinx-Gallery configuration. For example,
-to scrape both matplotlib and Mayavi images you can do::
+to scrape matplotlib images you can do::
 
       sphinx_gallery_conf = {
           ...
-          'image_scrapers': ('matplotlib', 'mayavi'),
+          'image_scrapers': ('matplotlib',),
       }
 
 The default value is ``'image_scrapers': ('matplotlib',)`` which only scrapes
@@ -1427,10 +1426,6 @@ The following scrapers are supported:
     Sphinx-Gallery maintains a scraper for
     :mod:`matplotlib <matplotlib.pyplot>` figures via the string
     ``'matplotlib'``.
-- Mayavi
-    Sphinx-Gallery maintains a scraper for
-    :mod:`Mayavi <mayavi.mlab>` figures via the string
-    ``'mayavi'``.
 - PyVista
     `PyVista <https://github.com/pyvista/pyvista>`__ maintains a scraper
     (for PyVista >= 0.20.3) enabled by the string ``'pyvista'``.

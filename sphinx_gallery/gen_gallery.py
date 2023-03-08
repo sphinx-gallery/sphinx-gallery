@@ -29,8 +29,7 @@ from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (generate_dir_rst, SPHX_GLR_SIG, _get_memory_base,
                       _get_readme)
-from .scrapers import (
-    _scraper_dict, _reset_dict, _import_matplotlib, _MAYAVI_WARN)
+from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
@@ -172,13 +171,6 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             msg += '\n'
         raise ConfigError(msg.strip())
     gallery_conf.update(sphinx_gallery_conf)
-    if sphinx_gallery_conf.get('find_mayavi_figures', False):
-        logger.warning(
-            "Deprecated image scraping variable `find_mayavi_figures`\n"
-            "detected, use `image_scrapers` instead as:\n\n"
-            "   image_scrapers=('matplotlib', 'mayavi')",
-            type=DeprecationWarning)
-        gallery_conf['image_scrapers'] += ('mayavi',)
     gallery_conf.update(plot_gallery=plot_gallery)
     gallery_conf.update(abort_on_example_error=abort_on_example_error)
     # XXX anything that can only be a bool (rather than str) should probably be
@@ -241,8 +233,6 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
     for si, scraper in enumerate(scrapers):
         if isinstance(scraper, str):
             if scraper in _scraper_dict:
-                if scraper == 'mayavi':
-                    logger.warning(_MAYAVI_WARN)
                 scraper = _scraper_dict[scraper]
             else:
                 orig_scraper = scraper

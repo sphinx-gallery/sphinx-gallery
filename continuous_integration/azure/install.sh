@@ -64,9 +64,6 @@ elif [ "$DISTRIB" == "ubuntu" ]; then
     python3 -m pip install --upgrade pip setuptools wheel
     python3 -m pip install -r dev-requirements.txt
     python3 -m pip install vtk "pyqt5!=5.15.8"
-    python3 -m pip install --no-build-isolation mayavi
-    # Make sure that Mayavi works and does not die when making an actual plot (tests Qt + VTK)
-    python3 -c "import faulthandler; faulthandler.enable(); from mayavi import mlab; mlab.test_plot3d()"
     python3 -m pip install --upgrade pytest pytest-cov coverage
     # test show_memory=True without memory_profiler by not installing it (not in req)
     python3 -m pip install "sphinx<5" "jinja2<=3.0.3"

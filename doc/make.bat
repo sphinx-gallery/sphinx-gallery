@@ -44,7 +44,6 @@ if "%1" == "clean" (
 	for /d %%i in (%BUILDDIR%\*) do rmdir /q /s %%i
 	del /q /s %BUILDDIR%\*
 	if exist auto_examples rd /q /s auto_examples
-	if exist auto_mayavi_examples rd /q /s auto_mayavi_examples
 	if exist auto_plotly_examples rd /q /s auto_plotly_examples
 	if exist auto_pyvista_examples rd /q /s auto_pyvista_examples
 	if exist tutorials rd /q /s tutorials
