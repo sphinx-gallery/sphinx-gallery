@@ -31,8 +31,8 @@ An incomplete list:
 
 * `Apache TVM <https://tvm.apache.org/docs/tutorial/index.html>`_
 * `Astropy <https://docs.astropy.org/en/stable/generated/examples/index.html>`_
-* `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
 * `Auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
+* `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
 * `Cartopy <https://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 * `Fury <https://fury.gl/latest/auto_examples/index.html>`_
 * `GIMLi <https://www.pygimli.org/_examples_auto/index.html>`_
@@ -55,9 +55,9 @@ An incomplete list:
 * `Scikit-learn <http://scikit-learn.org/stable/auto_examples/index.html>`_
 * `SimPEG <https://docs.simpeg.xyz/content/examples/>`_
 * `Sphinx-Gallery <https://sphinx-gallery.github.io/stable/auto_examples/index.html>`_
+* `SunPy <https://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
 * `Tonic <https://tonic.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
-* `SunPy <https://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
 
 .. projects_list_end
 
