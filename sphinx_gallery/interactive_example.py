@@ -2,11 +2,11 @@
 # Author: Chris Holdgraf
 # License: 3-clause BSD
 """
-Binder utility functions
-========================
+Binder and Jupyterlite utility functions
+========================================
 
-Integration with Binder is on an experimental stage. Note that this API may
-change in the future.
+Integration with Binder and Jupyterlite is on an experimental stage. Note that
+this API may change in the future.
 
 .. warning::
 
@@ -267,3 +267,144 @@ def check_binder_conf(binder_conf):
             'for Sphinx-Gallery. A path to at least one of these files '
             'must exist in your Binder dependencies.')
     return binder_conf
+
+
+def pre_configure_jupyterlite_sphinx(app, config):
+    is_jupyterlite_enabled = (
+        'jupyterlite_sphinx' in app.extensions
+        and config.sphinx_gallery_conf.get('jupyterlite', {}) is not None
+    )
+    if not is_jupyterlite_enabled:
+        return
+
+    # Do not use notebooks as sources for the documentation. See
+    # https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
+    # for more details
+    config.jupyterlite_bind_ipynb_suffix = False
+
+
+def post_configure_jupyterlite_sphinx(app, config):
+    config.sphinx_gallery_conf['jupyterlite'] = check_jupyterlite_conf(
+        config.sphinx_gallery_conf.get('jupyterlite', {}), app)
+
+    if config.sphinx_gallery_conf['jupyterlite'] is None:
+        return
+
+    if config.jupyterlite_contents is None:
+        config.jupyterlite_contents = []
+
+    # Append to jupyterlite_contents in case they have been set in conf.py
+    config.jupyterlite_contents.append(
+        config.sphinx_gallery_conf['jupyterlite']['jupyterlite_contents'])
+
+
+def create_jupyterlite_contents(app, exception):
+    if exception is not None:
+        return
+
+    if app.builder.name not in ['html', 'readthedocs']:
+        return
+
+    gallery_conf = app.config.sphinx_gallery_conf
+    is_jupyterlite_enabled = (
+        'jupyterlite_sphinx' in app.extensions
+        and gallery_conf['jupyterlite'] is not None)
+
+    if not is_jupyterlite_enabled:
+        return
+
+    logger.info('copying Jupyterlite contents ...', color='white')
+    gallery_dirs = gallery_conf.get('gallery_dirs')
+    contents_dir = gallery_conf['jupyterlite']['jupyterlite_contents']
+
+    shutil.rmtree(contents_dir, ignore_errors=True)
+    os.makedirs(contents_dir)
+
+    if not isinstance(gallery_dirs, (list, tuple)):
+        gallery_dirs = [gallery_dirs]
+
+    iterator = sphinx.util.status_iterator(
+        gallery_dirs, 'Copying Jupyterlite contents ...',
+        length=len(gallery_dirs))
+
+    for i_folder in iterator:
+        shutil.copytree(os.path.join(app.srcdir, i_folder),
+                        os.path.join(contents_dir, i_folder),
+                        ignore=_remove_ipynb_files)
+
+
+def gen_jupyterlite_rst(fpath, gallery_conf):
+    """Generate the RST + link for the Binder badge.
+
+    Parameters
+    ----------
+    fpath: str
+        The path to the `.ipynb` file for which a JupyterLite badge will be
+        generated.
+
+    gallery_conf : dict
+        Sphinx-Gallery configuration dictionary.
+
+    Returns
+    -------
+    rst : str
+        The reStructuredText for the JupyterLite badge that links to this file.
+    """
+    relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
+    notebook_location = relative_link.replace('.py', '.ipynb')
+    # Make sure we have the right slashes (in case we're on Windows)
+    notebook_location = notebook_location.replace(os.path.sep, '/')
+
+    if gallery_conf["jupyterlite"].get("use_jupyter_lab", True):
+        lite_root_url = "../lite/lab"
+    else:
+        lite_root_url = "../lite/retro/notebooks"
+
+    lite_url = f"{lite_root_url}/?path={notebook_location}"
+
+    # Similar work-around for badge file as in
+    # gen_binder_rst
+    physical_path = os.path.join(
+        os.path.dirname(fpath), 'images', 'jupyterlite_badge_logo.svg')
+    os.makedirs(os.path.dirname(physical_path), exist_ok=True)
+    if not os.path.isfile(physical_path):
+        shutil.copyfile(
+            os.path.join(glr_path_static(), 'jupyterlite_badge_logo.svg'),
+            physical_path)
+    rst = (
+        "\n"
+        "  .. container:: lite-badge\n\n"
+        "    .. image:: images/jupyterlite_badge_logo.svg\n"
+        "      :target: {}\n"
+        "      :alt: Launch JupyterLite\n"
+        "      :width: 150 px\n").format(lite_url)
+    return rst
+
+
+def check_jupyterlite_conf(jupyterlite_conf, app):
+    """Return full JupyterLite configuration with defaults"""
+    # app=None can happen for testing
+    if app is None:
+        is_jupyterlite_disabled = True
+    else:
+        is_jupyterlite_disabled = (
+            'jupyterlite_sphinx' not in app.extensions
+            or jupyterlite_conf is None
+        )
+
+    if is_jupyterlite_disabled:
+        return None
+
+    if not isinstance(jupyterlite_conf, dict):
+        raise ConfigError(
+            '`jupyterlite_conf` must be a dictionary')
+
+    result = {}
+    result['use_jupyter_lab'] = jupyterlite_conf.get('use_jupyter_lab', True)
+    result['jupyterlite_contents'] = jupyterlite_conf.get(
+        'jupyterlite_contents', 'jupyterlite_contents')
+    result['jupyterlite_contents'] = os.path.join(
+        app.srcdir,
+        result['jupyterlite_contents'])
+
+    return result

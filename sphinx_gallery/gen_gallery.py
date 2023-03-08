@@ -34,9 +34,13 @@ from .scrapers import (
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .sorting import NumberOfCodeLinesSortKey
-from .binder import copy_binder_files, check_binder_conf
+from .interactive_example import (
+    copy_binder_files, check_binder_conf, check_jupyterlite_conf
+)
+from .interactive_example import pre_configure_jupyterlite_sphinx
+from .interactive_example import post_configure_jupyterlite_sphinx
+from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
-
 
 _KNOWN_CSS = ('sg_gallery', 'sg_gallery-binder', 'sg_gallery-dataframe',
               'sg_gallery-rendered-html')
@@ -81,6 +85,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     'min_reported_time': 0,
     'binder': {},
+    'jupyterlite': {},
     'promote_jupyter_magic': False,
     'image_scrapers': ('matplotlib',),
     'compress_images': (),
@@ -374,6 +379,11 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
 
     # binder
     gallery_conf['binder'] = check_binder_conf(gallery_conf['binder'])
+
+    # jupyterlite
+    print('_complete_gallery_conf', gallery_conf.get('jupyterlite'))
+    gallery_conf['jupyterlite'] = check_jupyterlite_conf(
+        gallery_conf.get('jupyterlite', {}), app)
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
         raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'
@@ -1184,6 +1194,15 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
+    # set small priority value, so that pre_configure_jupyterlite_sphinx is
+    # called before jupyterlite_sphinx config-inited
+    app.connect(
+        'config-inited', pre_configure_jupyterlite_sphinx, priority=100)
+    # set high priority value, so that post_configure_jupyterlite_sphinx is
+    # called after jupyterlite_sphinx config-inited
+    app.connect(
+        'config-inited', post_configure_jupyterlite_sphinx, priority=900)
+
     if 'sphinx.ext.autodoc' in app.extensions:
         app.connect('autodoc-process-docstring', touch_empty_backreferences)
         app.connect('autodoc-process-docstring', write_api_entries)
@@ -1197,6 +1216,8 @@ def setup(app):
 
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)
+    app.connect('build-finished', create_jupyterlite_contents)
+
     app.connect('build-finished', summarize_failing_examples)
     app.connect('build-finished', embed_code_links)
     app.connect('build-finished', clean_files)

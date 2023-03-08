@@ -1003,12 +1003,12 @@ def test_md5_hash(sphinx_app):
     assert actual_md5 == expected_md5
 
 
-def test_binder_logo_exists(sphinx_app):
+def test_interactive_example_logo_exists(sphinx_app):
     """Test that the binder logo path is correct."""
     root = op.join(sphinx_app.outdir, 'auto_examples')
     with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
         html = fid.read()
-    path = re.match(r'.*<img alt="Launch binder" src="(.*)" width=.*\/>.*',
+    path = re.match(r'.*<img alt="Launch binder" src="([^"]*)" width=.*\/>.*',
                     html, re.DOTALL)
     assert path is not None
     path = path.groups()[0]
@@ -1016,6 +1016,27 @@ def test_binder_logo_exists(sphinx_app):
     assert 'binder_badge_logo' in img_fname  # can have numbers appended
     assert op.isfile(img_fname)
     assert 'https://mybinder.org/v2/gh/sphinx-gallery/sphinx-gallery.github.io/master?urlpath=lab/tree/notebooks/auto_examples/plot_svg.ipynb' in html  # noqa: E501
+
+    path = re.match(
+        r'.*<img alt="Launch JupyterLite" src="([^"]*)" width=.*\/>.*',
+        html, re.DOTALL)
+    assert path is not None
+    path = path.groups()[0]
+    img_fname = op.abspath(op.join(root, path))
+    assert 'jupyterlite_badge_logo' in img_fname  # can have numbers appended
+    assert op.isfile(img_fname)
+
+
+def test_download_and_interactive_note(sphinx_app):
+    """Test text saying go to the end to download code or run the example."""
+    root = op.join(sphinx_app.outdir, 'auto_examples')
+    with codecs.open(op.join(root, 'plot_svg.html'), 'r', 'utf-8') as fid:
+        html = fid.read()
+
+    pattern = (
+        r"to download the full example.+"
+        r"in your browser via JupyterLite or Binder")
+    assert re.search(pattern, html)
 
 
 def test_defer_figures(sphinx_app):

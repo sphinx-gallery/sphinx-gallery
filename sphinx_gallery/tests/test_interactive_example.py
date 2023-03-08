@@ -8,12 +8,16 @@ from __future__ import division, absolute_import, print_function
 
 from copy import deepcopy
 import os
+import re
+from unittest.mock import Mock
 
 import pytest
 
+from sphinx.application import Sphinx
 from sphinx.errors import ConfigError
-from sphinx_gallery.binder import (gen_binder_url, check_binder_conf,
-                                   _copy_binder_reqs, gen_binder_rst)
+from sphinx_gallery.interactive_example import (
+    gen_binder_url, check_binder_conf, _copy_binder_reqs, gen_binder_rst,
+    gen_jupyterlite_rst, check_jupyterlite_conf)
 
 
 def test_binder():
@@ -148,3 +152,57 @@ def test_gen_binder_rst(tmpdir):
     image_fname = os.path.join(
         os.path.dirname(file_path), 'images', 'binder_badge_logo.svg')
     assert os.path.isfile(image_fname)
+
+
+@pytest.mark.parametrize('use_jupyter_lab', [True, False])
+def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
+    """Check binder rst generated correctly."""
+    gallery_conf = {
+        'gallery_dirs': [str(tmpdir)], 'src_dir': 'blahblah',
+        'jupyterlite': {'use_jupyter_lab': use_jupyter_lab}}
+    file_path = str(tmpdir.join('blahblah', 'mydir', 'myfile.py'))
+    orig_dir = os.getcwd()
+    os.chdir(str(tmpdir))
+    try:
+        rst = gen_jupyterlite_rst(file_path, gallery_conf)
+    finally:
+        os.chdir(orig_dir)
+    image_rst = ' .. image:: images/jupyterlite_badge_logo.svg'
+    if use_jupyter_lab:
+        target_rst = ':target: .+lite/lab.+path=mydir/myfile.ipynb'
+    else:
+        target_rst = ':target: .+lite/retro/notebooks.+path=mydir/myfile.ipynb'
+    alt_rst = ':alt: Launch JupyterLite'
+    assert image_rst in rst
+    assert re.search(target_rst, rst), rst
+    assert alt_rst in rst
+    image_fname = os.path.join(
+        os.path.dirname(file_path), 'images', 'jupyterlite_badge_logo.svg')
+    assert os.path.isfile(image_fname)
+
+
+def test_check_jupyterlite_conf():
+    app = Mock(spec=Sphinx, config=dict(source_suffix={'.rst': None}),
+               extensions=[], srcdir='srcdir')
+
+    assert check_jupyterlite_conf(None, app) is None
+    assert check_jupyterlite_conf({}, app) is None
+
+    app.extensions = ['jupyterlite_sphinx']
+    assert check_jupyterlite_conf(None, app) is None
+    assert check_jupyterlite_conf({}, app) == {
+        'jupyterlite_contents': os.path.join('srcdir', 'jupyterlite_contents'),
+        'use_jupyter_lab': True
+    }
+
+    conf = {
+        'jupyterlite_contents': 'this_is_the_contents_dir',
+        'use_jupyter_lab': False
+    }
+    expected = {
+        'jupyterlite_contents': os.path.join(
+            'srcdir', 'this_is_the_contents_dir'),
+        'use_jupyter_lab': False
+    }
+
+    assert check_jupyterlite_conf(conf, app) == expected
