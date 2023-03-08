@@ -31,3 +31,4 @@ exclude __pycache__
 recursive-exclude */gen_modules *
 exclude gen_modules
 exclude .DS_store
+exclude .github_changelog_generator
