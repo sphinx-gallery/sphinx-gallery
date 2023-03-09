@@ -108,7 +108,7 @@ DEFAULT_GALLERY_CONF = {
     'nested_sections': True,
     'prefer_full_module': [],
     'api_usage_ignore': '.*__.*__',
-    'show_api_usage': False,
+    'show_api_usage': False,  # if this changes, change write_api_entries, too
     'copyfile_regex': '',
 }
 
@@ -732,10 +732,13 @@ def write_computation_times(gallery_conf, target_dir, costs):
 
 
 def write_api_entries(app, what, name, obj, options, lines):
-    if app.config.sphinx_gallery_conf['show_api_usage'] is False:
-        return
+    # sphinx-autoapi can do this before we manage to complete our config
+    if 'show_api_usage' not in app.config.sphinx_gallery_conf:
+        app.config.sphinx_gallery_conf['show_api_usage'] = False
     if 'api_entries' not in app.config.sphinx_gallery_conf:
         app.config.sphinx_gallery_conf['api_entries'] = dict()
+    if app.config.sphinx_gallery_conf['show_api_usage'] is False:
+        return
     if what not in app.config.sphinx_gallery_conf['api_entries']:
         app.config.sphinx_gallery_conf['api_entries'][what] = set()
     app.config.sphinx_gallery_conf['api_entries'][what].add(name)
