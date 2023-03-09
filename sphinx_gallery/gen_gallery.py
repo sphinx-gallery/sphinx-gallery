@@ -484,6 +484,8 @@ def _format_toctree(items, includehidden=False):
 
    %s\n""" % "\n   ".join(items)
 
+    st += "\n"
+
     return st
 
 
