@@ -158,7 +158,10 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                            builder_name='html', app=None, check_keys=True):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     options = sorted(gallery_conf)
-    extra_keys = sorted(set(sphinx_gallery_conf) - set(options))
+    ignore_keys = ('_sg_api_entries',)  # sphinx-autoapi can cause us to add this
+    extra_keys = sorted(
+        (set(sphinx_gallery_conf) - set(options)) - set(ignore_keys)
+    )
     if extra_keys and check_keys:
         msg = 'Unknown key(s) in sphinx_gallery_conf:\n'
         for key in extra_keys:
@@ -737,11 +740,11 @@ def write_api_entries(app, what, name, obj, options, lines):
         app.config.sphinx_gallery_conf['show_api_usage'] = False
     if app.config.sphinx_gallery_conf['show_api_usage'] is False:
         return
-    if 'api_entries' not in app.config.sphinx_gallery_conf:
-        app.config.sphinx_gallery_conf['api_entries'] = dict()
-    if what not in app.config.sphinx_gallery_conf['api_entries']:
-        app.config.sphinx_gallery_conf['api_entries'][what] = set()
-    app.config.sphinx_gallery_conf['api_entries'][what].add(name)
+    if '_sg_api_entries' not in app.config.sphinx_gallery_conf:
+        app.config.sphinx_gallery_conf['_sg_api_entries'] = dict()
+    if what not in app.config.sphinx_gallery_conf['_sg_api_entries']:
+        app.config.sphinx_gallery_conf['_sg_api_entries'][what] = set()
+    app.config.sphinx_gallery_conf['_sg_api_entries'][what].add(name)
 
 
 def init_api_usage(gallery_dir):
@@ -812,7 +815,7 @@ def _make_graph(fname, entries, gallery_conf):
                 dg.edge(node_from, node_to)
         # add modules with all API entries
         dg.attr('node', color='lightblue2')
-        for module in gallery_conf['api_entries']['module']:
+        for module in gallery_conf['_sg_api_entries']['module']:
             struct = module.split('.')
             for i in range(len(struct) - 1):
                 if struct[i + 1] not in lut:
@@ -852,27 +855,27 @@ def write_api_entry_usage(app, docname, source):
     # to in a gallery directory, e.g. auto_examples), it runs last
     # which means that all the api entries will be in gallery_conf
     if 'sg_api_usage' not in docname or \
-            'api_entries' not in gallery_conf or \
+            '_sg_api_entries' not in gallery_conf or \
             gallery_conf['backreferences_dir'] is None:
         return
     backreferences_dir = os.path.join(gallery_conf['src_dir'],
                                       gallery_conf['backreferences_dir'])
 
     example_files = set.union(
-        *[gallery_conf['api_entries'][obj_type]
+        *[gallery_conf['_sg_api_entries'][obj_type]
           for obj_type in ('class', 'method', 'function')
-          if obj_type in gallery_conf['api_entries']])
+          if obj_type in gallery_conf['_sg_api_entries']])
 
     if len(example_files) == 0:
         return
 
     def get_entry_type(entry):
-        if entry in gallery_conf['api_entries'].get('class', []):
+        if entry in gallery_conf['_sg_api_entries'].get('class', []):
             return 'class'
-        elif entry in gallery_conf['api_entries'].get('method', []):
+        elif entry in gallery_conf['_sg_api_entries'].get('method', []):
             return 'meth'
         else:
-            assert entry in gallery_conf['api_entries']['function']
+            assert entry in gallery_conf['_sg_api_entries']['function']
             return 'func'
 
     # find used and unused API entries
