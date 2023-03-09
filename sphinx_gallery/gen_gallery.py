@@ -158,7 +158,11 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                            builder_name='html', app=None, check_keys=True):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     options = sorted(gallery_conf)
-    ignore_keys = ('_sg_api_entries',)  # sphinx-autoapi can cause us to add this
+    # sphinx-autoapi can run before our config filling can occur, which
+    # when used with show_api_usage=True can cause us to add this early.
+    # In theory we could bump our priority above theirs, but this could have
+    # unintented consequences.
+    ignore_keys = ('_sg_api_entries',)
     extra_keys = sorted(
         (set(sphinx_gallery_conf) - set(options)) - set(ignore_keys)
     )
