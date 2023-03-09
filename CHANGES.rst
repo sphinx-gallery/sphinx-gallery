@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.12.1
+-------
+
+**Fixed bugs:**
+
+-  BUG: Fix bug with show_api_usage `#1095 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1095>`__ (`larsoner <https://github.com/larsoner>`__)
+-  FIX: Add blank line at end of table of contents block `#1094 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1094>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+
 v0.12.0
 -------
 Support for Sphinx < 4 dropped in this release. Requirement is Sphinx >= 4.
