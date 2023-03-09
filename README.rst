@@ -80,7 +80,7 @@ you are required to install them manually. Our minimal dependency
 is **Sphinx >= 4**.
 
 Sphinx-Gallery has also support for scraping images from packages like
-Matplotlib, Seaborn, and Mayavi. For much of this functionality, you will need
+Matplotlib, Seaborn, and PyVista. For much of this functionality, you will need
 ``pillow``. We also recommend installing system ``optipng`` binaries to reduce
 the file sizes of the generated PNG files.
 

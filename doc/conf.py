@@ -19,7 +19,6 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
-from sphinx_gallery.scrapers import _MayaviScraper
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -324,7 +323,6 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'matplotlib': ('https://matplotlib.org/stable', None),
-    'mayavi': ('http://docs.enthought.com/mayavi/mayavi', None),
     'pyvista': ('https://docs.pyvista.org/', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master', None),
@@ -336,20 +334,6 @@ gallery_dirs = ['auto_examples', 'tutorials']
 
 
 image_scrapers = ('matplotlib',)
-try:
-    # Run the mayavi examples and find the mayavi figures if mayavi is
-    # installed
-    from mayavi import mlab
-except Exception:  # can raise all sorts of errors
-    image_scrapers = ('matplotlib',)
-else:
-    image_scrapers += (_MayaviScraper(),)
-    examples_dirs.append('../mayavi_examples')
-    gallery_dirs.append('auto_mayavi_examples')
-    # Do not pop up any mayavi windows while running the
-    # examples. These are very annoying since they steal the focus.
-    mlab.options.offscreen = True
-
 try:
     # Run the PyVista examples and find the PyVista figures if PyVista is
     # installed

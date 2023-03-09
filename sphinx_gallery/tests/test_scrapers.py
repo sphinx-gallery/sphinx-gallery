@@ -5,11 +5,10 @@ import pytest
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx_gallery
 from sphinx_gallery.gen_gallery import _complete_gallery_conf
-from sphinx_gallery.scrapers import (figure_rst, mayavi_scraper, SG_IMAGE,
+from sphinx_gallery.scrapers import (figure_rst, SG_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
                                      save_figures, _KNOWN_IMG_EXTS,
                                      _reset_matplotlib)
-from sphinx_gallery.utils import _get_image
 
 
 @pytest.fixture(scope='function')
@@ -107,60 +106,6 @@ def test_save_matplotlib_figures_hidpi(gallery_conf):
         assert fname in image_rst
         fname = gallery_conf['gallery_dir'] + fname
         assert os.path.isfile(fname)
-
-
-def test_save_mayavi_figures(gallery_conf, req_mpl, req_pil):
-    """Test file naming when saving figures. Requires mayavi."""
-    import numpy as np
-    Image = _get_image()
-    mlab = pytest.importorskip('mayavi.mlab')
-    import matplotlib.pyplot as plt
-    gallery_conf.update(
-        image_scrapers=(matplotlib_scraper, mayavi_scraper))
-    fname_template = os.path.join(gallery_conf['gallery_dir'], 'image{0}.png')
-    image_path_iterator = ImagePathIterator(fname_template)
-    block = ('',) * 3
-    block_vars = dict(image_path_iterator=image_path_iterator)
-
-    plt.axes([-0.1, -0.1, 1.2, 1.2])
-    plt.pcolor([[0]], cmap='Greens')
-    mlab.test_plot3d()
-    with pytest.warns(FutureWarning, match=r'mayavi_scraper.* in 0\.13*'):
-        image_rst = save_figures(block, block_vars, gallery_conf)
-    assert len(plt.get_fignums()) == 0
-    assert len(image_path_iterator) == 2
-    assert '/image0.png' not in image_rst
-    assert '/image1.png' in image_rst
-    assert '/image2.png' in image_rst
-    assert '/image3.png' not in image_rst
-    assert not os.path.isfile(fname_template.format(0))
-    assert os.path.isfile(fname_template.format(1))
-    assert os.path.isfile(fname_template.format(2))
-    assert not os.path.isfile(fname_template.format(0))
-    with Image.open(fname_template.format(1)) as img:
-        pixels = np.asarray(img.convert("RGB"))
-    assert (pixels == [247, 252, 245]).all()  # plt first
-
-    # Test next-value handling, plus image_scrapers modification
-    gallery_conf.update(image_scrapers=(matplotlib_scraper,))
-    mlab.test_plot3d()
-    plt.axes([-0.1, -0.1, 1.2, 1.2])
-    plt.pcolor([[0]], cmap='Reds')
-    image_rst = save_figures(block, block_vars, gallery_conf)
-    assert len(plt.get_fignums()) == 0
-    assert len(image_path_iterator) == 3
-    assert '/image1.png' not in image_rst
-    assert '/image2.png' not in image_rst
-    assert '/image3.png' in image_rst
-    assert '/image4.png' not in image_rst
-    assert not os.path.isfile(fname_template.format(0))
-    for ii in range(3):
-        assert os.path.isfile(fname_template.format(ii + 1))
-    assert not os.path.isfile(fname_template.format(4))
-    with Image.open(fname_template.format(3)) as img:
-        pixels = np.asarray(img.convert("RGB"))
-    assert (pixels == [255, 245, 240]).all()
-    mlab.close(all=True)
 
 
 def _custom_func(x, y, z):

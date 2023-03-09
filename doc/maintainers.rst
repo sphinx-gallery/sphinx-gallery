@@ -36,9 +36,11 @@ How to make a release
    ``bug``
       For fixed bugs.
    ``enhancement``
-      For enhancements
+      For enhancements.
+   ``api``
+      For API changes (deprecations and removals).
    ``maintenance``
-      For general project maintenance (e.g., CIs)
+      For general project maintenance (e.g., CIs).
    ``documentation``
       For documentation improvements.
    

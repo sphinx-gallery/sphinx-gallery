@@ -61,12 +61,10 @@ stages:
         pip install --user --upgrade --progress-bar off --pre pydata-sphinx-theme
         echo "Qt, plotly, VTK"
         pip install --user --upgrade --progress-bar off pyvista "pyqt5!=5.15.8" plotly vtk jupyterlite-sphinx
-        echo "Mayavi"
-        pip install --user --upgrade --progress-bar off --no-build-isolation mayavi
       displayName: Setup pip environment
     - script: pip list
       displayName: pip list
-    - script: python -c "import pyvista; print(pyvista.Report()); from mayavi import mlab; mlab.test_plot3d()"
+    - script: python -c "import pyvista; print(pyvista.Report())"
       displayName: Test 3D
     - script: python setup.py develop --user
       displayName: Install sphinx-gallery

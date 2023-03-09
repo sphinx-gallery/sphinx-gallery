@@ -9,6 +9,5 @@ plotting backends.
 
    auto_examples/index
    tutorials/index
-   auto_mayavi_examples/index
    auto_plotly_examples/index
    auto_pyvista_examples/index
