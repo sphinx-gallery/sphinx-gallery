@@ -6,8 +6,8 @@ v0.12.1
 
 **Fixed bugs:**
 
-- BUG: Fix bug with show\_api\_usage [\#1095](https://github.com/sphinx-gallery/sphinx-gallery/pull/1095) ([larsoner](https://github.com/larsoner))
-- FIX: Add blank line at end of table of contents block [\#1094](https://github.com/sphinx-gallery/sphinx-gallery/pull/1094) ([sdhiscocks](https://github.com/sdhiscocks))
+-  BUG: Fix bug with show_api_usage `#1095 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1095>`__ (`larsoner <https://github.com/larsoner>`__)
+-  FIX: Add blank line at end of table of contents block `#1094 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1094>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
 
 v0.12.0
 -------
