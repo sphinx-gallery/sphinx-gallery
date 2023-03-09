@@ -9,7 +9,6 @@ from sphinx_gallery.scrapers import (figure_rst, SG_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
                                      save_figures, _KNOWN_IMG_EXTS,
                                      _reset_matplotlib)
-from sphinx_gallery.utils import _get_image
 
 
 @pytest.fixture(scope='function')

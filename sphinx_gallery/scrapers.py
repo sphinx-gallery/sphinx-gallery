@@ -20,10 +20,10 @@ import sys
 import re
 from textwrap import indent
 from pathlib import PurePosixPath
-from warnings import filterwarnings, warn
+from warnings import filterwarnings
 
 from sphinx.errors import ExtensionError
-from .utils import scale_image, optipng
+from .utils import optipng
 
 __all__ = ['save_figures', 'figure_rst', 'ImagePathIterator', 'clean_modules',
            'matplotlib_scraper']
