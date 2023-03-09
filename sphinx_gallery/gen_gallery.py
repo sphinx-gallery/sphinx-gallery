@@ -735,10 +735,10 @@ def write_api_entries(app, what, name, obj, options, lines):
     # sphinx-autoapi can do this before we manage to complete our config
     if 'show_api_usage' not in app.config.sphinx_gallery_conf:
         app.config.sphinx_gallery_conf['show_api_usage'] = False
-    if 'api_entries' not in app.config.sphinx_gallery_conf:
-        app.config.sphinx_gallery_conf['api_entries'] = dict()
     if app.config.sphinx_gallery_conf['show_api_usage'] is False:
         return
+    if 'api_entries' not in app.config.sphinx_gallery_conf:
+        app.config.sphinx_gallery_conf['api_entries'] = dict()
     if what not in app.config.sphinx_gallery_conf['api_entries']:
         app.config.sphinx_gallery_conf['api_entries'][what] = set()
     app.config.sphinx_gallery_conf['api_entries'][what].add(name)
