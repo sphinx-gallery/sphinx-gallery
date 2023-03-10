@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.12.2
+-------
+
+**Fixed bugs:**
+
+-  FIX: Only ANSI sanitize non-HTML output `#1097 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1097>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+
 v0.12.1
 -------
 
