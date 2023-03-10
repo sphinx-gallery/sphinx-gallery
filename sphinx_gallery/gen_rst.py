@@ -772,6 +772,11 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
         captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
     else:
         captured_std = ''
+
+    # Sanitize ANSI escape characters for RST output
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    captured_std = ansi_escape.sub('', captured_std)
+
     # give html output its own header
     if repr_meth == '_repr_html_':
         captured_html = HTML_HEADER.format(indent(last_repr, u' ' * 4))
@@ -884,10 +889,6 @@ def execute_code_block(compiler, block, example_globals, script_vars,
     finally:
         _reset_cwd_syspath(cwd, sys_path)
         logging_tee.restore_std()
-
-    # Sanitize ANSI escape characters from RST output
-    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-    code_output = ansi_escape.sub('', code_output)
 
     return code_output
 
