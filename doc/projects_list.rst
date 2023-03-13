@@ -2,9 +2,7 @@
 Who uses Sphinx-Gallery
 =======================
 
-Here is a list of projects using `sphinx-gallery`.
-
-* :ref:`Sphinx-Gallery <examples-index>`
+Here is an imcomplete list of projects using `sphinx-gallery`.
 
 .. include:: ../README.rst
    :start-after: projects_list_start
