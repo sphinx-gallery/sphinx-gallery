@@ -745,24 +745,19 @@ Add your own first and last notebook cell
 Sphinx-Gallery allows you to add your own first and/or last cell to *every*
 generated notebook. Adding a first cell can be useful for including code that
 is required to run properly in the notebook, but not in a ``.py`` file. By
-default, the following first cell is added to each notebook:
-
-.. code-block:: ipython
-
-    %matplotlib inline
+default, no first cell is added.
 
 Adding a last cell can be useful for performing a desired action such as
 reporting on the user's environment. By default no last cell is added.
 
 You can choose whatever text you like by modifying the ``first_notebook_cell``
-and ``last_notebook_cell`` configuration parameters. For example, the gallery
-of this documentation adds the following first cell:
+and ``last_notebook_cell`` configuration parameters. For example, you can add
+the following first cell:
 
 .. code-block:: ipython
 
     # This cell is added by sphinx-gallery
     # It can be customized to whatever you like
-    %matplotlib inline
 
 Which is achieved by the following configuration::
 
@@ -770,7 +765,7 @@ Which is achieved by the following configuration::
         ...
         'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
                                 "# It can be customized to whatever you like\n"
-                                "%matplotlib inline")
+                                )
     }
 
 A last cell may be added similarly by setting the ``last_notebook_cell``
@@ -780,7 +775,7 @@ parameter::
         ...
         'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
                                 "# It can be customized to whatever you like\n"
-                                "%matplotlib inline"),
+                                ),
         'last_notebook_cell': "# This is the last cell",
     }
 
