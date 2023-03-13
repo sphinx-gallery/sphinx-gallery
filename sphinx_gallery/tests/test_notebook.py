@@ -331,7 +331,6 @@ def test_jupyter_notebook(gallery_conf):
             assert json.load(fname) == example_nb
     finally:
         os.remove(f.name)
-    assert example_nb.get('cells')[0]['source'][0] == "%matplotlib inline"
 
     # Test custom first cell text
     test_text = '# testing\n%matplotlib notebook'

@@ -90,7 +90,7 @@ DEFAULT_GALLERY_CONF = {
     'compress_images': (),
     'reset_modules': ('matplotlib', 'seaborn'),
     'reset_modules_order': 'before',
-    'first_notebook_cell': '%matplotlib inline',
+    'first_notebook_cell': None,
     'last_notebook_cell': None,
     'notebook_images': False,
     'pypandoc': False,
