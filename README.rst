@@ -31,18 +31,18 @@ An incomplete list:
 
 * `Apache TVM <https://tvm.apache.org/docs/tutorial/index.html>`_
 * `Astropy <https://docs.astropy.org/en/stable/generated/examples/index.html>`_
-* `Auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
+* `auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
 * `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
 * `Cartopy <https://scitools.org.uk/cartopy/docs/latest/gallery/>`_
-* `Fury <https://fury.gl/latest/auto_examples/index.html>`_
-* `GIMLi <https://www.pygimli.org/_examples_auto/index.html>`_
-* `Matplotlib <https://matplotlib.org/stable/index.html>`_:
-* `MNE-python <https://mne.tools/stable/auto_examples/index.html>`_
+* `FURY <https://fury.gl/latest/auto_examples/index.html>`_
+* `pyGIMLi <https://www.pygimli.org/_examples_auto/index.html>`_
+* `Matplotlib <https://matplotlib.org/stable/index.html>`_
+* `MNE-Python <https://mne.tools/stable/auto_examples/index.html>`_
 * `Nestle <http://kylebarbary.com/nestle/examples/index.html>`_
 * `NetworkX <https://networkx.org/documentation/stable/auto_examples/index.html>`_
 * `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
 * `Nilearn <https://nilearn.github.io/stable/auto_examples/index.html>`_
-* `OpenML-Python <https://openml.github.io/openml-python/main/examples/index.html>`_
+* `OpenML <https://openml.github.io/openml-python/main/examples/index.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 * `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
 * `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
@@ -50,9 +50,9 @@ An incomplete list:
 * `PySurfer <https://pysurfer.github.io/>`_
 * `PyTorch tutorials <https://pytorch.org/tutorials>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
-* `Radis <https://radis.readthedocs.io/en/latest/auto_examples/index.html>`_
+* `RADIS <https://radis.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `scikit-image <https://scikit-image.org/docs/dev/auto_examples/>`_
-* `Scikit-learn <http://scikit-learn.org/stable/auto_examples/index.html>`_
+* `scikit-learn <https://scikit-learn.org/stable/auto_examples/index.html>`_
 * `SimPEG <https://docs.simpeg.xyz/content/examples/>`_
 * `Sphinx-Gallery <https://sphinx-gallery.github.io/stable/auto_examples/index.html>`_
 * `SunPy <https://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
