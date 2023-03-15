@@ -110,7 +110,10 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         The ReSTructuredText that will be rendered to HTML containing
         the images. This is often produced by :func:`figure_rst`.
     """
-    matplotlib, plt = _import_matplotlib()
+    # Do not use _import_matplotlib() to avoid potentially changing the backend
+    import matplotlib
+    import matplotlib.pyplot as plt
+
     from matplotlib.animation import Animation
     image_path_iterator = block_vars['image_path_iterator']
     image_rsts = []
