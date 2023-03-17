@@ -30,7 +30,7 @@ import pytest
 
 # total number of plot_*.py files in tinybuild/examples + examples_rst_index
 # + examples_with_rst
-N_EXAMPLES = 13 + 3 + 2
+N_EXAMPLES = 14 + 3 + 2
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs examples_rst_index, examples_with_rst
