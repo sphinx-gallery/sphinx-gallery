@@ -356,9 +356,9 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     notebook_location = notebook_location.replace(os.path.sep, '/')
 
     if gallery_conf["jupyterlite"].get("use_jupyter_lab", True):
-        lite_root_url = "../lite/lab"
+        lite_root_url = "/lite/lab"
     else:
-        lite_root_url = "../lite/retro/notebooks"
+        lite_root_url = "/lite/retro/notebooks"
 
     lite_url = f"{lite_root_url}/?path={notebook_location}"
 
