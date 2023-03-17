@@ -60,7 +60,7 @@ stages:
         pip install --user --upgrade --progress-bar off "ipython!=8.7.0" numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov joblib "plotly>=4.0"
         pip install --user --upgrade --progress-bar off --pre pydata-sphinx-theme
         echo "Qt, plotly, VTK"
-        pip install --user --upgrade --progress-bar off pyvista "pyqt5!=5.15.8" plotly vtk jupyterlite-sphinx
+        pip install --user --upgrade --progress-bar off pyvista "pyqt5!=5.15.8" plotly vtk jupyterlite-sphinx jupyterlite-pyodide-kernel
       displayName: Setup pip environment
     - script: pip list
       displayName: pip list
