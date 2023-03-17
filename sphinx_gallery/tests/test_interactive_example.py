@@ -169,9 +169,9 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
         os.chdir(orig_dir)
     image_rst = ' .. image:: images/jupyterlite_badge_logo.svg'
     if use_jupyter_lab:
-        target_rst = ':target: .+lite/lab.+path=mydir/myfile.ipynb'
+        target_rst = ':target: /lite/lab.+path=mydir/myfile.ipynb'
     else:
-        target_rst = ':target: .+lite/retro/notebooks.+path=mydir/myfile.ipynb'
+        target_rst = ':target: /lite/retro/notebooks.+path=mydir/myfile.ipynb'
     alt_rst = ':alt: Launch JupyterLite'
     assert image_rst in rst
     assert re.search(target_rst, rst), rst
