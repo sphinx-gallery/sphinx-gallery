@@ -1149,7 +1149,7 @@ are:
 
 In order to enable JupyterLite links with Sphinx-Gallery, you need to install
 the `jupyterlite-sphinx <https://jupyterlite-sphinx.readthedocs.io>`_ package.
-For `jupyterlite>=0.1.0b19` (released 15 March 2023) you also need to install
+For `jupyterlite-sphinx>=0.8` (released 15 March 2023) you also need to install
 `jupyterlite-pyodide-kernel`.
 
 You then need to add `jupyterlite_sphinx` to your Sphinx extensions in

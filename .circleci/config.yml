@@ -40,7 +40,8 @@ jobs:
           command: |
             pip install --progress-bar off --user --upgrade --only-binary ":all:" pip setuptools
             pip install --progress-bar off --user --upgrade --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3,!=5.15.8" vtk
-            pip install --progress-bar off --user --upgrade seaborn statsmodels pillow joblib sphinx pytest traits pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18" jupyterlite-sphinx
+            pip install --progress-bar off --user --upgrade seaborn statsmodels pillow joblib sphinx pytest traits pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18"
+            pip install --progress-bar off "jupyterlite-sphinx>=0.8.0,<0.9.0" "jupyterlite-pyodide-kernel<0.1.0"
             pip install --progress-bar off --user --upgrade --pre pydata-sphinx-theme
       - save_cache:
           key: cache-pip
