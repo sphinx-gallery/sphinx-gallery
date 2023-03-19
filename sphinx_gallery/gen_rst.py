@@ -221,6 +221,9 @@ def _sanitize_rst(string):
     # :anchor:`the term` --> the term
     string = re.sub(r':[a-z]+:`([^`<>]+)( <[^`<>]+>)?`', r'\1', string)
 
+    # r'\\dfrac' --> r'\dfrac'
+    string = string.replace('\\\\', '\\')
+
     return string
 
 
