@@ -13,6 +13,9 @@ class matplotlib_format_scraper:
         if op.basename(block_vars['target_file']) == 'plot_svg.py' and \
                 gallery_conf['builder_name'] != 'latex':
             kwargs['format'] = 'svg'
+        elif op.basename(block_vars['target_file']) == 'plot_webp.py' and \
+                gallery_conf['builder_name'] != 'latex':
+            kwargs['format'] = 'webp'
         return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
 
 

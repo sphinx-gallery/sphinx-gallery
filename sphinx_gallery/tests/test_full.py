@@ -30,7 +30,7 @@ import pytest
 
 # total number of plot_*.py files in tinybuild/examples + examples_rst_index
 # + examples_with_rst
-N_EXAMPLES = 14 + 3 + 2
+N_EXAMPLES = 15 + 3 + 2
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs examples_rst_index, examples_with_rst
@@ -289,6 +289,7 @@ def test_image_formats(sphinx_app):
     thumb_fnames = ['../_images/sphx_glr_plot_svg_thumb.svg',
                     '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png',
                     '../_images/sphx_glr_plot_animation_thumb.gif',
+                    '../_images/sphx_glr_plot_webp_thumb.webp',
                     ]
     for thumb_fname in thumb_fnames:
         file_fname = op.join(generated_examples_dir, thumb_fname)
@@ -300,7 +301,8 @@ def test_image_formats(sphinx_app):
     for ex, ext, nums, extra in (
             ('plot_svg', 'svg', [1], None),
             ('plot_numpy_matplotlib', 'png', [1], None),
-            ('plot_animation', 'png', [1, 3], 'function Animation')):
+            ('plot_animation', 'png', [1, 3], 'function Animation'),
+            ('plot_webp', 'webp', [1], None)):
         html_fname = op.join(generated_examples_dir, '%s.html' % ex)
         with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
@@ -314,7 +316,8 @@ def test_image_formats(sphinx_app):
                           (ex, num, ext))
             file_fname2 = op.join(generated_examples_dir, img_fname2)
             want_html = f'srcset="{img_fname0}, {img_fname2} 2.00x"'
-            if ext in ('png', 'jpg', 'svg'):  # check 2.00x (tests directive)
+            if ext in ('png', 'jpg', 'svg', 'webp'):
+                # check 2.00x (tests directive)
                 assert op.isfile(file_fname2), file_fname2
                 assert want_html in html
 

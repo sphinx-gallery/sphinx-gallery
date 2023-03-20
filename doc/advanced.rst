@@ -154,8 +154,8 @@ Image scrapers are functions (or callable class instances) that do the following
 things:
 
 1. Collect a list of images created in the latest execution of code.
-2. Write these images to disk in PNG, JPEG, SVG, or GIF format (with .png,
-   .jpg, .svg, or .gif extensions, respectively)
+2. Write these images to disk in PNG, JPEG, SVG, GIF, or WebP format (with .png,
+   .jpg, .svg, .gif, or .webp extensions, respectively)
 3. Return reST that embeds these figures in the built documentation.
 
 The function should take the following inputs (in this order):
@@ -197,8 +197,8 @@ reST (see below).
 
 This function will be called once for each code block of your examples.
 Sphinx-Gallery will take care of scaling images for the gallery
-index page thumbnails. PNG images are scaled using Pillow, and
-SVG images are copied.
+index page thumbnails. PNG, JPEG and WebP images are scaled using Pillow, and
+SVG and GIF images are copied.
 
 .. warning:: SVG images do not work with ``latex`` build modes, thus will not
              work while building a PDF version of your documentation.
@@ -305,8 +305,8 @@ Example 3: matplotlib with SVG format
 -------------------------------------
 The :func:`sphinx_gallery.scrapers.matplotlib_scraper` supports ``**kwargs``
 to pass to :meth:`matplotlib.figure.Figure.savefig`, one of which is the
-``format`` argument. Currently Sphinx-Gallery supports PNG (default) and SVG
-output formats. To use SVG, you can do::
+``format`` argument. See :ref:`custom_scraper` for supported formats.
+To use SVG, you can do::
 
     from sphinx_gallery.scrapers import matplotlib_scraper
 

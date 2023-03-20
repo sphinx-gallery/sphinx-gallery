@@ -100,8 +100,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         Additional keyword arguments to pass to
         :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``.
         The ``format`` kwarg in particular is used to set the file extension
-        of the output file (currently only 'png', 'jpg', and 'svg' are
-        supported).
+        of the output file (currently only 'png', 'jpg', 'svg', 'gif', and
+        'webp' are supported).
 
     Returns
     -------
@@ -300,7 +300,8 @@ class ImagePathIterator:
 
 
 # For now, these are what we support
-_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg', 'gif')
+# Update advanced.rst if this list is changed
+_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg', 'gif', 'webp')
 
 
 def _find_image_ext(path):
