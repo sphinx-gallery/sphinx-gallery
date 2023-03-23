@@ -433,7 +433,7 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
             '`jupyterlite_conf` must be a dictionary')
 
     result = jupyterlite_conf.copy()
-    jupyterlite_conf.setdefault('use_jupyter_lab', True)
+    result.setdefault('use_jupyter_lab', True)
     result.setdefault('jupyterlite_contents', 'jupyterlite_contents')
     result['jupyterlite_contents'] = os.path.join(
         app.srcdir,
