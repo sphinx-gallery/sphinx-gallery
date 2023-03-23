@@ -18,6 +18,8 @@ this API may change in the future.
 import os
 import shutil
 from urllib.parse import quote
+import glob
+import json
 
 from sphinx.errors import ConfigError
 import sphinx.util
@@ -332,6 +334,37 @@ def create_jupyterlite_contents(app, exception):
                         os.path.join(contents_dir, i_folder),
                         ignore=_remove_ipynb_files)
 
+    # What's the interface should be like?
+    # - input=filename, and function is expected to write to filename
+    # - input=Python object (json.load(filename)), function modifies object in
+    #   place
+    #
+    # For now doing input=Python object
+    notebook_modification_function = gallery_conf['jupyterlite'][
+        'notebook_modification_function']
+
+    if notebook_modification_function is None:
+        return
+
+    notebook_pattern = os.path.join(contents_dir, "**", "*.ipynb")
+    notebook_filename_list = glob.glob(notebook_pattern, recursive=True)
+
+    logger.info('Modifying Jupyterlite notebooks ...', color='white')
+    for notebook_filename in notebook_filename_list:
+        with open(notebook_filename) as f:
+            notebook_content = json.load(f)
+
+        # TODO decide whether I should pass the filename as well? This can be
+        # useful to modify notebooks based on folder or filename (all the
+        # mayavi stuff should have a big warning saying this is not going to
+        # work, easier by filename than by content). An alternative would be to
+        # have input=filename argument but you have more boilerplate code in
+        # conf.py ...
+        notebook_modification_function(notebook_content)
+
+        with open(notebook_filename, "w") as f:
+            json.dump(notebook_content, f)
+
 
 def gen_jupyterlite_rst(fpath, gallery_conf):
     """Generate the RST + link for the Binder badge.
@@ -399,12 +432,12 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
         raise ConfigError(
             '`jupyterlite_conf` must be a dictionary')
 
-    result = {}
-    result['use_jupyter_lab'] = jupyterlite_conf.get('use_jupyter_lab', True)
-    result['jupyterlite_contents'] = jupyterlite_conf.get(
-        'jupyterlite_contents', 'jupyterlite_contents')
+    result = jupyterlite_conf.copy()
+    jupyterlite_conf.setdefault('use_jupyter_lab', True)
+    result.setdefault('jupyterlite_contents', 'jupyterlite_contents')
     result['jupyterlite_contents'] = os.path.join(
         app.srcdir,
         result['jupyterlite_contents'])
+    result.setdefault('notebook_modification_function', None)
 
     return result

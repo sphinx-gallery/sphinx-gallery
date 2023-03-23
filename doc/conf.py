@@ -19,6 +19,7 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
+from sphinx_gallery.notebook import add_markdown_cell, add_code_cell
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -370,6 +371,26 @@ min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
     min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
 
+def notebook_modification_function(notebook_content):
+    markdown = "\n".join(
+        ["<div class='alert alert-danger'>",
+         "<h1>JupyterLite warnings</h1>",
+         "",
+         "JupyterLite integration in sphinx-gallery is beta "
+         "and it may break in weird ways",
+         "</div>"
+        ]
+    )
+    dummy_notebook_content = {'cells': []}
+    add_markdown_cell(dummy_notebook_content, markdown)
+
+    if "seaborn" in str(notebook_content):
+        code = "%pip install seaborn"
+        add_code_cell(dummy_notebook_content, code)
+
+    notebook_content["cells"] = dummy_notebook_content["cells"] + notebook_content["cells"]
+
+
 sphinx_gallery_conf = {
     'backreferences_dir': 'gen_modules/backreferences',
     'doc_module': ('sphinx_gallery', 'numpy'),
@@ -393,6 +414,7 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
+    'jupyterlite': {'notebook_modification_function': notebook_modification_function},
     'show_memory': True,
     'promote_jupyter_magic': False,
     'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),
