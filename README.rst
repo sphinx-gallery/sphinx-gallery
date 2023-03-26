@@ -45,6 +45,7 @@ An incomplete list:
 * `OpenML <https://openml.github.io/openml-python/main/examples/index.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 * `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
+* `PyGMT <https://www.pygmt.org/latest/gallery/index.html>`_
 * `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
 * `PySurfer <https://pysurfer.github.io/>`_
