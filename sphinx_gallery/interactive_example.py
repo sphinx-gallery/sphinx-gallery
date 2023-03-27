@@ -354,13 +354,7 @@ def create_jupyterlite_contents(app, exception):
         with open(notebook_filename) as f:
             notebook_content = json.load(f)
 
-        # TODO decide whether I should pass the filename as well? This can be
-        # useful to modify notebooks based on folder or filename (all the
-        # mayavi stuff should have a big warning saying this is not going to
-        # work, easier by filename than by content). An alternative would be to
-        # have input=filename argument but you have more boilerplate code in
-        # conf.py ...
-        notebook_modification_function(notebook_content)
+        notebook_modification_function(notebook_content, notebook_filename)
 
         with open(notebook_filename, "w") as f:
             json.dump(notebook_content, f)

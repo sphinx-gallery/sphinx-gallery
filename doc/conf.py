@@ -371,7 +371,7 @@ min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
     min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
 
-def notebook_modification_function(notebook_content):
+def notebook_modification_function(notebook_content, notebook_filename):
     markdown = "\n".join(
         ["<div class='alert alert-danger'>",
          "<h1>JupyterLite warnings</h1>",
@@ -419,7 +419,9 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
-    'jupyterlite': {'notebook_modification_function': notebook_modification_function},
+    'jupyterlite': {
+        'notebook_modification_function': notebook_modification_function
+    },
     'show_memory': True,
     'promote_jupyter_magic': False,
     'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),
