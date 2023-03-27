@@ -334,12 +334,6 @@ def create_jupyterlite_contents(app, exception):
                         os.path.join(contents_dir, i_folder),
                         ignore=_remove_ipynb_files)
 
-    # What's the interface should be like?
-    # - input=filename, and function is expected to write to filename
-    # - input=Python object (json.load(filename)), function modifies object in
-    #   place
-    #
-    # For now doing input=Python object
     notebook_modification_function = gallery_conf['jupyterlite'][
         'notebook_modification_function']
 
