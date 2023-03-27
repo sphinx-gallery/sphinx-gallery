@@ -372,24 +372,56 @@ if 'SOURCE_DATE_EPOCH' in os.environ:
     min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
 
 def notebook_modification_function(notebook_content, notebook_filename):
-    markdown = "\n".join(
-        ["<div class='alert alert-danger'>",
-         "<h1>JupyterLite warnings</h1>",
-         "",
-         "JupyterLite integration in sphinx-gallery is beta "
-         "and it may break in weird ways",
-         "</div>"
-        ]
-    )
+    notebook_content_str = str(notebook_content)
+
+    if "pyvista_examples" in notebook_filename:
+        markdown = "\n".join(
+            [
+                "<div class='alert alert-danger'>",
+                "<h1>JupyterLite warning</h1>",
+                "",
+                "PyVista is not packaged in Pyodide, this notebook is not "
+                "expected to work inside JupyterLite"
+                "</div>"
+
+            ]
+        )
+    elif "import plotly" in notebook_content_str:
+        markdown = "\n".join(
+            [
+                "<div class='alert alert-danger'>",
+                "<h1>JupyterLite warning</h1>",
+                "",
+                "This notebook is not expected to work inside JupyterLite for now. "
+                "There seems to be some issues with Plotly, see "
+                "<a href='https://github.com/jupyterlite/jupyterlite/pull/950'>this</a> "
+                "for more details."
+                "</div>"
+
+            ]
+        )
+    else:
+        markdown = "\n".join(
+            [
+                "<div class='alert alert-warning'>",
+                "<h1>JupyterLite warning</h1>",
+                "",
+                "JupyterLite integration in sphinx-gallery is beta "
+                "and it may break in weird ways",
+                "</div>"
+            ]
+        )
+
     dummy_notebook_content = {'cells': []}
     add_markdown_cell(dummy_notebook_content, markdown)
 
     code_lines = []
-    notebook_content_str = str(notebook_content)
-    if "seaborn" in notebook_content:
+
+    if "seaborn" in notebook_content_str:
         code_lines.append("%pip install seaborn")
 
     if code_lines:
+        code_lines = ["# JupyterLite-specific code"] + code_lines
         code = "\n".join(code_lines)
         add_code_cell(dummy_notebook_content, code)
 
