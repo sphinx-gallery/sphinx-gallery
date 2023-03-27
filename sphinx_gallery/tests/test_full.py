@@ -1068,8 +1068,10 @@ def test_no_dummy_image(sphinx_app):
 
 def test_jupyterlite_modifications(sphinx_app):
     src_dir = sphinx_app.srcdir
-    jupyterlite_notebook_pattern = op.join(src_dir, 'jupyterlite_contents', '**', '*.ipynb')
-    jupyterlite_notebook_filenames = glob.glob(jupyterlite_notebook_pattern, recursive=True)
+    jupyterlite_notebook_pattern = op.join(
+        src_dir, 'jupyterlite_contents', '**', '*.ipynb')
+    jupyterlite_notebook_filenames = glob.glob(
+        jupyterlite_notebook_pattern, recursive=True)
 
     for notebook_filename in jupyterlite_notebook_filenames:
         with open(notebook_filename) as f:
@@ -1080,4 +1082,4 @@ def test_jupyterlite_modifications(sphinx_app):
         assert (
             f"JupyterLite-specific change for {notebook_filename}"
             in first_cell['source']
-    )
+        )
