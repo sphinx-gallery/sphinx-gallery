@@ -384,8 +384,13 @@ def notebook_modification_function(notebook_content):
     dummy_notebook_content = {'cells': []}
     add_markdown_cell(dummy_notebook_content, markdown)
 
-    if "seaborn" in str(notebook_content):
-        code = "%pip install seaborn"
+    code_lines = []
+    notebook_content_str = str(notebook_content)
+    if "seaborn" in notebook_content:
+        code_lines.append("%pip install seaborn")
+
+    if code_lines:
+        code = "\n".join(code_lines)
         add_code_cell(dummy_notebook_content, code)
 
     notebook_content["cells"] = dummy_notebook_content["cells"] + notebook_content["cells"]
