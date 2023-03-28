@@ -339,7 +339,7 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     Parameters
     ----------
     fpath: str
-        The path to the `.ipynb` file for which a JupyterLite badge will be
+        The path to the `.py` file for which a JupyterLite badge will be
         generated.
 
     gallery_conf : dict
@@ -355,10 +355,17 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     # Make sure we have the right slashes (in case we're on Windows)
     notebook_location = notebook_location.replace(os.path.sep, '/')
 
+    lite_root_url = os.path.relpath(
+        os.path.join(gallery_conf['src_dir'], 'lite'),
+        os.path.dirname(fpath)
+    )
+    # Make sure we have the right slashes (in case we're on Windows)
+    lite_root_url = lite_root_url.replace(os.path.sep, '/')
+
     if gallery_conf["jupyterlite"].get("use_jupyter_lab", True):
-        lite_root_url = "/lite/lab"
+        lite_root_url += "/lab"
     else:
-        lite_root_url = "/lite/retro/notebooks"
+        lite_root_url += "/retro/notebooks"
 
     lite_url = f"{lite_root_url}/?path={notebook_location}"
 
