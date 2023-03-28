@@ -176,7 +176,9 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
         os.chdir(orig_dir)
     image_rst = ' .. image:: images/jupyterlite_badge_logo.svg'
 
-    target_rst_template = ':target: {root_url}/lite/{jupyter_part}.+path={notebook_path}'
+    target_rst_template = (
+        ':target: {root_url}/lite/{jupyter_part}.+path={notebook_path}'
+    )
     if 'subdir' not in file_path:
         root_url = r'\.\.'
         notebook_path = r'example_dir/myfile\.ipynb'
