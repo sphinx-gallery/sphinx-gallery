@@ -341,7 +341,8 @@ def create_jupyterlite_contents(app, exception):
         return
 
     notebook_pattern = os.path.join(contents_dir, "**", "*.ipynb")
-    notebook_filename_list = glob.glob(notebook_pattern, recursive=True)
+    notebook_filename_list = sorted(
+        glob.glob(notebook_pattern, recursive=True))
 
     logger.info('Modifying Jupyterlite notebooks ...', color='white')
     for notebook_filename in notebook_filename_list:
