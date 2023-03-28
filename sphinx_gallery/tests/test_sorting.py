@@ -44,6 +44,6 @@ def test_ExplicitOrder_sorting_key():
                          (FileSizeSortKey, int),
                          (ExampleTitleSortKey, str)):
         sorter = klass(src_dir)
-        assert str(sorter) == '<{}>'.format(klass.__name__)
+        assert str(sorter) == f'<{klass.__name__}>'
         out = sorter(op.basename(__file__))
         assert isinstance(out, type_), type(out)

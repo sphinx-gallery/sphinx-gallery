@@ -163,7 +163,7 @@ class NameFinder(ast.NodeVisitor):
 
 
 def _from_import(a, b):
-    imp_line = 'from {} import {}'.format(a, b)
+    imp_line = f'from {a} import {b}'
     scope = dict()
     with warnings.catch_warnings(record=True):  # swallow warnings
         warnings.simplefilter('ignore')
@@ -353,6 +353,6 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
             level = gallery_conf['log_level'].get('backreference_missing',
                                                   'warning')
             func = getattr(logger, level)
-            func('Could not find backreferences file: {}'.format(path))
+            func(f'Could not find backreferences file: {path}')
             func('The backreferences are likely to be erroneous '
                  'due to file system case insensitivity.')

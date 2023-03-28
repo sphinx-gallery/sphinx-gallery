@@ -51,7 +51,7 @@ class ExplicitOrder:
                               'found for {}'.format(item))
 
     def __repr__(self):
-        return '<{} : {}>'.format(self.__class__.__name__, self.ordered_list)
+        return f'<{self.__class__.__name__} : {self.ordered_list}>'
 
 
 class _SortKey:
@@ -61,7 +61,7 @@ class _SortKey:
         self.src_dir = src_dir
 
     def __repr__(self):
-        return '<{}>'.format(self.__class__.__name__)
+        return f'<{self.__class__.__name__}>'
 
 
 class NumberOfCodeLinesSortKey(_SortKey):

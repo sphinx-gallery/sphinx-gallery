@@ -21,7 +21,7 @@ from sphinx_gallery.utils import _get_image
 
 def pytest_report_header(config, startdir):
     """Add information to the pytest run header."""
-    return 'Sphinx:  {} ({})'.format(sphinx.__version__, sphinx.__file__)
+    return f'Sphinx:  {sphinx.__version__} ({sphinx.__file__})'
 
 
 @pytest.fixture
@@ -88,7 +88,7 @@ def req_mpl_jpg(tmpdir, req_mpl, scope='session'):
     try:
         plt.savefig(str(tmpdir.join('testplot.jpg')))
     except Exception as exp:
-        pytest.skip('Matplotlib jpeg saving failed: {}'.format(exp))
+        pytest.skip(f'Matplotlib jpeg saving failed: {exp}')
     finally:
         plt.close(fig)
 

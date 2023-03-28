@@ -124,7 +124,7 @@ def replace_py_ipynb(fname):
             "Unrecognized file extension, expected %s, got %s"
             % (allowed_extension, extension))
     new_extension = '.ipynb'
-    return '{}{}'.format(fname_prefix, new_extension)
+    return f'{fname_prefix}{new_extension}'
 
 
 def get_md5sum(src_file, mode='b'):

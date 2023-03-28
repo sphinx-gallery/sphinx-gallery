@@ -287,7 +287,7 @@ class ImagePathIterator:
         for ii in range(self._stop):
             yield self.next()
         else:
-            raise ExtensionError('Generated over {} images'.format(self._stop))
+            raise ExtensionError(f'Generated over {self._stop} images')
 
     def next(self):
         return self.__next__()
@@ -307,12 +307,12 @@ def _find_image_ext(path):
     """Find an image, tolerant of different file extensions."""
     path = os.path.splitext(path)[0]
     for ext in _KNOWN_IMG_EXTS:
-        this_path = '{}.{}'.format(path, ext)
+        this_path = f'{path}.{ext}'
         if os.path.isfile(this_path):
             break
     else:
         ext = 'png'
-    return ('{}.{}'.format(path, ext), ext)
+    return (f'{path}.{ext}', ext)
 
 
 def save_figures(block, block_vars, gallery_conf):

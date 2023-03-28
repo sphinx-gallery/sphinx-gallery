@@ -180,10 +180,10 @@ def codestr2rst(codestr, lang='python', lineno=None):
     if lineno is not None:
         # Sphinx only starts numbering from the first non-empty line.
         blank_lines = codestr.count('\n', 0, -len(codestr.lstrip()))
-        lineno = '   :lineno-start: {}\n'.format(lineno + blank_lines)
+        lineno = f'   :lineno-start: {lineno + blank_lines}\n'
     else:
         lineno = ''
-    code_directive = ".. code-block:: {}\n{}\n".format(lang, lineno)
+    code_directive = f".. code-block:: {lang}\n{lineno}\n"
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
@@ -323,7 +323,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
 
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir,
-                              'sphx_glr_{}_thumb.{}'.format(base_image_name, ext))
+                              f'sphx_glr_{base_image_name}_thumb.{ext}')
 
     if src_file in gallery_conf['failing_examples']:
         img = os.path.join(glr_path_static(), 'broken_example.png')
@@ -342,7 +342,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         return
     # update extension, since gallery_conf setting can be different
     # from file_conf
-    thumb_file = '{}.{}'.format(os.path.splitext(thumb_file)[0], ext)
+    thumb_file = f'{os.path.splitext(thumb_file)[0]}.{ext}'
     if ext in ('svg', 'gif'):
         copyfile(img, thumb_file)
     else:
@@ -768,7 +768,7 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
     captured_std = logging_tee.output.getvalue().expandtabs()
     # normal string output
     if repr_meth in ['__repr__', '__str__'] and last_repr:
-        captured_std = "{}\n{}".format(captured_std, last_repr)
+        captured_std = f"{captured_std}\n{last_repr}"
     if captured_std and not captured_std.isspace():
         captured_std = CODE_OUTPUT.format(indent(captured_std, ' ' * 4))
     else:
@@ -875,7 +875,7 @@ def execute_code_block(compiler, block, example_globals, script_vars,
         except_rst = handle_exception(
             sys.exc_info(), src_file, script_vars, gallery_conf
         )
-        code_output = "\n{}\n\n\n\n".format(except_rst)
+        code_output = f"\n{except_rst}\n\n\n\n"
         # still call this even though we won't use the images so that
         # figures are closed
         if need_save_figures:

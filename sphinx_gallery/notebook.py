@@ -371,7 +371,7 @@ def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
     # run script
     for src_file in args.python_src_file:
         file_conf, blocks = split_code_and_text_blocks(src_file)
-        print('Converting {}'.format(src_file))
+        print(f'Converting {src_file}')
         target_dir = os.path.dirname(src_file)
         example_nb = jupyter_notebook(
             blocks, copy.deepcopy(gallery_conf), target_dir)

@@ -170,9 +170,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             options = get_close_matches(key, options, cutoff=0.66)
             msg += repr(key)
             if len(options) == 1:
-                msg += ', did you mean {!r}?'.format(options[0])
+                msg += f', did you mean {options[0]!r}?'
             elif len(options) > 1:
-                msg += ', did you mean one of {!r}?'.format(options)
+                msg += f', did you mean one of {options!r}?'
             msg += '\n'
         raise ConfigError(msg.strip())
     gallery_conf.update(sphinx_gallery_conf)
@@ -250,7 +250,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                                       % (orig_scraper, exp))
             scrapers[si] = scraper
         if not callable(scraper):
-            raise ConfigError('Scraper {!r} was not callable'.format(scraper))
+            raise ConfigError(f'Scraper {scraper!r} was not callable')
     gallery_conf['image_scrapers'] = tuple(scrapers)
     del scrapers
     # Here we try to set up matplotlib but don't raise an error,
@@ -647,7 +647,7 @@ def generate_gallery_rst(app):
         lines, lens = _format_for_writing(
             costs, os.path.normpath(gallery_conf['src_dir']), kind='console')
         for name, t, m in lines:
-            text = ('    - {}:   '.format(name)).ljust(lens[0] + 10)
+            text = (f'    - {name}:   ').ljust(lens[0] + 10)
             if t is None:
                 text += '(not run)'
                 logger.info(text)
@@ -702,8 +702,8 @@ def _format_for_writing(costs, path, kind='rst'):
         else:  # like in generate_gallery
             assert kind == 'console'
             name = os.path.relpath(cost[1], path)
-            t = '{:0.2f} sec'.format(cost[0][0])
-        m = '{:.1f} MB'.format(cost[0][1])
+            t = f'{cost[0][0]:0.2f} sec'
+        m = f'{cost[0][1]:.1f} MB'
         lines.append([name, t, m])
     lens = [max(x) for x in zip(*[[len(item) for item in cost]
                                   for cost in lines])]
@@ -726,7 +726,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
         del costs
         hline = ''.join(('+' + '-' * (length + 2)) for length in lens) + '+\n'
         fid.write(hline)
-        format_str = ''.join('| {{{}}} '.format(ii)
+        format_str = ''.join(f'| {{{ii}}} '
                              for ii in range(len(lines[0]))) + '|\n'
         for line in lines:
             line = [ll.ljust(len_) for ll, len_ in zip(line, lens)]

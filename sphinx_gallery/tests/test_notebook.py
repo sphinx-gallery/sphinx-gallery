@@ -270,7 +270,7 @@ def test_notebook_images_prefix(gallery_conf,
     """).format(rst_path)
     markdown = rst2md(rst, gallery_conf, target_dir, {})
 
-    assert 'src="{}"'.format(md_path) in markdown
+    assert f'src="{md_path}"' in markdown
     assert 'alt="My Image"' in markdown
     assert 'width="100px"' in markdown
     assert 'height="200px"' in markdown

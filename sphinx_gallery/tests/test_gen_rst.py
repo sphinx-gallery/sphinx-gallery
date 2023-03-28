@@ -639,7 +639,7 @@ def test_zip_notebooks(gallery_conf):
     zipfilepath = downloads.python_zip(examples, gallery_conf['gallery_dir'])
     zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
-    assert not check, "Bad file in zipfile: {}".format(check)
+    assert not check, f"Bad file in zipfile: {check}"
 
 
 def test_rst_example(gallery_conf):
