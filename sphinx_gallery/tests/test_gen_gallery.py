@@ -8,6 +8,7 @@ import codecs
 import os
 import re
 from pathlib import Path
+import json
 
 import pytest
 
@@ -575,3 +576,47 @@ JupyterLite disabled via config"""
     create_jupyterlite_contents(sphinx_app, exception=None)
     assert not os.path.exists(os.path.join(
         sphinx_app.outdir, 'jupyterlite_contents'))
+
+
+@pytest.mark.conf_file(content="""
+extensions += ['jupyterlite_sphinx']
+
+def notebook_modification_function(notebook_content, notebook_filename):
+    source = f'JupyterLite-specific change for {notebook_filename}'
+    markdown_cell = {
+        'cell_type': 'markdown',
+        'metadata': {},
+        'source': source
+    }
+    notebook_content['cells'] = [markdown_cell] + notebook_content['cells']
+
+
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+    'jupyterlite': {
+        'notebook_modification_function': notebook_modification_function
+    }
+}""")
+def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    gallery_conf = sphinx_app.config.sphinx_gallery_conf
+
+    create_jupyterlite_contents(sphinx_app, exception=None)
+
+    for i_file in ['plot_1', 'plot_2', 'plot_3']:
+        notebook_filename = os.path.join(
+            sphinx_app.srcdir, 'jupyterlite_contents',
+            gallery_conf['gallery_dirs'][0], i_file + '.ipynb')
+        assert os.path.exists(notebook_filename)
+
+        with open(notebook_filename) as f:
+            notebook_content = json.load(f)
+
+        first_cell = notebook_content['cells'][0]
+        assert first_cell['cell_type'] == 'markdown'
+        assert (
+            f"JupyterLite-specific change for {notebook_filename}"
+            in first_cell['source']
+        )

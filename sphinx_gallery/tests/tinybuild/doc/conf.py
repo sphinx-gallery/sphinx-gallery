@@ -71,6 +71,18 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'joblib': ('https://joblib.readthedocs.io/en/latest', None),
 }
+
+
+def notebook_modification_function(notebook_content, notebook_filename):
+    source = f'JupyterLite-specific change for {notebook_filename}'
+    markdown_cell = {
+        'cell_type': 'markdown',
+        'metadata': {},
+        'source': source
+    }
+    notebook_content['cells'] = [markdown_cell] + notebook_content['cells']
+
+
 sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery',),
     'reference_url': {
@@ -85,6 +97,9 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
+    'jupyterlite': {
+        'notebook_modification_function': notebook_modification_function
+    },
     'examples_dirs': ['../examples/', '../examples_with_rst/',
                       '../examples_rst_index'],
     'reset_argv': ResetArgv(),

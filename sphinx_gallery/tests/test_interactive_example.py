@@ -216,7 +216,8 @@ def test_check_jupyterlite_conf():
     assert check_jupyterlite_conf(None, app) is None
     assert check_jupyterlite_conf({}, app) == {
         'jupyterlite_contents': os.path.join('srcdir', 'jupyterlite_contents'),
-        'use_jupyter_lab': True
+        'use_jupyter_lab': True,
+        'notebook_modification_function': None,
     }
 
     conf = {
@@ -226,7 +227,22 @@ def test_check_jupyterlite_conf():
     expected = {
         'jupyterlite_contents': os.path.join(
             'srcdir', 'this_is_the_contents_dir'),
-        'use_jupyter_lab': False
+        'use_jupyter_lab': False,
+        'notebook_modification_function': None,
+    }
+    assert check_jupyterlite_conf(conf, app) == expected
+
+    def notebook_modification_function(notebook_content, notebook_filename):
+        pass
+
+    conf = {
+        'notebook_modification_function': notebook_modification_function
+    }
+
+    expected = {
+        'jupyterlite_contents': os.path.join('srcdir', 'jupyterlite_contents'),
+        'use_jupyter_lab': True,
+        'notebook_modification_function': notebook_modification_function,
     }
 
     assert check_jupyterlite_conf(conf, app) == expected

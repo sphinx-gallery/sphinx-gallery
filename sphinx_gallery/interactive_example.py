@@ -18,6 +18,8 @@ this API may change in the future.
 import os
 import shutil
 from urllib.parse import quote
+import glob
+import json
 
 from sphinx.errors import ConfigError
 import sphinx.util
@@ -332,6 +334,26 @@ def create_jupyterlite_contents(app, exception):
                         os.path.join(contents_dir, i_folder),
                         ignore=_remove_ipynb_files)
 
+    notebook_modification_function = gallery_conf['jupyterlite'][
+        'notebook_modification_function']
+
+    if notebook_modification_function is None:
+        return
+
+    notebook_pattern = os.path.join(contents_dir, "**", "*.ipynb")
+    notebook_filename_list = sorted(
+        glob.glob(notebook_pattern, recursive=True))
+
+    logger.info('Modifying Jupyterlite notebooks ...', color='white')
+    for notebook_filename in notebook_filename_list:
+        with open(notebook_filename) as f:
+            notebook_content = json.load(f)
+
+        notebook_modification_function(notebook_content, notebook_filename)
+
+        with open(notebook_filename, "w") as f:
+            json.dump(notebook_content, f, indent=2)
+
 
 def gen_jupyterlite_rst(fpath, gallery_conf):
     """Generate the RST + link for the Binder badge.
@@ -406,12 +428,12 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
         raise ConfigError(
             '`jupyterlite_conf` must be a dictionary')
 
-    result = {}
-    result['use_jupyter_lab'] = jupyterlite_conf.get('use_jupyter_lab', True)
-    result['jupyterlite_contents'] = jupyterlite_conf.get(
-        'jupyterlite_contents', 'jupyterlite_contents')
+    result = jupyterlite_conf.copy()
+    result.setdefault('use_jupyter_lab', True)
+    result.setdefault('jupyterlite_contents', 'jupyterlite_contents')
     result['jupyterlite_contents'] = os.path.join(
         app.srcdir,
         result['jupyterlite_contents'])
+    result.setdefault('notebook_modification_function', None)
 
     return result

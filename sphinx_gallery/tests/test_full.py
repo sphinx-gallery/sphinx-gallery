@@ -14,6 +14,8 @@ import re
 import shutil
 import sys
 import time
+import glob
+import json
 
 from packaging.version import Version
 
@@ -1062,3 +1064,22 @@ def test_no_dummy_image(sphinx_app):
                    'sphx_glr_plot_repr_002.png')
     assert not op.isfile(img1)
     assert not op.isfile(img2)
+
+
+def test_jupyterlite_modifications(sphinx_app):
+    src_dir = sphinx_app.srcdir
+    jupyterlite_notebook_pattern = op.join(
+        src_dir, 'jupyterlite_contents', '**', '*.ipynb')
+    jupyterlite_notebook_filenames = glob.glob(
+        jupyterlite_notebook_pattern, recursive=True)
+
+    for notebook_filename in jupyterlite_notebook_filenames:
+        with open(notebook_filename) as f:
+            notebook_content = json.load(f)
+
+        first_cell = notebook_content['cells'][0]
+        assert first_cell['cell_type'] == 'markdown'
+        assert (
+            f"JupyterLite-specific change for {notebook_filename}"
+            in first_cell['source']
+        )
