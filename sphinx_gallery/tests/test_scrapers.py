@@ -44,7 +44,7 @@ def test_save_matplotlib_figures(gallery_conf, ext):
     block_vars = dict(image_path_iterator=image_path_iterator)
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 1
-    fname = '/image1.{0}'.format(ext)
+    fname = '/image1.{}'.format(ext)
     assert fname in image_rst
     fname = gallery_conf['gallery_dir'] + fname
     assert os.path.isfile(fname)
@@ -58,7 +58,7 @@ def test_save_matplotlib_figures(gallery_conf, ext):
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 5
     for ii in range(4, 6):
-        fname = '/image{0}.{1}'.format(ii, ext)
+        fname = '/image{}.{}'.format(ii, ext)
         assert fname in image_rst
         fname = gallery_conf['gallery_dir'] + fname
         assert os.path.isfile(fname)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Chris Holdgraf
 # License: 3-clause BSD
 """

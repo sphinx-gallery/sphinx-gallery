@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
@@ -210,7 +209,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         image_rsts = [re.sub(r':class: sphx-glr-single-img',
                              ':class: sphx-glr-multi-img',
                              image) for image in image_rsts]
-        image_rsts = [HLIST_IMAGE_MATPLOTLIB + indent(image, u' ' * 6)
+        image_rsts = [HLIST_IMAGE_MATPLOTLIB + indent(image, ' ' * 6)
                       for image in image_rsts]
         rst = HLIST_HEADER + ''.join(image_rsts)
     return rst
@@ -245,7 +244,7 @@ _scraper_dict = dict(
 )
 
 
-class ImagePathIterator(object):
+class ImagePathIterator:
     """Iterate over image paths for a given example.
 
     Parameters
@@ -288,7 +287,7 @@ class ImagePathIterator(object):
         for ii in range(self._stop):
             yield self.next()
         else:
-            raise ExtensionError('Generated over %s images' % (self._stop,))
+            raise ExtensionError('Generated over {} images'.format(self._stop))
 
     def next(self):
         return self.__next__()
@@ -308,12 +307,12 @@ def _find_image_ext(path):
     """Find an image, tolerant of different file extensions."""
     path = os.path.splitext(path)[0]
     for ext in _KNOWN_IMG_EXTS:
-        this_path = '%s.%s' % (path, ext)
+        this_path = '{}.{}'.format(path, ext)
         if os.path.isfile(this_path):
             break
     else:
         ext = 'png'
-    return ('%s.%s' % (path, ext), ext)
+    return ('{}.{}'.format(path, ext), ext)
 
 
 def save_figures(block, block_vars, gallery_conf):
@@ -334,7 +333,7 @@ def save_figures(block, block_vars, gallery_conf):
         rst code to embed the images in the document.
     """
     image_path_iterator = block_vars['image_path_iterator']
-    all_rst = u''
+    all_rst = ''
     prev_count = len(image_path_iterator)
     for scraper in gallery_conf['image_scrapers']:
         rst = scraper(block, block_vars, gallery_conf)

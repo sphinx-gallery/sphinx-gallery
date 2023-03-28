@@ -111,8 +111,8 @@ def directive_boolean(value):
     elif value.lower().strip() in ['no', '0', 0, 'false', 'none']:
         return False
     else:
-        raise ValueError(u"Please use one of: yes, true, no, false. "
-                         u"Do not use `{}` as boolean.".format(value))
+        raise ValueError("Please use one of: yes, true, no, false. "
+                         "Do not use `{}` as boolean.".format(value))
 
 
 class ImageSg(images.Image):

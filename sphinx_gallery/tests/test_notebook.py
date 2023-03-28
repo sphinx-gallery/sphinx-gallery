@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 r"""
 Testing the Jupyter notebook parser
 """
 
-from __future__ import division, absolute_import, print_function
 from collections import defaultdict
 from itertools import count
 import json
@@ -327,7 +325,7 @@ def test_jupyter_notebook(gallery_conf):
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         save_notebook(example_nb, f.name)
     try:
-        with open(f.name, "r") as fname:
+        with open(f.name) as fname:
             assert json.load(fname) == example_nb
     finally:
         os.remove(f.name)

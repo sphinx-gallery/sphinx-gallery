@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Choosing the thumbnail figure
 =============================
@@ -25,7 +24,7 @@ def main():
     plt.figure()
     plt.plot(x, y)
     plt.xlabel('$x$')
-    plt.ylabel('$\exp(x)$')
+    plt.ylabel(r'$\exp(x)$')
 
     # The next line sets the thumbnail for the second figure in the gallery
     # (plot with negative exponential in orange)
@@ -33,7 +32,7 @@ def main():
     plt.figure()
     plt.plot(x, -np.exp(-x), color='orange', linewidth=4)
     plt.xlabel('$x$')
-    plt.ylabel('$-\exp(-x)$')
+    plt.ylabel(r'$-\exp(-x)$')
     # To avoid matplotlib text output
     plt.show()
 

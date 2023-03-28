@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
 Testing the rst files generator
 """
-from __future__ import division, absolute_import, print_function
 import os
 import tempfile
 import sys

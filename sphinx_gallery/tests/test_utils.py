@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Test utility functions
 ==================
@@ -8,7 +7,6 @@ Test utility functions
 # Author: Nicholas Cain
 # License: 3-clause BSD
 
-from __future__ import division, absolute_import, print_function
 import sphinx_gallery.utils as utils
 import pytest
 

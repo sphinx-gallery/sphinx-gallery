@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Chris Holdgraf
 # License: 3-clause BSD
 """
 Testing the binder badge functionality
 """
-from __future__ import division, absolute_import, print_function
 
 from copy import deepcopy
 import os

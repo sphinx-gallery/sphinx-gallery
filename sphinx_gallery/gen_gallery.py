@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
@@ -10,7 +9,6 @@ when building the documentation.
 """
 
 
-from __future__ import division, print_function, absolute_import
 import codecs
 import copy
 from datetime import timedelta, datetime
@@ -172,9 +170,9 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             options = get_close_matches(key, options, cutoff=0.66)
             msg += repr(key)
             if len(options) == 1:
-                msg += ', did you mean %r?' % (options[0],)
+                msg += ', did you mean {!r}?'.format(options[0])
             elif len(options) > 1:
-                msg += ', did you mean one of %r?' % (options,)
+                msg += ', did you mean one of {!r}?'.format(options)
             msg += '\n'
         raise ConfigError(msg.strip())
     gallery_conf.update(sphinx_gallery_conf)
@@ -252,7 +250,7 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                                       % (orig_scraper, exp))
             scrapers[si] = scraper
         if not callable(scraper):
-            raise ConfigError('Scraper %r was not callable' % (scraper,))
+            raise ConfigError('Scraper {!r} was not callable'.format(scraper))
     gallery_conf['image_scrapers'] = tuple(scrapers)
     del scrapers
     # Here we try to set up matplotlib but don't raise an error,
@@ -649,7 +647,7 @@ def generate_gallery_rst(app):
         lines, lens = _format_for_writing(
             costs, os.path.normpath(gallery_conf['src_dir']), kind='console')
         for name, t, m in lines:
-            text = ('    - %s:   ' % (name,)).ljust(lens[0] + 10)
+            text = ('    - {}:   '.format(name)).ljust(lens[0] + 10)
             if t is None:
                 text += '(not run)'
                 logger.info(text)
@@ -682,7 +680,7 @@ def _sec_to_readable(t):
     # there aren't many > 99 minute scripts, but occasionally some
     # > 9 minute ones
     t = datetime(1, 1, 1) + timedelta(seconds=t)
-    t = '{0:02d}:{1:02d}.{2:03d}'.format(
+    t = '{:02d}:{:02d}.{:03d}'.format(
         t.hour * 60 + t.minute, t.second,
         int(round(t.microsecond / 1000.)))
     return t
@@ -704,8 +702,8 @@ def _format_for_writing(costs, path, kind='rst'):
         else:  # like in generate_gallery
             assert kind == 'console'
             name = os.path.relpath(cost[1], path)
-            t = '%0.2f sec' % (cost[0][0],)
-        m = '{0:.1f} MB'.format(cost[0][1])
+            t = '{:0.2f} sec'.format(cost[0][0])
+        m = '{:.1f} MB'.format(cost[0][1])
         lines.append([name, t, m])
     lens = [max(x) for x in zip(*[[len(item) for item in cost]
                                   for cost in lines])]
@@ -722,13 +720,13 @@ def write_computation_times(gallery_conf, target_dir, costs):
     with codecs.open(os.path.join(target_dir, 'sg_execution_times.rst'), 'w',
                      encoding='utf-8') as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
-        fid.write('**{0}** total execution time for **{1}** files:\n\n'
+        fid.write('**{}** total execution time for **{}** files:\n\n'
                   .format(_sec_to_readable(total_time), target_dir_clean))
         lines, lens = _format_for_writing(costs, target_dir_clean)
         del costs
         hline = ''.join(('+' + '-' * (length + 2)) for length in lens) + '+\n'
         fid.write(hline)
-        format_str = ''.join('| {%s} ' % (ii,)
+        format_str = ''.join('| {{{}}} '.format(ii)
                              for ii in range(len(lines[0]))) + '|\n'
         for line in lines:
             line = [ll.ljust(len_) for ll, len_ in zip(line, lens)]
@@ -899,7 +897,7 @@ def write_api_entry_usage(app, docname, source):
             unused_api_entries.append(entry)
         else:
             used_api_entries[entry] = list()
-            with open(example_fname, 'r', encoding='utf-8') as fid2:
+            with open(example_fname, encoding='utf-8') as fid2:
                 for line in fid2:
                     if line.startswith('  :ref:'):
                         example_name = line.split('`')[1]
@@ -941,8 +939,7 @@ def write_api_entry_usage(app, docname, source):
             source[0] += '\n\n'
 
         if has_graphviz:
-            used_modules = set([entry.split('.')[0]
-                                for entry in used_api_entries])
+            used_modules = {entry.split('.')[0] for entry in used_api_entries}
             for module in sorted(used_modules):
                 source[0] += (
                     f'{module}\n' + '^' * len(module) + '\n\n'
@@ -996,13 +993,13 @@ def write_junit_xml(gallery_conf, target_dir, costs):
             continue  # not subselected by our regex
         title = gallery_conf['titles'][fname]
         output += (
-            u'<testcase classname={0!s} file={1!s} line="1" '
-            u'name={2!s} time="{3!r}">'
+            '<testcase classname={!s} file={!s} line="1" '
+            'name={!s} time="{!r}">'
             .format(quoteattr(os.path.splitext(os.path.basename(fname))[0]),
                     quoteattr(os.path.relpath(fname, src_dir)),
                     quoteattr(title), t))
         if fname in failing_as_expected:
-            output += u'<skipped message="expected example failure"></skipped>'
+            output += '<skipped message="expected example failure"></skipped>'
             n_skips += 1
         elif fname in failing_unexpectedly or fname in passing_unexpectedly:
             if fname in failing_unexpectedly:
@@ -1010,16 +1007,16 @@ def write_junit_xml(gallery_conf, target_dir, costs):
             else:  # fname in passing_unexpectedly
                 traceback = 'Passed even though it was marked to fail'
             n_failures += 1
-            output += (u'<failure message={0!s}>{1!s}</failure>'
+            output += ('<failure message={!s}>{!s}</failure>'
                        .format(quoteattr(traceback.splitlines()[-1].strip()),
                                escape(traceback)))
-        output += u'</testcase>'
+        output += '</testcase>'
         n_tests += 1
         elapsed += t
-    output += u'</testsuite>'
-    output = (u'<?xml version="1.0" encoding="utf-8"?>'
-              u'<testsuite errors="0" failures="{0}" name="sphinx-gallery" '
-              u'skipped="{1}" tests="{2}" time="{3}">'
+    output += '</testsuite>'
+    output = ('<?xml version="1.0" encoding="utf-8"?>'
+              '<testsuite errors="0" failures="{}" name="sphinx-gallery" '
+              'skipped="{}" tests="{}" time="{}">'
               .format(n_failures, n_skips, n_tests, elapsed)) + output
     # Actually write it
     fname = os.path.normpath(os.path.join(target_dir, gallery_conf['junit']))
@@ -1050,9 +1047,9 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
 
 
 def _expected_failing_examples(gallery_conf):
-    return set(
+    return {
         os.path.normpath(os.path.join(gallery_conf['src_dir'], path))
-        for path in gallery_conf['expected_failing_examples'])
+        for path in gallery_conf['expected_failing_examples']}
 
 
 def _parse_failures(gallery_conf):

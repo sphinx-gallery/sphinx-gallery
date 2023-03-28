@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Seaborn example
 ===============
@@ -10,7 +9,6 @@ captured by default. See :ref:`image_scrapers` for details.
 # Author: Michael Waskom & Lucy Liu
 # License: BSD 3 clause
 
-from __future__ import division, absolute_import, print_function
 
 
 import numpy as np

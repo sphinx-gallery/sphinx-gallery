@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Sphinx-Gallery documentation build configuration file, created by
 # sphinx-quickstart on Mon Nov 17 16:01:26 2014.
@@ -65,8 +64,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Sphinx-Gallery'
-copyright = u'2014-%s, Sphinx-gallery developers' % date.today().year
+project = 'Sphinx-Gallery'
+copyright = '2014-%s, Sphinx-gallery developers' % date.today().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -257,8 +256,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'Sphinx-Gallery.tex', u'Sphinx-Gallery Documentation',
-     u'Óscar Nájera', 'manual'),
+    ('index', 'Sphinx-Gallery.tex', 'Sphinx-Gallery Documentation',
+     'Óscar Nájera', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -287,8 +286,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'sphinx-gallery', u'Sphinx-Gallery Documentation',
-     [u'Óscar Nájera'], 1)
+    ('index', 'sphinx-gallery', 'Sphinx-Gallery Documentation',
+     ['Óscar Nájera'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -301,8 +300,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'Sphinx-Gallery', u'Sphinx-Gallery Documentation',
-     u'Óscar Nájera', 'Sphinx-Gallery', 'One line description of project.',
+    ('index', 'Sphinx-Gallery', 'Sphinx-Gallery Documentation',
+     'Óscar Nájera', 'Sphinx-Gallery', 'One line description of project.',
      'Miscellaneous'),
 ]
 

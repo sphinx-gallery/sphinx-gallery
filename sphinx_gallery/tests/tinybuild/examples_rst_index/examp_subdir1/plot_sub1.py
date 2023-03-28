@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Plot-sin sub1
 =============
