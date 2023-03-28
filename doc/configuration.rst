@@ -1157,8 +1157,6 @@ You then need to add `jupyterlite_sphinx` to your Sphinx extensions in
 
     extensions = [
         ...,
-        ...,
-        ...,
         'jupyterlite_sphinx',
     ]
 
