@@ -155,12 +155,19 @@ def test_gen_binder_rst(tmpdir):
 
 
 @pytest.mark.parametrize('use_jupyter_lab', [True, False])
-def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
+@pytest.mark.parametrize(
+    'example_file',
+    [
+        os.path.join('example_dir', 'myfile.py'),
+        os.path.join('example_dir', 'subdir', 'myfile.py')
+    ]
+)
+def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     """Check binder rst generated correctly."""
     gallery_conf = {
         'gallery_dirs': [str(tmpdir)], 'src_dir': 'blahblah',
         'jupyterlite': {'use_jupyter_lab': use_jupyter_lab}}
-    file_path = str(tmpdir.join('blahblah', 'mydir', 'myfile.py'))
+    file_path = str(tmpdir.join('blahblah', example_file))
     orig_dir = os.getcwd()
     os.chdir(str(tmpdir))
     try:
@@ -168,10 +175,25 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
     finally:
         os.chdir(orig_dir)
     image_rst = ' .. image:: images/jupyterlite_badge_logo.svg'
-    if use_jupyter_lab:
-        target_rst = ':target: /lite/lab.+path=mydir/myfile.ipynb'
+
+    target_rst_template = ':target: {root_url}/lite/{jupyter_part}.+path={notebook_path}'
+    if 'subdir' not in file_path:
+        root_url = r'\.\.'
+        notebook_path = r'example_dir/myfile\.ipynb'
     else:
-        target_rst = ':target: /lite/retro/notebooks.+path=mydir/myfile.ipynb'
+        root_url = r'\.\./\.\.'
+        notebook_path = r'example_dir/subdir/myfile\.ipynb'
+
+    if use_jupyter_lab:
+        jupyter_part = 'lab'
+    else:
+        jupyter_part = 'retro/notebooks'
+
+    target_rst = target_rst_template.format(
+        root_url=root_url,
+        jupyter_part=jupyter_part,
+        notebook_path=notebook_path
+    )
     alt_rst = ':alt: Launch JupyterLite'
     assert image_rst in rst
     assert re.search(target_rst, rst), rst
