@@ -1131,7 +1131,7 @@ are:
 - with JupyterLite the first imports take time. At the time of writing
   (February 2023) ``import scipy`` can take ~15-30s. Some innocuously looking
   Python code may just not work and break in an unexpected fashion. The Jupyter
-  kernel is based on Pyodide, see some `here
+  kernel is based on Pyodide, see `here
   <https://pyodide.org/en/latest/usage/wasm-constraints.html>`__ for some
   Pyodide limitations.
 - with JupyterLite environments are not as flexible as Binder, for example you
@@ -1188,7 +1188,7 @@ notebook_modification_function (type: function, default: ``None``)
   when you do ``json.load(open(notebook_filename))``. The function is expected
   to modify ``json_dict`` in place by adding notebook cells. It is not expected
   to write to the file, since ``sphinx-gallery`` is in charge of this.
-  ``notebook_filename`` is provided for convenience becauses it is useful to
+  ``notebook_filename`` is provided for convenience because it is useful to
   modify the notebook based on its filename. Potential usages of this function
   are installing additional packages with a ``%pip install seaborn`` code cell,
   or adding a markdown cell to indicate that a notebook is not expected to work
@@ -1213,8 +1213,8 @@ extra things will happen:
 2. The built Jupyter Notebooks from the documentation will be copied to a
    folder called ``<jupyterlite_contents>/`` (relative to Sphinx source
    directory)
-3. If ``notebook_modification_function`` is not None, this function is going to
-   add JupyterLite-specific modifications to notebooks
+3. If ``notebook_modification_function`` is not ``None``, this function is
+   going to add JupyterLite-specific modifications to notebooks
 4. The rST output of each Sphinx-Gallery example will now have a
    ``launch JupyterLite`` button in it.
 5. That button will point to a JupyterLite link which will start a Jupyter

@@ -351,7 +351,7 @@ def create_jupyterlite_contents(app, exception):
         notebook_modification_function(notebook_content, notebook_filename)
 
         with open(notebook_filename, "w") as f:
-            json.dump(notebook_content, f)
+            json.dump(notebook_content, f, indent=2)
 
 
 def gen_jupyterlite_rst(fpath, gallery_conf):

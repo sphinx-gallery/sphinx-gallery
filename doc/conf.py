@@ -371,46 +371,45 @@ min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
     min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
 
+
 def notebook_modification_function(notebook_content, notebook_filename):
     notebook_content_str = str(notebook_content)
+    warning_template = "\n".join(
+        [
+            "<div class='alert alert-{message_class}'>",
+            "",
+            "# JupyterLite warning",
+            "",
+            "{message}",
+            "</div>"
+        ]
+    )
 
     if "pyvista_examples" in notebook_filename:
-        markdown = "\n".join(
-            [
-                "<div class='alert alert-danger'>",
-                "<h1>JupyterLite warning</h1>",
-                "",
-                "PyVista is not packaged in Pyodide, this notebook is not "
-                "expected to work inside JupyterLite"
-                "</div>"
-
-            ]
+        message_class = "danger"
+        message = (
+            "PyVista is not packaged in Pyodide, this notebook is not "
+            "expected to work inside JupyterLite"
         )
     elif "import plotly" in notebook_content_str:
-        markdown = "\n".join(
-            [
-                "<div class='alert alert-danger'>",
-                "<h1>JupyterLite warning</h1>",
-                "",
-                "This notebook is not expected to work inside JupyterLite for now. "
-                "There seems to be some issues with Plotly, see "
-                "<a href='https://github.com/jupyterlite/jupyterlite/pull/950'>this</a> "
-                "for more details."
-                "</div>"
-
-            ]
+        message_class = "danger"
+        message = (
+            "This notebook is not expected to work inside JupyterLite for now."
+            " There seems to be some issues with Plotly, see "
+            "[this]('https://github.com/jupyterlite/jupyterlite/pull/950') "
+            "for more details."
         )
     else:
-        markdown = "\n".join(
-            [
-                "<div class='alert alert-warning'>",
-                "<h1>JupyterLite warning</h1>",
-                "",
-                "JupyterLite integration in sphinx-gallery is beta "
-                "and it may break in weird ways",
-                "</div>"
-            ]
+        message_class = "warning"
+        message = (
+            "JupyterLite integration in sphinx-gallery is beta "
+            "and it may break in unexpected ways"
         )
+
+    markdown = warning_template.format(
+        message_class=message_class,
+        message=message
+    )
 
     dummy_notebook_content = {'cells': []}
     add_markdown_cell(dummy_notebook_content, markdown)
@@ -425,7 +424,9 @@ def notebook_modification_function(notebook_content, notebook_filename):
         code = "\n".join(code_lines)
         add_code_cell(dummy_notebook_content, code)
 
-    notebook_content["cells"] = dummy_notebook_content["cells"] + notebook_content["cells"]
+    notebook_content["cells"] = (
+        dummy_notebook_content["cells"] + notebook_content["cells"]
+    )
 
 
 sphinx_gallery_conf = {
