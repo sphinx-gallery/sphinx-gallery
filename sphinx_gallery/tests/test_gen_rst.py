@@ -380,11 +380,11 @@ def test_fail_example(gallery_conf, failing_code, want,
 
 
 def _generate_rst(gallery_conf, fname, content):
-    """Return the rST text of a given example content.
+    """Return the reST text of a given example content.
 
     This writes a file gallery_conf['examples_dir']/fname with *content*,
     creates the corresponding rst file by running generate_file_rst() and
-    returns the generated rST code.
+    returns the generated reST code.
 
     Parameters
     ----------
@@ -399,7 +399,7 @@ def _generate_rst(gallery_conf, fname, content):
     Returns
     -------
     rst : str
-        The generated rST code.
+        The generated reST code.
     """
     with codecs.open(os.path.join(gallery_conf['examples_dir'], fname),
                      mode='w', encoding='utf-8') as f:

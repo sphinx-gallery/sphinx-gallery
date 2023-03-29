@@ -38,7 +38,7 @@ REFERENCE = r"""
     ('<"test">', '&lt;&quot;test&quot;&gt;', False),
     # backref support
     ('test formating', 'test formating', True),
-    # RST sanitizing
+    # reST sanitizing
     ('1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`',
      '1 b. 2 a.b 3 better name', False),
     ('use :meth:`mne.io.Raw.plot_psd` to',

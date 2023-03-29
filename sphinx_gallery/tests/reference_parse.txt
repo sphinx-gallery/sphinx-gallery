@@ -3,7 +3,7 @@
   'Alternating text and code\n'
   '=========================\n'
   '\n'
-  'Sphinx-Gallery is capable of transforming Python files into rST files\n'
+  'Sphinx-Gallery is capable of transforming Python files into reST files\n'
   'with a notebook structure. For this to be used you need to respect some '
   'syntax\n'
   'rules. This example demonstrates how to alternate text and code blocks and '
@@ -88,11 +88,11 @@
   'New lines can be included in your text block and the parser\n'
   'is capable of retaining this important whitespace to work with Sphinx.\n'
   'Everything after a block splitter and starting with ``#`` then one space,\n'
-  'is interpreted by Sphinx-Gallery to be a rST text block. Keep your text\n'
+  'is interpreted by Sphinx-Gallery to be a reST text block. Keep your text\n'
   'block together using ``#`` and a space at the beginning of each line.\n'
   '\n'
-  'rST header within text block\n'
-  '^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
+  'reST header within text block\n'
+  '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
   73),
 ('code', "\nprint('one')\n\n", 81),
 ('code',

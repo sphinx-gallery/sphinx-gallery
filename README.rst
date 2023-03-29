@@ -70,7 +70,7 @@ Install via ``pip``
 
 .. installation-begin-content
 
-You can do a direct install via `pip`` by using:
+You can do a direct install via ``pip`` by using:
 
 .. code-block:: bash
 

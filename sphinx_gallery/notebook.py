@@ -101,13 +101,13 @@ def convert_code_to_md(text):
 
 
 def rst2md(text, gallery_conf, target_dir, heading_levels):
-    """Converts the RST text from the examples docstrings and comments
+    """Converts the reST text from the examples docstrings and comments
     into markdown text for the Jupyter notebooks
 
     Parameters
     ----------
     text: str
-        RST input to be converted to MD
+        reST input to be converted to MD
     gallery_conf : dict
         The sphinx-gallery configuration dictionary.
     target_dir : str

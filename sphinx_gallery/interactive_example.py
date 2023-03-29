@@ -78,7 +78,7 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
 
 
 def gen_binder_rst(fpath, binder_conf, gallery_conf):
-    """Generate the RST + link for the Binder badge.
+    """Generate the reST + link for the Binder badge.
 
     Parameters
     ----------
@@ -356,7 +356,7 @@ def create_jupyterlite_contents(app, exception):
 
 
 def gen_jupyterlite_rst(fpath, gallery_conf):
-    """Generate the RST + link for the Binder badge.
+    """Generate the reST + link for the Binder badge.
 
     Parameters
     ----------

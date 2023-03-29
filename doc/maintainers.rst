@@ -48,7 +48,7 @@ How to make a release
    look reasonable if necessary.
 
 3. Propagate the relevant changes to `CHANGES.rst <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/CHANGES.rst>`_.
-   You can easily convert it RST with pandoc::
+   You can easily convert it reST with pandoc::
 
       pandoc CHANGELOG.md --wrap=none -o CHANGELOG.rst
 
