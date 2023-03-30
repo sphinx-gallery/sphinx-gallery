@@ -2,8 +2,8 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
-RST file generator
-==================
+reST file generator
+===================
 
 Generate the rst files for the examples by iterating over the python
 example files.
@@ -238,7 +238,7 @@ def extract_intro_and_title(filename, docstring):
         raise ExtensionError(
             "Example docstring should have a header for the example title. "
             "Please check the example file:\n {}\n".format(filename))
-    # Title is the first paragraph with any ReSTructuredText title chars
+    # Title is the first paragraph with any reStructuredText title chars
     # removed, i.e. lines that consist of (3 or more of the same) 7-bit
     # non-ASCII chars.
     # This conditional is not perfect but should hopefully be good enough.
@@ -751,7 +751,7 @@ def _get_last_repr(capture_repr, ___):
 
 def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
                      images_rst, file_conf):
-    """Obtain standard output and html output in rST."""
+    """Obtain standard output and html output in reST."""
     last_repr = None
     repr_meth = None
     if is_last_expr:
@@ -776,7 +776,7 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
     else:
         captured_std = ''
 
-    # Sanitize ANSI escape characters for RST output
+    # Sanitize ANSI escape characters for reST output
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     captured_std = ansi_escape.sub('', captured_std)
 
@@ -827,7 +827,7 @@ def execute_code_block(compiler, block, example_globals, script_vars,
     Returns
     -------
     code_output : str
-        Output of executing code in rST.
+        Output of executing code in reST.
     """
     if example_globals is None:  # testing shortcut
         example_globals = script_vars['fake_main'].__dict__

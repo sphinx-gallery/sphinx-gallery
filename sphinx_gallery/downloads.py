@@ -107,7 +107,7 @@ def generate_zipfiles(gallery_dir, src_dir):
     gallery_dir : str
         path of the gallery to collect downloadable sources
     src_dir : str
-        The build source directory. Needed to make the RST paths relative.
+        The build source directory. Needed to make the reST paths relative.
 
     Return
     ------

@@ -107,7 +107,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     Returns
     -------
     rst : str
-        The ReSTructuredText that will be rendered to HTML containing
+        The reStructuredText that will be rendered to HTML containing
         the images. This is often produced by :func:`figure_rst`.
     """
     # Do not use _import_matplotlib() to avoid potentially changing the backend
@@ -355,7 +355,7 @@ def save_figures(block, block_vars, gallery_conf):
 
 
 def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None):
-    """Generate RST for a list of image filenames.
+    """Generate reST for a list of image filenames.
 
     Depending on whether we have one or more figures, we use a
     single rst call to 'image' or a horizontal list.

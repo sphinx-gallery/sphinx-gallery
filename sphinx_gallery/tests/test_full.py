@@ -298,7 +298,7 @@ def test_image_formats(sphinx_app):
         want_html = 'src="%s"' % (thumb_fname,)
         assert want_html in html
     # the original GIF does not get copied because it's not used in the
-    # RST/HTML, so can't add it to this check
+    # reST/HTML, so can't add it to this check
     for ex, ext, nums, extra in (
             ('plot_svg', 'svg', [1], None),
             ('plot_numpy_matplotlib', 'png', [1], None),
@@ -657,7 +657,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     # mtimes for backrefs (gh-394)
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
 
-    # generated RST files
+    # generated reST files
     ignore = (
         # these two should almost always be different, but in case we
         # get extremely unlucky and have identical run times
@@ -773,7 +773,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # mtimes for backrefs (gh-394)
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
 
-    # generated RST files
+    # generated reST files
     different = ('plot_numpy_matplotlib',)
     ignore = (
         # this one should almost always be different, but in case we

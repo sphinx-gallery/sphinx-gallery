@@ -80,7 +80,7 @@ def test_code_conversion():
 
 
 def test_convert(gallery_conf):
-    """Test ReST conversion"""
+    """Test reST conversion"""
     rst = """hello
 
 .. contents::

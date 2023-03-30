@@ -39,7 +39,7 @@ Support for Sphinx < 4 dropped in this release. Requirement is Sphinx >= 4.
 -  Adds ``plot_gallery`` as a string by default `#1062 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1062>`__ (`melissawm <https://github.com/melissawm>`__)
 -  Fix broken links when using dirhtml builder `#1060 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1060>`__ (`mgoulao <https://github.com/mgoulao>`__)
 -  BUG: Remove ignore blocks when remove_config_comments=True `#1059 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1059>`__ (`guberti <https://github.com/guberti>`__)
--  Fixed a bug where backslashes in paths could show up in RST files `#1047 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1047>`__ (`ayshih <https://github.com/ayshih>`__)
+-  Fixed a bug where backslashes in paths could show up in reST files `#1047 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1047>`__ (`ayshih <https://github.com/ayshih>`__)
 -  Allow 2 decimal places in srcset `#1039 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1039>`__ (`OverLordGoldDragon <https://github.com/OverLordGoldDragon>`__)
 -  Fix “``subsection_index_toctree`` referenced before assignment” `#1035 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1035>`__ (`OverLordGoldDragon <https://github.com/OverLordGoldDragon>`__)
 -  [BUG, MRG] fix issue with api usage dict `#1033 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1033>`__ (`alexrockhill <https://github.com/alexrockhill>`__)
@@ -204,7 +204,7 @@ For more details see `#845 <https://github.com/sphinx-gallery/sphinx-gallery/pul
 **Fixed bugs:**
 
 -  BUG URL quote branch names and filepaths in Binder URLs `#844 <https://github.com/sphinx-gallery/sphinx-gallery/pull/844>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
--  Sanitize ANSI characters from generated RST: Remove `ANSI characters <https://en.wikipedia.org/wiki/ANSI_escape_code>`_ from HTML output `#838 <https://github.com/sphinx-gallery/sphinx-gallery/pull/838>`__ (`agramfort <https://github.com/agramfort>`__)
+-  Sanitize ANSI characters from generated reST: Remove `ANSI characters <https://en.wikipedia.org/wiki/ANSI_escape_code>`_ from HTML output `#838 <https://github.com/sphinx-gallery/sphinx-gallery/pull/838>`__ (`agramfort <https://github.com/agramfort>`__)
 -  Bug Pin markupsafe version in Python nightly `#831 <https://github.com/sphinx-gallery/sphinx-gallery/pull/831>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  BUG Fix test_minigallery_directive failing on Windows `#830 <https://github.com/sphinx-gallery/sphinx-gallery/pull/830>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  BUG Fix LaTeX Error: File \`tgtermes.sty’ not found in CI `#829 <https://github.com/sphinx-gallery/sphinx-gallery/pull/829>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
@@ -291,7 +291,7 @@ Enables HTML animations to be rendered on readthedocs.
 -  Option to disable note in example header `#757 <https://github.com/sphinx-gallery/sphinx-gallery/issues/757>`__
 -  Add show_signature option `#756 <https://github.com/sphinx-gallery/sphinx-gallery/pull/756>`__ (`jschueller <https://github.com/jschueller>`__)
 -  ENH: Style HTML output like jupyter `#752 <https://github.com/sphinx-gallery/sphinx-gallery/pull/752>`__ (`larsoner <https://github.com/larsoner>`__)
--  ENH: Add RST comments, read-only `#750 <https://github.com/sphinx-gallery/sphinx-gallery/pull/750>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Add reST comments, read-only `#750 <https://github.com/sphinx-gallery/sphinx-gallery/pull/750>`__ (`larsoner <https://github.com/larsoner>`__)
 -  Relate warnings and errors on generated rst file back to source Python file / prevent accidental writing of generated files `#725 <https://github.com/sphinx-gallery/sphinx-gallery/issues/725>`__
 
 **Fixed bugs:**
@@ -337,7 +337,7 @@ by CSS) in version 0.9.0.
 -  Implement option to pass command line args to example scripts `#732 <https://github.com/sphinx-gallery/sphinx-gallery/pull/732>`__ (`mschmidt87 <https://github.com/mschmidt87>`__)
 -  ENH: Dont allow input `#729 <https://github.com/sphinx-gallery/sphinx-gallery/pull/729>`__ (`larsoner <https://github.com/larsoner>`__)
 -  Add support for image links and data URIs for notebooks `#724 <https://github.com/sphinx-gallery/sphinx-gallery/pull/724>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
--  Support headings in RST to MD `#723 <https://github.com/sphinx-gallery/sphinx-gallery/pull/723>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  Support headings in reST to MD `#723 <https://github.com/sphinx-gallery/sphinx-gallery/pull/723>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
 -  ENH Support pypandoc to convert rst to md for ipynb `#705 <https://github.com/sphinx-gallery/sphinx-gallery/pull/705>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  ENH: Use broader def of Animation `#693 <https://github.com/sphinx-gallery/sphinx-gallery/pull/693>`__ (`larsoner <https://github.com/larsoner>`__)
 
@@ -654,7 +654,7 @@ Incompatible changes
 -  fix wrong keyword in docs for “binder” `#500 <https://github.com/sphinx-gallery/sphinx-gallery/pull/500>`__ (`sappelhoff <https://github.com/sappelhoff>`__)
 -  Fix ‘Out:’ label position in html output block `#484 <https://github.com/sphinx-gallery/sphinx-gallery/pull/484>`__ (`timhoffm <https://github.com/timhoffm>`__)
 -  Mention pytest-coverage dependency `#482 <https://github.com/sphinx-gallery/sphinx-gallery/pull/482>`__ (`timhoffm <https://github.com/timhoffm>`__)
--  Fix ReST block after docstring `#480 <https://github.com/sphinx-gallery/sphinx-gallery/pull/480>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Fix reST block after docstring `#480 <https://github.com/sphinx-gallery/sphinx-gallery/pull/480>`__ (`timhoffm <https://github.com/timhoffm>`__)
 -  MAINT: Tolerate Windows mtime `#478 <https://github.com/sphinx-gallery/sphinx-gallery/pull/478>`__ (`larsoner <https://github.com/larsoner>`__)
 -  FIX: Output from code execution is not stripped `#475 <https://github.com/sphinx-gallery/sphinx-gallery/pull/475>`__ (`padix-key <https://github.com/padix-key>`__)
 -  FIX: Link `#470 <https://github.com/sphinx-gallery/sphinx-gallery/pull/470>`__ (`larsoner <https://github.com/larsoner>`__)

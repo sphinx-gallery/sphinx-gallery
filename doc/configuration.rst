@@ -407,7 +407,7 @@ If you do not use ``intersphinx``, then you should add entries that
 point to the directory containing ``searchindex.js``, such as
 ``'matplotlib': 'https://matplotlib.org'``.
 
-If you wish to do the same for ordinary RST documentation,
+If you wish to do the same for ordinary reST documentation,
 see :ref:`plain_rst`.
 
 If you are using inheritance for your documented code and you are experience
@@ -788,7 +788,7 @@ Adding images to notebooks
 ==========================
 
 When notebooks are produced, by default (``notebook_images = False``) image
-paths from the `image` directive in rST documentation blocks (not images
+paths from the `image` directive in reST documentation blocks (not images
 generated fom code) are included in markdown using their original paths. This
 includes paths to images expected to be present on the local filesystem which
 is unlikely to be the case for those downloading the notebook.
@@ -812,7 +812,7 @@ following configuration::
         ...
     }
 
-with an example `image` directive in an rST documentation block being:
+with an example `image` directive in an reST documentation block being:
 
 .. code-block:: rst
 
@@ -821,7 +821,7 @@ with an example `image` directive in an rST documentation block being:
 
 The image will be added to the generated notebook pointing to the source URL
 ``https://project.example.com/en/latest/_static/example.jpg``. Note the image
-path in the rST examples above is a relative path, therefore the URL doesn't
+path in the reST examples above is a relative path, therefore the URL doesn't
 contain ``auto_examples`` as ``../`` moved up a directory to the documentation
 source directory. Both relative and absolute (from source directory) paths are
 supported; so in the example above ``/_static/example.jpg`` would have resulted
@@ -847,17 +847,17 @@ included in the prefix if it's required.
 
 .. _use_pypandoc:
 
-Using pypandoc to convert rST to markdown
-=========================================
+Using pypandoc to convert reST to markdown
+==========================================
 
 Sphinx-Gallery can use `pypandoc <https://github.com/bebraw/pypandoc>`_
-(if installed) to convert rST text blocks to markdown for the iPython
+(if installed) to convert reST text blocks to markdown for the iPython
 notebooks (``.ipynb`` files) generated for each example. These are made
 available for download, along with the raw ``.py`` version, at the bottom
 of each example.
 
-The Sphinx-Gallery rST to markdown converter has limited support for more
-complex rST syntax. If your examples have more complex rST, ``pypandoc`` may
+The Sphinx-Gallery reST to markdown converter has limited support for more
+complex reST syntax. If your examples have more complex reST, ``pypandoc`` may
 produce better results. By default, the 'pypandoc' configuration is set to
 ``False`` and ``pypandoc`` is not used.
 
@@ -1051,7 +1051,7 @@ things will happen:
    folder called ``<notebooks_dir/>`` at the root of
    your built documentation (they will follow the same folder hierarchy within
    the notebooks directory folder.
-3. The rST output of each Sphinx-Gallery example will now have a
+3. The reST output of each Sphinx-Gallery example will now have a
    ``launch binder`` button in it.
 4. That button will point to a binder link with the following structure
 
@@ -1213,7 +1213,7 @@ extra things will happen:
    directory)
 3. If ``notebook_modification_function`` is not ``None``, this function is
    going to add JupyterLite-specific modifications to notebooks
-4. The rST output of each Sphinx-Gallery example will now have a
+4. The reST output of each Sphinx-Gallery example will now have a
    ``launch JupyterLite`` button in it.
 5. That button will point to a JupyterLite link which will start a Jupyter
    server in your browser with the current example as notebook
