@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
 Test the SG pipeline used with Sphinx
 """
-from __future__ import division, absolute_import, print_function
 
 import codecs
 from io import StringIO
@@ -45,7 +43,7 @@ N_EXECUTE = 2 + 3 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 9 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
-N_RST = '(%s|%s|%s)' % (N_RST, N_RST - 1, N_RST - 2)  # AppVeyor weirdness
+N_RST = f'({N_RST}|{N_RST - 1}|{N_RST - 2})'  # AppVeyor weirdness
 
 
 @pytest.fixture(scope='module')
@@ -98,7 +96,7 @@ def test_timings(sphinx_app):
     with codecs.open(timings_rst, 'r', 'utf-8') as fid:
         content = fid.read()
     assert ':ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`' in content
-    parenthetical = '(``%s``)' % ('plot_numpy_matplotlib.py',)
+    parenthetical = '(``{}``)'.format('plot_numpy_matplotlib.py')
     assert parenthetical in content
     # HTML output
     timings_html = op.join(out_dir, 'auto_examples',
@@ -200,7 +198,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert 'errors="0" failures="2"' in contents
     # this time we only ran the stale files
-    assert 'tests="%s"' % (N_FAILING + 1,) in contents
+    assert f'tests="{N_FAILING + 1}"' in contents
     assert '<failure message="RuntimeError: Forcing' in contents
     assert 'Passed even though it was marked to fail' in contents
 
@@ -295,7 +293,7 @@ def test_image_formats(sphinx_app):
     for thumb_fname in thumb_fnames:
         file_fname = op.join(generated_examples_dir, thumb_fname)
         assert op.isfile(file_fname), file_fname
-        want_html = 'src="%s"' % (thumb_fname,)
+        want_html = f'src="{thumb_fname}"'
         assert want_html in html
     # the original GIF does not get copied because it's not used in the
     # reST/HTML, so can't add it to this check
@@ -310,12 +308,12 @@ def test_image_formats(sphinx_app):
             img_fname0 = '../_images/sphx_glr_%s_%03d.%s' % (ex, num, ext)
             file_fname = op.join(generated_examples_dir, img_fname0)
             assert op.isfile(file_fname), file_fname
-            want_html = 'src="%s"' % (img_fname0,)
+            want_html = f'src="{img_fname0}"'
             assert want_html in html
             img_fname2 = ('../_images/sphx_glr_%s_%03d_2_00x.%s' %
                           (ex, num, ext))
             file_fname2 = op.join(generated_examples_dir, img_fname2)
-            want_html = 'srcset="%s, %s 2.00x"' % (img_fname0, img_fname2)
+            want_html = f'srcset="{img_fname0}, {img_fname2} 2.00x"'
             if ext in ('png', 'jpg', 'svg'):  # check 2.00x (tests directive)
                 assert op.isfile(file_fname2), file_fname2
                 assert want_html in html
@@ -550,7 +548,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     #
     status = sphinx_app._status.getvalue()
     lines = [line for line in status.split('\n') if 'removed' in line]
-    want = '.*%s added, 0 changed, 0 removed.*' % (N_RST,)
+    want = f'.*{N_RST} added, 0 changed, 0 removed.*'
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     want = '.*targets for 2 source files that are out of date$.*'
     lines = [line for line in status.split('\n') if 'out of date' in line]

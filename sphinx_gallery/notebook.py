@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Parser for Jupyter notebooks
 ============================
@@ -9,7 +8,6 @@ Class that holds the Jupyter notebook information
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from __future__ import division, absolute_import, print_function
 from collections import defaultdict
 from functools import partial
 from itertools import count
@@ -53,7 +51,7 @@ def jupyter_notebook_skeleton():
                 "name": "python",
                 "nbconvert_exporter": "python",
                 "pygments_lexer": "ipython" + str(py_version[0]),
-                "version": '{0}.{1}.{2}'.format(*sys.version_info[:3])
+                "version": '{}.{}.{}'.format(*sys.version_info[:3])
             }
         },
         "nbformat": 4,
@@ -65,7 +63,7 @@ def jupyter_notebook_skeleton():
 def directive_fun(match, directive):
     """Helper to fill in directives"""
     directive_to_alert = dict(note="info", warning="danger")
-    return ('<div class="alert alert-{0}"><h4>{1}</h4><p>{2}</p></div>'
+    return ('<div class="alert alert-{}"><h4>{}</h4><p>{}</p></div>'
             .format(directive_to_alert[directive], directive.capitalize(),
                     match.group(1).strip()))
 
@@ -373,7 +371,7 @@ def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
     # run script
     for src_file in args.python_src_file:
         file_conf, blocks = split_code_and_text_blocks(src_file)
-        print('Converting {0}'.format(src_file))
+        print(f'Converting {src_file}')
         target_dir = os.path.dirname(src_file)
         example_nb = jupyter_notebook(
             blocks, copy.deepcopy(gallery_conf), target_dir)

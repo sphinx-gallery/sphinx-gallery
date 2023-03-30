@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Parser for python source files
 ==============================
@@ -6,7 +5,6 @@ Parser for python source files
 # Created Sun Nov 27 14:03:07 2016
 # Author: Óscar Nájera
 
-from __future__ import division, absolute_import, print_function
 
 import codecs
 import ast
@@ -97,12 +95,12 @@ def _get_docstring_and_rest(filename):
 
     if not isinstance(node, ast.Module):
         raise ExtensionError("This function only supports modules. "
-                             "You provided {0}"
+                             "You provided {}"
                              .format(node.__class__.__name__))
     if not (node.body and isinstance(node.body[0], ast.Expr) and
             isinstance(node.body[0].value, ast.Str)):
         raise ExtensionError(
-            'Could not find docstring in file "{0}". '
+            'Could not find docstring in file "{}". '
             'A docstring is required by sphinx-gallery '
             'unless the file is ignored by "ignore_pattern"'
             .format(filename))

@@ -3,7 +3,7 @@ from sphinx_gallery.scrapers import matplotlib_scraper
 from sphinx_gallery.sorting import FileNameSortKey
 
 
-class matplotlib_format_scraper(object):
+class matplotlib_format_scraper:
 
     def __repr__(self):
         return self.__class__.__name__

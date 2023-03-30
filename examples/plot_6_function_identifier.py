@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Identifying function names in a script
 ======================================

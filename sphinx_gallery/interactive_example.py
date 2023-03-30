@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Chris Holdgraf
 # License: 3-clause BSD
 """
@@ -71,9 +70,9 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
                            quote(binder_conf['branch'])])
 
     if binder_conf.get('use_jupyter_lab', False) is True:
-        binder_url += '?urlpath=lab/tree/{}'.format(quote(path_link))
+        binder_url += f'?urlpath=lab/tree/{quote(path_link)}'
     else:
-        binder_url += '?filepath={}'.format(quote(path_link))
+        binder_url += f'?filepath={quote(path_link)}'
     return binder_url
 
 
@@ -239,7 +238,7 @@ def check_binder_conf(binder_conf):
 
     for key in binder_conf.keys():
         if key not in (req_values + optional_values):
-            raise ConfigError("Unknown Binder config key: {}".format(key))
+            raise ConfigError(f"Unknown Binder config key: {key}")
 
     # Ensure we have http in the URL
     if not any(binder_conf['binderhub_url'].startswith(ii)

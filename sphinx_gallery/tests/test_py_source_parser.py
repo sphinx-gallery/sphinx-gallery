@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Test source parser
 ==================
@@ -8,7 +7,6 @@ Test source parser
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from __future__ import division, absolute_import, print_function
 
 import os.path as op
 import pytest
@@ -19,8 +17,8 @@ import sphinx_gallery.py_source_parser as sg
 
 def test_get_docstring_and_rest(unicode_sample, tmpdir, monkeypatch):
     docstring, rest, lineno, _ = sg._get_docstring_and_rest(unicode_sample)
-    assert u'Únicode' in docstring
-    assert u'heiß' in rest
+    assert 'Únicode' in docstring
+    assert 'heiß' in rest
     # degenerate
     fname = op.join(str(tmpdir), 'temp')
     with open(fname, 'w') as fid:
