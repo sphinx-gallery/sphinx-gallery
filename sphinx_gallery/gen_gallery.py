@@ -1202,7 +1202,7 @@ def setup(app):
         app.add_config_value(key, get_default_config_value(key), 'html')
 
 
-    # Early normalization of sphinx_gallery_conf
+    # Early normalization of sphinx_gallery_conf at config-inited
     app.connect('config-inited', normalize_gallery_conf_config_inited, priority=10)
     # set small priority value, so that pre_configure_jupyterlite_sphinx is
     # called before jupyterlite_sphinx config-inited
@@ -1224,7 +1224,7 @@ def setup(app):
 
     imagesg_addnode(app)
 
-    # Early normalization of sphinx_gallery_conf
+    # Early normalization of sphinx_gallery_conf at builder-inited
     app.connect('builder-inited', normalize_gallery_conf_builder_inited,
                 priority=10)
     app.connect('builder-inited', generate_gallery_rst)

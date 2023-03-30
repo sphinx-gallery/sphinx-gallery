@@ -48,8 +48,8 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
         environment.
     """
     # Build the URL
-    fpath_prefix = binder_conf.get('filepath_prefix')
-    link_base = binder_conf.get('notebooks_dir')
+    fpath_prefix = binder_conf['filepath_prefix']
+    link_base = binder_conf['notebooks_dir']
 
     # We want to keep the relative path to sub-folders
     relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
@@ -70,7 +70,7 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
                            binder_conf['repo'],
                            quote(binder_conf['branch'])])
 
-    if binder_conf.get('use_jupyter_lab', False) is True:
+    if binder_conf['use_jupyter_lab'] is True:
         binder_url += '?urlpath=lab/tree/{}'.format(quote(path_link))
     else:
         binder_url += '?filepath={}'.format(quote(path_link))
@@ -155,7 +155,7 @@ def copy_binder_files(app, exception):
 
 def _copy_binder_reqs(app, binder_conf):
     """Copy Binder requirements files to a "binder" folder in the docs."""
-    path_reqs = binder_conf.get('dependencies')
+    path_reqs = binder_conf['dependencies']
     for path in path_reqs:
         if not os.path.exists(os.path.join(app.srcdir, path)):
             raise ConfigError(
@@ -198,9 +198,9 @@ def _copy_binder_notebooks(app):
     Jupyter notebook files."""
 
     gallery_conf = app.config.sphinx_gallery_conf
-    gallery_dirs = gallery_conf.get('gallery_dirs')
-    binder_conf = gallery_conf.get('binder')
-    notebooks_dir = os.path.join(app.outdir, binder_conf.get('notebooks_dir'))
+    gallery_dirs = gallery_conf['gallery_dirs']
+    binder_conf = gallery_conf['binder']
+    notebooks_dir = os.path.join(app.outdir, binder_conf['notebooks_dir'])
     shutil.rmtree(notebooks_dir, ignore_errors=True)
     os.makedirs(notebooks_dir)
 
@@ -219,7 +219,7 @@ def _copy_binder_notebooks(app):
 def check_binder_conf(binder_conf):
     """Check to make sure that the Binder configuration is correct."""
     # Grab the configuration and return None if it's not configured
-    binder_conf = {} if binder_conf is None else binder_conf
+    binder_conf = {} if binder_conf is None else binder_conf.copy()
     if not isinstance(binder_conf, dict):
         raise ConfigError('`binder_conf` must be a dictionary or None.')
     if len(binder_conf) == 0:
@@ -259,8 +259,9 @@ def check_binder_conf(binder_conf):
         raise ConfigError("`dependencies` value should be a list of strings. "
                           "Got type {}.".format(type(path_reqs)))
 
-    binder_conf['notebooks_dir'] = binder_conf.get('notebooks_dir',
-                                                   'notebooks')
+    binder_conf.setdefault('filepath_prefix')
+    binder_conf.setdefault('notebooks_dir', 'notebooks')
+    binder_conf.setdefault('use_jupyter_lab', False)
     path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
     if not any(ii in path_reqs_filenames for ii in required_reqs_files):
         raise ConfigError(
@@ -274,7 +275,7 @@ def check_binder_conf(binder_conf):
 def pre_configure_jupyterlite_sphinx(app, config):
     is_jupyterlite_enabled = (
         'jupyterlite_sphinx' in app.extensions
-        and config.sphinx_gallery_conf.get('jupyterlite', {}) is not None
+        and config.sphinx_gallery_conf['jupyterlite'] is not None
     )
     if not is_jupyterlite_enabled:
         return
@@ -287,7 +288,7 @@ def pre_configure_jupyterlite_sphinx(app, config):
 
 def post_configure_jupyterlite_sphinx(app, config):
     config.sphinx_gallery_conf['jupyterlite'] = check_jupyterlite_conf(
-        config.sphinx_gallery_conf.get('jupyterlite', {}), app)
+        config.sphinx_gallery_conf['jupyterlite'], app)
 
     if config.sphinx_gallery_conf['jupyterlite'] is None:
         return
@@ -316,7 +317,7 @@ def create_jupyterlite_contents(app, exception):
         return
 
     logger.info('copying Jupyterlite contents ...', color='white')
-    gallery_dirs = gallery_conf.get('gallery_dirs')
+    gallery_dirs = gallery_conf['gallery_dirs']
     contents_dir = gallery_conf['jupyterlite']['jupyterlite_contents']
 
     shutil.rmtree(contents_dir, ignore_errors=True)
@@ -384,7 +385,7 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     # Make sure we have the right slashes (in case we're on Windows)
     lite_root_url = lite_root_url.replace(os.path.sep, '/')
 
-    if gallery_conf["jupyterlite"].get("use_jupyter_lab", True):
+    if gallery_conf["jupyterlite"]["use_jupyter_lab"]:
         lite_root_url += "/lab"
     else:
         lite_root_url += "/retro/notebooks"
