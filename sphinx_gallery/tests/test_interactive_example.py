@@ -248,8 +248,15 @@ def test_check_jupyterlite_conf():
     assert check_jupyterlite_conf(conf, app) == expected
 
     match = (
-        'Found.+unknown keys.+unknown_key.+Allowed keys are.+'
-        'jupyterlite_contents.+notebook_modification_function.+use_jupyter_lab'
+        'Found.+unknown keys.+another_unknown_key.+unknown_key.+'
+        'Allowed keys are.+jupyterlite_contents.+'
+        'notebook_modification_function.+use_jupyter_lab'
     )
     with pytest.raises(ConfigError, match=match):
-        check_jupyterlite_conf({'unknown_key': 'value'}, app)
+        check_jupyterlite_conf(
+            {
+                'unknown_key': 'value',
+                'another_unknown_key': 'another_value'
+            },
+            app
+        )

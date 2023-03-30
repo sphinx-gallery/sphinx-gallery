@@ -439,7 +439,7 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
     if unknown_keys:
         raise ConfigError(
             f"Found some unknown keys in sphinx_gallery_conf['jupyterlite']: "
-            f"{list(unknown_keys)}. "
+            f"{sorted(unknown_keys)}. "
             f"Allowed keys are: {list(conf_defaults)}")
 
     for key, default_value in conf_defaults.items():
