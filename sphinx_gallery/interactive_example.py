@@ -428,12 +428,24 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
         raise ConfigError(
             '`jupyterlite_conf` must be a dictionary')
 
+    conf_defaults = {
+        'jupyterlite_contents': 'jupyterlite_contents',
+        'notebook_modification_function': None,
+        'use_jupyter_lab': True,
+    }
+
     result = jupyterlite_conf.copy()
-    result.setdefault('use_jupyter_lab', True)
-    result.setdefault('jupyterlite_contents', 'jupyterlite_contents')
+    unknown_keys = set(result) - set(conf_defaults)
+    if unknown_keys:
+        raise ConfigError(
+            f"Found some unknown keys in sphinx_gallery_conf['jupyterlite']: "
+            f"{sorted(unknown_keys)}. "
+            f"Allowed keys are: {list(conf_defaults)}")
+
+    for key, default_value in conf_defaults.items():
+        result.setdefault(key, default_value)
     result['jupyterlite_contents'] = os.path.join(
         app.srcdir,
         result['jupyterlite_contents'])
-    result.setdefault('notebook_modification_function', None)
 
     return result
