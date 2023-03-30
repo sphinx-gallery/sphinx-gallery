@@ -125,21 +125,9 @@ def _bool_eval(x):
 
 
 def parse_config(app, check_keys=True):
-    """Process the Sphinx Gallery configuration."""
-    plot_gallery = _bool_eval(app.builder.config.plot_gallery)
-    src_dir = app.builder.srcdir
-    abort_on_example_error = _bool_eval(
-        app.builder.config.abort_on_example_error)
-    lang = app.builder.config.highlight_language
-    gallery_conf = _complete_gallery_conf(
-        app.config.sphinx_gallery_conf, src_dir, plot_gallery,
-        abort_on_example_error, lang, app.builder.name, app,
-        check_keys)
-
-    # this assures I can call the config in other places
-    app.config.sphinx_gallery_conf = gallery_conf
-    app.config.html_static_path.append(glr_path_static())
-    return gallery_conf
+    normalize_gallery_conf_config_inited(app, app.config,
+                                         check_keys=check_keys)
+    normalize_gallery_conf_builder_inited(app)
 
 
 def _update_gallery_conf(gallery_conf):
@@ -156,6 +144,28 @@ def _update_gallery_conf(gallery_conf):
 def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                            abort_on_example_error, lang='python',
                            builder_name='html', app=None, check_keys=True):
+    new_sphinx_gallery_conf = _complete_gallery_conf_config_inited(
+        sphinx_gallery_conf, app=app, check_keys=check_keys)
+    _complete_gallery_conf_builder_inited(new_sphinx_gallery_conf, src_dir,
+                                          plot_gallery, abort_on_example_error,
+                                          lang, builder_name)
+    return new_sphinx_gallery_conf
+
+
+def _complete_gallery_conf_builder_inited(
+        sphinx_gallery_conf, src_dir, plot_gallery,
+        abort_on_example_error, lang='python',
+        builder_name='html'):
+    sphinx_gallery_conf.update(plot_gallery=plot_gallery)
+    sphinx_gallery_conf.update(abort_on_example_error=abort_on_example_error)
+    sphinx_gallery_conf['src_dir'] = src_dir
+    lang = lang if lang in ('python', 'python3', 'default') else 'python'
+    sphinx_gallery_conf['lang'] = lang
+    # Make it easy to know which builder we're in
+    sphinx_gallery_conf['builder_name'] = builder_name
+
+
+def _complete_gallery_conf_config_inited(sphinx_gallery_conf, app=None, check_keys=True):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     options = sorted(gallery_conf)
     # sphinx-autoapi can run before our config filling can occur, which
@@ -178,13 +188,10 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
             msg += '\n'
         raise ConfigError(msg.strip())
     gallery_conf.update(sphinx_gallery_conf)
-    gallery_conf.update(plot_gallery=plot_gallery)
-    gallery_conf.update(abort_on_example_error=abort_on_example_error)
     # XXX anything that can only be a bool (rather than str) should probably be
     # evaluated this way as it allows setting via -D on the command line
     for key in ('promote_jupyter_magic', 'run_stale_examples',):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
-    gallery_conf['src_dir'] = src_dir
     gallery_conf['app'] = app
 
     # Check capture_repr
@@ -320,8 +327,6 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                           "['before', 'after', 'both'], "
                           'got %r' % gallery_conf['reset_modules_order'])
 
-    lang = lang if lang in ('python', 'python3', 'default') else 'python'
-    gallery_conf['lang'] = lang
     del resetters
 
     # Ensure the first cell text is a string if we have it
@@ -359,8 +364,6 @@ def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
                                   "values: %s, got: %s."
                                   % (accepted_keys, key))
 
-    # Make it easy to know which builder we're in
-    gallery_conf['builder_name'] = builder_name
     gallery_conf['titles'] = {}
     # Ensure 'backreferences_dir' is str, pathlib.Path or None
     backref = gallery_conf['backreferences_dir']
@@ -505,7 +508,7 @@ def generate_gallery_rst(app):
     """
 
     logger.info('generating gallery...', color='white')
-    gallery_conf = parse_config(app)
+    gallery_conf = app.config.sphinx_gallery_conf
 
     seen_backrefs = set()
 
@@ -1190,12 +1193,33 @@ def get_default_config_value(key):
     return default_getter
 
 
+def normalize_gallery_conf_config_inited(app, config, check_keys=True):
+    new_sphinx_gallery_conf = _complete_gallery_conf_config_inited(
+        config.sphinx_gallery_conf, app=app, check_keys=check_keys)
+    config.sphinx_gallery_conf = new_sphinx_gallery_conf
+    config.html_static_path.append(glr_path_static())
+
+
+def normalize_gallery_conf_builder_inited(app):
+    plot_gallery = _bool_eval(app.builder.config.plot_gallery)
+    src_dir = app.builder.srcdir
+    abort_on_example_error = _bool_eval(
+        app.builder.config.abort_on_example_error)
+    lang = app.builder.config.highlight_language
+    _complete_gallery_conf_builder_inited(
+        app.config.sphinx_gallery_conf, src_dir, plot_gallery,
+        abort_on_example_error, lang, app.builder.name)
+
+
 def setup(app):
     """Setup Sphinx-Gallery sphinx extension"""
     app.add_config_value('sphinx_gallery_conf', DEFAULT_GALLERY_CONF, 'html')
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
+
+    # Early normalization of sphinx_gallery_conf
+    app.connect('config-inited', normalize_gallery_conf_config_inited, priority=10)
     # set small priority value, so that pre_configure_jupyterlite_sphinx is
     # called before jupyterlite_sphinx config-inited
     app.connect(
@@ -1216,6 +1240,9 @@ def setup(app):
 
     imagesg_addnode(app)
 
+    # Early normalization of sphinx_gallery_conf
+    app.connect('builder-inited', normalize_gallery_conf_builder_inited,
+                priority=10)
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)
     app.connect('build-finished', create_jupyterlite_contents)

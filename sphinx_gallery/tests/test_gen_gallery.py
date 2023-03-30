@@ -16,7 +16,9 @@ from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
     collect_gallery_files, write_computation_times, _complete_gallery_conf,
-    write_api_entry_usage)
+    write_api_entry_usage,
+    parse_config
+)
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 
 
@@ -423,7 +425,6 @@ sphinx_gallery_conf = {
     'first_notebook_cell': 2,
 }""")
 def test_first_notebook_cell_config(sphinx_app_wrapper):
-    from sphinx_gallery.gen_gallery import parse_config
     # First cell must be str
     with pytest.raises(ConfigError):
         parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
@@ -434,7 +435,6 @@ sphinx_gallery_conf = {
     'last_notebook_cell': 2,
 }""")
 def test_last_notebook_cell_config(sphinx_app_wrapper):
-    from sphinx_gallery.gen_gallery import parse_config
     # First cell must be str
     with pytest.raises(ConfigError):
         parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
@@ -446,7 +446,6 @@ sphinx_gallery_conf = {
 }""")
 def test_backreferences_dir_config(sphinx_app_wrapper):
     """Tests 'backreferences_dir' type checking."""
-    from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
                        match="The 'backreferences_dir' parameter must be of"):
         parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
@@ -460,7 +459,6 @@ sphinx_gallery_conf = {
 }""")
 def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     """Tests pathlib.Path does not raise exception."""
-    from sphinx_gallery.gen_gallery import parse_config
     parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
 
 
@@ -479,7 +477,6 @@ sphinx_gallery_conf = {
 }""")
 def test_pypandoc_config_list(sphinx_app_wrapper):
     """Tests 'pypandoc' type checking."""
-    from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
                        match="'pypandoc' parameter must be of type bool or "
                              "dict"):
@@ -492,7 +489,6 @@ sphinx_gallery_conf = {
 }""")
 def test_pypandoc_config_keys(sphinx_app_wrapper):
     """Tests 'pypandoc' dictionary key checking."""
-    from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
                        match="'pypandoc' only accepts the following key "
                              "values:"):
