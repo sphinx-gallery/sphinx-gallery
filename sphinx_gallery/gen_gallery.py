@@ -141,20 +141,9 @@ def _update_gallery_conf(gallery_conf):
     gallery_conf['exclude_implicit_doc_regex'] = exclude_regex
 
 
-def _complete_gallery_conf(sphinx_gallery_conf, src_dir, plot_gallery,
-                           abort_on_example_error, lang='python',
-                           builder_name='html', app=None, check_keys=True):
-    new_sphinx_gallery_conf = _complete_gallery_conf_config_inited(
-        sphinx_gallery_conf, app=app, check_keys=check_keys)
-    _complete_gallery_conf_builder_inited(new_sphinx_gallery_conf, src_dir,
-                                          plot_gallery, abort_on_example_error,
-                                          lang, builder_name)
-    return new_sphinx_gallery_conf
-
-
 def _complete_gallery_conf_builder_inited(
-        sphinx_gallery_conf, src_dir, plot_gallery,
-        abort_on_example_error, lang='python',
+        sphinx_gallery_conf, src_dir, plot_gallery=True,
+        abort_on_example_error=False, lang='python',
         builder_name='html'):
     sphinx_gallery_conf.update(plot_gallery=plot_gallery)
     sphinx_gallery_conf.update(abort_on_example_error=abort_on_example_error)
@@ -165,7 +154,8 @@ def _complete_gallery_conf_builder_inited(
     sphinx_gallery_conf['builder_name'] = builder_name
 
 
-def _complete_gallery_conf_config_inited(sphinx_gallery_conf, app=None, check_keys=True):
+def _complete_gallery_conf_config_inited(sphinx_gallery_conf, app=None,
+                                         check_keys=True):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     options = sorted(gallery_conf)
     # sphinx-autoapi can run before our config filling can occur, which

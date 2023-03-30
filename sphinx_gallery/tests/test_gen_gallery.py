@@ -15,7 +15,7 @@ import pytest
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
-    collect_gallery_files, write_computation_times, _complete_gallery_conf,
+    collect_gallery_files, write_computation_times, _complete_gallery_conf_config_inited,
     write_api_entry_usage,
     parse_config
 )
@@ -26,10 +26,10 @@ def test_bad_config():
     """Test that bad config values are caught."""
     sphinx_gallery_conf = dict(example_dir='')
     with pytest.raises(ConfigError, match="example_dir.*did you mean 'examples_dirs'?.*"):  # noqa: E501
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+        _complete_gallery_conf_config_inited(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(n_subsection_order='')
     with pytest.raises(ConfigError, match=r"did you mean one of \['subsection_order', 'within_.*"):  # noqa: E501
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+        _complete_gallery_conf_config_inited(sphinx_gallery_conf)
 
 
 def test_default_config(sphinx_app_wrapper):
@@ -114,11 +114,11 @@ def test_bad_api():
     """Test that we raise an error for bad API usage arguments."""
     sphinx_gallery_conf = dict(api_usage_ignore=('foo',))
     with pytest.raises(ConfigError, match='.*must be str.*'):
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+        _complete_gallery_conf_config_inited(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(show_api_usage='foo')
     with pytest.raises(ConfigError,
                        match='.*must be True, False or "unused".*'):
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+        _complete_gallery_conf_config_inited(sphinx_gallery_conf)
 
 
 @pytest.mark.conf_file(content="""
