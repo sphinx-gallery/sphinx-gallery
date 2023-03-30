@@ -15,9 +15,10 @@ import pytest
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
-    collect_gallery_files, write_computation_times, _complete_gallery_conf_config_inited,
+    collect_gallery_files, write_computation_times,
+    _complete_gallery_conf_config_inited,
     write_api_entry_usage,
-    parse_config
+    normalize_gallery_conf_config_inited
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 
@@ -427,7 +428,8 @@ sphinx_gallery_conf = {
 def test_first_notebook_cell_config(sphinx_app_wrapper):
     # First cell must be str
     with pytest.raises(ConfigError):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -435,9 +437,10 @@ sphinx_gallery_conf = {
     'last_notebook_cell': 2,
 }""")
 def test_last_notebook_cell_config(sphinx_app_wrapper):
-    # First cell must be str
+    # Last cell must be str
     with pytest.raises(ConfigError):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -448,7 +451,8 @@ def test_backreferences_dir_config(sphinx_app_wrapper):
     """Tests 'backreferences_dir' type checking."""
     with pytest.raises(ConfigError,
                        match="The 'backreferences_dir' parameter must be of"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -459,7 +463,8 @@ sphinx_gallery_conf = {
 }""")
 def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     """Tests pathlib.Path does not raise exception."""
-    parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+    app = sphinx_app_wrapper.create_sphinx_app()
+    normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
 
 
 def test_write_computation_times_noop():
@@ -480,7 +485,8 @@ def test_pypandoc_config_list(sphinx_app_wrapper):
     with pytest.raises(ConfigError,
                        match="'pypandoc' parameter must be of type bool or "
                              "dict"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -492,7 +498,8 @@ def test_pypandoc_config_keys(sphinx_app_wrapper):
     with pytest.raises(ConfigError,
                        match="'pypandoc' only accepts the following key "
                              "values:"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""

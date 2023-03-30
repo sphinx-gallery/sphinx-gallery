@@ -124,12 +124,6 @@ def _bool_eval(x):
     return bool(x)
 
 
-def parse_config(app, check_keys=True):
-    normalize_gallery_conf_config_inited(app, app.config,
-                                         check_keys=check_keys)
-    normalize_gallery_conf_builder_inited(app)
-
-
 def _update_gallery_conf(gallery_conf):
     """Update gallery config.
 
