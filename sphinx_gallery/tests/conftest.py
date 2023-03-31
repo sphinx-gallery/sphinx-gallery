@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 Pytest fixtures
 """
-from __future__ import division, absolute_import, print_function
 
 from contextlib import contextmanager
 from io import StringIO
@@ -23,7 +21,7 @@ from sphinx_gallery.utils import _get_image
 
 def pytest_report_header(config, startdir):
     """Add information to the pytest run header."""
-    return 'Sphinx:  %s (%s)' % (sphinx.__version__, sphinx.__file__)
+    return f'Sphinx:  {sphinx.__version__} ({sphinx.__file__})'
 
 
 @pytest.fixture
@@ -92,7 +90,7 @@ def req_mpl_jpg(tmpdir, req_mpl, scope='session'):
     try:
         plt.savefig(str(tmpdir.join('testplot.jpg')))
     except Exception as exp:
-        pytest.skip('Matplotlib jpeg saving failed: %s' % (exp,))
+        pytest.skip(f'Matplotlib jpeg saving failed: {exp}')
     finally:
         plt.close(fig)
 
@@ -129,7 +127,7 @@ def conf_file(request):
     return result
 
 
-class SphinxAppWrapper(object):
+class SphinxAppWrapper:
     """Wrapper for sphinx.application.Application.
 
     This allows control over when the sphinx application is initialized, since
@@ -180,13 +178,13 @@ def sphinx_app_wrapper(tmpdir, conf_file, req_mpl, req_pil):
     base_config = """
 import os
 import sphinx_gallery
-extensions = %r
+extensions = {!r}
 exclude_patterns = ['_build']
 source_suffix = '.rst'
 master_doc = 'index'
 # General information about the project.
 project = u'Sphinx-Gallery <Tests>'\n\n
-""" % (conf_file['extensions'],)
+""".format(conf_file['extensions'])
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
         conffile.write(base_config + conf_file['content'])
 

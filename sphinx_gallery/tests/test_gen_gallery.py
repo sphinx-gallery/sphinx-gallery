@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 r"""
@@ -266,17 +265,17 @@ def test_collect_gallery_files(tmpdir, gallery_conf):
     examples_path = tmpdir.join('examples')
     dirs = [examples_path.strpath]
     collected_files = set(collect_gallery_files(dirs, gallery_conf))
-    expected_files = set(
-        [ap.strpath for ap in abs_paths
-         if re.search(r'examples.*\.py$', ap.strpath)])
+    expected_files = {
+        ap.strpath for ap in abs_paths
+        if re.search(r"examples.*\.py$", ap.strpath)}
 
     assert collected_files == expected_files
 
     tutorials_path = tmpdir.join('tutorials')
     dirs = [examples_path.strpath, tutorials_path.strpath]
     collected_files = set(collect_gallery_files(dirs, gallery_conf))
-    expected_files = set(
-        [ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)])
+    expected_files = {
+        ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)}
 
     assert collected_files == expected_files
 
@@ -296,9 +295,9 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
     examples_path = tmpdir.join('examples')
     dirs = [examples_path.strpath]
     collected_files = set(collect_gallery_files(dirs, gallery_conf))
-    expected_files = set(
-        [ap.strpath for ap in abs_paths
-         if re.search(r'one', os.path.basename(ap.strpath)) is None])
+    expected_files = {
+        ap.strpath for ap in abs_paths
+        if re.search(r'one', os.path.basename(ap.strpath)) is None}
 
     assert collected_files == expected_files
 

@@ -11,7 +11,7 @@ Features
 
 * 🚀 :ref:`Create example galleries <create_simple_gallery>` automatically
   by running pure Python example scripts while capturing outputs + figures,
-  rendering them into rST files built into your documentation by Sphinx:
+  rendering them into reST files built into your documentation by Sphinx:
 * 📝 :ref:`embedding_rst`, allowing you to interweave narrative-like content
   with code that generates plots in your documentation. Sphinx-Gallery also
   automatically generates a Jupyter Notebook for each your example page.

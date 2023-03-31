@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
-RST file generator
-==================
+reST file generator
+===================
 
 Generate the rst files for the examples by iterating over the python
 example files.
@@ -11,7 +10,6 @@ example files.
 Files that generate images should start with 'plot'.
 """
 
-from __future__ import division, print_function, absolute_import
 from time import time
 import copy
 import contextlib
@@ -60,7 +58,7 @@ logger = sphinx.util.logging.getLogger('sphinx-gallery')
 ###############################################################################
 
 
-class _LoggingTee(object):
+class _LoggingTee:
     """A tee object to redirect streams to the logger."""
 
     def __init__(self, src_filename):
@@ -182,10 +180,10 @@ def codestr2rst(codestr, lang='python', lineno=None):
     if lineno is not None:
         # Sphinx only starts numbering from the first non-empty line.
         blank_lines = codestr.count('\n', 0, -len(codestr.lstrip()))
-        lineno = '   :lineno-start: {0}\n'.format(lineno + blank_lines)
+        lineno = f'   :lineno-start: {lineno + blank_lines}\n'
     else:
         lineno = ''
-    code_directive = ".. code-block:: {0}\n{1}\n".format(lang, lineno)
+    code_directive = f".. code-block:: {lang}\n{lineno}\n"
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
@@ -238,7 +236,7 @@ def extract_intro_and_title(filename, docstring):
         raise ExtensionError(
             "Example docstring should have a header for the example title. "
             "Please check the example file:\n {}\n".format(filename))
-    # Title is the first paragraph with any ReSTructuredText title chars
+    # Title is the first paragraph with any reStructuredText title chars
     # removed, i.e. lines that consist of (3 or more of the same) 7-bit
     # non-ASCII chars.
     # This conditional is not perfect but should hopefully be good enough.
@@ -271,7 +269,7 @@ def md5sum_is_current(src_file, mode='b'):
 
     src_md5_file = src_file + '.md5'
     if os.path.exists(src_md5_file):
-        with open(src_md5_file, 'r') as file_checksum:
+        with open(src_md5_file) as file_checksum:
             ref_md5 = file_checksum.read()
 
         return src_md5 == ref_md5
@@ -325,7 +323,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
 
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir,
-                              'sphx_glr_%s_thumb.%s' % (base_image_name, ext))
+                              f'sphx_glr_{base_image_name}_thumb.{ext}')
 
     if src_file in gallery_conf['failing_examples']:
         img = os.path.join(glr_path_static(), 'broken_example.png')
@@ -344,7 +342,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         return
     # update extension, since gallery_conf setting can be different
     # from file_conf
-    thumb_file = '%s.%s' % (os.path.splitext(thumb_file)[0], ext)
+    thumb_file = f'{os.path.splitext(thumb_file)[0]}.{ext}'
     if ext in ('svg', 'gif'):
         copyfile(img, thumb_file)
     else:
@@ -369,8 +367,8 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
                 return fpth
     if raise_error:
         raise ExtensionError(
-            "Example directory {0} does not have a README file with one "
-            "of the expected file extensions {1}. Please write one to "
+            "Example directory {} does not have a README file with one "
+            "of the expected file extensions {}. Please write one to "
             "introduce your gallery.".format(dir_, extensions))
     return None
 
@@ -486,7 +484,7 @@ def generate_dir_rst(
         with codecs.open(subsection_index_path, 'w', encoding='utf-8') as (
             findex
         ):
-            findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
+            findex.write("""\n\n.. _sphx_glr_{}:\n\n""".format(
                 head_ref.replace(os.path.sep, '_')
             ))
             findex.write(subsection_index_content)
@@ -631,7 +629,7 @@ def patch_warnings():
         warnings.showwarning = orig_showwarning
 
 
-class _exec_once(object):
+class _exec_once:
     """Deal with memory_usage calling functions more than once (argh)."""
 
     def __init__(self, code, fake_main):
@@ -751,7 +749,7 @@ def _get_last_repr(capture_repr, ___):
 
 def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
                      images_rst, file_conf):
-    """Obtain standard output and html output in rST."""
+    """Obtain standard output and html output in reST."""
     last_repr = None
     repr_meth = None
     if is_last_expr:
@@ -770,23 +768,23 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
     captured_std = logging_tee.output.getvalue().expandtabs()
     # normal string output
     if repr_meth in ['__repr__', '__str__'] and last_repr:
-        captured_std = u"{0}\n{1}".format(captured_std, last_repr)
+        captured_std = f"{captured_std}\n{last_repr}"
     if captured_std and not captured_std.isspace():
-        captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
+        captured_std = CODE_OUTPUT.format(indent(captured_std, ' ' * 4))
     else:
         captured_std = ''
 
-    # Sanitize ANSI escape characters for RST output
+    # Sanitize ANSI escape characters for reST output
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     captured_std = ansi_escape.sub('', captured_std)
 
     # give html output its own header
     if repr_meth == '_repr_html_':
-        captured_html = HTML_HEADER.format(indent(last_repr, u' ' * 4))
+        captured_html = HTML_HEADER.format(indent(last_repr, ' ' * 4))
     else:
         captured_html = ''
 
-    code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(
+    code_output = "\n{}\n\n{}\n{}\n\n".format(
         images_rst, captured_std, captured_html
     )
     return code_output
@@ -827,7 +825,7 @@ def execute_code_block(compiler, block, example_globals, script_vars,
     Returns
     -------
     code_output : str
-        Output of executing code in rST.
+        Output of executing code in reST.
     """
     if example_globals is None:  # testing shortcut
         example_globals = script_vars['fake_main'].__dict__
@@ -871,13 +869,13 @@ def execute_code_block(compiler, block, example_globals, script_vars,
             need_save_figures = False
             images_rst = save_figures(block, script_vars, gallery_conf)
         else:
-            images_rst = u''
+            images_rst = ''
     except Exception:
         logging_tee.restore_std()
         except_rst = handle_exception(
             sys.exc_info(), src_file, script_vars, gallery_conf
         )
-        code_output = u"\n{0}\n\n\n\n".format(except_rst)
+        code_output = f"\n{except_rst}\n\n\n\n"
         # still call this even though we won't use the images so that
         # figures are closed
         if need_save_figures:
@@ -1143,7 +1141,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)
     exclude_regex = gallery_conf['exclude_implicit_doc_regex']
-    backrefs = set(
+    backrefs = {
         '{module_short}.{name}'.format(**cobj)
         for cobjs in example_code_obj.values()
         for cobj in cobjs
@@ -1152,7 +1150,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             (not exclude_regex) or
             (not exclude_regex.search('{module}.{name}'.format(**cobj)))
         )
-    )
+    }
 
     # Write backreferences
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
@@ -1302,7 +1300,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     fname = os.path.basename(example_file)
 
     if gallery_conf['show_memory']:
-        example_rst += ("**Estimated memory usage:** {0: .0f} MB\n\n"
+        example_rst += ("**Estimated memory usage:** {: .0f} MB\n\n"
                         .format(memory_used))
 
     # Generate a binder URL if specified

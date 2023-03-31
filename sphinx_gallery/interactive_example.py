@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Chris Holdgraf
 # License: 3-clause BSD
 """
@@ -71,14 +70,14 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
                            quote(binder_conf['branch'])])
 
     if binder_conf['use_jupyter_lab'] is True:
-        binder_url += '?urlpath=lab/tree/{}'.format(quote(path_link))
+        binder_url += f'?urlpath=lab/tree/{quote(path_link)}'
     else:
-        binder_url += '?filepath={}'.format(quote(path_link))
+        binder_url += f'?filepath={quote(path_link)}'
     return binder_url
 
 
 def gen_binder_rst(fpath, binder_conf, gallery_conf):
-    """Generate the RST + link for the Binder badge.
+    """Generate the reST + link for the Binder badge.
 
     Parameters
     ----------
@@ -239,7 +238,7 @@ def check_binder_conf(binder_conf):
 
     for key in binder_conf.keys():
         if key not in (req_values + optional_values):
-            raise ConfigError("Unknown Binder config key: {}".format(key))
+            raise ConfigError(f"Unknown Binder config key: {key}")
 
     # Ensure we have http in the URL
     if not any(binder_conf['binderhub_url'].startswith(ii)
@@ -357,7 +356,7 @@ def create_jupyterlite_contents(app, exception):
 
 
 def gen_jupyterlite_rst(fpath, gallery_conf):
-    """Generate the RST + link for the Binder badge.
+    """Generate the reST + link for the Binder badge.
 
     Parameters
     ----------
@@ -429,12 +428,24 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
         raise ConfigError(
             '`jupyterlite_conf` must be a dictionary')
 
+    conf_defaults = {
+        'jupyterlite_contents': 'jupyterlite_contents',
+        'notebook_modification_function': None,
+        'use_jupyter_lab': True,
+    }
+
     result = jupyterlite_conf.copy()
-    result.setdefault('use_jupyter_lab', True)
-    result.setdefault('jupyterlite_contents', 'jupyterlite_contents')
+    unknown_keys = set(result) - set(conf_defaults)
+    if unknown_keys:
+        raise ConfigError(
+            f"Found some unknown keys in sphinx_gallery_conf['jupyterlite']: "
+            f"{sorted(unknown_keys)}. "
+            f"Allowed keys are: {list(conf_defaults)}")
+
+    for key, default_value in conf_defaults.items():
+        result.setdefault(key, default_value)
     result['jupyterlite_contents'] = os.path.join(
         app.srcdir,
         result['jupyterlite_contents'])
-    result.setdefault('notebook_modification_function', None)
 
     return result

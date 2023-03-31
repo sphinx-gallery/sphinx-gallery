@@ -56,7 +56,7 @@ class MiniGallery(Directive):
             heading = self.options['add-heading']
             if heading == "":
                 if len(obj_list) == 1:
-                    heading = 'Examples using ``{}``'.format(obj_list[0])
+                    heading = f'Examples using ``{obj_list[0]}``'
                 else:
                     heading = 'Examples using one of multiple objects'
             lines.append(heading)
@@ -66,7 +66,7 @@ class MiniGallery(Directive):
         def has_backrefs(obj):
             src_dir = config.sphinx_gallery_conf['src_dir']
             path = os.path.join(src_dir, backreferences_dir,
-                                '{}.examples'.format(obj))
+                                f'{obj}.examples')
             return os.path.isfile(path) and os.path.getsize(path) > 0
 
         if not any(has_backrefs(obj) for obj in obj_list):
@@ -78,7 +78,7 @@ class MiniGallery(Directive):
         for obj in obj_list:
             path = os.path.join('/',  # Sphinx treats this as the source dir
                                 backreferences_dir,
-                                '{}.examples'.format(obj))
+                                f'{obj}.examples')
 
             # Always remove the heading from the file
             lines.append("""\
@@ -111,8 +111,8 @@ def directive_boolean(value):
     elif value.lower().strip() in ['no', '0', 0, 'false', 'none']:
         return False
     else:
-        raise ValueError(u"Please use one of: yes, true, no, false. "
-                         u"Do not use `{}` as boolean.".format(value))
+        raise ValueError("Please use one of: yes, true, no, false. "
+                         "Do not use `{}` as boolean.".format(value))
 
 
 class ImageSg(images.Image):

@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
 Testing the rst files generator
 """
-from __future__ import division, absolute_import, print_function
 
 import pytest
 from sphinx.errors import ExtensionError
@@ -38,7 +36,7 @@ REFERENCE = r"""
     ('<"test">', '&lt;&quot;test&quot;&gt;', False),
     # backref support
     ('test formating', 'test formating', True),
-    # RST sanitizing
+    # reST sanitizing
     ('1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`',
      '1 b. 2 a.b 3 better name', False),
     ('use :meth:`mne.io.Raw.plot_psd` to',
@@ -162,9 +160,9 @@ Title
 This example uses :func:`k.l` and :meth:`~m.n`.
 '''
 """ + code_str.split(b"'''")[-1]
-    expected['k.l'] = [{u'module': u'k', u'module_short': u'k', u'name': u'l',
+    expected['k.l'] = [{'module': 'k', 'module_short': 'k', 'name': 'l',
                         'is_class': False, 'is_explicit': True}]
-    expected['m.n'] = [{u'module': u'm', u'module_short': u'm', u'name': u'n',
+    expected['m.n'] = [{'module': 'm', 'module_short': 'm', 'name': 'n',
                         'is_class': False, 'is_explicit': True}]
 
     fname = tmpdir.join("identify_names.py")

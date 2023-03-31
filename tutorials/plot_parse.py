@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 Alternating text and code
 =========================
 
-Sphinx-Gallery is capable of transforming Python files into rST files
+Sphinx-Gallery is capable of transforming Python files into reST files
 with a notebook structure. For this to be used you need to respect some syntax
 rules. This example demonstrates how to alternate text and code blocks and some
 edge cases. It was designed to be compared with the
@@ -73,11 +72,11 @@ def dummy():
 # New lines can be included in your text block and the parser
 # is capable of retaining this important whitespace to work with Sphinx.
 # Everything after a block splitter and starting with ``#`` then one space,
-# is interpreted by Sphinx-Gallery to be a rST text block. Keep your text
+# is interpreted by Sphinx-Gallery to be a reST text block. Keep your text
 # block together using ``#`` and a space at the beginning of each line.
 #
-# rST header within text block
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# reST header within text block
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 print('one')
 

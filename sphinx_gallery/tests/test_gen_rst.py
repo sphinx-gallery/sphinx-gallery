@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
 Testing the rst files generator
 """
-from __future__ import (division, absolute_import, print_function,
-                        unicode_literals)
 import ast
 import codecs
 import importlib
@@ -381,11 +378,11 @@ def test_fail_example(gallery_conf, failing_code, want,
 
 
 def _generate_rst(gallery_conf, fname, content):
-    """Return the rST text of a given example content.
+    """Return the reST text of a given example content.
 
     This writes a file gallery_conf['examples_dir']/fname with *content*,
     creates the corresponding rst file by running generate_file_rst() and
-    returns the generated rST code.
+    returns the generated reST code.
 
     Parameters
     ----------
@@ -400,7 +397,7 @@ def _generate_rst(gallery_conf, fname, content):
     Returns
     -------
     rst : str
-        The generated rST code.
+        The generated reST code.
     """
     with codecs.open(os.path.join(gallery_conf['examples_dir'], fname),
                      mode='w', encoding='utf-8') as f:
@@ -557,7 +554,7 @@ def test_gen_dir_rst(gallery_conf, ext):
     print(os.listdir(gallery_conf['examples_dir']))
     fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
     with open(fname_readme, 'wb') as fid:
-        fid.write(u"Testing\n=======\n\nÓscar here.".encode('utf-8'))
+        fid.write("Testing\n=======\n\nÓscar here.".encode())
     fname_out = os.path.splitext(fname_readme)[0] + ext
     if fname_readme != fname_out:
         shutil.move(fname_readme, fname_out)
@@ -568,7 +565,7 @@ def test_gen_dir_rst(gallery_conf, ext):
             generate_dir_rst(*args)
     else:
         out = generate_dir_rst(*args)
-        assert u"Óscar here" in out[1]
+        assert "Óscar here" in out[1]
 
 
 def test_pattern_matching(gallery_conf, log_collector, req_pil):
@@ -643,7 +640,7 @@ def test_zip_notebooks(gallery_conf):
     zipfilepath = downloads.python_zip(examples, gallery_conf['gallery_dir'])
     zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
-    assert not check, "Bad file in zipfile: {0}".format(check)
+    assert not check, f"Bad file in zipfile: {check}"
 
 
 def test_rst_example(gallery_conf):

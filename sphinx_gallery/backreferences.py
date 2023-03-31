@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
@@ -7,7 +6,6 @@ Backreferences Generator
 
 Parses example file code in order to keep track of used functions
 """
-from __future__ import print_function, unicode_literals
 
 import ast
 import codecs
@@ -40,7 +38,7 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
 """
 
 
-class DummyClass(object):
+class DummyClass:
     """Dummy class for testing method resolution."""
 
     def run(self):
@@ -60,7 +58,7 @@ class NameFinder(ast.NodeVisitor):
     """
 
     def __init__(self, global_variables=None):
-        super(NameFinder, self).__init__()
+        super().__init__()
         self.imported_names = {}
         self.global_variables = global_variables or {}
         self.accessed_names = set()
@@ -165,7 +163,7 @@ class NameFinder(ast.NodeVisitor):
 
 
 def _from_import(a, b):
-    imp_line = 'from %s import %s' % (a, b)
+    imp_line = f'from {a} import {b}'
     scope = dict()
     with warnings.catch_warnings(record=True):  # swallow warnings
         warnings.simplefilter('ignore')
@@ -285,7 +283,7 @@ BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
 
 def _thumbnail_div(target_dir, src_dir, fname, snippet, title,
                    is_backref=False, check=True):
-    """Generate RST to place a thumbnail in a gallery."""
+    """Generate reST to place a thumbnail in a gallery."""
     thumb, _ = _find_image_ext(
         os.path.join(target_dir, 'images', 'thumb',
                      'sphx_glr_%s_thumb.png' % fname[:-3]))
@@ -354,6 +352,6 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
         else:
             level = gallery_conf['log_level']['backreference_missing']
             func = getattr(logger, level)
-            func('Could not find backreferences file: %s' % (path,))
+            func(f'Could not find backreferences file: {path}')
             func('The backreferences are likely to be erroneous '
                  'due to file system case insensitivity.')
