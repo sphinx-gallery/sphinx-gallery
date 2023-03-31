@@ -358,7 +358,6 @@ def _complete_gallery_conf_config_inited(sphinx_gallery_conf, app=None,
     gallery_conf['binder'] = check_binder_conf(gallery_conf['binder'])
 
     # jupyterlite
-    print('_complete_gallery_conf', gallery_conf.get('jupyterlite'))
     gallery_conf['jupyterlite'] = check_jupyterlite_conf(
         gallery_conf.get('jupyterlite', {}), app)
 

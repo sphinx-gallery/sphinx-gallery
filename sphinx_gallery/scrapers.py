@@ -118,7 +118,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     image_path_iterator = block_vars['image_path_iterator']
     image_rsts = []
     # Check for srcset hidpi images
-    srcset = gallery_conf.get('image_srcset', [])
+    srcset = gallery_conf['image_srcset']
     srcset_mult_facs = [1]  # one is always supplied...
     for st in srcset:
         if (len(st) > 0) and (st[-1] == 'x'):
@@ -134,7 +134,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     # Check for animations
     anims = list()
-    if gallery_conf.get('matplotlib_animations', False):
+    if gallery_conf['matplotlib_animations']:
         for ani in block_vars['example_globals'].values():
             if isinstance(ani, Animation):
                 anims.append(ani)
