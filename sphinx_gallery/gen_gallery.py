@@ -1044,7 +1044,7 @@ def _parse_failures(gallery_conf):
     # filter from examples actually run
     passing_unexpectedly = [
         src_file for src_file in passing_unexpectedly
-        if re.search(gallery_conf.get('filename_pattern'), src_file)]
+        if re.search(gallery_conf['filename_pattern'], src_file)]
     return failing_as_expected, failing_unexpectedly, passing_unexpectedly
 
 

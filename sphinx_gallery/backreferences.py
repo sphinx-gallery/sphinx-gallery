@@ -352,8 +352,7 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
                 ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
             _replace_md5(path, mode='t')
         else:
-            level = gallery_conf['log_level'].get('backreference_missing',
-                                                  'warning')
+            level = gallery_conf['log_level']['backreference_missing']
             func = getattr(logger, level)
             func('Could not find backreferences file: %s' % (path,))
             func('The backreferences are likely to be erroneous '

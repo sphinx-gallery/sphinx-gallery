@@ -1274,12 +1274,10 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     example_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
     ref_fname = example_fname.replace(os.path.sep, "_")
 
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
+    binder_conf = gallery_conf['binder']
     is_binder_enabled = len(binder_conf) > 0
 
-    jupyterlite_conf = check_jupyterlite_conf(
-        gallery_conf.get('jupyterlite', {}),
-        gallery_conf['app'])
+    jupyterlite_conf = gallery_conf['jupyterlite']
     is_jupyterlite_enabled = jupyterlite_conf is not None
 
     interactive_example_text = ""
