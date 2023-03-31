@@ -23,6 +23,7 @@ import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import generate_dir_rst, _update_gallery_conf
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
+from sphinx_gallery.interactive_example import check_binder_conf
 
 CONTENT = [
     '"""',
@@ -644,15 +645,17 @@ def test_zip_notebooks(gallery_conf):
 
 def test_rst_example(gallery_conf):
     """Test generated rst file includes the correct paths for binder."""
-    gallery_conf.update(binder={'org': 'sphinx-gallery',
-                                'repo': 'sphinx-gallery.github.io',
-                                'binderhub_url': 'https://mybinder.org',
-                                'branch': 'master',
-                                'dependencies': './binder/requirements.txt',
-                                'notebooks_dir': 'notebooks',
-                                'use_jupyter_lab': True,
-                                },
-                        gallery_dirs=None)
+    binder_conf = check_binder_conf(
+        {
+            'org': 'sphinx-gallery',
+            'repo': 'sphinx-gallery.github.io',
+            'binderhub_url': 'https://mybinder.org',
+            'branch': 'master',
+            'dependencies': './binder/requirements.txt',
+            'use_jupyter_lab': True
+         }
+    )
+    gallery_conf.update(binder=binder_conf)
 
     example_file = os.path.join(gallery_conf['gallery_dir'], "plot.py")
     sg.save_rst_example("example_rst", example_file, 0, 0, gallery_conf)
@@ -661,7 +664,7 @@ def test_rst_example(gallery_conf):
     with codecs.open(test_file) as f:
         rst = f.read()
 
-    assert "lab/tree/notebooks/plot.ipy" in rst
+    assert "lab/tree/notebooks/plot.ipynb" in rst
 
     # CSS classes
     assert "rst-class:: sphx-glr-signature" in rst

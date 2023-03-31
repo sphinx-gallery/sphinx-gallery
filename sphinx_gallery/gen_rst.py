@@ -48,8 +48,8 @@ from .py_source_parser import (split_code_and_text_blocks,
                                remove_ignore_blocks)
 
 from .notebook import jupyter_notebook, save_notebook
-from .interactive_example import check_binder_conf, gen_binder_rst
-from .interactive_example import check_jupyterlite_conf, gen_jupyterlite_rst
+from .interactive_example import gen_binder_rst
+from .interactive_example import gen_jupyterlite_rst
 
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
@@ -331,7 +331,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         img = thumbnail_image_path
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        default_thumb_path = gallery_conf.get("default_thumb_file")
+        default_thumb_path = gallery_conf["default_thumb_file"]
         if default_thumb_path is None:
             default_thumb_path = os.path.join(
                 glr_path_static(),
@@ -510,7 +510,7 @@ def generate_dir_rst(
         subsection_index_content = None
 
     # Copy over any other files.
-    copyregex = gallery_conf.get('copyfile_regex')
+    copyregex = gallery_conf['copyfile_regex']
     if copyregex:
         listdir = [fname for fname in os.listdir(src_dir) if
                    re.match(copyregex, fname)]
@@ -911,7 +911,7 @@ def executable_script(src_file, gallery_conf):
         True if script has to be executed
     """
 
-    filename_pattern = gallery_conf.get('filename_pattern')
+    filename_pattern = gallery_conf['filename_pattern']
     execute = re.search(filename_pattern, src_file) and gallery_conf[
         'plot_gallery']
     return execute
@@ -1230,7 +1230,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
         if blabel == 'code':
 
             if not file_conf.get('line_numbers',
-                                 gallery_conf.get('line_numbers', False)):
+                                 gallery_conf['line_numbers']):
                 lineno = None
 
             code_rst = codestr2rst(bcontent, lang=gallery_conf['lang'],
@@ -1272,12 +1272,10 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     example_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
     ref_fname = example_fname.replace(os.path.sep, "_")
 
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
+    binder_conf = gallery_conf['binder']
     is_binder_enabled = len(binder_conf) > 0
 
-    jupyterlite_conf = check_jupyterlite_conf(
-        gallery_conf.get('jupyterlite', {}),
-        gallery_conf['app'])
+    jupyterlite_conf = gallery_conf['jupyterlite']
     is_jupyterlite_enabled = jupyterlite_conf is not None
 
     interactive_example_text = ""

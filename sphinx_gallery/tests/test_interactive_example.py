@@ -60,8 +60,9 @@ def test_binder():
         url = check_binder_conf(conf2)
 
     # Assert missing params
+    optional_keys = ['filepath_prefix', 'notebooks_dir', 'use_jupyter_lab']
     for key in conf1.keys():
-        if key == 'notebooks_dir':
+        if key in optional_keys:
             continue
         conf3 = deepcopy(conf1)
         conf3.pop(key)
