@@ -1180,8 +1180,13 @@ def normalize_gallery_conf_builder_inited(app):
         app.builder.config.abort_on_example_error)
     lang = app.builder.config.highlight_language
     _complete_gallery_conf_builder_inited(
-        app.config.sphinx_gallery_conf, src_dir, plot_gallery,
-        abort_on_example_error, lang, app.builder.name)
+        app.config.sphinx_gallery_conf,
+        src_dir,
+        plot_gallery=plot_gallery,
+        abort_on_example_error=abort_on_example_error,
+        lang=lang,
+        builder_name=app.builder.name
+    )
 
 
 def setup(app):
