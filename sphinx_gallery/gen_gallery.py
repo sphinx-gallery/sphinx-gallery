@@ -1192,9 +1192,9 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
-
     # Early normalization of sphinx_gallery_conf at config-inited
-    app.connect('config-inited', normalize_gallery_conf_config_inited, priority=10)
+    app.connect('config-inited', normalize_gallery_conf_config_inited,
+                priority=10)
     # set small priority value, so that pre_configure_jupyterlite_sphinx is
     # called before jupyterlite_sphinx config-inited
     app.connect(

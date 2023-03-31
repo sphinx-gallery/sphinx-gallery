@@ -123,7 +123,8 @@ def test_custom_scraper(gallery_conf, monkeypatch):
         for cust in (_custom_func, 'sphinx_gallery'):
             gallery_conf.update(image_scrapers=[cust])
             # smoke test that it works
-            _complete_gallery_conf_config_inited(gallery_conf, check_keys=False)
+            _complete_gallery_conf_config_inited(
+                gallery_conf, check_keys=False)
     # degenerate
     # without the monkey patch to add sphinx_gallery._get_sg_image_scraper,
     # we should get an error
@@ -153,12 +154,14 @@ def test_custom_scraper(gallery_conf, monkeypatch):
         m.setattr(sphinx_gallery, '_get_sg_image_scraper', 'foo',
                   raising=False)
         with pytest.raises(ConfigError, match='^Unknown image.*\n.*callable'):
-            _complete_gallery_conf_config_inited(gallery_conf, check_keys=False)
+            _complete_gallery_conf_config_inited(
+                gallery_conf, check_keys=False)
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, '_get_sg_image_scraper', lambda: 'foo',
                   raising=False)
         with pytest.raises(ConfigError, match='^Scraper.*was not callable'):
-            _complete_gallery_conf_config_inited(gallery_conf, check_keys=False)
+            _complete_gallery_conf_config_inited(
+                gallery_conf, check_keys=False)
 
 
 @pytest.mark.parametrize('ext', _KNOWN_IMG_EXTS)

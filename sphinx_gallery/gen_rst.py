@@ -48,8 +48,8 @@ from .py_source_parser import (split_code_and_text_blocks,
                                remove_ignore_blocks)
 
 from .notebook import jupyter_notebook, save_notebook
-from .interactive_example import check_binder_conf, gen_binder_rst
-from .interactive_example import check_jupyterlite_conf, gen_jupyterlite_rst
+from .interactive_example import gen_binder_rst
+from .interactive_example import gen_jupyterlite_rst
 
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
