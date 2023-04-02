@@ -4,7 +4,7 @@ import pytest
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx_gallery
-from sphinx_gallery.gen_gallery import _complete_gallery_conf_config_inited
+from sphinx_gallery.gen_gallery import _fill_gallery_conf_defaults
 from sphinx_gallery.scrapers import (figure_rst, SG_IMAGE,
                                      matplotlib_scraper, ImagePathIterator,
                                      save_figures, _KNOWN_IMG_EXTS,
@@ -17,7 +17,7 @@ def gallery_conf(tmpdir):
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
-    gallery_conf = _complete_gallery_conf_config_inited({})
+    gallery_conf = _fill_gallery_conf_defaults({})
     gallery_conf.update(src_dir=str(tmpdir), examples_dir=str(tmpdir),
                         gallery_dir=str(tmpdir))
 
@@ -123,7 +123,7 @@ def test_custom_scraper(gallery_conf, monkeypatch):
         for cust in (_custom_func, 'sphinx_gallery'):
             gallery_conf.update(image_scrapers=[cust])
             # smoke test that it works
-            _complete_gallery_conf_config_inited(
+            _fill_gallery_conf_defaults(
                 gallery_conf, check_keys=False)
     # degenerate
     # without the monkey patch to add sphinx_gallery._get_sg_image_scraper,
@@ -131,12 +131,12 @@ def test_custom_scraper(gallery_conf, monkeypatch):
     gallery_conf.update(image_scrapers=['sphinx_gallery'])
     with pytest.raises(ConfigError,
                        match="has no attribute '_get_sg_image_scraper'"):
-        _complete_gallery_conf_config_inited(gallery_conf, check_keys=False)
+        _fill_gallery_conf_defaults(gallery_conf, check_keys=False)
 
     # other degenerate conditions
     gallery_conf.update(image_scrapers=['foo'])
     with pytest.raises(ConfigError, match='Unknown image scraper'):
-        _complete_gallery_conf_config_inited(gallery_conf, check_keys=False)
+        _fill_gallery_conf_defaults(gallery_conf, check_keys=False)
     gallery_conf.update(image_scrapers=[_custom_func])
     fname_template = os.path.join(gallery_conf['gallery_dir'],
                                   'image{0}.png')
@@ -154,13 +154,13 @@ def test_custom_scraper(gallery_conf, monkeypatch):
         m.setattr(sphinx_gallery, '_get_sg_image_scraper', 'foo',
                   raising=False)
         with pytest.raises(ConfigError, match='^Unknown image.*\n.*callable'):
-            _complete_gallery_conf_config_inited(
+            _fill_gallery_conf_defaults(
                 gallery_conf, check_keys=False)
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, '_get_sg_image_scraper', lambda: 'foo',
                   raising=False)
         with pytest.raises(ConfigError, match='^Scraper.*was not callable'):
-            _complete_gallery_conf_config_inited(
+            _fill_gallery_conf_defaults(
                 gallery_conf, check_keys=False)
 
 

@@ -15,9 +15,9 @@ from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
     collect_gallery_files, write_computation_times,
-    _complete_gallery_conf_config_inited,
+    _fill_gallery_conf_defaults,
     write_api_entry_usage,
-    normalize_gallery_conf_config_inited
+    fill_gallery_conf_defaults
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 
@@ -26,10 +26,10 @@ def test_bad_config():
     """Test that bad config values are caught."""
     sphinx_gallery_conf = dict(example_dir='')
     with pytest.raises(ConfigError, match="example_dir.*did you mean 'examples_dirs'?.*"):  # noqa: E501
-        _complete_gallery_conf_config_inited(sphinx_gallery_conf)
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(n_subsection_order='')
     with pytest.raises(ConfigError, match=r"did you mean one of \['subsection_order', 'within_.*"):  # noqa: E501
-        _complete_gallery_conf_config_inited(sphinx_gallery_conf)
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
 
 
 def test_default_config(sphinx_app_wrapper):
@@ -114,11 +114,11 @@ def test_bad_api():
     """Test that we raise an error for bad API usage arguments."""
     sphinx_gallery_conf = dict(api_usage_ignore=('foo',))
     with pytest.raises(ConfigError, match='.*must be str.*'):
-        _complete_gallery_conf_config_inited(sphinx_gallery_conf)
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(show_api_usage='foo')
     with pytest.raises(ConfigError,
                        match='.*must be True, False or "unused".*'):
-        _complete_gallery_conf_config_inited(sphinx_gallery_conf)
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
 
 
 @pytest.mark.conf_file(content="""
@@ -428,7 +428,7 @@ def test_first_notebook_cell_config(sphinx_app_wrapper):
     # First cell must be str
     with pytest.raises(ConfigError):
         app = sphinx_app_wrapper.create_sphinx_app()
-        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -439,7 +439,7 @@ def test_last_notebook_cell_config(sphinx_app_wrapper):
     # Last cell must be str
     with pytest.raises(ConfigError):
         app = sphinx_app_wrapper.create_sphinx_app()
-        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -451,7 +451,7 @@ def test_backreferences_dir_config(sphinx_app_wrapper):
     with pytest.raises(ConfigError,
                        match="The 'backreferences_dir' parameter must be of"):
         app = sphinx_app_wrapper.create_sphinx_app()
-        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -463,7 +463,7 @@ sphinx_gallery_conf = {
 def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     """Tests pathlib.Path does not raise exception."""
     app = sphinx_app_wrapper.create_sphinx_app()
-    normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
+    fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 def test_write_computation_times_noop():
@@ -485,7 +485,7 @@ def test_pypandoc_config_list(sphinx_app_wrapper):
                        match="'pypandoc' parameter must be of type bool or "
                              "dict"):
         app = sphinx_app_wrapper.create_sphinx_app()
-        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -498,7 +498,7 @@ def test_pypandoc_config_keys(sphinx_app_wrapper):
                        match="'pypandoc' only accepts the following key "
                              "values:"):
         app = sphinx_app_wrapper.create_sphinx_app()
-        normalize_gallery_conf_config_inited(app, app.config, check_keys=False)
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
