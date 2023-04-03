@@ -122,8 +122,8 @@ def _bool_eval(x):
     return bool(x)
 
 
-def _update_gallery_conf(gallery_conf):
-    """Update gallery config.
+def _update_gallery_conf_exclude_implicit_doc(gallery_conf):
+    """Update gallery config exclude_implicit_doc.
 
     This is separate function for better testability.
     """
@@ -133,7 +133,7 @@ def _update_gallery_conf(gallery_conf):
     gallery_conf['exclude_implicit_doc_regex'] = exclude_regex
 
 
-def _complete_gallery_conf_builder_inited(
+def _update_gallery_conf_builder_inited(
         sphinx_gallery_conf, src_dir, plot_gallery=True,
         abort_on_example_error=False, lang='python',
         builder_name='html'):
@@ -146,8 +146,8 @@ def _complete_gallery_conf_builder_inited(
     sphinx_gallery_conf['builder_name'] = builder_name
 
 
-def _complete_gallery_conf_config_inited(sphinx_gallery_conf, app=None,
-                                         check_keys=True):
+def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
+                                check_keys=True):
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     options = sorted(gallery_conf)
     extra_keys = sorted(set(sphinx_gallery_conf) - set(options))
@@ -380,7 +380,7 @@ def _complete_gallery_conf_config_inited(sphinx_gallery_conf, app=None,
             'gallery_conf["show_api_usage"] must be True, False or "unused", '
             'got %s' % gallery_conf['show_api_usage'])
 
-    _update_gallery_conf(gallery_conf)
+    _update_gallery_conf_exclude_implicit_doc(gallery_conf)
 
     return gallery_conf
 
@@ -1163,20 +1163,28 @@ def get_default_config_value(key):
     return default_getter
 
 
-def normalize_gallery_conf_config_inited(app, config, check_keys=True):
-    new_sphinx_gallery_conf = _complete_gallery_conf_config_inited(
+def fill_gallery_conf_defaults(app, config, check_keys=True):
+    """Check the sphinx-gallery config and set its defaults.
+
+    This is called early at config-inited, so that all the rest of the code can
+    do things like ``sphinx_gallery_conf['binder']['use_jupyter_lab']``, even
+    if the keys have not been set explicitly in conf.py.
+    """
+    new_sphinx_gallery_conf = _fill_gallery_conf_defaults(
         config.sphinx_gallery_conf, app=app, check_keys=check_keys)
     config.sphinx_gallery_conf = new_sphinx_gallery_conf
     config.html_static_path.append(glr_path_static())
 
 
-def normalize_gallery_conf_builder_inited(app):
+def update_gallery_conf_builder_inited(app):
+    """Update the the sphinx-gallery config at builder-inited.
+    """
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
     src_dir = app.builder.srcdir
     abort_on_example_error = _bool_eval(
         app.builder.config.abort_on_example_error)
     lang = app.builder.config.highlight_language
-    _complete_gallery_conf_builder_inited(
+    _update_gallery_conf_builder_inited(
         app.config.sphinx_gallery_conf,
         src_dir,
         plot_gallery=plot_gallery,
@@ -1192,8 +1200,8 @@ def setup(app):
     for key in ['plot_gallery', 'abort_on_example_error']:
         app.add_config_value(key, get_default_config_value(key), 'html')
 
-    # Early normalization of sphinx_gallery_conf at config-inited
-    app.connect('config-inited', normalize_gallery_conf_config_inited,
+    # Early filling of sphinx_gallery_conf defaults at config-inited
+    app.connect('config-inited', fill_gallery_conf_defaults,
                 priority=10)
     # set small priority value, so that pre_configure_jupyterlite_sphinx is
     # called before jupyterlite_sphinx config-inited
@@ -1215,8 +1223,8 @@ def setup(app):
 
     imagesg_addnode(app)
 
-    # Early normalization of sphinx_gallery_conf at builder-inited
-    app.connect('builder-inited', normalize_gallery_conf_builder_inited,
+    # Early update of sphinx_gallery_conf at builder-inited
+    app.connect('builder-inited', update_gallery_conf_builder_inited,
                 priority=10)
     app.connect('builder-inited', generate_gallery_rst)
     app.connect('build-finished', copy_binder_files)

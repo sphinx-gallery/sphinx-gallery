@@ -21,7 +21,8 @@ import pytest
 from sphinx.errors import ExtensionError
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
-from sphinx_gallery.gen_gallery import generate_dir_rst, _update_gallery_conf
+from sphinx_gallery.gen_gallery import (
+    generate_dir_rst, _update_gallery_conf_exclude_implicit_doc)
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 from sphinx_gallery.interactive_example import check_binder_conf
 
@@ -540,7 +541,7 @@ def test_exclude_implicit(gallery_conf,
     gallery_conf['doc_module'] = ('numpy',)
     if exclusion:
         gallery_conf['exclude_implicit_doc'] = exclusion
-        _update_gallery_conf(gallery_conf)
+        _update_gallery_conf_exclude_implicit_doc(gallery_conf)
     _generate_rst(gallery_conf, 'test_exclude_implicit.py', EXCLUDE_CONTENT)
     if sys.version_info >= (3, 8, 0):
         assert mock_write_backreferences.call_args.args[0] == expected
