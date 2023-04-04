@@ -446,7 +446,9 @@ enables you to link to any examples that either:
    code.
 2. Refer to that function/method/attribute/object/class using sphinx markup
    ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a text
-   block.
+   block. You can omit this role markup if you have set the `default_role
+   <https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role>`_
+   in your ``conf.py`` to any of these roles.
 
 The former is useful for auto-documenting functions that are used and classes
 that are explicitly instantiated. The generated links are called implicit

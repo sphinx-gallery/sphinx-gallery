@@ -39,7 +39,9 @@ x = Figure()  # plt.Figure should be decorated (class), x shouldn't (inst)
 # nested resolution resolves to numpy.random.mtrand.RandomState:
 rng = np.random.RandomState(0)
 # test Issue 583
-sphinx_gallery.backreferences.identify_names([('text', 'Text block', 1)])
+sphinx_gallery.backreferences.identify_names(
+    [('text', 'Text block', 1)],
+    sphinx_gallery.backreferences._make_ref_regex({'default_role': None}))
 # 583: methods don't link properly
 dc = sphinx_gallery.backreferences.DummyClass()
 dc.run()
