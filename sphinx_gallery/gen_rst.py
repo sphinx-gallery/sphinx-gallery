@@ -450,7 +450,7 @@ def generate_dir_rst(
     costs = []
     subsection_toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    iterator = sphinx.util.status_iterator(
+    iterator = sphinx.util.display.status_iterator(
         sorted_listdir,
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
