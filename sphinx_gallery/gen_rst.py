@@ -177,6 +177,11 @@ HTML_HEADER = """.. raw:: html
     <br />"""
 
 
+RECOMMENDATIONS_INCLUDE = """\n
+.. include:: {0}.recommendations
+"""
+
+
 def codestr2rst(codestr, lang='python', lineno=None):
     """Return reStructuredText code block from code string."""
     if lineno is not None:
@@ -1321,6 +1326,10 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                                         binder_badge_rst,
                                         ref_fname,
                                         jupyterlite_rst)
+    
+    recommendation_fname = example_fname.rsplit(".", maxsplit=1)[0].rsplit("/", maxsplit=1)[-1]
+    example_rst += RECOMMENDATIONS_INCLUDE.format(recommendation_fname)
+
     if gallery_conf['show_signature']:
         example_rst += SPHX_GLR_SIG
 

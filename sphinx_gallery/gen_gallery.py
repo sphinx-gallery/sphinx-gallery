@@ -20,6 +20,7 @@ import re
 import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
+from itertools import chain
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
@@ -40,6 +41,7 @@ from .interactive_example import pre_configure_jupyterlite_sphinx
 from .interactive_example import post_configure_jupyterlite_sphinx
 from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
+from .recommender import ExampleRecommender, _write_recommendations
 
 _KNOWN_CSS = ('sg_gallery', 'sg_gallery-binder', 'sg_gallery-dataframe',
               'sg_gallery-rendered-html')
@@ -615,6 +617,27 @@ def generate_gallery_rst(app):
             write_computation_times(
                 gallery_conf, target_dir, subsection_costs
             )
+
+        # Build recommendation system
+        # TODO: rename variables
+        all_py_examples = []
+        directory_explore = [gallery_dir_abs_path] + subsecs
+        for subsection in directory_explore:
+            src_dir = os.path.join(gallery_dir_abs_path, subsection)
+            # get filenames
+            listdir = [fname for fname in os.listdir(src_dir)
+                    if fname.endswith('.py')]
+            # sort them to ensure that the input will always be in the same order when
+            # giving it to the `fit` of the recommender
+            sorted_listdir = sorted(
+                listdir, key=gallery_conf['within_subsection_order'](src_dir))
+            fullpath = [os.path.join(src_dir, file_name) for file_name in sorted_listdir]
+            all_py_examples.append(fullpath)
+        all_py_examples = list(chain.from_iterable(all_py_examples))
+
+        recommender = ExampleRecommender(n_examples=5, tokens="raw").fit(all_py_examples)
+        for fname in all_py_examples:
+            _write_recommendations(recommender, fname, gallery_conf)
 
         # generate toctree with subsections
         if gallery_conf["nested_sections"] is True:
