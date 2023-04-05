@@ -1327,8 +1327,11 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                                         ref_fname,
                                         jupyterlite_rst)
     
-    recommendation_fname = example_fname.rsplit(".", maxsplit=1)[0].rsplit("/", maxsplit=1)[-1]
-    example_rst += RECOMMENDATIONS_INCLUDE.format(recommendation_fname)
+    if gallery_conf["recommend_examples"]:
+        recommendation_fname = example_fname.rsplit(".", maxsplit=1)[0].rsplit(
+            "/", maxsplit=1
+        )[-1]
+        example_rst += RECOMMENDATIONS_INCLUDE.format(recommendation_fname)
 
     if gallery_conf['show_signature']:
         example_rst += SPHX_GLR_SIG

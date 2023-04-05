@@ -78,6 +78,7 @@ DEFAULT_GALLERY_CONF = {
     'download_all_examples': True,
     'abort_on_example_error': False,
     'only_warn_on_example_error': False,
+    'recommend_examples': True,
     'failing_examples': {},
     'passing_examples': [],
     'stale_examples': [],  # ones that did not need to be run due to md5sum
@@ -620,24 +621,31 @@ def generate_gallery_rst(app):
 
         # Build recommendation system
         # TODO: rename variables
-        all_py_examples = []
-        directory_explore = [gallery_dir_abs_path] + subsecs
-        for subsection in directory_explore:
-            src_dir = os.path.join(gallery_dir_abs_path, subsection)
-            # get filenames
-            listdir = [fname for fname in os.listdir(src_dir)
-                    if fname.endswith('.py')]
-            # sort them to ensure that the input will always be in the same order when
-            # giving it to the `fit` of the recommender
-            sorted_listdir = sorted(
-                listdir, key=gallery_conf['within_subsection_order'](src_dir))
-            fullpath = [os.path.join(src_dir, file_name) for file_name in sorted_listdir]
-            all_py_examples.append(fullpath)
-        all_py_examples = list(chain.from_iterable(all_py_examples))
+        if gallery_conf["recommend_examples"]:
+            all_py_examples = []
+            directory_explore = [gallery_dir_abs_path] + subsecs
+            for subsection in directory_explore:
+                src_dir = os.path.join(gallery_dir_abs_path, subsection)
+                # get filenames
+                listdir = [
+                    fname for fname in os.listdir(src_dir) if fname.endswith(".py")
+                ]
+                # sort them to ensure that the input will always be in the same
+                # order when giving it to the `fit` of the recommender
+                sorted_listdir = sorted(
+                    listdir, key=gallery_conf["within_subsection_order"](src_dir)
+                )
+                fullpath = [
+                    os.path.join(src_dir, file_name) for file_name in sorted_listdir
+                ]
+                all_py_examples.append(fullpath)
+            all_py_examples = list(chain.from_iterable(all_py_examples))
 
-        recommender = ExampleRecommender(n_examples=5, tokens="raw").fit(all_py_examples)
-        for fname in all_py_examples:
-            _write_recommendations(recommender, fname, gallery_conf)
+            recommender = ExampleRecommender(n_examples=5, tokens="raw").fit(
+                all_py_examples
+            )
+            for fname in all_py_examples:
+                _write_recommendations(recommender, fname, gallery_conf)
 
         # generate toctree with subsections
         if gallery_conf["nested_sections"] is True:
