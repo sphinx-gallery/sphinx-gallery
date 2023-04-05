@@ -18,6 +18,11 @@ import subprocess
 from sphinx.errors import ExtensionError
 import sphinx.util
 
+try:
+    from sphinx.util.display import status_iterator
+except Exception:  # Sphinx < 6
+    from sphinx.util import status_iterator
+
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
 

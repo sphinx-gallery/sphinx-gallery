@@ -39,7 +39,7 @@ import sphinx.util
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
 from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
-                    optipng)
+                    optipng, status_iterator)
 from . import glr_path_static
 from .backreferences import (_write_backreferences, _thumbnail_div,
                              identify_names, THUMBNAIL_PARENT_DIV,
@@ -450,7 +450,7 @@ def generate_dir_rst(
     costs = []
     subsection_toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    iterator = sphinx.util.display.status_iterator(
+    iterator = status_iterator(
         sorted_listdir,
         'generating gallery for %s... ' % build_target_dir,
         length=len(sorted_listdir))
