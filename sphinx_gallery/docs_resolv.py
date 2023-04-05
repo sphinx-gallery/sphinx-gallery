@@ -22,6 +22,8 @@ from sphinx.errors import ExtensionError
 from sphinx.search import js_index
 import sphinx.util
 
+from .utils import status_iterator
+
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
 
@@ -343,7 +345,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     flat = [[dirpath, filename]
             for dirpath, _, filenames in os.walk(html_gallery_dir)
             for filename in filenames]
-    iterator = sphinx.util.status_iterator(
+    iterator = status_iterator(
         flat, 'embedding documentation hyperlinks for %s... ' % gallery_dir,
         color='fuchsia', length=len(flat),
         stringify_func=lambda x: os.path.basename(x[1]))

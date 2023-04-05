@@ -23,7 +23,7 @@ import json
 from sphinx.errors import ConfigError
 import sphinx.util
 
-from .utils import replace_py_ipynb
+from .utils import replace_py_ipynb, status_iterator
 from . import glr_path_static
 
 
@@ -206,7 +206,7 @@ def _copy_binder_notebooks(app):
     if not isinstance(gallery_dirs, (list, tuple)):
         gallery_dirs = [gallery_dirs]
 
-    iterator = sphinx.util.status_iterator(
+    iterator = status_iterator(
         gallery_dirs, 'copying binder notebooks...', length=len(gallery_dirs))
 
     for i_folder in iterator:
@@ -325,7 +325,7 @@ def create_jupyterlite_contents(app, exception):
     if not isinstance(gallery_dirs, (list, tuple)):
         gallery_dirs = [gallery_dirs]
 
-    iterator = sphinx.util.status_iterator(
+    iterator = status_iterator(
         gallery_dirs, 'Copying Jupyterlite contents ...',
         length=len(gallery_dirs))
 
