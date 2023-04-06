@@ -203,39 +203,11 @@ class ExampleRecommender:
     similarity_matrix_ : sparse matrix
         Name of the file corresponding to the query index `item_id`.
     """
+
     def __init__(self, *, n_examples=5, tokens="raw"):
         self.n_examples = n_examples
         self.tokens = tokens
 
-    # @staticmethod
-    # def _load_data(listdir, tokens):
-    #     rootdir = "/home/arturoamor/scikit-learn/doc/auto_examples/"
-    #     data = {"file_name": [], "content": []}
-    #     if tokens == "raw":
-    #         for subdir, dirs, files in os.walk(rootdir):
-    #             for file in os.listdir(subdir):
-    #                 if file.endswith(".py"):
-    #                     file_name = os.path.join(subdir, file)
-    #                     data["file_name"].append(file_name.split(".py")[0])
-    #                     data["content"].append(Path(file_name).read_text())
-    #                 else:
-    #                     continue
-    #     # elif tokens == "backrefs":
-    #     #     for subdir, dirs, files in os.walk(rootdir):
-    #     #         for file in os.listdir(subdir):
-    #     #             if file.endswith(".pickle"):
-    #     #                 file_name = os.path.join(subdir, file)
-    #     #                 with open(file_name, "rb") as f:
-    #     #                     names = pickle.load(f)
-    #     #                 back_references = [name.split("_codeobj")[0] for name in names.keys()]
-    #     #                 data["file_name"].append(file_name.split("_codeobj")[0])
-    #     #                 data["content"].append(back_references)
-    #     #             else:
-    #     #                 continue
-    #     else:
-    #         raise NotImplementedError
-
-    
     def fit(self, file_names):
         """
         Compute the similarity matrix of a group of documents.
@@ -326,50 +298,3 @@ def _write_recommendations(recommender, fname, gallery_conf):
                 )
             )
         ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
-
-# # %%
-# rootdir = "/home/arturoamor/scikit-learn/doc/auto_examples/"
-# data = {"file_name": [], "content": []}
-
-# for subdir, dirs, files in os.walk(rootdir):
-#     for file in os.listdir(subdir):
-#         if file.endswith(".py"):
-#             file_name = os.path.join(subdir, file)
-#             data["file_name"].append(file_name.split(".py")[0])
-#             data["content"].append(Path(file_name).read_text())
-#         else:
-#             continue
-
-# recommender = ExampleRecommender(n_examples=5, tokens="raw")
-# recommender.fit(data)
-# query, recommendations = recommender.predict(data, item_id=12)
-
-# print(f"Query: {query}")
-# print("Recommendations:")
-# for recommendation in recommendations:
-#     print(f"\t- {recommendation.split('/')[-1]}")
-
-# # %%
-# rootdir = "/home/arturoamor/scikit-learn/doc/auto_examples/"
-# data = {"file_name": [], "content": []}
-
-# for subdir, dirs, files in os.walk(rootdir):
-#     for file in os.listdir(subdir):
-#         if file.endswith(".pickle"):
-#             file_name = os.path.join(subdir, file)
-#             with open(file_name, "rb") as f:
-#                 names = pickle.load(f)
-#             back_references = [name.split("_codeobj")[0] for name in names.keys()]
-#             data["file_name"].append(file_name.split("_codeobj")[0])
-#             data["content"].append(back_references)
-#         else:
-#             continue
-
-# recommender = ExampleRecommender(n_examples=5, tokens="backrefs")
-# recommender.fit(data)
-# query, recommendations = recommender.predict(data, item_id=12)
-
-# print(f"Query: {query}")
-# print("Recommendations:")
-# for recommendation in recommendations:
-#     print(f"\t- {recommendation.split('/')[-1]}")
