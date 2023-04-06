@@ -8,8 +8,9 @@ Recommendation generator
 Generate content based KNN recommendation system
 """
 # %%
-import re
+import numbers
 import os
+import re
 from collections import defaultdict
 from pathlib import Path
 
@@ -256,6 +257,10 @@ class ExampleRecommender():
             raise ValueError(
                 "Value not supported. Possible values for tokens are 'raw' and 'backrefs'"
             )
+        n_examples = self.n_examples
+        if not isinstance(n_examples, numbers.Integral):
+            raise ValueError("n_examples must be an integer")
+
         tfidf_matrix = tfidf_transformer(counts_matrix)
         self.similarity_matrix_ = cosine_similarity(tfidf_matrix)
         self.file_names_ = file_names
