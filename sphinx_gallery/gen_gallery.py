@@ -78,7 +78,7 @@ DEFAULT_GALLERY_CONF = {
     'download_all_examples': True,
     'abort_on_example_error': False,
     'only_warn_on_example_error': False,
-    'recommend_examples': True,
+    'recommend_n_examples': True,
     'failing_examples': {},
     'passing_examples': [],
     'stale_examples': [],  # ones that did not need to be run due to md5sum
@@ -621,7 +621,13 @@ def generate_gallery_rst(app):
 
         # Build recommendation system
         # TODO: rename variables
-        if gallery_conf["recommend_examples"]:
+        if gallery_conf["recommend_n_examples"]:
+            if gallery_conf["recommend_n_examples"] is True:
+                recommender = ExampleRecommender()
+            else:
+                n_examples = gallery_conf["recommend_n_examples"]
+                recommender = ExampleRecommender(n_examples=n_examples)
+
             all_py_examples = []
             directory_explore = [gallery_dir_abs_path] + subsecs
             for subsection in directory_explore:
@@ -641,9 +647,7 @@ def generate_gallery_rst(app):
                 all_py_examples.append(fullpath)
             all_py_examples = list(chain.from_iterable(all_py_examples))
 
-            recommender = ExampleRecommender(n_examples=5, tokens="raw").fit(
-                all_py_examples
-            )
+            recommender.fit(all_py_examples)
             for fname in all_py_examples:
                 _write_recommendations(recommender, fname, gallery_conf)
 

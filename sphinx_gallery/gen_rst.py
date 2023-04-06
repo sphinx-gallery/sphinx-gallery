@@ -1327,7 +1327,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                                         ref_fname,
                                         jupyterlite_rst)
     
-    if gallery_conf["recommend_examples"]:
+    if gallery_conf["recommend_n_examples"]:
         recommendation_fname = example_fname.rsplit(".", maxsplit=1)[0].rsplit(
             "/", maxsplit=1
         )[-1]
