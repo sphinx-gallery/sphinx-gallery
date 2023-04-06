@@ -18,7 +18,11 @@ import numpy as np
 import scipy.sparse as sp
 
 from scipy.sparse.linalg import norm
-from .backreferences import _thumbnail_div, THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE
+from .backreferences import (
+    _thumbnail_div,
+    THUMBNAIL_PARENT_DIV,
+    THUMBNAIL_PARENT_DIV_CLOSE,
+)
 from .py_source_parser import split_code_and_text_blocks
 from .gen_rst import extract_intro_and_title
 
@@ -181,7 +185,7 @@ def cosine_similarity(X, Y=None, dense_output=True):
     return similarity
 
 
-class ExampleRecommender():
+class ExampleRecommender:
     """
     Compute content-based knn-tfidf recommendation system.
 
@@ -308,7 +312,8 @@ def _write_recommendations(recommender, fname, gallery_conf):
         for recommendation in recommendations:
             rec_path, rec_name = recommendation.rsplit("/", maxsplit=1)
             _, script_blocks = split_code_and_text_blocks(
-                recommendation, return_node=False)
+                recommendation, return_node=False
+            )
             intro, title = extract_intro_and_title(fname, script_blocks[0][1])
             ex_file.write(
                 _thumbnail_div(
