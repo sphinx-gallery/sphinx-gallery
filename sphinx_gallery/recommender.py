@@ -291,9 +291,33 @@ class ExampleRecommender():
         recommendations = [file_names[index] for index in top_k_items]
         return query, recommendations
 
+
+def _write_recommendations(recommender, fname, gallery_conf):
+    src_dir = gallery_conf["src_dir"]
+    include_path = os.path.join("%s.recommendations" % fname[:-3])
+    _, recommendations = recommender.predict(fname)
+
+    with open(include_path, "w", encoding="utf-8") as ex_file:
+        ex_file.write("\n\n.. rubric:: Related examples\n")
+        ex_file.write(THUMBNAIL_PARENT_DIV)
+        for recommendation in recommendations:
+            rec_path, rec_name = recommendation.rsplit("/", maxsplit=1)
+            _, script_blocks = split_code_and_text_blocks(
+                recommendation, return_node=False)
+            intro, title = extract_intro_and_title(fname, script_blocks[0][1])
+            ex_file.write(
+                _thumbnail_div(
+                    rec_path,
+                    src_dir,
+                    rec_name,
+                    intro,
+                    title,
+                    is_backref=True,
+                )
+            )
+        ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
+
 # # %%
-
-
 # rootdir = "/home/arturoamor/scikit-learn/doc/auto_examples/"
 # data = {"file_name": [], "content": []}
 
@@ -339,34 +363,3 @@ class ExampleRecommender():
 # print("Recommendations:")
 # for recommendation in recommendations:
 #     print(f"\t- {recommendation.split('/')[-1]}")
-
-# # %%
-
-
-# %%
-def _write_recommendations(recommender, fname, gallery_conf):
-    src_dir = gallery_conf["src_dir"]
-    include_path = os.path.join("%s.recommendations" % fname[:-3])
-    _, recommendations = recommender.predict(fname)
-
-    with open(include_path, "w", encoding="utf-8") as ex_file:
-        heading = "More related examples"
-        ex_file.write("\n\n" + heading + "\n")
-        ex_file.write("^" * len(heading) + "\n")
-        ex_file.write(THUMBNAIL_PARENT_DIV)
-        for recommendation in recommendations:
-            rec_path, rec_name = recommendation.rsplit("/", maxsplit=1)
-            _, script_blocks = split_code_and_text_blocks(
-                recommendation, return_node=False)
-            intro, title = extract_intro_and_title(fname, script_blocks[0][1])
-            ex_file.write(
-                _thumbnail_div(
-                    rec_path,
-                    src_dir,
-                    rec_name,
-                    intro,
-                    title,
-                    is_backref=True,
-                )
-            )
-        ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
