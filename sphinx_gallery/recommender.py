@@ -68,14 +68,15 @@ class ExampleRecommender:
         return freq
 
     @staticmethod
-    def dict_vectorizer(data_dict):
+    def dict_vectorizer(data):
         """Convert a dictionary of feature arrays into a sparse matrix.
 
         Parameters
         ----------
-        data_dict : dict
-            A dictionary of feature arrays, where each key corresponds to a feature
-            name, and each value is an array of feature values.
+        data : list of dict
+            An iterable of dictionaries of feature arrays, where each key
+            corresponds to a feature name, and each value is an array of feature
+            values.
 
         Returns
         -------
@@ -86,14 +87,14 @@ class ExampleRecommender:
         """
         feature_names = []
         all_values = defaultdict(list)
-        for row in data_dict:
+        for row in data:
             for feature_name, feature_value in row.items():
                 feature_names.append(feature_name)
                 all_values[feature_name].append(feature_value)
 
         feature_names = sorted(set(feature_names))
         data, indices, indptr = [], [], [0]
-        for i, row in enumerate(data_dict):
+        for i, row in enumerate(data):
             for j, feature_name in enumerate(feature_names):
                 if feature_name in row:
                     feature_value = row[feature_name]
