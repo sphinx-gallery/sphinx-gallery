@@ -121,11 +121,8 @@ class ExampleRecommender:
         X_tfidf : {ndarray, sparse matrix} of shape (n_samples, n_features)
             A tf-idf matrix of the same shape as X.
         """
-        FLOAT_DTYPES = (np.float64, np.float32, np.float16)
-
         if not sparse.issparse(X):
-            X = sparse.csr_matrix(X, dtype=np.float64)
-        dtype = X.dtype if X.dtype in FLOAT_DTYPES else np.float64
+            X = sparse.csr_matrix(X, dtype=X.dtype)
 
         n_samples, n_features = X.shape
 
@@ -134,7 +131,7 @@ class ExampleRecommender:
             df = np.bincount(X.indices, minlength=n_features)
         else:
             df = np.diff(X.indptr)
-        df = df.astype(dtype, copy=False)
+        df = df.astype(X.dtype, copy=False)
         # perform idf smoothing
         df += 1
         n_samples += 1
@@ -145,11 +142,11 @@ class ExampleRecommender:
             offsets=0,
             shape=(n_features, n_features),
             format="csr",
-            dtype=dtype,
+            dtype=X.dtype,
         )
         X = X * idf_diag
         X_normalized = (X.T / norm(X, axis=1)).T
-        X_normalized = sparse.csr_matrix(X_normalized, dtype=np.float64)
+        X_normalized = sparse.csr_matrix(X_normalized, dtype=X.dtype)
 
         return X_normalized
 
@@ -186,7 +183,7 @@ class ExampleRecommender:
         else:
             Y_normalized = Y / norm(Y)
 
-        X_normalized = sparse.csr_matrix(X_normalized, dtype=np.float64)
+        X_normalized = sparse.csr_matrix(X_normalized, dtype=X.dtype)
         similarity = X_normalized @ Y_normalized.T
 
         if dense_output and hasattr(similarity, "toarray"):
