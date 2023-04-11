@@ -144,11 +144,11 @@ class ExampleRecommender:
             format="csr",
             dtype=X.dtype,
         )
-        X = X * idf_diag
-        X_normalized = (X.T / norm(X, axis=1)).T
-        X_normalized = sparse.csr_matrix(X_normalized, dtype=X.dtype)
+        X_tfidf = X * idf_diag
+        X_tfidf = (X_tfidf.T / norm(X_tfidf, axis=1)).T
+        X_tfidf = sparse.csr_matrix(X_tfidf, dtype=X.dtype)
 
-        return X_normalized
+        return X_tfidf
 
     @staticmethod
     def cosine_similarity(X, Y=None, dense_output=True):
