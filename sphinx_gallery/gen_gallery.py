@@ -631,12 +631,16 @@ def generate_gallery_rst(app):
                 src_dir = os.path.join(gallery_dir_abs_path, current_dir)
                 # sort python files to have a deterministic input across call
                 py_files = sorted(
-                    [fname for fname in os.listdir(src_dir) if os.path.splitext(fname)[1] == "py"],
-                    key=gallery_conf["within_subsection_order"](src_dir)
+                    [
+                        fname
+                        for fname in os.listdir(src_dir)
+                        if os.path.splitext(fname)[1] == "py"
+                    ],
+                    key=gallery_conf["within_subsection_order"](src_dir),
                 )
-                gallery_py_examples.append([
-                    os.path.join(src_dir, fname) for fname in py_files
-                ])
+                gallery_py_examples.append(
+                    [os.path.join(src_dir, fname) for fname in py_files]
+                )
             # flatten the list of list
             gallery_py_examples = list(chain.from_iterable(gallery_py_examples))
 
