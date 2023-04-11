@@ -7,7 +7,6 @@ Recommendation system generator
 
 Generate recommendations based on TF-IDF representation and a KNN model.
 """
-# %%
 import numbers
 # import pickle
 import re
@@ -58,10 +57,7 @@ class ExampleRecommender:
     def token_freqs(doc):
         """Extract a dict mapping raw tokens from doc to their occurrences."""
         token_generator = (tok.lower() for tok in re.findall(r"\w+", doc))
-        freq = defaultdict(int)
-        for tok in token_generator:
-            freq[tok] += 1
-        return freq
+        return dict_freqs(token_generator)
 
     @staticmethod
     def dict_freqs(doc):
@@ -95,11 +91,8 @@ class ExampleRecommender:
                 feature_names.append(feature_name)
                 all_values[feature_name].append(feature_value)
 
-        feature_names = list(set(feature_names))
-        feature_names.sort()
-        data = []
-        indices = []
-        indptr = [0]
+        feature_names = sorted(set(feature_names))
+        data, indices, indptr = [], [], [0]
         for i, row in enumerate(data_dict):
             for j, feature_name in enumerate(feature_names):
                 if feature_name in row:
@@ -221,6 +214,8 @@ class ExampleRecommender:
             )
         if not isinstance(n_examples, numbers.Integral):
             raise ValueError("n_examples must be an integer")
+        elif n_examples < 1:
+            raise ValueError("n_examples must be strictly positive")
 
         if self.tokenizer == "raw":
             frequency_func = self.token_freqs
