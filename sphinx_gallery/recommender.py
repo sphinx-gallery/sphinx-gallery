@@ -94,7 +94,7 @@ class ExampleRecommender:
 
         feature_names = sorted(set(feature_names))
         data, indices, indptr = [], [], [0]
-        for i, row in enumerate(data):
+        for row in data:
             for j, feature_name in enumerate(feature_names):
                 if feature_name in row:
                     feature_value = row[feature_name]
