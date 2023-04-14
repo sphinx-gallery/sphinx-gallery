@@ -30,8 +30,8 @@ How to make a release
 
    To avoid the need to pass ``--token``, you can use ``export CHANGELOG_GITHUB_TOKEN=<your-40-digit-token>`` instead.
 
-2. Iteratively update PR labels on GitHub and regenerate ``CHANGELOG.md`` so
-   that PRs are categorized correctly. The labels we currently use are:
+2. Iteratively update `PR labels on GitHub <https://github.com/sphinx-gallery/sphinx-gallery/pulls?q=is%3Apr+is%3Aclosed>`__
+   and regenerate ``CHANGELOG.md`` so that PRs are categorized correctly. The labels we currently use are:
 
    ``bug``
       For fixed bugs.
@@ -43,9 +43,9 @@ How to make a release
       For general project maintenance (e.g., CIs).
    ``documentation``
       For documentation improvements.
-   
-   Once all PRs land in one of these categories, manually edit CHANGELOG.md to
-   look reasonable if necessary.
+
+   Once all PRs land in one of these categories using the changelog generator,
+   manually edit CHANGELOG.md to look reasonable if necessary.
 
 3. Propagate the relevant changes to `CHANGES.rst <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/CHANGES.rst>`_.
    You can easily convert it reST with pandoc::
@@ -83,7 +83,7 @@ How to make a release
    * Confirm that the new version of Sphinx Gallery
      `is posted to PyPI <https://pypi.org/project/sphinx-gallery/#history>`_.
 
-3. Now that the releases are complete, we need to switch the `master`` branch
+3. Now that the releases are complete, we need to switch the ``master`` branch
    back into a developer mode. Bump the `Sphinx Gallery version number <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinx_gallery/__init__.py>`_
    to the next minor (or major) release and append ``.dev0`` to the end, and make a PR for this change.
 
