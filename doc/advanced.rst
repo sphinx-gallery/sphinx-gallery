@@ -486,8 +486,7 @@ Hide the download buttons in the example headers
 .. code-block:: css
 
     div.sphx-glr-download-link-note {
-        height: 0px;
-        visibility: hidden;
+        display: none;
     }
 
 Disable thumbnail text on hover
