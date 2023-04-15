@@ -323,7 +323,7 @@ intersphinx_mapping = {
     'python': (f'https://docs.python.org/{sys.version_info.major}', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'matplotlib': ('https://matplotlib.org/stable', None),
-    'pyvista': ('https://docs.pyvista.org/', None),
+    'pyvista': ('https://docs.pyvista.org/version/stable', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
