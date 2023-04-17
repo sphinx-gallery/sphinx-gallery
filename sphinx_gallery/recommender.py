@@ -43,7 +43,7 @@ class ExampleRecommender:
         The list of file names used for computing the similarity matrix.
         The recommended examples will be chosen among this list.
 
-    similarity_matrix_ : sparse matrix
+    similarity_matrix_ : dense matrix
         Fitted matrix of pairwise cosine similarities.
     """
 
@@ -67,7 +67,7 @@ class ExampleRecommender:
 
     @staticmethod
     def dict_vectorizer(data):
-        """Convert a dictionary of feature arrays into a sparse matrix.
+        """Convert a dictionary of feature arrays into a matrix.
 
         Parameters
         ----------
@@ -78,10 +78,10 @@ class ExampleRecommender:
 
         Returns
         -------
-        X : sparse matrix
-            A sparse matrix in CSR format of shape (n_samples, n_features) where
-            n_samples is the number of samples in the dataset and n_features is the
-            total number of features across all samples.
+        X : ndarray of shape (n_samples, n_features)
+            A matrix of occurrences where n_samples is the number of samples in
+            the dataset and n_features is the total number of features across
+            all samples.
         """
         feature_names = []
         all_values = defaultdict(list)
@@ -104,12 +104,12 @@ class ExampleRecommender:
 
         Parameters
         ----------
-        X : {ndarray, sparse matrix} of shape (n_samples, n_features)
+        X : ndarray of shape (n_samples, n_features)
             A term frequency matrix.
 
         Returns
         -------
-        X_tfidf : {ndarray, sparse matrix} of shape (n_samples, n_features)
+        X_tfidf : ndarray of shape (n_samples, n_features)
             A tf-idf matrix of the same shape as X.
         """
         n_samples, n_features = X.shape
@@ -129,16 +129,12 @@ class ExampleRecommender:
 
         Parameters
         ----------
-        X : {ndarray, sparse matrix} of shape (n_samples_X, n_features)
+        X : ndarray of shape (n_samples_X, n_features)
             Input data.
 
-        Y : {ndarray, sparse matrix} of shape (n_samples_Y, n_features), default=None
+        Y : ndarray of shape (n_samples_Y, n_features), default=None
             Input data. If `None`, the output will be the pairwise
             similarities between all samples in `X`.
-
-        dense_output : bool, default=True
-            Whether to return dense output even when the input is sparse. If
-            `False`, the output is sparse if both input arrays are sparse.
 
         Returns
         -------
