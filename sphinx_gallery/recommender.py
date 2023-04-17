@@ -98,7 +98,7 @@ class ExampleRecommender:
         return X
 
     @staticmethod
-    def tfidf_transformer(X):
+    def compute_tf_idf(X):
         """Transform a term frequency matrix into a term frequency-inverse document
         frequency (TF-IDF) matrix.
 
@@ -208,7 +208,7 @@ class ExampleRecommender:
         #     )
 
         self.similarity_matrix_ = self.cosine_similarity(
-            self.tfidf_transformer(counts_matrix)
+            self.compute_tf_idf(counts_matrix)
         )
         self.file_names_ = file_names
         return self
