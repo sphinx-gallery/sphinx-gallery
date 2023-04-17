@@ -186,7 +186,7 @@ class ExampleRecommender:
         X_normalized = sparse.csr_matrix(X_normalized, dtype=X.dtype)
         similarity = X_normalized @ Y_normalized.T
 
-        if dense_output and hasattr(similarity, "toarray"):
+        if dense_output:
             return similarity.toarray()
         return similarity
 
@@ -240,7 +240,9 @@ class ExampleRecommender:
         #     )
 
         tfidf_matrix = self.tfidf_transformer(counts_matrix)
-        self.similarity_matrix_ = self.cosine_similarity(tfidf_matrix)
+        self.similarity_matrix_ = self.cosine_similarity(
+            self.tfidf_transformer(counts_matrix)
+        )
         self.file_names_ = file_names
         return self
 
