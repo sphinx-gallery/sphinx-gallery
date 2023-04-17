@@ -14,8 +14,6 @@ from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
-from scipy import sparse
-from scipy.sparse.linalg import norm
 
 from .backreferences import (
     _thumbnail_div,
@@ -92,18 +90,11 @@ class ExampleRecommender:
                 feature_names.append(feature_name)
                 all_values[feature_name].append(feature_value)
 
-        feature_names = sorted(set(feature_names))
-        data, indices, indptr = [], [], [0]
-        for row in data:
-            for j, feature_name in enumerate(feature_names):
-                if feature_name in row:
-                    feature_value = row[feature_name]
-                    data.append(feature_value)
-                    indices.append(j)
-            indptr.append(len(indices))
-        X = sparse.csr_matrix(
-            (data, indices, indptr), shape=(len(indptr) - 1, len(feature_names))
-        )
+        feature_dict = {feature_name: i for i, feature_name in enumerate(sorted(all_values))}
+        X = np.zeros((len(data), len(feature_dict)))
+        for idx, row in enumerate(data):
+            for feature_name, feature_value in row.items():
+                X[idx, feature_dict[feature_name]] = feature_value
         return X
 
     @staticmethod
@@ -121,32 +112,13 @@ class ExampleRecommender:
         X_tfidf : {ndarray, sparse matrix} of shape (n_samples, n_features)
             A tf-idf matrix of the same shape as X.
         """
-        if not sparse.issparse(X):
-            X = sparse.csr_matrix(X, dtype=X.dtype)
-
         n_samples, n_features = X.shape
 
-        # Count the number of non-zero values for each feature in sparse X
-        if sparse.isspmatrix_csr(X):
-            df = np.bincount(X.indices, minlength=n_features)
-        else:
-            df = np.diff(X.indptr)
-        df = df.astype(X.dtype, copy=False)
-        # perform idf smoothing
-        df += 1
+        df = np.count_nonzero(X, axis=0) + 1
         n_samples += 1
         idf = np.log(n_samples / df) + 1
-
-        idf_diag = sparse.diags(
-            idf,
-            offsets=0,
-            shape=(n_features, n_features),
-            format="csr",
-            dtype=X.dtype,
-        )
-        X_tfidf = X * idf_diag
-        X_tfidf = (X_tfidf.T / norm(X_tfidf, axis=1)).T
-        X_tfidf = sparse.csr_matrix(X_tfidf, dtype=X.dtype)
+        X_tfidf = X * idf
+        X_tfidf = (X_tfidf.T / np.linalg.norm(X_tfidf, axis=1)).T
 
         return X_tfidf
 
@@ -177,17 +149,13 @@ class ExampleRecommender:
         if Y is X or Y is None:
             Y = X
 
-        X_normalized = X / norm(X)
+        X_normalized = X / np.linalg.norm(X)
         if X is Y:
             Y_normalized = X_normalized
         else:
-            Y_normalized = Y / norm(Y)
-
-        X_normalized = sparse.csr_matrix(X_normalized, dtype=X.dtype)
+            Y_normalized = Y / np.linalg.norm(Y)
         similarity = X_normalized @ Y_normalized.T
 
-        if dense_output:
-            return similarity.toarray()
         return similarity
 
     def fit(self, file_names):
@@ -239,7 +207,6 @@ class ExampleRecommender:
         #         [frequency_func(backref) for backref in backrefs_list]
         #     )
 
-        tfidf_matrix = self.tfidf_transformer(counts_matrix)
         self.similarity_matrix_ = self.cosine_similarity(
             self.tfidf_transformer(counts_matrix)
         )
