@@ -43,6 +43,7 @@ An incomplete list:
 * `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
 * `Nilearn <https://nilearn.github.io/stable/auto_examples/index.html>`_
 * `OpenML <https://openml.github.io/openml-python/main/examples/index.html>`_
+* `OpenTURNS <https://openturns.github.io/openturns/latest/examples/examples.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 * `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
 * `PyGMT <https://www.pygmt.org/latest/gallery/index.html>`_
