@@ -51,11 +51,10 @@ class ExampleRecommender:
         self.n_examples = n_examples
         self.tokenizer = tokenizer
 
-    @staticmethod
-    def token_freqs(doc):
+    def token_freqs(self, doc):
         """Extract a dict mapping raw tokens from doc to their occurrences."""
         token_generator = (tok.lower() for tok in re.findall(r"\w+", doc))
-        return dict_freqs(token_generator)
+        return self.dict_freqs(token_generator)
 
     @staticmethod
     def dict_freqs(doc):

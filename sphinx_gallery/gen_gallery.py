@@ -634,7 +634,7 @@ def generate_gallery_rst(app):
                     [
                         fname
                         for fname in os.listdir(src_dir)
-                        if os.path.splitext(fname)[1] == "py"
+                        if os.path.splitext(fname)[1] == ".py"
                     ],
                     key=gallery_conf["within_subsection_order"](src_dir),
                 )
