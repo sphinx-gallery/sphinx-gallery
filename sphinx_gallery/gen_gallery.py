@@ -78,7 +78,7 @@ DEFAULT_GALLERY_CONF = {
     'download_all_examples': True,
     'abort_on_example_error': False,
     'only_warn_on_example_error': False,
-    'recommender': {'enable': True, 'n_examples': 5},
+    'recommender': {'enable': False, 'n_examples': 5},
     'failing_examples': {},
     'passing_examples': [],
     'stale_examples': [],  # ones that did not need to be run due to md5sum
