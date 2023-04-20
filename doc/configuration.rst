@@ -44,6 +44,7 @@ file:
 - ``reset_modules_order`` (:ref:`reset_modules_order`)
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``only_warn_on_example_error`` (:ref:`warning_on_error`)
+- ``recommender`` (:ref:`recommend_examples`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``min_reported_time`` (:ref:`min_reported_time`)
 - ``show_memory`` (:ref:`show_memory`)
@@ -1703,6 +1704,23 @@ flag is passed to ``sphinx-build``. This can be enabled by setting::
         'only_warn_on_example_error': True
     }
 
+
+.. _recommend_examples:
+
+Enabling the example recommender system
+=======================================
+
+Sphinx-Gallery can be configured to generate content-based recommendations for
+the example gallery. This can be enabled by setting ``enable`` to ``True``. The
+number of displayed examples can be changed via the ``n_examples`` parameter,
+e.g.::
+
+    sphinx_gallery_conf = {
+        ...
+        'recommender': {'enable': True, 'n_examples': 5},
+    }
+
+Enabling this feature requires adding `numpy` to the dependencies.
 
 .. _setting_thumbnail_size:
 
