@@ -72,8 +72,8 @@ class ExampleRecommender:
         ----------
         data : list of dict
             An iterable of dictionaries of feature arrays, where each key
-            corresponds to a feature name, and each value is an array of feature
-            values.
+            corresponds to a feature name, and each value is an array of
+            feature values.
 
         Returns
         -------
@@ -89,7 +89,9 @@ class ExampleRecommender:
                 feature_names.append(feature_name)
                 all_values[feature_name].append(feature_value)
 
-        feature_dict = {feature_name: i for i, feature_name in enumerate(sorted(all_values))}
+        feature_dict = {
+            feature_name: i for i, feature_name in enumerate(sorted(all_values))
+        }
         X = np.zeros((len(data), len(feature_dict)))
         for idx, row in enumerate(data):
             for feature_name, feature_value in row.items():
@@ -98,8 +100,8 @@ class ExampleRecommender:
 
     @staticmethod
     def compute_tf_idf(X):
-        """Transform a term frequency matrix into a term frequency-inverse document
-        frequency (TF-IDF) matrix.
+        """Transform a term frequency matrix into a term frequency-inverse
+        document frequency (TF-IDF) matrix.
 
         Parameters
         ----------
@@ -179,12 +181,12 @@ class ExampleRecommender:
             raise ValueError("n_examples must be strictly positive")
 
         if self.tokenizer == "raw":
-            frequency_func = self.token_freqs
+            freq_func = self.token_freqs
             counts_matrix = self.dict_vectorizer(
-                [frequency_func(Path(fname).read_text()) for fname in file_names]
+                [freq_func(Path(fname).read_text()) for fname in file_names]
             )
         else:  # self.tokenizer == "backrefs"
-            frequency_func = self.dict_freqs
+            freq_func = self.dict_freqs
         #     backrefs_list = []
         #     for fname in file_names:
         #         pickle_file = fname[:-3] + "_codeobj.pickle"
@@ -199,7 +201,7 @@ class ExampleRecommender:
         #             continue
         #         backrefs_list.append(back_references)
         #     counts_matrix = dict_vectorizer(
-        #         [frequency_func(backref) for backref in backrefs_list]
+        #         [freq_func(backref) for backref in backrefs_list]
         #     )
 
         self.similarity_matrix_ = self.cosine_similarity(
@@ -207,7 +209,6 @@ class ExampleRecommender:
         )
         self.file_names_ = file_names
         return self
-
 
     def predict(self, file_name):
         """Compute the most `n_examples` similar documents to the query.
@@ -227,8 +228,8 @@ class ExampleRecommender:
         sorted_items = sorted(similar_items, key=lambda x: x[1], reverse=True)
 
         # Get the top k items similar to item_id
-        top_k_items = [index for index, _ in sorted_items[1 : self.n_examples + 1]]
-        recommendations = [self.file_names_[index] for index in top_k_items]
+        top_k_items = [idx for idx, _ in sorted_items[1:self.n_examples + 1]]
+        recommendations = [self.file_names_[idx] for idx in top_k_items]
         return recommendations
 
 
@@ -247,10 +248,10 @@ def _write_recommendations(recommender, fname, gallery_conf):
         Configuration dictionary for the sphinx-gallery extension.
     """
     path_fname = Path(fname)
-    recommendation_fname = f"{path_fname.parent / path_fname.stem}.recommendations"
+    recommend_fname = f"{path_fname.parent / path_fname.stem}.recommendations"
     recommended_examples = recommender.predict(fname)
 
-    with open(recommendation_fname, "w", encoding="utf-8") as ex_file:
+    with open(recommend_fname, "w", encoding="utf-8") as ex_file:
         ex_file.write("\n\n.. rubric:: Related examples\n")
         ex_file.write(THUMBNAIL_PARENT_DIV)
         for example_fname in recommended_examples:

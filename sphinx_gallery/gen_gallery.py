@@ -624,7 +624,7 @@ def generate_gallery_rst(app):
             n_examples = gallery_conf["recommender"]["n_examples"]
             recommender = ExampleRecommender(n_examples=n_examples)
 
-            gallery_py_examples = []
+            gallery_py_files = []
             # root and subsection directories containing python examples
             gallery_directories = [gallery_dir_abs_path] + subsecs
             for current_dir in gallery_directories:
@@ -638,14 +638,14 @@ def generate_gallery_rst(app):
                     ],
                     key=gallery_conf["within_subsection_order"](src_dir),
                 )
-                gallery_py_examples.append(
+                gallery_py_files.append(
                     [os.path.join(src_dir, fname) for fname in py_files]
                 )
             # flatten the list of list
-            gallery_py_examples = list(chain.from_iterable(gallery_py_examples))
+            gallery_py_files = list(chain.from_iterable(gallery_py_files))
 
-            recommender.fit(gallery_py_examples)
-            for fname in gallery_py_examples:
+            recommender.fit(gallery_py_files)
+            for fname in gallery_py_files:
                 _write_recommendations(recommender, fname, gallery_conf)
 
         # generate toctree with subsections

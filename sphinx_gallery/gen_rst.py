@@ -1326,11 +1326,11 @@ def save_rst_example(example_rst, example_file, time_elapsed,
                                         binder_badge_rst,
                                         ref_fname,
                                         jupyterlite_rst)
-    
+
     if gallery_conf["recommender"]["enable"]:
         # extract the filename without the extension
-        recommendation_fname = os.path.splitext(os.path.split(example_fname)[1])[0]
-        example_rst += RECOMMENDATIONS_INCLUDE.format(recommendation_fname)
+        recommend_fname = os.path.splitext(os.path.split(example_fname)[1])[0]
+        example_rst += RECOMMENDATIONS_INCLUDE.format(recommend_fname)
 
     if gallery_conf['show_signature']:
         example_rst += SPHX_GLR_SIG
