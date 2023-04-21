@@ -13,8 +13,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-import numpy as np
-
+from sphinx.errors import ConfigError
 from .backreferences import (
     _thumbnail_div,
     THUMBNAIL_PARENT_DIV,
@@ -48,6 +47,11 @@ class ExampleRecommender:
     """
 
     def __init__(self, *, n_examples=5, tokenizer="raw"):
+        try:
+            import numpy as np
+            self.np = np
+        except ImportError:
+            raise ConfigError("gallery_conf['recommender'] requires numpy")
         self.n_examples = n_examples
         self.tokenizer = tokenizer
 
@@ -65,7 +69,7 @@ class ExampleRecommender:
         return freq
 
     @staticmethod
-    def dict_vectorizer(data):
+    def dict_vectorizer(self, data):
         """Convert a dictionary of feature arrays into a matrix.
 
         Parameters
@@ -82,6 +86,7 @@ class ExampleRecommender:
             the dataset and n_features is the total number of features across
             all samples.
         """
+        np = self.np
         feature_names = []
         all_values = defaultdict(list)
         for row in data:
@@ -99,7 +104,7 @@ class ExampleRecommender:
         return X
 
     @staticmethod
-    def compute_tf_idf(X):
+    def compute_tf_idf(self, X):
         """Transform a term frequency matrix into a term frequency-inverse
         document frequency (TF-IDF) matrix.
 
@@ -113,6 +118,7 @@ class ExampleRecommender:
         X_tfidf : ndarray of shape (n_samples, n_features)
             A tf-idf matrix of the same shape as X.
         """
+        np = self.np
         n_samples, n_features = X.shape
 
         df = np.count_nonzero(X, axis=0) + 1
@@ -124,7 +130,7 @@ class ExampleRecommender:
         return X_tfidf
 
     @staticmethod
-    def cosine_similarity(X, Y=None, dense_output=True):
+    def cosine_similarity(self, X, Y=None, dense_output=True):
         """
         Compute the cosine similarity between two vectors X and Y.
 
@@ -142,7 +148,7 @@ class ExampleRecommender:
         cosine_similarity : ndarray of shape (n_samples_X, n_samples_Y)
             Cosine similarity matrix.
         """
-
+        np = self.np
         if Y is X or Y is None:
             Y = X
 
