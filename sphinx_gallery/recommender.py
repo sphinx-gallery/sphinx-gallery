@@ -95,7 +95,7 @@ class ExampleRecommender:
                 all_values[feature_name].append(feature_value)
 
         feature_dict = {
-            feature_name: i for i, feature_name in enumerate(sorted(all_values))
+            feature: i for i, feature in enumerate(sorted(all_values))
         }
         X = np.zeros((len(data), len(feature_dict)))
         for idx, row in enumerate(data):
