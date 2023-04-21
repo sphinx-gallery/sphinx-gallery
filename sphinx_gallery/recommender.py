@@ -68,7 +68,6 @@ class ExampleRecommender:
             freq[tok] += 1
         return freq
 
-    @staticmethod
     def dict_vectorizer(self, data):
         """Convert a dictionary of feature arrays into a matrix.
 
@@ -103,7 +102,6 @@ class ExampleRecommender:
                 X[idx, feature_dict[feature_name]] = feature_value
         return X
 
-    @staticmethod
     def compute_tf_idf(self, X):
         """Transform a term frequency matrix into a term frequency-inverse
         document frequency (TF-IDF) matrix.
@@ -129,7 +127,6 @@ class ExampleRecommender:
 
         return X_tfidf
 
-    @staticmethod
     def cosine_similarity(self, X, Y=None, dense_output=True):
         """
         Compute the cosine similarity between two vectors X and Y.

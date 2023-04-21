@@ -31,9 +31,7 @@ description = description.strip()
 with open('requirements.txt', 'r') as fid:
     install_requires = [line.strip() for line in fid if line.strip()]
 
-extras_require={
-        'recommender': ['numpy']
-    }
+extras_require={'recommender': ['numpy']}
 
 setup(
     name="sphinx-gallery",
