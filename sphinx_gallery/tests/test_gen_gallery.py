@@ -188,7 +188,7 @@ def _check_order(sphinx_app, key):
 
     index_fname = os.path.join(sphinx_app.outdir, '..', 'ex', 'index.rst')
     order = list()
-    regex = '.*:%s=(.):.*' % key
+    regex = f'.*:{key}=(.):.*'
     with codecs.open(index_fname, 'r', 'utf-8') as fid:
         for line in fid:
             if 'sphx-glr-thumbcontainer' in line:

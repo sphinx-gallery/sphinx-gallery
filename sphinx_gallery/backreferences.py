@@ -293,11 +293,11 @@ def _thumbnail_div(target_dir, src_dir, fname, snippet, title,
     """Generate reST to place a thumbnail in a gallery."""
     thumb, _ = _find_image_ext(
         os.path.join(target_dir, 'images', 'thumb',
-                     'sphx_glr_%s_thumb.png' % fname[:-3]))
+                     f'sphx_glr_{fname[:-3]}_thumb.png'))
     if check and not os.path.isfile(thumb):
         # This means we have done something wrong in creating our thumbnail!
         raise ExtensionError('Could not find internal Sphinx-Gallery thumbnail'
-                             ' file:\n%s' % (thumb,))
+                             f' file:\n{thumb}')
     thumb = os.path.relpath(thumb, src_dir)
     full_dir = os.path.relpath(target_dir, src_dir)
 
@@ -320,14 +320,14 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
                                     gallery_conf['backreferences_dir'],
-                                    '%s.examples.new' % backref)
+                                    f'{backref}.examples.new')
         seen = backref in seen_backrefs
         with codecs.open(include_path, 'a' if seen else 'w',
                          encoding='utf-8') as ex_file:
             if not seen:
                 # Be aware that if the number of lines of this heading changes,
                 #   the minigallery directive should be modified accordingly
-                heading = 'Examples using ``%s``' % backref
+                heading = f'Examples using ``{backref}``'
                 ex_file.write('\n\n' + heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
                 ex_file.write('\n\n.. start-sphx-glr-thumbnails\n\n')
@@ -349,7 +349,7 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
     for backref in seen_backrefs:
         path = os.path.join(gallery_conf['src_dir'],
                             gallery_conf['backreferences_dir'],
-                            '%s.examples.new' % backref)
+                            f'{backref}.examples.new')
         if os.path.isfile(path):
             # Close div containing all thumbnails
             # (it was open in _write_backreferences)

@@ -40,7 +40,7 @@ class MiniGallery(Directive):
         # Respect the same disabling options as the `raw` directive
         if (not self.state.document.settings.raw_enabled
                 or not self.state.document.settings.file_insertion_enabled):
-            raise self.warning('"%s" directive disabled.' % self.name)
+            raise self.warning(f'"{self.name}" directive disabled.')
 
         # Retrieve the backreferences directory
         config = self.state.document.settings.env.config
@@ -81,9 +81,9 @@ class MiniGallery(Directive):
                                 f'{obj}.examples')
 
             # Always remove the heading from the file
-            lines.append("""\
-.. include:: {}
-    :start-after: start-sphx-glr-thumbnails""".format(path))
+            lines.append(f"""\
+.. include:: {path}
+    :start-after: start-sphx-glr-thumbnails""")
 
         # Parse the assembly of `include` and `raw` directives
         text = '\n'.join(lines)

@@ -233,8 +233,9 @@ def check_binder_conf(binder_conf):
             missing_values.append(val)
 
     if len(missing_values) > 0:
-        raise ConfigError('binder_conf is missing values for: {}'.format(
-            missing_values))
+        raise ConfigError(
+            f'binder_conf is missing values for: {missing_values}'
+        )
 
     for key in binder_conf.keys():
         if key not in (req_values + optional_values):

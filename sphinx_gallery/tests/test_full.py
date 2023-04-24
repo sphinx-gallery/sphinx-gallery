@@ -96,7 +96,7 @@ def test_timings(sphinx_app):
     with codecs.open(timings_rst, 'r', 'utf-8') as fid:
         content = fid.read()
     assert ':ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`' in content
-    parenthetical = '(``{}``)'.format('plot_numpy_matplotlib.py')
+    parenthetical = "(``plot_numpy_matplotlib.py``)"
     assert parenthetical in content
     # HTML output
     timings_html = op.join(out_dir, 'auto_examples',
@@ -108,7 +108,7 @@ def test_timings(sphinx_app):
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('..', 'examples', 'plot_numpy_matplotlib.py')
-    assert ('- %s: ' % fname) in status
+    assert f'- {fname}: ' in status
 
 
 def test_api_usage(sphinx_app):
@@ -142,7 +142,7 @@ def test_api_usage(sphinx_app):
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('..', 'examples', 'plot_numpy_matplotlib.py')
-    assert ('- %s: ' % fname) in status
+    assert f'- {fname}: ' in status
 
 
 def test_optipng(sphinx_app):
@@ -165,7 +165,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="%d"' % (N_EXAMPLES,) in contents
+    assert f'tests="{N_EXAMPLES}"' in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
@@ -221,7 +221,7 @@ def test_run_sphinx(sphinx_app):
     for f in files_to_check:
         assert op.isfile(out_dir + '/' + f)
     status = sphinx_app._status.getvalue()
-    assert 'executed %d out of %d' % (N_GOOD, N_EXAMPLES) in status
+    assert f'executed {N_GOOD} out of {N_EXAMPLES}' in status
     assert 'after excluding 0' in status
     # intentionally have a bad URL in references
     warning = sphinx_app._warning.getvalue()
@@ -303,17 +303,16 @@ def test_image_formats(sphinx_app):
             ('plot_numpy_matplotlib', 'png', [1], None),
             ('plot_animation', 'png', [1, 3], 'function Animation'),
             ('plot_webp', 'webp', [1], None)):
-        html_fname = op.join(generated_examples_dir, '%s.html' % ex)
+        html_fname = op.join(generated_examples_dir, f'{ex}.html')
         with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
         for num in nums:
-            img_fname0 = '../_images/sphx_glr_%s_%03d.%s' % (ex, num, ext)
+            img_fname0 = f'../_images/sphx_glr_{ex}_{num:03}.{ext}'
             file_fname = op.join(generated_examples_dir, img_fname0)
             assert op.isfile(file_fname), file_fname
             want_html = f'src="{img_fname0}"'
             assert want_html in html
-            img_fname2 = ('../_images/sphx_glr_%s_%03d_2_00x.%s' %
-                          (ex, num, ext))
+            img_fname2 = f'../_images/sphx_glr_{ex}_{num:03}_2_00x.{ext}'
             file_fname2 = op.join(generated_examples_dir, img_fname2)
             want_html = f'srcset="{img_fname0}, {img_fname2} 2.00x"'
             if ext in ('png', 'jpg', 'svg', 'webp'):
@@ -414,7 +413,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'class="sphx-glr-signature"' in lines
     assert 'class="sphx-glr-timing"' in lines
     for kind in ('python', 'jupyter'):
-        assert 'class="sphx-glr-download sphx-glr-download-%s docutils container"' % kind in lines  # noqa:E501
+        assert f'class="sphx-glr-download sphx-glr-download-{kind} docutils container"' in lines  # noqa:E501
 
     # highlight language
     fname = op.join(src_dir, 'auto_examples', 'plot_numpy_matplotlib.rst')
@@ -725,7 +724,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     flags = re.MULTILINE | re.DOTALL
     # for some reason, setting "confoverrides" above causes Sphinx to show
     # all targets out of date, even though they haven't been modified...
-    want = '.*targets for %s source files that are out of date$.*' % N_RST
+    want = f'.*targets for {N_RST} source files that are out of date$.*'
     assert re.match(want, status, flags) is not None, lines
     # ... but then later detects that only some have actually changed:
     # Linux: 8 changed when how='run_stale', 9 when how='modify'.
