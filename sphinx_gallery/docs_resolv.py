@@ -346,7 +346,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             for dirpath, _, filenames in os.walk(html_gallery_dir)
             for filename in filenames]
     iterator = status_iterator(
-        flat, 'embedding documentation hyperlinks for %s... ' % gallery_dir,
+        flat, f'embedding documentation hyperlinks for {gallery_dir}... ',
         color='fuchsia', length=len(flat),
         stringify_func=lambda x: os.path.basename(x[1]))
     intersphinx_inv = getattr(app.env, 'intersphinx_named_inventory', dict())

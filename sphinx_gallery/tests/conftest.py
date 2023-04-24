@@ -178,16 +178,16 @@ def sphinx_app_wrapper(tmpdir, conf_file, req_mpl, req_pil):
     shutil.copytree(os.path.join(_fixturedir, "src"),
                     os.path.join(str(tmpdir), "examples"))
 
-    base_config = """
+    base_config = f"""
 import os
 import sphinx_gallery
-extensions = {!r}
+extensions = {conf_file['extensions']!r}
 exclude_patterns = ['_build']
 source_suffix = '.rst'
 master_doc = 'index'
 # General information about the project.
-project = u'Sphinx-Gallery <Tests>'\n\n
-""".format(conf_file['extensions'])
+project = 'Sphinx-Gallery <Tests>'\n\n
+"""
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
         conffile.write(base_config + conf_file['content'])
 

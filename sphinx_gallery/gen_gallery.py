@@ -176,14 +176,15 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
         for rep in capture_repr:
             if rep not in supported_reprs:
                 raise ConfigError("All entries in 'capture_repr' must be one "
-                                  "of %s, got: %s" % (supported_reprs, rep))
+                                  f"of {supported_reprs}, got: {rep}")
     else:
-        raise ConfigError("'capture_repr' must be a tuple, got: %s"
-                          % (type(capture_repr),))
+        raise ConfigError(
+            f"'capture_repr' must be a tuple, got: {type(capture_repr)}"
+        )
     # Check ignore_repr_types
     if not isinstance(gallery_conf['ignore_repr_types'], str):
-        raise ConfigError("'ignore_repr_types' must be a string, got: %s"
-                          % (type(gallery_conf['ignore_repr_types']),))
+        raise ConfigError("'ignore_repr_types' must be a string, got: " +
+                          type(gallery_conf['ignore_repr_types']))
 
     # deal with show_memory
     gallery_conf['memory_base'] = 0.
@@ -230,8 +231,9 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
                     scraper = getattr(scraper, '_get_sg_image_scraper')
                     scraper = scraper()
                 except Exception as exp:
-                    raise ConfigError('Unknown image scraper %r, got:\n%s'
-                                      % (orig_scraper, exp))
+                    raise ConfigError(
+                        f'Unknown image scraper {orig_scraper!r}, got:\n{exp}'
+                    )
             scrapers[si] = scraper
         if not callable(scraper):
             raise ConfigError(f'Scraper {scraper!r} was not callable')
@@ -257,7 +259,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
         compress_images = [compress_images]
     elif not isinstance(compress_images, (tuple, list)):
         raise ConfigError('compress_images must be a tuple, list, or str, '
-                          'got %s' % (type(compress_images),))
+                          f'got {type(compress_images)}')
     compress_images = list(compress_images)
     allowed_values = ('images', 'thumbnails')
     pops = list()
@@ -267,13 +269,13 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
                 pops.append(ki)
                 continue
             raise ConfigError('All entries in compress_images must be one of '
-                              '%s or a command-line switch starting with "-", '
-                              'got %r' % (allowed_values, kind))
+                              f'{allowed_values} or a command-line switch '
+                              f'starting with "-", got {kind!r}')
     compress_images_args = [compress_images.pop(p) for p in pops[::-1]]
     if len(compress_images) and not _has_optipng():
         logger.warning(
-            'optipng binaries not found, PNG %s will not be optimized'
-            % (' and '.join(compress_images),))
+            'optipng binaries not found, PNG %s will not be optimized',
+            ' and '.join(compress_images))
         compress_images = ()
     gallery_conf['compress_images'] = compress_images
     gallery_conf['compress_images_args'] = compress_images_args
@@ -286,21 +288,21 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
     for ri, resetter in enumerate(resetters):
         if isinstance(resetter, str):
             if resetter not in _reset_dict:
-                raise ConfigError('Unknown module resetter named %r'
-                                  % (resetter,))
+                raise ConfigError(
+                    f'Unknown module resetter named {resetter!r}'
+                )
             resetters[ri] = _reset_dict[resetter]
         elif not callable(resetter):
-            raise ConfigError('Module resetter %r was not callable'
-                              % (resetter,))
+            raise ConfigError(f'Module resetter {resetter!r} was not callable')
     gallery_conf['reset_modules'] = tuple(resetters)
 
     if not isinstance(gallery_conf['reset_modules_order'], str):
         raise ConfigError('reset_modules_order must be a str, '
-                          'got %r' % gallery_conf['reset_modules_order'])
+                          f'got {gallery_conf["reset_modules_order"]!r}')
     if gallery_conf['reset_modules_order'] not in ['before', 'after', 'both']:
         raise ConfigError("reset_modules_order must be in"
                           "['before', 'after', 'both'], "
-                          'got %r' % gallery_conf['reset_modules_order'])
+                          f"got {gallery_conf['reset_modules_order']!r}")
 
     del resetters
 
@@ -308,17 +310,17 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
     first_cell = gallery_conf.get("first_notebook_cell")
     if (not isinstance(first_cell, str)) and (first_cell is not None):
         raise ConfigError("The 'first_notebook_cell' parameter must be type "
-                          "str or None, found type %s" % type(first_cell))
+                          f"str or None, found type {type(first_cell)}")
     # Ensure the last cell text is a string if we have it
     last_cell = gallery_conf.get("last_notebook_cell")
     if (not isinstance(last_cell, str)) and (last_cell is not None):
         raise ConfigError("The 'last_notebook_cell' parameter must be type str"
-                          " or None, found type %s" % type(last_cell))
+                          f" or None, found type {type(last_cell)}")
     # Check pypandoc
     pypandoc = gallery_conf['pypandoc']
     if not isinstance(pypandoc, (dict, bool)):
         raise ConfigError("'pypandoc' parameter must be of type bool or dict,"
-                          "got: %s." % type(pypandoc))
+                          f"got: {type(pypandoc)}.")
     gallery_conf['pypandoc'] = dict() if pypandoc is True else pypandoc
     has_pypandoc, version = _has_pypandoc()
     if isinstance(gallery_conf['pypandoc'], dict) and has_pypandoc is None:
@@ -327,7 +329,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
         gallery_conf['pypandoc'] = False
     elif isinstance(gallery_conf['pypandoc'], dict):
         logger.info("Using pandoc version: %s to convert rst text blocks to "
-                    "markdown for .ipynb files" % (version,))
+                    "markdown for .ipynb files", version)
     else:
         logger.info("Using Sphinx-Gallery to convert rst text blocks to "
                     "markdown for .ipynb files.")
@@ -336,8 +338,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
         for key in pypandoc:
             if key not in accepted_keys:
                 raise ConfigError("'pypandoc' only accepts the following key "
-                                  "values: %s, got: %s."
-                                  % (accepted_keys, key))
+                                  f"values: {accepted_keys}, got: {key}.")
 
     gallery_conf['titles'] = {}
     # Ensure 'backreferences_dir' is str, pathlib.Path or None
@@ -346,7 +347,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
             (backref is not None):
         raise ConfigError("The 'backreferences_dir' parameter must be of type "
                           "str, pathlib.Path or None, "
-                          "found type %s" % type(backref))
+                          f"found type {type(backref)}")
     # if 'backreferences_dir' is pathlib.Path, make str for Python <=3.5
     # compatibility
     if isinstance(backref, pathlib.Path):
@@ -360,25 +361,26 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
         gallery_conf.get('jupyterlite', {}), app)
 
     if not isinstance(gallery_conf['css'], (list, tuple)):
-        raise ConfigError('gallery_conf["css"] must be list or tuple, got %r'
-                          % (gallery_conf['css'],))
+        raise ConfigError('gallery_conf["css"] must be list or tuple, got '
+                          f'{gallery_conf["css"]!r}')
     for css in gallery_conf['css']:
         if css not in _KNOWN_CSS:
-            raise ConfigError('Unknown css %r, must be one of %r'
-                              % (css, _KNOWN_CSS))
+            raise ConfigError(
+                f'Unknown css {css!r}, must be one of {_KNOWN_CSS!r}'
+            )
         if gallery_conf['app'] is not None:  # can be None in testing
             gallery_conf['app'].add_css_file(css + '.css')
 
     # check API usage
     if not isinstance(gallery_conf['api_usage_ignore'], str):
         raise ConfigError('gallery_conf["api_usage_ignore"] must be str, '
-                          'got %s' % type(gallery_conf['api_usage_ignore']))
+                          f'got {type(gallery_conf["api_usage_ignore"])}')
 
     if not isinstance(gallery_conf['show_api_usage'], bool) and \
             gallery_conf['show_api_usage'] != 'unused':
         raise ConfigError(
             'gallery_conf["show_api_usage"] must be True, False or "unused", '
-            'got %s' % gallery_conf['show_api_usage'])
+            f'got {gallery_conf["show_api_usage"]}')
 
     _update_gallery_conf_exclude_implicit_doc(gallery_conf)
 
@@ -456,7 +458,7 @@ def _format_toctree(items, includehidden=False):
 """
     st += """
 
-   %s\n""" % "\n   ".join(items)
+   {}\n""".format("\n   ".join(items))
 
     st += "\n"
 
@@ -695,7 +697,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
         return
     target_dir_clean = os.path.relpath(
         target_dir, gallery_conf['src_dir']).replace(os.path.sep, '_')
-    new_ref = 'sphx_glr_%s_sg_execution_times' % target_dir_clean
+    new_ref = f'sphx_glr_{target_dir_clean}_sg_execution_times'
     with codecs.open(os.path.join(target_dir, 'sg_execution_times.rst'), 'w',
                      encoding='utf-8') as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
@@ -924,7 +926,7 @@ def write_api_entry_usage(app, docname, source):
                     '    :layout: neato\n\n')
 
             for module in used_modules:
-                logger.info(f'Making API usage graph for {module}')
+                logger.info('Making API usage graph for %s', module)
                 # select and format entries for this module
                 entries = dict()
                 for entry, ref in used_api_entries.items():
@@ -1015,7 +1017,7 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
     examples_path = os.path.join(app.srcdir,
                                  app.config.sphinx_gallery_conf[
                                      "backreferences_dir"],
-                                 "%s.examples" % name)
+                                 f"{name}.examples")
 
     if not os.path.exists(examples_path):
         # touch file
@@ -1095,12 +1097,11 @@ def summarize_failing_examples(app, exception):
                 '    gallery_conf["filename_pattern"] = %r\n'
                 '    gallery_conf["ignore_pattern"]   = %r\n'
                 '\nafter excluding %d file%s that had previously been run '
-                '(based on MD5).\n'
-                % (n_good, n_tot, 's' if n_tot != 1 else '',
-                   gallery_conf['filename_pattern'],
-                   gallery_conf['ignore_pattern'],
-                   n_stale, 's' if n_stale != 1 else '',
-                   ),
+                '(based on MD5).\n',
+                n_good, n_tot, 's' if n_tot != 1 else '',
+                gallery_conf['filename_pattern'],
+                gallery_conf['ignore_pattern'],
+                n_stale, 's' if n_stale != 1 else '',
                 color='brown')
 
     if fail_msgs:
@@ -1143,7 +1144,7 @@ def check_duplicate_filenames(files):
         logger.warning(
             'Duplicate example file name(s) found. Having duplicate file '
             'names will break some links. '
-            'List of files: {}'.format(sorted(dup_names),))
+            'List of files: %s', sorted(dup_names))
 
 
 def check_spaces_in_filenames(files):
@@ -1154,7 +1155,7 @@ def check_spaces_in_filenames(files):
         logger.warning(
             'Example file name(s) with space(s) found. Having space(s) in '
             'file names will break some links. '
-            'List of files: {}'.format(sorted(files_with_space),))
+            'List of files: %s', sorted(files_with_space))
 
 
 def get_default_config_value(key):

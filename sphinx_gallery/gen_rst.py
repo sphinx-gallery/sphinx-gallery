@@ -246,8 +246,7 @@ def extract_intro_and_title(filename, docstring):
 
     if match is None:
         raise ExtensionError(
-            'Could not find a title in first paragraph:\n{}'.format(
-                title_paragraph))
+            f'Could not find a title in first paragraph:\n{title_paragraph}')
     title = match.group(0).strip()
     # Use the title if no other paragraphs are provided
     intro_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
@@ -313,7 +312,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         if not isinstance(thumbnail_number, int):
             raise ExtensionError(
                 'sphinx_gallery_thumbnail_number setting is not a number, '
-                'got %r' % (thumbnail_number,))
+                f'got {thumbnail_number!r}')
         # negative index means counting from the last one
         if thumbnail_number < 0:
             thumbnail_number += len(script_vars["image_path_iterator"]) + 1
@@ -453,7 +452,7 @@ def generate_dir_rst(
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     iterator = status_iterator(
         sorted_listdir,
-        'generating gallery for %s... ' % build_target_dir,
+        f'generating gallery for {build_target_dir}... ',
         length=len(sorted_listdir))
     for fname in iterator:
         intro, title, cost = generate_file_rst(
@@ -484,7 +483,7 @@ def generate_dir_rst(
         with codecs.open(subsection_index_path, 'w', encoding='utf-8') as (
             findex
         ):
-            findex.write("""\n\n.. _sphx_glr_{}:\n\n""".format(
+            findex.write("\n\n.. _sphx_glr_{}:\n\n".format(
                 head_ref.replace(os.path.sep, '_')
             ))
             findex.write(subsection_index_content)
@@ -501,8 +500,8 @@ def generate_dir_rst(
 .. toctree::
    :hidden:
 
-   %s\n
-""" % "\n   ".join(subsection_toctree_filenames)
+   {}\n
+""".format("\n   ".join(subsection_toctree_filenames))
                 findex.write(subsection_index_toctree)
 
     if have_index_rst:
@@ -662,7 +661,7 @@ def _get_memory_base(gallery_conf):
         sleep, timeout = (0.5, 1)
     proc = subprocess.Popen(
         [sys.executable, '-c',
-            'import time, sys; time.sleep(%s); sys.exit(0)' % sleep],
+            f'import time, sys; time.sleep({sleep}); sys.exit(0)'],
         close_fds=True)
     memories = memory_usage(proc, interval=1e-3, timeout=timeout)
     kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
@@ -784,9 +783,7 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
     else:
         captured_html = ''
 
-    code_output = "\n{}\n\n{}\n{}\n\n".format(
-        images_rst, captured_std, captured_html
-    )
+    code_output = f"\n{images_rst}\n\n{captured_std}\n{captured_html}\n\n"
     return code_output
 
 
@@ -1086,7 +1083,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             if type(dummy_image) is not int:
                 raise ExtensionError(
                     'sphinx_gallery_dummy_images setting is not a number, '
-                    'got %r' % (dummy_image,))
+                    'got {dummy_image!r}')
 
             image_path_iterator = script_vars['image_path_iterator']
             stock_img = os.path.join(glr_path_static(), 'no_image.png')
@@ -1302,8 +1299,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     fname = os.path.basename(example_file)
 
     if gallery_conf['show_memory']:
-        example_rst += ("**Estimated memory usage:** {: .0f} MB\n\n"
-                        .format(memory_used))
+        example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
 
     # Generate a binder URL if specified
     binder_badge_rst = ''

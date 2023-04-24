@@ -339,17 +339,16 @@ def save_figures(block, block_vars, gallery_conf):
     for scraper in gallery_conf['image_scrapers']:
         rst = scraper(block, block_vars, gallery_conf)
         if not isinstance(rst, str):
-            raise ExtensionError('rst from scraper %r was not a string, '
-                                 'got type %s:\n%r'
-                                 % (scraper, type(rst), rst))
+            raise ExtensionError(f'rst from scraper {scraper!r} was not a '
+                                 f'string, got type {type(rst)}:\n{rst!r}')
         n_new = len(image_path_iterator) - prev_count
         for ii in range(n_new):
             current_path, _ = _find_image_ext(
                 image_path_iterator.paths[prev_count + ii])
             if not os.path.isfile(current_path):
                 raise ExtensionError(
-                    'Scraper %s did not produce expected image:'
-                    '\n%s' % (scraper, current_path))
+                    f'Scraper {scraper} did not produce expected image:'
+                    f'\n{current_path}')
         all_rst += rst
     return all_rst
 

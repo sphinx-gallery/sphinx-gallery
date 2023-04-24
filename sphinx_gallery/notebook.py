@@ -209,10 +209,9 @@ def generate_image_src(image_path, gallery_conf, target_dir):
                 data = base64.b64encode(image_file.read())
         except OSError:
             raise ExtensionError(
-                'Unable to open {} to generate notebook data URI'
-                ''.format(full_path))
+                f'Unable to open {full_path} to generate notebook data URI')
         mime_type = mimetypes.guess_type(full_path)
-        return 'data:{};base64,{}'.format(mime_type[0], data.decode('ascii'))
+        return f"data:{mime_type[0]};base64,{data.decode('ascii')}"
 
 
 def jupyter_notebook(script_blocks, gallery_conf, target_dir):

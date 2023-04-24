@@ -34,7 +34,7 @@ def _get_image():
         except ImportError:
             raise ExtensionError(
                 'Could not import pillow, which is required '
-                'to rescale images (e.g., for thumbnails): %s' % (exc,))
+                f'to rescale images (e.g., for thumbnails): {exc}')
     return Image
 
 
@@ -126,8 +126,8 @@ def replace_py_ipynb(fname):
     allowed_extension = '.py'
     if extension != allowed_extension:
         raise ValueError(
-            "Unrecognized file extension, expected %s, got %s"
-            % (allowed_extension, extension))
+            f"Unrecognized file extension, expected {allowed_extension}, "
+            f"got {extension}")
     new_extension = '.ipynb'
     return f'{fname_prefix}{new_extension}'
 
