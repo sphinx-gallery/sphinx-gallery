@@ -251,7 +251,7 @@ def _write_recommendations(recommender, fname, gallery_conf):
         Configuration dictionary for the sphinx-gallery extension.
     """
     path_fname = Path(fname)
-    recommend_fname = f"{path_fname.parent / path_fname.stem}.recommendations"
+    recommend_fname = f"{path_fname.parent / path_fname.stem}.recommendations.new"
     recommended_examples = recommender.predict(fname)
 
     with open(recommend_fname, "w", encoding="utf-8") as ex_file:
@@ -274,3 +274,4 @@ def _write_recommendations(recommender, fname, gallery_conf):
                 )
             )
         ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
+    _replace_md5(recommend_fname, mode='t')
