@@ -23,7 +23,6 @@ from .py_source_parser import split_code_and_text_blocks
 from .gen_rst import extract_intro_and_title
 from .utils import  _replace_md5
 
-
 class ExampleRecommender:
     """Compute content-based KNN-TF-IFD recommendation system.
 
@@ -252,7 +251,9 @@ def _write_recommendations(recommender, fname, gallery_conf):
         Configuration dictionary for the sphinx-gallery extension.
     """
     path_fname = Path(fname)
-    recommend_fname = f"{path_fname.parent / path_fname.stem}.recommendations.new"
+    recommend_fname = (
+        f"{path_fname.parent / path_fname.stem}.recommendations.new"
+    )
     recommended_examples = recommender.predict(fname)
 
     with open(recommend_fname, "w", encoding="utf-8") as ex_file:
