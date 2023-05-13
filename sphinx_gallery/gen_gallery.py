@@ -171,7 +171,8 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None,
 
     # Check capture_repr
     capture_repr = gallery_conf['capture_repr']
-    supported_reprs = ['__repr__', '__str__', '_repr_html_']
+    supported_reprs = {'__repr__', '__str__', '_repr_html_', '_repr_png_',
+                       '_repr_svg_', '_repr_jpeg_'}
     if isinstance(capture_repr, tuple):
         for rep in capture_repr:
             if rep not in supported_reprs:
@@ -815,7 +816,7 @@ def _make_graph(fname, entries, gallery_conf):
 
 
 def write_api_entry_usage(app, docname, source):
-    """Write an html page describing which API entries are used and unused.
+    """Write an HTML page describing which API entries are used and unused.
 
     To document and graph only those API entries that are used by
     autodoc, we have to wait for autodoc to finish and hook into the

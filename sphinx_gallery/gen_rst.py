@@ -30,12 +30,13 @@ import subprocess
 import sys
 import traceback
 import codeop
+from pathlib import PurePosixPath
 
 from sphinx.errors import ExtensionError
 import sphinx.util
 
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
-                       _find_image_ext)
+                       _find_image_ext, figure_rst)
 from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
                     optipng, status_iterator)
 from . import glr_path_static
@@ -726,12 +727,40 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf,
     return is_last_expr, mem_max
 
 
+# Map _repr_*_ to MIME type present in _repr_mimebundle_
+MIME_MAPPING = {'_repr_svg_': 'image/svg+xml',
+                '_repr_jpeg_': 'image/jpeg',
+                '_repr_png_': 'image/png',
+                '_repr_html_': 'text/html'}
+MIME_MAPPING_REPR = set(MIME_MAPPING.keys())
+
+
 def _get_last_repr(capture_repr, ___):
-    """Get a repr of the last expression, using first method in 'capture_repr'
-    available for the last expression."""
+    """
+    Get a repr of the last expression, using first method in 'capture_repr'
+    available for the last expression.
+    """
+    # First try `_repr_mimebundle_`for those representations that may be there
+    capture_repr_set = set(capture_repr)
+    included_mime_types = {MIME_MAPPING[repr] for repr in
+                           capture_repr_set.intersection(MIME_MAPPING_REPR)}
+    excluded_mime_types = {MIME_MAPPING[repr] for repr in
+                           MIME_MAPPING_REPR.difference(capture_repr_set)}
+    mimebundle = {}
+    if included_mime_types and hasattr(___, '_repr_mimebundle_'):
+        try:
+            mimebundle = ___._repr_mimebundle_(include=included_mime_types,
+                                               exclude=excluded_mime_types)
+        except Exception:
+            pass
+
     for meth in capture_repr:
         try:
-            last_repr = getattr(___, meth)()
+            if meth in MIME_MAPPING and MIME_MAPPING[meth] in mimebundle:
+                # Already generated in _repr_mimebundle_
+                last_repr = mimebundle[MIME_MAPPING[meth]]
+            else:
+                last_repr = getattr(___, meth)()
             # for case when last statement is print()
             if last_repr is None or last_repr == 'None':
                 repr_meth = None
@@ -741,13 +770,13 @@ def _get_last_repr(capture_repr, ___):
             last_repr = None
             repr_meth = None
         else:
-            if isinstance(last_repr, str):
+            if isinstance(last_repr, (str, bytes)):
                 break
     return last_repr, repr_meth
 
 
 def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
-                     images_rst, file_conf):
+                     images_rst, file_conf, script_vars):
     """Obtain standard output and html output in reST."""
     last_repr = None
     repr_meth = None
@@ -782,6 +811,20 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
         captured_html = HTML_HEADER.format(indent(last_repr, ' ' * 4))
     else:
         captured_html = ''
+
+    # For other image representations, save to file
+    if repr_meth in ('_repr_png_', '_repr_jpeg_', '_repr_svg_'):
+        image_path = next(script_vars['image_path_iterator'])
+        image_path = PurePosixPath(image_path)
+        if repr_meth in ('_repr_jpeg_', '_repr_svg_'):
+            suffix = '.svg' if repr_meth == '_repr_svg_' else ".jpg"
+            image_path = image_path.with_suffix(suffix)
+        mode = 'w' if repr_meth == '_repr_svg_' else 'wb'
+        with open(image_path, mode) as f:
+            f.write(last_repr)
+        svg_image = repr_meth == '_repr_svg_'
+        images_rst += figure_rst([image_path], gallery_conf["src_dir"],
+                                 svg_image=svg_image)
 
     code_output = f"\n{images_rst}\n\n{captured_std}\n{captured_html}\n\n"
     return code_output
@@ -882,7 +925,7 @@ def execute_code_block(compiler, block, example_globals, script_vars,
 
         code_output = _get_code_output(
             is_last_expr, example_globals, gallery_conf, logging_tee,
-            images_rst, file_conf
+            images_rst, file_conf, script_vars
         )
     finally:
         _reset_cwd_syspath(cwd, sys_path)

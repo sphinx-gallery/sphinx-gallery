@@ -143,12 +143,16 @@ Write a custom image scraper
 By default, Sphinx-Gallery supports image scraping for Matplotlib
 (:func:`~sphinx_gallery.scrapers.matplotlib_scraper`). If you wish to capture
 output from other python packages, first determine if the object you wish to
-capture has a ``_repr_html_`` method. If so, you can use the configuration
-``capture_repr`` (:ref:`capture_repr`) to control the display of the object,
-without the need to write a custom scraper. This configuration allows capture
-of the raw html output, in a process similar to other html-based displays such
-as `jupyter <https://jupyter.org/>`_. If the first option does not work,
-this section describes how to write a custom scraper.
+capture has any of the other supported capture methods: ``_repr_html_``,
+``_repr_png_``, ``_repr_jpeg_``, and ``_repr_svg_``. If so, you can use the
+configuration ``capture_repr`` (:ref:`capture_repr`) to control the display of
+the object, without the need to write a custom scraper. This configuration allows
+capture of the raw html/png/jpeg/svg output, in a process similar to other enriched
+displays such as `jupyter <https://jupyter.org/>`_. If the object supports
+``_repr_mimebundle_``, adding, e.g., ``_repr_svg_`` to ``capture_repr`` will also
+look for SVG in the returned MIME-bundle.
+
+If the first option does not work, this section describes how to write a custom scraper.
 
 Image scrapers are functions (or callable class instances) that do the following
 things:

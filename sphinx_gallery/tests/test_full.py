@@ -30,7 +30,7 @@ import pytest
 
 # total number of plot_*.py files in tinybuild/examples + examples_rst_index
 # + examples_with_rst
-N_EXAMPLES = 15 + 3 + 2
+N_EXAMPLES = 19 + 3 + 2
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs examples_rst_index, examples_with_rst
@@ -332,6 +332,44 @@ def test_repr_html_classes(sphinx_app):
         lines = fid.read()
     assert 'div class="output_subarea output_html rendered_html output_result"' in lines  # noqa: E501
     assert 'gallery-rendered-html.css' in lines
+
+
+def test_repr_svg_classes(sphinx_app):
+    """Test appropriate _repr_svg_ classes."""
+    example_file = op.join(
+        sphinx_app.outdir, 'auto_examples', 'plot_svg_repr.html')
+    with codecs.open(example_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'sphx_glr_plot_svg_repr_001.svg' in lines
+
+
+def test_repr_svg_from_mimebundle_classes(sphinx_app):
+    """Test appropriate _repr_mimebundle_ classes."""
+    example_file = op.join(
+        sphinx_app.outdir, 'auto_examples', 'plot_mime_bundle.html')
+    with codecs.open(example_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert "This should actually print" in lines
+    for i in range(1, 4):
+        assert f'sphx_glr_plot_mime_bundle_00{i}.svg' in lines
+
+
+def test_capture_jpg(sphinx_app):
+    """Test capturing the JPG from _repr_jpeg_."""
+    example_file = op.join(
+        sphinx_app.outdir, 'auto_examples', 'plot_random_jpg.html')
+    with codecs.open(example_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'sphx_glr_plot_random_jpg_001.jpg' in lines
+
+
+def test_capture_png(sphinx_app):
+    """Test capturing the PNG from _repr_png_ of a Pillow Image."""
+    example_file = op.join(
+        sphinx_app.outdir, 'auto_examples', 'plot_random_png.html')
+    with codecs.open(example_file, 'r', 'utf-8') as fid:
+        lines = fid.read()
+    assert 'sphx_glr_plot_random_png_001.png' in lines
 
 
 def test_embed_links_and_styles(sphinx_app):

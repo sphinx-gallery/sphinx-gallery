@@ -830,6 +830,23 @@ text_above_html = """.. code-block:: none
 
 """
 
+code_repr_and_svg = """
+class repr_and_svg_class():
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return "This is the __repr__"
+
+    def _repr_svg_(self):
+        return ("<svg viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'>"
+                "<line x1='0' y1='0' x2='50' y2='50' stroke='black' />"
+                "</svg>")
+
+class_inst = repr_and_svg_class()
+class_inst
+"""
+
 
 def _clean_output(output):
     is_text = '.. rst-class:: sphx-glr-script-out' in output
@@ -879,6 +896,8 @@ def _clean_output(output):
     pytest.param(('_repr_html_', '__repr__'), code_repr_only,
                  'This is the __repr__', id='repr_only,(html,repr)'),
     pytest.param(('_repr_html_',), code_plt, '', id='html_none'),
+    pytest.param(('__repr__', '_repr_svg_'), code_repr_and_svg,
+                 'This is the __repr__', id='repr_and_svg,(repr,svg)'),
 ])
 def test_capture_repr(gallery_conf, capture_repr, code, expected_out,
                       req_mpl, req_pil, script_vars):

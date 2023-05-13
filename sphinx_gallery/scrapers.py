@@ -353,7 +353,8 @@ def save_figures(block, block_vars, gallery_conf):
     return all_rst
 
 
-def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None):
+def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None,
+               svg_image=False):
     """Generate reST for a list of image filenames.
 
     Depending on whether we have one or more figures, we use a
@@ -376,6 +377,10 @@ def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None):
         {0: /images/image.png, 2.0: /images/image_2_00x.png}
         where the key is the multiplication factor and the contents
         the path to the image created above.
+    svg_image : bool
+        Whether to use the standard ``sg_image`` wrapper (False, default) or a
+        special version of the ``sg_image`` for SVG images to enable later
+        conversions.
 
     Returns
     -------
@@ -416,8 +421,10 @@ def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None):
         figure_name = figure_paths[0]
         hinames = srcsetpaths[0]
         srcset = _get_srcset_st(sources_dir, hinames)
-        images_rst = SG_IMAGE % (figure_name, alt, srcset)
-
+        if svg_image:
+            images_rst = SVG_IMAGE % (figure_name, alt)
+        else:
+            images_rst = SG_IMAGE % (figure_name, alt, srcset)
     elif len(figure_paths) > 1:
         images_rst = HLIST_HEADER
         for nn, figure_name in enumerate(figure_paths):
@@ -489,6 +496,13 @@ SG_IMAGE = """
 .. image-sg:: /%s
    :alt: %s
    :srcset: %s
+   :class: sphx-glr-single-img
+"""
+
+# Used for SVGs
+SVG_IMAGE = """
+.. image:: /%s
+   :alt: %s
    :class: sphx-glr-single-img
 """
 

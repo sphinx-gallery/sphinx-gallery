@@ -1856,8 +1856,21 @@ are:
 * ``__str__`` - returns a string containing a nicely printable representation
   of an object. This is what is used when you ``print()`` an object or pass it
   to ``format()``.
-* ``_repr_html_`` - returns a HTML version of the object. This method is only
-  present in some objects, for example, pandas dataframes.
+* ``_repr_html_`` - returns an HTML version of the object.
+* ``_repr_png_`` - returns a PNG version of the object.
+* ``_repr_jpeg_`` - returns a JPEG version of the object.
+* ``_repr_svg_`` - returns an SVG version of the object.
+
+Note that the last four methods are only available for some objects. For example,
+Pandas dataframes, SymPy expressions, and GraphViz graphs, support one or more of
+these formats.
+
+.. note::
+
+    Some objects support :py:meth:`~MyObject._repr_mimebundle_`, which is the preferred
+    way to access enriched representations. By specifying, e.g., ``_repr_svg_``,
+    Sphinx-Gallery will first look for an SVG in the MIME bundle.
+    If not, it will call ``_repr_svg_`` if available.
 
 Output capture can be controlled globally by the ``capture_repr`` configuration
 setting or file-by-file by adding a comment to the example file, which overrides
