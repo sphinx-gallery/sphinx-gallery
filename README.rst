@@ -8,8 +8,8 @@ Sphinx-Gallery
 .. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
     :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4718153.svg
-    :target: https://doi.org/10.5281/zenodo.4718153
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3741780.svg
+    :target: https://doi.org/10.5281/zenodo.3741780
 
 .. tagline-begin-content
 
@@ -117,6 +117,6 @@ How to cite
 .. citation-begin-content
 
 If you would like to cite Sphinx-Gallery you can do so using our `Zenodo
-deposit <https://zenodo.org/record/3838216>`_.
+deposit <https://zenodo.org/record/3741780>`_.
 
 .. citation-end-content
