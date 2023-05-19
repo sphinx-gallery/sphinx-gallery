@@ -2,14 +2,30 @@
 Sphinx-Gallery
 ==============
 
-.. image:: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_apis/build/status/sphinx-gallery.sphinx-gallery?branchName=master
-    :target: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_build/latest?definitionId=1&branchName=master
+.. image:: https://img.shields.io/pypi/v/sphinx-gallery
+    :target: https://pypi.org/project/sphinx-gallery/
+    :alt: PyPI
 
-.. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
-    :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
+.. image:: https://img.shields.io/conda/vn/conda-forge/sphinx-gallery
+    :target: https://anaconda.org/conda-forge/sphinx-gallery
+    :alt: Conda-forge
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3741780.svg
     :target: https://doi.org/10.5281/zenodo.3741780
+    :alt: Zenodo DOI
+
+.. image:: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_apis/build/status/sphinx-gallery.sphinx-gallery?branchName=master
+    :target: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_build/latest?definitionId=1&branchName=master
+    :alt: Azure CI status
+
+.. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
+    :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
+    :alt: CircleCI status
+
+.. image:: https://codecov.io/github/sphinx-gallery/sphinx-gallery/badge.svg?branch=master&service=github(
+    :target: https://app.codecov.io/github/sphinx-gallery/sphinx-gallery
+    :alt: Code coverage
+
 
 .. tagline-begin-content
 
