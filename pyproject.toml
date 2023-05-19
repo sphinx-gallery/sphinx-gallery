@@ -1,0 +1,36 @@
+[project]
+name = "sphinx-gallery"
+authors = [
+   {name = "Óscar Nájera", email = 'najera.oscar@gmail.com'},
+]
+description = "A Sphinx extension that builds an HTML gallery of examples from any set of Python scripts."
+dynamic = ["version"]
+readme = "README.rst"
+requires-python = '>=3.7'
+license = {"text" = '3-clause BSD'}
+classifiers = [
+    'Intended Audience :: Developers',
+    'Development Status :: 4 - Beta',
+    'Framework :: Sphinx :: Extension',
+    'Programming Language :: Python',
+]
+dependencies = [
+    "sphinx>=4"
+]
+
+[project.urls]
+Source = "https://github.com/sphinx-gallery/sphinx-gallery"
+Documentation = "https://sphinx-gallery.github.io"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ['.']
+
+[tool.setuptools.dynamic]
+version = {attr = "sphinx_gallery.__version__"}

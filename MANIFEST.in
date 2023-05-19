@@ -30,3 +30,8 @@ recursive-exclude */gen_modules *
 exclude gen_modules
 exclude .DS_store
 exclude .github_changelog_generator
+include sphinx_gallery/_static/sg_gallery*.css
+include sphinx_gallery/_static/no_image.png
+include sphinx_gallery/_static/broken_example.png
+include sphinx_gallery/_static/binder_badge_logo.svg
+include sphinx_gallery/_static/jupyterlite_badge_logo.svg
