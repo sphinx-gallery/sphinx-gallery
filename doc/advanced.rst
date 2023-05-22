@@ -201,7 +201,9 @@ index page thumbnails. PNG, JPEG and WebP images are scaled using Pillow, and
 SVG and GIF images are copied.
 
 .. warning:: SVG images do not work with ``latex`` build modes, thus will not
-             work while building a PDF version of your documentation.
+             work while building a PDF version of your documentation. You may
+             want to consider `sphinxcontrib-svg2pdfconverter
+             <https://pypi.org/project/sphinxcontrib-svg2pdfconverter/>`_.
 
 Example 1: a Matplotlib-style scraper
 -------------------------------------
