@@ -153,7 +153,7 @@ CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
 TIMING_CONTENT = """
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ({0: .0f} minutes {1: .3f} seconds)
+   **Total running time of the script:** ({0:.0f} minutes {1:.3f} seconds)
 
 """
 
