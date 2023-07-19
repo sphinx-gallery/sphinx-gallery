@@ -67,6 +67,10 @@ class _LoggingTee:
         self.logger_buffer = ''
         self.set_std_and_reset_position()
 
+        # For TextIO compatibility
+        self.closed = False
+        self.encoding = "utf-8"
+
     def set_std_and_reset_position(self):
         if not isinstance(sys.stdout, _LoggingTee):
             self.origs = (sys.stdout, sys.stderr)
@@ -107,13 +111,35 @@ class _LoggingTee:
             self.logger.verbose('%s', self.logger_buffer)
             self.logger_buffer = ''
 
-    # Needed to work with Abseil
+    # For TextIO compatibility
     def close(self):
         pass
 
-    # When called from a local terminal seaborn needs it in Python3
+    def fileno(self):
+        return self.output.fileno()
+
     def isatty(self):
         return self.output.isatty()
+
+    def readable(self):
+        return False
+
+    def seekable(self):
+        return False
+
+    def tell(self):
+        return self.output.tell()
+
+    def writable(self):
+        return True
+
+    @property
+    def errors(self):
+        return self.output.errors
+
+    @property
+    def newlines(self):
+        return self.output.newlines
 
     # When called in gen_rst, conveniently use context managing
     def __enter__(self):
