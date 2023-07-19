@@ -1049,15 +1049,18 @@ def test_textio_compat(log_collector_wrap):
     assert not tee.seekable()
     assert tee.writable()
 
+
 def test_isatty(monkeypatch, log_collector_wrap):
     _, _, tee, _ = log_collector_wrap
     assert not tee.isatty()
     monkeypatch.setattr(tee.output, 'isatty', lambda: True)
     assert tee.isatty()
 
+
 def test_errors(log_collector_wrap):
     _, _, tee, _ = log_collector_wrap
     assert tee.errors == tee.output.errors
+
 
 def test_newlines(log_collector_wrap):
     _, _, tee, _ = log_collector_wrap
