@@ -1049,7 +1049,6 @@ def test_textio_compat(log_collector_wrap):
     assert not tee.seekable()
     assert tee.writable()
 
-
 def test_isatty(monkeypatch, log_collector_wrap):
     _, _, tee, _ = log_collector_wrap
     assert not tee.isatty()
