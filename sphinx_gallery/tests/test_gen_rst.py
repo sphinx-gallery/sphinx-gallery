@@ -6,6 +6,7 @@ Testing the rst files generator
 import ast
 import codecs
 import importlib
+import io
 import logging
 import tempfile
 import re
@@ -1043,12 +1044,41 @@ def test_multi_line(log_collector_wrap):
     assert tee.logger_buffer == 'third line'
 
 
+def test_textio_compat(log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert not tee.readable()
+    assert not tee.seekable()
+    assert tee.writable()
+
+
+def test_fileno(monkeypatch, log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    with pytest.raises(io.UnsupportedOperation):
+        tee.fileno()
+
+
 def test_isatty(monkeypatch, log_collector_wrap):
     _, _, tee, _ = log_collector_wrap
     assert not tee.isatty()
     monkeypatch.setattr(tee.output, 'isatty', lambda: True)
     assert tee.isatty()
 
+
+def test_tell(monkeypatch, log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert tee.tell() == tee.output.tell()
+    monkeypatch.setattr(tee.output, 'tell', lambda: 42)
+    assert tee.tell() == tee.output.tell()
+
+
+def test_errors(log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert tee.errors == tee.output.errors
+
+
+def test_newlines(log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert tee.newlines == tee.output.newlines
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are executed after a no-plot and produce
