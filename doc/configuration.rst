@@ -410,29 +410,29 @@ point to the directory containing ``searchindex.js``, such as
 If you wish to do the same for ordinary reST documentation,
 see :ref:`plain_rst`.
 
-If you are using inheritance for your documented code and you are experience
-wrong links in the sense that the links point to the base class of an object
+If you are using inherited classes in your code and are experiencing
+incorrect links in the sense that links point to the base class of an object
 instead of the child, the option ``prefer_full_module`` might solve your issue.
-Have also a look at `the GitHub
+See `the GitHub
 issue <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
-implementing this option for more context.
+for more context.
 
 To make this work in your documentation you need to include to the
-configuration
-dictionary within your Sphinx ``conf.py`` file::
+``prefer_full_module`` configuration within your Sphinx ``conf.py`` file::
 
     sphinx_gallery_conf = {
         ...
         'prefer_full_module':[
-        # a list of regex command of your module where the full module
-        # name should be used for sphinx_gallery instead of the shortend
-        'yourmodule.*+\d{4}',
+        # a list of regexes of qualified module names where the full module
+        # (e.g., a.b.meth) name should be used for links instead of the short
+        # module name (e.g., a.meth)
+        'yourmodule\.submod',
         ]
     }
 
-In the above examples all modules matching the string ``'yourmodule.*+\d{4}'``
-would use the full module name when creating the links. All other use the
-(default) way of linking.
+In the above example, all qualified names matching the regex
+``'yourmodule\.submod'`` would use the full module name when creating links. All
+others will use the (default) way of linking.
 
 .. _references_to_examples:
 
@@ -443,12 +443,13 @@ When documenting a given function/method/attribute/object/class, Sphinx-Gallery
 enables you to link to any examples that either:
 
 1. Use the function/method/attribute/object or instantiate the class in the
-   code.
+   code (generates *implicit backreferences*).
 2. Refer to that function/method/attribute/object/class using sphinx markup
    ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a text
    block. You can omit this role markup if you have set the `default_role
    <https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role>`_
-   in your ``conf.py`` to any of these roles.
+   in your ``conf.py`` to any of these roles (generates *explicit
+   backreferences*).
 
 The former is useful for auto-documenting functions that are used and classes
 that are explicitly instantiated. The generated links are called implicit
