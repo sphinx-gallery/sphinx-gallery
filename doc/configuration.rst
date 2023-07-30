@@ -426,12 +426,12 @@ To make this work in your documentation you need to include to the
         # a list of regexes of qualified module names where the full module
         # (e.g., a.b.meth) name should be used for links instead of the short
         # module name (e.g., a.meth)
-        'yourmodule\.submod',
+        'module\.submodule',
         ]
     }
 
 In the above example, all qualified names matching the regex
-``'yourmodule\.submod'`` would use the full module name when creating links. All
+``'module\.submodule'`` would use the full module name when creating links. All
 others will use the (default) way of linking.
 
 .. _references_to_examples:
