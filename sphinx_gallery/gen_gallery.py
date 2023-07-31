@@ -104,7 +104,7 @@ DEFAULT_GALLERY_CONF = {
     'default_thumb_file': None,
     'line_numbers': False,
     'nested_sections': True,
-    'prefer_full_module': [],
+    'prefer_full_module': {},
     'api_usage_ignore': '.*__.*__',
     'show_api_usage': False,  # if this changes, change write_api_entries, too
     'copyfile_regex': '',

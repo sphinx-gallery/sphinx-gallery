@@ -5,7 +5,11 @@ Testing the rst files generator
 """
 
 import pytest
+import sys
+from unittest.mock import MagicMock, patch
+
 from sphinx.errors import ExtensionError
+
 import sphinx_gallery.backreferences as sg
 from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.gen_rst import _sanitize_rst
@@ -93,11 +97,47 @@ def test_identify_names(unicode_sample, gallery_conf):
                 'is_class': False,
                 'is_explicit': False,
              }],
+        # Check `get_short_module_name` points to correct object.
+        # Here, `matplotlib.pyplot.figure` (func) can be shortened to
+        # `matplotlib.figure` (module) (but should not be)
+        'plt.figure':
+            [{
+                'name': 'figure',
+                'module': 'matplotlib.pyplot',
+                'module_short': 'matplotlib.pyplot',
+                'is_class': False,
+                'is_explicit': False,
+            }],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
     ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
     res = sg.identify_names(script_blocks, ref_regex)
     assert expected == res
+
+
+@pytest.mark.parametrize(
+    ("mock", "short_module"), [("same", "A"), ("diff", "A.B")]
+)
+def test_get_short_module_name(mock, short_module):
+    """Check `_get_short_module_name` correctly finds shortest module."""
+    if mock == 'same':
+        mock_mod_1 = mock_mod_2 = MagicMock()
+    else:
+        mock_mod_1 = MagicMock()
+        mock_mod_2 = MagicMock()
+
+    # Mock will return whatever object/attr we ask of it
+    # When mock objects are the same, the `obj_name` from "A" is the same as
+    # `obj_name` from "A.B", so "A" is an accepted short module
+    with patch.dict(sys.modules, {"A": mock_mod_1, "A.B": mock_mod_2}):
+        short_mod = sg._get_short_module_name("A.B", "C")
+        short_mod_with_attr = sg._get_short_module_name("A.B", "C.D")
+        assert short_mod == short_mod_with_attr == short_module
+        # Deleting desired attr will cause failure of `hasattr` check (we
+        # check this to ensure it is the right class)
+        del mock_mod_2.C.D
+        short_mod_no_attr = sg._get_short_module_name("A.B", "C.D")
+        assert short_mod_no_attr is None
 
 
 def test_identify_names_implicit(tmpdir, gallery_conf):

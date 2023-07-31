@@ -376,8 +376,8 @@ Add intersphinx links to your examples
 ======================================
 
 Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
-you can link the used functions to their matching online documentation. As such
-code snippets within the gallery appear like this
+you can link used functions/methods/attributes/objects/classes to their matching
+online documentation. Such code snippets within the gallery appear like this:
 
 .. raw:: html
 
@@ -417,22 +417,23 @@ See `the GitHub
 issue <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
 for more context.
 
-To make this work in your documentation you need to include to the
-``prefer_full_module`` configuration within your Sphinx ``conf.py`` file::
+To make this work in your documentation you need to include
+``prefer_full_module`` in the Sphinx-Gallery configuration dictionary in
+the ``conf.py`` file::
 
     sphinx_gallery_conf = {
         ...
-        'prefer_full_module':[
-        # a list of regexes of qualified module names where the full module
-        # (e.g., a.b.meth) name should be used for links instead of the short
-        # module name (e.g., a.meth)
+        'prefer_full_module': {
+        # Regexes to match the fully qualified names of objects where the full
+        # module name should be used. To use full names for all objects use: '.*'
         'module\.submodule',
-        ]
+        }
     }
 
-In the above example, all qualified names matching the regex
-``'module\.submodule'`` would use the full module name when creating links. All
-others will use the (default) way of linking.
+In the above example, all fully qualified names matching the regex
+``'module\.submodule'`` would use the full module name
+(e.g., module.submodule.meth) when creating links, instead of the short module
+name (e.g., module.meth). All others will use the (default) way of linking.
 
 .. _references_to_examples:
 
@@ -451,10 +452,10 @@ enables you to link to any examples that either:
    in your ``conf.py`` to any of these roles (generates *explicit
    backreferences*).
 
-The former is useful for auto-documenting functions that are used and classes
-that are explicitly instantiated. The generated links are called implicit
-backreferences. The latter is useful for classes that are typically implicitly
-returned rather than explicitly instantiated (e.g.,
+The former is useful for auto-documenting functions/methods/attributes/objects
+that are used and classes that are explicitly instantiated. The generated links
+are called implicit backreferences. The latter is useful for classes that are
+typically implicitly returned rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
 within function calls). Such links are called explicit backreferences.
 
@@ -476,8 +477,9 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
         # this case sphinx_gallery and numpy in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy'),
 
-        # objects to exclude from implicit backreferences. The default option
-        # is an empty set, i.e. exclude nothing.
+        # Regexes to match objects to exclude from implicit backreferences.
+        # The default option is an empty set, i.e. exclude nothing.
+        # To exclude everything, use: '.*'
         'exclude_implicit_doc': {},
     }
 

@@ -75,6 +75,9 @@ br.identify_names
 from sphinx_gallery.back_references import identify_names
 identify_names
 
+import matplotlib.pyplot as plt
+_ = plt.figure()
+
 """
 
     fname = tmpdir.join("unicode_sample.py")
