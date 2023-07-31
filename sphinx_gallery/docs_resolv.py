@@ -323,7 +323,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                     app.config.sphinx_gallery_conf,
-                    app.builder.outdir, src_gallery_dir, relative=True)
+                    str(app.builder.outdir), src_gallery_dir, relative=True)
             else:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                     app.config.sphinx_gallery_conf,
