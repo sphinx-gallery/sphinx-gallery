@@ -410,7 +410,16 @@ point to the directory containing ``searchindex.js``, such as
 If you wish to do the same for ordinary reST documentation,
 see :ref:`plain_rst`.
 
-If you are using inherited classes in your code and are experiencing
+Resolving module paths
+^^^^^^^^^^^^^^^^^^^^^^
+
+When finding links to objects we use, by default, the shortest module path,
+checking that it still directs to the same object. This is because it is common
+for a class that is defined in a deeper module to be documented in a shallower
+one because it is imported in a higher level modules' ``__init__.py`` (thus
+that's the namespace users expect it to be).
+
+However, if you are using inherited classes in your code and are experiencing
 incorrect links in the sense that links point to the base class of an object
 instead of the child, the option ``prefer_full_module`` might solve your issue.
 See `the GitHub
@@ -419,15 +428,13 @@ for more context.
 
 To make this work in your documentation you need to include
 ``prefer_full_module`` in the Sphinx-Gallery configuration dictionary in
-the ``conf.py`` file::
+``conf.py``::
 
     sphinx_gallery_conf = {
         ...
-        'prefer_full_module': {
         # Regexes to match the fully qualified names of objects where the full
         # module name should be used. To use full names for all objects use: '.*'
-        'module\.submodule',
-        }
+        'prefer_full_module': {r'module\.submodule'}
     }
 
 In the above example, all fully qualified names matching the regex
@@ -480,7 +487,7 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
         # Regexes to match objects to exclude from implicit backreferences.
         # The default option is an empty set, i.e. exclude nothing.
         # To exclude everything, use: '.*'
-        'exclude_implicit_doc': {},
+        'exclude_implicit_doc': {r'pyplot\.show'},
     }
 
 The path you specify in ``backreferences_dir`` (here we choose
