@@ -27,7 +27,7 @@ if [ "$DISTRIB" == "conda" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION} jinja2<=3.0.3"
     fi
     source activate base
-    conda install --yes -c conda-forge mamba
+    conda install --yes -c conda-forge mamba conda
     mamba install --yes -c conda-forge $CONDA_TO_INSTALL
     mamba info --envs
     pytest --version
