@@ -14,6 +14,7 @@ import sys
 import time
 import glob
 import json
+from pathlib import Path
 
 from packaging.version import Version
 
@@ -205,7 +206,7 @@ def test_junit(sphinx_app, tmpdir):
 
 def test_run_sphinx(sphinx_app):
     """Test basic outputs."""
-    out_dir = sphinx_app.outdir
+    out_dir = str(sphinx_app.outdir)
     out_files = os.listdir(out_dir)
     assert 'index.html' in out_files
     assert 'auto_examples' in out_files
