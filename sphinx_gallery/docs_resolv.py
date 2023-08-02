@@ -16,6 +16,7 @@ import shelve
 import sys
 import urllib.request as urllib_request
 import urllib.parse as urllib_parse
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 
 from sphinx.errors import ExtensionError
@@ -143,7 +144,12 @@ class SphinxDocLinkResolver:
         self.relative = relative
         self._link_cache = {}
 
-        if doc_url.startswith(('http://', 'https://')):
+        if isinstance(doc_url, Path):
+            index_url = os.path.join(doc_url, 'index.html')
+            searchindex_url = os.path.join(doc_url, 'searchindex.js')
+            docopts_url = os.path.join(
+                doc_url, '_static', 'documentation_options.js')
+        else:
             if relative:
                 raise ExtensionError(
                     'Relative links are only supported for local '
@@ -151,11 +157,6 @@ class SphinxDocLinkResolver:
             index_url = doc_url + '/'
             searchindex_url = doc_url + '/searchindex.js'
             docopts_url = doc_url + '/_static/documentation_options.js'
-        else:
-            index_url = os.path.join(doc_url, 'index.html')
-            searchindex_url = os.path.join(doc_url, 'searchindex.js')
-            docopts_url = os.path.join(
-                doc_url, '_static', 'documentation_options.js')
 
         # detect if we are using relative links on a Windows system
         if (os.name.lower() == 'nt' and
@@ -328,7 +329,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                     app.config.sphinx_gallery_conf,
-                    str(app.builder.outdir), src_gallery_dir, relative=True)
+                    Path(app.builder.outdir), src_gallery_dir, relative=True)
             else:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                     app.config.sphinx_gallery_conf,
