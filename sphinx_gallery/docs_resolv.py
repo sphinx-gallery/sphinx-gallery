@@ -159,8 +159,7 @@ class SphinxDocLinkResolver:
             docopts_url = doc_url + '/_static/documentation_options.js'
 
         # detect if we are using relative links on a Windows system
-        if (os.name.lower() == 'nt' and
-                not doc_url.startswith(('http://', 'https://'))):
+        if (os.name.lower() == 'nt' and isinstance(doc_url, Path)):
             if not relative:
                 raise ExtensionError(
                     'You have to use relative=True for the local'
