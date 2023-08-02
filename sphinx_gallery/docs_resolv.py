@@ -258,9 +258,14 @@ class SphinxDocLinkResolver:
         cobj : dict
             Dict with information about the "code object" for which we are
             resolving a link.
-            cobj['name'] : function or class name (str)
-            cobj['module_short'] : shortened module name (str)
-            cobj['module'] : module name (str)
+
+                - cobj['name'] : function or class name (str)
+                - cobj['module'] : module name (str)
+                - cobj['module_short'] : shortened module name (str)
+                - cobj['is_class'] : whether object is class (bool)
+                - cobj['is_explicit'] : whether object is an explicit
+                  backreference (referred to by sphinx markup) (bool)
+
         this_url: str
             URL of the current page. Needed to construct relative URLs
             (only used if relative=True in constructor).
@@ -279,7 +284,7 @@ class SphinxDocLinkResolver:
             # we don't have it cached
             use_full_module = False
             for pattern in self.config['prefer_full_module']:
-                if re.search(pattern, full_name):
+                if re.search(pattern, cobj['module'] + '.' + cobj['name']):
                     use_full_module = True
                     break
             self._link_cache[full_name] = self._get_link_type(
