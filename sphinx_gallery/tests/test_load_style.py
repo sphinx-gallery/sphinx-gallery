@@ -13,6 +13,6 @@ def test_load_style(sphinx_app_wrapper):
     index_html = os.path.join(
         sphinx_app_wrapper.outdir, 'index.html')
     assert os.path.isfile(index_html)
-    with open(index_html, 'r') as fid:
+    with open(index_html) as fid:
         content = fid.read()
-    assert 'link rel="stylesheet" type="text/css" href="_static/sg_gallery.css"' in content  # noqa: E501
+    assert 'link rel="stylesheet" type="text/css" href="_static/sg_gallery.css' in content  # noqa: E501

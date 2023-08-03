@@ -10,10 +10,10 @@ Creating a basic Gallery
 This section describes how to set up a basic gallery for your examples
 using the Sphinx extension Sphinx-Gallery, which will do the following:
 
-* Automatically generate `Sphinx rST
+* Automatically generate `Sphinx reST
   <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
   out of your ``.py`` example files. The
-  rendering of the resulting rST will provide the users with ``.ipynb``
+  rendering of the resulting reST will provide the users with ``.ipynb``
   (Jupyter notebook) and ``.py`` files of each example, which users can
   download.
 * Create a gallery with thumbnails for each of these examples
@@ -81,7 +81,7 @@ In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
 * **The gallery header**: A file named ``README.txt`` or ``README.rst`` that
-  contains rST to be used as a header for the gallery welcome page, which will
+  contains reST to be used as a header for the gallery welcome page, which will
   also include thumbnails generated from this folder. It must have at least a
   title. For example::
 
@@ -92,7 +92,7 @@ this folder must have the following things:
 
 * **Example Python scripts**: A collection of Python scripts that will be
   processed when you build your HTML documentation. For information on how
-  to structure these Python scripts with embedded rST, see
+  to structure these Python scripts with embedded reST, see
   :ref:`python_script_syntax`.
 
     * By default **only** files prefixed with ``plot_`` will be executed and
@@ -165,7 +165,7 @@ files and directories:
 Additionally for **each** ``.py`` file, a file with the following suffix is
 generated:
 
-* ``.rst`` - the rendered rST version of the ``.py`` file, ready for Sphinx
+* ``.rst`` - the rendered reST version of the ``.py`` file, ready for Sphinx
   to build.
 * ``.ipynb`` - to enable the user to download a Jupyter notebook version of the
   example.

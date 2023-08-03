@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
@@ -7,7 +6,6 @@ Backreferences Generator
 
 Parses example file code in order to keep track of used functions
 """
-from __future__ import print_function, unicode_literals
 
 import ast
 import codecs
@@ -40,7 +38,7 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
 """
 
 
-class DummyClass(object):
+class DummyClass:
     """Dummy class for testing method resolution."""
 
     def run(self):
@@ -60,7 +58,7 @@ class NameFinder(ast.NodeVisitor):
     """
 
     def __init__(self, global_variables=None):
-        super(NameFinder, self).__init__()
+        super().__init__()
         self.imported_names = {}
         self.global_variables = global_variables or {}
         self.accessed_names = set()
@@ -165,7 +163,7 @@ class NameFinder(ast.NodeVisitor):
 
 
 def _from_import(a, b):
-    imp_line = 'from %s import %s' % (a, b)
+    imp_line = f'from {a} import {b}'
     scope = dict()
     with warnings.catch_warnings(record=True):  # swallow warnings
         warnings.simplefilter('ignore')
@@ -206,17 +204,22 @@ def _get_short_module_name(module_name, obj_name):
     return short_name
 
 
-# keep in synch w/ configuration.rst "Add mini-galleries for API documentation"
-_regex = re.compile(r':(?:'
-                    r'func|'
-                    r'meth|'
-                    r'attr|'
-                    r'obj|'
-                    r'class):`~?(\S*)`'
-                    )
+def _make_ref_regex(config=None):
+    """Make regex to find reference to python objects."""
+    # keep roles variable in sync values shown in configuration.rst
+    # "Add mini-galleries for API documentation"
+    roles = 'func|meth|attr|obj|class'
+    default_role = config['default_role'] or '' if config else ''
+    def_role_regex = (
+        '|[^:]?' if re.fullmatch(f'(?:py:)?({roles})', default_role) else ''
+    )
+    # reference can have a separate title `title <reference>`,
+    # don't match ``literal`` or `!disabled.references`
+    return (rf'(?::(?:{roles}):{def_role_regex})'        # role prefix
+            r'(?!``)`~?[^!]*?<?([^!~\s<>`]+)>?(?!``)`')  # reference
 
 
-def identify_names(script_blocks, global_variables=None, node=''):
+def identify_names(script_blocks, ref_regex, global_variables=None, node=''):
     """Build a codeobj summary by identifying and resolving used names."""
     if node == '':  # mostly convenience for testing functions
         c = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'code')
@@ -228,7 +231,9 @@ def identify_names(script_blocks, global_variables=None, node=''):
     names = list(finder.get_mapping())
     # Get matches from docstring inspection (explicit matches)
     text = '\n'.join(txt for kind, txt, _ in script_blocks if kind == 'text')
-    names.extend((x, x, False, False, True) for x in re.findall(_regex, text))
+    names.extend(
+        (x, x, False, False, True) for x in re.findall(ref_regex, text)
+    )
     example_code_obj = collections.OrderedDict()  # order is important
     # Make a list of all guesses, in `_embed_code_links` we will break
     # when we find a match
@@ -285,14 +290,14 @@ BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
 
 def _thumbnail_div(target_dir, src_dir, fname, snippet, title,
                    is_backref=False, check=True):
-    """Generate RST to place a thumbnail in a gallery."""
+    """Generate reST to place a thumbnail in a gallery."""
     thumb, _ = _find_image_ext(
         os.path.join(target_dir, 'images', 'thumb',
-                     'sphx_glr_%s_thumb.png' % fname[:-3]))
+                     f'sphx_glr_{fname[:-3]}_thumb.png'))
     if check and not os.path.isfile(thumb):
         # This means we have done something wrong in creating our thumbnail!
         raise ExtensionError('Could not find internal Sphinx-Gallery thumbnail'
-                             ' file:\n%s' % (thumb,))
+                             f' file:\n{thumb}')
     thumb = os.path.relpath(thumb, src_dir)
     full_dir = os.path.relpath(target_dir, src_dir)
 
@@ -315,14 +320,14 @@ def _write_backreferences(backrefs, seen_backrefs, gallery_conf,
     for backref in backrefs:
         include_path = os.path.join(gallery_conf['src_dir'],
                                     gallery_conf['backreferences_dir'],
-                                    '%s.examples.new' % backref)
+                                    f'{backref}.examples.new')
         seen = backref in seen_backrefs
         with codecs.open(include_path, 'a' if seen else 'w',
                          encoding='utf-8') as ex_file:
             if not seen:
                 # Be aware that if the number of lines of this heading changes,
                 #   the minigallery directive should be modified accordingly
-                heading = 'Examples using ``%s``' % backref
+                heading = f'Examples using ``{backref}``'
                 ex_file.write('\n\n' + heading + '\n')
                 ex_file.write('^' * len(heading) + '\n')
                 ex_file.write('\n\n.. start-sphx-glr-thumbnails\n\n')
@@ -344,7 +349,7 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
     for backref in seen_backrefs:
         path = os.path.join(gallery_conf['src_dir'],
                             gallery_conf['backreferences_dir'],
-                            '%s.examples.new' % backref)
+                            f'{backref}.examples.new')
         if os.path.isfile(path):
             # Close div containing all thumbnails
             # (it was open in _write_backreferences)
@@ -352,9 +357,8 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
                 ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
             _replace_md5(path, mode='t')
         else:
-            level = gallery_conf['log_level'].get('backreference_missing',
-                                                  'warning')
+            level = gallery_conf['log_level']['backreference_missing']
             func = getattr(logger, level)
-            func('Could not find backreferences file: %s' % (path,))
+            func(f'Could not find backreferences file: {path}')
             func('The backreferences are likely to be erroneous '
                  'due to file system case insensitivity.')

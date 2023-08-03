@@ -1,13 +1,15 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
 Testing the rst files generator
 """
-from __future__ import division, absolute_import, print_function
 
 import pytest
+import sys
+from unittest.mock import MagicMock, patch
+
 from sphinx.errors import ExtensionError
+
 import sphinx_gallery.backreferences as sg
 from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.gen_rst import _sanitize_rst
@@ -38,7 +40,7 @@ REFERENCE = r"""
     ('<"test">', '&lt;&quot;test&quot;&gt;', False),
     # backref support
     ('test formating', 'test formating', True),
-    # RST sanitizing
+    # reST sanitizing
     ('1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`',
      '1 b. 2 a.b 3 better name', False),
     ('use :meth:`mne.io.Raw.plot_psd` to',
@@ -68,7 +70,7 @@ def test_thumbnail_div(content, tooltip, is_backref):
     assert html_div == reference
 
 
-def test_identify_names(unicode_sample):
+def test_identify_names(unicode_sample, gallery_conf):
     """Test name identification."""
     expected = {
         'os.path.join':
@@ -95,14 +97,51 @@ def test_identify_names(unicode_sample):
                 'is_class': False,
                 'is_explicit': False,
              }],
+        # Check `get_short_module_name` points to correct object.
+        # Here, `matplotlib.pyplot.figure` (func) can be shortened to
+        # `matplotlib.figure` (module) (but should not be)
+        'plt.figure':
+            [{
+                'name': 'figure',
+                'module': 'matplotlib.pyplot',
+                'module_short': 'matplotlib.pyplot',
+                'is_class': False,
+                'is_explicit': False,
+            }],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
-    res = sg.identify_names(script_blocks)
+    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    res = sg.identify_names(script_blocks, ref_regex)
     assert expected == res
 
 
-def test_identify_names2(tmpdir):
-    """Test more name identification."""
+@pytest.mark.parametrize(
+    ("mock", "short_module"), [("same", "A"), ("diff", "A.B")]
+)
+def test_get_short_module_name(mock, short_module):
+    """Check `_get_short_module_name` correctly finds shortest module."""
+    if mock == 'same':
+        mock_mod_1 = mock_mod_2 = MagicMock()
+    else:
+        mock_mod_1 = MagicMock()
+        mock_mod_2 = MagicMock()
+
+    # Mock will return whatever object/attr we ask of it
+    # When mock objects are the same, the `obj_name` from "A" is the same as
+    # `obj_name` from "A.B", so "A" is an accepted short module
+    with patch.dict(sys.modules, {"A": mock_mod_1, "A.B": mock_mod_2}):
+        short_mod = sg._get_short_module_name("A.B", "C")
+        short_mod_with_attr = sg._get_short_module_name("A.B", "C.D")
+        assert short_mod == short_mod_with_attr == short_module
+        # Deleting desired attr will cause failure of `hasattr` check (we
+        # check this to ensure it is the right class)
+        del mock_mod_2.C.D
+        short_mod_no_attr = sg._get_short_module_name("A.B", "C.D")
+        assert short_mod_no_attr is None
+
+
+def test_identify_names_implicit(tmpdir, gallery_conf):
+    """Test implicit name identification."""
     code_str = b"""
 '''
 Title
@@ -150,26 +189,52 @@ h.i.j()
     fname.write(code_str, 'wb')
 
     _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    res = sg.identify_names(script_blocks)
+    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    res = sg.identify_names(script_blocks, ref_regex)
 
     assert expected == res
 
-    code_str = b"""
-'''
-Title
------
 
-This example uses :func:`k.l` and :meth:`~m.n`.
-'''
-""" + code_str.split(b"'''")[-1]
-    expected['k.l'] = [{u'module': u'k', u'module_short': u'k', u'name': u'l',
-                        'is_class': False, 'is_explicit': True}]
-    expected['m.n'] = [{u'module': u'm', u'module_short': u'm', u'name': u'n',
-                        'is_class': False, 'is_explicit': True}]
+cobj = dict(
+    module="m", module_short="m", name="n", is_class=False, is_explicit=True
+)
 
-    fname = tmpdir.join("identify_names.py")
-    fname.write(code_str, 'wb')
-    _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    res = sg.identify_names(script_blocks)
 
-    assert expected == res
+@pytest.mark.parametrize(
+    'text, default_role, ref, cobj',
+    [
+        (':func:`m.n`', None, 'm.n', cobj),
+        (':func:`~m.n`', 'obj', 'm.n', cobj),
+        (':func:`Title <m.n>`', None, 'm.n', cobj),
+        (':func:`!m.n` or `!t <~m.n>`', None, None, None),
+        ('`m.n`', 'obj', 'm.n', cobj),
+        ('`m.n`', None, None, None),  # see comment below
+        (':ref:`m.n`', None, None, None),
+        ('`m.n`', 'ref', None, None),
+        ('``literal``', 'obj', None, None),
+    ],
+    ids=[
+        'regular',
+        'show only last component',
+        'with title',
+        'no link for !',
+        'default_role obj',
+        'no default_role',  # see comment below
+        'non-python role',
+        'non-python default_role',
+        'literal',
+    ],
+)
+# the sphinx default value for default_role is None = no change, the docutils
+# default is title-reference (set by the default-role directive), see
+# www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role
+# and docutils.sourceforge.io/docs/ref/rst/roles.html
+def test_identify_names_explicit(text, default_role, ref, cobj, gallery_conf):
+    """Test explicit name identification."""
+    if default_role:
+        gallery_conf['app'].config['default_role'] = default_role
+    script_blocks = [('text', text, 1)]
+    expected = {ref: [cobj]} if ref else {}
+    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    actual = sg.identify_names(script_blocks, ref_regex)
+    assert expected == actual

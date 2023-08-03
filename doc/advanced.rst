@@ -114,7 +114,7 @@ error::
         iae
     NameError: name 'iae' is not defined
 
-Problems in the text (rST) blocks of the gallery Python files will result
+Problems in the text (reST) blocks of the gallery Python files will result
 in warnings or errors when Sphinx is converting the generated ``.rst`` files
 to HTML. These will be printed by Sphinx in pink, after code block errors,
 during building of the documentation. In this case, the ``.rst`` file path and
@@ -154,14 +154,14 @@ Image scrapers are functions (or callable class instances) that do the following
 things:
 
 1. Collect a list of images created in the latest execution of code.
-2. Write these images to disk in PNG, JPEG, SVG, or GIF format (with .png,
-   .jpg, .svg, or .gif extensions, respectively)
-3. Return rST that embeds these figures in the built documentation.
+2. Write these images to disk in PNG, JPEG, SVG, GIF, or WebP format (with .png,
+   .jpg, .svg, .gif, or .webp extensions, respectively)
+3. Return reST that embeds these figures in the built documentation.
 
 The function should take the following inputs (in this order):
 
 1. ``block`` - a Sphinx-Gallery ``.py`` file is separated into consecutive
-   lines of 'code' and rST 'text', called 'blocks'. For each
+   lines of 'code' and reST 'text', called 'blocks'. For each
    block, a tuple containing the (label, content, line_number)
    (e.g. ``('code', 'print("Hello world")', 5)``) of the block is created.
 
@@ -188,20 +188,22 @@ The function should take the following inputs (in this order):
 3. ``gallery_conf`` - dictionary containing the configuration of Sphinx-Gallery,
    set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
 
-It should return a string containing the rST for embedding this figure in the
+It should return a string containing the reST for embedding this figure in the
 documentation. See :func:`~sphinx_gallery.scrapers.matplotlib_scraper` for an
 example of a scraper function (click on 'source' below the function name to see
 the source code). The :func:`~sphinx_gallery.scrapers.matplotlib_scraper` uses
 the helper function :func:`sphinx_gallery.scrapers.figure_rst` to help generate
-rST (see below).
+reST (see below).
 
 This function will be called once for each code block of your examples.
 Sphinx-Gallery will take care of scaling images for the gallery
-index page thumbnails. PNG images are scaled using Pillow, and
-SVG images are copied.
+index page thumbnails. PNG, JPEG and WebP images are scaled using Pillow, and
+SVG and GIF images are copied.
 
 .. warning:: SVG images do not work with ``latex`` build modes, thus will not
-             work while building a PDF version of your documentation.
+             work while building a PDF version of your documentation. You may
+             want to consider `sphinxcontrib-svg2pdfconverter
+             <https://pypi.org/project/sphinxcontrib-svg2pdfconverter/>`_.
 
 Example 1: a Matplotlib-style scraper
 -------------------------------------
@@ -210,7 +212,7 @@ For example, we will show sample code for a scraper for a hypothetical package.
 It uses an approach similar to what
 :func:`sphinx_gallery.scrapers.matplotlib_scraper` does under the hood, which
 use the helper function :func:`sphinx_gallery.scrapers.figure_rst` to
-create the standardized rST. If your package will be used to write an image
+create the standardized reST. If your package will be used to write an image
 file to disk (e.g., PNG or JPEG), we recommend you use a similar approach,
 but via a class so that the ``__repr__`` can remain stable across Sphinx runs::
 
@@ -237,8 +239,8 @@ but via a class so that the ``__repr__`` can remain stable across Sphinx runs::
             # Close all references to figures so they aren't used later.
             mymodule.close('all')
      
-            # Use the `figure_rst` helper function to generate the rST for this
-            # code block's figures. Alternatively you can define your own rST.
+            # Use the `figure_rst` helper function to generate the reST for this
+            # code block's figures. Alternatively you can define your own reST.
             return figure_rst(image_names, gallery_conf['src_dir'])
 
 This code would be defined either in your ``conf.py`` file, or as a module that
@@ -255,7 +257,7 @@ Example 2: detecting image files on disk
 
 Here's another example that assumes that images have *already been written to
 disk*. In this case we won't *generate* any image files, we'll only generate
-the rST needed to embed them in the documentation. Note that the example scripts
+the reST needed to embed them in the documentation. Note that the example scripts
 will still need to be executed to scrape the files, but the images
 don't need to be produced during the execution.
 
@@ -288,7 +290,7 @@ package in a module called ``scraper``. Here is the scraper code::
                     this_image_path = image_path_iterator.next()
                     image_names.append(this_image_path)
                     shutil.move(png, this_image_path)
-            # Use the `figure_rst` helper function to generate rST for image files
+            # Use the `figure_rst` helper function to generate reST for image files
             return figure_rst(image_names, gallery_conf['src_dir'])
  
 
@@ -305,8 +307,8 @@ Example 3: matplotlib with SVG format
 -------------------------------------
 The :func:`sphinx_gallery.scrapers.matplotlib_scraper` supports ``**kwargs``
 to pass to :meth:`matplotlib.figure.Figure.savefig`, one of which is the
-``format`` argument. Currently Sphinx-Gallery supports PNG (default) and SVG
-output formats. To use SVG, you can do::
+``format`` argument. See :ref:`custom_scraper` for supported formats.
+To use SVG, you can do::
 
     from sphinx_gallery.scrapers import matplotlib_scraper
 
@@ -486,8 +488,7 @@ Hide the download buttons in the example headers
 .. code-block:: css
 
     div.sphx-glr-download-link-note {
-        height: 0px;
-        visibility: hidden;
+        display: none;
     }
 
 Disable thumbnail text on hover

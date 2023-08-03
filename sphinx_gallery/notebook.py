@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Parser for Jupyter notebooks
 ============================
@@ -9,7 +8,6 @@ Class that holds the Jupyter notebook information
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from __future__ import division, absolute_import, print_function
 from collections import defaultdict
 from functools import partial
 from itertools import count
@@ -53,7 +51,7 @@ def jupyter_notebook_skeleton():
                 "name": "python",
                 "nbconvert_exporter": "python",
                 "pygments_lexer": "ipython" + str(py_version[0]),
-                "version": '{0}.{1}.{2}'.format(*sys.version_info[:3])
+                "version": '{}.{}.{}'.format(*sys.version_info[:3])
             }
         },
         "nbformat": 4,
@@ -65,7 +63,7 @@ def jupyter_notebook_skeleton():
 def directive_fun(match, directive):
     """Helper to fill in directives"""
     directive_to_alert = dict(note="info", warning="danger")
-    return ('<div class="alert alert-{0}"><h4>{1}</h4><p>{2}</p></div>'
+    return ('<div class="alert alert-{}"><h4>{}</h4><p>{}</p></div>'
             .format(directive_to_alert[directive], directive.capitalize(),
                     match.group(1).strip()))
 
@@ -101,13 +99,13 @@ def convert_code_to_md(text):
 
 
 def rst2md(text, gallery_conf, target_dir, heading_levels):
-    """Converts the RST text from the examples docstrings and comments
+    """Converts the reST text from the examples docstrings and comments
     into markdown text for the Jupyter notebooks
 
     Parameters
     ----------
     text: str
-        RST input to be converted to MD
+        reST input to be converted to MD
     gallery_conf : dict
         The sphinx-gallery configuration dictionary.
     target_dir : str
@@ -211,10 +209,9 @@ def generate_image_src(image_path, gallery_conf, target_dir):
                 data = base64.b64encode(image_file.read())
         except OSError:
             raise ExtensionError(
-                'Unable to open {} to generate notebook data URI'
-                ''.format(full_path))
+                f'Unable to open {full_path} to generate notebook data URI')
         mime_type = mimetypes.guess_type(full_path)
-        return 'data:{};base64,{}'.format(mime_type[0], data.decode('ascii'))
+        return f"data:{mime_type[0]};base64,{data.decode('ascii')}"
 
 
 def jupyter_notebook(script_blocks, gallery_conf, target_dir):
@@ -373,7 +370,7 @@ def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
     # run script
     for src_file in args.python_src_file:
         file_conf, blocks = split_code_and_text_blocks(src_file)
-        print('Converting {0}'.format(src_file))
+        print(f'Converting {src_file}')
         target_dir = os.path.dirname(src_file)
         example_nb = jupyter_notebook(
             blocks, copy.deepcopy(gallery_conf), target_dir)

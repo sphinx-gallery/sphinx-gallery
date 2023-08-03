@@ -377,8 +377,8 @@ Add intersphinx links to your examples
 ======================================
 
 Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
-you can link the used functions to their matching online documentation. As such
-code snippets within the gallery appear like this
+you can link used functions/methods/attributes/objects/classes to their matching
+online documentation. Such code snippets within the gallery appear like this:
 
 .. raw:: html
 
@@ -408,32 +408,40 @@ If you do not use ``intersphinx``, then you should add entries that
 point to the directory containing ``searchindex.js``, such as
 ``'matplotlib': 'https://matplotlib.org'``.
 
-If you wish to do the same for ordinary RST documentation,
+If you wish to do the same for ordinary reST documentation,
 see :ref:`plain_rst`.
 
-If you are using inheritance for your documented code and you are experience
-wrong links in the sense that the links point to the base class of an object
-instead of the child, the option ``prefer_full_module`` might solve your issue.
-Have also a look at `the GitHub
-issue <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
-implementing this option for more context.
+Resolving module paths
+^^^^^^^^^^^^^^^^^^^^^^
 
-To make this work in your documentation you need to include to the
-configuration
-dictionary within your Sphinx ``conf.py`` file::
+When finding links to objects we use, by default, the shortest module path,
+checking that it still directs to the same object. This is because it is common
+for a class that is defined in a deeper module to be documented in a shallower
+one because it is imported in a higher level modules' ``__init__.py`` (thus
+that's the namespace users expect it to be).
+
+However, if you are using inherited classes in your code and are experiencing
+incorrect links in the sense that links point to the base class of an object
+instead of the child, the option ``prefer_full_module`` might solve your issue.
+See `the GitHub
+issue <https://github.com/sphinx-gallery/sphinx-gallery/issues/947>`__
+for more context.
+
+To make this work in your documentation you need to include
+``prefer_full_module`` in the Sphinx-Gallery configuration dictionary in
+``conf.py``::
 
     sphinx_gallery_conf = {
         ...
-        'prefer_full_module':[
-        # a list of regex command of your module where the full module
-        # name should be used for sphinx_gallery instead of the shortend
-        'yourmodule.*+\d{4}',
-        ]
+        # Regexes to match the fully qualified names of objects where the full
+        # module name should be used. To use full names for all objects use: '.*'
+        'prefer_full_module': {r'module\.submodule'}
     }
 
-In the above examples all modules matching the string ``'yourmodule.*+\d{4}'``
-would use the full module name when creating the links. All other use the
-(default) way of linking.
+In the above example, all fully qualified names matching the regex
+``'module\.submodule'`` would use the full module name
+(e.g., module.submodule.meth) when creating links, instead of the short module
+name (e.g., module.meth). All others will use the (default) way of linking.
 
 .. _references_to_examples:
 
@@ -444,15 +452,18 @@ When documenting a given function/method/attribute/object/class, Sphinx-Gallery
 enables you to link to any examples that either:
 
 1. Use the function/method/attribute/object or instantiate the class in the
-   code.
+   code (generates *implicit backreferences*).
 2. Refer to that function/method/attribute/object/class using sphinx markup
    ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a text
-   block.
+   block. You can omit this role markup if you have set the `default_role
+   <https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role>`_
+   in your ``conf.py`` to any of these roles (generates *explicit
+   backreferences*).
 
-The former is useful for auto-documenting functions that are used and classes
-that are explicitly instantiated. The generated links are called implicit
-backreferences. The latter is useful for classes that are typically implicitly
-returned rather than explicitly instantiated (e.g.,
+The former is useful for auto-documenting functions/methods/attributes/objects
+that are used and classes that are explicitly instantiated. The generated links
+are called implicit backreferences. The latter is useful for classes that are
+typically implicitly returned rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
 within function calls). Such links are called explicit backreferences.
 
@@ -474,9 +485,10 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
         # this case sphinx_gallery and numpy in a tuple of strings.
         'doc_module'          : ('sphinx_gallery', 'numpy'),
 
-        # objects to exclude from implicit backreferences. The default option
-        # is an empty set, i.e. exclude nothing.
-        'exclude_implicit_doc': {},
+        # Regexes to match objects to exclude from implicit backreferences.
+        # The default option is an empty set, i.e. exclude nothing.
+        # To exclude everything, use: '.*'
+        'exclude_implicit_doc': {r'pyplot\.show'},
     }
 
 The path you specify in ``backreferences_dir`` (here we choose
@@ -789,7 +801,7 @@ Adding images to notebooks
 ==========================
 
 When notebooks are produced, by default (``notebook_images = False``) image
-paths from the `image` directive in rST documentation blocks (not images
+paths from the `image` directive in reST documentation blocks (not images
 generated fom code) are included in markdown using their original paths. This
 includes paths to images expected to be present on the local filesystem which
 is unlikely to be the case for those downloading the notebook.
@@ -813,7 +825,7 @@ following configuration::
         ...
     }
 
-with an example `image` directive in an rST documentation block being:
+with an example `image` directive in an reST documentation block being:
 
 .. code-block:: rst
 
@@ -822,7 +834,7 @@ with an example `image` directive in an rST documentation block being:
 
 The image will be added to the generated notebook pointing to the source URL
 ``https://project.example.com/en/latest/_static/example.jpg``. Note the image
-path in the rST examples above is a relative path, therefore the URL doesn't
+path in the reST examples above is a relative path, therefore the URL doesn't
 contain ``auto_examples`` as ``../`` moved up a directory to the documentation
 source directory. Both relative and absolute (from source directory) paths are
 supported; so in the example above ``/_static/example.jpg`` would have resulted
@@ -848,17 +860,17 @@ included in the prefix if it's required.
 
 .. _use_pypandoc:
 
-Using pypandoc to convert rST to markdown
-=========================================
+Using pypandoc to convert reST to markdown
+==========================================
 
 Sphinx-Gallery can use `pypandoc <https://github.com/bebraw/pypandoc>`_
-(if installed) to convert rST text blocks to markdown for the iPython
+(if installed) to convert reST text blocks to markdown for the iPython
 notebooks (``.ipynb`` files) generated for each example. These are made
 available for download, along with the raw ``.py`` version, at the bottom
 of each example.
 
-The Sphinx-Gallery rST to markdown converter has limited support for more
-complex rST syntax. If your examples have more complex rST, ``pypandoc`` may
+The Sphinx-Gallery reST to markdown converter has limited support for more
+complex reST syntax. If your examples have more complex reST, ``pypandoc`` may
 produce better results. By default, the 'pypandoc' configuration is set to
 ``False`` and ``pypandoc`` is not used.
 
@@ -1052,7 +1064,7 @@ things will happen:
    folder called ``<notebooks_dir/>`` at the root of
    your built documentation (they will follow the same folder hierarchy within
    the notebooks directory folder.
-3. The rST output of each Sphinx-Gallery example will now have a
+3. The reST output of each Sphinx-Gallery example will now have a
    ``launch binder`` button in it.
 4. That button will point to a binder link with the following structure
 
@@ -1132,7 +1144,7 @@ are:
 - with JupyterLite the first imports take time. At the time of writing
   (February 2023) ``import scipy`` can take ~15-30s. Some innocuously looking
   Python code may just not work and break in an unexpected fashion. The Jupyter
-  kernel is based on Pyodide, see some `here
+  kernel is based on Pyodide, see `here
   <https://pyodide.org/en/latest/usage/wasm-constraints.html>`__ for some
   Pyodide limitations.
 - with JupyterLite environments are not as flexible as Binder, for example you
@@ -1148,13 +1160,15 @@ are:
    may be instability or unexpected behaviour in the experience of users who
    click JupyterLite links.
 
-In order to enable JupyterLite links with Sphinx-Gallery, you must install the
-`jupyterlite-sphinx <https://jupyterlite-sphinx.readthedocs.io>`_ package and
-add it to your extensions in ``conf.py``::
+In order to enable JupyterLite links with Sphinx-Gallery, you need to install
+the `jupyterlite-sphinx <https://jupyterlite-sphinx.readthedocs.io>`_ package.
+For `jupyterlite-sphinx>=0.8` (released 15 March 2023) you also need to install
+`jupyterlite-pyodide-kernel`.
+
+You then need to add `jupyterlite_sphinx` to your Sphinx extensions in
+``conf.py``::
 
     extensions = [
-        ...,
-        ...,
         ...,
         'jupyterlite_sphinx',
     ]
@@ -1165,8 +1179,9 @@ You can configure JupyterLite integration by setting
     sphinx_gallery_conf = {
       ...
       'jupyterlite': {
-         'jupyterlite_contents': <str> # JupyterLite contents where to copy the example notebooks (relative to Sphinx source directory)
-         'use_jupyter_lab': <bool> # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
+         'use_jupyter_lab': <bool>, # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
+         'notebook_modification_function': <function>, # function that implements JupyterLite-specific modifications of notebooks
+         'jupyterlite_contents': <str>, # JupyterLite contents where to copy the example notebooks (relative to Sphinx source directory)
          }
     }
 
@@ -1176,12 +1191,28 @@ use_jupyter_lab (type: bool, default: ``True``)
   Whether the default interface activated by the JupyterLite link will be for
   Jupyter Lab or the RetroLab Notebook interface.
 
-jupyterlite_contents (type: string, default: ``jupyterlite_contents``) The name
-  of a folder where the built Jupyter notebooks will be copied, relative to the
-  Sphinx source directory. This is used as Jupyterlite contents.
+notebook_modification_function (type: function, default: ``None``)
+  Function that implements JupyterLite-specific modifications of notebooks. By
+  default, it is ``None`` which means that notebooks are not going to be
+  modified. Its signature should be ``notebook_modification_function(json_dict:
+  dict, notebook_filename: str) -> None`` where ``json_dict`` is what you get
+  when you do ``json.load(open(notebook_filename))``. The function is expected
+  to modify ``json_dict`` in place by adding notebook cells. It is not expected
+  to write to the file, since ``sphinx-gallery`` is in charge of this.
+  ``notebook_filename`` is provided for convenience because it is useful to
+  modify the notebook based on its filename. Potential usages of this function
+  are installing additional packages with a ``%pip install seaborn`` code cell,
+  or adding a markdown cell to indicate that a notebook is not expected to work
+  inside JupyterLite, for example because it is using packages that are not
+  packaged inside Pyodide.
+
+jupyterlite_contents (type: string, default: ``jupyterlite_contents``)
+  The name of a folder where the built Jupyter notebooks will be copied,
+  relative to the Sphinx source directory. This is used as Jupyterlite
+  contents.
 
 You can set variables in ``conf.py`` to configure ``jupyterlite-sphinx``, see
-its `jupyterlite-sphinx doc
+the `jupyterlite-sphinx doc
 <https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html>`__ for
 more details.
 
@@ -1193,9 +1224,11 @@ extra things will happen:
 2. The built Jupyter Notebooks from the documentation will be copied to a
    folder called ``<jupyterlite_contents>/`` (relative to Sphinx source
    directory)
-3. The rST output of each Sphinx-Gallery example will now have a
+3. If ``notebook_modification_function`` is not ``None``, this function is
+   going to add JupyterLite-specific modifications to notebooks
+4. The reST output of each Sphinx-Gallery example will now have a
    ``launch JupyterLite`` button in it.
-4. That button will point to a JupyterLite link which will start a Jupyter
+5. That button will point to a JupyterLite link which will start a Jupyter
    server in your browser with the current example as notebook
 
 If, for some reason, you want to enable the ``jupyterlite-sphinx`` extension
@@ -1428,6 +1461,9 @@ The following scrapers are supported:
 - PyGMT
     See `their website <https://www.pygmt.org/dev/>`__ for more information on
     how to integrate with Sphinx-Gallery.
+- qtgallery
+    This library provides a scraper for Qt windows. See `their repository <https://github.com/ixjlyons/qtgallery>`_
+    for instructions on integrating with Sphinx-Gallery. 
 
 It is possible to write custom scrapers for images generated by packages
 outside of those listed above. This is accomplished

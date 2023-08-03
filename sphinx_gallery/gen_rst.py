@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
-RST file generator
-==================
+reST file generator
+===================
 
 Generate the rst files for the examples by iterating over the python
 example files.
@@ -11,7 +10,6 @@ example files.
 Files that generate images should start with 'plot'.
 """
 
-from __future__ import division, print_function, absolute_import
 from time import time
 import copy
 import contextlib
@@ -39,19 +37,19 @@ import sphinx.util
 from .scrapers import (save_figures, ImagePathIterator, clean_modules,
                        _find_image_ext)
 from .utils import (replace_py_ipynb, scale_image, get_md5sum, _replace_md5,
-                    optipng)
+                    optipng, status_iterator)
 from . import glr_path_static
 from .backreferences import (_write_backreferences, _thumbnail_div,
-                             identify_names, THUMBNAIL_PARENT_DIV,
-                             THUMBNAIL_PARENT_DIV_CLOSE)
+                             identify_names, _make_ref_regex,
+                             THUMBNAIL_PARENT_DIV, THUMBNAIL_PARENT_DIV_CLOSE)
 from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (split_code_and_text_blocks,
                                remove_config_comments,
                                remove_ignore_blocks)
 
 from .notebook import jupyter_notebook, save_notebook
-from .interactive_example import check_binder_conf, gen_binder_rst
-from .interactive_example import check_jupyterlite_conf, gen_jupyterlite_rst
+from .interactive_example import gen_binder_rst
+from .interactive_example import gen_jupyterlite_rst
 
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
@@ -60,7 +58,7 @@ logger = sphinx.util.logging.getLogger('sphinx-gallery')
 ###############################################################################
 
 
-class _LoggingTee(object):
+class _LoggingTee:
     """A tee object to redirect streams to the logger."""
 
     def __init__(self, src_filename):
@@ -68,6 +66,10 @@ class _LoggingTee(object):
         self.src_filename = src_filename
         self.logger_buffer = ''
         self.set_std_and_reset_position()
+
+        # For TextIO compatibility
+        self.closed = False
+        self.encoding = "utf-8"
 
     def set_std_and_reset_position(self):
         if not isinstance(sys.stdout, _LoggingTee):
@@ -109,13 +111,35 @@ class _LoggingTee(object):
             self.logger.verbose('%s', self.logger_buffer)
             self.logger_buffer = ''
 
-    # Needed to work with Abseil
+    # For TextIO compatibility
     def close(self):
         pass
 
-    # When called from a local terminal seaborn needs it in Python3
+    def fileno(self):
+        return self.output.fileno()
+
     def isatty(self):
         return self.output.isatty()
+
+    def readable(self):
+        return False
+
+    def seekable(self):
+        return False
+
+    def tell(self):
+        return self.output.tell()
+
+    def writable(self):
+        return True
+
+    @property
+    def errors(self):
+        return self.output.errors
+
+    @property
+    def newlines(self):
+        return self.output.newlines
 
     # When called in gen_rst, conveniently use context managing
     def __enter__(self):
@@ -155,7 +179,7 @@ CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
 TIMING_CONTENT = """
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ({0: .0f} minutes {1: .3f} seconds)
+   **Total running time of the script:** ({0:.0f} minutes {1:.3f} seconds)
 
 """
 
@@ -187,10 +211,10 @@ def codestr2rst(codestr, lang='python', lineno=None):
     if lineno is not None:
         # Sphinx only starts numbering from the first non-empty line.
         blank_lines = codestr.count('\n', 0, -len(codestr.lstrip()))
-        lineno = '   :lineno-start: {0}\n'.format(lineno + blank_lines)
+        lineno = f'   :lineno-start: {lineno + blank_lines}\n'
     else:
         lineno = ''
-    code_directive = ".. code-block:: {0}\n{1}\n".format(lang, lineno)
+    code_directive = f".. code-block:: {lang}\n{lineno}\n"
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
@@ -226,6 +250,9 @@ def _sanitize_rst(string):
     # :anchor:`the term` --> the term
     string = re.sub(r':[a-z]+:`([^`<>]+)( <[^`<>]+>)?`', r'\1', string)
 
+    # r'\\dfrac' --> r'\dfrac'
+    string = string.replace('\\\\', '\\')
+
     return string
 
 
@@ -240,7 +267,7 @@ def extract_intro_and_title(filename, docstring):
         raise ExtensionError(
             "Example docstring should have a header for the example title. "
             "Please check the example file:\n {}\n".format(filename))
-    # Title is the first paragraph with any ReSTructuredText title chars
+    # Title is the first paragraph with any reStructuredText title chars
     # removed, i.e. lines that consist of (3 or more of the same) 7-bit
     # non-ASCII chars.
     # This conditional is not perfect but should hopefully be good enough.
@@ -250,8 +277,7 @@ def extract_intro_and_title(filename, docstring):
 
     if match is None:
         raise ExtensionError(
-            'Could not find a title in first paragraph:\n{}'.format(
-                title_paragraph))
+            f'Could not find a title in first paragraph:\n{title_paragraph}')
     title = match.group(0).strip()
     # Use the title if no other paragraphs are provided
     intro_paragraph = title if len(paragraphs) < 2 else paragraphs[1]
@@ -273,7 +299,7 @@ def md5sum_is_current(src_file, mode='b'):
 
     src_md5_file = src_file + '.md5'
     if os.path.exists(src_md5_file):
-        with open(src_md5_file, 'r') as file_checksum:
+        with open(src_md5_file) as file_checksum:
             ref_md5 = file_checksum.read()
 
         return src_md5 == ref_md5
@@ -317,7 +343,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         if not isinstance(thumbnail_number, int):
             raise ExtensionError(
                 'sphinx_gallery_thumbnail_number setting is not a number, '
-                'got %r' % (thumbnail_number,))
+                f'got {thumbnail_number!r}')
         # negative index means counting from the last one
         if thumbnail_number < 0:
             thumbnail_number += len(script_vars["image_path_iterator"]) + 1
@@ -327,7 +353,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
 
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir,
-                              'sphx_glr_%s_thumb.%s' % (base_image_name, ext))
+                              f'sphx_glr_{base_image_name}_thumb.{ext}')
 
     if src_file in gallery_conf['failing_examples']:
         img = os.path.join(glr_path_static(), 'broken_example.png')
@@ -335,7 +361,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         img = thumbnail_image_path
     elif not os.path.exists(thumb_file):
         # create something to replace the thumbnail
-        default_thumb_path = gallery_conf.get("default_thumb_file")
+        default_thumb_path = gallery_conf["default_thumb_file"]
         if default_thumb_path is None:
             default_thumb_path = os.path.join(
                 glr_path_static(),
@@ -346,7 +372,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         return
     # update extension, since gallery_conf setting can be different
     # from file_conf
-    thumb_file = '%s.%s' % (os.path.splitext(thumb_file)[0], ext)
+    thumb_file = f'{os.path.splitext(thumb_file)[0]}.{ext}'
     if ext in ('svg', 'gif'):
         copyfile(img, thumb_file)
     else:
@@ -371,8 +397,8 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
                 return fpth
     if raise_error:
         raise ExtensionError(
-            "Example directory {0} does not have a README file with one "
-            "of the expected file extensions {1}. Please write one to "
+            "Example directory {} does not have a README file with one "
+            "of the expected file extensions {}. Please write one to "
             "introduce your gallery.".format(dir_, extensions))
     return None
 
@@ -455,9 +481,9 @@ def generate_dir_rst(
     costs = []
     subsection_toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
-    iterator = sphinx.util.status_iterator(
+    iterator = status_iterator(
         sorted_listdir,
-        'generating gallery for %s... ' % build_target_dir,
+        f'generating gallery for {build_target_dir}... ',
         length=len(sorted_listdir))
     for fname in iterator:
         intro, title, cost = generate_file_rst(
@@ -488,7 +514,7 @@ def generate_dir_rst(
         with codecs.open(subsection_index_path, 'w', encoding='utf-8') as (
             findex
         ):
-            findex.write("""\n\n.. _sphx_glr_{0}:\n\n""".format(
+            findex.write("\n\n.. _sphx_glr_{}:\n\n".format(
                 head_ref.replace(os.path.sep, '_')
             ))
             findex.write(subsection_index_content)
@@ -505,8 +531,8 @@ def generate_dir_rst(
 .. toctree::
    :hidden:
 
-   %s\n
-""" % "\n   ".join(subsection_toctree_filenames)
+   {}\n
+""".format("\n   ".join(subsection_toctree_filenames))
                 findex.write(subsection_index_toctree)
 
     if have_index_rst:
@@ -514,7 +540,7 @@ def generate_dir_rst(
         subsection_index_content = None
 
     # Copy over any other files.
-    copyregex = gallery_conf.get('copyfile_regex')
+    copyregex = gallery_conf['copyfile_regex']
     if copyregex:
         listdir = [fname for fname in os.listdir(src_dir) if
                    re.match(copyregex, fname)]
@@ -633,7 +659,7 @@ def patch_warnings():
         warnings.showwarning = orig_showwarning
 
 
-class _exec_once(object):
+class _exec_once:
     """Deal with memory_usage calling functions more than once (argh)."""
 
     def __init__(self, code, fake_main):
@@ -666,7 +692,7 @@ def _get_memory_base(gallery_conf):
         sleep, timeout = (0.5, 1)
     proc = subprocess.Popen(
         [sys.executable, '-c',
-            'import time, sys; time.sleep(%s); sys.exit(0)' % sleep],
+            f'import time, sys; time.sleep({sleep}); sys.exit(0)'],
         close_fds=True)
     memories = memory_usage(proc, interval=1e-3, timeout=timeout)
     kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
@@ -753,7 +779,7 @@ def _get_last_repr(capture_repr, ___):
 
 def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
                      images_rst, file_conf):
-    """Obtain standard output and html output in rST."""
+    """Obtain standard output and html output in reST."""
     last_repr = None
     repr_meth = None
     if is_last_expr:
@@ -772,25 +798,23 @@ def _get_code_output(is_last_expr, example_globals, gallery_conf, logging_tee,
     captured_std = logging_tee.output.getvalue().expandtabs()
     # normal string output
     if repr_meth in ['__repr__', '__str__'] and last_repr:
-        captured_std = u"{0}\n{1}".format(captured_std, last_repr)
+        captured_std = f"{captured_std}\n{last_repr}"
     if captured_std and not captured_std.isspace():
-        captured_std = CODE_OUTPUT.format(indent(captured_std, u' ' * 4))
+        captured_std = CODE_OUTPUT.format(indent(captured_std, ' ' * 4))
     else:
         captured_std = ''
 
-    # Sanitize ANSI escape characters for RST output
+    # Sanitize ANSI escape characters for reST output
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     captured_std = ansi_escape.sub('', captured_std)
 
     # give html output its own header
     if repr_meth == '_repr_html_':
-        captured_html = HTML_HEADER.format(indent(last_repr, u' ' * 4))
+        captured_html = HTML_HEADER.format(indent(last_repr, ' ' * 4))
     else:
         captured_html = ''
 
-    code_output = u"\n{0}\n\n{1}\n{2}\n\n".format(
-        images_rst, captured_std, captured_html
-    )
+    code_output = f"\n{images_rst}\n\n{captured_std}\n{captured_html}\n\n"
     return code_output
 
 
@@ -829,7 +853,7 @@ def execute_code_block(compiler, block, example_globals, script_vars,
     Returns
     -------
     code_output : str
-        Output of executing code in rST.
+        Output of executing code in reST.
     """
     if example_globals is None:  # testing shortcut
         example_globals = script_vars['fake_main'].__dict__
@@ -873,13 +897,13 @@ def execute_code_block(compiler, block, example_globals, script_vars,
             need_save_figures = False
             images_rst = save_figures(block, script_vars, gallery_conf)
         else:
-            images_rst = u''
+            images_rst = ''
     except Exception:
         logging_tee.restore_std()
         except_rst = handle_exception(
             sys.exc_info(), src_file, script_vars, gallery_conf
         )
-        code_output = u"\n{0}\n\n\n\n".format(except_rst)
+        code_output = f"\n{except_rst}\n\n\n\n"
         # still call this even though we won't use the images so that
         # figures are closed
         if need_save_figures:
@@ -915,7 +939,7 @@ def executable_script(src_file, gallery_conf):
         True if script has to be executed
     """
 
-    filename_pattern = gallery_conf.get('filename_pattern')
+    filename_pattern = gallery_conf['filename_pattern']
     execute = re.search(filename_pattern, src_file) and gallery_conf[
         'plot_gallery']
     return execute
@@ -1090,7 +1114,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             if type(dummy_image) is not int:
                 raise ExtensionError(
                     'sphinx_gallery_dummy_images setting is not a number, '
-                    'got %r' % (dummy_image,))
+                    'got {dummy_image!r}')
 
             image_path_iterator = script_vars['image_path_iterator']
             stock_img = os.path.join(glr_path_static(), 'no_image.png')
@@ -1138,14 +1162,16 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
         global_variables = script_vars['example_globals']
     else:
         global_variables = None
-    example_code_obj = identify_names(script_blocks, global_variables, node)
+    ref_regex = _make_ref_regex(gallery_conf['app'].config)
+    example_code_obj = identify_names(script_blocks, ref_regex,
+                                      global_variables, node)
     if example_code_obj:
         codeobj_fname = target_file[:-3] + '_codeobj.pickle.new'
         with open(codeobj_fname, 'wb') as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)
     exclude_regex = gallery_conf['exclude_implicit_doc_regex']
-    backrefs = set(
+    backrefs = {
         '{module_short}.{name}'.format(**cobj)
         for cobjs in example_code_obj.values()
         for cobj in cobjs
@@ -1154,7 +1180,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf,
             (not exclude_regex) or
             (not exclude_regex.search('{module}.{name}'.format(**cobj)))
         )
-    )
+    }
 
     # Write backreferences
     _write_backreferences(backrefs, seen_backrefs, gallery_conf, target_dir,
@@ -1234,7 +1260,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
         if blabel == 'code':
 
             if not file_conf.get('line_numbers',
-                                 gallery_conf.get('line_numbers', False)):
+                                 gallery_conf['line_numbers']):
                 lineno = None
 
             code_rst = codestr2rst(bcontent, lang=gallery_conf['lang'],
@@ -1276,12 +1302,10 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     example_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
     ref_fname = example_fname.replace(os.path.sep, "_")
 
-    binder_conf = check_binder_conf(gallery_conf.get('binder'))
+    binder_conf = gallery_conf['binder']
     is_binder_enabled = len(binder_conf) > 0
 
-    jupyterlite_conf = check_jupyterlite_conf(
-        gallery_conf.get('jupyterlite', {}),
-        gallery_conf['app'])
+    jupyterlite_conf = gallery_conf['jupyterlite']
     is_jupyterlite_enabled = jupyterlite_conf is not None
 
     interactive_example_text = ""
@@ -1306,8 +1330,7 @@ def save_rst_example(example_rst, example_file, time_elapsed,
     fname = os.path.basename(example_file)
 
     if gallery_conf['show_memory']:
-        example_rst += ("**Estimated memory usage:** {0: .0f} MB\n\n"
-                        .format(memory_used))
+        example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
 
     # Generate a binder URL if specified
     binder_badge_rst = ''

@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
 Testing the rst files generator
 """
-from __future__ import (division, absolute_import, print_function,
-                        unicode_literals)
 import ast
 import codecs
 import importlib
+import io
 import logging
 import tempfile
 import re
@@ -24,8 +22,10 @@ import pytest
 from sphinx.errors import ExtensionError
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
-from sphinx_gallery.gen_gallery import generate_dir_rst, _update_gallery_conf
+from sphinx_gallery.gen_gallery import (
+    generate_dir_rst, _update_gallery_conf_exclude_implicit_doc)
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
+from sphinx_gallery.interactive_example import check_binder_conf
 
 CONTENT = [
     '"""',
@@ -50,13 +50,13 @@ CONTENT = [
     'import sys',
     'from warnings import warn',
     'x, y = 1, 2',
-    'print(u"Óscar output") # need some code output',
+    'print("Óscar output") # need some code output',
     'logger = logging.getLogger()',
     'logger.setLevel(logging.INFO)',
     'lh = logging.StreamHandler(sys.stdout)',
     'lh.setFormatter(logging.Formatter("log:%(message)s"))',
     'logger.addHandler(lh)',
-    'logger.info(u"Óscar")',
+    'logger.info("Óscar")',
     'print(r"$\\langle n_\\uparrow n_\\downarrow \\rangle$")',
     'warn("WarningsAbound", RuntimeWarning)',
 ]
@@ -380,11 +380,11 @@ def test_fail_example(gallery_conf, failing_code, want,
 
 
 def _generate_rst(gallery_conf, fname, content):
-    """Return the rST text of a given example content.
+    """Return the reST text of a given example content.
 
     This writes a file gallery_conf['examples_dir']/fname with *content*,
     creates the corresponding rst file by running generate_file_rst() and
-    returns the generated rST code.
+    returns the generated reST code.
 
     Parameters
     ----------
@@ -399,7 +399,7 @@ def _generate_rst(gallery_conf, fname, content):
     Returns
     -------
     rst : str
-        The generated rST code.
+        The generated reST code.
     """
     with codecs.open(os.path.join(gallery_conf['examples_dir'], fname),
                      mode='w', encoding='utf-8') as f:
@@ -542,7 +542,7 @@ def test_exclude_implicit(gallery_conf,
     gallery_conf['doc_module'] = ('numpy',)
     if exclusion:
         gallery_conf['exclude_implicit_doc'] = exclusion
-        _update_gallery_conf(gallery_conf)
+        _update_gallery_conf_exclude_implicit_doc(gallery_conf)
     _generate_rst(gallery_conf, 'test_exclude_implicit.py', EXCLUDE_CONTENT)
     if sys.version_info >= (3, 8, 0):
         assert mock_write_backreferences.call_args.args[0] == expected
@@ -556,7 +556,7 @@ def test_gen_dir_rst(gallery_conf, ext):
     print(os.listdir(gallery_conf['examples_dir']))
     fname_readme = os.path.join(gallery_conf['src_dir'], 'README.txt')
     with open(fname_readme, 'wb') as fid:
-        fid.write(u"Testing\n=======\n\nÓscar here.".encode('utf-8'))
+        fid.write("Testing\n=======\n\nÓscar here.".encode())
     fname_out = os.path.splitext(fname_readme)[0] + ext
     if fname_readme != fname_out:
         shutil.move(fname_readme, fname_out)
@@ -567,7 +567,7 @@ def test_gen_dir_rst(gallery_conf, ext):
             generate_dir_rst(*args)
     else:
         out = generate_dir_rst(*args)
-        assert u"Óscar here" in out[1]
+        assert "Óscar here" in out[1]
 
 
 def test_pattern_matching(gallery_conf, log_collector, req_pil):
@@ -642,20 +642,22 @@ def test_zip_notebooks(gallery_conf):
     zipfilepath = downloads.python_zip(examples, gallery_conf['gallery_dir'])
     zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
-    assert not check, "Bad file in zipfile: {0}".format(check)
+    assert not check, f"Bad file in zipfile: {check}"
 
 
 def test_rst_example(gallery_conf):
     """Test generated rst file includes the correct paths for binder."""
-    gallery_conf.update(binder={'org': 'sphinx-gallery',
-                                'repo': 'sphinx-gallery.github.io',
-                                'binderhub_url': 'https://mybinder.org',
-                                'branch': 'master',
-                                'dependencies': './binder/requirements.txt',
-                                'notebooks_dir': 'notebooks',
-                                'use_jupyter_lab': True,
-                                },
-                        gallery_dirs=None)
+    binder_conf = check_binder_conf(
+        {
+            'org': 'sphinx-gallery',
+            'repo': 'sphinx-gallery.github.io',
+            'binderhub_url': 'https://mybinder.org',
+            'branch': 'master',
+            'dependencies': './binder/requirements.txt',
+            'use_jupyter_lab': True
+         }
+    )
+    gallery_conf.update(binder=binder_conf)
 
     example_file = os.path.join(gallery_conf['gallery_dir'], "plot.py")
     sg.save_rst_example("example_rst", example_file, 0, 0, gallery_conf)
@@ -664,7 +666,7 @@ def test_rst_example(gallery_conf):
     with codecs.open(test_file) as f:
         rst = f.read()
 
-    assert "lab/tree/notebooks/plot.ipy" in rst
+    assert "lab/tree/notebooks/plot.ipynb" in rst
 
     # CSS classes
     assert "rst-class:: sphx-glr-signature" in rst
@@ -1042,12 +1044,41 @@ def test_multi_line(log_collector_wrap):
     assert tee.logger_buffer == 'third line'
 
 
+def test_textio_compat(log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert not tee.readable()
+    assert not tee.seekable()
+    assert tee.writable()
+
+
+def test_fileno(monkeypatch, log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    with pytest.raises(io.UnsupportedOperation):
+        tee.fileno()
+
+
 def test_isatty(monkeypatch, log_collector_wrap):
     _, _, tee, _ = log_collector_wrap
     assert not tee.isatty()
     monkeypatch.setattr(tee.output, 'isatty', lambda: True)
     assert tee.isatty()
 
+
+def test_tell(monkeypatch, log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert tee.tell() == tee.output.tell()
+    monkeypatch.setattr(tee.output, 'tell', lambda: 42)
+    assert tee.tell() == tee.output.tell()
+
+
+def test_errors(log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert tee.errors == tee.output.errors
+
+
+def test_newlines(log_collector_wrap):
+    _, _, tee, _ = log_collector_wrap
+    assert tee.newlines == tee.output.newlines
 
 # TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are executed after a no-plot and produce

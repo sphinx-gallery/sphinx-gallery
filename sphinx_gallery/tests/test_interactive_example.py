@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Chris Holdgraf
 # License: 3-clause BSD
 """
 Testing the binder badge functionality
 """
-from __future__ import division, absolute_import, print_function
 
 from copy import deepcopy
 import os
@@ -62,8 +60,9 @@ def test_binder():
         url = check_binder_conf(conf2)
 
     # Assert missing params
+    optional_keys = ['filepath_prefix', 'notebooks_dir', 'use_jupyter_lab']
     for key in conf1.keys():
-        if key == 'notebooks_dir':
+        if key in optional_keys:
             continue
         conf3 = deepcopy(conf1)
         conf3.pop(key)
@@ -155,12 +154,19 @@ def test_gen_binder_rst(tmpdir):
 
 
 @pytest.mark.parametrize('use_jupyter_lab', [True, False])
-def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
+@pytest.mark.parametrize(
+    'example_file',
+    [
+        os.path.join('example_dir', 'myfile.py'),
+        os.path.join('example_dir', 'subdir', 'myfile.py')
+    ]
+)
+def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     """Check binder rst generated correctly."""
     gallery_conf = {
         'gallery_dirs': [str(tmpdir)], 'src_dir': 'blahblah',
         'jupyterlite': {'use_jupyter_lab': use_jupyter_lab}}
-    file_path = str(tmpdir.join('blahblah', 'mydir', 'myfile.py'))
+    file_path = str(tmpdir.join('blahblah', example_file))
     orig_dir = os.getcwd()
     os.chdir(str(tmpdir))
     try:
@@ -168,10 +174,27 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, tmpdir):
     finally:
         os.chdir(orig_dir)
     image_rst = ' .. image:: images/jupyterlite_badge_logo.svg'
-    if use_jupyter_lab:
-        target_rst = ':target: .+lite/lab.+path=mydir/myfile.ipynb'
+
+    target_rst_template = (
+        ':target: {root_url}/lite/{jupyter_part}.+path={notebook_path}'
+    )
+    if 'subdir' not in file_path:
+        root_url = r'\.\.'
+        notebook_path = r'example_dir/myfile\.ipynb'
     else:
-        target_rst = ':target: .+lite/retro/notebooks.+path=mydir/myfile.ipynb'
+        root_url = r'\.\./\.\.'
+        notebook_path = r'example_dir/subdir/myfile\.ipynb'
+
+    if use_jupyter_lab:
+        jupyter_part = 'lab'
+    else:
+        jupyter_part = 'retro/notebooks'
+
+    target_rst = target_rst_template.format(
+        root_url=root_url,
+        jupyter_part=jupyter_part,
+        notebook_path=notebook_path
+    )
     alt_rst = ':alt: Launch JupyterLite'
     assert image_rst in rst
     assert re.search(target_rst, rst), rst
@@ -192,7 +215,8 @@ def test_check_jupyterlite_conf():
     assert check_jupyterlite_conf(None, app) is None
     assert check_jupyterlite_conf({}, app) == {
         'jupyterlite_contents': os.path.join('srcdir', 'jupyterlite_contents'),
-        'use_jupyter_lab': True
+        'use_jupyter_lab': True,
+        'notebook_modification_function': None,
     }
 
     conf = {
@@ -202,7 +226,36 @@ def test_check_jupyterlite_conf():
     expected = {
         'jupyterlite_contents': os.path.join(
             'srcdir', 'this_is_the_contents_dir'),
-        'use_jupyter_lab': False
+        'use_jupyter_lab': False,
+        'notebook_modification_function': None,
+    }
+    assert check_jupyterlite_conf(conf, app) == expected
+
+    def notebook_modification_function(notebook_content, notebook_filename):
+        pass
+
+    conf = {
+        'notebook_modification_function': notebook_modification_function
+    }
+
+    expected = {
+        'jupyterlite_contents': os.path.join('srcdir', 'jupyterlite_contents'),
+        'use_jupyter_lab': True,
+        'notebook_modification_function': notebook_modification_function,
     }
 
     assert check_jupyterlite_conf(conf, app) == expected
+
+    match = (
+        'Found.+unknown keys.+another_unknown_key.+unknown_key.+'
+        'Allowed keys are.+jupyterlite_contents.+'
+        'notebook_modification_function.+use_jupyter_lab'
+    )
+    with pytest.raises(ConfigError, match=match):
+        check_jupyterlite_conf(
+            {
+                'unknown_key': 'value',
+                'another_unknown_key': 'another_value'
+            },
+            app
+        )

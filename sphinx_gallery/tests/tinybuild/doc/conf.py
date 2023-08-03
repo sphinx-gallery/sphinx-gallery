@@ -3,7 +3,7 @@ from sphinx_gallery.scrapers import matplotlib_scraper
 from sphinx_gallery.sorting import FileNameSortKey
 
 
-class matplotlib_format_scraper(object):
+class matplotlib_format_scraper:
 
     def __repr__(self):
         return self.__class__.__name__
@@ -13,6 +13,9 @@ class matplotlib_format_scraper(object):
         if op.basename(block_vars['target_file']) == 'plot_svg.py' and \
                 gallery_conf['builder_name'] != 'latex':
             kwargs['format'] = 'svg'
+        elif op.basename(block_vars['target_file']) == 'plot_webp.py' and \
+                gallery_conf['builder_name'] != 'latex':
+            kwargs['format'] = 'webp'
         return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
 
 
@@ -71,6 +74,18 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'joblib': ('https://joblib.readthedocs.io/en/latest', None),
 }
+
+
+def notebook_modification_function(notebook_content, notebook_filename):
+    source = f'JupyterLite-specific change for {notebook_filename}'
+    markdown_cell = {
+        'cell_type': 'markdown',
+        'metadata': {},
+        'source': source
+    }
+    notebook_content['cells'] = [markdown_cell] + notebook_content['cells']
+
+
 sphinx_gallery_conf = {
     'doc_module': ('sphinx_gallery',),
     'reference_url': {
@@ -85,6 +100,9 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
+    'jupyterlite': {
+        'notebook_modification_function': notebook_modification_function
+    },
     'examples_dirs': ['../examples/', '../examples_with_rst/',
                       '../examples_rst_index'],
     'reset_argv': ResetArgv(),

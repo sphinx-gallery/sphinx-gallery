@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Sphinx-Gallery documentation build configuration file, created by
 # sphinx-quickstart on Mon Nov 17 16:01:26 2014.
@@ -19,6 +18,7 @@ import warnings
 
 import sphinx_gallery
 from sphinx_gallery.sorting import FileNameSortKey
+from sphinx_gallery.notebook import add_markdown_cell, add_code_cell
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -64,8 +64,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Sphinx-Gallery'
-copyright = u'2014-%s, Sphinx-gallery developers' % date.today().year
+project = 'Sphinx-Gallery'
+copyright = '2014-%s, Sphinx-gallery developers' % date.today().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -256,8 +256,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'Sphinx-Gallery.tex', u'Sphinx-Gallery Documentation',
-     u'Óscar Nájera', 'manual'),
+    ('index', 'Sphinx-Gallery.tex', 'Sphinx-Gallery Documentation',
+     'Óscar Nájera', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -286,8 +286,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'sphinx-gallery', u'Sphinx-Gallery Documentation',
-     [u'Óscar Nájera'], 1)
+    ('index', 'sphinx-gallery', 'Sphinx-Gallery Documentation',
+     ['Óscar Nájera'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -300,8 +300,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'Sphinx-Gallery', u'Sphinx-Gallery Documentation',
-     u'Óscar Nájera', 'Sphinx-Gallery', 'One line description of project.',
+    ('index', 'Sphinx-Gallery', 'Sphinx-Gallery Documentation',
+     'Óscar Nájera', 'Sphinx-Gallery', 'One line description of project.',
      'Miscellaneous'),
 ]
 
@@ -320,10 +320,10 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
+    'python': (f'https://docs.python.org/{sys.version_info.major}', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'matplotlib': ('https://matplotlib.org/stable', None),
-    'pyvista': ('https://docs.pyvista.org/', None),
+    'pyvista': ('https://docs.pyvista.org/version/stable', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
@@ -370,6 +370,64 @@ min_reported_time = 0
 if 'SOURCE_DATE_EPOCH' in os.environ:
     min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
 
+
+def notebook_modification_function(notebook_content, notebook_filename):
+    notebook_content_str = str(notebook_content)
+    warning_template = "\n".join(
+        [
+            "<div class='alert alert-{message_class}'>",
+            "",
+            "# JupyterLite warning",
+            "",
+            "{message}",
+            "</div>"
+        ]
+    )
+
+    if "pyvista_examples" in notebook_filename:
+        message_class = "danger"
+        message = (
+            "PyVista is not packaged in Pyodide, this notebook is not "
+            "expected to work inside JupyterLite"
+        )
+    elif "import plotly" in notebook_content_str:
+        message_class = "danger"
+        message = (
+            "This notebook is not expected to work inside JupyterLite for now."
+            " There seems to be some issues with Plotly, see "
+            "[this]('https://github.com/jupyterlite/jupyterlite/pull/950') "
+            "for more details."
+        )
+    else:
+        message_class = "warning"
+        message = (
+            "JupyterLite integration in sphinx-gallery is beta "
+            "and it may break in unexpected ways"
+        )
+
+    markdown = warning_template.format(
+        message_class=message_class,
+        message=message
+    )
+
+    dummy_notebook_content = {'cells': []}
+    add_markdown_cell(dummy_notebook_content, markdown)
+
+    code_lines = []
+
+    if "seaborn" in notebook_content_str:
+        code_lines.append("%pip install seaborn")
+
+    if code_lines:
+        code_lines = ["# JupyterLite-specific code"] + code_lines
+        code = "\n".join(code_lines)
+        add_code_cell(dummy_notebook_content, code)
+
+    notebook_content["cells"] = (
+        dummy_notebook_content["cells"] + notebook_content["cells"]
+    )
+
+
 sphinx_gallery_conf = {
     'backreferences_dir': 'gen_modules/backreferences',
     'doc_module': ('sphinx_gallery', 'numpy'),
@@ -393,6 +451,9 @@ sphinx_gallery_conf = {
                'notebooks_dir': 'notebooks',
                'use_jupyter_lab': True,
                },
+    'jupyterlite': {
+        'notebook_modification_function': notebook_modification_function
+    },
     'show_memory': True,
     'promote_jupyter_magic': False,
     'junit': os.path.join('sphinx-gallery', 'junit-results.xml'),

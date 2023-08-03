@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
@@ -101,13 +100,13 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         Additional keyword arguments to pass to
         :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``.
         The ``format`` kwarg in particular is used to set the file extension
-        of the output file (currently only 'png', 'jpg', and 'svg' are
-        supported).
+        of the output file (currently only 'png', 'jpg', 'svg', 'gif', and
+        'webp' are supported).
 
     Returns
     -------
     rst : str
-        The ReSTructuredText that will be rendered to HTML containing
+        The reStructuredText that will be rendered to HTML containing
         the images. This is often produced by :func:`figure_rst`.
     """
     # Do not use _import_matplotlib() to avoid potentially changing the backend
@@ -118,7 +117,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     image_path_iterator = block_vars['image_path_iterator']
     image_rsts = []
     # Check for srcset hidpi images
-    srcset = gallery_conf.get('image_srcset', [])
+    srcset = gallery_conf['image_srcset']
     srcset_mult_facs = [1]  # one is always supplied...
     for st in srcset:
         if (len(st) > 0) and (st[-1] == 'x'):
@@ -134,7 +133,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     # Check for animations
     anims = list()
-    if gallery_conf.get('matplotlib_animations', False):
+    if gallery_conf['matplotlib_animations']:
         for ani in block_vars['example_globals'].values():
             if isinstance(ani, Animation):
                 anims.append(ani)
@@ -210,7 +209,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         image_rsts = [re.sub(r':class: sphx-glr-single-img',
                              ':class: sphx-glr-multi-img',
                              image) for image in image_rsts]
-        image_rsts = [HLIST_IMAGE_MATPLOTLIB + indent(image, u' ' * 6)
+        image_rsts = [HLIST_IMAGE_MATPLOTLIB + indent(image, ' ' * 6)
                       for image in image_rsts]
         rst = HLIST_HEADER + ''.join(image_rsts)
     return rst
@@ -245,7 +244,7 @@ _scraper_dict = dict(
 )
 
 
-class ImagePathIterator(object):
+class ImagePathIterator:
     """Iterate over image paths for a given example.
 
     Parameters
@@ -288,7 +287,7 @@ class ImagePathIterator(object):
         for ii in range(self._stop):
             yield self.next()
         else:
-            raise ExtensionError('Generated over %s images' % (self._stop,))
+            raise ExtensionError(f'Generated over {self._stop} images')
 
     def next(self):
         return self.__next__()
@@ -301,19 +300,20 @@ class ImagePathIterator(object):
 
 
 # For now, these are what we support
-_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg', 'gif')
+# Update advanced.rst if this list is changed
+_KNOWN_IMG_EXTS = ('png', 'svg', 'jpg', 'gif', 'webp')
 
 
 def _find_image_ext(path):
     """Find an image, tolerant of different file extensions."""
     path = os.path.splitext(path)[0]
     for ext in _KNOWN_IMG_EXTS:
-        this_path = '%s.%s' % (path, ext)
+        this_path = f'{path}.{ext}'
         if os.path.isfile(this_path):
             break
     else:
         ext = 'png'
-    return ('%s.%s' % (path, ext), ext)
+    return (f'{path}.{ext}', ext)
 
 
 def save_figures(block, block_vars, gallery_conf):
@@ -334,28 +334,27 @@ def save_figures(block, block_vars, gallery_conf):
         rst code to embed the images in the document.
     """
     image_path_iterator = block_vars['image_path_iterator']
-    all_rst = u''
+    all_rst = ''
     prev_count = len(image_path_iterator)
     for scraper in gallery_conf['image_scrapers']:
         rst = scraper(block, block_vars, gallery_conf)
         if not isinstance(rst, str):
-            raise ExtensionError('rst from scraper %r was not a string, '
-                                 'got type %s:\n%r'
-                                 % (scraper, type(rst), rst))
+            raise ExtensionError(f'rst from scraper {scraper!r} was not a '
+                                 f'string, got type {type(rst)}:\n{rst!r}')
         n_new = len(image_path_iterator) - prev_count
         for ii in range(n_new):
             current_path, _ = _find_image_ext(
                 image_path_iterator.paths[prev_count + ii])
             if not os.path.isfile(current_path):
                 raise ExtensionError(
-                    'Scraper %s did not produce expected image:'
-                    '\n%s' % (scraper, current_path))
+                    f'Scraper {scraper} did not produce expected image:'
+                    f'\n{current_path}')
         all_rst += rst
     return all_rst
 
 
 def figure_rst(figure_list, sources_dir, fig_titles='', srcsetpaths=None):
-    """Generate RST for a list of image filenames.
+    """Generate reST for a list of image filenames.
 
     Depending on whether we have one or more figures, we use a
     single rst call to 'image' or a horizontal list.

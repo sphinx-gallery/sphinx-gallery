@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 r"""
@@ -8,14 +7,18 @@ import codecs
 import os
 import re
 from pathlib import Path
+import json
 
 import pytest
 
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames, check_spaces_in_filenames,
-    collect_gallery_files, write_computation_times, _complete_gallery_conf,
-    write_api_entry_usage)
+    collect_gallery_files, write_computation_times,
+    _fill_gallery_conf_defaults,
+    write_api_entry_usage,
+    fill_gallery_conf_defaults
+)
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 
 
@@ -23,10 +26,10 @@ def test_bad_config():
     """Test that bad config values are caught."""
     sphinx_gallery_conf = dict(example_dir='')
     with pytest.raises(ConfigError, match="example_dir.*did you mean 'examples_dirs'?.*"):  # noqa: E501
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(n_subsection_order='')
     with pytest.raises(ConfigError, match=r"did you mean one of \['subsection_order', 'within_.*"):  # noqa: E501
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
 
 
 def test_default_config(sphinx_app_wrapper):
@@ -111,11 +114,11 @@ def test_bad_api():
     """Test that we raise an error for bad API usage arguments."""
     sphinx_gallery_conf = dict(api_usage_ignore=('foo',))
     with pytest.raises(ConfigError, match='.*must be str.*'):
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(show_api_usage='foo')
     with pytest.raises(ConfigError,
                        match='.*must be True, False or "unused".*'):
-        _complete_gallery_conf(sphinx_gallery_conf, '', True, False)
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
 
 
 @pytest.mark.conf_file(content="""
@@ -185,7 +188,7 @@ def _check_order(sphinx_app, key):
 
     index_fname = os.path.join(sphinx_app.outdir, '..', 'ex', 'index.rst')
     order = list()
-    regex = '.*:%s=(.):.*' % key
+    regex = f'.*:{key}=(.):.*'
     with codecs.open(index_fname, 'r', 'utf-8') as fid:
         for line in fid:
             if 'sphx-glr-thumbcontainer' in line:
@@ -262,17 +265,17 @@ def test_collect_gallery_files(tmpdir, gallery_conf):
     examples_path = tmpdir.join('examples')
     dirs = [examples_path.strpath]
     collected_files = set(collect_gallery_files(dirs, gallery_conf))
-    expected_files = set(
-        [ap.strpath for ap in abs_paths
-         if re.search(r'examples.*\.py$', ap.strpath)])
+    expected_files = {
+        ap.strpath for ap in abs_paths
+        if re.search(r"examples.*\.py$", ap.strpath)}
 
     assert collected_files == expected_files
 
     tutorials_path = tmpdir.join('tutorials')
     dirs = [examples_path.strpath, tutorials_path.strpath]
     collected_files = set(collect_gallery_files(dirs, gallery_conf))
-    expected_files = set(
-        [ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)])
+    expected_files = {
+        ap.strpath for ap in abs_paths if re.search(r'.*\.py$', ap.strpath)}
 
     assert collected_files == expected_files
 
@@ -292,9 +295,9 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
     examples_path = tmpdir.join('examples')
     dirs = [examples_path.strpath]
     collected_files = set(collect_gallery_files(dirs, gallery_conf))
-    expected_files = set(
-        [ap.strpath for ap in abs_paths
-         if re.search(r'one', os.path.basename(ap.strpath)) is None])
+    expected_files = {
+        ap.strpath for ap in abs_paths
+        if re.search(r'one', os.path.basename(ap.strpath)) is None}
 
     assert collected_files == expected_files
 
@@ -422,10 +425,10 @@ sphinx_gallery_conf = {
     'first_notebook_cell': 2,
 }""")
 def test_first_notebook_cell_config(sphinx_app_wrapper):
-    from sphinx_gallery.gen_gallery import parse_config
     # First cell must be str
     with pytest.raises(ConfigError):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -433,10 +436,10 @@ sphinx_gallery_conf = {
     'last_notebook_cell': 2,
 }""")
 def test_last_notebook_cell_config(sphinx_app_wrapper):
-    from sphinx_gallery.gen_gallery import parse_config
-    # First cell must be str
+    # Last cell must be str
     with pytest.raises(ConfigError):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -445,10 +448,10 @@ sphinx_gallery_conf = {
 }""")
 def test_backreferences_dir_config(sphinx_app_wrapper):
     """Tests 'backreferences_dir' type checking."""
-    from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
                        match="The 'backreferences_dir' parameter must be of"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -459,8 +462,8 @@ sphinx_gallery_conf = {
 }""")
 def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     """Tests pathlib.Path does not raise exception."""
-    from sphinx_gallery.gen_gallery import parse_config
-    parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+    app = sphinx_app_wrapper.create_sphinx_app()
+    fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 def test_write_computation_times_noop():
@@ -478,11 +481,11 @@ sphinx_gallery_conf = {
 }""")
 def test_pypandoc_config_list(sphinx_app_wrapper):
     """Tests 'pypandoc' type checking."""
-    from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
                        match="'pypandoc' parameter must be of type bool or "
                              "dict"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -491,11 +494,11 @@ sphinx_gallery_conf = {
 }""")
 def test_pypandoc_config_keys(sphinx_app_wrapper):
     """Tests 'pypandoc' dictionary key checking."""
-    from sphinx_gallery.gen_gallery import parse_config
     with pytest.raises(ConfigError,
                        match="'pypandoc' only accepts the following key "
                              "values:"):
-        parse_config(sphinx_app_wrapper.create_sphinx_app(), False)
+        app = sphinx_app_wrapper.create_sphinx_app()
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
 @pytest.mark.conf_file(content="""
@@ -575,3 +578,47 @@ JupyterLite disabled via config"""
     create_jupyterlite_contents(sphinx_app, exception=None)
     assert not os.path.exists(os.path.join(
         sphinx_app.outdir, 'jupyterlite_contents'))
+
+
+@pytest.mark.conf_file(content="""
+extensions += ['jupyterlite_sphinx']
+
+def notebook_modification_function(notebook_content, notebook_filename):
+    source = f'JupyterLite-specific change for {notebook_filename}'
+    markdown_cell = {
+        'cell_type': 'markdown',
+        'metadata': {},
+        'source': source
+    }
+    notebook_content['cells'] = [markdown_cell] + notebook_content['cells']
+
+
+sphinx_gallery_conf = {
+    'backreferences_dir' : os.path.join('modules', 'gen'),
+    'examples_dirs': 'src',
+    'gallery_dirs': ['ex'],
+    'jupyterlite': {
+        'notebook_modification_function': notebook_modification_function
+    }
+}""")
+def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    gallery_conf = sphinx_app.config.sphinx_gallery_conf
+
+    create_jupyterlite_contents(sphinx_app, exception=None)
+
+    for i_file in ['plot_1', 'plot_2', 'plot_3']:
+        notebook_filename = os.path.join(
+            sphinx_app.srcdir, 'jupyterlite_contents',
+            gallery_conf['gallery_dirs'][0], i_file + '.ipynb')
+        assert os.path.exists(notebook_filename)
+
+        with open(notebook_filename) as f:
+            notebook_content = json.load(f)
+
+        first_cell = notebook_content['cells'][0]
+        assert first_cell['cell_type'] == 'markdown'
+        assert (
+            f"JupyterLite-specific change for {notebook_filename}"
+            in first_cell['source']
+        )

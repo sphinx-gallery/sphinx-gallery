@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
 Test the SG pipeline used with Sphinx
 """
-from __future__ import division, absolute_import, print_function
 
 import codecs
 from io import StringIO
@@ -14,6 +12,8 @@ import re
 import shutil
 import sys
 import time
+import glob
+import json
 
 from packaging.version import Version
 
@@ -30,7 +30,7 @@ import pytest
 
 # total number of plot_*.py files in tinybuild/examples + examples_rst_index
 # + examples_with_rst
-N_EXAMPLES = 13 + 3 + 2
+N_EXAMPLES = 15 + 3 + 2
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs examples_rst_index, examples_with_rst
@@ -43,7 +43,7 @@ N_EXECUTE = 2 + 3 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 9 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
-N_RST = '(%s|%s|%s)' % (N_RST, N_RST - 1, N_RST - 2)  # AppVeyor weirdness
+N_RST = f'({N_RST}|{N_RST - 1}|{N_RST - 2})'  # AppVeyor weirdness
 
 
 @pytest.fixture(scope='module')
@@ -96,7 +96,7 @@ def test_timings(sphinx_app):
     with codecs.open(timings_rst, 'r', 'utf-8') as fid:
         content = fid.read()
     assert ':ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`' in content
-    parenthetical = '(``%s``)' % ('plot_numpy_matplotlib.py',)
+    parenthetical = "(``plot_numpy_matplotlib.py``)"
     assert parenthetical in content
     # HTML output
     timings_html = op.join(out_dir, 'auto_examples',
@@ -108,7 +108,7 @@ def test_timings(sphinx_app):
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('..', 'examples', 'plot_numpy_matplotlib.py')
-    assert ('- %s: ' % fname) in status
+    assert f'- {fname}: ' in status
 
 
 def test_api_usage(sphinx_app):
@@ -142,7 +142,7 @@ def test_api_usage(sphinx_app):
     # printed
     status = sphinx_app._status.getvalue()
     fname = op.join('..', 'examples', 'plot_numpy_matplotlib.py')
-    assert ('- %s: ' % fname) in status
+    assert f'- {fname}: ' in status
 
 
 def test_optipng(sphinx_app):
@@ -165,7 +165,7 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert contents.startswith('<?xml')
     assert 'errors="0" failures="0"' in contents
-    assert 'tests="%d"' % (N_EXAMPLES,) in contents
+    assert f'tests="{N_EXAMPLES}"' in contents
     assert 'local_module' not in contents  # it's not actually run as an ex
     assert 'expected example failure' in contents
     assert '<failure message' not in contents
@@ -198,14 +198,14 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     assert 'errors="0" failures="2"' in contents
     # this time we only ran the stale files
-    assert 'tests="%s"' % (N_FAILING + 1,) in contents
+    assert f'tests="{N_FAILING + 1}"' in contents
     assert '<failure message="RuntimeError: Forcing' in contents
     assert 'Passed even though it was marked to fail' in contents
 
 
 def test_run_sphinx(sphinx_app):
     """Test basic outputs."""
-    out_dir = sphinx_app.outdir
+    out_dir = str(sphinx_app.outdir)
     out_files = os.listdir(out_dir)
     assert 'index.html' in out_files
     assert 'auto_examples' in out_files
@@ -221,7 +221,7 @@ def test_run_sphinx(sphinx_app):
     for f in files_to_check:
         assert op.isfile(out_dir + '/' + f)
     status = sphinx_app._status.getvalue()
-    assert 'executed %d out of %d' % (N_GOOD, N_EXAMPLES) in status
+    assert f'executed {N_GOOD} out of {N_EXAMPLES}' in status
     assert 'after excluding 0' in status
     # intentionally have a bad URL in references
     warning = sphinx_app._warning.getvalue()
@@ -289,32 +289,34 @@ def test_image_formats(sphinx_app):
     thumb_fnames = ['../_images/sphx_glr_plot_svg_thumb.svg',
                     '../_images/sphx_glr_plot_numpy_matplotlib_thumb.png',
                     '../_images/sphx_glr_plot_animation_thumb.gif',
+                    '../_images/sphx_glr_plot_webp_thumb.webp',
                     ]
     for thumb_fname in thumb_fnames:
         file_fname = op.join(generated_examples_dir, thumb_fname)
         assert op.isfile(file_fname), file_fname
-        want_html = 'src="%s"' % (thumb_fname,)
+        want_html = f'src="{thumb_fname}"'
         assert want_html in html
     # the original GIF does not get copied because it's not used in the
-    # RST/HTML, so can't add it to this check
+    # reST/HTML, so can't add it to this check
     for ex, ext, nums, extra in (
             ('plot_svg', 'svg', [1], None),
             ('plot_numpy_matplotlib', 'png', [1], None),
-            ('plot_animation', 'png', [1, 3], 'function Animation')):
-        html_fname = op.join(generated_examples_dir, '%s.html' % ex)
+            ('plot_animation', 'png', [1, 3], 'function Animation'),
+            ('plot_webp', 'webp', [1], None)):
+        html_fname = op.join(generated_examples_dir, f'{ex}.html')
         with codecs.open(html_fname, 'r', 'utf-8') as fid:
             html = fid.read()
         for num in nums:
-            img_fname0 = '../_images/sphx_glr_%s_%03d.%s' % (ex, num, ext)
+            img_fname0 = f'../_images/sphx_glr_{ex}_{num:03}.{ext}'
             file_fname = op.join(generated_examples_dir, img_fname0)
             assert op.isfile(file_fname), file_fname
-            want_html = 'src="%s"' % (img_fname0,)
+            want_html = f'src="{img_fname0}"'
             assert want_html in html
-            img_fname2 = ('../_images/sphx_glr_%s_%03d_2_00x.%s' %
-                          (ex, num, ext))
+            img_fname2 = f'../_images/sphx_glr_{ex}_{num:03}_2_00x.{ext}'
             file_fname2 = op.join(generated_examples_dir, img_fname2)
-            want_html = 'srcset="%s, %s 2.00x"' % (img_fname0, img_fname2)
-            if ext in ('png', 'jpg', 'svg'):  # check 2.00x (tests directive)
+            want_html = f'srcset="{img_fname0}, {img_fname2} 2.00x"'
+            if ext in ('png', 'jpg', 'svg', 'webp'):
+                # check 2.00x (tests directive)
                 assert op.isfile(file_fname2), file_fname2
                 assert want_html in html
 
@@ -411,7 +413,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert 'class="sphx-glr-signature"' in lines
     assert 'class="sphx-glr-timing"' in lines
     for kind in ('python', 'jupyter'):
-        assert 'class="sphx-glr-download sphx-glr-download-%s docutils container"' % kind in lines  # noqa:E501
+        assert f'class="sphx-glr-download sphx-glr-download-{kind} docutils container"' in lines  # noqa:E501
 
     # highlight language
     fname = op.join(src_dir, 'auto_examples', 'plot_numpy_matplotlib.rst')
@@ -548,7 +550,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     #
     status = sphinx_app._status.getvalue()
     lines = [line for line in status.split('\n') if 'removed' in line]
-    want = '.*%s added, 0 changed, 0 removed.*' % (N_RST,)
+    want = f'.*{N_RST} added, 0 changed, 0 removed.*'
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     want = '.*targets for 2 source files that are out of date$.*'
     lines = [line for line in status.split('\n') if 'out of date' in line]
@@ -655,7 +657,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     # mtimes for backrefs (gh-394)
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
 
-    # generated RST files
+    # generated reST files
     ignore = (
         # these two should almost always be different, but in case we
         # get extremely unlucky and have identical run times
@@ -722,7 +724,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     flags = re.MULTILINE | re.DOTALL
     # for some reason, setting "confoverrides" above causes Sphinx to show
     # all targets out of date, even though they haven't been modified...
-    want = '.*targets for %s source files that are out of date$.*' % N_RST
+    want = f'.*targets for {N_RST} source files that are out of date$.*'
     assert re.match(want, status, flags) is not None, lines
     # ... but then later detects that only some have actually changed:
     # Linux: 8 changed when how='run_stale', 9 when how='modify'.
@@ -771,7 +773,7 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     # mtimes for backrefs (gh-394)
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
 
-    # generated RST files
+    # generated reST files
     different = ('plot_numpy_matplotlib',)
     ignore = (
         # this one should almost always be different, but in case we
@@ -1062,3 +1064,22 @@ def test_no_dummy_image(sphinx_app):
                    'sphx_glr_plot_repr_002.png')
     assert not op.isfile(img1)
     assert not op.isfile(img2)
+
+
+def test_jupyterlite_modifications(sphinx_app):
+    src_dir = sphinx_app.srcdir
+    jupyterlite_notebook_pattern = op.join(
+        src_dir, 'jupyterlite_contents', '**', '*.ipynb')
+    jupyterlite_notebook_filenames = glob.glob(
+        jupyterlite_notebook_pattern, recursive=True)
+
+    for notebook_filename in jupyterlite_notebook_filenames:
+        with open(notebook_filename) as f:
+            notebook_content = json.load(f)
+
+        first_cell = notebook_content['cells'][0]
+        assert first_cell['cell_type'] == 'markdown'
+        assert (
+            f"JupyterLite-specific change for {notebook_filename}"
+            in first_cell['source']
+        )

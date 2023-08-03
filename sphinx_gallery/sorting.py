@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Sorters for Sphinx-Gallery (sub)sections
 ========================================
@@ -9,7 +8,6 @@ Sorting key functions for gallery subsection folders and section files.
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from __future__ import division, absolute_import, print_function
 import os
 import types
 
@@ -19,7 +17,7 @@ from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
 
 
-class ExplicitOrder(object):
+class ExplicitOrder:
     """Sorting key for all gallery subsections.
 
     This requires all folders to be listed otherwise an exception is raised.
@@ -53,17 +51,17 @@ class ExplicitOrder(object):
                               'found for {}'.format(item))
 
     def __repr__(self):
-        return '<%s : %s>' % (self.__class__.__name__, self.ordered_list)
+        return f'<{self.__class__.__name__} : {self.ordered_list}>'
 
 
-class _SortKey(object):
+class _SortKey:
     """Base class for section order key classes."""
 
     def __init__(self, src_dir):
         self.src_dir = src_dir
 
     def __repr__(self):
-        return '<%s>' % (self.__class__.__name__,)
+        return f'<{self.__class__.__name__}>'
 
 
 class NumberOfCodeLinesSortKey(_SortKey):

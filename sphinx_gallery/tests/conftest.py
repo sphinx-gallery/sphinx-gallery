@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 Pytest fixtures
 """
-from __future__ import division, absolute_import, print_function
 
 from contextlib import contextmanager
 from io import StringIO
@@ -23,16 +21,21 @@ from sphinx_gallery.utils import _get_image
 
 def pytest_report_header(config, startdir):
     """Add information to the pytest run header."""
-    return 'Sphinx:  %s (%s)' % (sphinx.__version__, sphinx.__file__)
+    return f'Sphinx:  {sphinx.__version__} ({sphinx.__file__})'
 
 
 @pytest.fixture
 def gallery_conf(tmpdir):
     """Set up a test sphinx-gallery configuration."""
-    app = Mock(spec=Sphinx, config=dict(source_suffix={'.rst': None}),
-               extensions=[])
-    gallery_conf = gen_gallery._complete_gallery_conf(
-        {}, str(tmpdir), True, False, app=app)
+    app = Mock(
+        spec=Sphinx,
+        config=dict(source_suffix={".rst": None}, default_role=None),
+        extensions=[],
+    )
+    gallery_conf = gen_gallery._fill_gallery_conf_defaults(
+        {},  app=app)
+    gen_gallery._update_gallery_conf_builder_inited(
+        gallery_conf, str(tmpdir))
     gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
     return gallery_conf
 
@@ -72,6 +75,9 @@ br.identify_names
 from sphinx_gallery.back_references import identify_names
 identify_names
 
+import matplotlib.pyplot as plt
+_ = plt.figure()
+
 """
 
     fname = tmpdir.join("unicode_sample.py")
@@ -90,7 +96,7 @@ def req_mpl_jpg(tmpdir, req_mpl, scope='session'):
     try:
         plt.savefig(str(tmpdir.join('testplot.jpg')))
     except Exception as exp:
-        pytest.skip('Matplotlib jpeg saving failed: %s' % (exp,))
+        pytest.skip(f'Matplotlib jpeg saving failed: {exp}')
     finally:
         plt.close(fig)
 
@@ -127,7 +133,7 @@ def conf_file(request):
     return result
 
 
-class SphinxAppWrapper(object):
+class SphinxAppWrapper:
     """Wrapper for sphinx.application.Application.
 
     This allows control over when the sphinx application is initialized, since
@@ -175,16 +181,16 @@ def sphinx_app_wrapper(tmpdir, conf_file, req_mpl, req_pil):
     shutil.copytree(os.path.join(_fixturedir, "src"),
                     os.path.join(str(tmpdir), "examples"))
 
-    base_config = """
+    base_config = f"""
 import os
 import sphinx_gallery
-extensions = %r
+extensions = {conf_file['extensions']!r}
 exclude_patterns = ['_build']
 source_suffix = '.rst'
 master_doc = 'index'
 # General information about the project.
-project = u'Sphinx-Gallery <Tests>'\n\n
-""" % (conf_file['extensions'],)
+project = 'Sphinx-Gallery <Tests>'\n\n
+"""
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
         conffile.write(base_config + conf_file['content'])
 

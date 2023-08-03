@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Utilities for downloadable items
 ================================
@@ -7,7 +6,6 @@ Utilities for downloadable items
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from __future__ import absolute_import, division, print_function
 
 import os
 import zipfile
@@ -107,7 +105,7 @@ def generate_zipfiles(gallery_dir, src_dir):
     gallery_dir : str
         path of the gallery to collect downloadable sources
     src_dir : str
-        The build source directory. Needed to make the RST paths relative.
+        The build source directory. Needed to make the reST paths relative.
 
     Return
     ------

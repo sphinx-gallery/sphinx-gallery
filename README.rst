@@ -2,14 +2,30 @@
 Sphinx-Gallery
 ==============
 
+.. image:: https://img.shields.io/pypi/v/sphinx-gallery
+    :target: https://pypi.org/project/sphinx-gallery/
+    :alt: PyPI
+
+.. image:: https://img.shields.io/conda/vn/conda-forge/sphinx-gallery
+    :target: https://anaconda.org/conda-forge/sphinx-gallery
+    :alt: Conda-forge
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3741780.svg
+    :target: https://doi.org/10.5281/zenodo.3741780
+    :alt: Zenodo DOI
+
 .. image:: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_apis/build/status/sphinx-gallery.sphinx-gallery?branchName=master
     :target: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_build/latest?definitionId=1&branchName=master
+    :alt: Azure CI status
 
 .. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
     :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
+    :alt: CircleCI status
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4718153.svg
-    :target: https://doi.org/10.5281/zenodo.4718153
+.. image:: https://codecov.io/github/sphinx-gallery/sphinx-gallery/badge.svg?branch=master&service=github(
+    :target: https://app.codecov.io/github/sphinx-gallery/sphinx-gallery
+    :alt: Code coverage
+
 
 .. tagline-begin-content
 
@@ -43,8 +59,10 @@ An incomplete list:
 * `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
 * `Nilearn <https://nilearn.github.io/stable/auto_examples/index.html>`_
 * `OpenML <https://openml.github.io/openml-python/main/examples/index.html>`_
+* `OpenTURNS <https://openturns.github.io/openturns/latest/examples/examples.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 * `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
+* `PyGMT <https://www.pygmt.org/latest/gallery/index.html>`_
 * `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
 * `PySurfer <https://pysurfer.github.io/>`_
@@ -69,7 +87,7 @@ Install via ``pip``
 
 .. installation-begin-content
 
-You can do a direct install via `pip`` by using:
+You can do a direct install via ``pip`` by using:
 
 .. code-block:: bash
 
@@ -115,6 +133,6 @@ How to cite
 .. citation-begin-content
 
 If you would like to cite Sphinx-Gallery you can do so using our `Zenodo
-deposit <https://zenodo.org/record/3838216>`_.
+deposit <https://zenodo.org/record/3741780>`_.
 
 .. citation-end-content

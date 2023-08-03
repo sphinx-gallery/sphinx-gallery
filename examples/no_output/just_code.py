@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 A short Python script
 =====================
@@ -10,5 +9,4 @@ example. Note that no output is capture as this file is not executed.
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
-from __future__ import print_function
 print([i for i in range(10)])

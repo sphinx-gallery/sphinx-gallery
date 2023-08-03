@@ -1,2 +1,2 @@
 # update README.rst when changing something here
-sphinx>=3
+sphinx>=4

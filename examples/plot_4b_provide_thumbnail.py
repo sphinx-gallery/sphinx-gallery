@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Providing a figure for the thumbnail image
 ==========================================

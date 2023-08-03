@@ -1,6 +1,52 @@
 Changelog
 =========
 
+v0.13.0
+-------
+
+**Implemented enhancements:**
+
+-  ENH: Create backreferences for default roles `#1122 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1122>`__ (`StefRe <https://github.com/StefRe>`__)
+-  ENH raise error in check_jupyterlite_conf with unknown key `#1119 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1119>`__ (`lesteve <https://github.com/lesteve>`__)
+-  ENH Add functionality to modify Jupyterlite notebooks based on their content `#1113 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1113>`__ (`lesteve <https://github.com/lesteve>`__)
+-  ENH: Add support for WebP `#1111 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1111>`__ (`StefRe <https://github.com/StefRe>`__)
+
+**Fixed bugs:**
+
+-  ENH Clean-up code by early initialization of sphinx_gallery_conf `#1120 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1120>`__ (`lesteve <https://github.com/lesteve>`__)
+-  FIX JupyterLite button links `#1115 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1115>`__ (`lesteve <https://github.com/lesteve>`__)
+-  Fix thumbnail text formatting `#1108 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1108>`__ (`StefRe <https://github.com/StefRe>`__)
+-  Fix JupyterLite URL with nested gallery folders `#1105 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1105>`__ (`lesteve <https://github.com/lesteve>`__)
+-  Avoid potentially changing the matplotlib backend when scraping `#1102 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1102>`__ (`ayshih <https://github.com/ayshih>`__)
+-  Remove default ‘%matplotlib inline’ line `#1099 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1099>`__ (`ArturoAmorQ <https://github.com/ArturoAmorQ>`__)
+-  FIX: Only ANSI sanitize non-HTML output `#1097 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1097>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  BUG: Fix bug with show_api_usage `#1095 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1095>`__ (`larsoner <https://github.com/larsoner>`__)
+-  FIX: Add blank line at end of table of contents block `#1094 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1094>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+
+**API changes**
+
+-  API: Remove deprecated mayavi support `#1090 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1090>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Documentation**
+
+-  Add reference to qtgallery (Qt scraper) `#1126 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1126>`__ (`aganders3 <https://github.com/aganders3>`__)
+-  DOC: Unify abbreviations of reStructuredText `#1118 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1118>`__ (`StefRe <https://github.com/StefRe>`__)
+-  Add PyGMT to list “Who uses Sphinx-Gallery” `#1114 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1114>`__ (`yvonnefroehlich <https://github.com/yvonnefroehlich>`__)
+-  DOC Update JupyterLite doc after JupyterLite 0.1.0b19 release `#1106 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1106>`__ (`lesteve <https://github.com/lesteve>`__)
+-  Fix project list `#1101 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1101>`__ (`StefRe <https://github.com/StefRe>`__)
+-  DOC: Document changes `#1098 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1098>`__ (`larsoner <https://github.com/larsoner>`__)
+-  DOC: Document point release changes `#1096 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1096>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Project maintenance**
+
+-  MAINT: Use non-aliased status_iterator `#1124 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1124>`__ (`larsoner <https://github.com/larsoner>`__)
+-  CLN Clean up naming of early config validation `#1123 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1123>`__ (`lesteve <https://github.com/lesteve>`__)
+-  MNT: Remove Python 2 leftovers `#1116 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1116>`__ (`StefRe <https://github.com/StefRe>`__)
+-  MNT: Sync minimum sphinx version with README.rst `#1110 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1110>`__ (`StefRe <https://github.com/StefRe>`__)
+-  CI Install jupyterlite-pyodide-kernel in CI `#1107 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1107>`__ (`lesteve <https://github.com/lesteve>`__)
+-  Add test for setting a non-agg Matplotlib backend `#1104 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1104>`__ (`ayshih <https://github.com/ayshih>`__)
+-  MAINT: Bump version to dev `#1089 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1089>`__ (`larsoner <https://github.com/larsoner>`__)
+
 v0.12.2
 -------
 
@@ -39,7 +85,7 @@ Support for Sphinx < 4 dropped in this release. Requirement is Sphinx >= 4.
 -  Adds ``plot_gallery`` as a string by default `#1062 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1062>`__ (`melissawm <https://github.com/melissawm>`__)
 -  Fix broken links when using dirhtml builder `#1060 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1060>`__ (`mgoulao <https://github.com/mgoulao>`__)
 -  BUG: Remove ignore blocks when remove_config_comments=True `#1059 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1059>`__ (`guberti <https://github.com/guberti>`__)
--  Fixed a bug where backslashes in paths could show up in RST files `#1047 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1047>`__ (`ayshih <https://github.com/ayshih>`__)
+-  Fixed a bug where backslashes in paths could show up in reST files `#1047 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1047>`__ (`ayshih <https://github.com/ayshih>`__)
 -  Allow 2 decimal places in srcset `#1039 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1039>`__ (`OverLordGoldDragon <https://github.com/OverLordGoldDragon>`__)
 -  Fix “``subsection_index_toctree`` referenced before assignment” `#1035 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1035>`__ (`OverLordGoldDragon <https://github.com/OverLordGoldDragon>`__)
 -  [BUG, MRG] fix issue with api usage dict `#1033 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1033>`__ (`alexrockhill <https://github.com/alexrockhill>`__)
@@ -204,7 +250,7 @@ For more details see `#845 <https://github.com/sphinx-gallery/sphinx-gallery/pul
 **Fixed bugs:**
 
 -  BUG URL quote branch names and filepaths in Binder URLs `#844 <https://github.com/sphinx-gallery/sphinx-gallery/pull/844>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
--  Sanitize ANSI characters from generated RST: Remove `ANSI characters <https://en.wikipedia.org/wiki/ANSI_escape_code>`_ from HTML output `#838 <https://github.com/sphinx-gallery/sphinx-gallery/pull/838>`__ (`agramfort <https://github.com/agramfort>`__)
+-  Sanitize ANSI characters from generated reST: Remove `ANSI characters <https://en.wikipedia.org/wiki/ANSI_escape_code>`_ from HTML output `#838 <https://github.com/sphinx-gallery/sphinx-gallery/pull/838>`__ (`agramfort <https://github.com/agramfort>`__)
 -  Bug Pin markupsafe version in Python nightly `#831 <https://github.com/sphinx-gallery/sphinx-gallery/pull/831>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  BUG Fix test_minigallery_directive failing on Windows `#830 <https://github.com/sphinx-gallery/sphinx-gallery/pull/830>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  BUG Fix LaTeX Error: File \`tgtermes.sty’ not found in CI `#829 <https://github.com/sphinx-gallery/sphinx-gallery/pull/829>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
@@ -291,7 +337,7 @@ Enables HTML animations to be rendered on readthedocs.
 -  Option to disable note in example header `#757 <https://github.com/sphinx-gallery/sphinx-gallery/issues/757>`__
 -  Add show_signature option `#756 <https://github.com/sphinx-gallery/sphinx-gallery/pull/756>`__ (`jschueller <https://github.com/jschueller>`__)
 -  ENH: Style HTML output like jupyter `#752 <https://github.com/sphinx-gallery/sphinx-gallery/pull/752>`__ (`larsoner <https://github.com/larsoner>`__)
--  ENH: Add RST comments, read-only `#750 <https://github.com/sphinx-gallery/sphinx-gallery/pull/750>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Add reST comments, read-only `#750 <https://github.com/sphinx-gallery/sphinx-gallery/pull/750>`__ (`larsoner <https://github.com/larsoner>`__)
 -  Relate warnings and errors on generated rst file back to source Python file / prevent accidental writing of generated files `#725 <https://github.com/sphinx-gallery/sphinx-gallery/issues/725>`__
 
 **Fixed bugs:**
@@ -337,7 +383,7 @@ by CSS) in version 0.9.0.
 -  Implement option to pass command line args to example scripts `#732 <https://github.com/sphinx-gallery/sphinx-gallery/pull/732>`__ (`mschmidt87 <https://github.com/mschmidt87>`__)
 -  ENH: Dont allow input `#729 <https://github.com/sphinx-gallery/sphinx-gallery/pull/729>`__ (`larsoner <https://github.com/larsoner>`__)
 -  Add support for image links and data URIs for notebooks `#724 <https://github.com/sphinx-gallery/sphinx-gallery/pull/724>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
--  Support headings in RST to MD `#723 <https://github.com/sphinx-gallery/sphinx-gallery/pull/723>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  Support headings in reST to MD `#723 <https://github.com/sphinx-gallery/sphinx-gallery/pull/723>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
 -  ENH Support pypandoc to convert rst to md for ipynb `#705 <https://github.com/sphinx-gallery/sphinx-gallery/pull/705>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
 -  ENH: Use broader def of Animation `#693 <https://github.com/sphinx-gallery/sphinx-gallery/pull/693>`__ (`larsoner <https://github.com/larsoner>`__)
 
@@ -654,7 +700,7 @@ Incompatible changes
 -  fix wrong keyword in docs for “binder” `#500 <https://github.com/sphinx-gallery/sphinx-gallery/pull/500>`__ (`sappelhoff <https://github.com/sappelhoff>`__)
 -  Fix ‘Out:’ label position in html output block `#484 <https://github.com/sphinx-gallery/sphinx-gallery/pull/484>`__ (`timhoffm <https://github.com/timhoffm>`__)
 -  Mention pytest-coverage dependency `#482 <https://github.com/sphinx-gallery/sphinx-gallery/pull/482>`__ (`timhoffm <https://github.com/timhoffm>`__)
--  Fix ReST block after docstring `#480 <https://github.com/sphinx-gallery/sphinx-gallery/pull/480>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Fix reST block after docstring `#480 <https://github.com/sphinx-gallery/sphinx-gallery/pull/480>`__ (`timhoffm <https://github.com/timhoffm>`__)
 -  MAINT: Tolerate Windows mtime `#478 <https://github.com/sphinx-gallery/sphinx-gallery/pull/478>`__ (`larsoner <https://github.com/larsoner>`__)
 -  FIX: Output from code execution is not stripped `#475 <https://github.com/sphinx-gallery/sphinx-gallery/pull/475>`__ (`padix-key <https://github.com/padix-key>`__)
 -  FIX: Link `#470 <https://github.com/sphinx-gallery/sphinx-gallery/pull/470>`__ (`larsoner <https://github.com/larsoner>`__)

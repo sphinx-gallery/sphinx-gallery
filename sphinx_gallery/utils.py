@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Utilities
 =========
@@ -8,7 +7,6 @@ Miscellaneous utilities.
 # Author: Eric Larson
 # License: 3-clause BSD
 
-from __future__ import division, absolute_import, print_function
 
 import hashlib
 import os
@@ -17,6 +15,11 @@ import subprocess
 
 from sphinx.errors import ExtensionError
 import sphinx.util
+
+try:
+    from sphinx.util.display import status_iterator  # noqa: F401
+except Exception:  # Sphinx < 6
+    from sphinx.util import status_iterator  # noqa: F401
 
 
 logger = sphinx.util.logging.getLogger('sphinx-gallery')
@@ -31,7 +34,7 @@ def _get_image():
         except ImportError:
             raise ExtensionError(
                 'Could not import pillow, which is required '
-                'to rescale images (e.g., for thumbnails): %s' % (exc,))
+                f'to rescale images (e.g., for thumbnails): {exc}')
     return Image
 
 
@@ -77,7 +80,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
 
     try:
         thumb.save(out_fname)
-    except IOError:
+    except OSError:
         # try again, without the alpha channel (e.g., for JPEG)
         thumb.convert('RGB').save(out_fname)
 
@@ -102,7 +105,7 @@ def optipng(fname, args=()):
                 ['optipng'] + list(args) + [fname],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
-        except (subprocess.CalledProcessError, IOError):  # FileNotFoundError
+        except (subprocess.CalledProcessError, OSError):  # FileNotFoundError
             pass
 
 
@@ -111,7 +114,7 @@ def _has_optipng():
         subprocess.check_call(['optipng', '--version'],
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE)
-    except IOError:  # FileNotFoundError
+    except OSError:  # FileNotFoundError
         return False
     else:
         return True
@@ -123,10 +126,10 @@ def replace_py_ipynb(fname):
     allowed_extension = '.py'
     if extension != allowed_extension:
         raise ValueError(
-            "Unrecognized file extension, expected %s, got %s"
-            % (allowed_extension, extension))
+            f"Unrecognized file extension, expected {allowed_extension}, "
+            f"got {extension}")
     new_extension = '.ipynb'
-    return '{}{}'.format(fname_prefix, new_extension)
+    return f'{fname_prefix}{new_extension}'
 
 
 def get_md5sum(src_file, mode='b'):
