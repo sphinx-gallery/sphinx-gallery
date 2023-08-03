@@ -21,7 +21,8 @@ from .backreferences import (
 )
 from .py_source_parser import split_code_and_text_blocks
 from .gen_rst import extract_intro_and_title
-from .utils import  _replace_md5
+from .utils import _replace_md5
+
 
 class ExampleRecommender:
     """Compute content-based KNN-TF-IFD recommendation system.
