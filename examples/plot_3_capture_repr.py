@@ -111,7 +111,7 @@ plt.show()
 # default ``capture_repr`` setting, ``_repr_html_`` is attempted to be captured
 # first. If this method does not exist, the ``__repr__`` method would be
 # captured. If the ``__repr__`` also does not exist (unlikely for non-user
-# defined objects), nothing would be captured. For example, if the the
+# defined objects), nothing would be captured. For example, if the
 # configuration was set to ``'capture_repr': ('_repr_html_')`` nothing would be
 # captured for example 2 as ``b`` does not have a ``_repr_html_``.
 # You can change the 'representations' in the ``capture_repr`` tuple to finely

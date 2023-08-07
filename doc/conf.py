@@ -327,6 +327,7 @@ intersphinx_mapping = {
     'sklearn': ('https://scikit-learn.org/stable', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'ipython': ('https://ipython.readthedocs.io/en/stable/', None),
 }
 
 examples_dirs = ['../examples', '../tutorials']

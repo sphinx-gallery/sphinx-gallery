@@ -16,3 +16,4 @@ absl-py
 graphviz
 packaging
 jupyterlite-sphinx
+sphinxcontrib-svg2pdfconverter[CairoSVG]

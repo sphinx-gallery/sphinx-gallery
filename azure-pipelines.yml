@@ -57,12 +57,15 @@ stages:
         set -eo pipefail
         python --version
         python -m pip install --user --upgrade pip setuptools wheel
-        pip install --user --upgrade --progress-bar off "ipython!=8.7.0" numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov joblib "plotly>=4.0" imageio
+        pip install --user --upgrade --progress-bar off "ipython!=8.7.0" numpy seaborn statsmodels matplotlib sphinx pillow pytest pytest-cov joblib "plotly>=4.0" imageio sphinxcontrib-svg2pdfconverter[CairoSVG]
         pip install --user --upgrade --progress-bar off --pre pydata-sphinx-theme
         echo "Qt, plotly, VTK"
         pip install --user --upgrade --progress-bar off pyvista "pyqt5!=5.15.8" plotly vtk
         echo "JupyterLite-related dependencies"
         pip install --user --upgrade --progress-bar off "jupyterlite-sphinx>=0.8.0,<0.9.0" "jupyterlite-pyodide-kernel<0.1.0" libarchive-c
+        echo "Install pre-build cairocffi with DLLs"
+        pip install --user --upgrade --progress-bar off pipwin
+        pipwin install cairocffi
       displayName: Setup pip environment
     - script: pip list
       displayName: pip list

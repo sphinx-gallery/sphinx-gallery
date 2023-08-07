@@ -128,7 +128,7 @@ class ImageSg(images.Image):
                      /plot_types/basic/images/sphx_glr_bar_001_2_00x.png 2.00x
             :class: sphx-glr-single-img
 
-    The resulting html is::
+    The resulting HTML is::
 
         <img src="sphx_glr_bar_001_hidpi.png"
             srcset="_images/sphx_glr_bar_001.png,
