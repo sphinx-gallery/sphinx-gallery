@@ -143,11 +143,14 @@ def get_md5sum(src_file, mode='b'):
         File mode to open file with. When in text mode, universal line endings
         are used to ensure consistency in hashes between platforms.
     """
-    errors = 'surrogateescape' if mode == 't' else None
-    with open(src_file, 'r' + mode, errors=errors) as src_data:
+    if mode == 't':
+        kwargs = {'errors': 'surrogateescape', 'encoding': 'utf-8'}
+    else:
+        kwargs = {}
+    with open(src_file, 'r' + mode, **kwargs) as src_data:
         src_content = src_data.read()
         if mode == 't':
-            src_content = src_content.encode(errors=errors)
+            src_content = src_content.encode(**kwargs)
         return hashlib.md5(src_content).hexdigest()
 
 
