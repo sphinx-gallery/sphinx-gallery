@@ -42,7 +42,7 @@ def _import_matplotlib():
     filterwarnings("ignore", category=UserWarning,
                    message='Matplotlib is currently using agg, which is a'
                            ' non-GUI backend, so cannot show the figure.'
-                           '|(\n|.)*is non-interactive, and thus cannot be' 
+                           '|(\n|.)*is non-interactive, and thus cannot be'
                            ' shown')
 
     if matplotlib_backend != 'agg':
