@@ -26,6 +26,7 @@ from sphinx_gallery.gen_gallery import (
     generate_dir_rst, _update_gallery_conf_exclude_implicit_doc)
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 from sphinx_gallery.interactive_example import check_binder_conf
+from sphinx_gallery.recommender import ExampleRecommender
 
 CONTENT = [
     '"""',
@@ -671,6 +672,44 @@ def test_rst_example(gallery_conf):
     # CSS classes
     assert "rst-class:: sphx-glr-signature" in rst
     assert "rst-class:: sphx-glr-timing" in rst
+
+
+def test_recommendation_files(gallery_conf):
+    """Test generated recommendations are in rst and are relevant."""
+    gallery_conf.update(recommender={'enable': True, 'n_examples': 5})
+    file_dict = {
+        "fox_jumps_dog.py": "The quick brown fox jumped over the lazy dog",
+        "dog_sleeps.py": "The lazy dog slept all day",
+        "fox_eats_dog_food.py": "The quick brown fox ate the lazy dog's food",
+        "dog_jumps_fox.py": "The quick dog jumped over the lazy fox"
+    }
+
+    for file_name, content in file_dict.items():
+        file_path = os.path.join(gallery_conf['gallery_dir'], file_name)
+        with open(file_path, 'w') as f:
+            f.write(content)
+        sg.save_rst_example("example_rst", file_path, 0, 0, gallery_conf)
+
+        test_file = re.sub(r'\.py$', '.rst', file_path)
+        recommendation_file = re.sub(r'\.py$', '.recommendations', file_name)
+        with codecs.open(test_file) as f:
+            rst = f.read()
+
+        assert recommendation_file in rst
+
+    py_files = [
+        fname
+        for fname in os.listdir(gallery_conf["gallery_dir"])
+        if os.path.splitext(fname)[1] == ".py"
+    ]
+    gallery_py_files = [
+        os.path.join(gallery_conf["gallery_dir"], fname) for fname in py_files
+    ]
+    recommender = ExampleRecommender(n_examples=1)
+    recommender.fit(gallery_py_files)
+    recommended_example = recommender.predict(file_path)  # dog_jumps_fox.py
+
+    assert os.path.basename(recommended_example[0]) == "fox_jumps_dog.py"
 
 
 @pytest.fixture(scope='function')
