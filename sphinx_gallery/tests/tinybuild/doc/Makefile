@@ -1,7 +1,5 @@
 SPHINXOPTS=
 
-current_dir := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
-
 all: clean html show
 
 clean:
