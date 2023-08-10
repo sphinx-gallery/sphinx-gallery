@@ -676,6 +676,7 @@ def test_rst_example(gallery_conf):
 
 def test_recommendation_files(gallery_conf):
     """Test generated recommendations are in rst and are relevant."""
+    pytest.importorskip("numpy")
     gallery_conf.update(recommender={'enable': True, 'n_examples': 5})
     file_dict = {
         "fox_jumps_dog.py": "The quick brown fox jumped over the lazy dog",
