@@ -1,4 +1,5 @@
 import os.path as op
+import sphinx
 from sphinx_gallery.scrapers import matplotlib_scraper
 from sphinx_gallery.sorting import FileNameSortKey
 
@@ -129,3 +130,22 @@ sphinx_gallery_conf = {
 nitpicky = True
 highlight_language = 'python3'
 html_static_path = ['_static_nonstandard']
+
+
+class ReportChanged:
+
+    def __repr__(self):
+        return "ReportChanged"
+
+    def __call__(self, app, env, added, changed, removed):
+        from sphinx.util.console import bold
+        logger = sphinx.util.logging.getLogger('sphinx-gallery')
+        if changed:
+            logger.info(bold(f'\nFiles changed ({len(changed)}):'))
+            for fname in sorted(changed):
+                logger.info(f'     - {fname}')
+        return []
+
+
+def setup(app):
+    app.connect("env-get-outdated", ReportChanged())

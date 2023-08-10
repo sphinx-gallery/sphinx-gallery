@@ -727,11 +727,24 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
     want = f'.*targets for {N_RST} source files that are out of date$.*'
     assert re.match(want, status, flags) is not None, lines
     # ... but then later detects that only some have actually changed:
-    # Linux: 8 changed when how='run_stale', 9 when how='modify'.
-    # Windows: always 9 for some reason
     lines = [line for line in status.split('\n') if 'changed,' in line]
-    lines = '\n'.join([how] + lines)
-    n_ch = '(7|8|9|10|11|12)'
+    # Ones that can change on stale:
+    # - auto_examples/future/plot_future_imports_broken
+    # - auto_examples/future/sg_execution_times
+    # - auto_examples/plot_scraper_broken
+    # - auto_examples/sg_execution_times
+    # - sg_api_usage
+    # Sometimes it's not all 5, for example when the execution time and
+    # memory usage reported ends up being the same.
+    #
+    # Modifying an example then adds these two:
+    # - auto_examples/index
+    # - auto_examples/plot_numpy_matplotlib
+    if how == 'modify':
+        n_ch = '[3-7]'
+    else:
+        n_ch = '[1-5]'
+    lines = '\n'.join([f"\n{how} != {n_ch}:"] + lines)
     want = f'.*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*'
     assert re.match(want, status, flags) is not None, lines
     want = ('.*executed 1 out of %s.*after excluding %s files.*based on MD5.*'

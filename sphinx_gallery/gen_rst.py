@@ -372,13 +372,16 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf,
         return
     # update extension, since gallery_conf setting can be different
     # from file_conf
-    thumb_file = f'{os.path.splitext(thumb_file)[0]}.{ext}'
+    # Here we have to do .new.ext so that optipng and PIL behave well
+    thumb_file = f'{os.path.splitext(thumb_file)[0]}.new.{ext}'
     if ext in ('svg', 'gif'):
         copyfile(img, thumb_file)
     else:
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
         if 'thumbnails' in gallery_conf['compress_images']:
             optipng(thumb_file, gallery_conf['compress_images_args'])
+    fname_old = f"{os.path.splitext(thumb_file)[0][:-3]}{ext}"
+    _replace_md5(thumb_file, fname_old=fname_old)
 
 
 def _get_readme(dir_, gallery_conf, raise_error=True):
