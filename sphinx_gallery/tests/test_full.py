@@ -989,6 +989,8 @@ def test_matplotlib_warning_filter(sphinx_app):
     warning = ('Matplotlib is currently using agg, which is a'
                ' non-GUI backend, so cannot show the figure.')
     assert warning not in html
+    warning = 'is non-interactive, and thus cannot be shown'
+    assert warning not in html
 
 
 def test_jupyter_notebook_pandoc(sphinx_app):
