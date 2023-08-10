@@ -159,11 +159,16 @@ def _replace_md5(fname_new, fname_old=None, method='move', mode='b'):
     if fname_old is None:
         assert fname_new.endswith('.new')
         fname_old = os.path.splitext(fname_new)[0]
-    if os.path.isfile(fname_old) and (get_md5sum(fname_old, mode) ==
-                                      get_md5sum(fname_new, mode)):
-        if method == 'move':
-            os.remove(fname_new)
-    else:
+    replace = True
+    if os.path.isfile(fname_old):
+        if get_md5sum(fname_old, mode) == get_md5sum(fname_new, mode):
+            replace = False
+            if method == 'move':
+                os.remove(fname_new)
+        else:
+            logger.debug(
+                f"Replacing stale {fname_old} with {fname_new}")
+    if replace:
         if method == 'move':
             move(fname_new, fname_old)
         else:
