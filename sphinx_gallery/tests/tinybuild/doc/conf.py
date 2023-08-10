@@ -126,6 +126,7 @@ sphinx_gallery_conf = {
     'exclude_implicit_doc': ['figure_rst'],
     'show_api_usage': True,
     'copyfile_regex': r'.*\.rst',
+    'recommender': {'enable': True, 'n_examples': 5},
 }
 nitpicky = True
 highlight_language = 'python3'

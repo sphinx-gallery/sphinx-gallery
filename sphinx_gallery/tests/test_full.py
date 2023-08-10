@@ -702,8 +702,9 @@ def _rerun(how, src_dir, conf_dir, out_dir, toctrees_dir,
             lines = fid.readlines()
         with codecs.open(fname, 'w', 'utf-8') as fid:
             for line in lines:
+                # Make a tiny change that won't affect the recommender
                 if 'FYI this' in line:
-                    line = 'A ' + line
+                    line = line.replace('FYI this', 'FYA this')
                 fid.write(line)
         out_of, excluding = N_FAILING + 1, N_GOOD - 1
         n_stale = N_GOOD - 1
