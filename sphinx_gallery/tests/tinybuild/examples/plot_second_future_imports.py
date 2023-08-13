@@ -17,5 +17,5 @@ from sphinx_gallery.scrapers import figure_rst, clean_modules
 ExplicitOrder([])  # must actually be used to become a backref target!
 
 assert 3 / 2 == 1.5
-assert figure_rst([], '') == ''
-assert clean_modules(dict(reset_modules=[]), '', 'before') is None
+assert figure_rst([], "") == ""
+assert clean_modules(dict(reset_modules=[]), "", "before") is None

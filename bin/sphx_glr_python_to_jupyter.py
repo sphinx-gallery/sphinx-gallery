@@ -14,5 +14,5 @@ scripts into Jupyter Notebooks.
 from sphinx_gallery.notebook import python_to_jupyter_cli
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     python_to_jupyter_cli()

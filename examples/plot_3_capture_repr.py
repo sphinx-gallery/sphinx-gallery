@@ -11,7 +11,7 @@ Sphinx-Gallery documentation. The output that is captured with this setting
 is demonstrated in this example. Differences in outputs that would be captured
 with other ``capture_repr`` settings is also explained.
 """
-#%%
+# %%
 # Nothing is captured for the code block below because no data is directed to
 # standard output and the last statement is an assignment, not an expression.
 
@@ -19,15 +19,15 @@ with other ``capture_repr`` settings is also explained.
 a = 2
 b = 10
 
-#%%
+# %%
 # If you did wish to capture the value of ``b``, you would need to use:
 
 # example 2
 a = 2
 b = 10
-b   # this is an expression
+b  # this is an expression
 
-#%%
+# %%
 # Sphinx-Gallery first attempts to capture the ``_repr_html_`` of ``b`` as this
 # is the first 'representation' method in the ``capture_repr`` tuple. As this
 # method does not exist for ``b``, Sphinx-Gallery moves on and tries to capture
@@ -40,10 +40,10 @@ b   # this is an expression
 # example 3
 import pandas as pd
 
-df = pd.DataFrame(data = {'col1': [1, 2], 'col2': [3, 4]})
+df = pd.DataFrame(data={"col1": [1, 2], "col2": [3, 4]})
 df
 
-#%%
+# %%
 # The pandas dataframe ``df`` has both a ``__repr__`` and ``_repr_html_``
 # method. As ``_repr_html_`` appears first in the ``capture_repr`` tuple, the
 # ``_repr_html_`` is captured in preference to ``__repr__``.
@@ -52,18 +52,19 @@ df
 # statement is an expression.
 
 # example 4
-print('Hello world')
+print("Hello world")
 a + b
 
-#%%
+# %%
 # Statsmodels tables should also be styled appropriately:
 
 # example 5
 import numpy as np
 import statsmodels.iolib.table
+
 statsmodels.iolib.table.SimpleTable(np.zeros((3, 3)))
 
-#%%
+# %%
 # ``print()`` outputs to standard output, which is always captured. The
 # string ``'Hello world'`` is thus captured. A 'representation' of the last
 # expression is also captured. Again, since this expression ``a + b`` does not
@@ -85,22 +86,22 @@ statsmodels.iolib.table.SimpleTable(np.zeros((3, 3)))
 
 import matplotlib.pyplot as plt
 
-plt.plot([1,2,3])
+plt.plot([1, 2, 3])
 
-#%%
+# %%
 # To avoid capturing the text representation, you can assign the last Matplotlib
 # expression to a temporary variable:
 
-_ = plt.plot([1,2,3])
+_ = plt.plot([1, 2, 3])
 
-#%%
+# %%
 # Alternatively, you can add ``plt.show()``, which does not return anything,
 # to the end of the code block:
 
-plt.plot([1,2,3])
+plt.plot([1, 2, 3])
 plt.show()
 
-#%%
+# %%
 # The ``capture_repr`` configuration
 # ##################################
 #

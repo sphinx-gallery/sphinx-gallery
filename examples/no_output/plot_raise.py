@@ -34,4 +34,4 @@ iae
 # %%
 # Here is another error raising block but will not be executed
 
-plt.plot('Strings are not a valid argument for the plot function')
+plt.plot("Strings are not a valid argument for the plot function")

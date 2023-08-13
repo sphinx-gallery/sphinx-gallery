@@ -21,7 +21,7 @@ from sphinx_gallery.utils import _get_image
 
 def pytest_report_header(config, startdir):
     """Add information to the pytest run header."""
-    return f'Sphinx:  {sphinx.__version__} ({sphinx.__file__})'
+    return f"Sphinx:  {sphinx.__version__} ({sphinx.__file__})"
 
 
 @pytest.fixture
@@ -32,21 +32,19 @@ def gallery_conf(tmpdir):
         config=dict(source_suffix={".rst": None}, default_role=None),
         extensions=[],
     )
-    gallery_conf = gen_gallery._fill_gallery_conf_defaults(
-        {},  app=app)
-    gen_gallery._update_gallery_conf_builder_inited(
-        gallery_conf, str(tmpdir))
+    gallery_conf = gen_gallery._fill_gallery_conf_defaults({}, app=app)
+    gen_gallery._update_gallery_conf_builder_inited(gallery_conf, str(tmpdir))
     gallery_conf.update(examples_dir=str(tmpdir), gallery_dir=str(tmpdir))
     return gallery_conf
 
 
 @pytest.fixture
 def log_collector(monkeypatch):
-    app = Mock(spec=Sphinx, name='FakeSphinxApp')()
-    monkeypatch.setattr(docs_resolv, 'logger', app)
-    monkeypatch.setattr(gen_gallery, 'logger', app)
-    monkeypatch.setattr(py_source_parser, 'logger', app)
-    monkeypatch.setattr(gen_rst, 'logger', app)
+    app = Mock(spec=Sphinx, name="FakeSphinxApp")()
+    monkeypatch.setattr(docs_resolv, "logger", app)
+    monkeypatch.setattr(gen_gallery, "logger", app)
+    monkeypatch.setattr(py_source_parser, "logger", app)
+    monkeypatch.setattr(gen_rst, "logger", app)
     yield app
 
 
@@ -81,52 +79,53 @@ _ = plt.figure()
 """
 
     fname = tmpdir.join("unicode_sample.py")
-    fname.write(code_str, 'wb')
+    fname.write(code_str, "wb")
     return fname.strpath
 
 
 @pytest.fixture
-def req_mpl_jpg(tmpdir, req_mpl, scope='session'):
+def req_mpl_jpg(tmpdir, req_mpl, scope="session"):
     """Raise SkipTest if JPEG support is not available."""
     # mostly this is needed because of
     # https://github.com/matplotlib/matplotlib/issues/16083
     import matplotlib.pyplot as plt
+
     fig, ax = plt.subplots()
     ax.plot(range(10))
     try:
-        plt.savefig(str(tmpdir.join('testplot.jpg')))
+        plt.savefig(str(tmpdir.join("testplot.jpg")))
     except Exception as exp:
-        pytest.skip(f'Matplotlib jpeg saving failed: {exp}')
+        pytest.skip(f"Matplotlib jpeg saving failed: {exp}")
     finally:
         plt.close(fig)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def req_mpl():
     try:
         _import_matplotlib()
     except (ImportError, ValueError):
-        pytest.skip('Test requires matplotlib')
+        pytest.skip("Test requires matplotlib")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def req_pil():
     try:
         _get_image()
     except ExtensionError:
-        pytest.skip('Test requires pillow')
+        pytest.skip("Test requires pillow")
 
 
 @pytest.fixture
 def conf_file(request):
     try:
-        env = request.node.get_closest_marker('conf_file')
+        env = request.node.get_closest_marker("conf_file")
     except AttributeError:  # old pytest
-        env = request.node.get_marker('conf_file')
+        env = request.node.get_marker("conf_file")
     kwargs = env.kwargs if env else {}
     result = {
-        'content': "",
-        'extensions': ['sphinx_gallery.gen_gallery'],
+        "content": "",
+        "extensions": ["sphinx_gallery.gen_gallery"],
     }
     result.update(kwargs)
 
@@ -143,8 +142,7 @@ class SphinxAppWrapper:
 
     """
 
-    def __init__(self, srcdir, confdir, outdir, doctreedir, buildername,
-                 **kwargs):
+    def __init__(self, srcdir, confdir, outdir, doctreedir, buildername, **kwargs):
         self.srcdir = srcdir
         self.confdir = confdir
         self.outdir = outdir
@@ -162,8 +160,14 @@ class SphinxAppWrapper:
     @contextmanager
     def create_sphinx_app_context(self):
         with docutils_namespace():
-            app = Sphinx(self.srcdir, self.confdir, self.outdir,
-                         self.doctreedir, self.buildername, **self.kwargs)
+            app = Sphinx(
+                self.srcdir,
+                self.confdir,
+                self.outdir,
+                self.doctreedir,
+                self.buildername,
+                **self.kwargs,
+            )
             yield app
 
     def build_sphinx_app(self, *args, **kwargs):
@@ -175,11 +179,12 @@ class SphinxAppWrapper:
 
 @pytest.fixture
 def sphinx_app_wrapper(tmpdir, conf_file, req_mpl, req_pil):
-    _fixturedir = os.path.join(os.path.dirname(__file__), 'testconfs')
+    _fixturedir = os.path.join(os.path.dirname(__file__), "testconfs")
     srcdir = os.path.join(str(tmpdir), "config_test")
     shutil.copytree(_fixturedir, srcdir)
-    shutil.copytree(os.path.join(_fixturedir, "src"),
-                    os.path.join(str(tmpdir), "examples"))
+    shutil.copytree(
+        os.path.join(_fixturedir, "src"), os.path.join(str(tmpdir), "examples")
+    )
 
     base_config = f"""
 import os
@@ -192,9 +197,14 @@ master_doc = 'index'
 project = 'Sphinx-Gallery <Tests>'\n\n
 """
     with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
-        conffile.write(base_config + conf_file['content'])
+        conffile.write(base_config + conf_file["content"])
 
     return SphinxAppWrapper(
-        srcdir, srcdir, os.path.join(srcdir, "_build"),
-        os.path.join(srcdir, "_build", "toctree"), "html", warning=StringIO(),
-        status=StringIO())
+        srcdir,
+        srcdir,
+        os.path.join(srcdir, "_build"),
+        os.path.join(srcdir, "_build", "toctree"),
+        "html",
+        warning=StringIO(),
+        status=StringIO(),
+    )

@@ -27,7 +27,7 @@ from .utils import replace_py_ipynb, status_iterator
 from . import glr_path_static
 
 
-logger = sphinx.util.logging.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
 def gen_binder_url(fpath, binder_conf, gallery_conf):
@@ -47,32 +47,36 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
         environment.
     """
     # Build the URL
-    fpath_prefix = binder_conf['filepath_prefix']
-    link_base = binder_conf['notebooks_dir']
+    fpath_prefix = binder_conf["filepath_prefix"]
+    link_base = binder_conf["notebooks_dir"]
 
     # We want to keep the relative path to sub-folders
-    relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
-    path_link = os.path.join(
-        link_base, replace_py_ipynb(relative_link))
+    relative_link = os.path.relpath(fpath, gallery_conf["src_dir"])
+    path_link = os.path.join(link_base, replace_py_ipynb(relative_link))
 
     # In case our website is hosted in a sub-folder
     if fpath_prefix is not None:
-        path_link = '/'.join([fpath_prefix.strip('/'), path_link])
+        path_link = "/".join([fpath_prefix.strip("/"), path_link])
 
     # Make sure we have the right slashes (in case we're on Windows)
-    path_link = path_link.replace(os.path.sep, '/')
+    path_link = path_link.replace(os.path.sep, "/")
 
     # Create the URL
-    binder_url = '/'.join([binder_conf['binderhub_url'],
-                           'v2', 'gh',
-                           binder_conf['org'],
-                           binder_conf['repo'],
-                           quote(binder_conf['branch'])])
+    binder_url = "/".join(
+        [
+            binder_conf["binderhub_url"],
+            "v2",
+            "gh",
+            binder_conf["org"],
+            binder_conf["repo"],
+            quote(binder_conf["branch"]),
+        ]
+    )
 
-    if binder_conf['use_jupyter_lab'] is True:
-        binder_url += f'?urlpath=lab/tree/{quote(path_link)}'
+    if binder_conf["use_jupyter_lab"] is True:
+        binder_url += f"?urlpath=lab/tree/{quote(path_link)}"
     else:
-        binder_url += f'?filepath={quote(path_link)}'
+        binder_url += f"?filepath={quote(path_link)}"
     return binder_url
 
 
@@ -117,19 +121,21 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     # a few copies, and there will be an extra in `_static` at the end of the
     # build, but it at least works...
     physical_path = os.path.join(
-        os.path.dirname(fpath), 'images', 'binder_badge_logo.svg')
+        os.path.dirname(fpath), "images", "binder_badge_logo.svg"
+    )
     os.makedirs(os.path.dirname(physical_path), exist_ok=True)
     if not os.path.isfile(physical_path):
         shutil.copyfile(
-            os.path.join(glr_path_static(), 'binder_badge_logo.svg'),
-            physical_path)
+            os.path.join(glr_path_static(), "binder_badge_logo.svg"), physical_path
+        )
     rst = (
         "\n"
         "  .. container:: binder-badge\n\n"
         "    .. image:: images/binder_badge_logo.svg\n"
         "      :target: {}\n"
         "      :alt: Launch binder\n"
-        "      :width: 150 px\n").format(binder_url)
+        "      :width: 150 px\n"
+    ).format(binder_url)
     return rst
 
 
@@ -138,31 +144,31 @@ def copy_binder_files(app, exception):
     if exception is not None:
         return
 
-    if app.builder.name not in ['html', 'readthedocs']:
+    if app.builder.name not in ["html", "readthedocs"]:
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
-    binder_conf = gallery_conf['binder']
+    binder_conf = gallery_conf["binder"]
 
     if not len(binder_conf) > 0:
         return
 
-    logger.info('copying binder requirements...', color='white')
+    logger.info("copying binder requirements...", color="white")
     _copy_binder_reqs(app, binder_conf)
     _copy_binder_notebooks(app)
 
 
 def _copy_binder_reqs(app, binder_conf):
     """Copy Binder requirements files to a "binder" folder in the docs."""
-    path_reqs = binder_conf['dependencies']
+    path_reqs = binder_conf["dependencies"]
     for path in path_reqs:
         if not os.path.exists(os.path.join(app.srcdir, path)):
             raise ConfigError(
                 "Couldn't find the Binder requirements file: {}, "
-                "did you specify the path correctly?"
-                .format(path))
+                "did you specify the path correctly?".format(path)
+            )
 
-    binder_folder = os.path.join(app.outdir, 'binder')
+    binder_folder = os.path.join(app.outdir, "binder")
     if not os.path.isdir(binder_folder):
         os.makedirs(binder_folder)
 
@@ -178,7 +184,7 @@ def _remove_ipynb_files(path, contents):
     Used with the `shutil` "ignore" keyword to filter out non-ipynb files."""
     contents_return = []
     for entry in contents:
-        if entry.endswith('.ipynb'):
+        if entry.endswith(".ipynb"):
             # Don't include ipynb files
             pass
         elif (entry != "images") and os.path.isdir(os.path.join(path, entry)):
@@ -197,9 +203,9 @@ def _copy_binder_notebooks(app):
     Jupyter notebook files."""
 
     gallery_conf = app.config.sphinx_gallery_conf
-    gallery_dirs = gallery_conf['gallery_dirs']
-    binder_conf = gallery_conf['binder']
-    notebooks_dir = os.path.join(app.outdir, binder_conf['notebooks_dir'])
+    gallery_dirs = gallery_conf["gallery_dirs"]
+    binder_conf = gallery_conf["binder"]
+    notebooks_dir = os.path.join(app.outdir, binder_conf["notebooks_dir"])
     shutil.rmtree(notebooks_dir, ignore_errors=True)
     os.makedirs(notebooks_dir)
 
@@ -207,12 +213,15 @@ def _copy_binder_notebooks(app):
         gallery_dirs = [gallery_dirs]
 
     iterator = status_iterator(
-        gallery_dirs, 'copying binder notebooks...', length=len(gallery_dirs))
+        gallery_dirs, "copying binder notebooks...", length=len(gallery_dirs)
+    )
 
     for i_folder in iterator:
-        shutil.copytree(os.path.join(app.srcdir, i_folder),
-                        os.path.join(notebooks_dir, i_folder),
-                        ignore=_remove_ipynb_files)
+        shutil.copytree(
+            os.path.join(app.srcdir, i_folder),
+            os.path.join(notebooks_dir, i_folder),
+            ignore=_remove_ipynb_files,
+        )
 
 
 def check_binder_conf(binder_conf):
@@ -220,62 +229,65 @@ def check_binder_conf(binder_conf):
     # Grab the configuration and return None if it's not configured
     binder_conf = {} if binder_conf is None else binder_conf.copy()
     if not isinstance(binder_conf, dict):
-        raise ConfigError('`binder_conf` must be a dictionary or None.')
+        raise ConfigError("`binder_conf` must be a dictionary or None.")
     if len(binder_conf) == 0:
         return binder_conf
 
     # Ensure all fields are populated
-    req_values = ['binderhub_url', 'org', 'repo', 'branch', 'dependencies']
-    optional_values = ['filepath_prefix', 'notebooks_dir', 'use_jupyter_lab']
+    req_values = ["binderhub_url", "org", "repo", "branch", "dependencies"]
+    optional_values = ["filepath_prefix", "notebooks_dir", "use_jupyter_lab"]
     missing_values = []
     for val in req_values:
         if binder_conf.get(val) is None:
             missing_values.append(val)
 
     if len(missing_values) > 0:
-        raise ConfigError(
-            f'binder_conf is missing values for: {missing_values}'
-        )
+        raise ConfigError(f"binder_conf is missing values for: {missing_values}")
 
     for key in binder_conf.keys():
         if key not in (req_values + optional_values):
             raise ConfigError(f"Unknown Binder config key: {key}")
 
     # Ensure we have http in the URL
-    if not any(binder_conf['binderhub_url'].startswith(ii)
-               for ii in ['http://', 'https://']):
-        raise ConfigError('did not supply a valid url, '
-                          'gave binderhub_url: {}'
-                          .format(binder_conf['binderhub_url']))
+    if not any(
+        binder_conf["binderhub_url"].startswith(ii) for ii in ["http://", "https://"]
+    ):
+        raise ConfigError(
+            "did not supply a valid url, "
+            "gave binderhub_url: {}".format(binder_conf["binderhub_url"])
+        )
 
     # Ensure we have at least one dependency file
     # Need at least one of these three files
-    required_reqs_files = ['requirements.txt', 'environment.yml', 'Dockerfile']
-    path_reqs = binder_conf['dependencies']
+    required_reqs_files = ["requirements.txt", "environment.yml", "Dockerfile"]
+    path_reqs = binder_conf["dependencies"]
     if isinstance(path_reqs, str):
         path_reqs = [path_reqs]
-        binder_conf['dependencies'] = path_reqs
+        binder_conf["dependencies"] = path_reqs
     elif not isinstance(path_reqs, (list, tuple)):
-        raise ConfigError("`dependencies` value should be a list of strings. "
-                          "Got type {}.".format(type(path_reqs)))
+        raise ConfigError(
+            "`dependencies` value should be a list of strings. "
+            "Got type {}.".format(type(path_reqs))
+        )
 
-    binder_conf.setdefault('filepath_prefix')
-    binder_conf.setdefault('notebooks_dir', 'notebooks')
-    binder_conf.setdefault('use_jupyter_lab', False)
+    binder_conf.setdefault("filepath_prefix")
+    binder_conf.setdefault("notebooks_dir", "notebooks")
+    binder_conf.setdefault("use_jupyter_lab", False)
     path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
     if not any(ii in path_reqs_filenames for ii in required_reqs_files):
         raise ConfigError(
-            'Did not find one of `requirements.txt` or `environment.yml` '
+            "Did not find one of `requirements.txt` or `environment.yml` "
             'in the "dependencies" section of the binder configuration '
-            'for Sphinx-Gallery. A path to at least one of these files '
-            'must exist in your Binder dependencies.')
+            "for Sphinx-Gallery. A path to at least one of these files "
+            "must exist in your Binder dependencies."
+        )
     return binder_conf
 
 
 def pre_configure_jupyterlite_sphinx(app, config):
     is_jupyterlite_enabled = (
-        'jupyterlite_sphinx' in app.extensions
-        and config.sphinx_gallery_conf['jupyterlite'] is not None
+        "jupyterlite_sphinx" in app.extensions
+        and config.sphinx_gallery_conf["jupyterlite"] is not None
     )
     if not is_jupyterlite_enabled:
         return
@@ -287,10 +299,11 @@ def pre_configure_jupyterlite_sphinx(app, config):
 
 
 def post_configure_jupyterlite_sphinx(app, config):
-    config.sphinx_gallery_conf['jupyterlite'] = check_jupyterlite_conf(
-        config.sphinx_gallery_conf['jupyterlite'], app)
+    config.sphinx_gallery_conf["jupyterlite"] = check_jupyterlite_conf(
+        config.sphinx_gallery_conf["jupyterlite"], app
+    )
 
-    if config.sphinx_gallery_conf['jupyterlite'] is None:
+    if config.sphinx_gallery_conf["jupyterlite"] is None:
         return
 
     if config.jupyterlite_contents is None:
@@ -298,27 +311,29 @@ def post_configure_jupyterlite_sphinx(app, config):
 
     # Append to jupyterlite_contents in case they have been set in conf.py
     config.jupyterlite_contents.append(
-        config.sphinx_gallery_conf['jupyterlite']['jupyterlite_contents'])
+        config.sphinx_gallery_conf["jupyterlite"]["jupyterlite_contents"]
+    )
 
 
 def create_jupyterlite_contents(app, exception):
     if exception is not None:
         return
 
-    if app.builder.name not in ['html', 'readthedocs']:
+    if app.builder.name not in ["html", "readthedocs"]:
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
     is_jupyterlite_enabled = (
-        'jupyterlite_sphinx' in app.extensions
-        and gallery_conf['jupyterlite'] is not None)
+        "jupyterlite_sphinx" in app.extensions
+        and gallery_conf["jupyterlite"] is not None
+    )
 
     if not is_jupyterlite_enabled:
         return
 
-    logger.info('copying Jupyterlite contents ...', color='white')
-    gallery_dirs = gallery_conf['gallery_dirs']
-    contents_dir = gallery_conf['jupyterlite']['jupyterlite_contents']
+    logger.info("copying Jupyterlite contents ...", color="white")
+    gallery_dirs = gallery_conf["gallery_dirs"]
+    contents_dir = gallery_conf["jupyterlite"]["jupyterlite_contents"]
 
     shutil.rmtree(contents_dir, ignore_errors=True)
     os.makedirs(contents_dir)
@@ -327,25 +342,27 @@ def create_jupyterlite_contents(app, exception):
         gallery_dirs = [gallery_dirs]
 
     iterator = status_iterator(
-        gallery_dirs, 'Copying Jupyterlite contents ...',
-        length=len(gallery_dirs))
+        gallery_dirs, "Copying Jupyterlite contents ...", length=len(gallery_dirs)
+    )
 
     for i_folder in iterator:
-        shutil.copytree(os.path.join(app.srcdir, i_folder),
-                        os.path.join(contents_dir, i_folder),
-                        ignore=_remove_ipynb_files)
+        shutil.copytree(
+            os.path.join(app.srcdir, i_folder),
+            os.path.join(contents_dir, i_folder),
+            ignore=_remove_ipynb_files,
+        )
 
-    notebook_modification_function = gallery_conf['jupyterlite'][
-        'notebook_modification_function']
+    notebook_modification_function = gallery_conf["jupyterlite"][
+        "notebook_modification_function"
+    ]
 
     if notebook_modification_function is None:
         return
 
     notebook_pattern = os.path.join(contents_dir, "**", "*.ipynb")
-    notebook_filename_list = sorted(
-        glob.glob(notebook_pattern, recursive=True))
+    notebook_filename_list = sorted(glob.glob(notebook_pattern, recursive=True))
 
-    logger.info('Modifying Jupyterlite notebooks ...', color='white')
+    logger.info("Modifying Jupyterlite notebooks ...", color="white")
     for notebook_filename in notebook_filename_list:
         with open(notebook_filename) as f:
             notebook_content = json.load(f)
@@ -373,17 +390,16 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     rst : str
         The reStructuredText for the JupyterLite badge that links to this file.
     """
-    relative_link = os.path.relpath(fpath, gallery_conf['src_dir'])
-    notebook_location = relative_link.replace('.py', '.ipynb')
+    relative_link = os.path.relpath(fpath, gallery_conf["src_dir"])
+    notebook_location = relative_link.replace(".py", ".ipynb")
     # Make sure we have the right slashes (in case we're on Windows)
-    notebook_location = notebook_location.replace(os.path.sep, '/')
+    notebook_location = notebook_location.replace(os.path.sep, "/")
 
     lite_root_url = os.path.relpath(
-        os.path.join(gallery_conf['src_dir'], 'lite'),
-        os.path.dirname(fpath)
+        os.path.join(gallery_conf["src_dir"], "lite"), os.path.dirname(fpath)
     )
     # Make sure we have the right slashes (in case we're on Windows)
-    lite_root_url = lite_root_url.replace(os.path.sep, '/')
+    lite_root_url = lite_root_url.replace(os.path.sep, "/")
 
     if gallery_conf["jupyterlite"]["use_jupyter_lab"]:
         lite_root_url += "/lab"
@@ -395,19 +411,21 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     # Similar work-around for badge file as in
     # gen_binder_rst
     physical_path = os.path.join(
-        os.path.dirname(fpath), 'images', 'jupyterlite_badge_logo.svg')
+        os.path.dirname(fpath), "images", "jupyterlite_badge_logo.svg"
+    )
     os.makedirs(os.path.dirname(physical_path), exist_ok=True)
     if not os.path.isfile(physical_path):
         shutil.copyfile(
-            os.path.join(glr_path_static(), 'jupyterlite_badge_logo.svg'),
-            physical_path)
+            os.path.join(glr_path_static(), "jupyterlite_badge_logo.svg"), physical_path
+        )
     rst = (
         "\n"
         "  .. container:: lite-badge\n\n"
         "    .. image:: images/jupyterlite_badge_logo.svg\n"
         "      :target: {}\n"
         "      :alt: Launch JupyterLite\n"
-        "      :width: 150 px\n").format(lite_url)
+        "      :width: 150 px\n"
+    ).format(lite_url)
     return rst
 
 
@@ -418,21 +436,19 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
         is_jupyterlite_disabled = True
     else:
         is_jupyterlite_disabled = (
-            'jupyterlite_sphinx' not in app.extensions
-            or jupyterlite_conf is None
+            "jupyterlite_sphinx" not in app.extensions or jupyterlite_conf is None
         )
 
     if is_jupyterlite_disabled:
         return None
 
     if not isinstance(jupyterlite_conf, dict):
-        raise ConfigError(
-            '`jupyterlite_conf` must be a dictionary')
+        raise ConfigError("`jupyterlite_conf` must be a dictionary")
 
     conf_defaults = {
-        'jupyterlite_contents': 'jupyterlite_contents',
-        'notebook_modification_function': None,
-        'use_jupyter_lab': True,
+        "jupyterlite_contents": "jupyterlite_contents",
+        "notebook_modification_function": None,
+        "use_jupyter_lab": True,
     }
 
     result = jupyterlite_conf.copy()
@@ -441,12 +457,13 @@ def check_jupyterlite_conf(jupyterlite_conf, app):
         raise ConfigError(
             f"Found some unknown keys in sphinx_gallery_conf['jupyterlite']: "
             f"{sorted(unknown_keys)}. "
-            f"Allowed keys are: {list(conf_defaults)}")
+            f"Allowed keys are: {list(conf_defaults)}"
+        )
 
     for key, default_value in conf_defaults.items():
         result.setdefault(key, default_value)
-    result['jupyterlite_contents'] = os.path.join(
-        app.srcdir,
-        result['jupyterlite_contents'])
+    result["jupyterlite_contents"] = os.path.join(
+        app.srcdir, result["jupyterlite_contents"]
+    )
 
     return result

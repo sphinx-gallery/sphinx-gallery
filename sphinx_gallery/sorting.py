@@ -35,23 +35,26 @@ class ExplicitOrder:
 
     def __init__(self, ordered_list):
         if not isinstance(ordered_list, (list, tuple, types.GeneratorType)):
-            raise ConfigError("ExplicitOrder sorting key takes a list, "
-                              "tuple or Generator, which hold"
-                              "the paths of each gallery subfolder")
+            raise ConfigError(
+                "ExplicitOrder sorting key takes a list, "
+                "tuple or Generator, which hold"
+                "the paths of each gallery subfolder"
+            )
 
-        self.ordered_list = list(os.path.normpath(path)
-                                 for path in ordered_list)
+        self.ordered_list = list(os.path.normpath(path) for path in ordered_list)
 
     def __call__(self, item):
         if item in self.ordered_list:
             return self.ordered_list.index(item)
         else:
-            raise ConfigError('If you use an explicit folder ordering, you '
-                              'must specify all folders. Explicit order not '
-                              'found for {}'.format(item))
+            raise ConfigError(
+                "If you use an explicit folder ordering, you "
+                "must specify all folders. Explicit order not "
+                "found for {}".format(item)
+            )
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} : {self.ordered_list}>'
+        return f"<{self.__class__.__name__} : {self.ordered_list}>"
 
 
 class _SortKey:
@@ -61,7 +64,7 @@ class _SortKey:
         self.src_dir = src_dir
 
     def __repr__(self):
-        return f'<{self.__class__.__name__}>'
+        return f"<{self.__class__.__name__}>"
 
 
 class NumberOfCodeLinesSortKey(_SortKey):
@@ -76,9 +79,13 @@ class NumberOfCodeLinesSortKey(_SortKey):
     def __call__(self, filename):
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
-        amount_of_code = sum([len(bcontent)
-                              for blabel, bcontent, lineno in script_blocks
-                              if blabel == 'code'])
+        amount_of_code = sum(
+            [
+                len(bcontent)
+                for blabel, bcontent, lineno in script_blocks
+                if blabel == "code"
+            ]
+        )
         return amount_of_code
 
 
