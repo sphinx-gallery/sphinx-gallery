@@ -9,7 +9,6 @@ seaborn
 statsmodels
 joblib
 importlib-metadata <5.0
-check-manifest
 plotly
 absl-py
 graphviz
