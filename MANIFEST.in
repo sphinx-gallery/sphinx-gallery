@@ -1,5 +1,6 @@
 include CHANGES.rst
 include LICENSE
+include ignore_words.txt
 include requirements.txt
 recursive-include examples *.py
 recursive-include examples *.txt
@@ -30,3 +31,5 @@ recursive-exclude */gen_modules *
 exclude gen_modules
 exclude .DS_store
 exclude .github_changelog_generator
+exclude .git-blame-ignore-revs
+exclude .pre-commit-config.yaml

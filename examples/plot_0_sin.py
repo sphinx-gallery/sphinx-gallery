@@ -1,4 +1,4 @@
-"""
+r"""
 Introductory example - Plotting sin
 ===================================
 
@@ -28,9 +28,9 @@ about to plot the following function:
 
 .. math::
 
-    x \\rightarrow \\sin(x)
+    x \rightarrow \sin(x)
 
-Here the function :math:`\\sin` is evaluated at each point the variable
+Here the function :math:`\sin` is evaluated at each point the variable
 :math:`x` is defined. When including LaTeX in a Python string, ensure that you
 escape the backslashes or use a :ref:`raw docstring <python:strings>`. You do
 not need to do this in text blocks (see below).

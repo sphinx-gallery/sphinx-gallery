@@ -1,11 +1,8 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Installer Sphinx extension for gallery generator
-"""
+"""Install Sphinx extension for gallery generator."""
 
 import codecs
-import os
 from setuptools import setup, find_packages
 import sphinx_gallery
 

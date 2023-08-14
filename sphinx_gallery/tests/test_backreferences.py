@@ -41,7 +41,7 @@ REFERENCE = r"""
         # HTML sanitizing
         ('<"test">', "&lt;&quot;test&quot;&gt;", False),
         # backref support
-        ("test formating", "test formating", True),
+        ("test formatting", "test formatting", True),
         # reST sanitizing
         (
             "1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`",

@@ -675,7 +675,7 @@ Each link in the code blocks will be decorated with two or three CSS classes.
 These three CSS classes are meant to give fine-grained control over how
 different links are decorated. For example, using CSS selectors you could
 choose to avoid highlighting any ``sphx-glr-backref-*`` links except for ones
-that you whitelist (e.g., those from your own module). For example, the
+that you allowlist (e.g., those from your own module). For example, the
 following css prevents any module except for matplotlib from being decorated:
 
 .. code-block:: css
@@ -802,7 +802,7 @@ Adding images to notebooks
 
 When notebooks are produced, by default (``notebook_images = False``) image
 paths from the `image` directive in reST documentation blocks (not images
-generated fom code) are included in markdown using their original paths. This
+generated from code) are included in markdown using their original paths. This
 includes paths to images expected to be present on the local filesystem which
 is unlikely to be the case for those downloading the notebook.
 
@@ -1139,8 +1139,8 @@ are:
 
 - with JupyterLite, the example actually runs in your browser, there is no need
   for a separate machine in the cloud to run your Python code. That means that
-  starting a Jupyter server is genrally quicker, no need to wait for the Binder
-  image to be built
+  starting a Jupyter server is generally quicker, no need to wait for the
+  Binder image to be built
 - with JupyterLite the first imports take time. At the time of writing
   (February 2023) ``import scipy`` can take ~15-30s. Some innocuously looking
   Python code may just not work and break in an unexpected fashion. The Jupyter
@@ -2015,7 +2015,7 @@ from the gallery-source to the sphinx-build.  For example, you may want
 to pass an image that a gallery refers to, but does not generate itself.
 You may also want to pass raw rst from the gallery-source to the
 sphinx-build, because that material fits in thematically with your gallery,
-but is easier to write as rst.  To accomodate this, you may set
+but is easier to write as rst.  To accommodate this, you may set
 ``copyfile_regex`` in ``sphinx_gallery_conf``.  The following copies
 across rst files.
 

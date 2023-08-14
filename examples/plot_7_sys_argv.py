@@ -10,7 +10,7 @@ file name. Further, any arguments added will take on the default value.
 
 This behavior can be changed by using the `reset_argv` option in the sphinx configuration, see :ref:`reset_argv`.
 
-"""
+"""  # noqa: E501
 
 import argparse
 import sys

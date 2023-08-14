@@ -15,7 +15,7 @@
   'This is the first text block and directly follows the header docstring '
   'above.\n',
   13),
-('code', '\nimport numpy as np\n\n', 14),
+('code', '\nimport numpy as np  # noqa: F401\n\n', 14),
 ('code',
   '\n'
   "# You can separate code blocks using either a single line of ``#``'s\n"
@@ -25,7 +25,7 @@
   'project.\n'
   'A = 1\n'
   '\n'
-  'import matplotlib.pyplot as plt\n'
+  'import matplotlib.pyplot as plt  # noqa: F401\n'
   '\n',
   18),
 ('text',
@@ -44,7 +44,7 @@
   '\n'
   '\n'
   'def dummy():\n'
-  '    """This should not be part of a \'text\' block\'"""\n'
+  '    """This should not be part of a \'text\' block\'"""  # noqa: D404\n'
   '\n'
   '    # %%\n'
   '    # This comment inside a code block will remain in the code block\n'

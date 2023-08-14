@@ -175,7 +175,7 @@ class ImageSg(images.Image):
 
 
 def _parse_srcset(st):
-    """parse st"""
+    """Parse st."""
     entries = st.split(",")
     srcset = {}
     for entry in entries:
