@@ -31,3 +31,5 @@ recursive-exclude */gen_modules *
 exclude gen_modules
 exclude .DS_store
 exclude .github_changelog_generator
+exclude .git-blame-ignore-revs
+exclude .pre-commit-config.yaml
