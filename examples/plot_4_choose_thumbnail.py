@@ -23,19 +23,19 @@ def main():
 
     plt.figure()
     plt.plot(x, y)
-    plt.xlabel('$x$')
-    plt.ylabel(r'$\exp(x)$')
+    plt.xlabel("$x$")
+    plt.ylabel(r"$\exp(x)$")
 
     # The next line sets the thumbnail for the second figure in the gallery
     # (plot with negative exponential in orange)
     # sphinx_gallery_thumbnail_number = 2
     plt.figure()
-    plt.plot(x, -np.exp(-x), color='orange', linewidth=4)
-    plt.xlabel('$x$')
-    plt.ylabel(r'$-\exp(-x)$')
+    plt.plot(x, -np.exp(-x), color="orange", linewidth=4)
+    plt.xlabel("$x$")
+    plt.ylabel(r"$-\exp(-x)$")
     # To avoid matplotlib text output
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

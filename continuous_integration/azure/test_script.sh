@@ -19,6 +19,5 @@ if [ "$DISTRIB" != "minimal" ] && [ "$DISTRIB" != "nightly" ]; then
     make SPHINXOPTS= html-noplot
     make SPHINXOPTS=${SPHINXOPTS} html -j 2
     cd ..
-    flake8 sphinx_gallery
     check-manifest
 fi

@@ -46,20 +46,20 @@ x = np.linspace(0, 2 * np.pi, 100)
 y = np.sin(x)
 
 plt.plot(x, y)
-plt.xlabel(r'$x$')
-plt.ylabel(r'$\sin(x)$')
+plt.xlabel(r"$x$")
+plt.ylabel(r"$\sin(x)$")
 # To avoid matplotlib text output
 plt.show()
 
-#%%
+# %%
 # To include embedded reST, use a line of >= 20 ``#``'s or ``#%%`` between your
 # reST and your code (see :ref:`embedding_rst`). This separates your example
 # into distinct text and code blocks. You can continue writing code below the
 # embedded reST text block:
 
-print('This example shows a sin plot!')
+print("This example shows a sin plot!")
 
-#%%
+# %%
 # LaTeX syntax in the text blocks does not require backslashes to be escaped:
 #
 # .. math::

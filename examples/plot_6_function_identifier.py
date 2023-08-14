@@ -32,10 +32,13 @@ import sphinx_gallery
 from sphinx_gallery.backreferences import identify_names, _make_ref_regex
 from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 
-filename = 'plot_6_function_identifier.py'
+filename = "plot_6_function_identifier.py"
 if not op.exists(filename):
-    filename = __file__ if '__file__' in locals() else op.join(op.dirname(
-                   sphinx_gallery.__path__[0]), 'examples', filename)
+    filename = (
+        __file__
+        if "__file__" in locals()
+        else op.join(op.dirname(sphinx_gallery.__path__[0]), "examples", filename)
+    )
 
 _, script_blocks = split_code_and_text_blocks(filename)
 
@@ -53,19 +56,25 @@ fig, ax = plt.subplots(figsize=(7.5, figheight))
 ax.set_visible(False)
 
 for i, (name, obj) in enumerate(names.items(), 1):
-    fig.text(0.48, 1 - i / (len(names) + 1),
-             name,
-             ha="right",
-             va="center",
-             size=fontsize,
-             transform=fig.transFigure,
-             bbox=dict(boxstyle='square', fc="w", ec="k"))
-    fig.text(0.52, 1 - i / (len(names) + 1),
-             obj[0]["module"],
-             ha="left",
-             va="center",
-             size=fontsize,
-             transform=fig.transFigure,
-             bbox=dict(boxstyle='larrow,pad=0.1', fc="w", ec="k"))
+    fig.text(
+        0.48,
+        1 - i / (len(names) + 1),
+        name,
+        ha="right",
+        va="center",
+        size=fontsize,
+        transform=fig.transFigure,
+        bbox=dict(boxstyle="square", fc="w", ec="k"),
+    )
+    fig.text(
+        0.52,
+        1 - i / (len(names) + 1),
+        obj[0]["module"],
+        ha="left",
+        va="center",
+        size=fontsize,
+        transform=fig.transFigure,
+        bbox=dict(boxstyle="larrow,pad=0.1", fc="w", ec="k"),
+    )
 
 plt.show()

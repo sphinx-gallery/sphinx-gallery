@@ -42,12 +42,14 @@
   31),
 ('code',
   '\n'
+  '\n'
   'def dummy():\n'
   '    """This should not be part of a \'text\' block\'"""\n'
   '\n'
   '    # %%\n'
   '    # This comment inside a code block will remain in the code block\n'
   '    pass\n'
+  '\n'
   '\n'
   "# this line should not be part of a 'text' block\n"
   '\n',
@@ -58,7 +60,7 @@
   'The above syntax makes a line cut in Sphinx. Note the space between the '
   'first\n'
   "``#`` and the line of ``#``'s.\n",
-  46),
+  48),
 ('text',
   '.. warning::\n'
   '    The next kind of comments are not supported (notice the line of '
@@ -77,13 +79,13 @@
   '        # supported\n'
   '            dummy2\n'
   '\n',
-  53),
+  55),
 ('code',
   '\n'
   '"""Free strings are not supported. They will be rendered as a code '
   'block"""\n'
   '\n',
-  68),
+  70),
 ('text',
   'New lines can be included in your text block and the parser\n'
   'is capable of retaining this important whitespace to work with Sphinx.\n'
@@ -93,18 +95,18 @@
   '\n'
   'reST header within text block\n'
   '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
-  72),
-('code', "\nprint('one')\n\n", 80),
+  74),
+('code', '\nprint("one")\n\n', 82),
 ('code',
   '\n# another way to separate code blocks shown above\nB = 1\n\n',
-  85),
+  87),
 ('text',
   'Code blocks containing Jupyter magic are executable\n'
   '    .. code-block:: bash\n'
   '\n'
   '      %%bash\n'
   '      # This could be run!\n\n',
-  90),
+  92),
 ('text',
   'Last text block.\n'
   '\n'
@@ -113,4 +115,4 @@
   '.. literalinclude:: plot_parse.py\n'
   '\n'
   '\n',
-  98)]
+  100)]

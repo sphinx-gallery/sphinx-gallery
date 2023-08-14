@@ -10,7 +10,6 @@ captured by default. See :ref:`image_scrapers` for details.
 # License: BSD 3 clause
 
 
-
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -23,7 +22,7 @@ x_array = np.array([])
 rs = np.random.RandomState(8)
 for _ in range(15):
     x = np.linspace(0, 30 / 2, 30)
-    y = np.sin(x) + rs.normal(0, 1.5) + rs.normal(0, .3, 30)
+    y = np.sin(x) + rs.normal(0, 1.5) + rs.normal(0, 0.3, 30)
     y_array = np.append(y_array, y)
     x_array = np.append(x_array, x)
 
