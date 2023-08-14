@@ -428,7 +428,7 @@ def generate_dir_rst(
         and possibly sub categories
     target_dir: str,
         Path where parsed examples (rst, python files, etc)
-        will be outputed
+        will be outputted
     gallery_conf : Dict[str, Any]
         Gallery configurations.
     seen_backrefs: set,

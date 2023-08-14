@@ -23,7 +23,7 @@ plt.pcolormesh(np.random.randn(100, 100))
 # %%
 # This next block will raise a NameError
 
-iae
+iae  # noqa
 
 # %%
 # Sphinx gallery will stop executing the remaining code blocks after

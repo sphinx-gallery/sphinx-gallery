@@ -287,7 +287,7 @@ def promote_jupyter_cell_magic(work_notebook, markdown):
 
     text_cell_start = 0
     for magic_cell in re.finditer(cell_magic_regex, markdown):
-        # Extract the preceeding text block, and add it if non-empty
+        # Extract the preceding text block, and add it if non-empty
         text_block = markdown[text_cell_start : magic_cell.span()[0]]
         if text_block and not text_block.isspace():
             add_markdown_cell(work_notebook, text_block)

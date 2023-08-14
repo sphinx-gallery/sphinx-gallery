@@ -473,7 +473,7 @@ def embed_code_links(app, exception):
 
     gallery_conf = app.config.sphinx_gallery_conf
 
-    # XXX: Whitelist of builders for which it makes sense to embed
+    # XXX: Allowlist of builders for which it makes sense to embed
     # hyperlinks inside the example html. Note that the link embedding
     # require searchindex.js to exist for the links to the local doc
     # and there does not seem to be a good way of knowing which

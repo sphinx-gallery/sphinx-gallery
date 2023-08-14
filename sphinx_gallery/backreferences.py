@@ -242,16 +242,16 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
             example_code_obj[name] = list()
         # name is as written in file (e.g. np.asarray)
         # full_name includes resolved import path (e.g. numpy.asarray)
-        splitted = full_name.rsplit(".", 1 + class_like)
-        if len(splitted) == 1:
-            splitted = ("builtins", splitted[0])
-        elif len(splitted) == 3:  # class-like
+        splits = full_name.rsplit(".", 1 + class_like)
+        if len(splits) == 1:
+            splits = ("builtins", splits[0])
+        elif len(splits) == 3:  # class-like
             assert class_like
-            splitted = (splitted[0], ".".join(splitted[1:]))
+            splits = (splits[0], ".".join(splits[1:]))
         else:
             assert not class_like
 
-        module, attribute = splitted
+        module, attribute = splits
 
         # get shortened module name
         module_short = _get_short_module_name(module, attribute)

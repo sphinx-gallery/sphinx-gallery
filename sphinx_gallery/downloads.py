@@ -47,7 +47,7 @@ CODE_ZIP_DOWNLOAD = """
 
 
 def python_zip(file_list, gallery_path, extension=".py"):
-    """Stores all files in file_list into an zip file
+    """Store all files in file_list into an zip file.
 
     Parameters
     ----------
@@ -60,6 +60,7 @@ def python_zip(file_list, gallery_path, extension=".py"):
         sources and jupyter notebooks the file extension from files in
         file_list will be removed and replace with the value of this
         variable while generating the zip file
+
     Returns
     -------
     zipname : str
@@ -79,12 +80,13 @@ def python_zip(file_list, gallery_path, extension=".py"):
 
 
 def list_downloadable_sources(target_dir):
-    """Returns a list of python source files is target_dir
+    """Return a list of python source files is target_dir.
 
     Parameters
     ----------
     target_dir : str
         path to the directory where python source file are
+
     Returns
     -------
     list

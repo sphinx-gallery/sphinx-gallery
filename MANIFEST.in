@@ -1,5 +1,6 @@
 include CHANGES.rst
 include LICENSE
+include ignore_words.txt
 include requirements.txt
 recursive-include examples *.py
 recursive-include examples *.txt

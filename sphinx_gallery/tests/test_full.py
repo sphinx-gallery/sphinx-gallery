@@ -455,7 +455,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert dummy_class_prop.search(lines) is not None
 
     try:
-        import memory_profiler  # noqa, analysis:ignore
+        import memory_profiler  # noqa: F401
     except ImportError:
         assert "memory usage" not in lines
     else:
@@ -845,7 +845,7 @@ def _rerun(
         )
         new_app.build(False, [])
     status = new_app._status.getvalue()
-    lines = [line for line in status.split("\n") if "source files tha" in line]
+    lines = [line for line in status.split("\n") if "source files that" in line]
     lines = "\n".join([how] + lines)
     flags = re.MULTILINE | re.DOTALL
     # for some reason, setting "confoverrides" above causes Sphinx to show
