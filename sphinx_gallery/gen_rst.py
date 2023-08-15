@@ -1139,9 +1139,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     if not executable:
         dummy_image = file_conf.get("dummy_images", None)
         if dummy_image is not None:
-            if type(dummy_image) is not int:
+            if isinstance(dummy_image, bool) or not isinstance(dummy_image, int):
                 raise ExtensionError(
-                    "sphinx_gallery_dummy_images setting is not a number, "
+                    "sphinx_gallery_dummy_images setting is not an integer, "
                     "got {dummy_image!r}"
                 )
 
