@@ -552,7 +552,7 @@ def test_dummy_image_error(gallery_conf, req_pil):
     content_image = CONTENT + [
         "# sphinx_gallery_dummy_images=False",
     ]
-    msg = "sphinx_gallery_dummy_images setting is not a number"
+    msg = "sphinx_gallery_dummy_images setting is not an integer"
     with pytest.raises(ExtensionError, match=msg):
         _generate_rst(gallery_conf, "test.py", content_image)
 
