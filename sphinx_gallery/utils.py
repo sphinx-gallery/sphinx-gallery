@@ -1,6 +1,4 @@
-"""
-Utilities
-=========
+"""Utilities.
 
 Miscellaneous utilities.
 """
@@ -40,9 +38,10 @@ def _get_image():
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
-    """Scales an image with the same aspect ratio centered in an
-    image box with the given max_width and max_height
-    if in_fname == out_fname the image can only be scaled down
+    """Scales image centered in image box using `max_width` and `max_height`.
+
+    The same aspect ratio is retained. If `in_fname` == `out_fname` the image can only
+    be scaled down.
     """
     # local import to avoid testing dependency on PIL:
     Image = _get_image()
@@ -123,7 +122,7 @@ def _has_optipng():
 
 
 def replace_py_ipynb(fname):
-    """Replace .py extension in filename by .ipynb"""
+    """Replace '.py' extension in filename with '.ipynb'."""
     fname_prefix, extension = os.path.splitext(fname)
     allowed_extension = ".py"
     if extension != allowed_extension:
@@ -136,7 +135,7 @@ def replace_py_ipynb(fname):
 
 
 def get_md5sum(src_file, mode="b"):
-    """Returns md5sum of file
+    """Returns md5sum of file.
 
     Parameters
     ----------

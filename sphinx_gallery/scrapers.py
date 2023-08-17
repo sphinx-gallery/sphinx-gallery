@@ -1,8 +1,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Scrapers for embedding images
-=============================
+"""Scrapers for embedding images.
 
 Collect images that have been produced by code blocks.
 
@@ -310,6 +308,7 @@ class ImagePathIterator:
             raise ExtensionError(f"Generated over {self._stop} images")
 
     def next(self):
+        """Return the next image path, with numbering starting at 1."""
         return self.__next__()
 
     def __next__(self):
@@ -412,7 +411,6 @@ def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
       /plot_types/imgs/img_2_00x.png 2.00x``
 
     """
-
     if srcsetpaths is None:
         # this should never happen, but figure_rst is public, so
         # this has to be a kwarg...
@@ -455,13 +453,14 @@ def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
 
 
 def _get_srcset_st(sources_dir, hinames):
-    """
-    Create the srcset string for including on the rst line.
-    ie. sources_dir might be /home/sample-proj/source,
-    hinames posix paths to
+    """Create the srcset string for including on the rst line.
+
+    For example; `sources_dir` might be `/home/sample-proj/source`,
+    hinames posix paths:
     0: /home/sample-proj/source/plot_types/images/img1.png,
     2.0: /home/sample-proj/source/plot_types/images/img1_2_00x.png,
-    The result will be:
+
+    The result wwould be:
     '/plot_types/basic/images/sphx_glr_pie_001.png,
     /plot_types/basic/images/sphx_glr_pie_001_2_00x.png 2.00x'
     """

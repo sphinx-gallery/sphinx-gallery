@@ -1,8 +1,6 @@
 # Author: Chris Holdgraf
 # License: 3-clause BSD
-"""
-Binder and Jupyterlite utility functions
-========================================
+"""Binder and Jupyterlite utility functions.
 
 Integration with Binder and Jupyterlite is on an experimental stage. Note that
 this API may change in the future.
@@ -178,10 +176,11 @@ def _copy_binder_reqs(app, binder_conf):
 
 
 def _remove_ipynb_files(path, contents):
-    """Given a list of files in `contents`, remove all files named `ipynb` or
-    directories named `images` and return the result.
+    """Remove files with `.ipynb` and directories named `images` from list of files.
 
-    Used with the `shutil` "ignore" keyword to filter out non-ipynb files."""
+    `contents` should be a list of files, which is returned after file removal.
+    Used with the `shutil` "ignore" keyword to filter out non-ipynb files.
+    """
     contents_return = []
     for entry in contents:
         if entry.endswith(".ipynb"):
@@ -200,8 +199,8 @@ def _copy_binder_notebooks(app):
     """Copy Jupyter notebooks to the binder notebooks directory.
 
     Copy each output gallery directory structure but only including the
-    Jupyter notebook files."""
-
+    Jupyter notebook files.
+    """
     gallery_conf = app.config.sphinx_gallery_conf
     gallery_dirs = gallery_conf["gallery_dirs"]
     binder_conf = gallery_conf["binder"]
@@ -285,6 +284,10 @@ def check_binder_conf(binder_conf):
 
 
 def pre_configure_jupyterlite_sphinx(app, config):
+    """Configure 'jupyterlite_bind_ipynb_suffix' if jupyterlite enabled.
+
+    Connected to "config-inited" event.
+    """
     is_jupyterlite_enabled = (
         "jupyterlite_sphinx" in app.extensions
         and config.sphinx_gallery_conf["jupyterlite"] is not None
@@ -299,6 +302,11 @@ def pre_configure_jupyterlite_sphinx(app, config):
 
 
 def post_configure_jupyterlite_sphinx(app, config):
+    """Check SG "jupyterlite" and update Jupyterlite config "jupyterlite_contents".
+
+    Connected to "config-inited" event but lower priority so called after
+    `pre_configure_jupyterlite_sphinx`.
+    """
     config.sphinx_gallery_conf["jupyterlite"] = check_jupyterlite_conf(
         config.sphinx_gallery_conf["jupyterlite"], app
     )
@@ -316,6 +324,7 @@ def post_configure_jupyterlite_sphinx(app, config):
 
 
 def create_jupyterlite_contents(app, exception):
+    """Create Jupyterlite contents according to "jupyterlite" configuration."""
     if exception is not None:
         return
 
@@ -430,7 +439,7 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
 
 
 def check_jupyterlite_conf(jupyterlite_conf, app):
-    """Return full JupyterLite configuration with defaults"""
+    """Return full JupyterLite configuration with defaults."""
     # app=None can happen for testing
     if app is None:
         is_jupyterlite_disabled = True

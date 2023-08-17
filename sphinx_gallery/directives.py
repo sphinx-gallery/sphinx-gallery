@@ -1,7 +1,4 @@
-"""
-Custom Sphinx directives
-========================
-"""
+"""Custom Sphinx directives."""
 import os
 from pathlib import PurePosixPath
 import shutil
@@ -15,8 +12,7 @@ from sphinx.errors import ExtensionError
 
 
 class MiniGallery(Directive):
-    """
-    Custom directive to insert a mini-gallery
+    """Custom directive to insert a mini-gallery.
 
     The required argument is one or more fully qualified names of objects,
     separated by spaces.  The mini-gallery will be the subset of gallery
@@ -40,6 +36,7 @@ class MiniGallery(Directive):
     }
 
     def run(self):
+        """Insert backreferences file with appropriate heading."""
         # Respect the same disabling options as the `raw` directive
         if (
             not self.state.document.settings.raw_enabled
@@ -107,6 +104,8 @@ Image sg for responsive images
 
 
 class imgsgnode(nodes.General, nodes.Element):
+    """Sphinx Gallery image node class."""
+
     pass
 
 
@@ -125,9 +124,9 @@ def directive_boolean(value):
 
 
 class ImageSg(images.Image):
-    """
-    Implements a directive to allow an optional hidpi image.  Meant to be
-    used with the `image_srcset` configuration option.
+    """Implements a directive to allow an optional hidpi image.
+
+    Meant to be used with the `image_srcset` configuration option.
 
     e.g.::
 
@@ -144,7 +143,6 @@ class ImageSg(images.Image):
                     _images/sphx_glr_bar_001_2_00x.png 2x",
             alt="bar"
             class="sphx-glr-single-img" />
-
     """
 
     has_content = False
@@ -158,6 +156,7 @@ class ImageSg(images.Image):
     }
 
     def run(self):
+        """Update node contents."""
         image_node = imgsgnode()
 
         imagenm = self.arguments[0]
@@ -191,6 +190,11 @@ def _parse_srcset(st):
 
 
 def visit_imgsg_html(self, node):
+    """Handle HTML image tag depending on 'srcset' configuration.
+
+    If 'srcset' is not `None`, copy images, generate image html tag with 'srcset'
+    and add to HTML `body`. If 'srcset' is `None` run `visit_image` on `node`.
+    """
     if node["srcset"] is None:
         self.visit_image(node)
         return
@@ -248,6 +252,7 @@ def visit_imgsg_html(self, node):
 
 
 def visit_imgsg_latex(self, node):
+    """Copy images, set node[uri] to highest resolution image and call `visit_image`."""
     if node["srcset"] is not None:
         imagedir, srcset = _copy_images(self, node)
         maxmult = -1
@@ -282,6 +287,7 @@ def _copy_images(self, node):
 
 
 def depart_imgsg_html(self, node):
+    """HTML depart node visitor function."""
     pass
 
 
@@ -292,10 +298,12 @@ def visit_sg_other(self, node):
 
 
 def depart_imgsg_latex(self, node):
+    """LaTeX depart node visitor function."""
     self.depart_image(node)
 
 
 def imagesg_addnode(app):
+    """Add `imgsgnode` to Sphinx app with visitor functions for HTML and LaTeX."""
     app.add_node(
         imgsgnode,
         html=(visit_imgsg_html, depart_imgsg_html),

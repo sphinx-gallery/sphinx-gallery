@@ -1,6 +1,4 @@
-r"""
-Sorters for Sphinx-Gallery (sub)sections
-========================================
+r"""Sorters for Sphinx-Gallery (sub)sections.
 
 Sorting key functions for gallery subsection folders and section files.
 """
@@ -44,6 +42,7 @@ class ExplicitOrder:
         self.ordered_list = list(os.path.normpath(path) for path in ordered_list)
 
     def __call__(self, item):
+        """Return index of item in `ordered_list`, raising error if it is missing."""
         if item in self.ordered_list:
             return self.ordered_list.index(item)
         else:
@@ -77,6 +76,7 @@ class NumberOfCodeLinesSortKey(_SortKey):
     """
 
     def __call__(self, filename):
+        """Return number of code lines in `filename`."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
         amount_of_code = sum(
@@ -99,6 +99,7 @@ class FileSizeSortKey(_SortKey):
     """
 
     def __call__(self, filename):
+        """Return file size."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         return int(os.stat(src_file).st_size)
 
@@ -113,6 +114,7 @@ class FileNameSortKey(_SortKey):
     """
 
     def __call__(self, filename):
+        """Return `filename`."""
         return filename
 
 
@@ -126,6 +128,7 @@ class ExampleTitleSortKey(_SortKey):
     """
 
     def __call__(self, filename):
+        """Return title of example."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         _, script_blocks = split_code_and_text_blocks(src_file)
         _, title = extract_intro_and_title(src_file, script_blocks[0][1])

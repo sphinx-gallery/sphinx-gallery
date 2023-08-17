@@ -1,3 +1,5 @@
+"""Sphinx configuration for tinybuild."""
+
 import os.path as op
 import sphinx
 from sphinx_gallery.scrapers import matplotlib_scraper
@@ -5,10 +7,13 @@ from sphinx_gallery.sorting import FileNameSortKey
 
 
 class matplotlib_format_scraper:
+    """Calls Matplotlib scraper, passing required `format` kwarg for testing."""
+
     def __repr__(self):
         return self.__class__.__name__
 
     def __call__(self, block, block_vars, gallery_conf):
+        """Call Matplotlib scraper with equired `format` kwarg for testing."""
         kwargs = dict()
         if (
             op.basename(block_vars["target_file"]) == "plot_svg.py"
@@ -24,10 +29,13 @@ class matplotlib_format_scraper:
 
 
 class ResetArgv:
+    """Provide `reset_argv` callable returning required `sys.argv` for test."""
+
     def __repr__(self):
         return "ResetArgv"
 
     def __call__(self, sphinx_gallery_conf, script_vars):
+        """Provide 'plot' arg for 'plot_command_line_args' example, for testing."""
         if "plot_command_line_args.py" in script_vars["src_file"]:
             return ["plot"]
         else:
@@ -44,6 +52,8 @@ def _raise(*args, **kwargs):
 
 
 class MockScrapeProblem:
+    """Used in 'reset_modules' to mock error during scraping."""
+
     def __init__(self):
         from matplotlib.colors import colorConverter
 
@@ -53,6 +63,7 @@ class MockScrapeProblem:
         return "MockScrapeProblem"
 
     def __call__(self, gallery_conf, fname):
+        """Raise error for 'scraper_broken' example."""
         from matplotlib.colors import colorConverter
 
         if "scraper_broken" in fname:
@@ -84,6 +95,7 @@ intersphinx_mapping = {
 
 
 def notebook_modification_function(notebook_content, notebook_filename):
+    """Implement JupyterLite-specific modifications of notebooks."""
     source = f"JupyterLite-specific change for {notebook_filename}"
     markdown_cell = {"cell_type": "markdown", "metadata": {}, "source": source}
     notebook_content["cells"] = [markdown_cell] + notebook_content["cells"]
@@ -136,10 +148,13 @@ html_static_path = ["_static_nonstandard"]
 
 
 class ReportChanged:
+    """For logging files changed by connecting to Sphinx `env-get-outdated` event."""
+
     def __repr__(self):
         return "ReportChanged"
 
     def __call__(self, app, env, added, changed, removed):
+        """Log files that have changed."""
         from sphinx.util.console import bold
 
         logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -151,4 +166,5 @@ class ReportChanged:
 
 
 def setup(app):
+    """Setup Sphinx."""
     app.connect("env-get-outdated", ReportChanged())

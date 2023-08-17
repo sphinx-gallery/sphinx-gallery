@@ -1,9 +1,6 @@
-r"""
-Parser for Jupyter notebooks
-============================
+r"""Parser for Jupyter notebooks.
 
 Class that holds the Jupyter notebook information
-
 """
 # Author: Óscar Nájera
 # License: 3-clause BSD
@@ -31,7 +28,7 @@ logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
 def jupyter_notebook_skeleton():
-    """Returns a dictionary with the elements of a Jupyter notebook"""
+    """Returns a dictionary with the elements of a Jupyter notebook."""
     py_version = sys.version_info
     notebook_skeleton = {
         "cells": [],
@@ -58,7 +55,7 @@ def jupyter_notebook_skeleton():
 
 
 def directive_fun(match, directive):
-    """Helper to fill in directives"""
+    """Helper to fill in directives."""
     directive_to_alert = dict(note="info", warning="danger")
     return '<div class="alert alert-{}"><h4>{}</h4><p>{}</p></div>'.format(
         directive_to_alert[directive], directive.capitalize(), match.group(1).strip()
@@ -66,8 +63,9 @@ def directive_fun(match, directive):
 
 
 def convert_code_to_md(text):
-    """Rewrites code blocks using the code-block notation to use Markdown's
-    preferred backtick notation, which preserves syntax highlighting.
+    """Rewrite code blocks to use Markdown's preferred backtick notation.
+
+    Backtick notation preserves syntax highlighting.
 
     Parameters
     ----------
@@ -75,7 +73,6 @@ def convert_code_to_md(text):
         A mostly converted string of markdown text. May contain zero, one,
         or multiple code blocks in code-block format.
     """
-
     code_regex = r"[ \t]*\.\. code-block::[ \t]*(\S*)\n[ \t]*\n([ \t]+)"
     while True:
         code_block = re.search(code_regex, text)
@@ -96,8 +93,7 @@ def convert_code_to_md(text):
 
 
 def rst2md(text, gallery_conf, target_dir, heading_levels):
-    """Converts the reST text from the examples docstrings and comments
-    into markdown text for the Jupyter notebooks
+    """Converts reST from docstrings and text blocks to markdown for Jupyter notebooks.
 
     Parameters
     ----------
@@ -112,7 +108,6 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
         Mapping of heading style ``(over_char, under_char)`` to heading level.
         Note that ``over_char`` is `None` when only underline is present.
     """
-
     # Characters recommended for use with headings
     # https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html#sections
     adornment_characters = "=`:.'\"~^_*+#<>-"
@@ -183,6 +178,13 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
 
 
 def generate_image_src(image_path, gallery_conf, target_dir):
+    """Modify image path for notebook, according to "notebook_images" config.
+
+    URLs are unchanged.
+    If "notebook_images" config is a str, it is used as a prefix to image path, relative
+    to "src_dir". If "notebook_images" is `True`, image is embedded as URI. If
+    "notebook_images" is `False`, "file://" is preprended.
+    """
     if re.match(r"https?://", image_path):
         return image_path
 
@@ -215,7 +217,7 @@ def generate_image_src(image_path, gallery_conf, target_dir):
 
 
 def jupyter_notebook(script_blocks, gallery_conf, target_dir):
-    """Generate a Jupyter notebook file cell-by-cell
+    """Generate a Jupyter notebook file cell-by-cell.
 
     Parameters
     ----------
@@ -240,14 +242,13 @@ def jupyter_notebook(script_blocks, gallery_conf, target_dir):
 
 
 def add_code_cell(work_notebook, code):
-    """Add a code cell to the notebook
+    """Add a code cell to the notebook.
 
     Parameters
     ----------
     code : str
         Cell content
     """
-
     code_cell = {
         "cell_type": "code",
         "execution_count": None,
@@ -259,7 +260,7 @@ def add_code_cell(work_notebook, code):
 
 
 def add_markdown_cell(work_notebook, markdown):
-    """Add a markdown cell to the notebook
+    """Add a markdown cell to the notebook.
 
     Parameters
     ----------
@@ -271,7 +272,9 @@ def add_markdown_cell(work_notebook, markdown):
 
 
 def promote_jupyter_cell_magic(work_notebook, markdown):
-    """Parses a block of markdown text looking for code blocks starting with a
+    """Promote Jupyter cell magic in text blocks to code block in notebooks.
+
+    Parses a block of markdown text looking for code blocks starting with a
     Jupyter cell magic (e.g. %%bash). Whenever one is found, the text before it
     and the code (as a runnable code block) are added to work_notebook. Any
     remaining text is returned.
@@ -281,7 +284,6 @@ def promote_jupyter_cell_magic(work_notebook, markdown):
     markdown : str
         Markdown cell content.
     """
-
     # Regex detects all code blocks that use %% Jupyter cell magic
     cell_magic_regex = r"\n?```\s*[a-z]*\n(%%(?:[\s\S]*?))\n?```\n?"
 
@@ -301,7 +303,7 @@ def promote_jupyter_cell_magic(work_notebook, markdown):
 
 
 def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
-    """Writes the Jupyter notebook cells
+    """Writes the Jupyter notebook cells.
 
     If available, uses pypandoc to convert rst to markdown.
 
@@ -337,7 +339,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
 
 
 def save_notebook(work_notebook, write_file):
-    """Saves the Jupyter work_notebook to write_file"""
+    """Saves the Jupyter work_notebook to write_file."""
     with open(write_file, "w") as out_nb:
         json.dump(work_notebook, out_nb, indent=2)
 
@@ -347,7 +349,7 @@ def save_notebook(work_notebook, write_file):
 
 
 def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
-    """Exposes the jupyter notebook renderer to the command line
+    """Exposes the jupyter notebook renderer to the command line.
 
     Takes the same arguments as ArgumentParser.parse_args.
     `sphinx_gallery_conf` functions same as in `conf.py`.

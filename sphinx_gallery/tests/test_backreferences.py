@@ -1,8 +1,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Testing the rst files generator
-"""
+"""Testing the rst files generator."""
 
 import pytest
 import sys
@@ -111,6 +109,15 @@ def test_identify_names(unicode_sample, gallery_conf):
                 "name": "identify_names",
                 "module": "sphinx_gallery.back_references",
                 "module_short": "sphinx_gallery.back_references",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        "NameFinder": [
+            {
+                "name": "",
+                "module": "sphinx_gallery.",
+                "module_short": "sphinx_gallery.",
                 "is_class": False,
                 "is_explicit": False,
             }
