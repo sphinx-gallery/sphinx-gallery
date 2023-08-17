@@ -110,20 +110,6 @@ class imgsgnode(nodes.General, nodes.Element):
     pass
 
 
-def directive_boolean(value):
-    if not value.strip():
-        raise ValueError("No argument provided but required")
-    if value.lower().strip() in ["yes", "1", 1, "true", "ok"]:
-        return True
-    elif value.lower().strip() in ["no", "0", 0, "false", "none"]:
-        return False
-    else:
-        raise ValueError(
-            "Please use one of: yes, true, no, false. "
-            "Do not use `{}` as boolean.".format(value)
-        )
-
-
 class ImageSg(images.Image):
     """
     Implements a directive to allow an optional hidpi image.  Meant to be
@@ -188,6 +174,28 @@ def _parse_srcset(st):
         else:
             raise ExtensionError('srcset argument "{entry}" is invalid.')
     return srcset
+
+
+def _copy_images(self, node):
+    srcset = _parse_srcset(node["srcset"])
+
+    # where the sources are.  i.e. myproj/source
+    srctop = self.builder.srcdir
+
+    # copy image from source to imagedir.  This is
+    # *probably* supposed to be done by a builder but...
+    # ie myproj/build/html/_images
+    imagedir = os.path.join(self.builder.imagedir, "")
+    imagedir = PurePosixPath(self.builder.outdir, imagedir)
+
+    os.makedirs(imagedir, exist_ok=True)
+
+    # copy all the sources to the imagedir:
+    for mult in srcset:
+        abspath = PurePosixPath(srctop, srcset[mult][1:])
+        shutil.copyfile(abspath, imagedir / abspath.name)
+
+    return imagedir, srcset
 
 
 def visit_imgsg_html(self, node):
@@ -259,36 +267,8 @@ def visit_imgsg_latex(self, node):
     self.visit_image(node)
 
 
-def _copy_images(self, node):
-    srcset = _parse_srcset(node["srcset"])
-
-    # where the sources are.  i.e. myproj/source
-    srctop = self.builder.srcdir
-
-    # copy image from source to imagedir.  This is
-    # *probably* supposed to be done by a builder but...
-    # ie myproj/build/html/_images
-    imagedir = os.path.join(self.builder.imagedir, "")
-    imagedir = PurePosixPath(self.builder.outdir, imagedir)
-
-    os.makedirs(imagedir, exist_ok=True)
-
-    # copy all the sources to the imagedir:
-    for mult in srcset:
-        abspath = PurePosixPath(srctop, srcset[mult][1:])
-        shutil.copyfile(abspath, imagedir / abspath.name)
-
-    return imagedir, srcset
-
-
 def depart_imgsg_html(self, node):
     pass
-
-
-def visit_sg_other(self, node):
-    if node["uri"][0] == "/":
-        node["uri"] = node["uri"][1:]
-    self.visit_image(node)
 
 
 def depart_imgsg_latex(self, node):
