@@ -7,7 +7,6 @@ select = ["E", "F", "W", "D"]
 exclude = ["__init__.py"]
 ignore = [
     # TODO: A lot of these we should actually fix eventually
-    #"D102", # Missing docstring in public method
     "D105", # Missing docstring in magic method
     "D401", # First line of docstring should be in imperative mood
 ]

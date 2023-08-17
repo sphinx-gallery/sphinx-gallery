@@ -113,15 +113,6 @@ def test_identify_names(unicode_sample, gallery_conf):
                 "is_explicit": False,
             }
         ],
-        "NameFinder": [
-            {
-                "name": "",
-                "module": "sphinx_gallery.",
-                "module_short": "sphinx_gallery.",
-                "is_class": False,
-                "is_explicit": False,
-            }
-        ],
         # Check `get_short_module_name` points to correct object.
         # Here, `matplotlib.pyplot.figure` (func) can be shortened to
         # `matplotlib.figure` (module) (but should not be)
