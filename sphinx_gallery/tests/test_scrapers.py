@@ -200,11 +200,14 @@ def test_figure_rst(ext):
 """
     assert image_rst == image_list_rst
 
-    # test issue #229
-    local_img = [os.path.join(os.getcwd(), "third." + ext)]
+
+def test_figure_rst_path():
+    """Test figure path correct in figure reSt."""
+    # Fixes issue #229
+    local_img = [os.path.join(os.getcwd(), "third.png")]
     image_rst = figure_rst(local_img, ".")
 
-    single_image = SG_IMAGE % ("third." + ext, "", "/third." + ext)
+    single_image = SG_IMAGE % ("third.png", "", "/third.png")
     assert image_rst == single_image
 
 
