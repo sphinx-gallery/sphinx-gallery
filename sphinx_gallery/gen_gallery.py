@@ -910,7 +910,7 @@ def write_api_entry_usage(app, docname, source):
     that they are used in.
     """
     gallery_conf = app.config.sphinx_gallery_conf
-    if gallery_conf["show_api_usage"] is False:
+    if gallery_conf["show_api_usage"] is False or docname is None:
         return
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
