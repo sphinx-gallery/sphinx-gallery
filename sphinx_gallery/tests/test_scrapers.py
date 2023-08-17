@@ -203,7 +203,7 @@ def test_figure_rst(ext):
 
 def test_figure_rst_path():
     """Test figure path correct in figure reSt."""
-    # Fixes issue #229
+    # Tests issue #229
     local_img = [os.path.join(os.getcwd(), "third.png")]
     image_rst = figure_rst(local_img, ".")
 
