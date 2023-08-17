@@ -85,6 +85,8 @@ def parse_sphinx_docopts(index):
 
     pos = index.find("var DOCUMENTATION_OPTIONS")
     if pos < 0:
+        pos = index.find("const DOCUMENTATION_OPTIONS")  # Sphinx 7.2+
+    if pos < 0:
         raise ExtensionError("Documentation options could not be found in index.")
     pos = index.find("{", pos)
     if pos < 0:
