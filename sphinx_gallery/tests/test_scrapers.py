@@ -216,47 +216,50 @@ def test_figure_rst_path():
     assert image_rst == single_image
 
 
-def test_figure_rst_srcset():
-    """Test reST generation of images with srcsetpaths correct."""
-    figure_list = ["sphx_glr_plot_1.png"]
+@pytest.mark.parametrize("ext", ["png"])
+def test_figure_rst_srcset(ext):
+    """Testing rst of images"""
+    figure_list = ["sphx_glr_plot_1." + ext]
     hipaths = [{0: "sphx_glr_plot_1.png", 2.0: "sphx_glr_plot_1_2_00.png"}]
     image_rst = figure_rst(figure_list, ".", srcsetpaths=hipaths)
-    single_image = """
-.. image-sg:: /sphx_glr_plot_1.png
+    single_image = f"""
+.. image-sg:: /sphx_glr_plot_1.{ext}
    :alt: pl
-   :srcset: /sphx_glr_plot_1.png, /sphx_glr_plot_1_2_00.png 2.00x
+   :srcset: /sphx_glr_plot_1.{ext}, /sphx_glr_plot_1_2_00.{ext} 2.00x
    :class: sphx-glr-single-img
 """
     assert image_rst == single_image
 
     hipaths += [{0: "second.png", 2.0: "second_2_00.png"}]
-    image_rst = figure_rst(figure_list + ["second.png"], ".", srcsetpaths=hipaths + [])
+    image_rst = figure_rst(
+        figure_list + ["second." + ext], ".", srcsetpaths=hipaths + []
+    )
 
-    image_list_rst = """
+    image_list_rst = f"""
 .. rst-class:: sphx-glr-horizontal
 
 
     *
 
-      .. image-sg:: /sphx_glr_plot_1.png
+      .. image-sg:: /sphx_glr_plot_1.{ext}
           :alt: pl
           :srcset: /sphx_glr_plot_1.png, /sphx_glr_plot_1_2_00.png 2.00x
           :class: sphx-glr-multi-img
 
     *
 
-      .. image-sg:: /second.png
+      .. image-sg:: /second.{ext}
           :alt: pl
-          :srcset: /second.png, /second_2_00.png 2.00x
+          :srcset: /second.{ext}, /second_2_00.{ext} 2.00x
           :class: sphx-glr-multi-img
 """
     assert image_rst == image_list_rst
 
     # test issue #229
-    local_img = [os.path.join(os.getcwd(), "third.png")]
+    local_img = [os.path.join(os.getcwd(), "third." + ext)]
     image_rst = figure_rst(local_img, ".")
 
-    single_image = SG_IMAGE % ("third.png", "", "/third.png")
+    single_image = SG_IMAGE % ("third." + ext, "", "/third." + ext)
     assert image_rst == single_image
 
 
