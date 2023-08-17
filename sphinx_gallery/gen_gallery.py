@@ -120,7 +120,7 @@ logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
 def _bool_eval(x):
-    """Eveulate bool only configs, to allow setting via -D on the command line."""
+    """Evaluate bool only configs, to allow setting via -D on the command line."""
     if isinstance(x, str):
         try:
             x = eval(x)
@@ -687,7 +687,7 @@ def generate_gallery_rst(app):
             _replace_md5(index_rst_new, mode="t")
 
     if gallery_conf["show_api_usage"] is not False:
-        _init_api_usage(app.builder.srcdir)
+        init_api_usage(app.builder.srcdir)
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf["plot_gallery"]:
@@ -857,7 +857,7 @@ def write_api_entries(app, what, name, obj, options, lines):
     app.config.sphinx_gallery_conf["_sg_api_entries"][what].add(name)
 
 
-def _init_api_usage(gallery_dir):
+def init_api_usage(gallery_dir):
     with codecs.open(
         os.path.join(gallery_dir, "sg_api_usage.rst"), "w", encoding="utf-8"
     ):
@@ -1110,7 +1110,7 @@ def write_api_entry_usage(app, docname, source):
                 )
 
 
-def clean_api_usage_files(app, exception):
+def clean_files(app, exception):
     """Remove api usage .dot files.
 
     To connect to 'build-finished' event.
@@ -1445,7 +1445,7 @@ def setup(app):
 
     app.connect("build-finished", summarize_failing_examples)
     app.connect("build-finished", embed_code_links)
-    app.connect("build-finished", clean_api_usage_files)
+    app.connect("build-finished", clean_files)
     metadata = {
         "parallel_read_safe": True,
         "parallel_write_safe": True,

@@ -1239,7 +1239,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
             or (not exclude_regex.search("{module}.{name}".format(**cobj)))
         )
     }
-    print(backrefs)
 
     # Write backreferences
     _write_backreferences(
