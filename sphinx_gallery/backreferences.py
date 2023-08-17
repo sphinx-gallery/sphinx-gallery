@@ -13,7 +13,6 @@ import inspect
 import os
 import re
 import sys
-import warnings
 
 from sphinx.errors import ExtensionError
 import sphinx.util
