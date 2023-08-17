@@ -80,7 +80,6 @@ def test_bug_cases_of_notebook_syntax():
     with open("sphinx_gallery/tests/reference_parse.txt") as reference:
         ref_blocks = ast.literal_eval(reference.read())
         file_conf, blocks = sg.split_code_and_text_blocks("tutorials/plot_parse.py")
-        print(blocks)
 
         assert file_conf == {}
         assert blocks == ref_blocks
