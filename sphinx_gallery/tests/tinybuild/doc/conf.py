@@ -13,7 +13,7 @@ class matplotlib_format_scraper:
         return self.__class__.__name__
 
     def __call__(self, block, block_vars, gallery_conf):
-        """Call Matplotlib scraper with equired `format` kwarg for testing."""
+        """Call Matplotlib scraper with required `format` kwarg for testing."""
         kwargs = dict()
         if (
             op.basename(block_vars["target_file"]) == "plot_svg.py"
@@ -35,7 +35,7 @@ class ResetArgv:
         return "ResetArgv"
 
     def __call__(self, sphinx_gallery_conf, script_vars):
-        """Provide 'plot' arg for 'plot_command_line_args' example, for testing."""
+        """Return 'plot' arg if 'plot_command_line_args' example, for testing."""
         if "plot_command_line_args.py" in script_vars["src_file"]:
             return ["plot"]
         else:
