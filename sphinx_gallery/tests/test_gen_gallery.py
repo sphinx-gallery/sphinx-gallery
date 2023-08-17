@@ -492,25 +492,27 @@ def test_show_memory_callable(sphinx_app_wrapper):
     assert "0.0 MB" in status
 
 
-@pytest.mark.parametrize(
-    "",
-    [
-        pytest.param(
-            id="first notebook cell",
-            marks=pytest.mark.conf_file(
-                content="""sphinx_gallery_conf = {'first_notebook_cell': 2,}"""
-            ),
-        ),
-        pytest.param(
-            id="last notebook cell",
-            marks=pytest.mark.conf_file(
-                content="""sphinx_gallery_conf = {'last_notebook_cell': 2,}"""
-            ),
-        ),
-    ],
+@pytest.mark.conf_file(
+    content="""
+sphinx_gallery_conf = {
+    'first_notebook_cell': 2,
+}"""
 )
-def test_notebook_cell_config(sphinx_app_wrapper):
-    """Tests that first/last cell configuration validated."""
+def test_first_notebook_cell_config(sphinx_app_wrapper):
+    # First cell must be str
+    with pytest.raises(ConfigError):
+        app = sphinx_app_wrapper.create_sphinx_app()
+        fill_gallery_conf_defaults(app, app.config, check_keys=False)
+
+
+@pytest.mark.conf_file(
+    content="""
+sphinx_gallery_conf = {
+    'last_notebook_cell': 2,
+}"""
+)
+def test_last_notebook_cell_config(sphinx_app_wrapper):
+    # Last cell must be str
     with pytest.raises(ConfigError):
         app = sphinx_app_wrapper.create_sphinx_app()
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
