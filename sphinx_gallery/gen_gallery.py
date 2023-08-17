@@ -1374,6 +1374,7 @@ def check_spaces_in_filenames(files):
 
 def get_default_config_value(key):
     """Get default configuration function."""
+
     def default_getter(conf):
         return conf["sphinx_gallery_conf"].get(key, DEFAULT_GALLERY_CONF[key])
 

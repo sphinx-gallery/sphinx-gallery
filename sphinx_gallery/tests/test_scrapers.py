@@ -230,9 +230,7 @@ def test_figure_rst_srcset():
     assert image_rst == single_image
 
     hipaths += [{0: "second.png", 2.0: "second_2_00.png"}]
-    image_rst = figure_rst(
-        figure_list + ["second.png"], ".", srcsetpaths=hipaths + []
-    )
+    image_rst = figure_rst(figure_list + ["second.png"], ".", srcsetpaths=hipaths + [])
 
     image_list_rst = """
 .. rst-class:: sphx-glr-horizontal
