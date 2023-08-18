@@ -1133,7 +1133,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     ----------
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
-    target_dir : Union[str, Path]
+    target_dir : Union[str, pathlib.Path]
         Build directory.
     costs: List[Tuple[Tuple[float], str]]
         List of tuples of computation costs and absolute paths to example, of format:
