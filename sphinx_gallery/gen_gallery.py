@@ -755,7 +755,7 @@ def _format_for_writing(costs, path, kind="rst"):
         ((time_elapsed, memory_used), example_path).
     path: str
         Source directory.
-    kind: str 'rst' or 'console', default='rst'
+    kind: 'rst' or 'console', default='rst'
         Format for printing to 'console' or for writing `sg_execution_times.rst' ('rst')
 
     Returns
