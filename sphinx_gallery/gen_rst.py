@@ -430,9 +430,10 @@ def generate_dir_rst(
     seen_backrefs: set,
         Back references encountered when parsing this gallery
         will be stored in this set.
-    include_toctree: bool, default=True
+    include_toctree: bool
         Whether or not toctree should be included
         in generated rst file.
+        Default = True.
 
     Returns
     -------
