@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 
 
 def main():
+    """Plot expoential functions."""
     x = np.linspace(-1, 2, 100)
     y = np.exp(x)
 

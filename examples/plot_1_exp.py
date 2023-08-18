@@ -21,6 +21,7 @@ from local_module import N  # = 100
 
 
 def main():
+    """Plot exponential functions."""
     x = np.linspace(-1, 2, N)
     y = np.exp(x)
 

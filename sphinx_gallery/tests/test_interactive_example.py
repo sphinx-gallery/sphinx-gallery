@@ -1,8 +1,6 @@
 # Author: Chris Holdgraf
 # License: 3-clause BSD
-"""
-Testing the binder badge functionality
-"""
+"""Testing the binder badge functionality."""
 
 from copy import deepcopy
 import os

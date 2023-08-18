@@ -1,8 +1,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Testing the rst files generator
-"""
+"""Testing the rst files generator."""
 
 import pytest
 import sys

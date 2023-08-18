@@ -1,7 +1,6 @@
 # License: 3-clause BSD
-"""
-Test the SG pipeline using Sphinx and tinybuild
-"""
+"""Test the SG pipeline using Sphinx and tinybuild."""
+
 from io import StringIO
 import os.path as op
 import shutil

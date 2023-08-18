@@ -14,6 +14,7 @@ assert "__file__" not in globals()
 
 
 def function(x):
+    """Square root function."""
     return sqrt(x)
 
 
