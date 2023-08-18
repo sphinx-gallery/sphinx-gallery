@@ -12,9 +12,12 @@ env:
 
 jobs:
   check-type-label:
-    name: ensure type label
+    name: ensure labeled
     runs-on: ubuntu-latest
     steps:
       - run: |
-          set -exo pipefail
-          echo "$LABELS" | grep "\(bug\|enhancement\|maintenance\|documentation\)"
+          echo "Labels: $LABELS"
+          if [[ "$LABELS" != *"bug"* ]] && [[ "$LABELS" != *"enhancement"* ]] [[ "$LABELS" != *"maintenance"* ]] && [[ "$LABELS" != *"documentation"* ]]; then
+            echo "Please add a type label to this PR"
+            exit 1
+          fi
