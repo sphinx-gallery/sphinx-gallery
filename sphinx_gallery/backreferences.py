@@ -248,10 +248,10 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
         the corresponding content string of block and the leading line number.
     ref_regex : str
         Regex to find references to python objects.
-    example_globals: Optional[Dict[str, Any]], default=None
-        Global variables for examples.
-    node : ast.Node or str, default=""
-        The parsed node.
+    example_globals: Optional[Dict[str, Any]]
+        Global variables for examples. Default=None
+    node : ast.Node or str
+        The parsed node. Default=""
 
     Returns
     -------
