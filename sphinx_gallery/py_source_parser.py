@@ -83,7 +83,8 @@ def _get_docstring_and_rest(filename):
     lineno : int
         The line number.
     node : ast.Module
-        The ast node.
+        The ast node. When `filename` parsed with `mode='exec' node should be
+        of type `ast.Module`.
     """
     node, content = parse_source_file(filename)
 
