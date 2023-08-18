@@ -251,7 +251,7 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
     example_globals: Optional[Dict[str, Any]]
         Global variables for examples. Default=None
     node : ast.Module or str
-        The parsed node. Default=""
+        The parsed node. Default="".
 
     Returns
     -------
