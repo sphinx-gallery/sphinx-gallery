@@ -215,7 +215,7 @@ def test_figure_rst(ext):
 
 @pytest.mark.parametrize("ext", ["png"])
 def test_figure_rst_srcset(ext):
-    """Testing rst of images"""
+    """Testing rst of images."""
     figure_list = ["sphx_glr_plot_1." + ext]
     hipaths = [{0: "sphx_glr_plot_1.png", 2.0: "sphx_glr_plot_1_2_00.png"}]
     image_rst = figure_rst(figure_list, ".", srcsetpaths=hipaths)
