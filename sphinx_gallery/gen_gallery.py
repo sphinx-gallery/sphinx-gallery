@@ -835,8 +835,9 @@ def write_api_entries(app, what, name, obj, options, lines):
     ----------
     app :
         The Sphinx application object.
-    what: "module", "class", "exception", "function", "method", "attribute"
-        The type of the object which the docstring belongs to.
+    what: str
+        The type of the object which the docstring belongs to. One of
+        "module", "class", "exception", "function", "method", "attribute".
     name :
         The fully qualified name of the object.
     obj :

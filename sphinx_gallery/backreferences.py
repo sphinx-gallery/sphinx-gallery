@@ -250,7 +250,7 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
         Regex to find references to python objects.
     example_globals: Optional[Dict[str, Any]], default=None
         Global variables for examples.
-    node : ast Node or str, default=""
+    node : ast.Node or str, default=""
         The parsed node.
 
     Returns
