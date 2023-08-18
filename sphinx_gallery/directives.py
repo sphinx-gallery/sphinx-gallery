@@ -109,20 +109,6 @@ class imgsgnode(nodes.General, nodes.Element):
     pass
 
 
-def directive_boolean(value):
-    if not value.strip():
-        raise ValueError("No argument provided but required")
-    if value.lower().strip() in ["yes", "1", 1, "true", "ok"]:
-        return True
-    elif value.lower().strip() in ["no", "0", 0, "false", "none"]:
-        return False
-    else:
-        raise ValueError(
-            "Please use one of: yes, true, no, false. "
-            "Do not use `{}` as boolean.".format(value)
-        )
-
-
 class ImageSg(images.Image):
     """Implements a directive to allow an optional hidpi image.
 
@@ -289,12 +275,6 @@ def _copy_images(self, node):
 def depart_imgsg_html(self, node):
     """HTML depart node visitor function."""
     pass
-
-
-def visit_sg_other(self, node):
-    if node["uri"][0] == "/":
-        node["uri"] = node["uri"][1:]
-    self.visit_image(node)
 
 
 def depart_imgsg_latex(self, node):
