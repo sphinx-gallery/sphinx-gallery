@@ -460,7 +460,7 @@ def _get_srcset_st(sources_dir, hinames):
     0: /home/sample-proj/source/plot_types/images/img1.png,
     2.0: /home/sample-proj/source/plot_types/images/img1_2_00x.png,
 
-    The result wwould be:
+    The result would be:
     '/plot_types/basic/images/sphx_glr_pie_001.png,
     /plot_types/basic/images/sphx_glr_pie_001_2_00x.png 2.00x'
     """

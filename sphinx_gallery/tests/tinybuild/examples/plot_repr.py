@@ -14,7 +14,3 @@ class A:
 
 
 A()
-
-import numpy as np
-
-np.arange(6)
