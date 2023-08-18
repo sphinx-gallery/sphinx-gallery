@@ -71,6 +71,9 @@ br.identify_names
 from sphinx_gallery.back_references import identify_names
 identify_names
 
+from sphinx_gallery.back_references import DummyClass
+DummyClass().prop
+
 import matplotlib.pyplot as plt
 _ = plt.figure()
 
