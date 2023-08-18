@@ -4,8 +4,10 @@ on:  # yamllint disable-line rule:truthy
   pull_request:
     types:
       - opened
+      - reopened
       - labeled
       - unlabeled
+      - synchronize
 
 env:
   LABELS: ${{ join( github.event.pull_request.labels.*.name, ' ' ) }}
