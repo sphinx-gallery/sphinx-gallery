@@ -1,6 +1,55 @@
 Changelog
 =========
 
+v0.14.0
+-------
+
+**Implemented enhancements:**
+
+-  MAINT Update backreferences docs and add tests `#1154 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1154>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Remove extra spaces in reported running time `#1147 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1147>`__ (`stefanv <https://github.com/stefanv>`__)
+
+**Fixed bugs:**
+
+-  MAINT: Fix for Sphinx 7.2 `#1176 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1176>`__ (`larsoner <https://github.com/larsoner>`__)
+-  updated mpl gui warning catcher to new error message `#1160 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1160>`__ (`story645 <https://github.com/story645>`__)
+-  Ensure consistent encoding for md5sum generation `#1159 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1159>`__ (`sdhiscocks <https://github.com/sdhiscocks>`__)
+-  Maint: Fix ``app.builder.outdir`` as Sphinx now using pathlib `#1155 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1155>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Make \_LoggingTee compatible with TextIO `#1151 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1151>`__ (`o-laurent <https://github.com/o-laurent>`__)
+-  MAINT: Replace build_sphinx with sphinx-build `#1139 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1139>`__ (`oscargus <https://github.com/oscargus>`__)
+-  Set table.dataframe width to auto in CSS file close #1128 `#1137 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1137>`__ (`photoniker <https://github.com/photoniker>`__)
+
+**Documentation**
+
+-  DOC Fix typo in ``_get_docstring_and_rest`` docstring `#1182 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1182>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Fix Jupyterlite config example in ``configuration.rst`` `#1181 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1181>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Update basics gallery name `#1153 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1153>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC: Add link to sphinxcontrib-svg2pdfconverter `#1145 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1145>`__ (`oscargus <https://github.com/oscargus>`__)
+-  MNT: Add a few badges `#1143 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1143>`__ (`oscargus <https://github.com/oscargus>`__)
+-  MAINT: Fix Zenodo reference `#1140 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1140>`__ (`oscargus <https://github.com/oscargus>`__)
+-  Add OpenTURNS to “who uses” list `#1133 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1133>`__ (`jschueller <https://github.com/jschueller>`__)
+-  Correctly hide download buttons `#1131 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1131>`__ (`timhoffm <https://github.com/timhoffm>`__)
+
+**Project maintenance**
+
+-  MAINT: Force PRs to be labeled properly `#1183 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1183>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT Add to ``test_identify_names`` so class property tested `#1180 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1180>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT Lint - fix ast node type in docstrings `#1179 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1179>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT Move ``figure_rst`` path testing to own unit test `#1173 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1173>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT Remove unused parametrize in ``test_figure_rst_srcset`` `#1172 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1172>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT Parametrize notebook first/last cell test `#1171 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1171>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT Lint api usage `#1170 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1170>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT Fix lint, clean and expand docstrings `#1169 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1169>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1167 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1167>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MAINT: yamllint `#1166 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1166>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Use pre-commit `#1165 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1165>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: black . `#1164 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1164>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Make outdated check better `#1161 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1161>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Use pathlib for url ``_embed_code_links`` `#1157 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1157>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MAINT: Speed up conda solving `#1156 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1156>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MNT: Change % formatting to f-strings `#1135 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1135>`__ (`StefRe <https://github.com/StefRe>`__)
+-  MAINT: Update deps and intersphinx links `#1132 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1132>`__ (`larsoner <https://github.com/larsoner>`__)
+
 v0.13.0
 -------
 
