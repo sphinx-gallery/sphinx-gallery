@@ -125,6 +125,16 @@ def test_identify_names(unicode_sample, gallery_conf):
                 "is_explicit": False,
             }
         ],
+        # Check we get a in a().b in `visit_Attribute`
+        "DummyClass": [
+            {
+                "name": "DummyClass",
+                "module": "sphinx_gallery.back_references",
+                "module_short": "sphinx_gallery.back_references",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
     ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
