@@ -1181,7 +1181,7 @@ You can configure JupyterLite integration by setting
       'jupyterlite': {
          'use_jupyter_lab': <bool>, # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
          'notebook_modification_function': <function>, # function that implements JupyterLite-specific modifications of notebooks
-         'jupyterlite_contents': <str>, # JupyterLite contents where to copy the example notebooks (relative to Sphinx source directory)
+         'jupyterlite_contents': <str>, # where to copy the example notebooks (relative to Sphinx source directory)
          }
     }
 
