@@ -1,8 +1,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-reST file generator
-===================
+"""reST file generator.
 
 Generate the rst files for the examples by iterating over the python
 example files.
@@ -299,8 +297,7 @@ def extract_intro_and_title(filename, docstring):
 
 
 def md5sum_is_current(src_file, mode="b"):
-    """Checks whether src_file has the same md5 hash as the one on disk"""
-
+    """Checks whether src_file has the same md5 hash as the one on disk."""
     src_md5 = get_md5sum(src_file, mode)
 
     src_md5_file = src_file + ".md5"
@@ -314,7 +311,7 @@ def md5sum_is_current(src_file, mode="b"):
 
 
 def save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf):
-    """Generate and Save the thumbnail image
+    """Generate and Save the thumbnail image.
 
     Parameters
     ----------
@@ -330,7 +327,6 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
-
     thumb_dir = os.path.join(os.path.dirname(image_path_template), "thumb")
     if not os.path.exists(thumb_dir):
         os.makedirs(thumb_dir)
@@ -434,7 +430,7 @@ def generate_dir_rst(
     seen_backrefs: set,
         Back references encountered when parsing this gallery
         will be stored in this set.
-    include_toctree: bool,
+    include_toctree: bool
         Whether or not toctree should be included
         in generated rst file.
         Default = True.
@@ -447,7 +443,8 @@ def generate_dir_rst(
         Content which will be written to the index rst file
         presenting the current example gallery
     costs: list,
-        List of costs for building each element of the gallery
+        List of costs (time_elapsed, memory_used) for building each element of the
+        gallery and absolute path to the example file
     toctree_items: list,
         List of files included in toctree
         (independent of include_toctree's value)
@@ -722,8 +719,7 @@ def _get_memory_base(gallery_conf):
 
 
 def _ast_module():
-    """Get ast.Module function, dealing with:
-    https://bugs.python.org/issue35894"""
+    """Get ast.Module function, dealing with: https://bugs.python.org/issue35894."""
     if sys.version_info >= (3, 8):
         ast_Module = partial(ast.Module, type_ignores=[])
     else:
@@ -743,8 +739,28 @@ def _check_reset_logging_tee(src_file):
 
 
 def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_vars):
-    """Execute ast, capturing output if last line is expression and get max
-    memory usage."""
+    """Execute ast, capturing output if last line expression and get max mem usage.
+
+    Parameters
+    ----------
+    compiler : codeop.Compile
+        Compiler to compile AST of code block.
+    ast_Module : Callable
+        ast.Module function.
+    code_ast : ast.Module
+        AST parsed code to execute.
+    gallery_conf : Dict[str, Any]
+        Gallery configurations.
+    script_vars : Dict[str, Any]
+        Configuration and runtime variables.
+
+    Returns
+    -------
+    is_last_expr : bool
+        Whether the last expression in `code_ast` is an ast.Expr.
+    mem_max : float
+        Max memory used during execution.
+    """
     src_file = script_vars["src_file"]
     # capture output if last line is expression
     is_last_expr = False
@@ -775,8 +791,7 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_va
 
 
 def _get_last_repr(capture_repr, ___):
-    """Get a repr of the last expression, using first method in 'capture_repr'
-    available for the last expression."""
+    """Get repr of last expression, using first method in 'capture_repr' available."""
     for meth in capture_repr:
         try:
             last_repr = getattr(___, meth)()
@@ -797,7 +812,29 @@ def _get_last_repr(capture_repr, ___):
 def _get_code_output(
     is_last_expr, example_globals, gallery_conf, logging_tee, images_rst, file_conf
 ):
-    """Obtain standard output and html output in reST."""
+    """Obtain standard output and html output in reST.
+
+    Parameters
+    ----------
+    is_last_expr : bool
+        Whether the last expression in executed code is an ast.Expr.
+    example_globals: Dict[str, Any]
+        Global variables for examples.
+    logging_tee : _LoggingTee
+        Logging tee.
+    images_rst : str
+        rst code to embed the images in the document.
+    gallery_conf : Dict[str, Any]
+        Gallery configurations.
+    file_conf : Dict[str, Any]
+        File-specific settings given in source file comments as:
+        ``# sphinx_gallery_<name> = <value>``.
+
+    Returns
+    -------
+    code_output : str
+        reST of output of executed code block, including images and captured output.
+    """
     last_repr = None
     repr_meth = None
     if is_last_expr:
@@ -848,20 +885,15 @@ def execute_code_block(
     ----------
     compiler : codeop.Compile
         Compiler to compile AST of code block.
-
     block : List[Tuple[str, str, int]]
         List of Tuples, each Tuple contains label ('text' or 'code'),
         the corresponding content string of block and the leading line number.
-
     example_globals: Dict[str, Any]
         Global variables for examples.
-
     script_vars : Dict[str, Any]
         Configuration and runtime variables.
-
     gallery_conf : Dict[str, Any]
         Gallery configurations.
-
     file_conf : Dict[str, Any]
         File-specific settings given in source file comments as:
         ``# sphinx_gallery_<name> = <value>``.
@@ -944,7 +976,7 @@ def execute_code_block(
 
 
 def executable_script(src_file, gallery_conf):
-    """Validate if script has to be run according to gallery configuration
+    """Validate if script has to be run according to gallery configuration.
 
     Parameters
     ----------
@@ -959,7 +991,6 @@ def executable_script(src_file, gallery_conf):
     bool
         True if script has to be executed
     """
-
     filename_pattern = gallery_conf["filename_pattern"]
     execute = re.search(filename_pattern, src_file) and gallery_conf["plot_gallery"]
     return execute
@@ -972,7 +1003,7 @@ def _check_input(prompt=None):
 
 
 def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
-    """Execute and capture output from python script already in block structure
+    """Execute and capture output from python script already in block structure.
 
     Parameters
     ----------
@@ -1072,22 +1103,23 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     Parameters
     ----------
     fname : str
-        Filename of python script
+        Filename of python script.
     target_dir : str
-        Absolute path to directory in documentation where examples are saved
+        Absolute path to directory in documentation where examples are saved.
     src_dir : str
-        Absolute path to directory where source examples are stored
+        Absolute path to directory where source examples are stored.
     gallery_conf : dict
-        Contains the configuration of Sphinx-Gallery
+        Contains the configuration of Sphinx-Gallery.
     seen_backrefs : set
         The seen backreferences.
 
     Returns
     -------
     intro: str
-        The introduction of the example
+        The introduction of the example.
     cost : tuple
-        A tuple containing the ``(time, memory)`` required to run the script.
+        A tuple containing the ``(time_elapsed, memory_used)`` required to run the
+        script.
     """
     seen_backrefs = set() if seen_backrefs is None else seen_backrefs
     src_file = os.path.normpath(os.path.join(src_dir, fname))
@@ -1272,7 +1304,6 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     out : str
         rst notebook
     """
-
     # A simple example has two blocks: one for the
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
@@ -1312,7 +1343,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
 def save_rst_example(
     example_rst, example_file, time_elapsed, memory_used, gallery_conf
 ):
-    """Saves the rst notebook to example_file including header & footer
+    """Saves the rst notebook to example_file including header & footer.
 
     Parameters
     ----------
@@ -1327,7 +1358,6 @@ def save_rst_example(
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
-
     example_fname = os.path.relpath(example_file, gallery_conf["src_dir"])
     ref_fname = example_fname.replace(os.path.sep, "_")
 

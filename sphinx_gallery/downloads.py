@@ -1,8 +1,4 @@
-r"""
-Utilities for downloadable items
-================================
-
-"""
+r"""Utilities for downloadable items."""
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
@@ -100,9 +96,9 @@ def list_downloadable_sources(target_dir):
 
 
 def generate_zipfiles(gallery_dir, src_dir):
-    """
-    Collects all Python source files and Jupyter notebooks in
-    gallery_dir and makes zipfiles of them
+    """Collects downloadable sources and makes zipfiles of them.
+
+    Collects all Python source files and Jupyter notebooks in gallery_dir.
 
     Parameters
     ----------
@@ -116,7 +112,6 @@ def generate_zipfiles(gallery_dir, src_dir):
     download_rst: str
         RestructuredText to include download buttons to the generated files
     """
-
     listdir = list_downloadable_sources(gallery_dir)
     for directory in sorted(os.listdir(gallery_dir)):
         if os.path.isdir(os.path.join(gallery_dir, directory)):

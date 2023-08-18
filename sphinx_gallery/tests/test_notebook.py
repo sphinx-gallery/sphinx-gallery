@@ -1,8 +1,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-r"""
-Testing the Jupyter notebook parser
-"""
+r"""Testing the Jupyter notebook parser."""
 
 from collections import defaultdict
 from itertools import count
@@ -28,7 +26,7 @@ from sphinx_gallery.notebook import (
 
 
 def test_latex_conversion(gallery_conf):
-    """Latex parsing from rst into Jupyter Markdown"""
+    """Test Latex parsing from rst into Jupyter Markdown."""
     double_inline_rst = r":math:`T<0` and :math:`U>0`"
     double_inline_jmd = r"$T<0$ and $U>0$"
     assert double_inline_jmd == rst2md(double_inline_rst, gallery_conf, "", {})
@@ -45,7 +43,7 @@ def test_latex_conversion(gallery_conf):
 
 
 def test_code_conversion():
-    """Use the ``` code format so Jupyter syntax highlighting works"""
+    """Test `rst2md` results in ``` code format so Jupyter syntax highlighting works."""
     rst = textwrap.dedent(
         """
         Regular text
@@ -86,7 +84,7 @@ def test_code_conversion():
 
 
 def test_convert(gallery_conf):
-    """Test reST conversion"""
+    """Test reST conversion to markdown."""
     rst = """hello
 
 .. contents::
@@ -397,21 +395,20 @@ def test_jupyter_notebook(gallery_conf):
 
 
 def test_with_empty_args():
-    """User passes no args, should fail with SystemExit"""
+    """User passes no args, should fail with `SystemExit`."""
     with pytest.raises(SystemExit):
         python_to_jupyter_cli([])
 
 
 def test_missing_file():
-    """User passes non existing file, should fail with FileNotFoundError"""
+    """User passes non existing file, should fail with `FileNotFoundError`."""
     with pytest.raises(FileNotFoundError) as excinfo:
         python_to_jupyter_cli(["nofile.py"])
     excinfo.match(r"No such file or directory.+nofile\.py")
 
 
 def test_file_is_generated():
-    """User passes good python file. Check notebook file is created"""
-
+    """Check notebook file created when user passes good python file."""
     python_to_jupyter_cli(["examples/plot_0_sin.py"])
     assert os.path.isfile("examples/plot_0_sin.ipynb")
     os.remove("examples/plot_0_sin.ipynb")

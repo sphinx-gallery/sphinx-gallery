@@ -1,8 +1,7 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-r"""
-Test Sphinx-Gallery
-"""
+r"""Test Sphinx-Gallery gallery generation."""
+
 import codecs
 import os
 import re
@@ -39,9 +38,7 @@ def test_bad_config():
 
 
 def test_default_config(sphinx_app_wrapper):
-    """Test the default Sphinx-Gallery configuration is loaded
-
-    if only the extension is added to Sphinx"""
+    """Test default Sphinx-Gallery config loaded when extension added to Sphinx."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     cfg = sphinx_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
@@ -145,6 +142,7 @@ def test_bad_reset_modules_order(sphinx_app_wrapper, err_class, err_match):
     ],
 )
 def test_bad_css(sphinx_app_wrapper, err_class, err_match):
+    """Test 'css' configuration validation is correct."""
     with pytest.raises(err_class, match=err_match):
         sphinx_app_wrapper.create_sphinx_app()
 
@@ -168,7 +166,7 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_config_backreferences(sphinx_app_wrapper):
-    """Test no warning is issued under the new configuration"""
+    """Test no warning is issued under the new configuration."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     cfg = sphinx_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
@@ -225,12 +223,10 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
 
 
 def _check_order(sphinx_app, key):
-    """
-    Iterates through sphx-glr-thumbcontainer divs from index.rst lines
-    and reads given key from the tooltip.
-    Test that these keys appear in a specific order.
-    """
+    """Iterates through sphx-glr-thumbcontainer divs and reads key from the tooltip.
 
+    Used to test that these keys (in index.rst) appear in a specific order.
+    """
     index_fname = os.path.join(sphinx_app.outdir, "..", "ex", "index.rst")
     order = list()
     regex = f".*:{key}=(.):.*"
@@ -423,7 +419,7 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_expected_failing_examples_were_executed(sphinx_app_wrapper):
-    """Testing that no exception is issued when broken example is not built
+    """Testing that no exception is issued when broken example is not built.
 
     See #335 for more details.
     """
@@ -439,9 +435,7 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_only_warn_on_example_error(sphinx_app_wrapper):
-    """
-    Test behaviour of only_warn_on_example_error flag.
-    """
+    """Test behaviour of only_warn_on_example_error flag."""
     example_dir = Path(sphinx_app_wrapper.srcdir) / "src"
     with codecs.open(example_dir / "plot_3.py", "a", encoding="utf-8") as fid:
         fid.write("raise ValueError")
@@ -461,9 +455,7 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_only_warn_on_example_error_sphinx_warning(sphinx_app_wrapper):
-    """
-    Test behaviour of only_warn_on_example_error flag.
-    """
+    """Test behaviour of only_warn_on_example_error flag."""
     sphinx_app_wrapper.kwargs["warningiserror"] = True
     example_dir = Path(sphinx_app_wrapper.srcdir) / "src"
     with codecs.open(example_dir / "plot_3.py", "a", encoding="utf-8") as fid:
@@ -659,7 +651,7 @@ sphinx_gallery_conf = {
 def test_create_jupyterlite_contents_without_jupyterlite_sphinx_loaded(
     sphinx_app_wrapper,
 ):
-    """Test JupyterLite contents creation without jupyterlite_sphinx loaded"""
+    """Test JupyterLite contents creation without jupyterlite_sphinx loaded."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
     create_jupyterlite_contents(sphinx_app, exception=None)
@@ -680,8 +672,10 @@ sphinx_gallery_conf = {
 def test_create_jupyterlite_contents_with_jupyterlite_disabled_via_config(
     sphinx_app_wrapper,
 ):
-    """Test JupyterLite contents creation with jupyterlite_sphinx loaded but
-    JupyterLite disabled via config"""
+    """Test JupyterLite contents created with jupyterlite_sphinx loaded but disabled.
+
+    JupyterLite disabled via config.
+    """
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
     create_jupyterlite_contents(sphinx_app, exception=None)

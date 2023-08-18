@@ -1,8 +1,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Testing the rst files generator
-"""
+"""Testing the rst files generator."""
 
 import pytest
 import sys
@@ -123,6 +121,16 @@ def test_identify_names(unicode_sample, gallery_conf):
                 "name": "figure",
                 "module": "matplotlib.pyplot",
                 "module_short": "matplotlib.pyplot",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        # Check we get a in a().b in `visit_Attribute`
+        "DummyClass": [
+            {
+                "name": "DummyClass",
+                "module": "sphinx_gallery.back_references",
+                "module_short": "sphinx_gallery.back_references",
                 "is_class": False,
                 "is_explicit": False,
             }

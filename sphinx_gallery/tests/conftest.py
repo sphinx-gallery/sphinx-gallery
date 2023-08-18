@@ -1,6 +1,4 @@
-"""
-Pytest fixtures
-"""
+"""Pytest fixtures."""
 
 from contextlib import contextmanager
 from io import StringIO
@@ -50,7 +48,7 @@ def log_collector(monkeypatch):
 
 @pytest.fixture
 def unicode_sample(tmpdir):
-    """Return temporary python source file with Unicode in various places"""
+    """Return temporary python source file with Unicode in various places."""
     code_str = b"""# -*- coding: utf-8 -*-
 '''
 \xc3\x9anicode in header
@@ -72,6 +70,9 @@ br.identify_names
 
 from sphinx_gallery.back_references import identify_names
 identify_names
+
+from sphinx_gallery.back_references import DummyClass
+DummyClass().prop
 
 import matplotlib.pyplot as plt
 _ = plt.figure()
@@ -139,7 +140,6 @@ class SphinxAppWrapper:
     part of the sphinx-gallery build is done in
     sphinx.application.Application.__init__ and the remainder is done in
     sphinx.application.Application.build.
-
     """
 
     def __init__(self, srcdir, confdir, outdir, doctreedir, buildername, **kwargs):
@@ -151,6 +151,7 @@ class SphinxAppWrapper:
         self.kwargs = kwargs
 
     def create_sphinx_app(self):
+        """Create Sphinx app."""
         # Avoid warnings about re-registration, see:
         # https://github.com/sphinx-doc/sphinx/issues/5038
         with self.create_sphinx_app_context() as app:
@@ -159,6 +160,7 @@ class SphinxAppWrapper:
 
     @contextmanager
     def create_sphinx_app_context(self):
+        """Create Sphinx app inside context."""
         with docutils_namespace():
             app = Sphinx(
                 self.srcdir,
@@ -171,6 +173,7 @@ class SphinxAppWrapper:
             yield app
 
     def build_sphinx_app(self, *args, **kwargs):
+        """Build Sphinx app."""
         with self.create_sphinx_app_context() as app:
             # building should be done in the same docutils_namespace context
             app.build(*args, **kwargs)

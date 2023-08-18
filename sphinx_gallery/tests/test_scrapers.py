@@ -1,3 +1,5 @@
+"""Testing image scrapers."""
+
 import os
 
 import pytest
@@ -18,7 +20,7 @@ from sphinx_gallery.scrapers import (
 
 @pytest.fixture(scope="function")
 def gallery_conf(tmpdir):
-    """Sets up a test sphinx-gallery configuration"""
+    """Sets up a test sphinx-gallery configuration."""
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
@@ -31,10 +33,13 @@ def gallery_conf(tmpdir):
 
 
 class matplotlib_svg_scraper:
+    """Test matplotlib svg scraper."""
+
     def __repr__(self):
         return self.__class__.__name__
 
     def __call__(self, *args, **kwargs):
+        """Call matplotlib scraper with 'svg' format."""
         return matplotlib_scraper(*args, format="svg", **kwargs)
 
 
@@ -167,7 +172,7 @@ def test_custom_scraper(gallery_conf, monkeypatch):
 
 @pytest.mark.parametrize("ext", _KNOWN_IMG_EXTS)
 def test_figure_rst(ext):
-    """Testing rst of images"""
+    """Test reST generation of images."""
     figure_list = ["sphx_glr_plot_1." + ext]
     image_rst = figure_rst(figure_list, ".")
     single_image = f"""
@@ -211,50 +216,46 @@ def test_figure_rst_path():
     assert image_rst == single_image
 
 
-@pytest.mark.parametrize("ext", ["png"])
-def test_figure_rst_srcset(ext):
-    """Testing rst of images"""
-    figure_list = ["sphx_glr_plot_1." + ext]
+def test_figure_rst_srcset():
+    """Test reST generation of images with srcset paths correct."""
+    figure_list = ["sphx_glr_plot_1.png"]
     hipaths = [{0: "sphx_glr_plot_1.png", 2.0: "sphx_glr_plot_1_2_00.png"}]
     image_rst = figure_rst(figure_list, ".", srcsetpaths=hipaths)
-    single_image = f"""
-.. image-sg:: /sphx_glr_plot_1.{ext}
+    single_image = """
+.. image-sg:: /sphx_glr_plot_1.png
    :alt: pl
-   :srcset: /sphx_glr_plot_1.{ext}, /sphx_glr_plot_1_2_00.{ext} 2.00x
+   :srcset: /sphx_glr_plot_1.png, /sphx_glr_plot_1_2_00.png 2.00x
    :class: sphx-glr-single-img
 """
     assert image_rst == single_image
 
     hipaths += [{0: "second.png", 2.0: "second_2_00.png"}]
-    image_rst = figure_rst(
-        figure_list + ["second." + ext], ".", srcsetpaths=hipaths + []
-    )
-
-    image_list_rst = f"""
+    image_rst = figure_rst(figure_list + ["second.png"], ".", srcsetpaths=hipaths + [])
+    image_list_rst = """
 .. rst-class:: sphx-glr-horizontal
 
 
     *
 
-      .. image-sg:: /sphx_glr_plot_1.{ext}
+      .. image-sg:: /sphx_glr_plot_1.png
           :alt: pl
           :srcset: /sphx_glr_plot_1.png, /sphx_glr_plot_1_2_00.png 2.00x
           :class: sphx-glr-multi-img
 
     *
 
-      .. image-sg:: /second.{ext}
+      .. image-sg:: /second.png
           :alt: pl
-          :srcset: /second.{ext}, /second_2_00.{ext} 2.00x
+          :srcset: /second.png, /second_2_00.png 2.00x
           :class: sphx-glr-multi-img
 """
     assert image_rst == image_list_rst
 
     # test issue #229
-    local_img = [os.path.join(os.getcwd(), "third." + ext)]
+    local_img = [os.path.join(os.getcwd(), "third.png")]
     image_rst = figure_rst(local_img, ".")
 
-    single_image = SG_IMAGE % ("third." + ext, "", "/third." + ext)
+    single_image = SG_IMAGE % ("third.png", "", "/third.png")
     assert image_rst == single_image
 
 

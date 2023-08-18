@@ -1,4 +1,4 @@
-#
+"""Sphinx-Gallery documentation build configuration file."""
 # Sphinx-Gallery documentation build configuration file, created by
 # sphinx-quickstart on Mon Nov 17 16:01:26 2014.
 #
@@ -383,6 +383,7 @@ if "SOURCE_DATE_EPOCH" in os.environ:
 
 
 def notebook_modification_function(notebook_content, notebook_filename):
+    """Implement JupyterLite-specific modifications of notebooks."""
     notebook_content_str = str(notebook_content)
     warning_template = "\n".join(
         [

@@ -1,7 +1,4 @@
-r"""
-Parser for python source files
-==============================
-"""
+r"""Parser for python source files."""
 # Created Sun Nov 27 14:03:07 2016
 # Author: Óscar Nájera
 
@@ -85,8 +82,9 @@ def _get_docstring_and_rest(filename):
         ``filename`` content without the docstring
     lineno : int
         The line number.
-    node : ast Node
-        The node.
+    node : ast.Module
+        The ast node. When `filename` parsed with `mode='exec' node should be
+        of type `ast.Module`.
     """
     node, content = parse_source_file(filename)
 
@@ -133,9 +131,7 @@ def _get_docstring_and_rest(filename):
 
 
 def extract_file_config(content):
-    """
-    Pull out the file-specific config specified in the docstring.
-    """
+    """Pull out the file-specific config specified in the docstring."""
     file_conf = {}
     for match in re.finditer(INFILE_CONFIG_PATTERN, content):
         name = match.group(1)
@@ -171,9 +167,9 @@ def split_code_and_text_blocks(source_file, return_node=False):
     blocks : list
         (label, content, line_number)
         List where each element is a tuple with the label ('text' or 'code'),
-        the corresponding content string of block and the leading line number
-    node : ast Node
-        The parsed node.
+        the corresponding content string of block and the leading line number.
+    node : ast.Module
+        The parsed ast node.
     """
     docstring, rest_of_content, lineno, node = _get_docstring_and_rest(source_file)
     blocks = [("text", docstring, 1)]

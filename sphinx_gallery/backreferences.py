@@ -1,10 +1,8 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Backreferences Generator
-========================
+"""Backreferences Generator.
 
-Parses example file code in order to keep track of used functions
+Parses example file code in order to keep track of used functions.
 """
 
 import ast
@@ -64,17 +62,21 @@ class NameFinder(ast.NodeVisitor):
         self.accessed_names = set()
 
     def visit_Import(self, node, prefix=""):
+        """For 'import' add node names to `imported_names`."""
         for alias in node.names:
             local_name = alias.asname or alias.name
             self.imported_names[local_name] = prefix + alias.name
 
     def visit_ImportFrom(self, node):
+        """For 'from import' add node names to `imported_names`, incl module prefix."""
         self.visit_Import(node, node.module + ".")
 
     def visit_Name(self, node):
+        """Add node id to `accessed_names`."""
         self.accessed_names.add(node.id)
 
     def visit_Attribute(self, node):
+        """Add attributes, including their prefix, to `accessed_names`."""
         attrs = []
         while isinstance(node, ast.Attribute):
             attrs.append(node.attr)
@@ -89,6 +91,20 @@ class NameFinder(ast.NodeVisitor):
             self.visit(node)
 
     def get_mapping(self):
+        """Map names used in code, using AST nodes, to their fully qualified names.
+
+        Returns
+        -------
+        options : List[Tuple[str]]
+            List of tuples, each tuple containing the following information about
+            an `accessed_name`:
+
+                accessed name : str,
+                fully qualified name : str
+                if it is a class attribute (i.e., property or method) : bool
+                if it is a class : bool
+                if it is an explicit backreference : bool (always false here)
+        """
         options = list()
         for name in self.accessed_names:
             local_name_split = name.split(".")
@@ -222,7 +238,34 @@ def _make_ref_regex(config=None):
 
 
 def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
-    """Build a codeobj summary by identifying and resolving used names."""
+    """Build a codeobj summary by identifying and resolving used names.
+
+    Parameters
+    ----------
+    script_blocks : list
+        (label, content, line_number)
+        List where each element is a tuple with the label ('text' or 'code'),
+        the corresponding content string of block and the leading line number.
+    ref_regex : str
+        Regex to find references to python objects.
+    example_globals: Optional[Dict[str, Any]]
+        Global variables for examples. Default=None
+    node : ast.Module or str
+        The parsed node. Default="".
+
+    Returns
+    -------
+    example_code_obj : OrderedDict[str, Any]
+        OrderedDict with information about all code object references found in an
+        example. OrderedDict contains the following keys:
+
+            - example_code_obj['name'] : function or class name (str)
+            - example_code_obj['module'] : module name (str)
+            - example_code_obj['module_short'] : shortened module name (str)
+            - example_code_obj['is_class'] : whether object is class (bool)
+            - example_code_obj['is_explicit'] : whether object is an explicit
+                backreference (referred to by sphinx markup) (bool)
+    """
     if node == "":  # mostly convenience for testing functions
         c = "\n".join(txt for kind, txt, _ in script_blocks if kind == "code")
         node = ast.parse(c)
@@ -324,7 +367,25 @@ def _thumbnail_div(
 def _write_backreferences(
     backrefs, seen_backrefs, gallery_conf, target_dir, fname, snippet, title
 ):
-    """Write backreference file including a thumbnail list of examples."""
+    """Write backreference file for one example including a thumbnail list of examples.
+
+    Parameters
+    ----------
+    backrefs : set[str]
+        Back references to write.
+    seen_backrefs: set
+        Back references already encountered when parsing this example.
+    gallery_conf : Dict[str, Any]
+        Gallery configurations.
+    target_dir : str
+        Absolute path to directory where examples are saved.
+    fname : str
+        Filename of current example python file.
+    snippet : str
+        Introductory docstring of example.
+    title: str
+        Title of example.
+    """
     if gallery_conf["backreferences_dir"] is None:
         return
 

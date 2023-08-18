@@ -1,8 +1,7 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Testing the rst files generator
-"""
+"""Testing the rst files generator."""
+
 import os
 import tempfile
 import sys
@@ -20,8 +19,7 @@ def test_embed_code_links_get_data():
 
 
 def test_shelve(tmpdir):
-    """Test if shelve can be caches information
-    retrieved after file is deleted"""
+    """Test if shelve can cache and retrieve data after file is deleted."""
     test_string = "test information"
     tmp_cache = str(tmpdir)
     with tempfile.NamedTemporaryFile("w", delete=False) as f:
