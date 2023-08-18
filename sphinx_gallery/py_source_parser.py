@@ -82,8 +82,8 @@ def _get_docstring_and_rest(filename):
         ``filename`` content without the docstring
     lineno : int
         The line number.
-    node : ast Node
-        The node.
+    node : ast.Module
+        The ast node.
     """
     node, content = parse_source_file(filename)
 
@@ -167,8 +167,8 @@ def split_code_and_text_blocks(source_file, return_node=False):
         (label, content, line_number)
         List where each element is a tuple with the label ('text' or 'code'),
         the corresponding content string of block and the leading line number.
-    node : ast Node
-        The parsed node.
+    node : ast.Module
+        The parsed ast node.
     """
     docstring, rest_of_content, lineno, node = _get_docstring_and_rest(source_file)
     blocks = [("text", docstring, 1)]
