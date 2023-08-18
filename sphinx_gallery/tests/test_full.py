@@ -348,7 +348,6 @@ def test_repr_html_classes(sphinx_app):
     example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
     with codecs.open(example_file, "r", "utf-8") as fid:
         lines = fid.read()
-    print(lines)
     assert 'div class="output_subarea output_html rendered_html output_result"' in lines
     assert "gallery-rendered-html.css" in lines
 
