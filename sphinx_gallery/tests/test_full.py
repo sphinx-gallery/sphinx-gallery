@@ -350,7 +350,7 @@ def test_repr_html_classes(sphinx_app):
         lines = fid.read()
     assert (
         'div class="output_subarea output_html rendered_html output_result"' in lines
-    )  # noqa: E501
+    )
     assert "gallery-rendered-html.css" in lines
 
 
@@ -553,7 +553,9 @@ def test_backreferences_examples_html(sphinx_app):
     n_documented = len(regex.findall(lines))
     possible = "\n".join(line for line in lines.split("\n") if "<dt " in line)
     # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
-    assert n_documented == 5, possible
+    # NameFinder.get_mapping, NameFinder.visit_Attribute, NameFinder.visit_Import
+    # NameFinder.visit_ImportFrom, NameFinder.visit_Name
+    assert n_documented == 10, possible
     # identify_names, DummyClass, NameFinder (3); once doc, once left bar (x2)
     n_mini = lines.count("Examples using ")
     assert n_mini == 6
