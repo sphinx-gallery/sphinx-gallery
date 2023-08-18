@@ -176,28 +176,6 @@ def _parse_srcset(st):
     return srcset
 
 
-def _copy_images(self, node):
-    srcset = _parse_srcset(node["srcset"])
-
-    # where the sources are.  i.e. myproj/source
-    srctop = self.builder.srcdir
-
-    # copy image from source to imagedir.  This is
-    # *probably* supposed to be done by a builder but...
-    # ie myproj/build/html/_images
-    imagedir = os.path.join(self.builder.imagedir, "")
-    imagedir = PurePosixPath(self.builder.outdir, imagedir)
-
-    os.makedirs(imagedir, exist_ok=True)
-
-    # copy all the sources to the imagedir:
-    for mult in srcset:
-        abspath = PurePosixPath(srctop, srcset[mult][1:])
-        shutil.copyfile(abspath, imagedir / abspath.name)
-
-    return imagedir, srcset
-
-
 def visit_imgsg_html(self, node):
     if node["srcset"] is None:
         self.visit_image(node)
@@ -265,6 +243,28 @@ def visit_imgsg_latex(self, node):
         node["uri"] = str(PurePosixPath(srcset[maxmult]).name)
 
     self.visit_image(node)
+
+
+def _copy_images(self, node):
+    srcset = _parse_srcset(node["srcset"])
+
+    # where the sources are.  i.e. myproj/source
+    srctop = self.builder.srcdir
+
+    # copy image from source to imagedir.  This is
+    # *probably* supposed to be done by a builder but...
+    # ie myproj/build/html/_images
+    imagedir = os.path.join(self.builder.imagedir, "")
+    imagedir = PurePosixPath(self.builder.outdir, imagedir)
+
+    os.makedirs(imagedir, exist_ok=True)
+
+    # copy all the sources to the imagedir:
+    for mult in srcset:
+        abspath = PurePosixPath(srctop, srcset[mult][1:])
+        shutil.copyfile(abspath, imagedir / abspath.name)
+
+    return imagedir, srcset
 
 
 def depart_imgsg_html(self, node):
