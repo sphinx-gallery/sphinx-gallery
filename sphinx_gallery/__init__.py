@@ -7,7 +7,7 @@ import os
 
 # dev versions should have "dev" in them, stable should not.
 # doc/conf.py makes use of this to set the version drop-down.
-__version__ = "0.14.0"
+__version__ = "0.15.dev0"
 
 
 def glr_path_static():
