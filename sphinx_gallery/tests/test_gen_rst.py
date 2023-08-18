@@ -1,8 +1,7 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Testing the rst files generator
-"""
+"""Testing the rst files generator."""
+
 import ast
 import codecs
 import importlib
@@ -65,8 +64,7 @@ CONTENT = [
 
 
 def test_split_code_and_text_blocks():
-    """Test if a known example file gets properly split"""
-
+    """Test if a known example file gets properly split."""
     file_conf, blocks = sg.split_code_and_text_blocks("examples/no_output/just_code.py")
 
     assert file_conf == {}
@@ -75,10 +73,10 @@ def test_split_code_and_text_blocks():
 
 
 def test_bug_cases_of_notebook_syntax():
-    """Test the known requirements of supported syntax in the
-    notebook styled comments. Use both '#'s' and '#%%' as cell
-    separators"""
+    """Test the block splitting with supported syntax in notebook styled example.
 
+    `plot_parse.py` uses both '#'s' and '#%%' as cell separators.
+    """
     with open("sphinx_gallery/tests/reference_parse.txt") as reference:
         ref_blocks = ast.literal_eval(reference.read())
         file_conf, blocks = sg.split_code_and_text_blocks("tutorials/plot_parse.py")
@@ -127,7 +125,7 @@ def test_direct_comment_after_docstring():
 
 
 def test_final_rst_last_word(tmpdir):
-    """Tests last word in final rst block included as text"""
+    """Tests last word in final rst block included as text."""
     filename = str(tmpdir.join("temp.py"))
     with open(filename, "w") as f:
         f.write(
@@ -547,8 +545,7 @@ def test_remove_ignore_blocks(gallery_conf, req_pil, remove_config_comments):
 
 
 def test_dummy_image_error(gallery_conf, req_pil):
-    """Test correct error is raised if int not provided to
-    sphinx_gallery_dummy_images."""
+    """Test sphinx_gallery_dummy_images configuration validated."""
     content_image = CONTENT + [
         "# sphinx_gallery_dummy_images=False",
     ]
@@ -558,8 +555,10 @@ def test_dummy_image_error(gallery_conf, req_pil):
 
 
 def test_final_empty_block(gallery_conf, req_pil):
-    """Test empty final block is removed. Empty final block can occur after
-    sole config comment is removed from final block."""
+    """Test empty final block is removed.
+
+    Empty final block can occur after sole config comment is removed from final block.
+    """
     content_block = CONTENT + ["# %%", "", "# sphinx_gallery_line_numbers = True"]
     gallery_conf["remove_config_comments"] = True
     rst = _generate_rst(gallery_conf, "test.py", content_block)
@@ -682,7 +681,7 @@ def test_pattern_matching(gallery_conf, log_collector, req_pil):
     ],
 )
 def test_thumbnail_number(test_str):
-    # which plot to show as the thumbnail image
+    """Test correct plot used as thumbnail image."""
     with tempfile.NamedTemporaryFile("w", delete=False) as f:
         f.write("\n".join(['"Docstring"', test_str]))
     try:
@@ -702,7 +701,7 @@ def test_thumbnail_number(test_str):
     ],
 )
 def test_thumbnail_path(test_str):
-    # which plot to show as the thumbnail image
+    """Test correct plot used for thumbnail image."""
     with tempfile.NamedTemporaryFile("w", delete=False) as f:
         f.write("\n".join(['"Docstring"', test_str]))
     try:
@@ -810,8 +809,9 @@ def test_output_no_ansi(gallery_conf, script_vars):
 
 
 def test_absl_logging(gallery_conf, script_vars):
-    """Test using absl logging does not throw error. This is important, as many
-    popular libraries like Tensorflow use absl for logging.
+    """Test using absl logging does not throw error.
+
+    This is important, as many popular libraries like Tensorflow use absl for logging.
     """
     pytest.importorskip("absl")
 

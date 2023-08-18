@@ -1,3 +1,5 @@
+"""Testing sphinx_gallery.load_style extension."""
+
 import os
 import pytest
 
@@ -16,4 +18,4 @@ def test_load_style(sphinx_app_wrapper):
         content = fid.read()
     assert (
         'link rel="stylesheet" type="text/css" href="_static/sg_gallery.css' in content
-    )  # noqa: E501
+    )

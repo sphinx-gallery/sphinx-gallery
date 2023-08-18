@@ -1,8 +1,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Test the SG pipeline used with Sphinx
-"""
+"""Test the SG pipeline used with Sphinx and tinybuild."""
 
 import codecs
 from io import StringIO
@@ -269,8 +267,7 @@ def test_thumbnail_path(sphinx_app, tmpdir):
 
 
 def test_negative_thumbnail_config(sphinx_app, tmpdir):
-    """Test 'sphinx_gallery_thumbnail_number' config works correctly for
-    negative numbers."""
+    """Test 'sphinx_gallery_thumbnail_number' config correct for negative numbers."""
     import numpy as np
 
     # Make sure our thumbnail is the 2nd (last) image
@@ -351,9 +348,7 @@ def test_repr_html_classes(sphinx_app):
     example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
     with codecs.open(example_file, "r", "utf-8") as fid:
         lines = fid.read()
-    assert (
-        'div class="output_subarea output_html rendered_html output_result"' in lines
-    )  # noqa: E501
+    assert 'div class="output_subarea output_html rendered_html output_result"' in lines
     assert "gallery-rendered-html.css" in lines
 
 
@@ -556,7 +551,9 @@ def test_backreferences_examples_html(sphinx_app):
     n_documented = len(regex.findall(lines))
     possible = "\n".join(line for line in lines.split("\n") if "<dt " in line)
     # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
-    assert n_documented == 5, possible
+    # NameFinder.get_mapping, NameFinder.visit_Attribute, NameFinder.visit_Import
+    # NameFinder.visit_ImportFrom, NameFinder.visit_Name
+    assert n_documented == 10, possible
     # identify_names, DummyClass, NameFinder (3); once doc, once left bar (x2)
     n_mini = lines.count("Examples using ")
     assert n_mini == 6
@@ -609,11 +606,8 @@ def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
 
 
 def test_rebuild(tmpdir_factory, sphinx_app):
-    # Make sure that examples that haven't been changed aren't run twice.
-
-    #
+    """Test examples that haven't been changed aren't run twice."""
     # First run completes in the fixture.
-    #
     status = sphinx_app._status.getvalue()
     lines = [line for line in status.split("\n") if "removed" in line]
     want = f".*{N_RST} added, 0 changed, 0 removed.*"
@@ -989,7 +983,7 @@ def test_error_messages_dirhtml(sphinx_dirhtml_app, name, want):
 
 
 def test_alt_text_image(sphinx_app):
-    """Test alt text for matplotlib images in html and rst"""
+    """Test alt text for matplotlib images in html and rst."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
     # alt text is fig titles, rst
@@ -1214,8 +1208,7 @@ def test_defer_figures(sphinx_app):
 
 
 def test_no_dummy_image(sphinx_app):
-    """Test that sphinx_gallery_dummy_images are NOT created (when executable
-    is True)."""
+    """Test sphinx_gallery_dummy_images NOT created when executable is True."""
     img1 = op.join(
         sphinx_app.srcdir, "auto_examples", "images", "sphx_glr_plot_repr_001.png"
     )

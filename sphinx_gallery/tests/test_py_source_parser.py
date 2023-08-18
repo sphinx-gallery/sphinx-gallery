@@ -1,12 +1,6 @@
-r"""
-Test source parser
-==================
-
-
-"""
 # Author: Óscar Nájera
 # License: 3-clause BSD
-
+r"""Test source parser."""
 
 import os.path as op
 import pytest
@@ -16,6 +10,7 @@ import sphinx_gallery.py_source_parser as sg
 
 
 def test_get_docstring_and_rest(unicode_sample, tmpdir, monkeypatch):
+    """Test `_get_docstring_and_rest` correctly splits docstring and rest of example."""
     docstring, rest, lineno, _ = sg._get_docstring_and_rest(unicode_sample)
     assert "Únicode" in docstring
     assert "heiß" in rest
@@ -46,6 +41,7 @@ def test_get_docstring_and_rest(unicode_sample, tmpdir, monkeypatch):
     ],
 )
 def test_extract_file_config(content, file_conf, log_collector):
+    """Test file config correctly extracted."""
     if file_conf is None:
         assert sg.extract_file_config(content) == {}
         log_collector.warning.assert_called_once()

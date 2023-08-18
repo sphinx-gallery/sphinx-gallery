@@ -1,3 +1,5 @@
+"""Testing image scrapers."""
+
 import os
 
 import pytest
@@ -18,7 +20,7 @@ from sphinx_gallery.scrapers import (
 
 @pytest.fixture(scope="function")
 def gallery_conf(tmpdir):
-    """Sets up a test sphinx-gallery configuration"""
+    """Sets up a test sphinx-gallery configuration."""
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
@@ -31,10 +33,13 @@ def gallery_conf(tmpdir):
 
 
 class matplotlib_svg_scraper:
+    """Test matplotlib svg scraper."""
+
     def __repr__(self):
         return self.__class__.__name__
 
     def __call__(self, *args, **kwargs):
+        """Call matplotlib scraper with 'svg' format."""
         return matplotlib_scraper(*args, format="svg", **kwargs)
 
 
@@ -167,7 +172,7 @@ def test_custom_scraper(gallery_conf, monkeypatch):
 
 @pytest.mark.parametrize("ext", _KNOWN_IMG_EXTS)
 def test_figure_rst(ext):
-    """Testing rst of images"""
+    """Test reST generation of images."""
     figure_list = ["sphx_glr_plot_1." + ext]
     image_rst = figure_rst(figure_list, ".")
     single_image = f"""
@@ -209,7 +214,7 @@ def test_figure_rst(ext):
 
 
 def test_figure_rst_srcset():
-    """Test reST generation of images with srcsetpaths correct."""
+    """Test reST generation of images with srcset paths correct."""
     figure_list = ["sphx_glr_plot_1.png"]
     hipaths = [{0: "sphx_glr_plot_1.png", 2.0: "sphx_glr_plot_1_2_00.png"}]
     image_rst = figure_rst(figure_list, ".", srcsetpaths=hipaths)

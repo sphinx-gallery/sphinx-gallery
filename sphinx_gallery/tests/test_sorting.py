@@ -1,10 +1,6 @@
-r"""
-Tests for sorting keys on gallery (sub)sections
-===============================================
-
-"""
 # Author: Óscar Nájera
 # License: 3-clause BSD
+r"""Tests for sorting keys on gallery (sub)sections."""
 
 import os.path as op
 import pytest
@@ -20,8 +16,7 @@ from sphinx_gallery.sorting import (
 
 
 def test_ExplicitOrder_sorting_key():
-    """Test ExplicitOrder"""
-
+    """Test ExplicitOrder."""
     all_folders = ["e", "f", "d", "c", "01b", "a"]
     explicit_folders = ["f", "d"]
     key = ExplicitOrder(explicit_folders)
