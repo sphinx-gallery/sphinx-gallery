@@ -257,7 +257,7 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
     -------
     example_code_obj : OrderedDict[str, Any]
         OrderedDict with information about all code object references found in an
-        example. OrderedDict containts the following keys:
+        example. OrderedDict contains the following keys:
 
             - example_code_obj['name'] : function or class name (str)
             - example_code_obj['module'] : module name (str)

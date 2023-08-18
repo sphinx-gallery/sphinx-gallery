@@ -183,7 +183,7 @@ def generate_image_src(image_path, gallery_conf, target_dir):
     URLs are unchanged.
     If "notebook_images" config is a str, it is used as a prefix to image path, relative
     to "src_dir". If "notebook_images" is `True`, image is embedded as URI. If
-    "notebook_images" is `False`, "file://" is preprended.
+    "notebook_images" is `False`, "file://" is prepended.
     """
     if re.match(r"https?://", image_path):
         return image_path

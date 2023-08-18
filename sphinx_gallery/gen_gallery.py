@@ -746,7 +746,7 @@ def cost_name_key(cost_name):
 
 
 def _format_for_writing(costs, path, kind="rst"):
-    """Provide formated computation summary text.
+    """Provide formatted computation summary text.
 
     Parameters
     ----------
@@ -761,7 +761,7 @@ def _format_for_writing(costs, path, kind="rst"):
     Returns
     -------
     lines: List[List[str]]
-        Formated computation text for each example, of format:
+        Formatted computation text for each example, of format:
         [example_file, time_elapsed, memory_used]
 
     lens: List[int]
