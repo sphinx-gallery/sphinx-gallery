@@ -1248,8 +1248,8 @@ def test_recommend_n_examples(sphinx_app):
     with codecs.open(fname, "r", "utf-8") as fid:
         html = fid.read()
 
-    count = html.count("<div class=\"sphx-glr-thumbnail-title\">")
+    count = html.count('<div class="sphx-glr-thumbnail-title">')
     n_examples = sphinx_app.config.sphinx_gallery_conf["recommender"]["n_examples"]
 
-    assert "<p class=\"rubric\">Related examples</p>" in html
+    assert '<p class="rubric">Related examples</p>' in html
     assert count == n_examples
