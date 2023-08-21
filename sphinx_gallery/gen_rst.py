@@ -1408,11 +1408,9 @@ def save_rst_example(
         jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, "  ")  # need an extra two
 
-    example_rst += CODE_DOWNLOAD.format(fname,
-                                        replace_py_ipynb(fname),
-                                        binder_badge_rst,
-                                        ref_fname,
-                                        jupyterlite_rst)
+    example_rst += CODE_DOWNLOAD.format(
+        fname, replace_py_ipynb(fname), binder_badge_rst, ref_fname, jupyterlite_rst
+    )
 
     if gallery_conf["recommender"]["enable"]:
         # extract the filename without the extension

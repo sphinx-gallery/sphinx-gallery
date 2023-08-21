@@ -757,22 +757,22 @@ def test_rst_example(gallery_conf):
 def test_recommendation_files(gallery_conf):
     """Test generated recommendations are in rst and are relevant."""
     pytest.importorskip("numpy")
-    gallery_conf.update(recommender={'enable': True, 'n_examples': 5})
+    gallery_conf.update(recommender={"enable": True, "n_examples": 5})
     file_dict = {
         "fox_jumps_dog.py": "The quick brown fox jumped over the lazy dog",
         "dog_sleeps.py": "The lazy dog slept all day",
         "fox_eats_dog_food.py": "The quick brown fox ate the lazy dog's food",
-        "dog_jumps_fox.py": "The quick dog jumped over the lazy fox"
+        "dog_jumps_fox.py": "The quick dog jumped over the lazy fox",
     }
 
     for file_name, content in file_dict.items():
-        file_path = os.path.join(gallery_conf['gallery_dir'], file_name)
-        with open(file_path, 'w') as f:
+        file_path = os.path.join(gallery_conf["gallery_dir"], file_name)
+        with open(file_path, "w") as f:
             f.write(content)
         sg.save_rst_example("example_rst", file_path, 0, 0, gallery_conf)
 
-        test_file = re.sub(r'\.py$', '.rst', file_path)
-        recommendation_file = re.sub(r'\.py$', '.recommendations', file_name)
+        test_file = re.sub(r"\.py$", ".rst", file_path)
+        recommendation_file = re.sub(r"\.py$", ".recommendations", file_name)
         with codecs.open(test_file) as f:
             rst = f.read()
 
