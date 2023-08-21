@@ -8,6 +8,7 @@ Recommendation system generator
 Generate recommendations based on TF-IDF representation and a KNN model.
 """
 import numbers
+
 # import pickle
 import re
 from collections import defaultdict
@@ -50,6 +51,7 @@ class ExampleRecommender:
     def __init__(self, *, n_examples=5, tokenizer="raw"):
         try:
             import numpy as np
+
             self.np = np
         except ImportError:
             raise ConfigError("gallery_conf['recommender'] requires numpy")
@@ -94,9 +96,7 @@ class ExampleRecommender:
                 feature_names.append(feature_name)
                 all_values[feature_name].append(feature_value)
 
-        feature_dict = {
-            feature: i for i, feature in enumerate(sorted(all_values))
-        }
+        feature_dict = {feature: i for i, feature in enumerate(sorted(all_values))}
         X = np.zeros((len(data), len(feature_dict)))
         for idx, row in enumerate(data):
             for feature_name, feature_value in row.items():
@@ -232,7 +232,7 @@ class ExampleRecommender:
         sorted_items = sorted(similar_items, key=lambda x: x[1], reverse=True)
 
         # Get the top k items similar to item_id
-        top_k_items = [idx for idx, _ in sorted_items[1:self.n_examples + 1]]
+        top_k_items = [idx for idx, _ in sorted_items[1 : self.n_examples + 1]]
         recommendations = [self.file_names_[idx] for idx in top_k_items]
         return recommendations
 
@@ -252,9 +252,7 @@ def _write_recommendations(recommender, fname, gallery_conf):
         Configuration dictionary for the sphinx-gallery extension.
     """
     path_fname = Path(fname)
-    recommend_fname = (
-        f"{path_fname.parent / path_fname.stem}.recommendations.new"
-    )
+    recommend_fname = f"{path_fname.parent / path_fname.stem}.recommendations.new"
     recommended_examples = recommender.predict(fname)
 
     with open(recommend_fname, "w", encoding="utf-8") as ex_file:
@@ -277,4 +275,4 @@ def _write_recommendations(recommender, fname, gallery_conf):
                 )
             )
         ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
-    _replace_md5(recommend_fname, mode='t')
+    _replace_md5(recommend_fname, mode="t")
