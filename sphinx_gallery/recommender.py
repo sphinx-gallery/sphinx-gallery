@@ -8,8 +8,6 @@ Generate recommendations based on TF-IDF representation and a KNN model.
 
 
 import numbers
-
-# import pickle
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -34,15 +32,15 @@ class ExampleRecommender:
         Number of most relevant examples to display.
 
     tokenizer : {"raw", "backrefs"}, default="raw"
-        The type of tokenizer to use. If "raw", the raw text will be used as
-        tokens. If "backrefs", the list of sphinx-gallery backreferences will
-        be used as tokens.
+        The type of tokenizer to use. If "raw", the raw text is used as
+        tokens. If "backrefs", the list of sphinx-gallery backreferences is
+        used as tokens.
 
     Attributes
     ----------
     file_names_ : list of str
         The list of file names used for computing the similarity matrix.
-        The recommended examples will be chosen among this list.
+        The recommended examples are chosen among this list.
 
     similarity_matrix_ : dense matrix
         Fitted matrix of pairwise cosine similarities.
@@ -128,7 +126,7 @@ class ExampleRecommender:
 
         return X_tfidf
 
-    def cosine_similarity(self, X, Y=None, dense_output=True):
+    def cosine_similarity(self, X, Y=None):
         """
         Compute the cosine similarity between two vectors X and Y.
 
