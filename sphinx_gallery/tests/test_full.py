@@ -1239,3 +1239,17 @@ def test_jupyterlite_modifications(sphinx_app):
             f"JupyterLite-specific change for {notebook_filename}"
             in first_cell["source"]
         )
+
+
+def test_recommend_n_examples(sphinx_app):
+    """Test the deferring of figures."""
+    root = op.join(sphinx_app.outdir, "auto_examples")
+    fname = op.join(root, "plot_defer_figures.html")
+    with codecs.open(fname, "r", "utf-8") as fid:
+        html = fid.read()
+
+    count = html.count("<div class=\"sphx-glr-thumbnail-title\">")
+    n_examples = sphinx_app.config.sphinx_gallery_conf["recommender"]["n_examples"]
+
+    assert "<p class=\"rubric\">Related examples</p>" in html
+    assert count == n_examples
