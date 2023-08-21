@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# Author: Arturo Amor
-# License: 3-clause BSD
-"""
-Recommendation system generator
-===============================
+"""Recommendation system generator.
 
 Generate recommendations based on TF-IDF representation and a KNN model.
 """
+# Author: Arturo Amor
+# License: 3-clause BSD
+
+
 import numbers
 # import pickle
 import re
