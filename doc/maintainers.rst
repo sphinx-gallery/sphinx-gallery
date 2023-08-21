@@ -30,8 +30,8 @@ How to make a release
 
    To avoid the need to pass ``--token``, you can use ``export CHANGELOG_GITHUB_TOKEN=<your-40-digit-token>`` instead.
 
-2. Iteratively update `PR labels on GitHub <https://github.com/sphinx-gallery/sphinx-gallery/pulls?q=is%3Apr+is%3Aclosed>`__
-   and regenerate ``CHANGELOG.md`` so that PRs are categorized correctly. The labels we currently use are:
+2. Update `PR labels on GitHub <https://github.com/sphinx-gallery/sphinx-gallery/pulls?q=is%3Apr+is%3Aclosed>`__
+   if necessary and regenerate ``CHANGELOG.md`` so that PRs are categorized correctly. The labels we currently use are:
 
    ``bug``
       For fixed bugs.

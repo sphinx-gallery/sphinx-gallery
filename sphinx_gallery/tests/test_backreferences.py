@@ -1,8 +1,6 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Testing the rst files generator
-"""
+"""Testing the rst files generator."""
 
 import pytest
 import sys
@@ -35,29 +33,44 @@ REFERENCE = r"""
 {1}"""
 
 
-@pytest.mark.parametrize('content, tooltip, is_backref', [
-    # HTML sanitizing
-    ('<"test">', '&lt;&quot;test&quot;&gt;', False),
-    # backref support
-    ('test formating', 'test formating', True),
-    # reST sanitizing
-    ('1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`',
-     '1 b. 2 a.b 3 better name', False),
-    ('use :meth:`mne.io.Raw.plot_psd` to',
-     'use mne.io.Raw.plot_psd to', False),
-    ('`this` and ``that``; and `these things` and ``those things``',
-     'this and that; and these things and those things', False),
-])
+@pytest.mark.parametrize(
+    "content, tooltip, is_backref",
+    [
+        # HTML sanitizing
+        ('<"test">', "&lt;&quot;test&quot;&gt;", False),
+        # backref support
+        ("test formatting", "test formatting", True),
+        # reST sanitizing
+        (
+            "1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`",
+            "1 b. 2 a.b 3 better name",
+            False,
+        ),
+        ("use :meth:`mne.io.Raw.plot_psd` to", "use mne.io.Raw.plot_psd to", False),
+        (
+            "`this` and ``that``; and `these things` and ``those things``",
+            "this and that; and these things and those things",
+            False,
+        ),
+    ],
+)
 def test_thumbnail_div(content, tooltip, is_backref):
     """Test if the thumbnail div generates the correct string."""
-    with pytest.raises(ExtensionError, match='internal Sphinx-Gallery thumb'):
-        html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
-                                     '<"test">', '<"title">')
+    with pytest.raises(ExtensionError, match="internal Sphinx-Gallery thumb"):
+        html_div = sg._thumbnail_div(
+            "fake_dir", "", "test_file.py", '<"test">', '<"title">'
+        )
     content = _sanitize_rst(content)
-    title = 'test title'
-    html_div = sg._thumbnail_div('fake_dir', '', 'test_file.py',
-                                 content, title, is_backref=is_backref,
-                                 check=False)
+    title = "test title"
+    html_div = sg._thumbnail_div(
+        "fake_dir",
+        "",
+        "test_file.py",
+        content,
+        title,
+        is_backref=is_backref,
+        check=False,
+    )
     if is_backref:
         extra = """
 .. only:: not html
@@ -65,7 +78,7 @@ def test_thumbnail_div(content, tooltip, is_backref):
  * :ref:`sphx_glr_fake_dir_test_file.py`
 """
     else:
-        extra = ''
+        extra = ""
     reference = REFERENCE.format(tooltip, extra)
     assert html_div == reference
 
@@ -73,54 +86,66 @@ def test_thumbnail_div(content, tooltip, is_backref):
 def test_identify_names(unicode_sample, gallery_conf):
     """Test name identification."""
     expected = {
-        'os.path.join':
-            [{
-                'name': 'join',
-                'module': 'os.path',
-                'module_short': 'os.path',
-                'is_class': False,
-                'is_explicit': False,
-            }],
-        'br.identify_names':
-            [{
-                'name': 'identify_names',
-                'module': 'sphinx_gallery.back_references',
-                'module_short': 'sphinx_gallery.back_references',
-                'is_class': False,
-                'is_explicit': False,
-            }],
-        'identify_names':
-            [{
-                'name': 'identify_names',
-                'module': 'sphinx_gallery.back_references',
-                'module_short': 'sphinx_gallery.back_references',
-                'is_class': False,
-                'is_explicit': False,
-             }],
+        "os.path.join": [
+            {
+                "name": "join",
+                "module": "os.path",
+                "module_short": "os.path",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        "br.identify_names": [
+            {
+                "name": "identify_names",
+                "module": "sphinx_gallery.back_references",
+                "module_short": "sphinx_gallery.back_references",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        "identify_names": [
+            {
+                "name": "identify_names",
+                "module": "sphinx_gallery.back_references",
+                "module_short": "sphinx_gallery.back_references",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
         # Check `get_short_module_name` points to correct object.
         # Here, `matplotlib.pyplot.figure` (func) can be shortened to
         # `matplotlib.figure` (module) (but should not be)
-        'plt.figure':
-            [{
-                'name': 'figure',
-                'module': 'matplotlib.pyplot',
-                'module_short': 'matplotlib.pyplot',
-                'is_class': False,
-                'is_explicit': False,
-            }],
+        "plt.figure": [
+            {
+                "name": "figure",
+                "module": "matplotlib.pyplot",
+                "module_short": "matplotlib.pyplot",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        # Check we get a in a().b in `visit_Attribute`
+        "DummyClass": [
+            {
+                "name": "DummyClass",
+                "module": "sphinx_gallery.back_references",
+                "module_short": "sphinx_gallery.back_references",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
-    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
     res = sg.identify_names(script_blocks, ref_regex)
     assert expected == res
 
 
-@pytest.mark.parametrize(
-    ("mock", "short_module"), [("same", "A"), ("diff", "A.B")]
-)
+@pytest.mark.parametrize(("mock", "short_module"), [("same", "A"), ("diff", "A.B")])
 def test_get_short_module_name(mock, short_module):
     """Check `_get_short_module_name` correctly finds shortest module."""
-    if mock == 'same':
+    if mock == "same":
         mock_mod_1 = mock_mod_2 = MagicMock()
     else:
         mock_mod_1 = MagicMock()
@@ -159,70 +184,71 @@ e.HelloWorld().f.g
 h.i.j()
 """
     expected = {
-        'c':
-        [{
-            'name': 'c',
-            'module': 'a.b',
-            'module_short': 'a.b',
-            'is_class': False,
-            'is_explicit': False,
-        }],
-        'e.HelloWorld':
-        [{
-            'name': 'HelloWorld',
-            'module': 'd',
-            'module_short': 'd',
-            'is_class': False,
-            'is_explicit': False,
-        }],
-        'h.i.j':
-        [{
-            'name': 'j',
-            'module': 'h.i',
-            'module_short': 'h.i',
-            'is_class': False,
-            'is_explicit': False,
-        }],
+        "c": [
+            {
+                "name": "c",
+                "module": "a.b",
+                "module_short": "a.b",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        "e.HelloWorld": [
+            {
+                "name": "HelloWorld",
+                "module": "d",
+                "module_short": "d",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        "h.i.j": [
+            {
+                "name": "j",
+                "module": "h.i",
+                "module_short": "h.i",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
     }
 
     fname = tmpdir.join("identify_names.py")
-    fname.write(code_str, 'wb')
+    fname.write(code_str, "wb")
 
     _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
     res = sg.identify_names(script_blocks, ref_regex)
 
     assert expected == res
 
 
-cobj = dict(
-    module="m", module_short="m", name="n", is_class=False, is_explicit=True
-)
+cobj = dict(module="m", module_short="m", name="n", is_class=False, is_explicit=True)
 
 
 @pytest.mark.parametrize(
-    'text, default_role, ref, cobj',
+    "text, default_role, ref, cobj",
     [
-        (':func:`m.n`', None, 'm.n', cobj),
-        (':func:`~m.n`', 'obj', 'm.n', cobj),
-        (':func:`Title <m.n>`', None, 'm.n', cobj),
-        (':func:`!m.n` or `!t <~m.n>`', None, None, None),
-        ('`m.n`', 'obj', 'm.n', cobj),
-        ('`m.n`', None, None, None),  # see comment below
-        (':ref:`m.n`', None, None, None),
-        ('`m.n`', 'ref', None, None),
-        ('``literal``', 'obj', None, None),
+        (":func:`m.n`", None, "m.n", cobj),
+        (":func:`~m.n`", "obj", "m.n", cobj),
+        (":func:`Title <m.n>`", None, "m.n", cobj),
+        (":func:`!m.n` or `!t <~m.n>`", None, None, None),
+        ("`m.n`", "obj", "m.n", cobj),
+        ("`m.n`", None, None, None),  # see comment below
+        (":ref:`m.n`", None, None, None),
+        ("`m.n`", "ref", None, None),
+        ("``literal``", "obj", None, None),
     ],
     ids=[
-        'regular',
-        'show only last component',
-        'with title',
-        'no link for !',
-        'default_role obj',
-        'no default_role',  # see comment below
-        'non-python role',
-        'non-python default_role',
-        'literal',
+        "regular",
+        "show only last component",
+        "with title",
+        "no link for !",
+        "default_role obj",
+        "no default_role",  # see comment below
+        "non-python role",
+        "non-python default_role",
+        "literal",
     ],
 )
 # the sphinx default value for default_role is None = no change, the docutils
@@ -232,9 +258,9 @@ cobj = dict(
 def test_identify_names_explicit(text, default_role, ref, cobj, gallery_conf):
     """Test explicit name identification."""
     if default_role:
-        gallery_conf['app'].config['default_role'] = default_role
-    script_blocks = [('text', text, 1)]
+        gallery_conf["app"].config["default_role"] = default_role
+    script_blocks = [("text", text, 1)]
     expected = {ref: [cobj]} if ref else {}
-    ref_regex = sg._make_ref_regex(gallery_conf['app'].config)
+    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
     actual = sg.identify_names(script_blocks, ref_regex)
     assert expected == actual

@@ -14,8 +14,8 @@ if [ "$DISTRIB" == "conda" ]; then
     # source ~/miniconda/etc/profile.d/conda.sh
     echo "##vso[task.prependpath]$CONDA/bin"
     export PATH=${CONDA}/bin:${PATH}
-    CONDA_TO_INSTALL="python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib flake8 wheel libiconv graphviz memory_profiler \"ipython!=8.7.0\" pypandoc"
-    PIP_DEPENDENCIES="check-manifest jupyterlite-sphinx>=0.8.0,<0.9.0 jupyterlite-pyodide-kernel<0.1.0 libarchive-c numpy"
+    CONDA_TO_INSTALL="python=$PYTHON_VERSION pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels 'plotly>=4.0' joblib wheel libiconv graphviz memory_profiler \"ipython!=8.7.0\" pypandoc"
+    PIP_DEPENDENCIES="jupyterlite-sphinx>=0.8.0,<0.9.0 jupyterlite-pyodide-kernel<0.1.0 libarchive-c numpy"
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
     elif [ "$SPHINX_VERSION" == "dev" ]; then

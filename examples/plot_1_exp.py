@@ -21,22 +21,24 @@ from local_module import N  # = 100
 
 
 def main():
+    """Plot exponential functions."""
     x = np.linspace(-1, 2, N)
     y = np.exp(x)
 
     plt.figure()
     plt.plot(x, y)
-    plt.xlabel('$x$')
-    plt.ylabel(r'$\exp(x)$')
-    plt.title('Exponential function')
+    plt.xlabel("$x$")
+    plt.ylabel(r"$\exp(x)$")
+    plt.title("Exponential function")
 
     plt.figure()
     plt.plot(x, -np.exp(-x))
-    plt.xlabel('$x$')
-    plt.ylabel(r'$-\exp(-x)$')
-    plt.title('Negative exponential\nfunction')
+    plt.xlabel("$x$")
+    plt.ylabel(r"$-\exp(-x)$")
+    plt.title("Negative exponential\nfunction")
     # To avoid matplotlib text output
     plt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

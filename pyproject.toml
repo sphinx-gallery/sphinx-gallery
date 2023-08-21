@@ -1,0 +1,67 @@
+[tool.codespell]
+builtin = "clear,rare,informal,names,usage"
+ignore-words = "ignore_words.txt"
+
+[tool.ruff]
+select = ["E", "F", "W", "D"]
+exclude = ["__init__.py"]
+ignore = [
+    # TODO: A lot of these we should actually fix eventually
+    "D105", # Missing docstring in magic method
+    "D401", # First line of docstring should be in imperative mood
+]
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.per-file-ignores]
+"sphinx_gallery/tests/*.py" = [
+    "E501", # line too long
+    "D103", # Missing docstring in public function
+]
+"examples/no_output/plot_syntaxerror.py" = [
+    "E999", # SyntaxError
+]
+"tutorials/plot_parse.py" = [
+    "D202", # [*] No blank lines allowed after function docstring (found 1)
+    "D209", # Multi-line docstring closing quotes should be on a separate line
+]
+# Example files cannot satisfy below rules due to header and imports in code blocks
+"*examples*/*.py" = [
+    "D400", # First line should end with a period
+    "E402", # Module level import not at top of file
+    "D205", # 1 blank line required between summary line and description
+]
+"tutorials/*.py" = [
+    "D400", # First line should end with a period
+    "E402", # Module level import not at top of file
+    "D205", # 1 blank line required between summary line and description
+]
+"bin/*.py" = [
+    "D400", # First line should end with a period
+    "D205", # 1 blank line required between summary line and description
+]
+"sphinx_gallery/tests/testconfs/src/*.py" = [
+    "D400", # First line should end with a period
+    "D205", # 1 blank line required between summary line and description
+]
+
+[tool.pytest.ini_options]
+addopts = """--cov-report= --cov=sphinx_gallery --durations=5 -r a --tb=short --junit-xml=junit-results.xml"""
+python_files = "tests/*.py"
+norecursedirs = "build _build auto_examples gen_modules sphinx_gallery/tests/tinybuild"
+filterwarnings = """
+    ignore:.*HasTraits.trait_.*:DeprecationWarning
+    ignore:.*importing the ABCs.*:DeprecationWarning
+    ignore:np.loads is deprecated, use pickle.loads instead:DeprecationWarning
+    ignore:'U' mode is deprecated:DeprecationWarning
+    ignore:node class .* is already registered.*:
+    ignore:node.Node.* is obsoleted by Node.*:
+"""
+junit_family = "xunit2"
+markers = """
+    conf_file:Configuration file.
+"""
+
+[tool.black]
+exclude = "(dist/)|(build/)"

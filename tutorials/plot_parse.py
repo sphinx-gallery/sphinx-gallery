@@ -12,7 +12,7 @@ edge cases. It was designed to be compared with the
 # %%
 # This is the first text block and directly follows the header docstring above.
 
-import numpy as np
+import numpy as np  # noqa: F401
 
 # %%
 
@@ -21,7 +21,7 @@ import numpy as np
 # you use only one of the above three 'block splitter' options in your project.
 A = 1
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: F401
 
 # %%
 # Block splitters allow you alternate between code and text blocks **and**
@@ -33,12 +33,14 @@ import matplotlib.pyplot as plt
 # separated text blocks only shows as a new lines between text, in the rendered
 # output.
 
+
 def dummy():
-    """This should not be part of a 'text' block'"""
+    """This should not be part of a 'text' block'"""  # noqa: D404
 
     # %%
     # This comment inside a code block will remain in the code block
     pass
+
 
 # this line should not be part of a 'text' block
 
@@ -78,7 +80,7 @@ def dummy():
 # reST header within text block
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-print('one')
+print("one")
 
 # %%
 #

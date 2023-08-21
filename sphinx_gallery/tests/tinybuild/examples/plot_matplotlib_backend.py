@@ -7,6 +7,7 @@ Setting the Matplotlib backend
 # The Matplotlib backend should start as `agg`
 
 import matplotlib
+
 print(f"Matplotlib backend is {matplotlib.get_backend()}")
 assert matplotlib.get_backend() == "agg"
 

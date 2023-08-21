@@ -1,6 +1,4 @@
-"""
-Utilities
-=========
+"""Utilities.
 
 Miscellaneous utilities.
 """
@@ -22,7 +20,7 @@ except Exception:  # Sphinx < 6
     from sphinx.util import status_iterator  # noqa: F401
 
 
-logger = sphinx.util.logging.getLogger('sphinx-gallery')
+logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
 def _get_image():
@@ -33,15 +31,17 @@ def _get_image():
             import Image
         except ImportError:
             raise ExtensionError(
-                'Could not import pillow, which is required '
-                f'to rescale images (e.g., for thumbnails): {exc}')
+                "Could not import pillow, which is required "
+                f"to rescale images (e.g., for thumbnails): {exc}"
+            )
     return Image
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
-    """Scales an image with the same aspect ratio centered in an
-       image box with the given max_width and max_height
-       if in_fname == out_fname the image can only be scaled down
+    """Scales image centered in image box using `max_width` and `max_height`.
+
+    The same aspect ratio is retained. If `in_fname` == `out_fname` the image can only
+    be scaled down.
     """
     # local import to avoid testing dependency on PIL:
     Image = _get_image()
@@ -74,7 +74,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     # width_sc, height_sc = img.size  # necessary if using thumbnail
 
     # insert centered
-    thumb = Image.new('RGBA', (max_width, max_height), (255, 255, 255, 0))
+    thumb = Image.new("RGBA", (max_width, max_height), (255, 255, 255, 0))
     pos_insert = ((max_width - width_sc) // 2, (max_height - height_sc) // 2)
     thumb.paste(img, pos_insert)
 
@@ -82,7 +82,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
         thumb.save(out_fname)
     except OSError:
         # try again, without the alpha channel (e.g., for JPEG)
-        thumb.convert('RGB').save(out_fname)
+        thumb.convert("RGB").save(out_fname)
 
 
 def optipng(fname, args=()):
@@ -97,23 +97,24 @@ def optipng(fname, args=()):
     args : tuple
         Extra command-line arguments, such as ``['-o7']``.
     """
-    if fname.endswith('.png'):
+    if fname.endswith(".png"):
         # -o7 because this is what CPython used
         # https://github.com/python/cpython/pull/8032
         try:
             subprocess.check_call(
-                ['optipng'] + list(args) + [fname],
+                ["optipng"] + list(args) + [fname],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                stderr=subprocess.PIPE,
+            )
         except (subprocess.CalledProcessError, OSError):  # FileNotFoundError
             pass
 
 
 def _has_optipng():
     try:
-        subprocess.check_call(['optipng', '--version'],
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+        subprocess.check_call(
+            ["optipng", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
     except OSError:  # FileNotFoundError
         return False
     else:
@@ -121,19 +122,20 @@ def _has_optipng():
 
 
 def replace_py_ipynb(fname):
-    """Replace .py extension in filename by .ipynb"""
+    """Replace '.py' extension in filename with '.ipynb'."""
     fname_prefix, extension = os.path.splitext(fname)
-    allowed_extension = '.py'
+    allowed_extension = ".py"
     if extension != allowed_extension:
         raise ValueError(
             f"Unrecognized file extension, expected {allowed_extension}, "
-            f"got {extension}")
-    new_extension = '.ipynb'
-    return f'{fname_prefix}{new_extension}'
+            f"got {extension}"
+        )
+    new_extension = ".ipynb"
+    return f"{fname_prefix}{new_extension}"
 
 
-def get_md5sum(src_file, mode='b'):
-    """Returns md5sum of file
+def get_md5sum(src_file, mode="b"):
+    """Returns md5sum of file.
 
     Parameters
     ----------
@@ -143,33 +145,32 @@ def get_md5sum(src_file, mode='b'):
         File mode to open file with. When in text mode, universal line endings
         are used to ensure consistency in hashes between platforms.
     """
-    if mode == 't':
-        kwargs = {'errors': 'surrogateescape', 'encoding': 'utf-8'}
+    if mode == "t":
+        kwargs = {"errors": "surrogateescape", "encoding": "utf-8"}
     else:
         kwargs = {}
-    with open(src_file, 'r' + mode, **kwargs) as src_data:
+    with open(src_file, "r" + mode, **kwargs) as src_data:
         src_content = src_data.read()
-        if mode == 't':
+        if mode == "t":
             src_content = src_content.encode(**kwargs)
         return hashlib.md5(src_content).hexdigest()
 
 
-def _replace_md5(fname_new, fname_old=None, method='move', mode='b'):
-    assert method in ('move', 'copy')
+def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
+    assert method in ("move", "copy")
     if fname_old is None:
-        assert fname_new.endswith('.new')
+        assert fname_new.endswith(".new")
         fname_old = os.path.splitext(fname_new)[0]
     replace = True
     if os.path.isfile(fname_old):
         if get_md5sum(fname_old, mode) == get_md5sum(fname_new, mode):
             replace = False
-            if method == 'move':
+            if method == "move":
                 os.remove(fname_new)
         else:
-            logger.debug(
-                f"Replacing stale {fname_old} with {fname_new}")
+            logger.debug(f"Replacing stale {fname_old} with {fname_new}")
     if replace:
-        if method == 'move':
+        if method == "move":
             move(fname_new, fname_old)
         else:
             copyfile(fname_new, fname_old)
@@ -180,6 +181,7 @@ def _has_pypandoc():
     """Check if pypandoc package available."""
     try:
         import pypandoc  # noqa
+
         # Import error raised only when function called
         version = pypandoc.get_pandoc_version()
     except (ImportError, OSError):
@@ -192,7 +194,9 @@ def _has_graphviz():
     try:
         import graphviz  # noqa F401
     except ImportError as exc:
-        logger.info('`graphviz` required for graphical visualization '
-                    f'but could not be imported, got: {exc}')
+        logger.info(
+            "`graphviz` required for graphical visualization "
+            f"but could not be imported, got: {exc}"
+        )
         return False
     return True

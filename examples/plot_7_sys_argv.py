@@ -10,13 +10,12 @@ file name. Further, any arguments added will take on the default value.
 
 This behavior can be changed by using the `reset_argv` option in the sphinx configuration, see :ref:`reset_argv`.
 
-"""
+"""  # noqa: E501
 
 import argparse
 import sys
 
-parser = argparse.ArgumentParser(description='Toy parser')
-parser.add_argument('--option', default='default',
-                    help='a dummy optional argument')
-print('sys.argv:', sys.argv)
-print('parsed args:', parser.parse_args())
+parser = argparse.ArgumentParser(description="Toy parser")
+parser.add_argument("--option", default="default", help="a dummy optional argument")
+print("sys.argv:", sys.argv)
+print("parsed args:", parser.parse_args())

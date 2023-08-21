@@ -23,7 +23,7 @@ plt.pcolormesh(np.random.randn(100, 100))
 # %%
 # This next block will raise a NameError
 
-iae
+iae  # noqa
 
 # %%
 # Sphinx gallery will stop executing the remaining code blocks after
@@ -34,4 +34,4 @@ iae
 # %%
 # Here is another error raising block but will not be executed
 
-plt.plot('Strings are not a valid argument for the plot function')
+plt.plot("Strings are not a valid argument for the plot function")

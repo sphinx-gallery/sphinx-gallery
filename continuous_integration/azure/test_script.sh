@@ -15,10 +15,6 @@ fi
 if [ "$DISTRIB" != "minimal" ] && [ "$DISTRIB" != "nightly" ]; then
     which gcc
     gcc --version
-    cd doc
-    make SPHINXOPTS= html-noplot
-    make SPHINXOPTS=${SPHINXOPTS} html -j 2
-    cd ..
-    flake8 sphinx_gallery
-    check-manifest
+    make -C doc SPHINXOPTS= html-noplot
+    make -C doc SPHINXOPTS=${SPHINXOPTS} html -j 2
 fi
