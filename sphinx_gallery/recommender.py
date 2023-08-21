@@ -102,8 +102,7 @@ class ExampleRecommender:
         return X
 
     def compute_tf_idf(self, X):
-        """Transform a term frequency matrix into a term frequency-inverse
-        document frequency (TF-IDF) matrix.
+        """Transform a term frequency matrix into a TF-IDF matrix.
 
         Parameters
         ----------
