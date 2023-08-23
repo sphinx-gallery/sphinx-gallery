@@ -30,6 +30,10 @@ class ExampleRecommender:
     ----------
     n_examples : int, default=5
         Number of most relevant examples to display.
+    min_df : int, default=1
+        When building the vocabulary ignore terms that have a document frequency
+        strictly lower than the given threshold in terms of absolute counts.
+        This value is also called cut-off in the literature.
 
     Attributes
     ----------
@@ -41,8 +45,9 @@ class ExampleRecommender:
         Fitted matrix of pairwise cosine similarities.
     """
 
-    def __init__(self, *, n_examples=5):
+    def __init__(self, *, n_examples=5, min_df=1):
         self.n_examples = n_examples
+        self.min_df = min_df
 
     def token_freqs(self, doc):
         """Extract a dict mapping raw tokens from doc to their occurrences."""
@@ -164,18 +169,27 @@ class ExampleRecommender:
         self : object
             Fitted recommender.
         """
+        import numpy as np
+
         n_examples = self.n_examples
+        min_df = self.min_df
         if not isinstance(n_examples, numbers.Integral):
             raise ValueError("n_examples must be an integer")
         elif n_examples < 1:
             raise ValueError("n_examples must be strictly positive")
+        if not isinstance(min_df, numbers.Integral):
+            raise ValueError("min_df must be an integer")
+        elif min_df < 1:
+            raise ValueError("min_df must be strictly positive")
 
         freq_func = self.token_freqs
         counts_matrix = self.dict_vectorizer(
             [freq_func(Path(fname).read_text()) for fname in file_names]
         )
+        doc_appearances = np.sum(counts_matrix, axis=0)
+        mask = doc_appearances >= min_df
         self.similarity_matrix_ = self.cosine_similarity(
-            self.compute_tf_idf(counts_matrix)
+            self.compute_tf_idf(counts_matrix[:, mask])
         )
         self.file_names_ = file_names
         return self

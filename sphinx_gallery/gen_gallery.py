@@ -82,7 +82,7 @@ DEFAULT_GALLERY_CONF = {
     "download_all_examples": True,
     "abort_on_example_error": False,
     "only_warn_on_example_error": False,
-    "recommender": {"enable": False, "n_examples": 5},
+    "recommender": {"enable": False, "n_examples": 5, "min_df": 1},
     "failing_examples": {},
     "passing_examples": [],
     "stale_examples": [],  # ones that did not need to be run due to md5sum
@@ -667,7 +667,8 @@ def generate_gallery_rst(app):
         # Build recommendation system
         if gallery_conf["recommender"]["enable"]:
             n_examples = gallery_conf["recommender"]["n_examples"]
-            recommender = ExampleRecommender(n_examples=n_examples)
+            min_df = gallery_conf["recommender"]["min_df"]
+            recommender = ExampleRecommender(n_examples=n_examples, min_df=min_df)
 
             gallery_py_files = []
             # root and subsection directories containing python examples
