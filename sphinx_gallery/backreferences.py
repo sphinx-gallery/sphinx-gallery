@@ -186,10 +186,14 @@ def _get_short_module_name(module_name, obj_name):
         attr = None
 
     try:
+        # look only in sys.modules to avoid importing the module, which may
+        # otherwise have side effects
         real_obj = getattr(sys.modules[module_name], obj_name)
         if attr is not None:
-            getattr(real_obj, attr)  # wrong class
-    except (AttributeError, KeyError):  # wrong object
+            getattr(real_obj, attr)
+    except (AttributeError, KeyError):
+        # AttributeError: wrong class
+        # KeyError: wrong object or module not previously imported
         return None
 
     parts = module_name.split(".")
@@ -198,7 +202,10 @@ def _get_short_module_name(module_name, obj_name):
         short_name = ".".join(parts[:i])
         try:
             assert real_obj is getattr(sys.modules[short_name], obj_name)
-        except (AssertionError, AttributeError, KeyError):  # wrong object
+        except (AssertionError, AttributeError, KeyError):
+            # AssertionError: shortened object is not what we expect
+            # KeyError: short module name not previously imported
+            # AttributeError: wrong class or object
             # get the last working module name
             short_name = ".".join(parts[: (i + 1)])
             break
