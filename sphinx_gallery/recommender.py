@@ -42,12 +42,6 @@ class ExampleRecommender:
     """
 
     def __init__(self, *, n_examples=5):
-        try:
-            import numpy as np
-
-            self.np = np
-        except ImportError:
-            raise ConfigError("gallery_conf['recommender'] requires numpy")
         self.n_examples = n_examples
 
     def token_freqs(self, doc):
@@ -80,7 +74,12 @@ class ExampleRecommender:
             the dataset and n_features is the total number of features across
             all samples.
         """
-        np = self.np
+        try:
+            import numpy as np
+
+        except ImportError:
+            raise ConfigError("gallery_conf['recommender'] requires numpy")
+
         feature_names = []
         all_values = defaultdict(list)
         for row in data:
@@ -108,7 +107,8 @@ class ExampleRecommender:
         X_tfidf : ndarray of shape (n_samples, n_features)
             A tf-idf matrix of the same shape as X.
         """
-        np = self.np
+        import numpy as np
+
         n_samples, n_features = X.shape
 
         df = np.count_nonzero(X, axis=0) + 1
@@ -137,7 +137,8 @@ class ExampleRecommender:
         cosine_similarity : ndarray of shape (n_samples_X, n_samples_Y)
             Cosine similarity matrix.
         """
-        np = self.np
+        import numpy as np
+
         if Y is X or Y is None:
             Y = X
 
