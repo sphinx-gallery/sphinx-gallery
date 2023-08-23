@@ -31,11 +31,6 @@ class ExampleRecommender:
     n_examples : int, default=5
         Number of most relevant examples to display.
 
-    tokenizer : {"raw", "backrefs"}, default="raw"
-        The type of tokenizer to use. If "raw", the raw text is used as
-        tokens. If "backrefs", the list of sphinx-gallery backreferences is
-        used as tokens.
-
     Attributes
     ----------
     file_names_ : list of str
@@ -46,7 +41,7 @@ class ExampleRecommender:
         Fitted matrix of pairwise cosine similarities.
     """
 
-    def __init__(self, *, n_examples=5, tokenizer="raw"):
+    def __init__(self, *, n_examples=5):
         try:
             import numpy as np
 
@@ -54,7 +49,6 @@ class ExampleRecommender:
         except ImportError:
             raise ConfigError("gallery_conf['recommender'] requires numpy")
         self.n_examples = n_examples
-        self.tokenizer = tokenizer
 
     def token_freqs(self, doc):
         """Extract a dict mapping raw tokens from doc to their occurrences."""
@@ -170,41 +164,15 @@ class ExampleRecommender:
             Fitted recommender.
         """
         n_examples = self.n_examples
-        known_tokenizers = {"raw", "backrefs"}
-        if self.tokenizer not in known_tokenizers:
-            raise ValueError(
-                f"Unknown tokenizer {self.tokenizer}. "
-                f"Expected one of {known_tokenizers}."
-            )
         if not isinstance(n_examples, numbers.Integral):
             raise ValueError("n_examples must be an integer")
         elif n_examples < 1:
             raise ValueError("n_examples must be strictly positive")
 
-        if self.tokenizer == "raw":
-            freq_func = self.token_freqs
-            counts_matrix = self.dict_vectorizer(
-                [freq_func(Path(fname).read_text()) for fname in file_names]
-            )
-        else:  # self.tokenizer == "backrefs"
-            freq_func = self.dict_freqs
-        #     backrefs_list = []
-        #     for fname in file_names:
-        #         pickle_file = fname[:-3] + "_codeobj.pickle"
-        #         try:
-        #             with open(pickle_file, "rb") as f:
-        #                 names = pickle.load(f)
-        #             back_references = [
-        #                 name.split("_codeobj")[0] for name in names.keys()
-        #             ]
-        #         except:
-        #             back_references = []
-        #             continue
-        #         backrefs_list.append(back_references)
-        #     counts_matrix = dict_vectorizer(
-        #         [freq_func(backref) for backref in backrefs_list]
-        #     )
-
+        freq_func = self.token_freqs
+        counts_matrix = self.dict_vectorizer(
+            [freq_func(Path(fname).read_text()) for fname in file_names]
+        )
         self.similarity_matrix_ = self.cosine_similarity(
             self.compute_tf_idf(counts_matrix)
         )
