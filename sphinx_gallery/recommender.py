@@ -51,7 +51,7 @@ class ExampleRecommender:
         Fitted matrix of pairwise cosine similarities.
     """
 
-    def __init__(self, *, n_examples=5, min_df=1, max_df=1.0):
+    def __init__(self, *, n_examples=5, min_df=3, max_df=0.9):
         self.n_examples = n_examples
         self.min_df = min_df
         self.max_df = max_df

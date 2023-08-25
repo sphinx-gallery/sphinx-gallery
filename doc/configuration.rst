@@ -1759,7 +1759,7 @@ configure it, pass a dictionary to the ``sphinx_gallery_conf``, e.g.::
 
     sphinx_gallery_conf = {
         ...
-        "recommender": {"enable": True, "n_examples": 5, "min_df": 1, "max_df": 1.0},
+        "recommender": {"enable": True, "n_examples": 5, "min_df": 3, "max_df": 0.9},
     }
 
 The only necessary parameter is ``enable``. If any other parameters is not
@@ -1771,12 +1771,12 @@ enable (type: bool, default: False)
   feature requires adding `numpy` to the dependencies.
 n_examples (type: int, default: 5)
   Number of most relevant examples to display.
-min_df (type: float in range [0.0, 1.0] | int, default: 1)
+min_df (type: float in range [0.0, 1.0] | int, default: 3)
   When building the vocabulary ignore terms that have a document frequency
   strictly lower than the given threshold. If float, the parameter represents a
   proportion of documents, integer represents absolute counts. This value is
   also called cut-off in the literature.
-max_df (type: float in range [0.0, 1.0] | int, default: 1.0)
+max_df (type: float in range [0.0, 1.0] | int, default: 0.9)
   When building the vocabulary ignore terms that have a document frequency
   strictly higher than the given threshold. If float, the parameter represents a
   proportion of documents, integer represents absolute counts.

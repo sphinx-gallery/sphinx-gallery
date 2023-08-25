@@ -757,7 +757,7 @@ def test_rst_example(gallery_conf):
 def test_recommendation_files(gallery_conf):
     """Test generated recommendations are in rst and are relevant."""
     pytest.importorskip("numpy")
-    gallery_conf.update(recommender={"enable": True, "n_examples": 5})
+    gallery_conf.update(recommender={"enable": True})
     file_dict = {
         "fox_jumps_dog.py": "The quick brown fox jumped over the lazy dog",
         "dog_sleeps.py": "The lazy dog slept all day",
@@ -786,7 +786,7 @@ def test_recommendation_files(gallery_conf):
     gallery_py_files = [
         os.path.join(gallery_conf["gallery_dir"], fname) for fname in py_files
     ]
-    recommender = ExampleRecommender(n_examples=1)
+    recommender = ExampleRecommender(n_examples=1, min_df=1)
     recommender.fit(gallery_py_files)
     recommended_example = recommender.predict(file_path)  # dog_jumps_fox.py
 
