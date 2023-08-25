@@ -1754,7 +1754,7 @@ e.g.::
 
     sphinx_gallery_conf = {
         ...
-        "recommender": {"enable": True, "n_examples": 5, "min_df": 1},
+        "recommender": {"enable": True, "n_examples": 5, "min_df": 1, "max_df": 1.0},
     }
 
 Enabling this feature requires adding `numpy` to the dependencies.

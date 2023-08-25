@@ -35,7 +35,11 @@ class ExampleRecommender:
         strictly lower than the given threshold. If float, the parameter
         represents a proportion of documents, integer represents absolute
         counts. This value is also called cut-off in the literature.
-
+    max_df : float in range [0.0, 1.0] or int, default=1.0
+        When building the vocabulary ignore terms that have a document frequency
+        strictly higher than the given threshold. If float, the parameter
+        represents a proportion of documents, integer represents absolute
+        counts.
     Attributes
     ----------
     file_names_ : list of str
@@ -46,9 +50,10 @@ class ExampleRecommender:
         Fitted matrix of pairwise cosine similarities.
     """
 
-    def __init__(self, *, n_examples=5, min_df=1):
+    def __init__(self, *, n_examples=5, min_df=1, max_df=1.0):
         self.n_examples = n_examples
         self.min_df = min_df
+        self.max_df = max_df
 
     def token_freqs(self, doc):
         """Extract a dict mapping raw tokens from doc to their occurrences."""
@@ -174,6 +179,7 @@ class ExampleRecommender:
 
         n_examples = self.n_examples
         min_df = self.min_df
+        max_df = self.max_df
         if not isinstance(n_examples, numbers.Integral):
             raise ValueError("n_examples must be an integer")
         elif n_examples < 1:
@@ -188,8 +194,12 @@ class ExampleRecommender:
             min_df = int(np.ceil(min_df * counts_matrix.shape[0]))
         elif not isinstance(min_df, numbers.Integral) and min_df > 1:
             raise ValueError("min_df must be float in range [0.0, 1.0] or int")
+        if isinstance(max_df, float) and 0.0 < max_df <= 1.0:
+            max_df = int(np.floor(max_df * counts_matrix.shape[0]))
+        elif not isinstance(max_df, numbers.Integral) and max_df > 1:
+            raise ValueError("max_df must be float in range [0.0, 1.0] or int")
         doc_appearances = np.sum(counts_matrix, axis=0)
-        mask = doc_appearances >= min_df
+        mask = (doc_appearances >= min_df) & (doc_appearances <= max_df)
         self.similarity_matrix_ = self.cosine_similarity(
             self.compute_tf_idf(counts_matrix[:, mask])
         )
