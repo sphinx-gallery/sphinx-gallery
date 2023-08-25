@@ -28,7 +28,6 @@ class ExampleRecommender:
 
     Parameters
     ----------
-
     n_examples : int, default=5
         Number of most relevant examples to display.
     min_df : float in range [0.0, 1.0] or int, default=1
@@ -44,7 +43,6 @@ class ExampleRecommender:
 
     Attributes
     ----------
-
     file_names_ : list of str
         The list of file names used for computing the similarity matrix.
         The recommended examples are chosen among this list.
