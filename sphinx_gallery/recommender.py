@@ -32,8 +32,9 @@ class ExampleRecommender:
         Number of most relevant examples to display.
     min_df : float in range [0.0, 1.0] or int, default=1
         When building the vocabulary ignore terms that have a document frequency
-        strictly lower than the given threshold in terms of absolute counts.
-        This value is also called cut-off in the literature.
+        strictly lower than the given threshold. If float, the parameter
+        represents a proportion of documents, integer represents absolute
+        counts. This value is also called cut-off in the literature.
 
     Attributes
     ----------
