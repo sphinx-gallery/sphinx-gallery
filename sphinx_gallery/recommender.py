@@ -224,7 +224,9 @@ class ExampleRecommender:
         similar_items = list(enumerate(self.similarity_matrix_[item_id]))
         sorted_items = sorted(similar_items, key=lambda x: x[1], reverse=True)
 
-        # Get the top k items similar to item_id
+        # Get the top k items similar to item_id. Note that `sorted_items[0]`
+        # is always the query document itself, hence it is discarded from the
+        # returned list of recommendations.
         top_k_items = [idx for idx, _ in sorted_items[1 : self.n_examples + 1]]
         recommendations = [self.file_names_[idx] for idx in top_k_items]
         return recommendations
