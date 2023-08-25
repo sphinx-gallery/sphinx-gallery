@@ -30,7 +30,7 @@ class ExampleRecommender:
     ----------
     n_examples : int, default=5
         Number of most relevant examples to display.
-    min_df : int, default=1
+    min_df : float in range [0.0, 1.0] or int, default=1
         When building the vocabulary ignore terms that have a document frequency
         strictly lower than the given threshold in terms of absolute counts.
         This value is also called cut-off in the literature.
@@ -177,15 +177,16 @@ class ExampleRecommender:
             raise ValueError("n_examples must be an integer")
         elif n_examples < 1:
             raise ValueError("n_examples must be strictly positive")
-        if not isinstance(min_df, numbers.Integral):
-            raise ValueError("min_df must be an integer")
-        elif min_df < 1:
-            raise ValueError("min_df must be strictly positive")
 
         freq_func = self.token_freqs
         counts_matrix = self.dict_vectorizer(
             [freq_func(Path(fname).read_text()) for fname in file_names]
         )
+
+        if isinstance(min_df, float) and 0.0 < min_df <= 1.0:
+            min_df = int(np.ceil(min_df * counts_matrix.shape[0]))
+        elif not isinstance(min_df, numbers.Integral) and min_df > 1:
+            raise ValueError("min_df must be float in range [0.0, 1.0] or int")
         doc_appearances = np.sum(counts_matrix, axis=0)
         mask = doc_appearances >= min_df
         self.similarity_matrix_ = self.cosine_similarity(
