@@ -62,6 +62,7 @@ DEFAULT_GALLERY_CONF = {
     "filename_pattern": re.escape(os.sep) + "plot",
     "ignore_pattern": r"__init__\.py",
     "examples_dirs": os.path.join("..", "examples"),
+    "languages": {"python": (".py",)},
     "reset_argv": DefaultResetArgv(),
     "subsection_order": None,
     "within_subsection_order": NumberOfCodeLinesSortKey,

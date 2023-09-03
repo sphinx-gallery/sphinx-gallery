@@ -19,6 +19,7 @@ import pickle
 import importlib
 from io import StringIO
 import os
+from pathlib import Path
 import re
 import stat
 from textwrap import indent
@@ -34,7 +35,6 @@ import sphinx.util
 
 from .scrapers import save_figures, ImagePathIterator, clean_modules, _find_image_ext
 from .utils import (
-    replace_py_ipynb,
     scale_image,
     get_md5sum,
     _replace_md5,
@@ -467,7 +467,14 @@ def generate_dir_rst(
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     # get filenames
-    listdir = [fname for fname in os.listdir(src_dir) if fname.endswith(".py")]
+    allowed_extensions = {
+        ext for exts in gallery_conf["languages"].values() for ext in exts
+    }
+    listdir = [
+        fname
+        for fname in os.listdir(src_dir)
+        if Path(fname).suffix in allowed_extensions
+    ]
     # limit which to look at based on regex (similar to filename_pattern)
     listdir = [
         fname
@@ -502,8 +509,8 @@ def generate_dir_rst(
         )
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
-        gallery_item_filename = os.path.join(build_target_dir, fname[:-3]).replace(
-            os.sep, "/"
+        gallery_item_filename = (
+            (Path(build_target_dir) / fname).with_suffix("").as_posix()
         )
         this_entry = _thumbnail_div(
             target_dir, gallery_conf["src_dir"], fname, intro, title
@@ -1211,7 +1218,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
     example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
-    ipy_fname = replace_py_ipynb(target_file) + ".new"
+    ipy_fname = Path(target_file).with_suffix(".ipynb.new")
     save_notebook(example_nb, ipy_fname)
     _replace_md5(ipy_fname, mode="t")
 
@@ -1223,7 +1230,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     ref_regex = _make_ref_regex(gallery_conf["app"].config)
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
-        codeobj_fname = target_file[:-3] + "_codeobj.pickle.new"
+        codeobj_fname = os.path.splitext(target_file)[0] + "_codeobj.pickle.new"
         with open(codeobj_fname, "wb") as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)
@@ -1358,7 +1365,8 @@ def save_rst_example(
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
-    example_fname = os.path.relpath(example_file, gallery_conf["src_dir"])
+    example_file = Path(example_file)
+    example_fname = str(example_file.relative_to(gallery_conf["src_dir"]))
     ref_fname = example_fname.replace(os.path.sep, "_")
 
     binder_conf = gallery_conf["binder"]
@@ -1387,8 +1395,6 @@ def save_rst_example(
         time_m, time_s = divmod(time_elapsed, 60)
         example_rst += TIMING_CONTENT.format(time_m, time_s)
 
-    fname = os.path.basename(example_file)
-
     if gallery_conf["show_memory"]:
         example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
 
@@ -1403,13 +1409,14 @@ def save_rst_example(
         jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, "  ")  # need an extra two
 
+    ipynb_name = example_file.with_suffix(".ipynb").name
     example_rst += CODE_DOWNLOAD.format(
-        fname, replace_py_ipynb(fname), binder_badge_rst, ref_fname, jupyterlite_rst
+        example_file.name, ipynb_name, binder_badge_rst, ref_fname, jupyterlite_rst
     )
     if gallery_conf["show_signature"]:
         example_rst += SPHX_GLR_SIG
 
-    write_file_new = re.sub(r"\.py$", ".rst.new", example_file)
+    write_file_new = example_file.with_suffix(".rst.new")
     with codecs.open(write_file_new, "w", encoding="utf-8") as f:
         f.write(example_rst)
     # make it read-only so that people don't try to edit it

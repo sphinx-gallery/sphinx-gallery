@@ -7,6 +7,7 @@ import codecs
 import importlib
 import io
 import logging
+from pathlib import Path
 import tempfile
 import re
 import os
@@ -507,7 +508,7 @@ def _alpha_mpl_scraper(block, block_vars, gallery_conf):
         fig = plt.figure(fig_num)
         assert image_path.endswith(".png")
         # use format that does not support alpha
-        image_path = image_path[:-3] + "jpg"
+        image_path = Path(image_path).with_suffix(".jpg")
         fig.savefig(image_path)
         image_paths.append(image_path)
     plt.close("all")
