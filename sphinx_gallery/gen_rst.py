@@ -51,11 +51,8 @@ from .backreferences import (
     THUMBNAIL_PARENT_DIV_CLOSE,
 )
 from .downloads import CODE_DOWNLOAD
-from .py_source_parser import (
-    split_code_and_text_blocks,
-    remove_config_comments,
-    remove_ignore_blocks,
-)
+from . import py_source_parser
+from . import cxx_source_parser
 
 from .notebook import jupyter_notebook, save_notebook
 from .interactive_example import gen_binder_rst
@@ -1133,9 +1130,22 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     target_file = os.path.join(target_dir, fname)
     _replace_md5(src_file, target_file, "copy", mode="t")
 
-    file_conf, script_blocks, node = split_code_and_text_blocks(
-        src_file, return_node=True
-    )
+    if fname.endswith(".py"):
+        parser = py_source_parser
+    elif fname.endswith(".cpp"):
+        parser = cxx_source_parser
+    else:
+        raise ValueError(f"Unable to parse source file with extension {Path(fname).suffix}")
+
+    if fname.endswith(".py"):
+        file_conf, script_blocks, node = parser.split_code_and_text_blocks(
+            src_file, return_node=True
+        )
+    elif fname.endswith(".cpp"):
+        file_conf, script_blocks, node = parser.split_code_and_text_blocks(
+            src_file, return_node=True
+        )
+
     intro, title = extract_intro_and_title(fname, script_blocks[0][1])
     gallery_conf["titles"][src_file] = title
 
@@ -1193,13 +1203,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     # Ignore blocks must be processed before the
     # remaining config comments are removed.
     script_blocks = [
-        (label, remove_ignore_blocks(content), line_number)
+        (label, parser.remove_ignore_blocks(content), line_number)
         for label, content, line_number in script_blocks
     ]
 
     if gallery_conf["remove_config_comments"]:
         script_blocks = [
-            (label, remove_config_comments(content), line_number)
+            (label, parser.remove_config_comments(content), line_number)
             for label, content, line_number in script_blocks
         ]
 
