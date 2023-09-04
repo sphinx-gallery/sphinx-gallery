@@ -1101,6 +1101,15 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
     return output_blocks, time_elapsed
 
 
+def _get_example_language(fname, gallery_conf):
+    suffix = Path(fname).suffix
+    for language, exts in gallery_conf["languages"].items():
+        if suffix in exts:
+            return language
+
+    raise ValueError(f"Unable to parse source file with extension {suffix}")
+
+
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=None):
     """Generate the rst file for a given example.
 
@@ -1130,21 +1139,19 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     target_file = os.path.join(target_dir, fname)
     _replace_md5(src_file, target_file, "copy", mode="t")
 
-    if fname.endswith(".py"):
+    language = _get_example_language(fname, gallery_conf)
+    if language == "python":
         parser = py_source_parser
-    elif fname.endswith(".cpp"):
+    elif language == "c++":
         parser = cxx_source_parser
     else:
-        raise ValueError(f"Unable to parse source file with extension {Path(fname).suffix}")
+        raise ValueError(f"Unable to parse source file with language {language}")
 
-    if fname.endswith(".py"):
-        file_conf, script_blocks, node = parser.split_code_and_text_blocks(
-            src_file, return_node=True
-        )
-    elif fname.endswith(".cpp"):
-        file_conf, script_blocks, node = parser.split_code_and_text_blocks(
-            src_file, return_node=True
-        )
+    file_conf, script_blocks, node = parser.split_code_and_text_blocks(
+        src_file, return_node=True
+    )
+    if "language" not in file_conf:
+        file_conf["language"] = language
 
     intro, title = extract_intro_and_title(fname, script_blocks[0][1])
     gallery_conf["titles"][src_file] = title
@@ -1339,7 +1346,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
                 lineno = None
 
             code_rst = (
-                codestr2rst(bcontent, lang=gallery_conf["lang"], lineno=lineno) + "\n"
+                codestr2rst(bcontent, lang=file_conf["language"], lineno=lineno) + "\n"
             )
             if is_example_notebook_like:
                 example_rst += code_rst

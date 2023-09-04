@@ -150,14 +150,11 @@ def _update_gallery_conf_builder_inited(
     src_dir,
     plot_gallery=True,
     abort_on_example_error=False,
-    lang="python",
     builder_name="html",
 ):
     sphinx_gallery_conf.update(plot_gallery=plot_gallery)
     sphinx_gallery_conf.update(abort_on_example_error=abort_on_example_error)
     sphinx_gallery_conf["src_dir"] = src_dir
-    lang = lang if lang in ("python", "python3", "default") else "python"
-    sphinx_gallery_conf["lang"] = lang
     # Make it easy to know which builder we're in
     sphinx_gallery_conf["builder_name"] = builder_name
 
@@ -1462,13 +1459,11 @@ def update_gallery_conf_builder_inited(app):
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
     src_dir = app.builder.srcdir
     abort_on_example_error = _bool_eval(app.builder.config.abort_on_example_error)
-    lang = app.builder.config.highlight_language
     _update_gallery_conf_builder_inited(
         app.config.sphinx_gallery_conf,
         src_dir,
         plot_gallery=plot_gallery,
         abort_on_example_error=abort_on_example_error,
-        lang=lang,
         builder_name=app.builder.name,
     )
 
