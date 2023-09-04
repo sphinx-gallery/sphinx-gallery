@@ -52,7 +52,7 @@ from .backreferences import (
 )
 from .downloads import CODE_DOWNLOAD
 from . import py_source_parser
-from . import cxx_source_parser
+from .cxx_source_parser import CxxParser
 
 from .notebook import jupyter_notebook, save_notebook
 from .interactive_example import gen_binder_rst
@@ -1100,14 +1100,37 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
 
     return output_blocks, time_elapsed
 
+_default_parsers = {
+    "python": "python",
+    "c++": "c++",
+    "csharp": "c++",
+    "go": "c++",
+    "java": "c++",
+    "javascript": "c++",
+    "rust": "c++"
+}
 
-def _get_example_language(fname, gallery_conf):
+def _get_language_and_parser(fname, gallery_conf):
     suffix = Path(fname).suffix
-    for language, exts in gallery_conf["languages"].items():
+    language = None
+    for lang, exts in gallery_conf["languages"].items():
         if suffix in exts:
-            return language
+            language = lang
+            break
 
-    raise ValueError(f"Unable to parse source file with extension {suffix}")
+    parser_name = gallery_conf["language_parsers"].get(language,
+                                                       _default_parsers.get(language))
+
+    if language is None:
+        raise ValueError(f"Unable to determine language for file with extension {suffix}")
+    elif parser_name == "python":
+        parser = py_source_parser
+    elif parser_name == "c++":
+        parser = CxxParser()
+    else:
+        raise ValueError(f"Unable to parse source file with language {language}")
+
+    return language, parser
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=None):
@@ -1139,13 +1162,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     target_file = os.path.join(target_dir, fname)
     _replace_md5(src_file, target_file, "copy", mode="t")
 
-    language = _get_example_language(fname, gallery_conf)
-    if language == "python":
-        parser = py_source_parser
-    elif language == "c++":
-        parser = cxx_source_parser
-    else:
-        raise ValueError(f"Unable to parse source file with language {language}")
+    language, parser = _get_language_and_parser(fname, gallery_conf)
 
     file_conf, script_blocks, node = parser.split_code_and_text_blocks(
         src_file, return_node=True

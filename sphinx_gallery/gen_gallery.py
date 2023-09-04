@@ -63,6 +63,7 @@ DEFAULT_GALLERY_CONF = {
     "ignore_pattern": r"__init__\.py",
     "examples_dirs": os.path.join("..", "examples"),
     "languages": {"python": (".py",)},
+    "language_parsers": {},
     "reset_argv": DefaultResetArgv(),
     "subsection_order": None,
     "within_subsection_order": NumberOfCodeLinesSortKey,
