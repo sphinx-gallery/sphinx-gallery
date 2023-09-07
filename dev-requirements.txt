@@ -1,5 +1,5 @@
-sphinx>=1.8.3
-sphinx_rtd_theme
+sphinx >= 4, != 5.2.0, < 6
+pydata-sphinx-theme
 pytest
 pytest-coverage
 numpy
@@ -8,6 +8,9 @@ pillow
 seaborn
 statsmodels
 joblib
-flake8
-check-manifest
+importlib-metadata <5.0
 plotly
+absl-py
+graphviz
+packaging
+jupyterlite-sphinx

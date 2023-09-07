@@ -2,18 +2,37 @@
 Sphinx-Gallery
 ==============
 
+.. image:: https://img.shields.io/pypi/v/sphinx-gallery
+    :target: https://pypi.org/project/sphinx-gallery/
+    :alt: PyPI
+
+.. image:: https://img.shields.io/conda/vn/conda-forge/sphinx-gallery
+    :target: https://anaconda.org/conda-forge/sphinx-gallery
+    :alt: Conda-forge
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3741780.svg
+    :target: https://doi.org/10.5281/zenodo.3741780
+    :alt: Zenodo DOI
+
 .. image:: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_apis/build/status/sphinx-gallery.sphinx-gallery?branchName=master
     :target: https://dev.azure.com/sphinx-gallery/sphinx-gallery/_build/latest?definitionId=1&branchName=master
+    :alt: Azure CI status
 
 .. image:: https://circleci.com/gh/sphinx-gallery/sphinx-gallery.svg?style=shield
     :target: https://circleci.com/gh/sphinx-gallery/sphinx-gallery
+    :alt: CircleCI status
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4718153.svg
-    :target: https://doi.org/10.5281/zenodo.4718153
+.. image:: https://codecov.io/github/sphinx-gallery/sphinx-gallery/badge.svg?branch=master&service=github(
+    :target: https://app.codecov.io/github/sphinx-gallery/sphinx-gallery
+    :alt: Code coverage
 
 
-A Sphinx extension that builds an HTML version of any Python
-script and puts it into an examples gallery.
+.. tagline-begin-content
+
+A `Sphinx <https://www.sphinx-doc.org/en/master/>`_ extension that builds an
+HTML gallery of examples from any set of Python scripts.
+
+.. tagline-end-content
 
 .. image:: doc/_static/demo.png
    :width: 80%
@@ -22,34 +41,43 @@ script and puts it into an examples gallery.
 Who uses Sphinx-Gallery
 =======================
 
-* `Sphinx-Gallery <https://sphinx-gallery.github.io/stable/auto_examples/index.html>`_
-* `Scikit-learn <http://scikit-learn.org/dev/auto_examples/index.html>`_
-* `Nilearn <https://nilearn.github.io/auto_examples/index.html>`_
-* `MNE-python <https://www.martinos.org/mne/stable/auto_examples/index.html>`_
-* `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
-* `GIMLi <http://www.pygimli.org/_examples_auto/index.html>`_
-* `Nestle <https://kbarbary.github.io/nestle/examples/index.html>`_
-* `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
-* `scikit-image <http://scikit-image.org/docs/dev/auto_examples/>`_
-* `Astropy <http://docs.astropy.org/en/stable/generated/examples/index.html>`_
-* `SunPy <http://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
-* `PySurfer <https://pysurfer.github.io/>`_
-* `Matplotlib <https://matplotlib.org/index.html>`_ `Examples <https://matplotlib.org/gallery/index.html>`_ and `Tutorials  <https://matplotlib.org/tutorials/index.html>`__
-* `PyTorch tutorials <http://pytorch.org/tutorials>`_
-* `Cartopy <http://scitools.org.uk/cartopy/docs/latest/gallery/>`_
-* `PyVista <https://docs.pyvista.org/examples/>`_
-* `SimPEG <http://docs.simpeg.xyz/content/examples/>`_
-* `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
-* `Fury <http://fury.gl/latest/auto_examples/index.html>`_
-* `NetworkX <https://networkx.github.io/documentation/stable/auto_examples/index.html>`_
-* `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
-* `Auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
-* `OpenML-Python <https://openml.github.io/openml-python/main/examples/index.html>`_
-* `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
-* `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
-* `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
+An incomplete list:
 
-.. installation-begin-content
+.. projects_list_start
+
+* `Apache TVM <https://tvm.apache.org/docs/tutorial/index.html>`_
+* `Astropy <https://docs.astropy.org/en/stable/generated/examples/index.html>`_
+* `auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
+* `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
+* `Cartopy <https://scitools.org.uk/cartopy/docs/latest/gallery/>`_
+* `FURY <https://fury.gl/latest/auto_examples/index.html>`_
+* `pyGIMLi <https://www.pygimli.org/_examples_auto/index.html>`_
+* `Matplotlib <https://matplotlib.org/stable/index.html>`_
+* `MNE-Python <https://mne.tools/stable/auto_examples/index.html>`_
+* `Nestle <http://kylebarbary.com/nestle/examples/index.html>`_
+* `NetworkX <https://networkx.org/documentation/stable/auto_examples/index.html>`_
+* `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
+* `Nilearn <https://nilearn.github.io/stable/auto_examples/index.html>`_
+* `OpenML <https://openml.github.io/openml-python/main/examples/index.html>`_
+* `OpenTURNS <https://openturns.github.io/openturns/latest/examples/examples.html>`_
+* `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
+* `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
+* `PyGMT <https://www.pygmt.org/latest/gallery/index.html>`_
+* `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
+* `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
+* `PySurfer <https://pysurfer.github.io/>`_
+* `PyTorch tutorials <https://pytorch.org/tutorials>`_
+* `PyVista <https://docs.pyvista.org/examples/>`_
+* `RADIS <https://radis.readthedocs.io/en/latest/auto_examples/index.html>`_
+* `scikit-image <https://scikit-image.org/docs/dev/auto_examples/>`_
+* `scikit-learn <https://scikit-learn.org/stable/auto_examples/index.html>`_
+* `SimPEG <https://docs.simpeg.xyz/content/examples/>`_
+* `Sphinx-Gallery <https://sphinx-gallery.github.io/stable/auto_examples/index.html>`_
+* `SunPy <https://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
+* `Tonic <https://tonic.readthedocs.io/en/latest/auto_examples/index.html>`_
+* `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
+
+.. projects_list_end
 
 Installation
 ============
@@ -57,7 +85,9 @@ Installation
 Install via ``pip``
 -------------------
 
-You can do a direct install via pip by using:
+.. installation-begin-content
+
+You can do a direct install via ``pip`` by using:
 
 .. code-block:: bash
 
@@ -65,22 +95,17 @@ You can do a direct install via pip by using:
 
 Sphinx-Gallery will not manage its dependencies when installing, thus
 you are required to install them manually. Our minimal dependency
-is:
+is **Sphinx >= 4**.
 
-* Sphinx >= 1.8.3
+Sphinx-Gallery has also support for scraping images from packages like
+Matplotlib, Seaborn, and PyVista. For much of this functionality, you will need
+``pillow``. We also recommend installing system ``optipng`` binaries to reduce
+the file sizes of the generated PNG files.
 
-Sphinx-Gallery has also support for packages like:
+.. installation-end-content
 
-* Matplotlib
-* Seaborn
-* Mayavi
-
-For much of this functionality, you will need ``pillow``. We also recommend
-installing system ``optipng`` binaries to reduce the file sizes of the
-generated PNG files.
-
-Install as a Sphinx-Gallery developer
--------------------------------------
+Contributing
+============
 
 You can get the latest development source from our `Github repository
 <https://github.com/sphinx-gallery/sphinx-gallery>`_. You need
@@ -91,13 +116,23 @@ you can do:
 
     $ git clone https://github.com/sphinx-gallery/sphinx-gallery
     $ cd sphinx-gallery
-    $ pip install -r dev-requirements.txt
+    $ pip install -r requirements.txt -r dev-requirements.txt
+    $ conda install graphviz  # if using conda, you can get graphviz this way
     $ pip install -e .
 
-.. installation-end-content
 
-Citation
-========
+Check that you are all set by running:
+
+.. code-block:: console
+
+    $ pytest sphinx_gallery
+
+How to cite
+===========
+
+.. citation-begin-content
 
 If you would like to cite Sphinx-Gallery you can do so using our `Zenodo
-deposit <https://zenodo.org/record/3838216>`_.
+deposit <https://zenodo.org/record/3741780>`_.
+
+.. citation-end-content

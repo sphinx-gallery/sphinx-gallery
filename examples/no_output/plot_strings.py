@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Constrained Text output frame
 =============================
@@ -11,9 +10,9 @@ framed into a text area.
 # Code source: Óscar Nájera
 # License: BSD 3 clause
 
-print('This is a long test Output\n' * 50)
+print("This is a long test Output\n" * 50)
 
 ####################################
 # One line out
 
-print('one line out')
+print("one line out")

@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-r"""
-Sorters for Sphinx-Gallery (sub)sections
-========================================
+r"""Sorters for Sphinx-Gallery (sub)sections.
 
 Sorting key functions for gallery subsection folders and section files.
 """
@@ -9,7 +6,6 @@ Sorting key functions for gallery subsection folders and section files.
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from __future__ import division, absolute_import, print_function
 import os
 import types
 
@@ -19,7 +15,7 @@ from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
 
 
-class ExplicitOrder(object):
+class ExplicitOrder:
     """Sorting key for all gallery subsections.
 
     This requires all folders to be listed otherwise an exception is raised.
@@ -37,33 +33,37 @@ class ExplicitOrder(object):
 
     def __init__(self, ordered_list):
         if not isinstance(ordered_list, (list, tuple, types.GeneratorType)):
-            raise ConfigError("ExplicitOrder sorting key takes a list, "
-                              "tuple or Generator, which hold"
-                              "the paths of each gallery subfolder")
+            raise ConfigError(
+                "ExplicitOrder sorting key takes a list, "
+                "tuple or Generator, which hold"
+                "the paths of each gallery subfolder"
+            )
 
-        self.ordered_list = list(os.path.normpath(path)
-                                 for path in ordered_list)
+        self.ordered_list = list(os.path.normpath(path) for path in ordered_list)
 
     def __call__(self, item):
+        """Return index of item in `ordered_list`, raising error if it is missing."""
         if item in self.ordered_list:
             return self.ordered_list.index(item)
         else:
-            raise ConfigError('If you use an explicit folder ordering, you '
-                              'must specify all folders. Explicit order not '
-                              'found for {}'.format(item))
+            raise ConfigError(
+                "If you use an explicit folder ordering, you "
+                "must specify all folders. Explicit order not "
+                "found for {}".format(item)
+            )
 
     def __repr__(self):
-        return '<%s : %s>' % (self.__class__.__name__, self.ordered_list)
+        return f"<{self.__class__.__name__} : {self.ordered_list}>"
 
 
-class _SortKey(object):
+class _SortKey:
     """Base class for section order key classes."""
 
     def __init__(self, src_dir):
         self.src_dir = src_dir
 
     def __repr__(self):
-        return '<%s>' % (self.__class__.__name__,)
+        return f"<{self.__class__.__name__}>"
 
 
 class NumberOfCodeLinesSortKey(_SortKey):
@@ -76,11 +76,16 @@ class NumberOfCodeLinesSortKey(_SortKey):
     """
 
     def __call__(self, filename):
+        """Return number of code lines in `filename`."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
-        amount_of_code = sum([len(bcontent)
-                              for blabel, bcontent, lineno in script_blocks
-                              if blabel == 'code'])
+        amount_of_code = sum(
+            [
+                len(bcontent)
+                for blabel, bcontent, lineno in script_blocks
+                if blabel == "code"
+            ]
+        )
         return amount_of_code
 
 
@@ -94,6 +99,7 @@ class FileSizeSortKey(_SortKey):
     """
 
     def __call__(self, filename):
+        """Return file size."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         return int(os.stat(src_file).st_size)
 
@@ -108,6 +114,7 @@ class FileNameSortKey(_SortKey):
     """
 
     def __call__(self, filename):
+        """Return `filename`."""
         return filename
 
 
@@ -121,6 +128,7 @@ class ExampleTitleSortKey(_SortKey):
     """
 
     def __call__(self, filename):
+        """Return title of example."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         _, script_blocks = split_code_and_text_blocks(src_file)
         _, title = extract_intro_and_title(src_file, script_blocks[0][1])

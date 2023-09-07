@@ -10,26 +10,24 @@ Creating a basic Gallery
 This section describes how to set up a basic gallery for your examples
 using the Sphinx extension Sphinx-Gallery, which will do the following:
 
-* Automatically generate `Sphinx rST
+* Automatically generate `Sphinx reST
   <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
   out of your ``.py`` example files. The
-  rendering of the resulting rST will provide the users with ``.ipynb``
+  rendering of the resulting reST will provide the users with ``.ipynb``
   (Jupyter notebook) and ``.py`` files of each example, which users can
   download.
 * Create a gallery with thumbnails for each of these examples
   (such as `the one that scikit-learn
-  <http://scikit-learn.org/stable/auto_examples/index.html>`_ uses).
+  <https://scikit-learn.org/stable/auto_examples/index.html>`_ uses).
 
 A `template repository <https://github.com/sphinx-gallery/sample-project>`_,
 with sample example galleries and basic configurations is also available to
 help you get started.
 
 .. note::
-   Working `sphinx 
-   builders <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#options>`_ 
-   for sphinx_gallery include `html` and `latex`. Support for other builders
-   is not guaranteed (e.g., `dirhtml` is known to be broken and will cause
-   broken image links.).
+   Working `sphinx
+   builders <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#options>`_
+   for sphinx_gallery include `html`, `dirhtml` and `latex`.
 
 
 .. _set_up_your_project:
@@ -61,7 +59,7 @@ Let's say your Python project has the following structure:
 * ``doc`` is the Sphinx 'source directory'. It contains the Sphinx base
   configuration files. Default versions of these base files can obtained from
   executing ``sphinx-quickstart`` (more details at `Sphinx-quickstart
-  <http://www.sphinx-doc.org/en/master/usage/quickstart.html>`_). Sphinx
+  <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_). Sphinx
   ``.rst`` source files are generally also placed here (none included in
   our example directory structure above) but these are
   unassociated with Sphinx-Gallery functions.
@@ -83,7 +81,7 @@ In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
 * **The gallery header**: A file named ``README.txt`` or ``README.rst`` that
-  contains rST to be used as a header for the gallery welcome page, which will
+  contains reST to be used as a header for the gallery welcome page, which will
   also include thumbnails generated from this folder. It must have at least a
   title. For example::
 
@@ -94,7 +92,7 @@ this folder must have the following things:
 
 * **Example Python scripts**: A collection of Python scripts that will be
   processed when you build your HTML documentation. For information on how
-  to structure these Python scripts with embedded rST, see
+  to structure these Python scripts with embedded reST, see
   :ref:`python_script_syntax`.
 
     * By default **only** files prefixed with ``plot_`` will be executed and
@@ -167,7 +165,7 @@ files and directories:
 Additionally for **each** ``.py`` file, a file with the following suffix is
 generated:
 
-* ``.rst`` - the rendered rST version of the ``.py`` file, ready for Sphinx
+* ``.rst`` - the rendered reST version of the ``.py`` file, ready for Sphinx
   to build.
 * ``.ipynb`` - to enable the user to download a Jupyter notebook version of the
   example.

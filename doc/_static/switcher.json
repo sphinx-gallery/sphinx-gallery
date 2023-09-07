@@ -1,0 +1,10 @@
+[
+    {
+        "version": "stable",
+        "url": "https://sphinx-gallery.github.io/stable/"
+    },
+    {
+        "version": "dev",
+        "url": "https://sphinx-gallery.github.io/dev/"
+    }
+]

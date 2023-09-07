@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*-
-r"""
-Parser for python source files
-==============================
-"""
+r"""Parser for python source files."""
 # Created Sun Nov 27 14:03:07 2016
 # Author: Óscar Nájera
 
-from __future__ import division, absolute_import, print_function
 
 import codecs
 import ast
@@ -16,9 +11,9 @@ import tokenize
 from textwrap import dedent
 
 from sphinx.errors import ExtensionError
-from .sphinx_compatibility import getLogger
+from sphinx.util.logging import getLogger
 
-logger = getLogger('sphinx-gallery')
+logger = getLogger("sphinx-gallery")
 
 SYNTAX_ERROR_DOCSTRING = """
 SyntaxError
@@ -37,9 +32,16 @@ Example script with invalid Python syntax
 #     # sphinx_gallery_thumbnail_number = 2
 #
 #     b = 2
+FLAG_START = r"^[\ \t]*#\s*"
 INFILE_CONFIG_PATTERN = re.compile(
-    r"^[\ \t]*#\s*sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?",
-    re.MULTILINE)
+    FLAG_START + r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?", re.MULTILINE
+)
+
+START_IGNORE_FLAG = FLAG_START + "sphinx_gallery_start_ignore"
+END_IGNORE_FLAG = FLAG_START + "sphinx_gallery_end_ignore"
+IGNORE_BLOCK_PATTERN = re.compile(
+    rf"{START_IGNORE_FLAG}(?:[\s\S]*?){END_IGNORE_FLAG}\n?", re.MULTILINE
+)
 
 
 def parse_source_file(filename):
@@ -55,10 +57,10 @@ def parse_source_file(filename):
     node : AST node
     content : utf-8 encoded string
     """
-    with codecs.open(filename, 'r', 'utf-8') as fid:
+    with codecs.open(filename, "r", "utf-8") as fid:
         content = fid.read()
     # change from Windows format to UNIX for uniformity
-    content = content.replace('\r\n', '\n')
+    content = content.replace("\r\n", "\n")
 
     try:
         node = ast.parse(content)
@@ -80,8 +82,9 @@ def _get_docstring_and_rest(filename):
         ``filename`` content without the docstring
     lineno : int
         The line number.
-    node : ast Node
-        The node.
+    node : ast.Module
+        The ast node. When `filename` parsed with `mode='exec'` node should be
+        of type `ast.Module`.
     """
     node, content = parse_source_file(filename)
 
@@ -89,24 +92,28 @@ def _get_docstring_and_rest(filename):
         return SYNTAX_ERROR_DOCSTRING, content, 1, node
 
     if not isinstance(node, ast.Module):
-        raise ExtensionError("This function only supports modules. "
-                             "You provided {0}"
-                             .format(node.__class__.__name__))
-    if not (node.body and isinstance(node.body[0], ast.Expr) and
-            isinstance(node.body[0].value, ast.Str)):
         raise ExtensionError(
-            'Could not find docstring in file "{0}". '
-            'A docstring is required by sphinx-gallery '
-            'unless the file is ignored by "ignore_pattern"'
-            .format(filename))
+            "This function only supports modules. "
+            "You provided {}".format(node.__class__.__name__)
+        )
+    if not (
+        node.body
+        and isinstance(node.body[0], ast.Expr)
+        and isinstance(node.body[0].value, ast.Str)
+    ):
+        raise ExtensionError(
+            'Could not find docstring in file "{}". '
+            "A docstring is required by sphinx-gallery "
+            'unless the file is ignored by "ignore_pattern"'.format(filename)
+        )
 
     # Python 3.7+ way
     docstring = ast.get_docstring(node)
     assert docstring is not None  # should be guaranteed above
     # This is just for backward compat
-    if len(node.body[0].value.s) and node.body[0].value.s[0] == '\n':
+    if len(node.body[0].value.s) and node.body[0].value.s[0] == "\n":
         # just for strict backward compat here
-        docstring = '\n' + docstring
+        docstring = "\n" + docstring
     ts = tokenize.tokenize(BytesIO(content.encode()).readline)
     # find the first string according to the tokenizer and get its end row
     for tk in ts:
@@ -118,15 +125,13 @@ def _get_docstring_and_rest(filename):
 
     # This get the content of the file after the docstring last line
     # Note: 'maxsplit' argument is not a keyword argument in python2
-    rest = '\n'.join(content.split('\n')[lineno:])
+    rest = "\n".join(content.split("\n")[lineno:])
     lineno += 1
     return docstring, rest, lineno, node
 
 
 def extract_file_config(content):
-    """
-    Pull out the file-specific config specified in the docstring.
-    """
+    """Pull out the file-specific config specified in the docstring."""
     file_conf = {}
     for match in re.finditer(INFILE_CONFIG_PATTERN, content):
         name = match.group(1)
@@ -137,8 +142,8 @@ def extract_file_config(content):
             value = ast.literal_eval(value)
         except (SyntaxError, ValueError):
             logger.warning(
-                'Sphinx-gallery option %s was passed invalid value %s',
-                name, value)
+                "Sphinx-gallery option %s was passed invalid value %s", name, value
+            )
         else:
             file_conf[name] = value
     return file_conf
@@ -162,45 +167,69 @@ def split_code_and_text_blocks(source_file, return_node=False):
     blocks : list
         (label, content, line_number)
         List where each element is a tuple with the label ('text' or 'code'),
-        the corresponding content string of block and the leading line number
-    node : ast Node
-        The parsed node.
+        the corresponding content string of block and the leading line number.
+    node : ast.Module
+        The parsed ast node.
     """
-    docstring, rest_of_content, lineno, node = _get_docstring_and_rest(
-        source_file)
-    blocks = [('text', docstring, 1)]
+    docstring, rest_of_content, lineno, node = _get_docstring_and_rest(source_file)
+    blocks = [("text", docstring, 1)]
 
     file_conf = extract_file_config(rest_of_content)
 
     pattern = re.compile(
-        r'(?P<header_line>^#{20,}.*|^# ?%%.*)\s(?P<text_content>(?:^#.*\s?)*)',
-        flags=re.M)
-    sub_pat = re.compile('^#', flags=re.M)
+        r"(?P<header_line>^#{20,}.*|^# ?%%.*)\s(?P<text_content>(?:^#.*\s?)*)",
+        flags=re.M,
+    )
+    sub_pat = re.compile("^#", flags=re.M)
 
     pos_so_far = 0
     for match in re.finditer(pattern, rest_of_content):
-        code_block_content = rest_of_content[pos_so_far:match.start()]
+        code_block_content = rest_of_content[pos_so_far : match.start()]
         if code_block_content.strip():
-            blocks.append(('code', code_block_content, lineno))
-        lineno += code_block_content.count('\n')
+            blocks.append(("code", code_block_content, lineno))
+        lineno += code_block_content.count("\n")
 
         lineno += 1  # Ignored header line of hashes.
-        text_content = match.group('text_content')
-        text_block_content = dedent(re.sub(sub_pat, '', text_content)).lstrip()
+        text_content = match.group("text_content")
+        text_block_content = dedent(re.sub(sub_pat, "", text_content)).lstrip()
         if text_block_content.strip():
-            blocks.append(('text', text_block_content, lineno))
-        lineno += text_content.count('\n')
+            blocks.append(("text", text_block_content, lineno))
+        lineno += text_content.count("\n")
 
         pos_so_far = match.end()
 
     remaining_content = rest_of_content[pos_so_far:]
     if remaining_content.strip():
-        blocks.append(('code', remaining_content, lineno))
+        blocks.append(("code", remaining_content, lineno))
 
     out = (file_conf, blocks)
     if return_node:
         out += (node,)
     return out
+
+
+def remove_ignore_blocks(code_block):
+    """
+    Return the content of *code_block* with ignored areas removed.
+
+    An ignore block starts with # sphinx_gallery_begin_ignore, and ends with
+    # sphinx_gallery_end_ignore. These lines and anything in between them will
+    be removed, but surrounding empty lines are preserved.
+
+    Parameters
+    ----------
+    code_block : str
+        A code segment.
+    """
+    num_start_flags = len(re.findall(START_IGNORE_FLAG, code_block))
+    num_end_flags = len(re.findall(END_IGNORE_FLAG, code_block))
+
+    if num_start_flags != num_end_flags:
+        raise ExtensionError(
+            'All "sphinx_gallery_start_ignore" flags must have a matching '
+            '"sphinx_gallery_end_ignore" flag!'
+        )
+    return re.subn(IGNORE_BLOCK_PATTERN, "", code_block)[0]
 
 
 def remove_config_comments(code_block):
@@ -215,5 +244,5 @@ def remove_config_comments(code_block):
     code_block : str
         A code segment.
     """
-    parsed_code, _ = re.subn(INFILE_CONFIG_PATTERN, '', code_block)
+    parsed_code, _ = re.subn(INFILE_CONFIG_PATTERN, "", code_block)
     return parsed_code

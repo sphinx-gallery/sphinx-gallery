@@ -1,12 +1,13 @@
 include CHANGES.rst
 include LICENSE
+include ignore_words.txt
 include requirements.txt
 recursive-include examples *.py
 recursive-include examples *.txt
 recursive-include tutorials *.py
 recursive-include tutorials *.txt
-recursive-include mayavi_examples *.py
-recursive-include mayavi_examples *.rst
+recursive-include plotly_examples *.py
+recursive-include plotly_examples *.rst
 recursive-include pyvista_examples *.py
 recursive-include pyvista_examples *.rst
 recursive-include sphinx_gallery *.py
@@ -29,3 +30,6 @@ exclude __pycache__
 recursive-exclude */gen_modules *
 exclude gen_modules
 exclude .DS_store
+exclude .github_changelog_generator
+exclude .git-blame-ignore-revs
+exclude .pre-commit-config.yaml

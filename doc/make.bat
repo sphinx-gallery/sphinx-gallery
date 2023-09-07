@@ -43,6 +43,11 @@ if "%1" == "help" (
 if "%1" == "clean" (
 	for /d %%i in (%BUILDDIR%\*) do rmdir /q /s %%i
 	del /q /s %BUILDDIR%\*
+	if exist auto_examples rd /q /s auto_examples
+	if exist auto_plotly_examples rd /q /s auto_plotly_examples
+	if exist auto_pyvista_examples rd /q /s auto_pyvista_examples
+	if exist tutorials rd /q /s tutorials
+	if exist gen_modules rd /q /s gen_modules
 	goto end
 )
 

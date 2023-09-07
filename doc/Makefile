@@ -55,7 +55,7 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf auto_examples/
-	rm -rf auto_mayavi_examples/
+	rm -rf auto_plotly_examples/
 	rm -rf auto_pyvista_examples/
 	rm -rf tutorials/
 	rm -rf gen_modules/

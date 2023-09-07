@@ -1,0 +1,28 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        args: [--quiet]
+        exclude: plot_syntaxerror
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.287
+    hooks:
+      - id: ruff
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.5
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli
+        files: ^sphinx_gallery/|^doc/|^.*_examples/|^tutorials/
+        types_or: [python, bib, rst, inc]
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: "0.49"
+    hooks:
+      - id: check-manifest
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
+        args: [--strict, -c, .yamllint.yml]

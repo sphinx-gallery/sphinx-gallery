@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .coverage*
+.vscode
 
 # C extensions
 *.so
@@ -44,6 +45,7 @@ coverage.xml
 *.orig
 .pytest_cache
 CHANGELOG.md
+CHANGELOG.rst
 junit-results.xml
 
 # Translations
@@ -56,7 +58,7 @@ junit-results.xml
 # Sphinx documentation
 doc/_build/
 doc/auto_examples
-doc/auto_mayavi_examples
+doc/auto_plotly_examples
 doc/auto_pyvista_examples
 doc/tutorials/
 doc/gen_modules/
@@ -80,3 +82,6 @@ target/
 
 # Jupyter notebooks
 .ipynb_checkpoints
+
+# Default JupyterLite content
+jupyterlite_contents
