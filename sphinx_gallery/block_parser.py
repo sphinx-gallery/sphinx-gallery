@@ -4,6 +4,7 @@ import re
 import pygments.lexers
 import pygments.token
 import re
+from textwrap import dedent
 
 from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
@@ -102,32 +103,39 @@ class BlockParser:
 
         blocks = []
         def append_block(blocks, kind, block):
-            if block:
+            if block and set(block) != {"\n"}:
                 block = "".join(block)
+                block += "\n"
                 if kind == "text":
-                    block = cleanup_multiline(block)
+                    block = cleanup_comment(block)
                 line_no = blocks[-1][2] if blocks else 0
                 line_no += block.count("\n")
-                blocks.append((kind, "".join(block), line_no))
+                blocks.append((kind, block, line_no))
 
-        def cleanup_multiline(block):
-            """
-            Remove comment characters and decorations from multiline C-style comments
-            """
-            if "/\*" not in self.allowed_comments:
-                return block
-            if not (b := block.rstrip()).endswith("*/"):
-                return block
+        def cleanup_comment(block):
+            if ("/*" not in self.allowed_comments
+                or not (b := block.rstrip()).endswith("*/")):
+                # For simple comments, all we have to do is dedent
+                return dedent(block)
 
+            print("vvvvv BEFORE vvvvv")
+            print(block)
+            print("^^^^^^^^^^^^^^^^^^")
+
+            # Otherwise, remove decorations from C-style multiline comments
+            # b = b.lstrip("\n")
             lines = b[:-2].splitlines()  # delete the trailing "*/"
+
+            if len(lines) == 1:
+                return lines[0]
 
             # Find the longest consistent prefix consisting of these characters
             prefix_chars = {"\t", " ", "*", "/"}
             N, longest = max((len(re.match(r"\s*[\*/]*\s*", line).group(0)), line)
-                            for line in lines)
+                            for line in lines[1:])
             matched = 0
             for i in range(1, N+1):
-                for line in lines:
+                for line in lines[1:]:
                     if set(line[:i]) - prefix_chars:
                         break
                     if len(line) < i:
@@ -140,40 +148,74 @@ class BlockParser:
                 if matched != i:
                     break
 
-            return (lines[0].lstrip() + "\n"
-                    + "\n".join((line[matched:] for line in lines)))
+
+            block = (lines[0].lstrip() + "\n"
+                     + "\n".join((line[matched:] for line in lines[1:])))
+            print("vvvvv AFTER vvvvv")
+            print(block)
+            print("^^^^^^^^^^^^^^^^^^")
+            return block
 
         in_text = False
         in_code = False
         block = []
         start_of_text = self.continue_text  # Take first comment block without sentinel
+        last_space = []
+        newline_count = 0
         for token, text in self.lexer.get_tokens(content):
-            if token in COMMENT_TYPES and (m := start_of_text.match(text)):
+            # Track consecutive newlines, which can indicate the end of a special
+            # comment block
+            if block and token in pygments.token.Whitespace:
+                newline_count += text.count("\n")
+            else:
+                newline_count = text.count("\n")
+
+            if token in pygments.token.Whitespace:
+                branch = 1
+                # Defer categorizing whitespace -- it may belong to the following block
+                last_space.append(text)
+
+                if in_text and newline_count >= 2:
+                    append_block(blocks, "text", block)
+                    block, last_space = last_space, []
+                    in_text = False
+            elif token in COMMENT_TYPES and (m := start_of_text.match(text)):
+                branch = 2
                 # start of first comment block or a special comment block
+                if start_of_text == self.continue_text:
+                    pass
+                    # start of first comment block
                 text = m.group(1)
                 # Complete the preceding code block
                 append_block(blocks, "code", block)
-                block = []
+                block, last_space = last_space, []
                 if m.group(1).strip():
                     block.append(text)
                 in_text = True
                 in_code = False
                 # For subsequent blocks, require the special sentinel
                 start_of_text = self.start_special
-            elif in_text and (token in COMMENT_TYPES or SPACES.match(text)):
-                # continuation of a special comment block. Ignore leading spaces.
+            elif in_text and token in COMMENT_TYPES:
+                branch = 3
+                # continuation of a special comment block
+                block.extend(last_space)
+                last_space = []
                 if m := self.continue_text.match(text):
                     block.append(m.group(1))
             elif not in_code:
+                branch = 4
                 # start of a code block; complete the preceding text block
                 append_block(blocks, "text", block)
-                block = []
+                block, last_space = last_space, []
                 block.append(text)
                 in_code = True
                 in_text = False
             else:
+                branch = 5
                 # continuation of a code block
+                block.extend(last_space)
                 block.append(text)
+                last_space = []
 
         if in_text:
             append_block(blocks, "text", block)
