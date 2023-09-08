@@ -1139,8 +1139,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     file_conf, script_blocks, node = parser.split_code_and_text_blocks(
         src_file, return_node=True
     )
-    if "language" not in file_conf:
-        file_conf["language"] = language
 
     intro, title = extract_intro_and_title(fname, script_blocks[0][1])
     gallery_conf["titles"][src_file] = title
@@ -1215,7 +1213,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         script_blocks = script_blocks[:-1]
         output_blocks = output_blocks[:-1]
 
-    example_rst = rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf)
+    example_rst = rst_blocks(script_blocks, output_blocks, file_conf, language,
+                             gallery_conf)
     memory_used = gallery_conf["memory_base"] + script_vars["memory_delta"]
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
@@ -1294,7 +1293,7 @@ RST_BLOCK_HEADER = """\
 """
 
 
-def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
+def rst_blocks(script_blocks, output_blocks, file_conf, language, gallery_conf):
     """Generate the rst string containing the script prose, code and output.
 
     Parameters
@@ -1309,6 +1308,9 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     file_conf : dict
         File-specific settings given in source file comments as:
         ``# sphinx_gallery_<name> = <value>``
+    language : str
+        The language to be used for syntax highlighting in code blocks. Must be a name
+        or alias recognized by Pygments.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
 
@@ -1335,7 +1337,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
                 lineno = None
 
             code_rst = (
-                codestr2rst(bcontent, lang=file_conf["language"], lineno=lineno) + "\n"
+                codestr2rst(bcontent, lang=language, lineno=lineno) + "\n"
             )
             if is_example_notebook_like:
                 example_rst += code_rst

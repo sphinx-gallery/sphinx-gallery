@@ -471,7 +471,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert op.isfile(fname)
     with codecs.open(fname, "r", "utf-8") as fid:
         rst = fid.read()
-    assert ".. code-block:: python3\n" in rst
+    assert ".. code-block:: python\n" in rst
 
     # warnings
     want_warn = (

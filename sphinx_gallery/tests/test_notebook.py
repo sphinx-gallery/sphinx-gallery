@@ -16,6 +16,7 @@ import textwrap
 from sphinx.errors import ExtensionError
 
 import sphinx_gallery.gen_rst as sg
+from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.notebook import (
     rst2md,
     jupyter_notebook,
@@ -339,7 +340,7 @@ def test_notebook_images_data_uri(gallery_conf):
 
 def test_jupyter_notebook(gallery_conf):
     """Test that written ipython notebook file corresponds to python object."""
-    file_conf, blocks = sg.split_code_and_text_blocks("tutorials/plot_parse.py")
+    file_conf, blocks = split_code_and_text_blocks("tutorials/plot_parse.py")
     target_dir = "tutorials"
     example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
 

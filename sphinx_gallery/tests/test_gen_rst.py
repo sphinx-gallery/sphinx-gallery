@@ -26,6 +26,8 @@ from sphinx_gallery.gen_gallery import (
     generate_dir_rst,
     _update_gallery_conf_exclude_implicit_doc,
 )
+# TODO: The tests of this method should probably be moved to test_py_source_parser.py
+from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 from sphinx_gallery.interactive_example import check_binder_conf
 
@@ -66,7 +68,7 @@ CONTENT = [
 
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split."""
-    file_conf, blocks = sg.split_code_and_text_blocks("examples/no_output/just_code.py")
+    file_conf, blocks = split_code_and_text_blocks("examples/no_output/just_code.py")
 
     assert file_conf == {}
     assert blocks[0][0] == "text"
@@ -80,7 +82,7 @@ def test_bug_cases_of_notebook_syntax():
     """
     with open("sphinx_gallery/tests/reference_parse.txt") as reference:
         ref_blocks = ast.literal_eval(reference.read())
-        file_conf, blocks = sg.split_code_and_text_blocks("tutorials/plot_parse.py")
+        file_conf, blocks = split_code_and_text_blocks("tutorials/plot_parse.py")
 
         assert file_conf == {}
         assert blocks == ref_blocks
@@ -102,7 +104,7 @@ def test_direct_comment_after_docstring():
             )
         )
     try:
-        file_conf, result = sg.split_code_and_text_blocks(f.name)
+        file_conf, result = split_code_and_text_blocks(f.name)
     finally:
         os.remove(f.name)
 
@@ -140,7 +142,7 @@ def test_final_rst_last_word(tmpdir):
             )
         )
 
-    file_conf, result = sg.split_code_and_text_blocks(f.name)
+    file_conf, result = split_code_and_text_blocks(f.name)
 
     assert file_conf == {}
     expected_result = [
@@ -172,7 +174,7 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
                 ]
             )
         )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    file_conf, blocks = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     assert len(blocks) == 4
@@ -183,12 +185,14 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
 
     script_vars = {"execute_script": ""}
     file_conf = {}
+    language = "python"
 
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf, file_conf
     )
 
-    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
+    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, language,
+                                gallery_conf)
     want_rst = """\
 Docstring
 
@@ -225,7 +229,7 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
                 ]
             )
         )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    file_conf, blocks = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     assert len(blocks) == 3
@@ -244,8 +248,10 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf, file_conf
     )
+    language = "python"
 
-    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
+    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, language,
+                                gallery_conf)
     want_rst = """\
 Docstring
 
@@ -279,7 +285,7 @@ a = 1.
 b = 'foo'
 """
         )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    file_conf, blocks = split_code_and_text_blocks(filename)
     assert len(blocks) == 2
     assert blocks[0][0] == "text"
     assert blocks[1][0] == "code"
@@ -686,7 +692,7 @@ def test_thumbnail_number(test_str):
     with tempfile.NamedTemporaryFile("w", delete=False) as f:
         f.write("\n".join(['"Docstring"', test_str]))
     try:
-        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
+        file_conf, blocks = split_code_and_text_blocks(f.name)
     finally:
         os.remove(f.name)
     assert file_conf == {"thumbnail_number": 2}
@@ -706,7 +712,7 @@ def test_thumbnail_path(test_str):
     with tempfile.NamedTemporaryFile("w", delete=False) as f:
         f.write("\n".join(['"Docstring"', test_str]))
     try:
-        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
+        file_conf, blocks = split_code_and_text_blocks(f.name)
     finally:
         os.remove(f.name)
     assert file_conf == {"thumbnail_path": "_static/demo.png"}
