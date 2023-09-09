@@ -464,14 +464,9 @@ def generate_dir_rst(
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     # get filenames
-    allowed_extensions = {
-        ext for exts in gallery_conf["languages"].values() for ext in exts
-    }
-    listdir = [
-        fname
-        for fname in os.listdir(src_dir)
-        if Path(fname).suffix in allowed_extensions
-    ]
+    listdir = [fname for fname in os.listdir(src_dir)
+               if (s := Path(fname).suffix)
+               and s not in gallery_conf["ignored_extensions"]]
     # limit which to look at based on regex (similar to filename_pattern)
     listdir = [
         fname
@@ -1133,7 +1128,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         parser = py_source_parser
         language = "python"
     else:
-        parser = BlockParser(fname)
+        parser = BlockParser(fname, gallery_conf)
         language = parser.language
 
     file_conf, script_blocks, node = parser.split_code_and_text_blocks(

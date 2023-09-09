@@ -1,6 +1,7 @@
 import ast
 import codecs
 import re
+from pathlib import Path
 import pygments.lexers
 import pygments.token
 import re
@@ -27,10 +28,16 @@ class BlockParser:
     ----------
     source_file : str
         A file name that has a suffix compatible with files that are subsequently parsed
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery.
     """
 
-    def __init__(self, source_file):
-        self.lexer = pygments.lexers.find_lexer_class_for_filename(source_file)()
+    def __init__(self, source_file, gallery_conf):
+        source_file = Path(source_file)
+        if name := gallery_conf["filetype_parsers"].get(source_file.suffix):
+            self.lexer = pygments.lexers.find_lexer_class_by_name(name)()
+        else:
+            self.lexer = pygments.lexers.find_lexer_class_for_filename(source_file)()
         self.language = self.lexer.name
 
         # determine valid comment starting syntaxes
@@ -82,7 +89,7 @@ class BlockParser:
         source_file : str
             Path to the source file.
         return_node : bool
-            If True, return the ast node (if possible)
+            Ignored; returning an ast node is not supported
 
         Returns
         -------
@@ -93,8 +100,8 @@ class BlockParser:
             (label, content, line_number)
             List where each element is a tuple with the label ('text' or 'code'),
             the corresponding content string of block and the leading line number.
-        node : ast.Module | None
-            The parsed ast node, or None if not requested or not possible
+        node : None
+            Returning an ast node is not supported.
         """
 
         with codecs.open(source_file, "r", "utf-8") as fid:

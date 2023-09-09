@@ -3,6 +3,7 @@ import pytest
 from textwrap import dedent
 
 from sphinx_gallery.block_parser import BlockParser
+from sphinx_gallery.gen_gallery import DEFAULT_GALLERY_CONF
 
 CXX_BODY = dedent("""
     int x = 3;
@@ -73,7 +74,7 @@ CXX_BODY = dedent("""
 )
 def test_cxx_titles(comment, expected_docstring):
     doc = comment + CXX_BODY
-    parser = BlockParser("*.cpp")
+    parser = BlockParser("*.cpp", DEFAULT_GALLERY_CONF)
     file_conf, blocks, _ = parser._split_content(doc)
 
     assert len(blocks) == 2
@@ -132,7 +133,7 @@ def test_cxx_titles(comment, expected_docstring):
 )
 def test_rst_blocks(filetype, title, special, expected):
     doc = f"{title}\n{CXX_BODY}\n\n{special}\n{CXX_BODY}"
-    parser = BlockParser(filetype)
+    parser = BlockParser(filetype, DEFAULT_GALLERY_CONF)
     file_conf, blocks, _ = parser._split_content(doc)
 
     assert len(blocks) == 4
