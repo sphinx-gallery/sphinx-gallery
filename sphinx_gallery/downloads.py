@@ -20,7 +20,7 @@ CODE_DOWNLOAD = """
 {4}
     .. container:: sphx-glr-download sphx-glr-download-python
 
-      :download:`Download Python source code: {0} <{0}>`
+      :download:`Download {5} source code: {0} <{0}>`
 
     .. container:: sphx-glr-download sphx-glr-download-jupyter
 

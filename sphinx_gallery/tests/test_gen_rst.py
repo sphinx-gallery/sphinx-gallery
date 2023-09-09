@@ -749,7 +749,7 @@ def test_rst_example(gallery_conf):
     gallery_conf["min_reported_time"] = -1
 
     example_file = os.path.join(gallery_conf["gallery_dir"], "plot.py")
-    sg.save_rst_example("example_rst", example_file, 0, 0, gallery_conf)
+    sg.save_rst_example("example_rst", example_file, "Python", 0, 0, gallery_conf)
 
     test_file = re.sub(r"\.py$", ".rst", example_file)
     with codecs.open(test_file) as f:

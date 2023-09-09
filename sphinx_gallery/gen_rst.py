@@ -1126,7 +1126,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
 
     if fname.endswith(".py"):
         parser = py_source_parser
-        language = "python"
+        language = "Python"
     else:
         parser = BlockParser(fname, gallery_conf)
         language = parser.language
@@ -1213,7 +1213,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     memory_used = gallery_conf["memory_base"] + script_vars["memory_delta"]
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
-    save_rst_example(example_rst, target_file, time_elapsed, memory_used, gallery_conf)
+    save_rst_example(example_rst, target_file, language, time_elapsed, memory_used,
+                     gallery_conf)
 
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
@@ -1351,7 +1352,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, language, gallery_conf):
 
 
 def save_rst_example(
-    example_rst, example_file, time_elapsed, memory_used, gallery_conf
+    example_rst, example_file, language, time_elapsed, memory_used, gallery_conf
 ):
     """Saves the rst notebook to example_file including header & footer.
 
@@ -1361,6 +1362,8 @@ def save_rst_example(
         rst containing the executed file content
     example_file : str
         Filename with full path of python example file in documentation folder
+    language : str
+        Name of the programming language the example is in
     time_elapsed : float
         Time elapsed in seconds while executing file
     memory_used : float
@@ -1414,7 +1417,8 @@ def save_rst_example(
 
     ipynb_name = example_file.with_suffix(".ipynb").name
     example_rst += CODE_DOWNLOAD.format(
-        example_file.name, ipynb_name, binder_badge_rst, ref_fname, jupyterlite_rst
+        example_file.name, ipynb_name, binder_badge_rst, ref_fname, jupyterlite_rst,
+        language
     )
     if gallery_conf["show_signature"]:
         example_rst += SPHX_GLR_SIG
