@@ -96,16 +96,20 @@ class BlockParser:
         node : ast.Module | None
             The parsed ast node, or None if not requested or not possible
         """
+
         with codecs.open(source_file, "r", "utf-8") as fid:
             content = fid.read()
         # change from Windows format to UNIX for uniformity
         content = content.replace("\r\n", "\n")
+        return self._split_content(content)
 
+    def _split_content(self, content):
         blocks = []
         def append_block(blocks, kind, block):
+            block = "".join(block)
             if block and set(block) != {"\n"}:
-                block = "".join(block)
-                block += "\n"
+                if not block.endswith("\n"):
+                    block += "\n"
                 if kind == "text":
                     block = cleanup_comment(block)
                 line_no = blocks[-1][2] if blocks else 0
@@ -113,18 +117,19 @@ class BlockParser:
                 blocks.append((kind, block, line_no))
 
         def cleanup_comment(block):
-            if ("/*" not in self.allowed_comments
+            if ("/\\*" not in self.allowed_comments
                 or not (b := block.rstrip()).endswith("*/")):
-                # For simple comments, all we have to do is dedent
+
+                # Normalize leading and trailing newlines: none to start, one at the end
+                block = block.lstrip("\n")
+                if block.endswith("\n\n"):
+                    block = block.rstrip("\n") + "\n"
+
                 return dedent(block)
 
-            print("vvvvv BEFORE vvvvv")
-            print(block)
-            print("^^^^^^^^^^^^^^^^^^")
-
             # Otherwise, remove decorations from C-style multiline comments
-            # b = b.lstrip("\n")
             lines = b[:-2].splitlines()  # delete the trailing "*/"
+            lines = [line.rstrip(" \t") for line in lines]
 
             if len(lines) == 1:
                 return lines[0]
@@ -148,19 +153,21 @@ class BlockParser:
                 if matched != i:
                     break
 
-
+            # delete the prefix from lines after the first
             block = (lines[0].lstrip() + "\n"
                      + "\n".join((line[matched:] for line in lines[1:])))
-            print("vvvvv AFTER vvvvv")
-            print(block)
-            print("^^^^^^^^^^^^^^^^^^")
+
+            # Normalize leading and trailing newlines: none to start, one at the end
+            block = block.lstrip("\n")
+            if block.endswith("\n\n") or not block.endswith("\n"):
+                block = block.rstrip("\n") + "\n"
+
             return block
 
-        in_text = False
-        in_code = False
         block = []
+        mode = None
         start_of_text = self.continue_text  # Take first comment block without sentinel
-        last_space = []
+        last_space = ""
         newline_count = 0
         for token, text in self.lexer.get_tokens(content):
             # Track consecutive newlines, which can indicate the end of a special
@@ -171,56 +178,47 @@ class BlockParser:
                 newline_count = text.count("\n")
 
             if token in pygments.token.Whitespace:
-                branch = 1
-                # Defer categorizing whitespace -- it may belong to the following block
-                last_space.append(text)
+                # Defer categorizing start-of-line whitespace; it may belong to the
+                # following block
+                last_space = text[text.rindex("\n")+1:] if "\n" in text else text
 
-                if in_text and newline_count >= 2:
+                if mode == "text" and newline_count >= 2:
                     append_block(blocks, "text", block)
-                    block, last_space = last_space, []
-                    in_text = False
+                    block = [last_space]
+                    last_space = ""
+                    mode = None
             elif token in COMMENT_TYPES and (m := start_of_text.match(text)):
-                branch = 2
-                # start of first comment block or a special comment block
-                if start_of_text == self.continue_text:
-                    pass
-                    # start of first comment block
-                text = m.group(1)
+                # Start of first comment block or a special comment block.
                 # Complete the preceding code block
                 append_block(blocks, "code", block)
-                block, last_space = last_space, []
-                if m.group(1).strip():
+                block = [last_space]
+                last_space = ""
+                if (text := m.group(1)).strip():
                     block.append(text)
-                in_text = True
-                in_code = False
+                mode = "text"
                 # For subsequent blocks, require the special sentinel
                 start_of_text = self.start_special
-            elif in_text and token in COMMENT_TYPES:
-                branch = 3
+            elif mode == "text" and token in COMMENT_TYPES:
                 # continuation of a special comment block
-                block.extend(last_space)
-                last_space = []
+                block.append(last_space)
+                last_space = ""
                 if m := self.continue_text.match(text):
                     block.append(m.group(1))
-            elif not in_code:
-                branch = 4
+            elif mode != "code":
                 # start of a code block; complete the preceding text block
                 append_block(blocks, "text", block)
-                block, last_space = last_space, []
+                block = [last_space]
+                last_space = ""
                 block.append(text)
-                in_code = True
-                in_text = False
+                mode = "code"
             else:
-                branch = 5
                 # continuation of a code block
-                block.extend(last_space)
+                block.append(last_space)
                 block.append(text)
-                last_space = []
+                last_space = ""
 
-        if in_text:
-            append_block(blocks, "text", block)
-        elif in_code:
-            append_block(blocks, "code", block)
+        if mode is not None:
+            append_block(blocks, mode, block)
 
         file_conf = self.extract_file_config(content)
         return file_conf, blocks, None
