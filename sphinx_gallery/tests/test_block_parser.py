@@ -154,14 +154,13 @@ def test_cxx_titles(comment, expected_docstring):
         pytest.param(
             "*.c",
             """/* Title */""",
-            ("     /*%% * List item\n"
-             "      * * Another item\n"
-             "      * * Item 3\n"
-             "      */"
-             ),
-            ("* List item\n"
-             "* Another item\n"
-             "* Item 3\n"),
+            (
+                "     /*%% * List item\n"
+                "      * * Another item\n"
+                "      * * Item 3\n"
+                "      */"
+            ),
+            ("* List item\n" "* Another item\n" "* Item 3\n"),
             id="multiline-comment-short-form",
         ),
     ],
@@ -174,6 +173,7 @@ def test_rst_blocks(filetype, title, special, expected):
     assert len(blocks) == 4
     assert blocks[2][0] == "text"
     assert blocks[2][1] == expected
+
 
 def test_cpp_file_to_rst():
     CODE = """\
