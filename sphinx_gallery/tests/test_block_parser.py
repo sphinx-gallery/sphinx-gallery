@@ -99,6 +99,16 @@ def test_cxx_titles(comment, expected_docstring):
             id="single-line-indented"
         ),
         pytest.param(
+            "*.cpp",
+            """// Title""",
+            ("     // %%\n"
+             "     // First comment line\n"
+             "     // Second comment line\n"),
+            ("First comment line\n"
+             "Second comment line\n"),
+            id="indented-separate-sentinel"
+        ),
+        pytest.param(
             "*.cs",
             """// Title""",
             ("     //%% Indented multi-line comment\n"

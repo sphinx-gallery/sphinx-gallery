@@ -150,7 +150,7 @@ class BlockParser:
                 for line in lines[1:]:
                     if set(line[:i]) - prefix_chars:
                         break
-                    if len(line) < i:
+                    elif len(line) < i:
                         if line != longest[:len(line)]:
                             break
                     elif line[:i] != longest[:i]:
@@ -195,13 +195,17 @@ class BlockParser:
                     last_space = ""
                     mode = None
             elif token in COMMENT_TYPES and (m := start_of_text.match(text)):
-                # Start of first comment block or a special comment block.
                 # Complete the preceding code block
                 append_block(blocks, "code", block)
-                block = [last_space]
-                last_space = ""
+
+                # Start of first comment block or a special comment block.
                 if (text := m.group(1)).strip():
-                    block.append(text)
+                    block = [last_space, text]
+                elif "\n" in text:
+                    block = [text[text.rindex("\n")+1:]]
+                else:
+                    block = [last_space]
+                last_space = ""
                 mode = "text"
                 # For subsequent blocks, require the special sentinel
                 start_of_text = self.start_special
@@ -220,8 +224,7 @@ class BlockParser:
                 mode = "code"
             else:
                 # continuation of a code block
-                block.append(last_space)
-                block.append(text)
+                block.extend((last_space, text))
                 last_space = ""
 
         if mode is not None:
