@@ -171,10 +171,19 @@ class BlockParser:
 
             return block
 
+        def init_block(last_space):
+            space = "".join(last_space)
+            if "\n" in space:
+                block = [space[space.rindex("\n")+1:]]
+            else:
+                block = space.split("\n")
+
+            return block, []
+
         block = []
         mode = None
         start_of_text = self.continue_text  # Take first comment block without sentinel
-        last_space = ""
+        last_space = []
         newline_count = 0
         for token, text in self.lexer.get_tokens(content):
             # Track consecutive newlines, which can indicate the end of a special
@@ -187,45 +196,43 @@ class BlockParser:
             if token in pygments.token.Whitespace:
                 # Defer categorizing start-of-line whitespace; it may belong to the
                 # following block
-                last_space = text[text.rindex("\n")+1:] if "\n" in text else text
+                last_space.append(text)
 
                 if mode == "text" and newline_count >= 2:
                     append_block(blocks, "text", block)
-                    block = [last_space]
-                    last_space = ""
+                    block, last_space = init_block(last_space)
                     mode = None
             elif token in COMMENT_TYPES and (m := start_of_text.match(text)):
                 # Complete the preceding code block
                 append_block(blocks, "code", block)
+                block, last_space = init_block(last_space)
 
                 # Start of first comment block or a special comment block.
                 if (text := m.group(1)).strip():
-                    block = [last_space, text]
+                    block.append(text)
                 elif "\n" in text:
+                    # Drop previous whitespace
                     block = [text[text.rindex("\n")+1:]]
-                else:
-                    block = [last_space]
-                last_space = ""
                 mode = "text"
                 # For subsequent blocks, require the special sentinel
                 start_of_text = self.start_special
             elif mode == "text" and token in COMMENT_TYPES:
                 # continuation of a special comment block
-                block.append(last_space)
-                last_space = ""
+                block.extend(last_space)
+                last_space = []
                 if m := self.continue_text.match(text):
                     block.append(m.group(1))
             elif mode != "code":
                 # start of a code block; complete the preceding text block
                 append_block(blocks, "text", block)
-                block = [last_space]
-                last_space = ""
+                block, last_space = init_block(last_space)
                 block.append(text)
                 mode = "code"
             else:
                 # continuation of a code block
-                block.extend((last_space, text))
-                last_space = ""
+                block.extend(last_space)
+                block.append(text)
+                last_space = []
 
         if mode is not None:
             append_block(blocks, mode, block)
