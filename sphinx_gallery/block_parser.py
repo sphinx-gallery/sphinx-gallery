@@ -61,9 +61,9 @@ class BlockParser:
             if next(self.lexer.get_tokens(comment))[0] in COMMENT_TYPES
         }
 
-        comment_start = "|".join(self.allowed_comments)
-        self.start_special = re.compile(f"(?:{comment_start}) ?%% ?(.*)", re.DOTALL)
-        self.continue_text = re.compile(f"(?:{comment_start}) ?(.*)", re.DOTALL)
+        comment_start = "(?:" + "|".join(self.allowed_comments) + ")"
+        self.start_special = re.compile(f"{comment_start} ?%% ?(.*)", re.DOTALL)
+        self.continue_text = re.compile(f"{comment_start} ?(.*)", re.DOTALL)
 
         # The pattern for in-file config comments is designed to not greedily match
         # newlines at the start and end, except for one newline at the end. This
@@ -275,7 +275,7 @@ class BlockParser:
         """
         Return the content of *code_block* with ignored areas removed.
 
-        An ignore block starts with ``?? sphinx_gallery_begin_ignore`` and ends with
+        An ignore block starts with ``?? sphinx_gallery_start_ignore`` and ends with
         ``?? sphinx_gallery_end_ignore`` where ``??`` is the active language's line
         comment marker. These lines and anything in between them will be removed, but
         surrounding empty lines are preserved.

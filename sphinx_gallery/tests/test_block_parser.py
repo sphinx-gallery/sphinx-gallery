@@ -1,5 +1,7 @@
 """test BlockParser."""
+import os
 import pytest
+import tempfile
 from textwrap import dedent
 
 from sphinx_gallery.block_parser import BlockParser
@@ -152,8 +154,14 @@ def test_cxx_titles(comment, expected_docstring):
         pytest.param(
             "*.c",
             """/* Title */""",
-            ("     /*%% * List item\n" "      * * Another item\n" "      */"),
-            ("* List item\n" "* Another item\n"),
+            ("     /*%% * List item\n"
+             "      * * Another item\n"
+             "      * * Item 3\n"
+             "      */"
+             ),
+            ("* List item\n"
+             "* Another item\n"
+             "* Item 3\n"),
             id="multiline-comment-short-form",
         ),
     ],
@@ -166,3 +174,42 @@ def test_rst_blocks(filetype, title, special, expected):
     assert len(blocks) == 4
     assert blocks[2][0] == "text"
     assert blocks[2][1] == expected
+
+def test_cpp_file_to_rst():
+    CODE = """\
+// Do stuff
+// --------
+
+int main(int argc, char** argv) {
+    //%% This is the start of ``main``
+
+    // This is just a comment because of the preceding blank line
+    int y = 4;
+
+    // sphinx_gallery_start_ignore
+    y = 5; // don't look: this is a secret!
+    // sphinx_gallery_end_ignore
+    if (y == 4) {
+        return 1;
+    }
+    // sphinx_gallery_foobar = 14
+}
+"""
+    with tempfile.NamedTemporaryFile("wb", suffix=".cpp", delete=False) as f:
+        f.write(CODE.encode())
+
+    try:
+        parser = BlockParser(f.name, DEFAULT_GALLERY_CONF)
+        file_conf, blocks, _ = parser.split_code_and_text_blocks(f.name)
+    finally:
+        os.remove(f.name)
+
+    assert parser.language == "C++"
+    assert file_conf == {"foobar": 14}
+
+    assert "// This is just a comment" in blocks[3][1]
+    assert "secret" in blocks[3][1]
+
+    cleaned = parser.remove_ignore_blocks(blocks[3][1])
+    assert "secret" not in cleaned
+    assert "y == 4" in cleaned
