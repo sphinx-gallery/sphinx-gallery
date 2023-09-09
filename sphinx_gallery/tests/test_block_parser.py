@@ -1,3 +1,4 @@
+"""test BlockParser."""
 import pytest
 from textwrap import dedent
 

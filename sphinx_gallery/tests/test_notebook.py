@@ -15,7 +15,6 @@ import textwrap
 
 from sphinx.errors import ExtensionError
 
-import sphinx_gallery.gen_rst as sg
 from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.notebook import (
     rst2md,

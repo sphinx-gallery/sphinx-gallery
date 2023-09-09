@@ -1,6 +1,6 @@
+"""BlockParser divides source files into blocks of code and markup text."""
 import ast
 import codecs
-import re
 from pathlib import Path
 import pygments.lexers
 import pygments.token
@@ -25,8 +25,9 @@ SPACES = re.compile(r"^[ \t]+$")
 
 class BlockParser:
     """
-    A parser that breaks a source file into blocks of code and markup text. Determines
-    the source language and identifies comment blocks using pygments.
+    A parser that breaks a source file into blocks of code and markup text.
+
+    Determines the source language and identifies comment blocks using pygments.
 
     Parameters
     ----------
@@ -110,7 +111,6 @@ class BlockParser:
         node : None
             Returning an ast node is not supported.
         """
-
         with codecs.open(source_file, "r", "utf-8") as fid:
             content = fid.read()
         # change from Windows format to UNIX for uniformity
