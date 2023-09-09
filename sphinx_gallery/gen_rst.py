@@ -1394,7 +1394,7 @@ def save_rst_example(
         + example_rst
     )
 
-    if time_elapsed >= gallery_conf["min_reported_time"]:
+    if time_elapsed > gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)
         example_rst += TIMING_CONTENT.format(time_m, time_s)
 

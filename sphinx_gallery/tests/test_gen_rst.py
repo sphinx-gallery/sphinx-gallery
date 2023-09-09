@@ -568,6 +568,7 @@ def test_final_empty_block(gallery_conf, req_pil):
     """
     content_block = CONTENT + ["# %%", "", "# sphinx_gallery_line_numbers = True"]
     gallery_conf["remove_config_comments"] = True
+    gallery_conf["min_reported_time"] = -1  # Force timing info to be shown
     rst = _generate_rst(gallery_conf, "test.py", content_block)
     want = "RuntimeWarning)\n\n\n.. rst-class:: sphx-glr-timing"
     assert want in rst
@@ -745,6 +746,7 @@ def test_rst_example(gallery_conf):
         }
     )
     gallery_conf.update(binder=binder_conf)
+    gallery_conf["min_reported_time"] = -1
 
     example_file = os.path.join(gallery_conf["gallery_dir"], "plot.py")
     sg.save_rst_example("example_rst", example_file, 0, 0, gallery_conf)
