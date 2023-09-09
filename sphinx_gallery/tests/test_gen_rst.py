@@ -26,6 +26,7 @@ from sphinx_gallery.gen_gallery import (
     generate_dir_rst,
     _update_gallery_conf_exclude_implicit_doc,
 )
+
 # TODO: The tests of this method should probably be moved to test_py_source_parser.py
 from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
@@ -191,8 +192,9 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
         blocks, script_vars, gallery_conf, file_conf
     )
 
-    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, language,
-                                gallery_conf)
+    example_rst = sg.rst_blocks(
+        blocks, output_blocks, file_conf, language, gallery_conf
+    )
     want_rst = """\
 Docstring
 
@@ -250,8 +252,9 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
     )
     language = "python"
 
-    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, language,
-                                gallery_conf)
+    example_rst = sg.rst_blocks(
+        blocks, output_blocks, file_conf, language, gallery_conf
+    )
     want_rst = """\
 Docstring
 

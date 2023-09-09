@@ -1,76 +1,94 @@
-
 import pytest
 from textwrap import dedent
 
 from sphinx_gallery.block_parser import BlockParser
 from sphinx_gallery.gen_gallery import DEFAULT_GALLERY_CONF
 
-CXX_BODY = dedent("""
+CXX_BODY = dedent(
+    """
     int x = 3;
     return;
-""")
+"""
+)
+
 
 @pytest.mark.parametrize(
     "comment, expected_docstring",
     [
         pytest.param(
-            dedent("""\
+            dedent(
+                """\
                 // Title
                 // =====
                 //
                 // description
-            """),
-            dedent("""\
+            """
+            ),
+            dedent(
+                """\
                 Title
                 =====
 
                 description
-            """),
-            id="single-line style"
+            """
+            ),
+            id="single-line style",
         ),
         # A simple multiline header
         pytest.param(
-            dedent("""\
+            dedent(
+                """\
                 /*
                    Title
                    =====
                  */
-                """),
-            dedent("""\
+                """
+            ),
+            dedent(
+                """\
                 Title
                 =====
-                """),
-            id="simple multiline"
+                """
+            ),
+            id="simple multiline",
         ),
         # A multiline comment with aligned decorations on intermediate lines
         pytest.param(
-            dedent("""\
+            dedent(
+                """\
                 /*
                  * Title
                  * =====
                  */
-                """),
-            dedent("""\
+                """
+            ),
+            dedent(
+                """\
                 Title
                 =====
-                """),
-            id="decorated-multiline"
+                """
+            ),
+            id="decorated-multiline",
         ),
         # A multiline comment that starts on the same line as the start symbol
         pytest.param(
-            dedent("""\
+            dedent(
+                """\
                 /* Title
                  * =====
                  *
                  */
-                """),
-            dedent("""\
+                """
+            ),
+            dedent(
+                """\
                 Title
                 =====
-                """),
-            id="early-multiline"
-        )
-    ]
+                """
+            ),
+            id="early-multiline",
+        ),
+    ],
 )
 def test_cxx_titles(comment, expected_docstring):
     doc = comment + CXX_BODY
@@ -81,6 +99,7 @@ def test_cxx_titles(comment, expected_docstring):
     assert blocks[0][0] == "text"
     assert blocks[0][1] == expected_docstring
 
+
 @pytest.mark.parametrize(
     "filetype, title, special, expected",
     [
@@ -89,57 +108,54 @@ def test_cxx_titles(comment, expected_docstring):
             """# Title""",
             """# %% Single-line comment""",
             "Single-line comment\n",
-            id="single-line-simple"
+            id="single-line-simple",
         ),
         pytest.param(
             "*.f90",
             """! Title""",
             """     ! %% Indented single-line comment""",
             "Indented single-line comment\n",
-            id="single-line-indented"
+            id="single-line-indented",
         ),
         pytest.param(
             "*.cpp",
             """// Title""",
-            ("     // %%\n"
-             "     // First comment line\n"
-             "     // Second comment line\n"),
-            ("First comment line\n"
-             "Second comment line\n"),
-            id="indented-separate-sentinel"
+            (
+                "     // %%\n"
+                "     // First comment line\n"
+                "     // Second comment line\n"
+            ),
+            ("First comment line\n" "Second comment line\n"),
+            id="indented-separate-sentinel",
         ),
         pytest.param(
             "*.cs",
             """// Title""",
-            ("     //%% Indented multi-line comment\n"
-             "     // continued on a second line\n"
+            (
+                "     //%% Indented multi-line comment\n"
+                "     // continued on a second line\n"
             ),
-            ("Indented multi-line comment\n"
-             "continued on a second line\n"),
-             id="block-from-single-lines"
+            ("Indented multi-line comment\n" "continued on a second line\n"),
+            id="block-from-single-lines",
         ),
         pytest.param(
             "*.c",
             """/* Title */""",
-            ("     /* %% Indented multi-line comment\n"
-             "        continued on a second line */\n"
+            (
+                "     /* %% Indented multi-line comment\n"
+                "        continued on a second line */\n"
             ),
-            ("Indented multi-line comment\n"
-             "continued on a second line\n"),
-             id="multiline-comment-short-form"
+            ("Indented multi-line comment\n" "continued on a second line\n"),
+            id="multiline-comment-short-form",
         ),
         pytest.param(
             "*.c",
             """/* Title */""",
-            ("     /*%% * List item\n"
-             "      * * Another item\n"
-             "      */"
-            ),
-            ("* List item\n"
-             "* Another item\n"),
-             id="multiline-comment-short-form"
+            ("     /*%% * List item\n" "      * * Another item\n" "      */"),
+            ("* List item\n" "* Another item\n"),
+            id="multiline-comment-short-form",
         ),
-    ]
+    ],
 )
 def test_rst_blocks(filetype, title, special, expected):
     doc = f"{title}\n{CXX_BODY}\n\n{special}\n{CXX_BODY}"

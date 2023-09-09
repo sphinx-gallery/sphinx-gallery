@@ -464,9 +464,11 @@ def generate_dir_rst(
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     # get filenames
-    listdir = [fname for fname in os.listdir(src_dir)
-               if (s := Path(fname).suffix)
-               and s not in gallery_conf["ignored_extensions"]]
+    listdir = [
+        fname
+        for fname in os.listdir(src_dir)
+        if (s := Path(fname).suffix) and s not in gallery_conf["ignored_extensions"]
+    ]
     # limit which to look at based on regex (similar to filename_pattern)
     listdir = [
         fname
@@ -1095,6 +1097,7 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
 
     return output_blocks, time_elapsed
 
+
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=None):
     """Generate the rst file for a given example.
 
@@ -1208,13 +1211,15 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         script_blocks = script_blocks[:-1]
         output_blocks = output_blocks[:-1]
 
-    example_rst = rst_blocks(script_blocks, output_blocks, file_conf, language,
-                             gallery_conf)
+    example_rst = rst_blocks(
+        script_blocks, output_blocks, file_conf, language, gallery_conf
+    )
     memory_used = gallery_conf["memory_base"] + script_vars["memory_delta"]
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
-    save_rst_example(example_rst, target_file, language, time_elapsed, memory_used,
-                     gallery_conf)
+    save_rst_example(
+        example_rst, target_file, language, time_elapsed, memory_used, gallery_conf
+    )
 
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
@@ -1332,9 +1337,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, language, gallery_conf):
             if not file_conf.get("line_numbers", gallery_conf["line_numbers"]):
                 lineno = None
 
-            code_rst = (
-                codestr2rst(bcontent, lang=language, lineno=lineno) + "\n"
-            )
+            code_rst = codestr2rst(bcontent, lang=language, lineno=lineno) + "\n"
             if is_example_notebook_like:
                 example_rst += code_rst
                 example_rst += code_output
@@ -1417,8 +1420,12 @@ def save_rst_example(
 
     ipynb_name = example_file.with_suffix(".ipynb").name
     example_rst += CODE_DOWNLOAD.format(
-        example_file.name, ipynb_name, binder_badge_rst, ref_fname, jupyterlite_rst,
-        language
+        example_file.name,
+        ipynb_name,
+        binder_badge_rst,
+        ref_fname,
+        jupyterlite_rst,
+        language,
     )
     if gallery_conf["show_signature"]:
         example_rst += SPHX_GLR_SIG

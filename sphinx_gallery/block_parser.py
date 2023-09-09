@@ -14,10 +14,14 @@ logger = getLogger("sphinx-gallery")
 
 # Don't just use "x in pygments.token.Comment" because it also includes preprocessor
 # statements
-COMMENT_TYPES = (pygments.token.Comment.Single, pygments.token.Comment.Multiline,
-                 pygments.token.Comment)
+COMMENT_TYPES = (
+    pygments.token.Comment.Single,
+    pygments.token.Comment.Multiline,
+    pygments.token.Comment,
+)
 
 SPACES = re.compile(r"^[ \t]+$")
+
 
 class BlockParser:
     """
@@ -50,8 +54,11 @@ class BlockParser:
             "#=": "#= comment =#",
         }
 
-        self.allowed_comments = {start for start, comment in comment_tests.items()
-                                 if next(self.lexer.get_tokens(comment))[0] in COMMENT_TYPES}
+        self.allowed_comments = {
+            start
+            for start, comment in comment_tests.items()
+            if next(self.lexer.get_tokens(comment))[0] in COMMENT_TYPES
+        }
 
         comment_start = "|".join(self.allowed_comments)
         self.start_special = re.compile(f"(?:{comment_start}) ?%% ?(.*)", re.DOTALL)
@@ -71,14 +78,14 @@ class BlockParser:
 
         self.infile_config_pattern = re.compile(
             flag_start + r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?",
-            re.MULTILINE
+            re.MULTILINE,
         )
 
         self.start_ignore_flag = flag_start + "sphinx_gallery_start_ignore"
         self.end_ignore_flag = flag_start + "sphinx_gallery_end_ignore"
         self.ignore_block_pattern = re.compile(
             rf"{self.start_ignore_flag}(?:[\s\S]*?){self.end_ignore_flag}\n?",
-            re.MULTILINE
+            re.MULTILINE,
         )
 
     def split_code_and_text_blocks(self, source_file, return_node=False):
@@ -112,6 +119,7 @@ class BlockParser:
 
     def _split_content(self, content):
         blocks = []
+
         def append_block(blocks, kind, block):
             block = "".join(block)
             if block and set(block) != {"\n"}:
@@ -124,9 +132,9 @@ class BlockParser:
                 blocks.append((kind, block, line_no))
 
         def cleanup_comment(block):
-            if ("/\\*" not in self.allowed_comments
-                or not (b := block.rstrip()).endswith("*/")):
-
+            if "/\\*" not in self.allowed_comments or not (
+                b := block.rstrip()
+            ).endswith("*/"):
                 # Normalize leading and trailing newlines: none to start, one at the end
                 block = block.lstrip("\n")
                 if block.endswith("\n\n"):
@@ -143,15 +151,17 @@ class BlockParser:
 
             # Find the longest consistent prefix consisting of these characters
             prefix_chars = {"\t", " ", "*", "/"}
-            N, longest = max((len(re.match(r"\s*[\*/]*\s*", line).group(0)), line)
-                            for line in lines[1:])
+            N, longest = max(
+                (len(re.match(r"\s*[\*/]*\s*", line).group(0)), line)
+                for line in lines[1:]
+            )
             matched = 0
-            for i in range(1, N+1):
+            for i in range(1, N + 1):
                 for line in lines[1:]:
                     if set(line[:i]) - prefix_chars:
                         break
                     elif len(line) < i:
-                        if line != longest[:len(line)]:
+                        if line != longest[: len(line)]:
                             break
                     elif line[:i] != longest[:i]:
                         break
@@ -161,8 +171,11 @@ class BlockParser:
                     break
 
             # delete the prefix from lines after the first
-            block = (lines[0].lstrip() + "\n"
-                     + "\n".join((line[matched:] for line in lines[1:])))
+            block = (
+                lines[0].lstrip()
+                + "\n"
+                + "\n".join((line[matched:] for line in lines[1:]))
+            )
 
             # Normalize leading and trailing newlines: none to start, one at the end
             block = block.lstrip("\n")
@@ -174,7 +187,7 @@ class BlockParser:
         def init_block(last_space):
             space = "".join(last_space)
             if "\n" in space:
-                block = [space[space.rindex("\n")+1:]]
+                block = [space[space.rindex("\n") + 1 :]]
             else:
                 block = space.split("\n")
 
@@ -212,7 +225,7 @@ class BlockParser:
                     block.append(text)
                 elif "\n" in text:
                     # Drop previous whitespace
-                    block = [text[text.rindex("\n")+1:]]
+                    block = [text[text.rindex("\n") + 1 :]]
                 mode = "text"
                 # For subsequent blocks, require the special sentinel
                 start_of_text = self.start_special
