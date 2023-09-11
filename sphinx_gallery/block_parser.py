@@ -52,6 +52,7 @@ class BlockParser:
             r"/\*": "/* comment */",
             "%": "% comment",
             "!": "! comment",
+            r"^c(?:$|     )": "c     comment",
             "#=": "#= comment =#",
         }
 
@@ -62,8 +63,12 @@ class BlockParser:
         }
 
         comment_start = "(?:" + "|".join(self.allowed_comments) + ")"
-        self.start_special = re.compile(f"{comment_start} ?%% ?(.*)", re.DOTALL)
-        self.continue_text = re.compile(f"{comment_start} ?(.*)", re.DOTALL)
+        self.start_special = re.compile(
+            f"{comment_start} ?%% ?(.*)", re.DOTALL | re.MULTILINE
+        )
+        self.continue_text = re.compile(
+            f"{comment_start} ?(.*)", re.DOTALL | re.MULTILINE
+        )
 
         # The pattern for in-file config comments is designed to not greedily match
         # newlines at the start and end, except for one newline at the end. This
