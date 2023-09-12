@@ -297,7 +297,7 @@ def md5sum_is_current(src_file, mode="b"):
     """Checks whether src_file has the same md5 hash as the one on disk."""
     src_md5 = get_md5sum(src_file, mode)
 
-    src_md5_file = src_file + ".md5"
+    src_md5_file = str(src_file) + ".md5"
     if os.path.exists(src_md5_file):
         with open(src_md5_file) as file_checksum:
             ref_md5 = file_checksum.read()
@@ -1124,7 +1124,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     """
     seen_backrefs = set() if seen_backrefs is None else seen_backrefs
     src_file = os.path.normpath(os.path.join(src_dir, fname))
-    target_file = os.path.join(target_dir, fname)
+    target_file = Path(target_dir) / fname
     _replace_md5(src_file, target_file, "copy", mode="t")
 
     if fname.endswith(".py"):
@@ -1149,7 +1149,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
             if gallery_conf["run_stale_examples"]:
                 do_return = False
             else:
-                gallery_conf["stale_examples"].append(target_file)
+                gallery_conf["stale_examples"].append(str(target_file))
         if do_return:
             return intro, title, (0, 0)
 
@@ -1165,7 +1165,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         "execute_script": executable,
         "image_path_iterator": ImagePathIterator(image_path_template),
         "src_file": src_file,
-        "target_file": target_file,
+        "target_file": str(target_file),
     }
 
     if executable and gallery_conf["reset_modules_order"] in ["before", "both"]:
@@ -1224,7 +1224,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
     example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
-    ipy_fname = Path(target_file).with_suffix(".ipynb.new")
+    ipy_fname = target_file.with_suffix(".ipynb.new")
     save_notebook(example_nb, ipy_fname)
     _replace_md5(ipy_fname, mode="t")
 
@@ -1236,7 +1236,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     ref_regex = _make_ref_regex(gallery_conf["app"].config)
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
-        codeobj_fname = os.path.splitext(target_file)[0] + "_codeobj.pickle.new"
+        codeobj_fname = target_file.with_name(target_file.stem + "_codeobj.pickle.new")
         with open(codeobj_fname, "wb") as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)

@@ -145,7 +145,7 @@ def get_md5sum(src_file, mode="b"):
 
 
 def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
-    fname_new = str(fname_new)
+    fname_new = str(fname_new)  # convert possible Path
     assert method in ("move", "copy")
     if fname_old is None:
         assert fname_new.endswith(".new")
