@@ -186,15 +186,12 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
 
     script_vars = {"execute_script": ""}
     file_conf = {}
-    language = "python"
 
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf, file_conf
     )
 
-    example_rst = sg.rst_blocks(
-        blocks, output_blocks, file_conf, language, gallery_conf
-    )
+    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
     want_rst = """\
 Docstring
 
@@ -250,11 +247,8 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf, file_conf
     )
-    language = "python"
 
-    example_rst = sg.rst_blocks(
-        blocks, output_blocks, file_conf, language, gallery_conf
-    )
+    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
     want_rst = """\
 Docstring
 
@@ -752,7 +746,7 @@ def test_rst_example(gallery_conf):
     gallery_conf["min_reported_time"] = -1
 
     example_file = os.path.join(gallery_conf["gallery_dir"], "plot.py")
-    sg.save_rst_example("example_rst", example_file, "Python", 0, 0, gallery_conf)
+    sg.save_rst_example("example_rst", example_file, 0, 0, gallery_conf)
 
     test_file = re.sub(r"\.py$", ".rst", example_file)
     with codecs.open(test_file) as f:
