@@ -62,7 +62,7 @@ DEFAULT_GALLERY_CONF = {
     "filename_pattern": re.escape(os.sep) + "plot",
     "ignore_pattern": r"__init__\.py",
     "examples_dirs": os.path.join("..", "examples"),
-    "ignored_extensions": {".txt", ".rst"},
+    "example_extensions": {".py"},
     "filetype_parsers": {},
     "reset_argv": DefaultResetArgv(),
     "subsection_order": None,

@@ -467,7 +467,7 @@ def generate_dir_rst(
     listdir = [
         fname
         for fname in os.listdir(src_dir)
-        if (s := Path(fname).suffix) and s not in gallery_conf["ignored_extensions"]
+        if (s := Path(fname).suffix) and s in gallery_conf["example_extensions"]
     ]
     # limit which to look at based on regex (similar to filename_pattern)
     listdir = [
