@@ -215,7 +215,13 @@ def codestr2rst(codestr, lang="python", lineno=None):
         lineno = f"   :lineno-start: {lineno + blank_lines}\n"
     else:
         lineno = ""
-    code_directive = f".. code-block:: {lang}\n{lineno}\n"
+    # If the whole block is indented, prevent Sphinx from removing too much whitespace
+    dedent = "   :dedent: 1\n"
+    for line in codestr.splitlines():
+        if line and not line.startswith((" ", "\t")):
+            dedent = ""
+            break
+    code_directive = f".. code-block:: {lang}\n{dedent}{lineno}\n"
     indented_block = indent(codestr, " " * 4)
     return code_directive + indented_block
 
