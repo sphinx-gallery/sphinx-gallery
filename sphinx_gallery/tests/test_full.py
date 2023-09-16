@@ -37,8 +37,9 @@ import pytest
 N_EXAMPLES = 15 + 3 + 2
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
-# passthroughs examples_rst_index, examples_with_rst
-N_PASS = 0 + 2
+# passthroughs and non-executed examples in examples + examples_rst_index
+# + examples_with_rst
+N_PASS = 1 + 0 + 2
 # indices SG generates  (extra non-plot*.py file)
 # + examples_rst_index + examples_with_rst
 N_INDEX = 2 + 1 + 3
@@ -1256,3 +1257,11 @@ def test_jupyterlite_modifications(sphinx_app):
             f"JupyterLite-specific change for {notebook_filename}"
             in first_cell["source"]
         )
+
+
+def test_cpp_rst(sphinx_app):
+    cpp_rst = Path(sphinx_app.srcdir) / "auto_examples" / "parse_this.rst"
+    content = cpp_rst.read_text()
+    assert content.count(".. code-block:: C++") == 3
+    assert content.count(":dedent: 1", 1)
+    assert "Download C++ source code" in content
