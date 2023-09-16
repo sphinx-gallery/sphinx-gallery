@@ -109,14 +109,21 @@ def test_cxx_titles(comment, expected_docstring):
         pytest.param(
             "*.py",
             """# Title""",
-            """# %% Single-line comment""",
-            "Single-line comment\n",
-            id="single-line-simple",
+            (
+                "# %%\n"
+                "# A simple comment\n"
+                "# with two lines"
+            ),
+            "A simple comment\nwith two lines\n",
+            id="simple",
         ),
         pytest.param(
             "*.f90",
             """! Title""",
-            """     ! %% Indented single-line comment""",
+            (
+                "    !%%\n"
+                "    !  Indented single-line comment"
+            ),
             "Indented single-line comment\n",
             id="single-line-indented",
         ),
@@ -135,32 +142,36 @@ def test_cxx_titles(comment, expected_docstring):
             "*.cs",
             """// Title""",
             (
-                "     //%% Indented multi-line comment\n"
-                "     // continued on a second line\n"
+                "     //%%\n"
+                "     // Indented multi-line comment\n"
+                "     //\n"
+                "     // with a blank line\n"
             ),
-            ("Indented multi-line comment\n" "continued on a second line\n"),
-            id="block-from-single-lines",
+            ("Indented multi-line comment\n\nwith a blank line\n"),
+            id="block-two-paragraphs",
         ),
         pytest.param(
             "*.c",
             """/* Title */""",
             (
-                "     /* %% Indented multi-line comment\n"
+                "     /* %%  \n"
+                "        Indented multi-line comment\n"
                 "        continued on a second line */\n"
             ),
-            ("Indented multi-line comment\n" "continued on a second line\n"),
-            id="multiline-comment-short-form",
+            ("Indented multi-line comment\ncontinued on a second line\n"),
+            id="multiline-block-comment",
         ),
         pytest.param(
             "*.c",
             """/* Title */""",
             (
-                "     /*%% * List item\n"
+                "     /*%%\n"
+                "      * * List item\n"
                 "      * * Another item\n"
                 "      * * Item 3\n"
                 "      */"
             ),
-            ("* List item\n" "* Another item\n" "* Item 3\n"),
+            ("* List item\n* Another item\n* Item 3\n"),
             id="multiline-comment-short-form",
         ),
     ],
@@ -181,7 +192,8 @@ def test_cpp_file_to_rst():
 // --------
 
 int main(int argc, char** argv) {
-    //%% This is the start of ``main``
+    //%%
+    //This is the start of ``main``
 
     // This is just a comment because of the preceding blank line
     int y = 4;
