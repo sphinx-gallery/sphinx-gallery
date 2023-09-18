@@ -251,6 +251,16 @@ class BlockParser:
     def _split_content(self, content):
         file_conf = self.extract_file_config(content)
         blocks = list(self._get_blocks(content))
+
+        # For examples that start with a code block before the file docstring due to
+        # language conventions or requirements, swap these blocks so the title block
+        # comes first and merge consecutive code blocks if needed.
+        if len(blocks) >= 2 and blocks[0][0] == "code" and blocks[1][0] == "text":
+            blocks[0], blocks[1] = blocks[1], blocks[0]
+            if len(blocks) >= 3 and blocks[2][0] == "code":
+                blocks[1] = ("code", f"{blocks[1][1]}\n{blocks[2][1]}", blocks[1][2])
+                blocks.pop(2)
+
         return file_conf, blocks, None
 
     def extract_file_config(self, content):

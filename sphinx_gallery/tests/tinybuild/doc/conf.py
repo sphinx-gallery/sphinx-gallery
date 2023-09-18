@@ -118,7 +118,8 @@ sphinx_gallery_conf = {
     },
     "jupyterlite": {"notebook_modification_function": notebook_modification_function},
     "examples_dirs": ["../examples/", "../examples_with_rst/", "../examples_rst_index"],
-    "example_extensions": {".py", ".cpp"},
+    "example_extensions": {".py", ".cpp", ".m"},
+    "filetype_parsers": {".m": "Matlab"},
     "reset_argv": ResetArgv(),
     "reset_modules": (MockScrapeProblem(), "matplotlib"),
     "gallery_dirs": [
