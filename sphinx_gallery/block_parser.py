@@ -45,12 +45,12 @@ class BlockParser:
 
         # determine valid comment syntaxes
         comment_tests = [
+            ("#= comment =#", "#=", "=#"),  # Julia multiline
             ("# comment", "#", None),
             ("// comment", "//", None),
             ("/* comment */", r"/\*", r"\*/"),
             ("% comment", "%", None),
             ("! comment", "!", None),
-            ("#= comment =#", "#=", "=#"),  # Julia multiline
             ("c     comment", r"^c(?:$|     )", None),
         ]
 
@@ -69,6 +69,7 @@ class BlockParser:
             self.multiline_cleanup = re.compile(r"\s*")
 
         comment_start = "(?:" + "|".join(self.allowed_comments) + ")"
+        print(f"{source_file=}; {comment_start=!r}")
         self.start_special = re.compile(f"{comment_start} ?%% ?(.*)")
         self.continue_text = re.compile(f"{comment_start} ?(.*)")
 

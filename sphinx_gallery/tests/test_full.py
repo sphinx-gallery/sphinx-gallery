@@ -39,7 +39,7 @@ N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs and non-executed examples in examples + examples_rst_index
 # + examples_with_rst
-N_PASS = 2 + 0 + 2
+N_PASS = 3 + 0 + 2
 # indices SG generates  (extra non-plot*.py file)
 # + examples_rst_index + examples_with_rst
 N_INDEX = 2 + 1 + 3
@@ -1268,8 +1268,16 @@ def test_cpp_rst(sphinx_app):
 
 
 def test_matlab_rst(sphinx_app):
-    cpp_rst = Path(sphinx_app.srcdir) / "auto_examples" / "isentropic.rst"
-    content = cpp_rst.read_text()
+    matlab_rst = Path(sphinx_app.srcdir) / "auto_examples" / "isentropic.rst"
+    content = matlab_rst.read_text()
     assert content.count(".. code-block:: Matlab", 3)
     assert "ISENTROPIC - isentropic, adiabatic flow example\n==============" in content
     assert "Download Matlab source code" in content
+
+
+def test_julia_rst(sphinx_app):
+    julia_rst = Path(sphinx_app.srcdir) / "auto_examples" / "julia_sample.rst"
+    content = julia_rst.read_text()
+    assert content.count(".. code-block:: Julia", 3)
+    assert "Julia example\n=============" in content
+    assert "Download Julia source code" in content
