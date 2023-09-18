@@ -16,11 +16,9 @@ logger = getLogger("sphinx-gallery")
 # statements
 COMMENT_TYPES = (
     pygments.token.Comment.Single,
-    pygments.token.Comment.Multiline,
     pygments.token.Comment,
+    pygments.token.Comment.Multiline,
 )
-
-SPACES = re.compile(r"^[ \t]+$")
 
 
 class BlockParser:
@@ -45,30 +43,34 @@ class BlockParser:
             self.lexer = pygments.lexers.find_lexer_class_for_filename(source_file)()
         self.language = self.lexer.name
 
-        # determine valid comment starting syntaxes
-        comment_tests = {
-            "#": "# comment",
-            "//": "// comment",
-            r"/\*": "/* comment */",
-            "%": "% comment",
-            "!": "! comment",
-            r"^c(?:$|     )": "c     comment",
-            "#=": "#= comment =#",
-        }
+        # determine valid comment syntaxes
+        comment_tests = [
+            ("# comment", "#", None),
+            ("// comment", "//", None),
+            ("/* comment */", r"/\*", r"\*/"),
+            ("% comment", "%", None),
+            ("! comment", "!", None),
+            ("#= comment =#", "#=", "=#"),  # Julia multiline
+            ("c     comment", r"^c(?:$|     )", None),
+        ]
 
-        self.allowed_comments = {
-            start
-            for start, comment in comment_tests.items()
-            if next(self.lexer.get_tokens(comment))[0] in COMMENT_TYPES
-        }
+        self.allowed_comments = []
+        self.multiline_end = re.compile(chr(0))  # unmatchable regex
+        for test, start, end in comment_tests:
+            if next(self.lexer.get_tokens(test))[0] in COMMENT_TYPES:
+                self.allowed_comments.append(start)
+                if end:
+                    self.multiline_end = re.compile(rf"(.*?)\s*{end}")
+
+        if r"/\*" in self.allowed_comments:
+            # Remove decorative asterisks from C-style multiline comments
+            self.multiline_cleanup = re.compile(r"\s*\*\s*")
+        else:
+            self.multiline_cleanup = re.compile(r"\s*")
 
         comment_start = "(?:" + "|".join(self.allowed_comments) + ")"
-        self.start_special = re.compile(
-            f"{comment_start} ?%% ?(.*)", re.DOTALL | re.MULTILINE
-        )
-        self.continue_text = re.compile(
-            f"{comment_start} ?(.*)", re.DOTALL | re.MULTILINE
-        )
+        self.start_special = re.compile(f"{comment_start} ?%% ?(.*)")
+        self.continue_text = re.compile(f"{comment_start} ?(.*)")
 
         # The pattern for in-file config comments is designed to not greedily match
         # newlines at the start and end, except for one newline at the end. This
@@ -122,140 +124,133 @@ class BlockParser:
         content = content.replace("\r\n", "\n")
         return self._split_content(content)
 
-    def _split_content(self, content):
-        blocks = []
+    def _get_content_lines(self, content):
+        """
+        Combine individual tokens into lines, using the first non-whitespace
+        token (if any) as the characteristic token type for the line
+        """
+        current_line = []
+        line_token = pygments.token.Whitespace
+        for token, text in self.lexer.get_tokens(content):
+            if line_token == pygments.token.Whitespace:
+                line_token = token
 
-        def append_block(blocks, kind, block):
-            block = "".join(block)
-            if block and set(block) != {"\n"}:
-                if not block.endswith("\n"):
-                    block += "\n"
-                if kind == "text":
-                    block = cleanup_comment(block)
-                line_no = blocks[-1][2] if blocks else 0
-                line_no += block.count("\n")
-                blocks.append((kind, block, line_no))
-
-        def cleanup_comment(block):
-            if "/\\*" not in self.allowed_comments or not (
-                b := block.rstrip()
-            ).endswith("*/"):
-                # Normalize leading and trailing newlines: none to start, one at the end
-                block = block.lstrip("\n")
-                if block.endswith("\n\n"):
-                    block = block.rstrip("\n") + "\n"
-
-                return dedent(block)
-
-            # Otherwise, remove decorations from C-style multiline comments
-            lines = b[:-2].splitlines()  # delete the trailing "*/"
-            lines = [line.rstrip(" \t") for line in lines]
-
-            if len(lines) == 1:
-                return lines[0]
-
-            # Find the longest consistent prefix consisting of these characters
-            prefix_chars = {"\t", " ", "*", "/"}
-            N, longest = max(
-                (len(re.match(r"\s*[\*/]*\s*", line).group(0)), line)
-                for line in lines[1:]
-            )
-            matched = 0
-            for i in range(1, N + 1):
-                for line in lines[1:]:
-                    if set(line[:i]) - prefix_chars:
-                        break
-                    elif len(line) < i:
-                        if line != longest[: len(line)]:
-                            break
-                    elif line[:i] != longest[:i]:
-                        break
-                else:
-                    matched = i
-                if matched != i:
-                    break
-
-            # delete the prefix from lines after the first
-            block = (
-                lines[0].lstrip()
-                + "\n"
-                + "\n".join((line[matched:] for line in lines[1:]))
-            )
-
-            # Normalize leading and trailing newlines: none to start, one at the end
-            block = block.lstrip("\n")
-            if block.endswith("\n\n") or not block.endswith("\n"):
-                block = block.rstrip("\n") + "\n"
-
-            return block
-
-        def init_block(last_space):
-            space = "".join(last_space)
-            if "\n" in space:
-                block = [space[space.rindex("\n") + 1 :]]
+            if "\n" in text:
+                text_lines = text.split("\n")
+                # first item belongs to the previous line
+                current_line.append(text_lines.pop(0))
+                yield line_token, "".join(current_line)
+                # last item belongs to the line after this token
+                current_line = [text_lines.pop()]
+                # Anything left is a block of lines to add directly
+                for ln in text_lines:
+                    if not ln.strip():
+                        line_token = pygments.token.Whitespace
+                    yield line_token, ln
+                if not current_line[0].strip():
+                    line_token = pygments.token.Whitespace
             else:
-                block = space.split("\n")
+                current_line.append(text)
 
-            return block, []
+    def _get_blocks(self, content):
+        """
+        Generate a sequence of (label, content, line_number) tuples based on the lines
+        in `content`.
+        """
+
+        start_text = self.continue_text  # No special delimiter needed for first block
+
+        def cleanup_multiline(lines):
+            first_line = 1 if start_text == self.continue_text else 0
+            longest = max(len(line) for line in lines)
+            matched = False
+            for i, line in enumerate(lines[first_line:]):
+                if m := self.multiline_cleanup.match(line):
+                    matched = True
+                    if (n := len(m.group(0))) < len(line):
+                        longest = min(longest, n)
+
+            if matched and longest:
+                for i, line in enumerate(lines[first_line:], start=first_line):
+                    lines[i] = lines[i][longest:]
+
+            return lines
+
+        def finalize_block(mode, block):
+            nonlocal start_text
+            if mode == "text":
+                # subsequent blocks need to have the special delimiter
+                start_text = self.start_special
+
+                # Remove leading blank lines, and end in a single newline
+                first = 0
+                for i, line in enumerate(block):
+                    first = i
+                    if line.strip():
+                        break
+                last = None
+                for i, line in enumerate(reversed(block)):
+                    last = -i or None
+                    if line.strip():
+                        break
+                block.append("")
+                text = dedent("\n".join(block[first:last]))
+            else:
+                text = "\n".join(block)
+            return mode, text, n - len(block)
 
         block = []
         mode = None
-        start_of_text = self.continue_text  # Take first comment block without sentinel
-        last_space = []
-        newline_count = 0
-        for token, text in self.lexer.get_tokens(content):
-            # Track consecutive newlines, which can indicate the end of a special
-            # comment block
-            if block and token in pygments.token.Whitespace:
-                newline_count += text.count("\n")
-            else:
-                newline_count = text.count("\n")
-
-            if token in pygments.token.Whitespace:
-                # Defer categorizing start-of-line whitespace; it may belong to the
-                # following block
-                last_space.append(text)
-
-                if mode == "text" and newline_count >= 2:
-                    append_block(blocks, "text", block)
-                    block, last_space = init_block(last_space)
-                    mode = None
-            elif token in COMMENT_TYPES and (m := start_of_text.match(text)):
-                # Complete the preceding code block
-                append_block(blocks, "code", block)
-                block, last_space = init_block(last_space)
-
-                # Start of first comment block or a special comment block.
-                if (text := m.group(1)).strip():
-                    block.append(text)
-                elif "\n" in text:
-                    # Drop previous whitespace
-                    block = [text[text.rindex("\n") + 1 :]]
-                mode = "text"
-                # For subsequent blocks, require the special sentinel
-                start_of_text = self.start_special
+        for n, (token, text) in enumerate(self._get_content_lines(content)):
+            if mode == "text" and token in pygments.token.Whitespace:
+                # Blank line ends current text block
+                if block:
+                    yield finalize_block(mode, block)
+                mode, block = None, []
+            elif (
+                mode != "text"
+                and token in COMMENT_TYPES
+                and (m := start_text.search(text))
+            ):
+                # start of a text block; end the current block
+                if block:
+                    yield finalize_block(mode, block)
+                mode, block = "text", []
+                if (trailing_text := m.group(1)) is not None:
+                    if start_text == self.continue_text:
+                        # Keep any text on the first line of the title block
+                        block.append(trailing_text)
+                    elif trailing_text.strip():
+                        # Warn about text following a "%%" delimiter
+                        logger.warning(
+                            f"Dropped text on same line as marker: {trailing_text!r}"
+                        )
             elif mode == "text" and token in COMMENT_TYPES:
-                # continuation of a special comment block
-                block.extend(last_space)
-                last_space = []
-                if m := self.continue_text.match(text):
-                    block.append(m.group(1))
+                # Continuation of a text block
+                if token == pygments.token.Comment.Multiline:
+                    if m := self.multiline_end.search(text):
+                        block.append(m.group(1))
+                        block = cleanup_multiline(block)
+                    else:
+                        block.append(text)
+                else:
+                    block.append(self.continue_text.search(text).group(1))
             elif mode != "code":
-                # start of a code block; complete the preceding text block
-                append_block(blocks, "text", block)
-                block, last_space = init_block(last_space)
-                block.append(text)
-                mode = "code"
+                # start of a code block
+                if block:
+                    yield finalize_block(mode, block)
+                mode, block = "code", [text]
             else:
                 # continuation of a code block
-                block.extend(last_space)
                 block.append(text)
-                last_space = []
 
-        if mode is not None:
-            append_block(blocks, mode, block)
+        # end of input ends final block
+        if block:
+            yield finalize_block(mode, block)
 
+    def _split_content(self, content):
         file_conf = self.extract_file_config(content)
+        blocks = list(self._get_blocks(content))
         return file_conf, blocks, None
 
     def extract_file_config(self, content):

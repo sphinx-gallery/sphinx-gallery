@@ -109,21 +109,14 @@ def test_cxx_titles(comment, expected_docstring):
         pytest.param(
             "*.py",
             """# Title""",
-            (
-                "# %%\n"
-                "# A simple comment\n"
-                "# with two lines"
-            ),
+            "# %%\n# A simple comment\n# with two lines",
             "A simple comment\nwith two lines\n",
             id="simple",
         ),
         pytest.param(
             "*.f90",
             """! Title""",
-            (
-                "    !%%\n"
-                "    !  Indented single-line comment"
-            ),
+            "    !%%\n    !  Indented single-line comment",
             "Indented single-line comment\n",
             id="single-line-indented",
         ),
@@ -135,7 +128,7 @@ def test_cxx_titles(comment, expected_docstring):
                 "     // First comment line\n"
                 "     // Second comment line\n"
             ),
-            ("First comment line\n" "Second comment line\n"),
+            "First comment line\nSecond comment line\n",
             id="indented-separate-sentinel",
         ),
         pytest.param(
@@ -147,7 +140,7 @@ def test_cxx_titles(comment, expected_docstring):
                 "     //\n"
                 "     // with a blank line\n"
             ),
-            ("Indented multi-line comment\n\nwith a blank line\n"),
+            "Indented multi-line comment\n\nwith a blank line\n",
             id="block-two-paragraphs",
         ),
         pytest.param(
@@ -158,7 +151,7 @@ def test_cxx_titles(comment, expected_docstring):
                 "        Indented multi-line comment\n"
                 "        continued on a second line */\n"
             ),
-            ("Indented multi-line comment\ncontinued on a second line\n"),
+            "Indented multi-line comment\ncontinued on a second line\n",
             id="multiline-block-comment",
         ),
         pytest.param(
@@ -174,10 +167,24 @@ def test_cxx_titles(comment, expected_docstring):
             ("* List item\n* Another item\n* Item 3\n"),
             id="multiline-comment-short-form",
         ),
+        pytest.param(
+            "*.jl",
+            "# Title",
+            (
+                "    #=%%\n"
+                "    * list item 1\n"
+                "    * list item 2\n"
+                "      * subitem\n"
+                "    =#"
+            ),
+            "* list item 1\n* list item 2\n  * subitem\n",
+            id="julia-multiline",
+        ),
     ],
 )
 def test_rst_blocks(filetype, title, special, expected):
     doc = f"{title}\n{CXX_BODY}\n\n{special}\n{CXX_BODY}"
+    print(doc)
     parser = BlockParser(filetype, DEFAULT_GALLERY_CONF)
     file_conf, blocks, _ = parser._split_content(doc)
 
