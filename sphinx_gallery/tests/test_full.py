@@ -1265,6 +1265,9 @@ def test_cpp_rst(sphinx_app):
     assert content.count(".. code-block:: C++") == 3
     assert content.count(":dedent: 1", 1)
     assert "Download C++ source code" in content
+    assert "binder-badge" not in content
+    assert "lite-badge" not in content
+    assert "Download Jupyter notebook" not in content
 
 
 def test_matlab_rst(sphinx_app):

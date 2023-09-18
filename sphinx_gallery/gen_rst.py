@@ -50,7 +50,6 @@ from .backreferences import (
     THUMBNAIL_PARENT_DIV,
     THUMBNAIL_PARENT_DIV_CLOSE,
 )
-from .downloads import CODE_DOWNLOAD
 from . import py_source_parser
 from .block_parser import BlockParser
 
@@ -205,6 +204,26 @@ HTML_HEADER = """.. raw:: html
     </div>
     <br />
     <br />"""
+
+DOWNLOAD_LINKS_HEADER = """
+.. _sphx_glr_download_{0}:
+
+.. only:: html
+
+  .. container:: sphx-glr-footer sphx-glr-footer-example
+"""
+
+CODE_DOWNLOAD = """
+    .. container:: sphx-glr-download sphx-glr-download-python
+
+      :download:`Download {1} source code: {0} <{0}>`
+"""
+
+NOTEBOOK_DOWNLOAD = """
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: {0} <{0}>`
+"""
 
 
 def codestr2rst(codestr, lang="python", lineno=None):
@@ -1234,10 +1253,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
 
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
-    example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
-    ipy_fname = target_file.with_suffix(".ipynb.new")
-    save_notebook(example_nb, ipy_fname)
-    _replace_md5(ipy_fname, mode="t")
+    if target_file.suffix in gallery_conf["notebook_extensions"]:
+        example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
+        ipy_fname = target_file.with_suffix(".ipynb.new")
+        save_notebook(example_nb, ipy_fname)
+        _replace_md5(ipy_fname, mode="t")
 
     # Write names
     if gallery_conf["inspect_global_variables"]:
@@ -1426,26 +1446,26 @@ def save_rst_example(
     if gallery_conf["show_memory"]:
         example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
 
-    # Generate a binder URL if specified
-    binder_badge_rst = ""
-    if is_binder_enabled:
-        binder_badge_rst += gen_binder_rst(example_file, binder_conf, gallery_conf)
-        binder_badge_rst = indent(binder_badge_rst, "  ")  # need an extra two
+    example_rst += DOWNLOAD_LINKS_HEADER.format(ref_fname)
 
-    jupyterlite_rst = ""
-    if is_jupyterlite_enabled:
+    save_notebook = example_file.suffix in gallery_conf["notebook_extensions"]
+
+    # Generate a binder URL if specified
+    if is_binder_enabled and save_notebook:
+        binder_badge_rst = gen_binder_rst(example_file, binder_conf, gallery_conf)
+        binder_badge_rst = indent(binder_badge_rst, "  ")  # need an extra two
+        example_rst += binder_badge_rst
+
+    if is_jupyterlite_enabled and save_notebook:
         jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, "  ")  # need an extra two
+        example_rst += jupyterlite_rst
 
-    ipynb_name = example_file.with_suffix(".ipynb").name
-    example_rst += CODE_DOWNLOAD.format(
-        example_file.name,
-        ipynb_name,
-        binder_badge_rst,
-        ref_fname,
-        jupyterlite_rst,
-        language,
-    )
+    if save_notebook:
+        example_rst += NOTEBOOK_DOWNLOAD.format(example_file.with_suffix(".ipynb").name)
+
+    example_rst += CODE_DOWNLOAD.format(example_file.name, language)
+
     if gallery_conf["show_signature"]:
         example_rst += SPHX_GLR_SIG
 

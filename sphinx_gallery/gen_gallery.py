@@ -64,6 +64,7 @@ DEFAULT_GALLERY_CONF = {
     "examples_dirs": os.path.join("..", "examples"),
     "example_extensions": {".py"},
     "filetype_parsers": {},
+    "notebook_extensions": {".py"},
     "reset_argv": DefaultResetArgv(),
     "subsection_order": None,
     "within_subsection_order": NumberOfCodeLinesSortKey,

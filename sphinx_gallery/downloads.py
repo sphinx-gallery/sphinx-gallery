@@ -8,24 +8,6 @@ import zipfile
 
 from .utils import _replace_md5
 
-CODE_DOWNLOAD = """
-.. _sphx_glr_download_{3}:
-
-.. only:: html
-
-  .. container:: sphx-glr-footer sphx-glr-footer-example
-
-{2}
-
-{4}
-    .. container:: sphx-glr-download sphx-glr-download-python
-
-      :download:`Download {5} source code: {0} <{0}>`
-
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
-
-      :download:`Download Jupyter notebook: {1} <{1}>`
-"""
 
 CODE_ZIP_DOWNLOAD = """
 .. only:: html
