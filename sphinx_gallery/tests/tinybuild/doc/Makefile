@@ -1,4 +1,4 @@
-SPHINXOPTS=
+SPHINXOPTS=-v
 
 all: clean html show
 

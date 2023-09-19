@@ -6,6 +6,7 @@ import codecs
 from io import StringIO
 import os
 import os.path as op
+from pathlib import Path
 import re
 import shutil
 import sys
@@ -41,8 +42,8 @@ N_PASS = 0 + 2
 # indices SG generates  (extra non-plot*.py file)
 # + examples_rst_index + examples_with_rst
 N_INDEX = 2 + 1 + 3
-# SG execution times (example, + examples_rst_index + examples_with_rst)
-N_EXECUTE = 2 + 3 + 1
+# SG execution times (examples + examples_rst_index + examples_with_rst + root-level)
+N_EXECUTE = 2 + 3 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 9 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
@@ -518,11 +519,16 @@ def test_backreferences(sphinx_app):
 @pytest.mark.parametrize(
     "rst_file, example_used_in",
     [
-        (
+        pytest.param(
             "sphinx_gallery.backreferences.identify_names.examples",
             "plot_numpy_matplotlib",
+            id="identify_names",
         ),
-        ("sphinx_gallery.sorting.ExplicitOrder.examples", "plot_second_future_imports"),
+        pytest.param(
+            "sphinx_gallery.sorting.ExplicitOrder.examples",
+            "plot_second_future_imports",
+            id="ExplicitOrder",
+        ),
     ],
 )
 def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
@@ -612,7 +618,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     lines = [line for line in status.split("\n") if "removed" in line]
     want = f".*{N_RST} added, 0 changed, 0 removed.*"
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
-    want = ".*targets for 2 source files that are out of date$.*"
+    want = ".*targets for 3 source files that are out of date$.*"
     lines = [line for line in status.split("\n") if "out of date" in line]
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     lines = [line for line in status.split("\n") if "on MD5" in line]
@@ -861,9 +867,9 @@ def _rerun(
     # - auto_examples/index
     # - auto_examples/plot_numpy_matplotlib
     if how == "modify":
-        n_ch = "[3-7]"
+        n_ch = "[3-9]"
     else:
-        n_ch = "[1-5]"
+        n_ch = "[1-6]"
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
     want = f".*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
@@ -945,31 +951,38 @@ def _rerun(
 @pytest.mark.parametrize(
     "name, want",
     [
-        (
+        pytest.param(
             "future/plot_future_imports_broken",
             ".*RuntimeError.*Forcing this example to fail on Python 3.*",
+            id="future",
         ),
-        ("plot_scraper_broken", ".*ValueError.*zero-size array to reduction.*"),
+        pytest.param(
+            "plot_scraper_broken",
+            ".*ValueError.*zero-size array to reduction.*",
+            id="scraper",
+        ),
     ],
 )
 def test_error_messages(sphinx_app, name, want):
     """Test that informative error messages are added."""
-    src_dir = sphinx_app.srcdir
-    example_rst = op.join(src_dir, "auto_examples", name + ".rst")
-    with codecs.open(example_rst, "r", "utf-8") as fid:
-        rst = fid.read()
-    rst = rst.replace("\n", " ")
-    assert re.match(want, rst) is not None
+    src_dir = Path(sphinx_app.srcdir)
+    rst = (src_dir / "auto_examples" / (name + ".rst")).read_text("utf-8")
+    assert re.match(want, rst, re.DOTALL) is not None
 
 
 @pytest.mark.parametrize(
     "name, want",
     [
-        (
+        pytest.param(
             "future/plot_future_imports_broken",
             ".*RuntimeError.*Forcing this example to fail on Python 3.*",
+            id="future",
         ),
-        ("plot_scraper_broken", ".*ValueError.*zero-size array to reduction.*"),
+        pytest.param(
+            "plot_scraper_broken",
+            ".*ValueError.*zero-size array to reduction.*",
+            id="scraper",
+        ),
     ],
 )
 def test_error_messages_dirhtml(sphinx_dirhtml_app, name, want):

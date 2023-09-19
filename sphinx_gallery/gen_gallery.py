@@ -686,6 +686,9 @@ def generate_gallery_rst(app):
                 fhindex.write(indexst)
             _replace_md5(index_rst_new, mode="t")
 
+    # Write a single global sg_execution_times
+    write_computation_times(gallery_conf, None, costs)
+
     if gallery_conf["show_api_usage"] is not False:
         _init_api_usage(app.builder.srcdir)
     _finalize_backreferences(seen_backrefs, gallery_conf)
@@ -693,7 +696,7 @@ def generate_gallery_rst(app):
     if gallery_conf["plot_gallery"]:
         logger.info("computation time summary:", color="white")
         lines, lens = _format_for_writing(
-            costs, os.path.normpath(gallery_conf["src_dir"]), kind="console"
+            costs, src_dir=gallery_conf["src_dir"], kind="console"
         )
         for name, t, m in lines:
             text = (f"    - {name}:   ").ljust(lens[0] + 10)
@@ -738,14 +741,13 @@ def _sec_to_readable(t):
     return t
 
 
-def cost_name_key(cost_name):
+def _cost_key(cost):
     """Cost (time_elapsed, memory_used) sorting function."""
-    cost, name = cost_name
     # sort by descending computation time, descending memory, alphabetical name
-    return (-cost[0], -cost[1], name)
+    return (-cost["t"], -cost["mem"], cost["src_file"])
 
 
-def _format_for_writing(costs, path, kind="rst"):
+def _format_for_writing(costs, *, src_dir, kind="rst"):
     """Provide formatted computation summary text.
 
     Parameters
@@ -753,10 +755,11 @@ def _format_for_writing(costs, path, kind="rst"):
     costs: List[Tuple[Tuple[float], str]]
         List of tuples of computation costs and absolute paths to example, of format:
         ((time_elapsed, memory_used), example_path).
-    path: str
-        Source directory.
-    kind: 'rst' or 'console', default='rst'
-        Format for printing to 'console' or for writing `sg_execution_times.rst' ('rst')
+    src_dir : pathlib.Path
+        The Sphinx source directory.
+    kind: 'rst', 'rst-full' or 'console', default='rst'
+        Format for printing to 'console' or for writing `sg_execution_times.rst' ('rst'
+        and 'rst-full').
 
     Returns
     -------
@@ -768,17 +771,23 @@ def _format_for_writing(costs, path, kind="rst"):
         Character length of each string in `lines`.
     """
     lines = list()
-    for cost in sorted(costs, key=cost_name_key):
-        if kind == "rst":  # like in sg_execution_times
-            name = ":ref:`sphx_glr_{0}_{1}` (``{1}``)".format(
-                path, os.path.basename(cost[1])
+    for cost in sorted(costs, key=_cost_key):
+        src_file = cost["src_file"]
+        rel_path = os.path.relpath(src_file, src_dir)
+        if kind in ("rst", "rst-full"):  # like in sg_execution_times
+            target_dir_clean = os.path.relpath(cost["target_dir"], src_dir).replace(
+                os.path.sep, "_"
             )
-            t = _sec_to_readable(cost[0][0])
+            paren = rel_path if kind == "rst-full" else os.path.basename(src_file)
+            name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
+                target_dir_clean, os.path.basename(src_file), paren
+            )
+            t = _sec_to_readable(cost["t"])
         else:  # like in generate_gallery
             assert kind == "console"
-            name = os.path.relpath(cost[1], path)
-            t = f"{cost[0][0]:0.2f} sec"
-        m = f"{cost[0][1]:.1f} MB"
+            name = rel_path
+            t = f'{cost["t"]:0.2f} sec'
+        m = f'{cost["mem"]:.1f} MB'
         lines.append([name, t, m])
     lens = [max(x) for x in zip(*[[len(item) for item in cost] for cost in lines])]
     return lines, lens
@@ -791,29 +800,39 @@ def write_computation_times(gallery_conf, target_dir, costs):
     ----------
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
-    target_dir : str
+    target_dir : str | None
         Path to directory where example python source file are.
-    costs: List[Tuple[Tuple[float], str]]
+    costs: List[Tuple[Tuple[float], str, str]]
         List of tuples of computation costs and absolute paths to example, of format:
         ((time_elapsed, memory_used), example_path).
     """
-    total_time = sum(cost[0][0] for cost in costs)
+    total_time = sum(cost["t"] for cost in costs)
     if total_time == 0:
         return
-    target_dir_clean = os.path.relpath(target_dir, gallery_conf["src_dir"]).replace(
-        os.path.sep, "_"
-    )
-    new_ref = f"sphx_glr_{target_dir_clean}_sg_execution_times"
+    if target_dir is None:  # global
+        out_dir = gallery_conf["src_dir"]
+        where = "all galleries"
+        kind = "rst-full"
+        ref_extra = ""
+    else:  # local
+        out_dir = target_dir
+        where = os.path.relpath(target_dir, gallery_conf["src_dir"])
+        kind = "rst"
+        ref_extra = f'{where.replace(os.path.sep, "_")}_'
+    new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
     with codecs.open(
-        os.path.join(target_dir, "sg_execution_times.rst"), "w", encoding="utf-8"
+        os.path.join(out_dir, "sg_execution_times.rst"), "w", encoding="utf-8"
     ) as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
         fid.write(
-            "**{}** total execution time for **{}** files:\n\n".format(
-                _sec_to_readable(total_time), target_dir_clean
-            )
+            f"**{_sec_to_readable(total_time)}** total execution time for "
+            f"{len(costs)} file{'s' if len(costs) != 1 else ''} **from {where}**:\n\n"
         )
-        lines, lens = _format_for_writing(costs, target_dir_clean)
+        lines, lens = _format_for_writing(
+            costs,
+            src_dir=gallery_conf["src_dir"],
+            kind=kind,
+        )
         del costs
         hline = "".join(("+" + "-" * (length + 2)) for length in lens) + "+\n"
         fid.write(hline)
@@ -1151,7 +1170,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     src_dir = gallery_conf["src_dir"]
     output = ""
     for cost in costs:
-        (t, _), fname = cost
+        t, fname = cost["t"], cost["src_file"]
         if not any(
             fname in x
             for x in (

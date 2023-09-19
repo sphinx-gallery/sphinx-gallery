@@ -546,7 +546,7 @@ def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
 
 
 def test_write_computation_times_noop():
-    write_computation_times(None, None, [[[0]]])
+    write_computation_times(None, None, [dict(t=0)])
 
 
 def test_write_api_usage_noop(sphinx_app_wrapper):
