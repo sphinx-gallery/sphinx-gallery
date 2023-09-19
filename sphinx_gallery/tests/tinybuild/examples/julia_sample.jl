@@ -6,7 +6,7 @@ An example for code written in Julia.
 =#
 
 function sphere_vol(r)
-    return 4/3 * π * r^3
+    return 4/3 * pi * r^3
 end
 
 # %%
@@ -14,7 +14,7 @@ end
 println(sphere_vol(3))
 
 #%%
-# Here's a subsection about ϕ
-# ---------------------------
+# Here's a subsection
+# -------------------
 
-ϕ = (1 + √5)/2
+phi = (1 + sqrt(5)) / 2
