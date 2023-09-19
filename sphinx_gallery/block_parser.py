@@ -45,33 +45,43 @@ class BlockParser:
 
         # determine valid comment syntaxes
         comment_tests = [
-            ("#= comment =#", "#=", "=#"),  # Julia multiline
-            ("# comment", "#", None),
-            ("// comment", "//", None),
-            ("/* comment */", r"/\*", r"\*/"),
-            ("% comment", "%", None),
-            ("! comment", "!", None),
-            ("c     comment", r"^c(?:$|     )", None),
+            ("#= comment =#", "#=", "=#", None),  # Julia multiline
+            ("# comment", "#", None, "#{20,}"),
+            ("// comment", "//", None, "/{20,}"),
+            ("/* comment */", r"/\*", r"\*/", r"/\*{20,}/"),
+            ("% comment", "%", None, "%{20,}"),
+            ("! comment", "!", None, "!{20,}"),
+            ("c     comment", r"^c(?:$|     )", None, None),
         ]
 
         self.allowed_comments = []
+        allowed_special = []
         self.multiline_end = re.compile(chr(0))  # unmatchable regex
-        for test, start, end in comment_tests:
+        for test, start, end, special in comment_tests:
             if next(self.lexer.get_tokens(test))[0] in COMMENT_TYPES:
                 self.allowed_comments.append(start)
                 if end:
                     self.multiline_end = re.compile(rf"(.*?)\s*{end}")
+                if special:
+                    allowed_special.append(special)
 
         if r"/\*" in self.allowed_comments:
-            # Remove decorative asterisks from C-style multiline comments
-            self.multiline_cleanup = re.compile(r"\s*\*\s*")
+            # Remove decorative asterisks and comment starts from C-style multiline
+            # comments
+            self.multiline_cleanup = re.compile(r"\s*/?\*\s*")
         else:
             self.multiline_cleanup = re.compile(r"\s*")
 
-        comment_start = "(?:" + "|".join(self.allowed_comments) + ")"
+        comment_start = "|".join(self.allowed_comments)
+        allowed_special = "|".join(allowed_special)
         print(f"{source_file=}; {comment_start=!r}")
-        self.start_special = re.compile(f"{comment_start} ?%% ?(.*)")
-        self.continue_text = re.compile(f"{comment_start} ?(.*)")
+        if allowed_special:
+            self.start_special = re.compile(
+                f"(?:(?:{comment_start}) ?%% ?|{allowed_special})(.*)"
+            )
+        else:
+            self.start_special = re.compile(f"(?:{comment_start}) ?%% ?(.*)")
+        self.continue_text = re.compile(f"(?:{comment_start}) ?(.*)")
 
         # The pattern for in-file config comments is designed to not greedily match
         # newlines at the start and end, except for one newline at the end. This
@@ -83,7 +93,7 @@ class BlockParser:
         #     # sphinx_gallery_thumbnail_number = 2
         #
         #     b = 2
-        flag_start = rf"^[\ \t]*{comment_start}\s*"
+        flag_start = rf"^[\ \t]*(?:{comment_start})\s*"
 
         self.infile_config_pattern = re.compile(
             flag_start + r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?",
@@ -160,8 +170,13 @@ class BlockParser:
         """
 
         start_text = self.continue_text  # No special delimiter needed for first block
+        needs_multiline_cleanup = False
 
         def cleanup_multiline(lines):
+            nonlocal needs_multiline_cleanup
+            print("Cleaining up multiline block:")
+            print("\n".join(lines))
+            print("^^^^^^^^^^^^^^^^^^^^^^^^^^")
             first_line = 1 if start_text == self.continue_text else 0
             longest = max(len(line) for line in lines)
             matched = False
@@ -174,12 +189,15 @@ class BlockParser:
             if matched and longest:
                 for i, line in enumerate(lines[first_line:], start=first_line):
                     lines[i] = lines[i][longest:]
-
+            needs_multiline_cleanup = False
             return lines
 
         def finalize_block(mode, block):
             nonlocal start_text
             if mode == "text":
+                if needs_multiline_cleanup:
+                    cleanup_multiline(block)
+
                 # subsequent blocks need to have the special delimiter
                 start_text = self.start_special
 
@@ -228,10 +246,14 @@ class BlockParser:
                         )
             elif mode == "text" and token in COMMENT_TYPES:
                 # Continuation of a text block
-                if token == pygments.token.Comment.Multiline:
+                if self.start_special.search(text):
+                    print(f"Ignoring: {text!r}")
+                    # Starting a new text block now is just a continuation of the existing one
+                    pass
+                elif token == pygments.token.Comment.Multiline:
                     if m := self.multiline_end.search(text):
                         block.append(m.group(1))
-                        block = cleanup_multiline(block)
+                        needs_multiline_cleanup = True
                     else:
                         block.append(text)
                 else:

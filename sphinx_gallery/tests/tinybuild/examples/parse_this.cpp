@@ -21,8 +21,8 @@ int main(int argc, char** argv)
         y.push_back(i * i);
     }
 
-    /* %%
-     * Here comes the end.
-     */
+    /**************************/
+    /* Here comes the end!    */
+    /**************************/
     return 0;
 }

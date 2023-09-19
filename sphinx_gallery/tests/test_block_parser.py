@@ -135,7 +135,7 @@ def test_cxx_titles(comment, expected_docstring):
             "*.cs",
             """// Title""",
             (
-                "     //%%\n"
+                "     //////////////////////////////\n"
                 "     // Indented multi-line comment\n"
                 "     //\n"
                 "     // with a blank line\n"
