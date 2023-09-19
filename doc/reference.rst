@@ -28,6 +28,7 @@ Sphinx-Gallery API Reference
    gen_rst
    scrapers
    py_source_parser
+   block_parser
    docs_resolv
    notebook
    downloads

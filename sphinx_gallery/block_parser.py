@@ -272,6 +272,10 @@ class BlockParser:
             yield finalize_block(mode, block)
 
     def _split_content(self, content):
+        """
+        Split the input content into blocks and return a tuple of (file_conf, blocks, None)
+        that corresponds to the return values of ``split_code_and_text_blocks``.
+        """
         file_conf = self.extract_file_config(content)
         blocks = list(self._get_blocks(content))
 
