@@ -74,7 +74,6 @@ class BlockParser:
 
         comment_start = "|".join(self.allowed_comments)
         allowed_special = "|".join(allowed_special)
-        print(f"{source_file=}; {comment_start=!r}")
         if allowed_special:
             self.start_special = re.compile(
                 f"(?:(?:{comment_start}) ?%% ?|{allowed_special})(.*)"
@@ -137,8 +136,10 @@ class BlockParser:
 
     def _get_content_lines(self, content):
         """
-        Combine individual tokens into lines, using the first non-whitespace
-        token (if any) as the characteristic token type for the line
+        Combine individual tokens into lines.
+
+        Use the first non-whitespace token (if any) as the characteristic token type for
+        the line.
         """
         current_line = []
         line_token = pygments.token.Whitespace
@@ -165,18 +166,16 @@ class BlockParser:
 
     def _get_blocks(self, content):
         """
-        Generate a sequence of (label, content, line_number) tuples based on the lines
-        in `content`.
-        """
+        Generate a sequence of "blocks" from the lines in ``content``.
 
+        Each block is a tuple of (label, content, line_number), matching the format
+        ultimately returned by `split_code_and_text_blocks`.
+        """
         start_text = self.continue_text  # No special delimiter needed for first block
         needs_multiline_cleanup = False
 
         def cleanup_multiline(lines):
             nonlocal needs_multiline_cleanup
-            print("Cleaining up multiline block:")
-            print("\n".join(lines))
-            print("^^^^^^^^^^^^^^^^^^^^^^^^^^")
             first_line = 1 if start_text == self.continue_text else 0
             longest = max(len(line) for line in lines)
             matched = False
@@ -247,8 +246,8 @@ class BlockParser:
             elif mode == "text" and token in COMMENT_TYPES:
                 # Continuation of a text block
                 if self.start_special.search(text):
-                    print(f"Ignoring: {text!r}")
-                    # Starting a new text block now is just a continuation of the existing one
+                    # Starting a new text block now is just a continuation of the
+                    # existing one
                     pass
                 elif token == pygments.token.Comment.Multiline:
                     if m := self.multiline_end.search(text):
@@ -273,8 +272,10 @@ class BlockParser:
 
     def _split_content(self, content):
         """
-        Split the input content into blocks and return a tuple of (file_conf, blocks, None)
-        that corresponds to the return values of ``split_code_and_text_blocks``.
+        Split the input content into blocks.
+
+        Return a tuple of (file_conf, blocks, None) that corresponds to the return
+        values of ``split_code_and_text_blocks``.
         """
         file_conf = self.extract_file_config(content)
         blocks = list(self._get_blocks(content))
