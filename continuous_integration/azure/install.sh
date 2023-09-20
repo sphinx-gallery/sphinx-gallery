@@ -19,8 +19,7 @@ if [ "$DISTRIB" == "conda" ]; then
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
-        # Need to pin to a commit until https://github.com/pydata/pydata-sphinx-theme/issues/1404 is fixed and pydata-sphinx-theme releases
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/3e30fa36a241bade5415051ab01af981caa29d62"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/dev"
     elif [ "$SPHINX_VERSION" == "old" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<5 jinja2<=3.0.3"
     else
