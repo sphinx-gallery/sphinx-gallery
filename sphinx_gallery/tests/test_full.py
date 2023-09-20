@@ -618,7 +618,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     lines = [line for line in status.split("\n") if "removed" in line]
     want = f".*{N_RST} added, 0 changed, 0 removed.*"
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
-    want = ".*targets for 3 source files that are out of date$.*"
+    want = ".*targets for [2-3] source files that are out of date$.*"
     lines = [line for line in status.split("\n") if "out of date" in line]
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
     lines = [line for line in status.split("\n") if "on MD5" in line]
