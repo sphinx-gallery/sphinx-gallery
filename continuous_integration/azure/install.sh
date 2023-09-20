@@ -19,7 +19,7 @@ if [ "$DISTRIB" == "conda" ]; then
     if [ "$SPHINX_VERSION" == "" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx jinja2<=3.0.3"
     elif [ "$SPHINX_VERSION" == "dev" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/dev"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     elif [ "$SPHINX_VERSION" == "old" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<5 jinja2<=3.0.3"
     else
