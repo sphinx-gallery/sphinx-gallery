@@ -742,7 +742,7 @@ def _sec_to_readable(t):
 
 
 def _cost_key(cost):
-    """Cost (time_elapsed, memory_used) sorting function."""
+    """Cost sorting function."""
     # sort by descending computation time, descending memory, alphabetical name
     return (-cost["t"], -cost["mem"], cost["src_file"])
 
@@ -752,14 +752,13 @@ def _format_for_writing(costs, *, src_dir, kind="rst"):
 
     Parameters
     ----------
-    costs: List[Tuple[Tuple[float], str]]
-        List of tuples of computation costs and absolute paths to example, of format:
-        ((time_elapsed, memory_used), example_path).
+    costs: List[Dict]
+        List of dicts of computation costs and paths, see gen_rst.py for details.
     src_dir : pathlib.Path
         The Sphinx source directory.
     kind: 'rst', 'rst-full' or 'console', default='rst'
         Format for printing to 'console' or for writing `sg_execution_times.rst' ('rst'
-        and 'rst-full').
+        for single galleries and 'rst-full' for all galleries).
 
     Returns
     -------
@@ -802,19 +801,18 @@ def write_computation_times(gallery_conf, target_dir, costs):
         Sphinx-Gallery configuration dictionary.
     target_dir : str | None
         Path to directory where example python source file are.
-    costs: List[Tuple[Tuple[float], str, str]]
-        List of tuples of computation costs and absolute paths to example, of format:
-        ((time_elapsed, memory_used), example_path).
+    costs: List[Dict]
+        List of dicts of computation costs and paths, see gen_rst.py for details.
     """
     total_time = sum(cost["t"] for cost in costs)
     if total_time == 0:
         return
-    if target_dir is None:  # global
+    if target_dir is None:  # all galleries together
         out_dir = gallery_conf["src_dir"]
         where = "all galleries"
         kind = "rst-full"
         ref_extra = ""
-    else:  # local
+    else:  # a single gallery
         out_dir = target_dir
         where = os.path.relpath(target_dir, gallery_conf["src_dir"])
         kind = "rst"
@@ -1155,8 +1153,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     target_dir : Union[str, pathlib.Path]
         Build directory.
     costs: List[Tuple[Tuple[float], str]]
-        List of tuples of computation costs and absolute paths to example, of format:
-        ((time_elapsed, memory_used), example_path).
+        List of dicts of computation costs and paths, see gen_rst.py for details.
     """
     if not gallery_conf["junit"] or not gallery_conf["plot_gallery"]:
         return

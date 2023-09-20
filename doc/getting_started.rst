@@ -177,7 +177,8 @@ generated:
   :ref:`sphx_glr_auto_examples_plot_6_function_identifier.py`)
 
 Additionally, two compressed ``.zip`` files containing all the ``.ipynb`` and
-``.py`` files are generated.
+``.py`` files are generated, as well as a root-level ``sg_execution_times.rst`` file
+containing all of the execution times.
 
 For more advanced configuration, see the :ref:`configuration` page.
 

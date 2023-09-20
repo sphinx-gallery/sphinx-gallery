@@ -855,21 +855,26 @@ def _rerun(
     # ... but then later detects that only some have actually changed:
     lines = [line for line in status.split("\n") if "changed," in line]
     # Ones that can change on stale:
+    #
     # - auto_examples/future/plot_future_imports_broken
     # - auto_examples/future/sg_execution_times
     # - auto_examples/plot_scraper_broken
     # - auto_examples/sg_execution_times
+    # - auto_examples_rst_index/sg_execution_times
+    # - auto_examples_with_rst/sg_execution_times
     # - sg_api_usage
-    # Sometimes it's not all 5, for example when the execution time and
+    # - sg_execution_times
+    #
+    # Sometimes it's not all 8, for example when the execution time and
     # memory usage reported ends up being the same.
     #
     # Modifying an example then adds these two:
     # - auto_examples/index
     # - auto_examples/plot_numpy_matplotlib
     if how == "modify":
-        n_ch = "[3-9]"
+        n_ch = "[3-10]"
     else:
-        n_ch = "[1-6]"
+        n_ch = "[1-8]"
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
     want = f".*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
