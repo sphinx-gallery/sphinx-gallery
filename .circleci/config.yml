@@ -62,7 +62,7 @@ jobs:
       - run: sphinx-build doc doc/_build/html -nW --keep-going -b html
       - store_artifacts:
           path: doc/_build/html/
-          destination: rtd_html
+          destination: html
       - store_test_results:
           path: doc/_build/html/
 
@@ -85,27 +85,27 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: circleci/python:3.7-stretch
+      - image: circleci/python:3.8-stretch
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints:
             - "87:18:18:25:10:8c:29:0f:25:bd:28:b1:4f:cd:af:96"
       - attach_workspace:
-          at: rtd_html
-      - run: ./.circleci/docs_deploy.sh rtd_html dev
+          at: html
+      - run: ./.circleci/docs_deploy.sh html dev
 
   deploy_stable:
     docker:
-      - image: circleci/python:3.7-stretch
+      - image: circleci/python:3.8-stretch
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints:
             - "87:18:18:25:10:8c:29:0f:25:bd:28:b1:4f:cd:af:96"
       - attach_workspace:
-          at: rtd_html
-      - run: ./.circleci/docs_deploy.sh rtd_html stable
+          at: html
+      - run: ./.circleci/docs_deploy.sh html stable
 
 
 workflows:
