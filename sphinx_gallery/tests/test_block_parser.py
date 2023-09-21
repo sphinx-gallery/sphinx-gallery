@@ -180,12 +180,20 @@ def test_cxx_titles(comment, expected_docstring):
             "* list item 1\n* list item 2\n  * subitem\n",
             id="julia-multiline",
         ),
+        pytest.param(
+            "*.m",
+            "% Title",
+            "%% Heading\n% Extended description",
+            "Heading\n-------\n\nExtended description\n",
+            id="matlab-autoheading",
+        ),
     ],
 )
 def test_rst_blocks(filetype, title, special, expected):
     doc = f"{title}\n{CXX_BODY}\n\n{special}\n{CXX_BODY}"
-    print(doc)
-    parser = BlockParser(filetype, DEFAULT_GALLERY_CONF)
+    gallery_conf = DEFAULT_GALLERY_CONF.copy()
+    gallery_conf["filetype_parsers"] = {".m": "Matlab"}
+    parser = BlockParser(filetype, gallery_conf)
     file_conf, blocks, _ = parser._split_content(doc)
 
     assert len(blocks) == 4
@@ -199,7 +207,7 @@ def test_cpp_file_to_rst():
 // --------
 
 int main(int argc, char** argv) {
-    //%%
+    //%% First heading
     //This is the start of ``main``
 
     // This is just a comment because of the preceding blank line
@@ -225,6 +233,8 @@ int main(int argc, char** argv) {
 
     assert parser.language == "C++"
     assert file_conf == {"foobar": 14}
+
+    assert "First heading\n-------------\n\nThis is the start" in blocks[2][1]
 
     assert "// This is just a comment" in blocks[3][1]
     assert "secret" in blocks[3][1]

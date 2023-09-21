@@ -1274,7 +1274,7 @@ def test_matlab_rst(sphinx_app):
     matlab_rst = Path(sphinx_app.srcdir) / "auto_examples" / "isentropic.rst"
     content = matlab_rst.read_text()
     assert content.count(".. code-block:: Matlab", 3)
-    assert "ISENTROPIC - isentropic, adiabatic flow example\n==============" in content
+    assert "isentropic, adiabatic flow example\n==============" in content
     assert "Download Matlab source code" in content
 
 

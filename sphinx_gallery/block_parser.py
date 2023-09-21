@@ -65,6 +65,12 @@ class BlockParser:
                 if special:
                     allowed_special.append(special)
 
+        if self.language == "Matlab":
+            # Matlab treats code sections starting with "%%" in a similar manner to
+            # tools that recognize "# %%" in Python code, so we accept that style as
+            # an alternative.
+            allowed_special.append(r"%%(?:$|\s)")
+
         if r"/\*" in self.allowed_comments:
             # Remove decorative asterisks and comment starts from C-style multiline
             # comments
@@ -236,18 +242,24 @@ class BlockParser:
                 mode, block = "text", []
                 if (trailing_text := m.group(1)) is not None:
                     if start_text == self.continue_text:
-                        # Keep any text on the first line of the title block
-                        block.append(trailing_text)
-                    elif trailing_text.strip():
-                        # Warn about text following a "%%" delimiter
-                        logger.warning(
-                            f"Dropped text on same line as marker: {trailing_text!r}"
-                        )
+                        if (delimited := self.start_special.search(text)) and (
+                            heading := delimited.group(1).strip()
+                        ):
+                            # Treat text on the same line as the delimiter as a title
+                            block.extend((heading, "=" * len(heading), ""))
+                        else:
+                            # Keep any text on the first line of the title block as is
+                            block.append(trailing_text)
+                    elif heading := trailing_text.strip():
+                        # Treat text on the same line as the delimiter as a heading
+                        block.extend((heading, "-" * len(heading), ""))
             elif mode == "text" and token in COMMENT_TYPES:
                 # Continuation of a text block
-                if self.start_special.search(text):
+                if m := self.start_special.search(text):
                     # Starting a new text block now is just a continuation of the
-                    # existing one
+                    # existing one, possibly including a new heading.
+                    if heading := m.group(1).strip():
+                        block.extend((heading, "-" * len(heading), ""))
                     pass
                 elif token == pygments.token.Comment.Multiline:
                     if m := self.multiline_end.search(text):

@@ -170,23 +170,24 @@ of the example. Valid special delimiters are:
 3. A line of at least 20 comment characters. For example, ``////////////////////`` for
    C++.
 
-No text should follow this delimiter on the same line. The reST block continues until
-a line that does not start with a comment character is encountered. Some examples:
+Any text following the special delimiter on the same line will be converted into a reST
+heading (underlined with ``-``). The reST block continues until a line that does not
+start with a comment character is encountered. Some examples:
 
 .. code:: C++
 
-  // %%
-  // This is the start of a reST block in C++
+  // %% Important Heading
+  // This is some text in a reST block in C++, appearing underneath a heading.
   //
   // * Start a list
   // * Check it twice
 
-.. code:: Matlab
+.. code:: Fortran
 
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  % This is the start of a reST block in Matlab.
-  %
-  % It can contain multiple paragraphs.
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! This is the start of a reST block in Fortran 90.
+  !
+  ! It can contain multiple paragraphs.
 
 For languages that use C-style multiline comments, the following styles are supported:
 
@@ -208,6 +209,15 @@ For languages that use C-style multiline comments, the following styles are supp
   /* Description            */
   /**************************/
   double z = 1.5;
+
+Finally, for compatibility with Matlab's use of a simple ``%%`` delimiter to mark code
+sections, this is allowed as a special delimiter in Matlab source files, in addition to
+the multi-language syntax described above:
+
+.. code:: Matlab
+
+  %% Heading
+  % some text below the heading
 
 .. _plain_rst:
 
