@@ -239,6 +239,9 @@ int main(int argc, char** argv) {
     assert "// This is just a comment" in blocks[3][1]
     assert "secret" in blocks[3][1]
 
+    assert "sphinx_gallery_foobar" in blocks[3][1]
+    assert "sphinx_gallery_foobar" not in parser.remove_config_comments(blocks[3][1])
+
     cleaned = parser.remove_ignore_blocks(blocks[3][1])
     assert "secret" not in cleaned
     assert "y == 4" in cleaned
