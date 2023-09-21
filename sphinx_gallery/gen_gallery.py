@@ -857,11 +857,12 @@ def write_computation_times(gallery_conf, target_dir, costs):
    :class: table table-striped sg-datatable
 
    * - Example
-     - Time (s)
+     - Time
      - Mem (MB)
 """  # noqa: E501
         )
-        for line in lines:
+        # Need at least one entry or Sphinx complains
+        for line in lines or [["N/A", "00:00.000", "0.0"]]:
             fid.write(
                 f"""\
    * - {line[0]}
