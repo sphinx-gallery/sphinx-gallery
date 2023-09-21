@@ -827,21 +827,42 @@ def write_computation_times(gallery_conf, target_dir, costs):
         if len(costs) == 0:
             fid.write("No examples were run.\n\n")
             return
-        lines, lens = _format_for_writing(
+        lines, _ = _format_for_writing(
             costs,
             src_dir=gallery_conf["src_dir"],
             kind=kind,
         )
         del costs
-        hline = "".join(("+" + "-" * (length + 2)) for length in lens) + "+\n"
-        fid.write(hline)
-        format_str = "".join(f"| {{{ii}}} " for ii in range(len(lines[0]))) + "|\n"
+        # People who use jQuery will get nice sortable columns
+        fid.write(
+            """\
+.. raw:: html
+
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" class="init">
+    $(document).ready( function () {
+        $('table.sg-datatable').DataTable();
+    } );
+    </script>
+
+.. list-table::
+   :header-rows: 1
+   :class: sg-datatable
+
+   * - Example
+     - Time (s)
+     - Mem (MB)
+"""
+        )
         for line in lines:
-            line = [ll.ljust(len_) for ll, len_ in zip(line, lens)]
-            text = format_str.format(*line)
-            assert len(text) == len(hline)
-            fid.write(text)
-            fid.write(hline)
+            fid.write(
+                f"""\
+   * - {line[0]}
+     - {line[1]}
+     - {line[2].rsplit(maxsplit=1)[0]}
+"""
+            )  # remove the "MB" from the right
 
 
 def write_api_entries(app, what, name, obj, options, lines):
