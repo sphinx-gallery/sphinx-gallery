@@ -824,10 +824,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
             f"**{_sec_to_readable(total_time)}** total execution time for "
             f"{len(costs)} file{'s' if len(costs) != 1 else ''} **from {where}**:\n\n"
         )
-        if len(costs) == 0:
-            fid.write("No examples were run.\n\n")
-            return
-        lines, _ = _format_for_writing(
+        lines, lens = _format_for_writing(
             costs,
             src_dir=gallery_conf["src_dir"],
             kind=kind,
