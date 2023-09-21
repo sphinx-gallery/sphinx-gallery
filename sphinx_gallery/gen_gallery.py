@@ -833,7 +833,6 @@ def write_computation_times(gallery_conf, target_dir, costs):
             kind=kind,
         )
         del costs
-        # People who use jQuery will get nice sortable columns
         fid.write(
             """\
 .. raw:: html
@@ -842,7 +841,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" class="init">
     $(document).ready( function () {
-        $('table.sg-datatable').DataTable();
+        $('table.sg-datatable').DataTable({order: [[1, 'desc']]});
     } );
     </script>
 
