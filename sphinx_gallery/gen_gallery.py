@@ -862,7 +862,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
 """  # noqa: E501
         )
         # Need at least one entry or Sphinx complains
-        for line in lines or [["N/A", "00:00.000", "0.0"]]:
+        for line in lines or [["N/A", "N/A", "N/A"]]:
             fid.write(
                 f"""\
    * - {line[0]}
