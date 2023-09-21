@@ -12,6 +12,7 @@ import copy
 from datetime import timedelta, datetime
 from difflib import get_close_matches
 from importlib import import_module
+from pathlib import Path
 import re
 import os
 import pathlib
@@ -816,9 +817,10 @@ def write_computation_times(gallery_conf, target_dir, costs):
         kind = "rst"
         ref_extra = f'{where.replace(os.path.sep, "_")}_'
     new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
-    with codecs.open(
-        os.path.join(out_dir, "sg_execution_times.rst"), "w", encoding="utf-8"
-    ) as fid:
+    out_file = Path(out_dir) / "sg_execution_times.rst"
+    if out_file.is_file() and total_time == 0:  # a re-run
+        return
+    with out_file.open("w", encoding="utf-8") as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
         fid.write(
             f"**{_sec_to_readable(total_time)}** total execution time for "
