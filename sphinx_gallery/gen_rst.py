@@ -442,9 +442,9 @@ def generate_dir_rst(
     index_content: str,
         Content which will be written to the index rst file
         presenting the current example gallery
-    costs: list,
-        List of costs (time_elapsed, memory_used) for building each element of the
-        gallery and absolute path to the example file
+    costs: List[Dict]
+        List of dicts of costs for building each element of the gallery
+         with keys "t", "mem", "src_file", and "target_dir".
     toctree_items: list,
         List of files included in toctree
         (independent of include_toctree's value)
@@ -497,11 +497,11 @@ def generate_dir_rst(
         length=len(sorted_listdir),
     )
     for fname in iterator:
-        intro, title, cost = generate_file_rst(
+        intro, title, (t, mem) = generate_file_rst(
             fname, target_dir, src_dir, gallery_conf, seen_backrefs
         )
         src_file = os.path.normpath(os.path.join(src_dir, fname))
-        costs.append((cost, src_file))
+        costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
         gallery_item_filename = os.path.join(build_target_dir, fname[:-3]).replace(
             os.sep, "/"
         )

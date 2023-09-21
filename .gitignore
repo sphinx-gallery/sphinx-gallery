@@ -64,9 +64,10 @@ doc/tutorials/
 doc/gen_modules/
 
 # Test builds
-sphinx_gallery/tests/tinybuild/gen_modules/
-sphinx_gallery/tests/tinybuild/auto_examples/
-sphinx_gallery/tests/tinybuild/_build/
+sphinx_gallery/tests/tinybuild/doc/gen_modules/
+sphinx_gallery/tests/tinybuild/doc/auto_*/
+sphinx_gallery/tests/tinybuild/doc/_build/
+sphinx_gallery/tests/tinybuild/doc/sg_execution_times.rst
 sphinx_gallery/tests/tinybuild/tiny_html/
 junit-results.xml
 
