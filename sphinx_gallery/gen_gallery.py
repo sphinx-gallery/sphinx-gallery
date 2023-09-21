@@ -833,26 +833,34 @@ def write_computation_times(gallery_conf, target_dir, costs):
             kind=kind,
         )
         del costs
-        fid.write(
+        # https://datatables.net/examples/styling/bootstrap5.html
+        fid.write(  # put it in a container to make the scoped style work
             """\
-.. raw:: html
+.. container::
 
+  .. raw:: html
+
+    <style scoped>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    </style>
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script type="text/javascript" class="init">
     $(document).ready( function () {
         $('table.sg-datatable').DataTable({order: [[1, 'desc']]});
     } );
     </script>
 
-.. list-table::
+  .. list-table::
    :header-rows: 1
-   :class: sg-datatable
+   :class: table table-striped sg-datatable
 
    * - Example
      - Time (s)
      - Mem (MB)
-"""
+"""  # noqa: E501
         )
         for line in lines:
             fid.write(

@@ -695,7 +695,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     if sys.platform.startswith("win"):
         assert (
             re.match(
-                ".*[0|1] added, [1-9][0-3]? changed, 0 removed$.*",
+                ".*[0|1] added, ([1-9]|1[0-4]) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
@@ -704,7 +704,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     else:
         assert (
             re.match(
-                ".*[0|1] added, [1-9] changed, 0 removed$.*",
+                ".*[0|1] added, ([1-9]|10) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
