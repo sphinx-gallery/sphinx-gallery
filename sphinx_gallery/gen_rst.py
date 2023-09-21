@@ -442,8 +442,8 @@ def generate_dir_rst(
     index_content: str,
         Content which will be written to the index rst file
         presenting the current example gallery
-    costs: dict
-        Dict of costs for building each element of the gallery
+    costs: List[Dict]
+        List of dicts of costs for building each element of the gallery
          with keys "t", "mem", "src_file", and "target_dir".
     toctree_items: list,
         List of files included in toctree
