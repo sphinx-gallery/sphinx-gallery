@@ -97,7 +97,7 @@ jobs:
 
   deploy_stable:
     docker:
-      - image: cimg/python:3.11.5
+      - image: cimg/base:2023.09
     steps:
       - checkout
       - add_ssh_keys:
