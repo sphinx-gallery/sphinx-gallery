@@ -805,8 +805,6 @@ def write_computation_times(gallery_conf, target_dir, costs):
         List of dicts of computation costs and paths, see gen_rst.py for details.
     """
     total_time = sum(cost["t"] for cost in costs)
-    if total_time == 0:
-        return
     if target_dir is None:  # all galleries together
         out_dir = gallery_conf["src_dir"]
         where = "all galleries"
