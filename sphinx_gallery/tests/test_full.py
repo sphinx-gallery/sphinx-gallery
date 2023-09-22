@@ -691,7 +691,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         new_app.build(False, [])
     status = new_app._status.getvalue()
     lines = [line for line in status.split("\n") if "0 removed" in line]
-    # XXX on AppVeyor this can be 13
+    # XXX on Windows this can be more
     if sys.platform.startswith("win"):
         assert (
             re.match(
