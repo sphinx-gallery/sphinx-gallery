@@ -12,6 +12,7 @@ import copy
 from datetime import timedelta, datetime
 from difflib import get_close_matches
 from importlib import import_module
+from pathlib import Path
 import re
 import os
 import pathlib
@@ -805,8 +806,6 @@ def write_computation_times(gallery_conf, target_dir, costs):
         List of dicts of computation costs and paths, see gen_rst.py for details.
     """
     total_time = sum(cost["t"] for cost in costs)
-    if total_time == 0:
-        return
     if target_dir is None:  # all galleries together
         out_dir = gallery_conf["src_dir"]
         where = "all galleries"
@@ -818,9 +817,10 @@ def write_computation_times(gallery_conf, target_dir, costs):
         kind = "rst"
         ref_extra = f'{where.replace(os.path.sep, "_")}_'
     new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
-    with codecs.open(
-        os.path.join(out_dir, "sg_execution_times.rst"), "w", encoding="utf-8"
-    ) as fid:
+    out_file = Path(out_dir) / "sg_execution_times.rst"
+    if out_file.is_file() and total_time == 0:  # a re-run
+        return
+    with out_file.open("w", encoding="utf-8") as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
         fid.write(
             f"**{_sec_to_readable(total_time)}** total execution time for "
@@ -832,15 +832,44 @@ def write_computation_times(gallery_conf, target_dir, costs):
             kind=kind,
         )
         del costs
-        hline = "".join(("+" + "-" * (length + 2)) for length in lens) + "+\n"
-        fid.write(hline)
-        format_str = "".join(f"| {{{ii}}} " for ii in range(len(lines[0]))) + "|\n"
-        for line in lines:
-            line = [ll.ljust(len_) for ll, len_ in zip(line, lens)]
-            text = format_str.format(*line)
-            assert len(text) == len(hline)
-            fid.write(text)
-            fid.write(hline)
+        # https://datatables.net/examples/styling/bootstrap5.html
+        fid.write(  # put it in a container to make the scoped style work
+            """\
+.. container::
+
+  .. raw:: html
+
+    <style scoped>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" class="init">
+    $(document).ready( function () {
+        $('table.sg-datatable').DataTable({order: [[1, 'desc']]});
+    } );
+    </script>
+
+  .. list-table::
+   :header-rows: 1
+   :class: table table-striped sg-datatable
+
+   * - Example
+     - Time
+     - Mem (MB)
+"""  # noqa: E501
+        )
+        # Need at least one entry or Sphinx complains
+        for ex, t, mb in lines or [["N/A", "N/A", "N/A"]]:
+            fid.write(
+                f"""\
+   * - {ex}
+     - {t}
+     - {mb.rsplit(maxsplit=1)[0]}
+"""
+            )  # remove the "MB" from the right
 
 
 def write_api_entries(app, what, name, obj, options, lines):

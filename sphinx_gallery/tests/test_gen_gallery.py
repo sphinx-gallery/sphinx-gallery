@@ -545,8 +545,9 @@ def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
-def test_write_computation_times_noop():
-    write_computation_times(None, None, [dict(t=0)])
+def test_write_computation_times_noop(sphinx_app_wrapper):
+    app = sphinx_app_wrapper.create_sphinx_app()
+    write_computation_times(app.config.sphinx_gallery_conf, None, [])
 
 
 def test_write_api_usage_noop(sphinx_app_wrapper):
