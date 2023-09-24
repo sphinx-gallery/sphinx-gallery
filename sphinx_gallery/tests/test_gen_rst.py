@@ -716,8 +716,8 @@ def test_thumbnail_path(test_str):
     assert file_conf == {"thumbnail_path": "_static/demo.png"}
 
 
-def test_zip_notebooks(gallery_conf):
-    """Test generated zipfiles are not corrupt."""
+def test_zip_python(gallery_conf):
+    """Test generated zipfiles are not corrupt and have expected name and contents."""
     gallery_conf.update(examples_dir=os.path.join(gallery_conf["src_dir"], "examples"))
     shutil.copytree(
         os.path.join(os.path.dirname(__file__), "tinybuild", "examples"),
@@ -725,9 +725,32 @@ def test_zip_notebooks(gallery_conf):
     )
     examples = downloads.list_downloadable_sources(gallery_conf["examples_dir"])
     zipfilepath = downloads.python_zip(examples, gallery_conf["gallery_dir"])
+    assert zipfilepath.endswith("_python.zip")
     zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
     assert not check, f"Bad file in zipfile: {check}"
+    filenames = {item.filename for item in zipf.filelist}
+    assert "examples/plot_command_line_args.py" in filenames
+    assert "examples/julia_sample.jl" not in filenames
+
+
+def test_zip_mixed_source(gallery_conf):
+    """Test generated zipfiles are not corrupt and have expected name and contents."""
+    gallery_conf.update(examples_dir=os.path.join(gallery_conf["src_dir"], "examples"))
+    shutil.copytree(
+        os.path.join(os.path.dirname(__file__), "tinybuild", "examples"),
+        gallery_conf["examples_dir"],
+    )
+    examples = downloads.list_downloadable_sources(
+        gallery_conf["examples_dir"], (".py", ".jl")
+    )
+    zipfilepath = downloads.python_zip(examples, gallery_conf["gallery_dir"], None)
+    zipf = zipfile.ZipFile(zipfilepath)
+    check = zipf.testzip()
+    assert not check, f"Bad file in zipfile: {check}"
+    filenames = {item.filename for item in zipf.filelist}
+    assert "examples/plot_command_line_args.py" in filenames
+    assert "examples/julia_sample.jl" in filenames
 
 
 def test_rst_example(gallery_conf):

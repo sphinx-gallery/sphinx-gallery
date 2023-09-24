@@ -674,7 +674,7 @@ def generate_gallery_rst(app):
 
         if gallery_conf["download_all_examples"]:
             download_fhindex = generate_zipfiles(
-                gallery_dir_abs_path, app.builder.srcdir
+                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
             )
             indexst += download_fhindex
 
