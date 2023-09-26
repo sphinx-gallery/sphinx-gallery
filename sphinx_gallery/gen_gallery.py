@@ -911,6 +911,17 @@ def _init_api_usage(gallery_dir):
         pass
 
 
+# Colors from https://personal.sron.nl/~pault/data/colourschemes.pdf
+# 3 Diverging Colour Schemes, Figure 12, plus alpha=AA
+API_COLORS = dict(
+    edge="#00000088",
+    okay="#6EA6CDAA",  # blue
+    bad_1="#FEDA8BAA",  # yellow
+    bad_2="#F67E4BAA",  # orange
+    bad_3="#A50026AA",  # red
+)
+
+
 def _make_graph(fname, entries, gallery_conf):
     """Make a graph of unused and used API entries.
 
@@ -939,7 +950,17 @@ def _make_graph(fname, entries, gallery_conf):
 
     dg = graphviz.Digraph(
         filename=fname,
-        node_attr={"color": "lightblue2", "style": "filled", "fontsize": "40"},
+        graph_attr={
+            "overlap": "scale",
+            "pad": "0.5",
+        },
+        node_attr={
+            "color": API_COLORS["okay"],
+            "style": "filled",
+            "fontsize": "20",
+            "shape": "box",
+            "fontname": "Open Sans,Arial",
+        },
     )
 
     if isinstance(entries, list):
@@ -954,9 +975,9 @@ def _make_graph(fname, entries, gallery_conf):
                 node_from = (
                     lut[struct[level]] if struct[level] in lut else struct[level]
                 )
-                dg.attr("node", color="lightblue2")
                 dg.node(node_from)
                 node_to = struct[level + 1]
+                node_kwargs = dict()
                 # count, don't show leaves
                 if len(struct) - 3 == level:
                     leaf_count = 0
@@ -973,21 +994,18 @@ def _make_graph(fname, entries, gallery_conf):
                             ]
                         ):
                             leaf_count += 1
-                    node_to += f"\n({leaf_count})"
+                    node_to += f" ({leaf_count})"
                     lut[struct[level + 1]] = node_to
                     if leaf_count > 10:
-                        color = "red"
+                        color_key = "bad_3"
                     elif leaf_count > 5:
-                        color = "orange"
+                        color_key = "bad_2"
                     else:
-                        color = "yellow"
-                    dg.attr("node", color=color)
-                else:
-                    dg.attr("node", color="lightblue2")
-                dg.node(node_to)
-                dg.edge(node_from, node_to)
+                        color_key = "bad_1"
+                    node_kwargs["color"] = API_COLORS[color_key]
+                dg.node(node_to, **node_kwargs)
+                dg.edge(node_from, node_to, color=API_COLORS["edge"])
         # add modules with all API entries
-        dg.attr("node", color="lightblue2")
         for module in gallery_conf["_sg_api_entries"]["module"]:
             struct = module.split(".")
             for i in range(len(struct) - 1):
@@ -996,15 +1014,11 @@ def _make_graph(fname, entries, gallery_conf):
     else:
         assert isinstance(entries, dict)
         for entry, refs in entries.items():
-            dg.attr("node", color="lightblue2")
             dg.node(entry)
-            dg.attr("node", color="yellow")
             for ref in refs:
-                dg.node(ref)
-                dg.edge(entry, ref)
-
-    dg.attr(overlap="scale")
-    dg.save(fname)
+                dg.node(ref, color=API_COLORS["bad_1"])
+                dg.edge(entry, ref, color=API_COLORS["edge"])
+    dg.save()
 
 
 def write_api_entry_usage(app, docname, source):
