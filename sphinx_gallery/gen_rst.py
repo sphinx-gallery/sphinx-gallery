@@ -1125,6 +1125,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     target_file = os.path.join(target_dir, fname)
     _replace_md5(src_file, target_file, "copy", mode="t")
+    fname_nice = os.path.relpath(src_file, gallery_conf["src_dir"])
 
     file_conf, script_blocks, node = split_code_and_text_blocks(
         src_file, return_node=True
@@ -1134,14 +1135,18 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
 
     executable = executable_script(src_file, gallery_conf)
 
+    reason = "md5sum not current"
     if md5sum_is_current(target_file, mode="t"):
-        do_return = True
         if executable:
             if gallery_conf["run_stale_examples"]:
-                do_return = False
+                do_return, reason = False, "run_stale_examples=True"
             else:
                 gallery_conf["stale_examples"].append(target_file)
+                do_return, reason = True, "stale"
+        else:
+            do_return, reason = True, "not executable"
         if do_return:
+            logger.debug("%s: not running, %s", fname_nice, reason)
             return intro, title, (0, 0)
 
     image_dir = os.path.join(target_dir, "images")
@@ -1160,12 +1165,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     }
 
     if executable and gallery_conf["reset_modules_order"] in ["before", "both"]:
+        logger.debug("%s: clean modules before", fname_nice)
         clean_modules(gallery_conf, fname, "before")
+    logger.debug("%s: running, %s", fname_nice, reason)
     output_blocks, time_elapsed = execute_script(
         script_blocks, script_vars, gallery_conf, file_conf
     )
 
-    logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
+    logger.debug("%s ran in : %.2g seconds", fname_nice, time_elapsed)
 
     # Create dummy images
     if not executable:
@@ -1202,20 +1209,24 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         script_blocks = script_blocks[:-1]
         output_blocks = output_blocks[:-1]
 
+    logger.debug("%s: create rst blocks", fname_nice)
     example_rst = rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf)
     memory_used = gallery_conf["memory_base"] + script_vars["memory_delta"]
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
+    logger.debug("%s: saving rst", fname_nice)
     save_rst_example(example_rst, target_file, time_elapsed, memory_used, gallery_conf)
 
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
+    logger.debug("%s: writing notebook", fname_nice)
     example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
     ipy_fname = replace_py_ipynb(target_file) + ".new"
     save_notebook(example_nb, ipy_fname)
     _replace_md5(ipy_fname, mode="t")
 
     # Write names
+    logger.debug("%s: resolve backrefs", fname_nice)
     if gallery_conf["inspect_global_variables"]:
         global_variables = script_vars["example_globals"]
     else:
@@ -1241,6 +1252,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     }
 
     # Write backreferences
+    logger.debug("%s: write backrefs", fname_nice)
     _write_backreferences(
         backrefs, seen_backrefs, gallery_conf, target_dir, fname, intro, title
     )
@@ -1250,8 +1262,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         del global_variables["___"]
     del script_vars, global_variables  # don't keep these during reset
     if executable and gallery_conf["reset_modules_order"] in ["after", "both"]:
+        logger.debug("%s: clean modules after", fname_nice)
         clean_modules(gallery_conf, fname, "after")
 
+    logger.debug("%s: done", fname_nice)
     return intro, title, (time_elapsed, memory_used)
 
 
