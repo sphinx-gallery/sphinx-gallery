@@ -914,11 +914,11 @@ def _init_api_usage(gallery_dir):
 # Colors from https://personal.sron.nl/~pault/data/colourschemes.pdf
 # 3 Diverging Colour Schemes, Figure 12, plus alpha=AA
 API_COLORS = dict(
-    edge="#00000088",
-    okay="#6EA6CDAA",  # blue
-    bad_1="#FEDA8BAA",  # yellow
-    bad_2="#F67E4BAA",  # orange
-    bad_3="#A50026AA",  # red
+    edge="#00000080",  # gray (by alpha)
+    okay="#98CAE180",  # blue
+    bad_1="#FEDA8B80",  # yellow
+    bad_2="#F67E4B80",  # orange
+    bad_3="#A5002680",  # red
 )
 
 
