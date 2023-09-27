@@ -2,7 +2,7 @@
 Animation support
 =================
 
-Show an animation, which should end up nicely embedded below.
+Show an animation, which should end up nicely embedded below. See `mylink`_.
 """
 
 import numpy as np

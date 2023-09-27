@@ -101,6 +101,10 @@ def notebook_modification_function(notebook_content, notebook_filename):
     notebook_content["cells"] = [markdown_cell] + notebook_content["cells"]
 
 
+rst_prolog = """
+.. _mylink: https://example.com
+"""
+
 sphinx_gallery_conf = {
     "doc_module": ("sphinx_gallery",),
     "reference_url": {
