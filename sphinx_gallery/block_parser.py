@@ -1,4 +1,4 @@
-"""BlockParser divides source files into blocks of code and markup text."""
+"""BlockParser divides non `.py` source files into blocks of code and markup text."""
 import ast
 import codecs
 from pathlib import Path
@@ -9,6 +9,8 @@ from textwrap import dedent
 
 from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
+
+from .py_source_parser import FLAG_BODY
 
 logger = getLogger("sphinx-gallery")
 
@@ -43,15 +45,19 @@ class BlockParser:
             self.lexer = pygments.lexers.find_lexer_class_for_filename(source_file)()
         self.language = self.lexer.name
 
-        # determine valid comment syntaxes
+        # determine valid comment syntaxes. For each possible syntax, the tuple contains
+        # - A test comment
+        # - The comment start character
+        # - The comment end character (for multiline comments) or None
+        # - A regex for the start of a block based on repeated characters, or None
         comment_tests = [
             ("#= comment =#", "#=", "=#", None),  # Julia multiline
-            ("# comment", "#", None, "#{20,}"),
-            ("// comment", "//", None, "/{20,}"),
-            ("/* comment */", r"/\*", r"\*/", r"/\*{20,}/"),
-            ("% comment", "%", None, "%{20,}"),
-            ("! comment", "!", None, "!{20,}"),
-            ("c     comment", r"^c(?:$|     )", None, None),
+            ("# comment", "#", None, "#{20,}"),  # Julia, Ruby, Bash, Perl, etc.
+            ("// comment", "//", None, "/{20,}"),  # C++, C#, Java, Rust, etc.
+            ("/* comment */", r"/\*", r"\*/", r"/\*{20,}/"),  # C/C++ etc. multiline
+            ("% comment", "%", None, "%{20,}"),  # Matlab
+            ("! comment", "!", None, "!{20,}"),  # Fortran
+            ("c     comment", r"^c(?:$|     )", None, None),  # Fortran 77
         ]
 
         self.allowed_comments = []
@@ -100,11 +106,7 @@ class BlockParser:
         #     b = 2
         flag_start = rf"^[\ \t]*(?:{comment_start})\s*"
 
-        self.infile_config_pattern = re.compile(
-            flag_start + r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?",
-            re.MULTILINE,
-        )
-
+        self.infile_config_pattern = re.compile(flag_start + FLAG_BODY, re.MULTILINE)
         self.start_ignore_flag = flag_start + "sphinx_gallery_start_ignore"
         self.end_ignore_flag = flag_start + "sphinx_gallery_end_ignore"
         self.ignore_block_pattern = re.compile(

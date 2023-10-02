@@ -147,9 +147,9 @@ languages other than Python, although these examples are not currently executed 
 scanned for output. See :ref:`filename/ignore patterns <build_pattern>` for
 configuration settings.
 
-For such examples, the header for the example is defined by the first comment block
-in the file, which must contain a reST title, and may contain any additional reST
-content that should appear above the example. For example, A C++ example could start
+For such examples, the header for the example is defined by the first comment block in
+the file, which must contain a reST title, and may contain any additional reST content
+that should appear above the first code block. For example, a C++ example could start
 with:
 
 .. code:: C++

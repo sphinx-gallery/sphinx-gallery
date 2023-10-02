@@ -214,8 +214,9 @@ consult the `regular expressions`_ module for more details.
 
         $ sphinx-build -D sphinx_gallery_conf.filename_pattern=plot_specific_example\.py ...
 
-To parse examples in other languages, add their extensions to ``example_extensions``.
-For example, to include examples in Python, Julia, and C++::
+You can also parse and highlight syntax examples in other languages by adding their
+extensions to ``example_extensions``, though they will not be executed. For example, to
+include examples in Python, Julia, and C++::
 
     sphinx_gallery_conf = {
         ...
@@ -224,9 +225,9 @@ For example, to include examples in Python, Julia, and C++::
 
 Parsing and syntax highlighting is supported by the Pygments library, with the language
 determined by the file extension. To override Pygments' default file associations, the
-``filetype_parsers`` option can be used to specify a ``dict`` mapping a file extension
-to any of the `pygments language names <https://pygments.org/languages/>`__. For
-example::
+``filetype_parsers`` option can be used to specify a ``dict`` mapping any of the file
+extensions in ``example_extensions`` to any of the `pygments language names
+<https://pygments.org/languages/>`__. For example::
 
     sphinx_gallery_conf = {
         ...
@@ -1283,6 +1284,8 @@ downloads can be enabled using the ``notebook_extensions`` option. For example::
     sphinx_gallery_conf = {
         "notebook_extensions": {".py", ".jl"}
     }
+
+where the listed extensions are compared to file names in the gallery directory.
 
 .. note::
 

@@ -33,9 +33,8 @@ Example script with invalid Python syntax
 #
 #     b = 2
 FLAG_START = r"^[\ \t]*#\s*"
-INFILE_CONFIG_PATTERN = re.compile(
-    FLAG_START + r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?", re.MULTILINE
-)
+FLAG_BODY = r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?"
+INFILE_CONFIG_PATTERN = re.compile(FLAG_START + FLAG_BODY, re.MULTILINE)
 
 START_IGNORE_FLAG = FLAG_START + "sphinx_gallery_start_ignore"
 END_IGNORE_FLAG = FLAG_START + "sphinx_gallery_end_ignore"
