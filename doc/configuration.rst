@@ -23,7 +23,8 @@ Most Sphinx-Gallery configuration options are set in the Sphinx ``conf.py``
 file:
 
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
-- ``filename_pattern`` and ``ignore_pattern`` (:ref:`build_pattern`)
+- ``filename_pattern``, ``ignore_pattern``, ``example_extensions``, and
+  ``filetype_parsers`` (:ref:`build_pattern`)
 - ``run_stale_examples`` (:ref:`run_stale_examples`)
 - ``reset_argv`` (:ref:`reset_argv`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
@@ -50,6 +51,7 @@ file:
 - ``show_signature`` (:ref:`show_signature`)
 - ``binder`` (:ref:`binder_links`)
 - ``jupyterlite`` (:ref:`jupyterlite`)
+- ``notebook_extensions`` (:ref:`notebook_extensions`)
 - ``promote_jupyter_magic`` (:ref:`promote_jupyter_magic`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``notebook_images`` (:ref:`notebook_images`)
@@ -140,13 +142,14 @@ Parsing and executing examples via matching patterns
 
 By default, Sphinx-Gallery will **parse and add** all files with a ``.py``
 extension to the gallery, but only **execute** files beginning with ``plot_``.
-These behaviors are controlled by the ``ignore_pattern`` and ``filename_pattern``
-entries, which have the default values::
+These behaviors are controlled by the ``ignore_pattern``, ``filename_pattern``,
+and ``example_extensions`` entries, which have the default values::
 
     sphinx_gallery_conf = {
         ...
         'filename_pattern': '/plot_',
         'ignore_pattern': r'__init__\.py',
+        'example_extensions': {'.py'}
     }
 
 To omit some files from the gallery entirely (i.e., not execute, parse, or
@@ -210,6 +213,26 @@ consult the `regular expressions`_ module for more details.
     .. code-block:: console
 
         $ sphinx-build -D sphinx_gallery_conf.filename_pattern=plot_specific_example\.py ...
+
+You can also parse and highlight syntax examples in other languages by adding their
+extensions to ``example_extensions``, though they will not be executed. For example, to
+include examples in Python, Julia, and C++::
+
+    sphinx_gallery_conf = {
+        ...
+        'example_extensions': {'.py', '.jl', '.cpp'}
+    }
+
+Parsing and syntax highlighting is supported by the Pygments library, with the language
+determined by the file extension. To override Pygments' default file associations, the
+``filetype_parsers`` option can be used to specify a ``dict`` mapping any of the file
+extensions in ``example_extensions`` to any of the `pygments language names
+<https://pygments.org/languages/>`__. For example::
+
+    sphinx_gallery_conf = {
+        ...
+        'filetype_parsers': {'.m': 'Matlab'}
+    }
 
 .. _run_stale_examples:
 
@@ -1247,6 +1270,27 @@ but not use sphinx-gallery Jupyterlite integration you can do::
 See the Sphinx-Gallery `Sphinx configuration file
 <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the JupyterLite integration.
+
+.. _notebook_extensions:
+
+Controlling notebook download links
+===================================
+
+By default, links to download Jupyter noteooks and launch Binder or JupyterLite (if
+enabled) are shown only for Python examples. If parsing other file extensions has been
+enabled (using the ``example_extensions`` option; see :ref:`build_pattern`), notebook
+downloads can be enabled using the ``notebook_extensions`` option. For example::
+
+    sphinx_gallery_conf = {
+        "notebook_extensions": {".py", ".jl"}
+    }
+
+where the listed extensions are compared to file names in the gallery directory.
+
+.. note::
+
+    Currently, all generated notebooks specify Python as the kernel. After downloading,
+    the user will need to manually change to the correct kernel.
 
 .. _promote_jupyter_magic:
 
