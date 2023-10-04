@@ -1045,6 +1045,8 @@ def write_api_entry_usage(app, docname, source):
         List whose single element is the contents of the source file
     """
     docname = docname or ""  # can be None on Sphinx 7.2
+    if docname != "sg_api_usage.rst":
+        return
     gallery_conf = app.config.sphinx_gallery_conf
     if gallery_conf["show_api_usage"] is False:
         return
@@ -1057,8 +1059,7 @@ def write_api_entry_usage(app, docname, source):
     title = "Unused API Entries"
     source[0] += title + "\n" + "^" * len(title) + "\n\n"
     if (
-        "sg_api_usage" not in docname
-        or "_sg_api_entries" not in gallery_conf
+        "_sg_api_entries" not in gallery_conf
         or gallery_conf["backreferences_dir"] is None
     ):
         source[0] += "No API entries found, not computed.\n\n"
