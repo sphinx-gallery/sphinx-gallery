@@ -7,6 +7,7 @@ import codecs
 import importlib
 import io
 import logging
+from pathlib import Path
 import tempfile
 import re
 import os
@@ -25,6 +26,9 @@ from sphinx_gallery.gen_gallery import (
     generate_dir_rst,
     _update_gallery_conf_exclude_implicit_doc,
 )
+
+# TODO: The tests of this method should probably be moved to test_py_source_parser.py
+from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 from sphinx_gallery.interactive_example import check_binder_conf
 
@@ -65,7 +69,7 @@ CONTENT = [
 
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split."""
-    file_conf, blocks = sg.split_code_and_text_blocks("examples/no_output/just_code.py")
+    file_conf, blocks = split_code_and_text_blocks("examples/no_output/just_code.py")
 
     assert file_conf == {}
     assert blocks[0][0] == "text"
@@ -79,7 +83,7 @@ def test_bug_cases_of_notebook_syntax():
     """
     with open("sphinx_gallery/tests/reference_parse.txt") as reference:
         ref_blocks = ast.literal_eval(reference.read())
-        file_conf, blocks = sg.split_code_and_text_blocks("tutorials/plot_parse.py")
+        file_conf, blocks = split_code_and_text_blocks("tutorials/plot_parse.py")
 
         assert file_conf == {}
         assert blocks == ref_blocks
@@ -101,7 +105,7 @@ def test_direct_comment_after_docstring():
             )
         )
     try:
-        file_conf, result = sg.split_code_and_text_blocks(f.name)
+        file_conf, result = split_code_and_text_blocks(f.name)
     finally:
         os.remove(f.name)
 
@@ -139,7 +143,7 @@ def test_final_rst_last_word(tmpdir):
             )
         )
 
-    file_conf, result = sg.split_code_and_text_blocks(f.name)
+    file_conf, result = split_code_and_text_blocks(f.name)
 
     assert file_conf == {}
     expected_result = [
@@ -171,7 +175,7 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
                 ]
             )
         )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    file_conf, blocks = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     assert len(blocks) == 4
@@ -224,7 +228,7 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
                 ]
             )
         )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    file_conf, blocks = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     assert len(blocks) == 3
@@ -278,7 +282,7 @@ a = 1.
 b = 'foo'
 """
         )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    file_conf, blocks = split_code_and_text_blocks(filename)
     assert len(blocks) == 2
     assert blocks[0][0] == "text"
     assert blocks[1][0] == "code"
@@ -507,7 +511,7 @@ def _alpha_mpl_scraper(block, block_vars, gallery_conf):
         fig = plt.figure(fig_num)
         assert image_path.endswith(".png")
         # use format that does not support alpha
-        image_path = image_path[:-3] + "jpg"
+        image_path = Path(image_path).with_suffix(".jpg")
         fig.savefig(image_path)
         image_paths.append(image_path)
     plt.close("all")
@@ -561,6 +565,7 @@ def test_final_empty_block(gallery_conf, req_pil):
     """
     content_block = CONTENT + ["# %%", "", "# sphinx_gallery_line_numbers = True"]
     gallery_conf["remove_config_comments"] = True
+    gallery_conf["min_reported_time"] = -1  # Force timing info to be shown
     rst = _generate_rst(gallery_conf, "test.py", content_block)
     want = "RuntimeWarning)\n\n\n.. rst-class:: sphx-glr-timing"
     assert want in rst
@@ -685,7 +690,7 @@ def test_thumbnail_number(test_str):
     with tempfile.NamedTemporaryFile("w", delete=False) as f:
         f.write("\n".join(['"Docstring"', test_str]))
     try:
-        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
+        file_conf, blocks = split_code_and_text_blocks(f.name)
     finally:
         os.remove(f.name)
     assert file_conf == {"thumbnail_number": 2}
@@ -705,14 +710,14 @@ def test_thumbnail_path(test_str):
     with tempfile.NamedTemporaryFile("w", delete=False) as f:
         f.write("\n".join(['"Docstring"', test_str]))
     try:
-        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
+        file_conf, blocks = split_code_and_text_blocks(f.name)
     finally:
         os.remove(f.name)
     assert file_conf == {"thumbnail_path": "_static/demo.png"}
 
 
-def test_zip_notebooks(gallery_conf):
-    """Test generated zipfiles are not corrupt."""
+def test_zip_python(gallery_conf):
+    """Test generated zipfiles are not corrupt and have expected name and contents."""
     gallery_conf.update(examples_dir=os.path.join(gallery_conf["src_dir"], "examples"))
     shutil.copytree(
         os.path.join(os.path.dirname(__file__), "tinybuild", "examples"),
@@ -720,9 +725,32 @@ def test_zip_notebooks(gallery_conf):
     )
     examples = downloads.list_downloadable_sources(gallery_conf["examples_dir"])
     zipfilepath = downloads.python_zip(examples, gallery_conf["gallery_dir"])
+    assert zipfilepath.endswith("_python.zip")
     zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
     assert not check, f"Bad file in zipfile: {check}"
+    filenames = {item.filename for item in zipf.filelist}
+    assert "examples/plot_command_line_args.py" in filenames
+    assert "examples/julia_sample.jl" not in filenames
+
+
+def test_zip_mixed_source(gallery_conf):
+    """Test generated zipfiles are not corrupt and have expected name and contents."""
+    gallery_conf.update(examples_dir=os.path.join(gallery_conf["src_dir"], "examples"))
+    shutil.copytree(
+        os.path.join(os.path.dirname(__file__), "tinybuild", "examples"),
+        gallery_conf["examples_dir"],
+    )
+    examples = downloads.list_downloadable_sources(
+        gallery_conf["examples_dir"], (".py", ".jl")
+    )
+    zipfilepath = downloads.python_zip(examples, gallery_conf["gallery_dir"], None)
+    zipf = zipfile.ZipFile(zipfilepath)
+    check = zipf.testzip()
+    assert not check, f"Bad file in zipfile: {check}"
+    filenames = {item.filename for item in zipf.filelist}
+    assert "examples/plot_command_line_args.py" in filenames
+    assert "examples/julia_sample.jl" in filenames
 
 
 def test_rst_example(gallery_conf):
@@ -738,6 +766,7 @@ def test_rst_example(gallery_conf):
         }
     )
     gallery_conf.update(binder=binder_conf)
+    gallery_conf["min_reported_time"] = -1
 
     example_file = os.path.join(gallery_conf["gallery_dir"], "plot.py")
     sg.save_rst_example("example_rst", example_file, 0, 0, gallery_conf)

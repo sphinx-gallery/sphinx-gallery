@@ -14,6 +14,7 @@ import copy
 import json
 import mimetypes
 import os
+from pathlib import Path
 import re
 import sys
 import textwrap
@@ -22,7 +23,6 @@ from sphinx.errors import ExtensionError
 import sphinx.util
 
 from .py_source_parser import split_code_and_text_blocks
-from .utils import replace_py_ipynb
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -377,4 +377,4 @@ def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
         print(f"Converting {src_file}")
         target_dir = os.path.dirname(src_file)
         example_nb = jupyter_notebook(blocks, copy.deepcopy(gallery_conf), target_dir)
-        save_notebook(example_nb, replace_py_ipynb(src_file))
+        save_notebook(example_nb, Path(src_file).with_suffix(".ipynb"))

@@ -13,6 +13,7 @@ this API may change in the future.
 """
 
 import os
+from pathlib import Path
 import shutil
 from urllib.parse import quote
 import glob
@@ -21,7 +22,7 @@ import json
 from sphinx.errors import ConfigError
 import sphinx.util
 
-from .utils import replace_py_ipynb, status_iterator
+from .utils import status_iterator
 from . import glr_path_static
 
 
@@ -50,7 +51,7 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
 
     # We want to keep the relative path to sub-folders
     relative_link = os.path.relpath(fpath, gallery_conf["src_dir"])
-    path_link = os.path.join(link_base, replace_py_ipynb(relative_link))
+    path_link = os.path.join(link_base, Path(relative_link).with_suffix(".ipynb"))
 
     # In case our website is hosted in a sub-folder
     if fpath_prefix is not None:

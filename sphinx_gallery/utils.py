@@ -97,6 +97,7 @@ def optipng(fname, args=()):
     args : tuple
         Extra command-line arguments, such as ``['-o7']``.
     """
+    fname = str(fname)
     if fname.endswith(".png"):
         # -o7 because this is what CPython used
         # https://github.com/python/cpython/pull/8032
@@ -119,19 +120,6 @@ def _has_optipng():
         return False
     else:
         return True
-
-
-def replace_py_ipynb(fname):
-    """Replace '.py' extension in filename with '.ipynb'."""
-    fname_prefix, extension = os.path.splitext(fname)
-    allowed_extension = ".py"
-    if extension != allowed_extension:
-        raise ValueError(
-            f"Unrecognized file extension, expected {allowed_extension}, "
-            f"got {extension}"
-        )
-    new_extension = ".ipynb"
-    return f"{fname_prefix}{new_extension}"
 
 
 def get_md5sum(src_file, mode="b"):
@@ -157,6 +145,7 @@ def get_md5sum(src_file, mode="b"):
 
 
 def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
+    fname_new = str(fname_new)  # convert possible Path
     assert method in ("move", "copy")
     if fname_old is None:
         assert fname_new.endswith(".new")

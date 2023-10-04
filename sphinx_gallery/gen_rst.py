@@ -19,6 +19,7 @@ import pickle
 import importlib
 from io import StringIO
 import os
+from pathlib import Path
 import re
 import stat
 from textwrap import indent
@@ -34,7 +35,6 @@ import sphinx.util
 
 from .scrapers import save_figures, ImagePathIterator, clean_modules, _find_image_ext
 from .utils import (
-    replace_py_ipynb,
     scale_image,
     get_md5sum,
     _replace_md5,
@@ -50,12 +50,8 @@ from .backreferences import (
     THUMBNAIL_PARENT_DIV,
     THUMBNAIL_PARENT_DIV_CLOSE,
 )
-from .downloads import CODE_DOWNLOAD
-from .py_source_parser import (
-    split_code_and_text_blocks,
-    remove_config_comments,
-    remove_ignore_blocks,
-)
+from . import py_source_parser
+from .block_parser import BlockParser
 
 from .notebook import jupyter_notebook, save_notebook
 from .interactive_example import gen_binder_rst
@@ -209,6 +205,26 @@ HTML_HEADER = """.. raw:: html
     <br />
     <br />"""
 
+DOWNLOAD_LINKS_HEADER = """
+.. _sphx_glr_download_{0}:
+
+.. only:: html
+
+  .. container:: sphx-glr-footer sphx-glr-footer-example
+"""
+
+CODE_DOWNLOAD = """
+    .. container:: sphx-glr-download sphx-glr-download-python
+
+      :download:`Download {1} source code: {0} <{0}>`
+"""
+
+NOTEBOOK_DOWNLOAD = """
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: {0} <{0}>`
+"""
+
 
 def codestr2rst(codestr, lang="python", lineno=None):
     """Return reStructuredText code block from code string."""
@@ -218,7 +234,13 @@ def codestr2rst(codestr, lang="python", lineno=None):
         lineno = f"   :lineno-start: {lineno + blank_lines}\n"
     else:
         lineno = ""
-    code_directive = f".. code-block:: {lang}\n{lineno}\n"
+    # If the whole block is indented, prevent Sphinx from removing too much whitespace
+    dedent = "   :dedent: 1\n"
+    for line in codestr.splitlines():
+        if line and not line.startswith((" ", "\t")):
+            dedent = ""
+            break
+    code_directive = f".. code-block:: {lang}\n{dedent}{lineno}\n"
     indented_block = indent(codestr, " " * 4)
     return code_directive + indented_block
 
@@ -300,7 +322,7 @@ def md5sum_is_current(src_file, mode="b"):
     """Checks whether src_file has the same md5 hash as the one on disk."""
     src_md5 = get_md5sum(src_file, mode)
 
-    src_md5_file = src_file + ".md5"
+    src_md5_file = str(src_file) + ".md5"
     if os.path.exists(src_md5_file):
         with open(src_md5_file) as file_checksum:
             ref_md5 = file_checksum.read()
@@ -467,7 +489,11 @@ def generate_dir_rst(
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     # get filenames
-    listdir = [fname for fname in os.listdir(src_dir) if fname.endswith(".py")]
+    listdir = [
+        fname
+        for fname in os.listdir(src_dir)
+        if (s := Path(fname).suffix) and s in gallery_conf["example_extensions"]
+    ]
     # limit which to look at based on regex (similar to filename_pattern)
     listdir = [
         fname
@@ -502,8 +528,8 @@ def generate_dir_rst(
         )
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
-        gallery_item_filename = os.path.join(build_target_dir, fname[:-3]).replace(
-            os.sep, "/"
+        gallery_item_filename = (
+            (Path(build_target_dir) / fname).with_suffix("").as_posix()
         )
         this_entry = _thumbnail_div(
             target_dir, gallery_conf["src_dir"], fname, intro, title
@@ -1123,12 +1149,20 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     """
     seen_backrefs = set() if seen_backrefs is None else seen_backrefs
     src_file = os.path.normpath(os.path.join(src_dir, fname))
-    target_file = os.path.join(target_dir, fname)
+    target_file = Path(target_dir) / fname
     _replace_md5(src_file, target_file, "copy", mode="t")
 
-    file_conf, script_blocks, node = split_code_and_text_blocks(
+    if fname.endswith(".py"):
+        parser = py_source_parser
+        language = "Python"
+    else:
+        parser = BlockParser(fname, gallery_conf)
+        language = parser.language
+
+    file_conf, script_blocks, node = parser.split_code_and_text_blocks(
         src_file, return_node=True
     )
+
     intro, title = extract_intro_and_title(fname, script_blocks[0][1])
     gallery_conf["titles"][src_file] = title
 
@@ -1140,7 +1174,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
             if gallery_conf["run_stale_examples"]:
                 do_return = False
             else:
-                gallery_conf["stale_examples"].append(target_file)
+                gallery_conf["stale_examples"].append(str(target_file))
         if do_return:
             return intro, title, (0, 0)
 
@@ -1156,7 +1190,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         "execute_script": executable,
         "image_path_iterator": ImagePathIterator(image_path_template),
         "src_file": src_file,
-        "target_file": target_file,
+        "target_file": str(target_file),
     }
 
     if executable and gallery_conf["reset_modules_order"] in ["before", "both"]:
@@ -1186,13 +1220,13 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     # Ignore blocks must be processed before the
     # remaining config comments are removed.
     script_blocks = [
-        (label, remove_ignore_blocks(content), line_number)
+        (label, parser.remove_ignore_blocks(content), line_number)
         for label, content, line_number in script_blocks
     ]
 
     if gallery_conf["remove_config_comments"]:
         script_blocks = [
-            (label, remove_config_comments(content), line_number)
+            (label, parser.remove_config_comments(content), line_number)
             for label, content, line_number in script_blocks
         ]
 
@@ -1202,18 +1236,28 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         script_blocks = script_blocks[:-1]
         output_blocks = output_blocks[:-1]
 
-    example_rst = rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf)
+    example_rst = rst_blocks(
+        script_blocks, output_blocks, file_conf, gallery_conf, language=language
+    )
     memory_used = gallery_conf["memory_base"] + script_vars["memory_delta"]
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
-    save_rst_example(example_rst, target_file, time_elapsed, memory_used, gallery_conf)
+    save_rst_example(
+        example_rst,
+        target_file,
+        time_elapsed,
+        memory_used,
+        gallery_conf,
+        language=language,
+    )
 
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
-    example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
-    ipy_fname = replace_py_ipynb(target_file) + ".new"
-    save_notebook(example_nb, ipy_fname)
-    _replace_md5(ipy_fname, mode="t")
+    if target_file.suffix in gallery_conf["notebook_extensions"]:
+        example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
+        ipy_fname = target_file.with_suffix(".ipynb.new")
+        save_notebook(example_nb, ipy_fname)
+        _replace_md5(ipy_fname, mode="t")
 
     # Write names
     if gallery_conf["inspect_global_variables"]:
@@ -1223,7 +1267,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     ref_regex = _make_ref_regex(gallery_conf["app"].config)
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
-        codeobj_fname = target_file[:-3] + "_codeobj.pickle.new"
+        codeobj_fname = target_file.with_name(target_file.stem + "_codeobj.pickle.new")
         with open(codeobj_fname, "wb") as fid:
             pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
         _replace_md5(codeobj_fname)
@@ -1281,7 +1325,9 @@ RST_BLOCK_HEADER = """\
 """
 
 
-def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
+def rst_blocks(
+    script_blocks, output_blocks, file_conf, gallery_conf, *, language="python"
+):
     """Generate the rst string containing the script prose, code and output.
 
     Parameters
@@ -1296,6 +1342,9 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     file_conf : dict
         File-specific settings given in source file comments as:
         ``# sphinx_gallery_<name> = <value>``
+    language : str
+        The language to be used for syntax highlighting in code blocks. Must be a name
+        or alias recognized by Pygments.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
 
@@ -1321,9 +1370,7 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
             if not file_conf.get("line_numbers", gallery_conf["line_numbers"]):
                 lineno = None
 
-            code_rst = (
-                codestr2rst(bcontent, lang=gallery_conf["lang"], lineno=lineno) + "\n"
-            )
+            code_rst = codestr2rst(bcontent, lang=language, lineno=lineno) + "\n"
             if is_example_notebook_like:
                 example_rst += code_rst
                 example_rst += code_output
@@ -1341,7 +1388,13 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
 
 
 def save_rst_example(
-    example_rst, example_file, time_elapsed, memory_used, gallery_conf
+    example_rst,
+    example_file,
+    time_elapsed,
+    memory_used,
+    gallery_conf,
+    *,
+    language="python",
 ):
     """Saves the rst notebook to example_file including header & footer.
 
@@ -1351,6 +1404,8 @@ def save_rst_example(
         rst containing the executed file content
     example_file : str
         Filename with full path of python example file in documentation folder
+    language : str
+        Name of the programming language the example is in
     time_elapsed : float
         Time elapsed in seconds while executing file
     memory_used : float
@@ -1358,7 +1413,8 @@ def save_rst_example(
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
-    example_fname = os.path.relpath(example_file, gallery_conf["src_dir"])
+    example_file = Path(example_file)
+    example_fname = str(example_file.relative_to(gallery_conf["src_dir"]))
     ref_fname = example_fname.replace(os.path.sep, "_")
 
     binder_conf = gallery_conf["binder"]
@@ -1383,33 +1439,37 @@ def save_rst_example(
         + example_rst
     )
 
-    if time_elapsed >= gallery_conf["min_reported_time"]:
+    if time_elapsed > gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)
         example_rst += TIMING_CONTENT.format(time_m, time_s)
-
-    fname = os.path.basename(example_file)
 
     if gallery_conf["show_memory"]:
         example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
 
-    # Generate a binder URL if specified
-    binder_badge_rst = ""
-    if is_binder_enabled:
-        binder_badge_rst += gen_binder_rst(example_file, binder_conf, gallery_conf)
-        binder_badge_rst = indent(binder_badge_rst, "  ")  # need an extra two
+    example_rst += DOWNLOAD_LINKS_HEADER.format(ref_fname)
 
-    jupyterlite_rst = ""
-    if is_jupyterlite_enabled:
+    save_notebook = example_file.suffix in gallery_conf["notebook_extensions"]
+
+    # Generate a binder URL if specified
+    if is_binder_enabled and save_notebook:
+        binder_badge_rst = gen_binder_rst(example_file, binder_conf, gallery_conf)
+        binder_badge_rst = indent(binder_badge_rst, "  ")  # need an extra two
+        example_rst += binder_badge_rst
+
+    if is_jupyterlite_enabled and save_notebook:
         jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, "  ")  # need an extra two
+        example_rst += jupyterlite_rst
 
-    example_rst += CODE_DOWNLOAD.format(
-        fname, replace_py_ipynb(fname), binder_badge_rst, ref_fname, jupyterlite_rst
-    )
+    if save_notebook:
+        example_rst += NOTEBOOK_DOWNLOAD.format(example_file.with_suffix(".ipynb").name)
+
+    example_rst += CODE_DOWNLOAD.format(example_file.name, language)
+
     if gallery_conf["show_signature"]:
         example_rst += SPHX_GLR_SIG
 
-    write_file_new = re.sub(r"\.py$", ".rst.new", example_file)
+    write_file_new = example_file.with_suffix(".rst.new")
     with codecs.open(write_file_new, "w", encoding="utf-8") as f:
         f.write(example_rst)
     # make it read-only so that people don't try to edit it

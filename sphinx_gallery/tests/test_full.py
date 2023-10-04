@@ -37,8 +37,9 @@ import pytest
 N_EXAMPLES = 15 + 3 + 2
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
-# passthroughs examples_rst_index, examples_with_rst
-N_PASS = 0 + 2
+# passthroughs and non-executed examples in examples + examples_rst_index
+# + examples_with_rst
+N_PASS = 3 + 0 + 2
 # indices SG generates  (extra non-plot*.py file)
 # + examples_rst_index + examples_with_rst
 N_INDEX = 2 + 1 + 3
@@ -471,7 +472,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert op.isfile(fname)
     with codecs.open(fname, "r", "utf-8") as fid:
         rst = fid.read()
-    assert ".. code-block:: python3\n" in rst
+    assert ".. code-block:: Python\n" in rst
 
     # warnings
     want_warn = (
@@ -1256,3 +1257,30 @@ def test_jupyterlite_modifications(sphinx_app):
             f"JupyterLite-specific change for {notebook_filename}"
             in first_cell["source"]
         )
+
+
+def test_cpp_rst(sphinx_app):
+    cpp_rst = Path(sphinx_app.srcdir) / "auto_examples" / "parse_this.rst"
+    content = cpp_rst.read_text()
+    assert content.count(".. code-block:: C++") == 3
+    assert content.count(":dedent: 1", 1)
+    assert "Download C++ source code" in content
+    assert "binder-badge" not in content
+    assert "lite-badge" not in content
+    assert "Download Jupyter notebook" not in content
+
+
+def test_matlab_rst(sphinx_app):
+    matlab_rst = Path(sphinx_app.srcdir) / "auto_examples" / "isentropic.rst"
+    content = matlab_rst.read_text()
+    assert content.count(".. code-block:: Matlab", 3)
+    assert "isentropic, adiabatic flow example\n==============" in content
+    assert "Download Matlab source code" in content
+
+
+def test_julia_rst(sphinx_app):
+    julia_rst = Path(sphinx_app.srcdir) / "auto_examples" / "julia_sample.rst"
+    content = julia_rst.read_text()
+    assert content.count(".. code-block:: Julia", 3)
+    assert "Julia example\n=============" in content
+    assert "Download Julia source code" in content

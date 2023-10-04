@@ -11,6 +11,7 @@ import collections
 from html import escape
 import inspect
 import os
+from pathlib import Path
 import re
 import sys
 
@@ -334,8 +335,9 @@ def _thumbnail_div(
     target_dir, src_dir, fname, snippet, title, is_backref=False, check=True
 ):
     """Generate reST to place a thumbnail in a gallery."""
+    fname = Path(fname)
     thumb, _ = _find_image_ext(
-        os.path.join(target_dir, "images", "thumb", f"sphx_glr_{fname[:-3]}_thumb.png")
+        os.path.join(target_dir, "images", "thumb", f"sphx_glr_{fname.stem}_thumb.png")
     )
     if check and not os.path.isfile(thumb):
         # This means we have done something wrong in creating our thumbnail!
