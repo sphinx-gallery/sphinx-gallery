@@ -1045,7 +1045,7 @@ def write_api_entry_usage(app, docname, source):
         List whose single element is the contents of the source file
     """
     docname = docname or ""  # can be None on Sphinx 7.2
-    if docname != "sg_api_usage.rst":
+    if docname != "sg_api_usage":
         return
     gallery_conf = app.config.sphinx_gallery_conf
     if gallery_conf["show_api_usage"] is False:
