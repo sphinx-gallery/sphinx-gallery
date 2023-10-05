@@ -47,6 +47,7 @@ coverage.xml
 CHANGELOG.md
 CHANGELOG.rst
 junit-results.xml
+.github_changelog_generator/
 
 # Translations
 *.mo

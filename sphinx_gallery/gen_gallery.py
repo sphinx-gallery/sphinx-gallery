@@ -1045,17 +1045,24 @@ def write_api_entry_usage(app, docname, source):
         List whose single element is the contents of the source file
     """
     docname = docname or ""  # can be None on Sphinx 7.2
+    if docname != "sg_api_usage":
+        return
     gallery_conf = app.config.sphinx_gallery_conf
     if gallery_conf["show_api_usage"] is False:
         return
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
     # which means that all the api entries will be in gallery_conf
+
+    # Always write at least the title
+    source[0] = SPHX_GLR_ORPHAN.format("sphx_glr_sg_api_usage")
+    title = "Unused API Entries"
+    source[0] += title + "\n" + "^" * len(title) + "\n\n"
     if (
-        "sg_api_usage" not in docname
-        or "_sg_api_entries" not in gallery_conf
+        "_sg_api_entries" not in gallery_conf
         or gallery_conf["backreferences_dir"] is None
     ):
+        source[0] += "No API entries found, not computed.\n\n"
         return
     backreferences_dir = os.path.join(
         gallery_conf["src_dir"], gallery_conf["backreferences_dir"]
@@ -1070,6 +1077,7 @@ def write_api_entry_usage(app, docname, source):
     )
 
     if len(example_files) == 0:
+        source[0] += "No examples run, not computed.\n\n"
         return
 
     def get_entry_type(entry):
@@ -1103,10 +1111,6 @@ def write_api_entry_usage(app, docname, source):
                         example_name = line.split("`")[1]
                         used_api_entries[entry].append(example_name)
 
-    source[0] = SPHX_GLR_ORPHAN.format("sphx_glr_sg_api_usage")
-
-    title = "Unused API Entries"
-    source[0] += title + "\n" + "^" * len(title) + "\n\n"
     for entry in sorted(unused_api_entries):
         source[0] += f"- :{get_entry_type(entry)}:`{entry}`\n"
     source[0] += "\n\n"
