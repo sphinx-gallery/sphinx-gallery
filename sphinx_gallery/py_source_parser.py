@@ -33,9 +33,8 @@ Example script with invalid Python syntax
 #
 #     b = 2
 FLAG_START = r"^[\ \t]*#\s*"
-INFILE_CONFIG_PATTERN = re.compile(
-    FLAG_START + r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?", re.MULTILINE
-)
+FLAG_BODY = r"sphinx_gallery_([A-Za-z0-9_]+)(\s*=\s*(.+))?[\ \t]*\n?"
+INFILE_CONFIG_PATTERN = re.compile(FLAG_START + FLAG_BODY, re.MULTILINE)
 
 START_IGNORE_FLAG = FLAG_START + "sphinx_gallery_start_ignore"
 END_IGNORE_FLAG = FLAG_START + "sphinx_gallery_end_ignore"
@@ -212,7 +211,7 @@ def remove_ignore_blocks(code_block):
     """
     Return the content of *code_block* with ignored areas removed.
 
-    An ignore block starts with # sphinx_gallery_begin_ignore, and ends with
+    An ignore block starts with # sphinx_gallery_start_ignore, and ends with
     # sphinx_gallery_end_ignore. These lines and anything in between them will
     be removed, but surrounding empty lines are preserved.
 
@@ -221,8 +220,8 @@ def remove_ignore_blocks(code_block):
     code_block : str
         A code segment.
     """
-    num_start_flags = len(re.findall(START_IGNORE_FLAG, code_block))
-    num_end_flags = len(re.findall(END_IGNORE_FLAG, code_block))
+    num_start_flags = len(re.findall(START_IGNORE_FLAG, code_block, re.MULTILINE))
+    num_end_flags = len(re.findall(END_IGNORE_FLAG, code_block, re.MULTILINE))
 
     if num_start_flags != num_end_flags:
         raise ExtensionError(

@@ -11,8 +11,9 @@ import collections
 from html import escape
 import inspect
 import os
+from pathlib import Path
 import re
-import warnings
+import sys
 
 from sphinx.errors import ExtensionError
 import sphinx.util
@@ -178,42 +179,34 @@ class NameFinder(ast.NodeVisitor):
         return options
 
 
-def _from_import(a, b):
-    imp_line = f"from {a} import {b}"
-    scope = dict()
-    with warnings.catch_warnings(record=True):  # swallow warnings
-        warnings.simplefilter("ignore")
-        exec(imp_line, scope, scope)
-    return scope
-
-
 def _get_short_module_name(module_name, obj_name):
     """Get the shortest possible module name."""
     if "." in obj_name:
         obj_name, attr = obj_name.split(".")
     else:
         attr = None
-    scope = {}
+
     try:
-        # Find out what the real object is supposed to be.
-        scope = _from_import(module_name, obj_name)
-    except Exception:  # wrong object
+        # look only in sys.modules to avoid importing the module, which may
+        # otherwise have side effects
+        real_obj = getattr(sys.modules[module_name], obj_name)
+        if attr is not None:
+            getattr(real_obj, attr)
+    except (AttributeError, KeyError):
+        # AttributeError: wrong class
+        # KeyError: wrong object or module not previously imported
         return None
-    else:
-        real_obj = scope[obj_name]
-        if attr is not None and not hasattr(real_obj, attr):  # wrong class
-            return None  # wrong object
 
     parts = module_name.split(".")
     short_name = module_name
     for i in range(len(parts) - 1, 0, -1):
         short_name = ".".join(parts[:i])
-        scope = {}
         try:
-            scope = _from_import(short_name, obj_name)
-            # Ensure shortened object is the same as what we expect.
-            assert real_obj is scope[obj_name]
-        except Exception:  # libraries can throw all sorts of exceptions...
+            assert real_obj is getattr(sys.modules[short_name], obj_name)
+        except (AssertionError, AttributeError, KeyError):
+            # AssertionError: shortened object is not what we expect
+            # KeyError: short module name not previously imported
+            # AttributeError: wrong class or object
             # get the last working module name
             short_name = ".".join(parts[: (i + 1)])
             break
@@ -342,8 +335,9 @@ def _thumbnail_div(
     target_dir, src_dir, fname, snippet, title, is_backref=False, check=True
 ):
     """Generate reST to place a thumbnail in a gallery."""
+    fname = Path(fname)
     thumb, _ = _find_image_ext(
-        os.path.join(target_dir, "images", "thumb", f"sphx_glr_{fname[:-3]}_thumb.png")
+        os.path.join(target_dir, "images", "thumb", f"sphx_glr_{fname.stem}_thumb.png")
     )
     if check and not os.path.isfile(thumb):
         # This means we have done something wrong in creating our thumbnail!

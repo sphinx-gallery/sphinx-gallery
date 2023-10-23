@@ -12,6 +12,7 @@ import copy
 from datetime import timedelta, datetime
 from difflib import get_close_matches
 from importlib import import_module
+from pathlib import Path
 import re
 import os
 import pathlib
@@ -63,6 +64,9 @@ DEFAULT_GALLERY_CONF = {
     "filename_pattern": re.escape(os.sep) + "plot",
     "ignore_pattern": r"__init__\.py",
     "examples_dirs": os.path.join("..", "examples"),
+    "example_extensions": {".py"},
+    "filetype_parsers": {},
+    "notebook_extensions": {".py"},
     "reset_argv": DefaultResetArgv(),
     "subsection_order": None,
     "within_subsection_order": NumberOfCodeLinesSortKey,
@@ -151,14 +155,11 @@ def _update_gallery_conf_builder_inited(
     src_dir,
     plot_gallery=True,
     abort_on_example_error=False,
-    lang="python",
     builder_name="html",
 ):
     sphinx_gallery_conf.update(plot_gallery=plot_gallery)
     sphinx_gallery_conf.update(abort_on_example_error=abort_on_example_error)
     sphinx_gallery_conf["src_dir"] = src_dir
-    lang = lang if lang in ("python", "python3", "default") else "python"
-    sphinx_gallery_conf["lang"] = lang
     # Make it easy to know which builder we're in
     sphinx_gallery_conf["builder_name"] = builder_name
 
@@ -706,7 +707,7 @@ def generate_gallery_rst(app):
 
         if gallery_conf["download_all_examples"]:
             download_fhindex = generate_zipfiles(
-                gallery_dir_abs_path, app.builder.srcdir
+                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
             )
             indexst += download_fhindex
 
@@ -719,6 +720,9 @@ def generate_gallery_rst(app):
                 fhindex.write(indexst)
             _replace_md5(index_rst_new, mode="t")
 
+    # Write a single global sg_execution_times
+    write_computation_times(gallery_conf, None, costs)
+
     if gallery_conf["show_api_usage"] is not False:
         _init_api_usage(app.builder.srcdir)
     _finalize_backreferences(seen_backrefs, gallery_conf)
@@ -726,7 +730,7 @@ def generate_gallery_rst(app):
     if gallery_conf["plot_gallery"]:
         logger.info("computation time summary:", color="white")
         lines, lens = _format_for_writing(
-            costs, os.path.normpath(gallery_conf["src_dir"]), kind="console"
+            costs, src_dir=gallery_conf["src_dir"], kind="console"
         )
         for name, t, m in lines:
             text = (f"    - {name}:   ").ljust(lens[0] + 10)
@@ -771,25 +775,24 @@ def _sec_to_readable(t):
     return t
 
 
-def cost_name_key(cost_name):
-    """Cost (time_elapsed, memory_used) sorting function."""
-    cost, name = cost_name
+def _cost_key(cost):
+    """Cost sorting function."""
     # sort by descending computation time, descending memory, alphabetical name
-    return (-cost[0], -cost[1], name)
+    return (-cost["t"], -cost["mem"], cost["src_file"])
 
 
-def _format_for_writing(costs, path, kind="rst"):
+def _format_for_writing(costs, *, src_dir, kind="rst"):
     """Provide formatted computation summary text.
 
     Parameters
     ----------
-    costs: List[Tuple[Tuple[float], str]]
-        List of tuples of computation costs and absolute paths to example, of format:
-        ((time_elapsed, memory_used), example_path).
-    path: str
-        Source directory.
-    kind: 'rst' or 'console', default='rst'
-        Format for printing to 'console' or for writing `sg_execution_times.rst' ('rst')
+    costs: List[Dict]
+        List of dicts of computation costs and paths, see gen_rst.py for details.
+    src_dir : pathlib.Path
+        The Sphinx source directory.
+    kind: 'rst', 'rst-full' or 'console', default='rst'
+        Format for printing to 'console' or for writing `sg_execution_times.rst' ('rst'
+        for single galleries and 'rst-full' for all galleries).
 
     Returns
     -------
@@ -801,17 +804,23 @@ def _format_for_writing(costs, path, kind="rst"):
         Character length of each string in `lines`.
     """
     lines = list()
-    for cost in sorted(costs, key=cost_name_key):
-        if kind == "rst":  # like in sg_execution_times
-            name = ":ref:`sphx_glr_{0}_{1}` (``{1}``)".format(
-                path, os.path.basename(cost[1])
+    for cost in sorted(costs, key=_cost_key):
+        src_file = cost["src_file"]
+        rel_path = os.path.relpath(src_file, src_dir)
+        if kind in ("rst", "rst-full"):  # like in sg_execution_times
+            target_dir_clean = os.path.relpath(cost["target_dir"], src_dir).replace(
+                os.path.sep, "_"
             )
-            t = _sec_to_readable(cost[0][0])
+            paren = rel_path if kind == "rst-full" else os.path.basename(src_file)
+            name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
+                target_dir_clean, os.path.basename(src_file), paren
+            )
+            t = _sec_to_readable(cost["t"])
         else:  # like in generate_gallery
             assert kind == "console"
-            name = os.path.relpath(cost[1], path)
-            t = f"{cost[0][0]:0.2f} sec"
-        m = f"{cost[0][1]:.1f} MB"
+            name = rel_path
+            t = f'{cost["t"]:0.2f} sec'
+        m = f'{cost["mem"]:.1f} MB'
         lines.append([name, t, m])
     lens = [max(x) for x in zip(*[[len(item) for item in cost] for cost in lines])]
     return lines, lens
@@ -824,39 +833,76 @@ def write_computation_times(gallery_conf, target_dir, costs):
     ----------
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
-    target_dir : str
+    target_dir : str | None
         Path to directory where example python source file are.
-    costs: List[Tuple[Tuple[float], str]]
-        List of tuples of computation costs and absolute paths to example, of format:
-        ((time_elapsed, memory_used), example_path).
+    costs: List[Dict]
+        List of dicts of computation costs and paths, see gen_rst.py for details.
     """
-    total_time = sum(cost[0][0] for cost in costs)
-    if total_time == 0:
+    total_time = sum(cost["t"] for cost in costs)
+    if target_dir is None:  # all galleries together
+        out_dir = gallery_conf["src_dir"]
+        where = "all galleries"
+        kind = "rst-full"
+        ref_extra = ""
+    else:  # a single gallery
+        out_dir = target_dir
+        where = os.path.relpath(target_dir, gallery_conf["src_dir"])
+        kind = "rst"
+        ref_extra = f'{where.replace(os.path.sep, "_")}_'
+    new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
+    out_file = Path(out_dir) / "sg_execution_times.rst"
+    if out_file.is_file() and total_time == 0:  # a re-run
         return
-    target_dir_clean = os.path.relpath(target_dir, gallery_conf["src_dir"]).replace(
-        os.path.sep, "_"
-    )
-    new_ref = f"sphx_glr_{target_dir_clean}_sg_execution_times"
-    with codecs.open(
-        os.path.join(target_dir, "sg_execution_times.rst"), "w", encoding="utf-8"
-    ) as fid:
+    with out_file.open("w", encoding="utf-8") as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
         fid.write(
-            "**{}** total execution time for **{}** files:\n\n".format(
-                _sec_to_readable(total_time), target_dir_clean
-            )
+            f"**{_sec_to_readable(total_time)}** total execution time for "
+            f"{len(costs)} file{'s' if len(costs) != 1 else ''} **from {where}**:\n\n"
         )
-        lines, lens = _format_for_writing(costs, target_dir_clean)
+        lines, lens = _format_for_writing(
+            costs,
+            src_dir=gallery_conf["src_dir"],
+            kind=kind,
+        )
         del costs
-        hline = "".join(("+" + "-" * (length + 2)) for length in lens) + "+\n"
-        fid.write(hline)
-        format_str = "".join(f"| {{{ii}}} " for ii in range(len(lines[0]))) + "|\n"
-        for line in lines:
-            line = [ll.ljust(len_) for ll, len_ in zip(line, lens)]
-            text = format_str.format(*line)
-            assert len(text) == len(hline)
-            fid.write(text)
-            fid.write(hline)
+        # https://datatables.net/examples/styling/bootstrap5.html
+        fid.write(  # put it in a container to make the scoped style work
+            """\
+.. container::
+
+  .. raw:: html
+
+    <style scoped>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" class="init">
+    $(document).ready( function () {
+        $('table.sg-datatable').DataTable({order: [[1, 'desc']]});
+    } );
+    </script>
+
+  .. list-table::
+   :header-rows: 1
+   :class: table table-striped sg-datatable
+
+   * - Example
+     - Time
+     - Mem (MB)
+"""  # noqa: E501
+        )
+        # Need at least one entry or Sphinx complains
+        for ex, t, mb in lines or [["N/A", "N/A", "N/A"]]:
+            fid.write(
+                f"""\
+   * - {ex}
+     - {t}
+     - {mb.rsplit(maxsplit=1)[0]}
+"""
+            )  # remove the "MB" from the right
 
 
 def write_api_entries(app, what, name, obj, options, lines):
@@ -898,6 +944,17 @@ def _init_api_usage(gallery_dir):
         pass
 
 
+# Colors from https://personal.sron.nl/~pault/data/colourschemes.pdf
+# 3 Diverging Colour Schemes, Figure 12, plus alpha=AA
+API_COLORS = dict(
+    edge="#00000080",  # gray (by alpha)
+    okay="#98CAE180",  # blue
+    bad_1="#FEDA8B80",  # yellow
+    bad_2="#F67E4B80",  # orange
+    bad_3="#A5002680",  # red
+)
+
+
 def _make_graph(fname, entries, gallery_conf):
     """Make a graph of unused and used API entries.
 
@@ -926,7 +983,17 @@ def _make_graph(fname, entries, gallery_conf):
 
     dg = graphviz.Digraph(
         filename=fname,
-        node_attr={"color": "lightblue2", "style": "filled", "fontsize": "40"},
+        graph_attr={
+            "overlap": "scale",
+            "pad": "0.5",
+        },
+        node_attr={
+            "color": API_COLORS["okay"],
+            "style": "filled",
+            "fontsize": "20",
+            "shape": "box",
+            "fontname": "Open Sans,Arial",
+        },
     )
 
     if isinstance(entries, list):
@@ -941,9 +1008,9 @@ def _make_graph(fname, entries, gallery_conf):
                 node_from = (
                     lut[struct[level]] if struct[level] in lut else struct[level]
                 )
-                dg.attr("node", color="lightblue2")
                 dg.node(node_from)
                 node_to = struct[level + 1]
+                node_kwargs = dict()
                 # count, don't show leaves
                 if len(struct) - 3 == level:
                     leaf_count = 0
@@ -960,21 +1027,18 @@ def _make_graph(fname, entries, gallery_conf):
                             ]
                         ):
                             leaf_count += 1
-                    node_to += f"\n({leaf_count})"
+                    node_to += f" ({leaf_count})"
                     lut[struct[level + 1]] = node_to
                     if leaf_count > 10:
-                        color = "red"
+                        color_key = "bad_3"
                     elif leaf_count > 5:
-                        color = "orange"
+                        color_key = "bad_2"
                     else:
-                        color = "yellow"
-                    dg.attr("node", color=color)
-                else:
-                    dg.attr("node", color="lightblue2")
-                dg.node(node_to)
-                dg.edge(node_from, node_to)
+                        color_key = "bad_1"
+                    node_kwargs["color"] = API_COLORS[color_key]
+                dg.node(node_to, **node_kwargs)
+                dg.edge(node_from, node_to, color=API_COLORS["edge"])
         # add modules with all API entries
-        dg.attr("node", color="lightblue2")
         for module in gallery_conf["_sg_api_entries"]["module"]:
             struct = module.split(".")
             for i in range(len(struct) - 1):
@@ -983,15 +1047,11 @@ def _make_graph(fname, entries, gallery_conf):
     else:
         assert isinstance(entries, dict)
         for entry, refs in entries.items():
-            dg.attr("node", color="lightblue2")
             dg.node(entry)
-            dg.attr("node", color="yellow")
             for ref in refs:
-                dg.node(ref)
-                dg.edge(entry, ref)
-
-    dg.attr(overlap="scale")
-    dg.save(fname)
+                dg.node(ref, color=API_COLORS["bad_1"])
+                dg.edge(entry, ref, color=API_COLORS["edge"])
+    dg.save()
 
 
 def write_api_entry_usage(app, docname, source):
@@ -1018,17 +1078,24 @@ def write_api_entry_usage(app, docname, source):
         List whose single element is the contents of the source file
     """
     docname = docname or ""  # can be None on Sphinx 7.2
+    if docname != "sg_api_usage":
+        return
     gallery_conf = app.config.sphinx_gallery_conf
     if gallery_conf["show_api_usage"] is False:
         return
     # since this is done at the gallery directory level (as opposed
     # to in a gallery directory, e.g. auto_examples), it runs last
     # which means that all the api entries will be in gallery_conf
+
+    # Always write at least the title
+    source[0] = SPHX_GLR_ORPHAN.format("sphx_glr_sg_api_usage")
+    title = "Unused API Entries"
+    source[0] += title + "\n" + "^" * len(title) + "\n\n"
     if (
-        "sg_api_usage" not in docname
-        or "_sg_api_entries" not in gallery_conf
+        "_sg_api_entries" not in gallery_conf
         or gallery_conf["backreferences_dir"] is None
     ):
+        source[0] += "No API entries found, not computed.\n\n"
         return
     backreferences_dir = os.path.join(
         gallery_conf["src_dir"], gallery_conf["backreferences_dir"]
@@ -1043,6 +1110,7 @@ def write_api_entry_usage(app, docname, source):
     )
 
     if len(example_files) == 0:
+        source[0] += "No examples run, not computed.\n\n"
         return
 
     def get_entry_type(entry):
@@ -1076,10 +1144,6 @@ def write_api_entry_usage(app, docname, source):
                         example_name = line.split("`")[1]
                         used_api_entries[entry].append(example_name)
 
-    source[0] = SPHX_GLR_ORPHAN.format("sphx_glr_sg_api_usage")
-
-    title = "Unused API Entries"
-    source[0] += title + "\n" + "^" * len(title) + "\n\n"
     for entry in sorted(unused_api_entries):
         source[0] += f"- :{get_entry_type(entry)}:`{entry}`\n"
     source[0] += "\n\n"
@@ -1169,8 +1233,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     target_dir : Union[str, pathlib.Path]
         Build directory.
     costs: List[Tuple[Tuple[float], str]]
-        List of tuples of computation costs and absolute paths to example, of format:
-        ((time_elapsed, memory_used), example_path).
+        List of dicts of computation costs and paths, see gen_rst.py for details.
     """
     if not gallery_conf["junit"] or not gallery_conf["plot_gallery"]:
         return
@@ -1184,7 +1247,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     src_dir = gallery_conf["src_dir"]
     output = ""
     for cost in costs:
-        (t, _), fname = cost
+        t, fname = cost["t"], cost["src_file"]
         if not any(
             fname in x
             for x in (
@@ -1435,13 +1498,11 @@ def update_gallery_conf_builder_inited(app):
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
     src_dir = app.builder.srcdir
     abort_on_example_error = _bool_eval(app.builder.config.abort_on_example_error)
-    lang = app.builder.config.highlight_language
     _update_gallery_conf_builder_inited(
         app.config.sphinx_gallery_conf,
         src_dir,
         plot_gallery=plot_gallery,
         abort_on_example_error=abort_on_example_error,
-        lang=lang,
         builder_name=app.builder.name,
     )
 

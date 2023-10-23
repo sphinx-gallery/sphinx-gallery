@@ -58,7 +58,7 @@ setup(
     author_email="najera.oscar@gmail.com",
     install_requires=install_requires,
     extras_require=extras_require,
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     license="3-clause BSD",
     classifiers=[
         "Intended Audience :: Developers",
