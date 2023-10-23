@@ -90,9 +90,14 @@ jobs:
       - run: pytest sphinx_gallery -v --tb=short
       - name: Remove incompatible doc config entries
         run: |
-          sed --in-place="" "/show_memory/d" doc/conf.py
-          sed --in-place="" "/compress_images/d" doc/conf.py
-        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+          if [[ $(uname) == "Darwin" ]]; then
+            CMD="sed -i ''"
+          else
+            CMD="sed -i"
+          fi
+          $CMD "/show_memory/d" doc/conf.py
+          $CMD "/compress_images/d" doc/conf.py
+        if: startsWith(matrix.os, 'macos')
       - run: make -C doc SPHINXOPTS= html-noplot
         if: matrix.distrib != 'minimal'
       - run: make -C doc SPHINXOPTS= html -j 2
