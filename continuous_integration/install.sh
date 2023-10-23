@@ -18,6 +18,9 @@ elif [ "$DISTRIB" == "minimal" ]; then
     PIP_DEPENDENCIES=""
 elif [ "$DISTRIB" == "pip" ]; then
     PIP_DEPENDENCIES="-r dev-requirements.txt vtk pyqt6"
+    if [[ $(python -c "import platform; print(platform.system())") == "Linux" ]]; then
+        sudo apt install graphviz
+    fi
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1

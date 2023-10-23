@@ -53,11 +53,11 @@ jobs:
           - os: macos-latest
             python: '3.11'
             sphinx_version: 'default'
-            distrib: mamba  # only use mambad on macOS to avoid Python shell issues
+            distrib: mamba  # only use mamba on macOS to avoid Python shell issues
           - os: windows-latest
             python: '3.11'
             sphinx_version: 'default'
-            distrib: pip
+            distrib: windows  # ensure graphviz works
     steps:
       - uses: actions/checkout@v4
         with:
@@ -87,5 +87,14 @@ jobs:
           echo "LC_CTYPE=C" >> $GITHUB_ENV
         if: matrix.locale == 'C'
       - run: ./continuous_integration/install.sh
-      - run: ./continuous_integration/test_script.sh
+      - run: pytest sphinx_gallery -v --tb=short
+      - name: Remove incompatible doc config entries
+        run:
+          sed -i '/show_memory/d' doc/conf.py
+          sed -i '/compress_images/d' doc/conf.py
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      - run: make -C doc SPHINXOPTS= html-noplot
+        if: matrix.distrib != 'minimal'
+      - run: make -C doc SPHINXOPTS=${SPHINXOPTS} html -j 2
+        if: matrix.distrib != 'minimal'
       - uses: codecov/codecov-action@v3
