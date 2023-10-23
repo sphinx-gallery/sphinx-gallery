@@ -1470,10 +1470,6 @@ def save_rst_example(
 
     example_rst += CODE_DOWNLOAD.format(example_file.name, language)
 
-    example_rst += CODE_DOWNLOAD.format(
-        fname, replace_py_ipynb(fname), binder_badge_rst, ref_fname, jupyterlite_rst
-    )
-
     if gallery_conf["recommender"]["enable"]:
         # extract the filename without the extension
         recommend_fname = os.path.splitext(os.path.split(example_fname)[1])[0]
