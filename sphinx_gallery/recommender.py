@@ -101,7 +101,7 @@ class ExampleRecommender:
 
         feature_dict = {feature: i for i, feature in enumerate(sorted(all_values))}
         X = np.zeros((len(data), len(feature_dict)))
-        for idx, row in enumerate(data):
+        for row_idx, row in enumerate(data):
             for feature_name, feature_value in row.items():
                 X[idx, feature_dict[feature_name]] = feature_value
         return X
@@ -121,7 +121,7 @@ class ExampleRecommender:
         """
         import numpy as np
 
-        n_samples, n_features = X.shape
+        n_samples = X.shape[0] + 1
 
         df = np.count_nonzero(X, axis=0) + 1
         n_samples += 1
@@ -208,7 +208,7 @@ class ExampleRecommender:
         return self
 
     def predict(self, file_name):
-        """Compute the most `n_examples` similar documents to the query.
+        """Compute the `n_examples` most similar documents to the query.
 
         Parameters
         ----------
@@ -233,7 +233,7 @@ class ExampleRecommender:
 
 
 def _write_recommendations(recommender, fname, gallery_conf):
-    """Generate `.recommendations` RST file for a given example.
+    """Generate `.recommendations` reST file for a given example.
 
     Parameters
     ----------
