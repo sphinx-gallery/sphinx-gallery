@@ -11,7 +11,7 @@ if [ "$DISTRIB" == "mamba" ]; then
         PIP_DEPENDENCIES="--pre ${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
     elif [ "$SPHINX_VERSION" == "old" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx<5"
-    else
+    elif [ "$SPHINX_VERSION" != "default" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
 elif [ "$DISTRIB" == "minimal" ]; then

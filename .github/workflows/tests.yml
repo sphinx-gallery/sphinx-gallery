@@ -28,28 +28,25 @@ jobs:
       DISTRIB: '${{ matrix.distrib }}'
     strategy:
       matrix:
+        sphinx_version: ["default"]
+        distrib: ["mamba"]
+        python: ["3.11"]
         include:
           - os: ubuntu-latest
             python: '3.12'
-            distrib: mamba
             sphinx_version: dev
           - os: ubuntu-latest
             python: '3.8'
-            distrib: mamba
             sphinx_version: old
             locale: C
           - os: ubuntu-latest
-            python: '3.11'
-            distrib: mamba
             sphinx_version: '6'
           - os: ubuntu-latest
             python: '3.8'
             distrib: minimal
           - os: macos-latest
-            python: '3.11'
             distrib: pip
           - os: windows-latest
-            python: '3.11'
             distrib: pip
     steps:
       - uses: actions/checkout@v4
@@ -71,21 +68,13 @@ jobs:
           environment-name: test
           init-shell: bash
           create-args: 'python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv pygraphviz memory_profiler ipython pypandoc'
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          environment-file: ${{ env.CONDA_ENV }}
-          activate-environment: mne
-          miniforge-version: latest
-          miniforge-variant: Mambaforge
-          use-mamba: ${{ matrix.distrib != 'conda' }}
         if: matrix.distrib == 'mamba'
       - name: Set env vars
         shell: bash -e {0}
         run: |
-          echo "LC_ALL=C" >> $BASH_ENV
-          echo "LANG=C" >> $BASH_ENV
-          echo "LC_CTYPE=C" >> $BASH_ENV
+          echo "LC_ALL=C" >> $GITHUB_ENV
+          echo "LANG=C" >> $GITHUB_ENV
+          echo "LC_CTYPE=C" >> $GITHUB_ENV
         if: matrix.locale == 'C'
       - run: ./continuous_integration/install.sh
       - run: ./continuous_integration/test_script.sh
