@@ -1825,10 +1825,10 @@ max_df (type: float in range [0.0, 1.0] | int, default: 0.9)
   strictly higher than the given threshold. If float, the parameter represents a
   proportion of documents, integer represents absolute counts.
 
-The parameters ``min_df`` and ``max_df`` can be customized by the user to trim the
-very rare/very common words. This may improve the recommendations quality, but
-more importantly, it spares some computation resources that would be wasted on
-non-informative tokens.
+The parameters ``min_df`` and ``max_df`` can be customized by the user to trim
+the very rare/very common words. This may improve the recommendations quality,
+but more importantly, it spares some computation resources that would be wasted
+on non-informative tokens.
 
 .. _setting_thumbnail_size:
 
