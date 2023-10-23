@@ -89,7 +89,7 @@ jobs:
       - run: ./continuous_integration/install.sh
       - run: pytest sphinx_gallery -v --tb=short
       - name: Remove incompatible doc config entries
-        run:
+        run: |
           sed -i '/show_memory/d' doc/conf.py
           sed -i '/compress_images/d' doc/conf.py
         if: ${{ !startsWith(matrix.os, 'ubuntu') }}
