@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   pytest:
-    name: '${{ matrix.os }} / ${{ matrix.kind }} / ${{ matrix.python }}'
+    name: '${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.distrib }} / ${{ matrix.sphinx_version }}'
     timeout-minutes: 30
     continue-on-error: true
     runs-on: ${{ matrix.os }}
@@ -46,11 +46,11 @@ jobs:
             python: '3.8'
             distrib: minimal
           - os: macos-latest
-            distrib: pip
             python: '3.11'
+            distrib: pip
           - os: windows-latest
-            distrib: pip
             python: '3.11'
+            distrib: pip
     steps:
       - uses: actions/checkout@v4
         with:
