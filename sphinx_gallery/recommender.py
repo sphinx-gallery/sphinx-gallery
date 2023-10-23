@@ -12,7 +12,6 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from sphinx.errors import ConfigError
 from .backreferences import (
     _thumbnail_div,
     THUMBNAIL_PARENT_DIV,
@@ -86,11 +85,7 @@ class ExampleRecommender:
             the dataset and n_features is the total number of features across
             all samples.
         """
-        try:
-            import numpy as np
-
-        except ImportError:
-            raise ConfigError("gallery_conf['recommender'] requires numpy")
+        import numpy as np
 
         feature_names = []
         all_values = defaultdict(list)

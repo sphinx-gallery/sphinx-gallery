@@ -667,6 +667,11 @@ def generate_gallery_rst(app):
 
         # Build recommendation system
         if gallery_conf["recommender"]["enable"]:
+            try:
+                import numpy as np  # noqa: F401
+            except ImportError:
+                raise ConfigError("gallery_conf['recommender'] requires numpy")
+
             recommender_params = copy.deepcopy(gallery_conf["recommender"])
             recommender_params.pop("enable")
             recommender = ExampleRecommender(**recommender_params)
