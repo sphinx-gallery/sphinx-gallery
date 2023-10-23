@@ -28,23 +28,35 @@ jobs:
       DISTRIB: '${{ matrix.distrib }}'
     strategy:
       matrix:
-        sphinx_version: ['default']
-        distrib: ['mamba']
-        python: ['3.11']
-        os: ['ubuntu-latest']
         include:
-          - python: '3.12'
+          - os: ubuntu-latest
+            python: '3.12'
             sphinx_version: dev
+            distrib: mamba
             locale: C
-          - sphinx_version: '6'
-          - python: '3.8'
+          - os: ubuntu-latest
+            python: '3.11'
+            sphinx_version: '6'
+            distrib: mamba
+          - os: ubuntu-latest
+            python: '3.8'
             sphinx_version: old
-          - python: '3.8'
+            distrib: mamba
+          - os: ubuntu-latest
+            python: '3.8'
+            sphinx_version: 'default'
             distrib: minimal
-          - distrib: pip
+          - os: ubuntu-latest
+            python: '3.11'
+            sphinx_version: 'default'
+            distrib: pip
           - os: macos-latest
+            python: '3.11'
+            sphinx_version: 'default'
             distrib: pip
           - os: windows-latest
+            python: '3.11'
+            sphinx_version: 'default'
             distrib: pip
     steps:
       - uses: actions/checkout@v4
