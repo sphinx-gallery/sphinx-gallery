@@ -1,0 +1,92 @@
+name: 'Tests'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
+  cancel-in-progress: true
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: '${{ matrix.os }} / ${{ matrix.kind }} / ${{ matrix.python }}'
+    timeout-minutes: 30
+    continue-on-error: true
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    env:
+      PYTHON_VERSION: '${{ matrix.python }}'
+      SPHINX_VERSION: '${{ matrix.sphinx_version }}'
+      DISTRIB: '${{ matrix.distrib }}'
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: '3.12'
+            distrib: mamba
+            sphinx_version: dev
+          - os: ubuntu-latest
+            python: '3.8'
+            distrib: mamba
+            sphinx_version: old
+            locale: C
+          - os: ubuntu-latest
+            python: '3.11'
+            distrib: mamba
+            sphinx_version: '6'
+          - os: ubuntu-latest
+            python: '3.8'
+            distrib: minimal
+          - os: macos-latest
+            distrib: pip
+            python: '3.11'
+          - os: windows-latest
+            distrib: pip
+            python: '3.11'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Xvfb/OpenGL
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+          pyvista: false
+      # Python (if pip)
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+        if: matrix.distrib != 'mamba'
+      # Python (if conda)
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-name: test
+          init-shell: bash
+          create-args: 'python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels "plotly>=4.0" joblib wheel libiconv pygraphviz memory_profiler "ipython!=8.7.0" pypandoc'
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          environment-file: ${{ env.CONDA_ENV }}
+          activate-environment: mne
+          miniforge-version: latest
+          miniforge-variant: Mambaforge
+          use-mamba: ${{ matrix.distrib != 'conda' }}
+        if: matrix.distrib == 'mamba'
+      - name: Set env vars
+        shell: bash -e {0}
+        run: |
+          echo "LC_ALL=C" >> $BASH_ENV
+          echo "LANG=C" >> $BASH_ENV
+          echo "LC_CTYPE=C" >> $BASH_ENV
+        if: matrix.locale == 'C'
+      - run: ./continuous_integration/install.sh
+      - run: ./continuous_integration/test_script.sh
+      - uses: codecov/codecov-action@v3

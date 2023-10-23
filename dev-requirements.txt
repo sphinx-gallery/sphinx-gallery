@@ -1,4 +1,4 @@
-sphinx >= 4, != 5.2.0, < 6
+sphinx >= 4, != 5.2.0
 pydata-sphinx-theme
 pytest
 pytest-coverage
@@ -8,7 +8,7 @@ pillow
 seaborn
 statsmodels
 joblib
-importlib-metadata <5.0
+importlib-metadata
 plotly
 absl-py
 graphviz
