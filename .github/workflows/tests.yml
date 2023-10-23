@@ -53,7 +53,7 @@ jobs:
           - os: macos-latest
             python: '3.11'
             sphinx_version: 'default'
-            distrib: pip
+            distrib: mamba  # only use mambad on macOS to avoid Python shell issues
           - os: windows-latest
             python: '3.11'
             sphinx_version: 'default'
