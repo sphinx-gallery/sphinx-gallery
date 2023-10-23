@@ -15,7 +15,7 @@ if [ "$DISTRIB" == "mamba" ]; then
     elif [ "$SPHINX_VERSION" != "default" ]; then
         PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
     fi
-    if [ "$PLATFORM" == "macOS" ]; then
+    if [ "$PLATFORM" == "Darwin" ]; then
         conda remove -y memory_profiler
     fi
 elif [ "$DISTRIB" == "minimal" ]; then
