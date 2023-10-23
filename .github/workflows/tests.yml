@@ -97,7 +97,7 @@ jobs:
           fi
           $CMD "/show_memory/d" doc/conf.py
           $CMD "/compress_images/d" doc/conf.py
-        if: startsWith(matrix.os, 'macos')
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
       - run: make -C doc SPHINXOPTS= html-noplot
         if: matrix.distrib != 'minimal'
       - run: make -C doc SPHINXOPTS= html -j 2
