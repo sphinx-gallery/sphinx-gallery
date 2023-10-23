@@ -103,7 +103,7 @@ class ExampleRecommender:
         X = np.zeros((len(data), len(feature_dict)))
         for row_idx, row in enumerate(data):
             for feature_name, feature_value in row.items():
-                X[idx, feature_dict[feature_name]] = feature_value
+                X[row_idx, feature_dict[feature_name]] = feature_value
         return X
 
     def compute_tf_idf(self, X):
@@ -121,10 +121,9 @@ class ExampleRecommender:
         """
         import numpy as np
 
-        n_samples = X.shape[0] + 1
+        n_samples = X.shape[0] + 1  # avoid taking log of 0
 
         df = np.count_nonzero(X, axis=0) + 1
-        n_samples += 1
         idf = np.log(n_samples / df) + 1
         X_tfidf = X * idf
         X_tfidf = (X_tfidf.T / np.linalg.norm(X_tfidf, axis=1)).T
