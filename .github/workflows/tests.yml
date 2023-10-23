@@ -90,7 +90,7 @@ jobs:
       - run: pytest sphinx_gallery -v --tb=short
       - name: Remove incompatible doc config entries
         run: |
-          if [[ $(uname) == "Darwin" ]]; then
+          if [[ "$(uname)" == "Darwin" ]]; then
             CMD="sed -i ''"
           else
             CMD="sed -i"
