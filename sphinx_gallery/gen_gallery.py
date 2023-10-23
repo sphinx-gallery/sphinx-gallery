@@ -1504,7 +1504,7 @@ def setup(app):
     app.connect("builder-inited", update_gallery_conf_builder_inited, priority=10)
     app.connect("builder-inited", generate_gallery_rst)
     # Setting a small priority so that create_jupyterlite_contents runs before
-    # jupyterlite_sphinx sphinx extension build-finished code
+    # jupyterlite_sphinx build-finished
     app.connect("build-finished", create_jupyterlite_contents, priority=100)
 
     app.connect("build-finished", summarize_failing_examples)
