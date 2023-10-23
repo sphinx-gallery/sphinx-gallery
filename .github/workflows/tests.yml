@@ -31,18 +31,15 @@ jobs:
         sphinx_version: ["default"]
         distrib: ["mamba"]
         python: ["3.11"]
+        os: ["ubuntu-latest"]
         include:
-          - os: ubuntu-latest
-            python: '3.12'
+          - python: '3.12'
             sphinx_version: dev
-          - os: ubuntu-latest
-            python: '3.8'
-            sphinx_version: old
             locale: C
-          - os: ubuntu-latest
-            sphinx_version: '6'
-          - os: ubuntu-latest
-            python: '3.8'
+          - sphinx_version: '6'
+          - python: '3.8'
+            sphinx_version: old
+          - python: '3.8'
             distrib: minimal
           - os: macos-latest
             distrib: pip
