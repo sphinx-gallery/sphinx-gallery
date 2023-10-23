@@ -32,4 +32,4 @@ if [[ "$PLATFORM" == "Windows" ]]; then
     pip uninstall -y graphviz
 fi
 
-python setup.py install
+pip install -e .
