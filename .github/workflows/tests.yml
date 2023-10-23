@@ -57,7 +57,7 @@ jobs:
           - os: windows-latest
             python: '3.11'
             sphinx_version: 'default'
-            distrib: mamba  # ensure graphviz works
+            distrib: pip
     steps:
       - uses: actions/checkout@v4
         with:
@@ -95,6 +95,6 @@ jobs:
         if: ${{ !startsWith(matrix.os, 'ubuntu') }}
       - run: make -C doc SPHINXOPTS= html-noplot
         if: matrix.distrib != 'minimal'
-      - run: make -C doc SPHINXOPTS=${SPHINXOPTS} html -j 2
+      - run: make -C doc SPHINXOPTS= html -j 2
         if: matrix.distrib != 'minimal'
       - uses: codecov/codecov-action@v3
