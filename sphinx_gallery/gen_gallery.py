@@ -680,8 +680,8 @@ def generate_gallery_rst(app):
                 py_files = sorted(
                     [
                         fname
-                        for fname in os.listdir(src_dir)
-                        if os.path.splitext(fname)[1] == ".py"
+                        for fname in Path(src_dir).iterdir()
+                        if fname.suffix == ".py"
                     ],
                     key=gallery_conf["within_subsection_order"](src_dir),
                 )
