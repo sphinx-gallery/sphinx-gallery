@@ -28,10 +28,10 @@ jobs:
       DISTRIB: '${{ matrix.distrib }}'
     strategy:
       matrix:
-        sphinx_version: ["default"]
-        distrib: ["mamba"]
-        python: ["3.11"]
-        os: ["ubuntu-latest"]
+        sphinx_version: ['default']
+        distrib: ['mamba']
+        python: ['3.11']
+        os: ['ubuntu-latest']
         include:
           - python: '3.12'
             sphinx_version: dev
@@ -41,6 +41,7 @@ jobs:
             sphinx_version: old
           - python: '3.8'
             distrib: minimal
+          - distrib: pip
           - os: macos-latest
             distrib: pip
           - os: windows-latest
