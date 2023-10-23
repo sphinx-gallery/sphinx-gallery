@@ -57,7 +57,7 @@ jobs:
           - os: windows-latest
             python: '3.11'
             sphinx_version: 'default'
-            distrib: windows  # ensure graphviz works
+            distrib: mamba  # ensure graphviz works
     steps:
       - uses: actions/checkout@v4
         with:
