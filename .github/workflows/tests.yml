@@ -70,7 +70,7 @@ jobs:
         with:
           environment-name: test
           init-shell: bash
-          create-args: 'python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels "plotly>=4.0" joblib wheel libiconv pygraphviz memory_profiler "ipython!=8.7.0" pypandoc'
+          create-args: 'python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv pygraphviz memory_profiler ipython pypandoc'
       - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
