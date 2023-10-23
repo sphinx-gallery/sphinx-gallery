@@ -8,7 +8,6 @@ pillow
 seaborn
 statsmodels
 joblib
-importlib-metadata
 plotly
 absl-py
 graphviz
