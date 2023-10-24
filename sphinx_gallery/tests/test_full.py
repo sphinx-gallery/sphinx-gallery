@@ -1265,6 +1265,7 @@ def test_jupyterlite_modifications(sphinx_app):
 
 def test_recommend_n_examples(sphinx_app):
     """Test that exactly n_examples thumbnails are displayed."""
+    pytest.importorskip("numpy")
     root = op.join(sphinx_app.outdir, "auto_examples")
     fname = op.join(root, "plot_defer_figures.html")
     with codecs.open(fname, "r", "utf-8") as fid:
