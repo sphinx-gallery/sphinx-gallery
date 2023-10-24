@@ -77,7 +77,7 @@ jobs:
         with:
           environment-name: test
           init-shell: bash
-          create-args: 'python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv pygraphviz memory_profiler ipython pypandoc conda-libmamba-solver'
+          create-args: 'python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv pygraphviz memory_profiler ipython pypandoc conda-libmamba-solver mamba'
         if: matrix.distrib == 'mamba'
       # Make sure that things work even if the locale is set to C (which
       # effectively means ASCII). Some of the input rst files have unicode
