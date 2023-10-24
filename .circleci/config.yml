@@ -92,6 +92,10 @@ jobs:
           at: ~/
       - bash_env
       - run:
+          name: Get LaTeX tools
+          command: |
+            sudo apt install texlive texlive-latex-extra latexmk tex-gyre
+      - run:
           name: latexpdf
           command: |
             make -C sphinx_gallery/tests/tinybuild/doc clean latexpdf
