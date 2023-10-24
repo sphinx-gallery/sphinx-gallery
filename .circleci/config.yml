@@ -36,12 +36,12 @@ jobs:
           name: Pip
           # for VTK: https://gitlab.kitware.com/vtk/vtk/-/packages/102
           command: |
-            pip install --progress-bar off --upgrade --only-binary ":all:" pip setuptools
-            pip install --progress-bar off --upgrade --only-binary ":all:" \
+            pip install --upgrade --only-binary ":all:" pip setuptools
+            pip install --upgrade --only-binary ":all:" \
                 numpy matplotlib seaborn statsmodels pillow joblib sphinx pytest traits pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18" imageio pydata-sphinx-theme \
                 "jupyterlite-sphinx>=0.8.0,<0.9.0" "jupyterlite-pyodide-kernel<0.1.0" libarchive-c
             pip uninstall -yq vtk  # pyvista installs vtk above
-            pip install --only-binary ":all" --extra-index-url https://wheels.vtk.org vtk-osmesa
+            pip install --upgrade --only-binary ":all" --extra-index-url https://wheels.vtk.org vtk-osmesa
       - save_cache:
           key: cache-pip-1
           paths:

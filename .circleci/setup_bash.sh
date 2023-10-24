@@ -3,9 +3,7 @@
 set -eo pipefail
 echo "set -eo pipefail" >> "$BASH_ENV"
 sudo apt update
-sudo apt --no-install-recommends install -yq \
-    libgl1 libosmesa6 mesa-utils \
-    optipng graphviz python3-venv
+sudo apt --no-install-recommends install -yq optipng graphviz python3-venv
 python3 -m venv ~/python_env
 source ~/python_env/bin/activate
 echo "source ~/python_env/bin/activate" >> "$BASH_ENV"
