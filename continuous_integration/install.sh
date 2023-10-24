@@ -17,7 +17,10 @@ elif [ "$DISTRIB" == "minimal" ]; then
     PIP_DEPENDENCIES=""
 elif [ "$DISTRIB" == "pip" ]; then
     PIP_DEPENDENCIES="-r dev-requirements.txt pyqt6"
-    if [[ ]]
+    # No VTK on Python 3.12 pip yet
+    if [[ "$(python -c "import sys; print(sys.version)")" != "3.12"* ]]; then
+        PIP_DEPENDENCIES="$PIP_DEPENDENCIES vtk"
+    fi
 else
     echo "invalid value for DISTRIB environment variable: $DISTRIB"
     exit 1
@@ -28,10 +31,6 @@ if [ "$SPHINX_VERSION" == "dev" ]; then
     PIP_DEPENDENCIES="--upgrade --pre https://api.github.com/repos/sphinx-doc/sphinx/zipball/master $PIP_DEPENDENCIES"
 elif [ "$SPHINX_VERSION" != "default" ]; then
     PIP_DEPENDENCIES="sphinx==${SPHINX_VERSION}.* $PIP_DEPENDENCIES"
-    # No VTK on Python 3.12 pip yet
-    if [[ "$(python -c "import sys; print(sys.version)")" != "3.12"* ]]; then
-        PIP_DEPENDENCIES="$PIP_DEPENDENCIES vtk"
-    fi
 fi
 
 set -x
