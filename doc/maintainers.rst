@@ -88,3 +88,15 @@ How to make a release
    to the next minor (or major) release and append ``.dev0`` to the end, and make a PR for this change.
 
 4. Celebrate! You've just released a new version of Sphinx Gallery!
+
+3. Post-release tasks
+---------------------
+
+1. Check for any deprecations (e.g., ``git grep eprecat``) and complete them, usually by
+   removing code or some behavior in a PR.
+2. Check minimum supported Python and Sphinx versions, and update if necessary in a PR:
+
+   - ``setup.py::python_requires``
+   - ``requirements.txt``
+   - ``.github/workflows/tests.yml``
+   - ``README.rst::Installation``

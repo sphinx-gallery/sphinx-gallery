@@ -29,27 +29,27 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-latest  # newest possible
             python: '3.12'
             sphinx_version: dev
             distrib: mamba
             locale: C
+          - os: ubuntu-latest  # oldest supported Python and Sphinx
+            python: '3.8'
+            sphinx_version: '4'
+            distrib: mamba
+          - os: ubuntu-latest
+            python: '3.11'
+            sphinx_version: '5'
+            distrib: pip
           - os: ubuntu-latest
             python: '3.11'
             sphinx_version: '6'
             distrib: mamba
           - os: ubuntu-latest
             python: '3.8'
-            sphinx_version: old
-            distrib: mamba
-          - os: ubuntu-latest
-            python: '3.8'
-            sphinx_version: 'default'
+            sphinx_version: '7'
             distrib: minimal
-          - os: ubuntu-latest
-            python: '3.11'
-            sphinx_version: 'default'
-            distrib: pip
           - os: macos-latest
             python: '3.11'
             sphinx_version: 'default'
@@ -79,6 +79,9 @@ jobs:
           init-shell: bash
           create-args: 'python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv pygraphviz memory_profiler ipython pypandoc'
         if: matrix.distrib == 'mamba'
+      # Make sure that things work even if the locale is set to C (which
+      # effectively means ASCII). Some of the input rst files have unicode
+      # characters and we need to deal with this gracefully.
       - name: Set env vars
         shell: bash -e {0}
         run: |
