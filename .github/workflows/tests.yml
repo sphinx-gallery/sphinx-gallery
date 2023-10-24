@@ -32,7 +32,7 @@ jobs:
           - os: ubuntu-latest  # newest possible
             python: '3.12'
             sphinx_version: dev
-            distrib: mamba
+            distrib: pip
             locale: C
           - os: ubuntu-latest  # oldest supported Python and Sphinx
             python: '3.8'
