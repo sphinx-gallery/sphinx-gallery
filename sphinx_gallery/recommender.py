@@ -8,6 +8,7 @@ Generate recommendations based on TF-IDF representation and a KNN model.
 
 
 import numbers
+import numpy as np
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -85,8 +86,6 @@ class ExampleRecommender:
             the dataset and n_features is the total number of features across
             all samples.
         """
-        import numpy as np
-
         feature_names = []
         all_values = defaultdict(list)
         for row in data:
@@ -118,8 +117,6 @@ class ExampleRecommender:
         X_tfidf : ndarray of shape (n_samples, n_features)
             A tf-idf matrix of the same shape as X.
         """
-        import numpy as np
-
         n_samples = X.shape[0] + 1  # avoid taking log of 0
 
         df = np.count_nonzero(X, axis=0) + 1
@@ -147,8 +144,6 @@ class ExampleRecommender:
         cosine_similarity : ndarray of shape (n_samples_X, n_samples_Y)
             Cosine similarity matrix.
         """
-        import numpy as np
-
         if Y is X or Y is None:
             Y = X
 
@@ -174,8 +169,6 @@ class ExampleRecommender:
         self : object
             Fitted recommender.
         """
-        import numpy as np
-
         n_examples = self.n_examples
         min_df = self.min_df
         max_df = self.max_df
