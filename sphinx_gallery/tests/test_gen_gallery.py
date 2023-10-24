@@ -596,6 +596,7 @@ sphinx_gallery_conf = {
 )
 def test_create_jupyterlite_contents(sphinx_app_wrapper):
     """Test that JupyterLite contents are created properly."""
+    pytest.importorskip("jupyterlite_sphinx")
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
 
@@ -625,6 +626,7 @@ sphinx_gallery_conf = {
 )
 def test_create_jupyterlite_contents_non_default_contents(sphinx_app_wrapper):
     """Test that JupyterLite contents are created properly."""
+    pytest.importorskip("jupyterlite_sphinx")
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
 
@@ -653,6 +655,7 @@ def test_create_jupyterlite_contents_without_jupyterlite_sphinx_loaded(
     sphinx_app_wrapper,
 ):
     """Test JupyterLite contents creation without jupyterlite_sphinx loaded."""
+    pytest.importorskip("jupyterlite_sphinx")
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
     create_jupyterlite_contents(sphinx_app, exception=None)
@@ -677,6 +680,7 @@ def test_create_jupyterlite_contents_with_jupyterlite_disabled_via_config(
 
     JupyterLite disabled via config.
     """
+    pytest.importorskip("jupyterlite_sphinx")
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
     create_jupyterlite_contents(sphinx_app, exception=None)
@@ -707,6 +711,7 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
+    pytest.importorskip("jupyterlite_sphinx")
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
 
