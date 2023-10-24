@@ -57,7 +57,7 @@ jobs:
           - os: windows-latest
             python: '3.11'
             sphinx_version: 'default'
-            distrib: mamba  # faster than pip
+            distrib: pip
     steps:
       - uses: actions/checkout@v4
         with:
@@ -101,6 +101,7 @@ jobs:
           $CMD "/show_memory/d" doc/conf.py
           $CMD "/compress_images/d" doc/conf.py
         if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      # pydata-sphinx-theme is not compatible with Sphinx 4
       - run: make -C doc SPHINXOPTS= html-noplot
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
       - run: make -C doc SPHINXOPTS= html -j 2
