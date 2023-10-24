@@ -36,10 +36,9 @@ jobs:
           name: Pip
           command: |
             pip install --progress-bar off --upgrade --only-binary ":all:" pip setuptools
-            pip install --progress-bar off --upgrade --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3,!=5.15.8" vtk
-            pip install --progress-bar off --upgrade seaborn statsmodels pillow joblib sphinx pytest traits pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18" imageio
-            pip install --progress-bar off "jupyterlite-sphinx>=0.8.0,<0.9.0" "jupyterlite-pyodide-kernel<0.1.0" libarchive-c
-            pip install --progress-bar off --upgrade --pre pydata-sphinx-theme
+            pip install --progress-bar off --upgrade --only-binary ":all:" --extra-index-url https://gitlab.kitware.com/api/v4/projects/13/packages/pypi/simple \
+                vtk-osmesa numpy matplotlib seaborn statsmodels pillow joblib sphinx pytest traits pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18" imageio pydata-sphinx-theme \
+                "jupyterlite-sphinx>=0.8.0,<0.9.0" "jupyterlite-pyodide-kernel<0.1.0" libarchive-c
       - save_cache:
           key: cache-pip-1
           paths:
