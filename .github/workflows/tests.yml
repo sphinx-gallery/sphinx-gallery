@@ -57,7 +57,7 @@ jobs:
           - os: windows-latest
             python: '3.11'
             sphinx_version: 'default'
-            distrib: pip
+            distrib: mamba  # faster than pip
     steps:
       - uses: actions/checkout@v4
         with:
