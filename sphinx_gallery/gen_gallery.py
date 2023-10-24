@@ -1505,6 +1505,7 @@ def setup(app):
     # Early update of sphinx_gallery_conf at builder-inited
     app.connect("builder-inited", update_gallery_conf_builder_inited, priority=10)
     app.connect("builder-inited", generate_gallery_rst)
+    app.connect("build-finished", copy_binder_files)
     # Set priority to a small number (higher priority than the default
     # priority=500) so that create_jupyterlite_contents runs before
     # jupyterlite_sphinx build-finished
