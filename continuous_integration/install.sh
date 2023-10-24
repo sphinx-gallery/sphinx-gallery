@@ -13,7 +13,7 @@ if [ "$DISTRIB" == "mamba" ]; then
         PIP_DEPENDENCIES="--pre ${PIP_DEPENDENCIES} https://api.github.com/repos/sphinx-doc/sphinx/zipball/master"
         EXTRA_ARGS="--upgrade --pre"
     elif [ "$SPHINX_VERSION" != "default" ]; then
-        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}"
+        PIP_DEPENDENCIES="${PIP_DEPENDENCIES} sphinx==${SPHINX_VERSION}.*"
     fi
     # memory_profiler is unreliable on macOS and Windows (lots of zombie processes)
     if [ "$PLATFORM" != "Linux" ]; then
