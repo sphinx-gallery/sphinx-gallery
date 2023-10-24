@@ -1,19 +1,24 @@
-version: 2
+version: 2.1
+
+# Aliases to reuse
+_imageconfig: &imageconfig
+  docker:
+    - image: cimg/base:2022.10-22.04
+
+commands:
+  bash_env:
+    steps:
+      - run:
+          name: Set BASH_ENV
+          command: |
+            ./.circleci/setup_bash.sh
+
 jobs:
-  build_docs:
-    docker:
-      - image: cimg/python:3.10.10
+  setup_env:
+    <<: *imageconfig
     steps:
       # Get our data and merge with upstream
       - checkout
-      - run:
-          name: Update libraries
-          command: |
-            sudo apt update
-            sudo apt --no-install-recommends install -yq \
-              libosmesa6 libglx-mesa0 libopengl0 libglx0 libdbus-1-3 \
-              libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 xvfb \
-              texlive texlive-latex-extra latexmk optipng tex-gyre graphviz
       - run:
           name: Merge with upstream
           command: |
@@ -23,15 +28,7 @@ jobs:
               echo "Merging $(cat merge.txt)";
               git pull --ff-only origin "refs/pull/$(cat merge.txt)/merge";
             fi
-      # Python env
-      - run:
-          name: Set up Xvfb
-          command: |
-            echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
-            echo 'export XDG_RUNTIME_DIR=/tmp/runtime-circleci' >> $BASH_ENV
-            echo 'export DISPLAY=:99' >> $BASH_ENV
-            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
-
+      - bash_env
       - restore_cache:
           keys:
             - cache-pip
@@ -47,9 +44,6 @@ jobs:
           key: cache-pip
           paths:
             - ~/.cache/pip
-
-      # Fix libgcc_s.so.1 pthread_cancel bug:
-      # https://github.com/ContinuumIO/anaconda-issues/issues/9190#issuecomment-386508136
       - run:
           name: Test libs
           command: |
@@ -58,30 +52,52 @@ jobs:
           name: Install
           command: |
             python setup.py develop --user
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project
+            - python_env
 
+  build_docs:
+    <<: *imageconfig
+    steps:
+      - attach_workspace:
+          at: ~/
+      - bash_env
       - run: sphinx-build doc doc/_build/html -nW --keep-going -b html
       - store_artifacts:
           path: doc/_build/html/
           destination: html
       - store_test_results:
           path: doc/_build/html/
-
-      - run: sphinx-build sphinx_gallery/tests/tinybuild/doc tiny_html
-      - store_artifacts:
-          path: tiny_html
-          destination: tiny_html
-
-      - run:
-          name: latexpdf
-          command: |
-            cd sphinx_gallery/tests/tinybuild/doc && make clean && make latexpdf
-      - store_artifacts:
-          path: sphinx_gallery/tests/tinybuild/doc/_build/latex/
-          destination: latex
-
       - persist_to_workspace:
           root: doc/_build/html
           paths: .
+
+  build_tinyhtml:
+    <<: *imageconfig
+    steps:
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run: make -C sphinx_gallery/tests/tinybuild/doc clean html
+      - store_artifacts:
+          path: sphinx_gallery/tests/tinybuild/doc/_build/html
+          destination: tiny_html
+
+  build_latexpdf:
+    <<: *imageconfig
+    steps:
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run:
+          name: latexpdf
+          command: |
+            make -C sphinx_gallery/tests/tinybuild/doc clean latexpdf
+      - store_artifacts:
+          path: sphinx_gallery/tests/tinybuild/doc/_build/latex/
+          destination: latex
 
   deploy_dev:
     docker:
@@ -114,10 +130,22 @@ workflows:
     jobs:
       # https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag
       # Run for all branches and tags
-      - build_docs:
+      - setup_env: &filter_tags
           filters:
             tags:
               only: /.*/
+      - build_docs:
+          requires:
+            - setup_env
+          <<: *filter_tags
+      - build_tinyhtml:
+          requires:
+            - setup_env
+          <<: *filter_tags
+      - build_latexpdf:
+          requires:
+            - setup_env
+          <<: *filter_tags
       # Run for master branch
       - deploy_dev:
           requires:
