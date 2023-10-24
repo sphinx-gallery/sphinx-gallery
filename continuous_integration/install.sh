@@ -7,6 +7,7 @@ set -eo pipefail
 python -m pip install --upgrade pip setuptools wheel
 PLATFORM=$(python -c "import platform; print(platform.system())")
 if [ "$DISTRIB" == "mamba" ]; then
+    conda config --set solver libmamba
     # memory_profiler is unreliable on macOS and Windows (lots of zombie processes)
     if [ "$PLATFORM" != "Linux" ]; then
         conda remove -y memory_profiler
