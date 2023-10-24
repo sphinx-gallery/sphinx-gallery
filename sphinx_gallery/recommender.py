@@ -183,20 +183,25 @@ class ExampleRecommender:
             raise ValueError("n_examples must be an integer")
         elif n_examples < 1:
             raise ValueError("n_examples must be strictly positive")
+        if not (
+            (isinstance(min_df, numbers.Integral) and min_df >= 1)
+            or (isinstance(min_df, float) and 0.0 <= min_df <= 1.0)
+        ):
+            raise ValueError("min_df must be float in range [0.0, 1.0] or int")
+        if not (
+            (isinstance(max_df, numbers.Integral) and max_df > 1)
+            or (isinstance(max_df, float) and 0.0 <= max_df <= 1.0)
+        ):
+            raise ValueError("max_df must be float in range [0.0, 1.0] or int")
 
         freq_func = self.token_freqs
         counts_matrix = self.dict_vectorizer(
             [freq_func(Path(fname).read_text()) for fname in file_names]
         )
-
-        if isinstance(min_df, float) and 0.0 < min_df <= 1.0:
+        if isinstance(min_df, float):
             min_df = int(np.ceil(min_df * counts_matrix.shape[0]))
-        elif not isinstance(min_df, numbers.Integral) and min_df > 1:
-            raise ValueError("min_df must be float in range [0.0, 1.0] or int")
-        if isinstance(max_df, float) and 0.0 < max_df <= 1.0:
+        if isinstance(max_df, float):
             max_df = int(np.floor(max_df * counts_matrix.shape[0]))
-        elif not isinstance(max_df, numbers.Integral) and max_df > 1:
-            raise ValueError("max_df must be float in range [0.0, 1.0] or int")
         doc_appearances = np.sum(counts_matrix, axis=0)
         mask = (doc_appearances >= min_df) & (doc_appearances <= max_df)
         self.similarity_matrix_ = self.cosine_similarity(
