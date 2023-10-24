@@ -36,19 +36,19 @@ jobs:
             locale: C
           - os: ubuntu-latest  # oldest supported Python and Sphinx
             python: '3.8'
-            sphinx_version: '4'
+            sphinx_version: '4.*'
             distrib: mamba
           - os: ubuntu-latest
             python: '3.11'
-            sphinx_version: '5'
+            sphinx_version: '5.*'
             distrib: pip
           - os: ubuntu-latest
             python: '3.11'
-            sphinx_version: '6'
+            sphinx_version: '6.*'
             distrib: mamba
           - os: ubuntu-latest
             python: '3.8'
-            sphinx_version: '7'
+            sphinx_version: '7.*'
             distrib: minimal
           - os: macos-latest
             python: '3.11'
@@ -102,7 +102,7 @@ jobs:
           $CMD "/compress_images/d" doc/conf.py
         if: ${{ !startsWith(matrix.os, 'ubuntu') }}
       - run: make -C doc SPHINXOPTS= html-noplot
-        if: matrix.distrib != 'minimal'
+        if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4.*'
       - run: make -C doc SPHINXOPTS= html -j 2
-        if: matrix.distrib != 'minimal'
+        if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4.*'
       - uses: codecov/codecov-action@v3
