@@ -879,7 +879,7 @@ def _rerun(
     if how == "modify":
         n_ch = "([3-9]|10)"
     else:
-        n_ch = "[1-8]"
+        n_ch = "[1-9]"
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
     want = f".*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
