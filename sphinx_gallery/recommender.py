@@ -74,9 +74,8 @@ class ExampleRecommender:
         Parameters
         ----------
         data : list of dict
-            An iterable of dictionaries of feature arrays, where each key
-            corresponds to a feature name, and each value is an array of
-            feature values.
+            Each dictionary represents a document where tokens are keys and
+            values are their occurrence frequencies.
 
         Returns
         -------
