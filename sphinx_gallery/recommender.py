@@ -87,22 +87,20 @@ class ExampleRecommender:
         """
         import numpy as np
 
-        feature_names = []
+        tokens = []
         all_values = defaultdict(list)
-        for row in data:
-            for feature_name, feature_value in row.items():
-                feature_names.append(feature_name)
-                all_values[feature_name].append(feature_value)
+        for dict_of_freqs in data:
+            for token, freq in dict_of_freqs.items():
+                tokens.append(token)
+                all_values[token].append(freq)
 
-        feature_dict = {
-            feature: feature_idx
-            for feature_idx, feature in enumerate(sorted(all_values))
+        token_dict = {
+            token: token_idx for token_idx, token in enumerate(sorted(all_values))
         }
-
-        X = np.zeros((len(data), len(feature_dict)))
-        for row_idx, row in enumerate(data):
-            for feature_name, feature_value in row.items():
-                X[row_idx, feature_dict[feature_name]] = feature_value
+        X = np.zeros((len(data), len(token_dict)))
+        for dict_of_freqs_idx, dict_of_freqs in enumerate(data):
+            for token, freq in dict_of_freqs.items():
+                X[dict_of_freqs_idx, token_dict[token]] = freq
         return X
 
     def compute_tf_idf(self, X):
