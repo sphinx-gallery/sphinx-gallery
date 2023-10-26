@@ -1824,6 +1824,9 @@ max_df (type: float in range [0.0, 1.0] | int, default: 0.9)
   When building the vocabulary ignore terms that have a document frequency
   strictly higher than the given threshold. If float, the parameter represents a
   proportion of documents, integer represents absolute counts.
+rubric_header (type: str, default: "Related examples")
+  Customizable rubric footer, e.g. to link to API doc of the recommender system
+  on the sphinx-gallery documentation website.
 
 The parameters ``min_df`` and ``max_df`` can be customized by the user to trim
 the very rare/very common words. This may improve the recommendations quality,
