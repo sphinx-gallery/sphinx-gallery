@@ -877,7 +877,7 @@ def _rerun(
     # - auto_examples/index
     # - auto_examples/plot_numpy_matplotlib
     if how == "modify":
-        n_ch = "([3-9]|10)"
+        n_ch = "([3-9]|10|11)"
     else:
         n_ch = "[1-9]"
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
