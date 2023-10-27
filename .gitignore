@@ -63,6 +63,7 @@ doc/auto_plotly_examples
 doc/auto_pyvista_examples
 doc/tutorials/
 doc/gen_modules/
+doc/sg_execution_times.rst
 
 # Test builds
 sphinx_gallery/tests/tinybuild/doc/gen_modules/

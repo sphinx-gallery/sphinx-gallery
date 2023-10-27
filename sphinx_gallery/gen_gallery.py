@@ -1520,11 +1520,13 @@ def setup(app):
 
     # Early filling of sphinx_gallery_conf defaults at config-inited
     app.connect("config-inited", fill_gallery_conf_defaults, priority=10)
-    # set small priority value, so that pre_configure_jupyterlite_sphinx is
-    # called before jupyterlite_sphinx config-inited
+    # Set priority to a small number (higher priority than the default
+    # priority=500), so that pre_configure_jupyterlite_sphinx is called before
+    # jupyterlite_sphinx config-inited
     app.connect("config-inited", pre_configure_jupyterlite_sphinx, priority=100)
-    # set high priority value, so that post_configure_jupyterlite_sphinx is
-    # called after jupyterlite_sphinx config-inited
+    # Set priority to a big number (lower priority than the default
+    # priority=500), so that post_configure_jupyterlite_sphinx is called after
+    # jupyterlite_sphinx config-inited
     app.connect("config-inited", post_configure_jupyterlite_sphinx, priority=900)
 
     if "sphinx.ext.autodoc" in app.extensions:
@@ -1541,12 +1543,16 @@ def setup(app):
     # Early update of sphinx_gallery_conf at builder-inited
     app.connect("builder-inited", update_gallery_conf_builder_inited, priority=10)
     app.connect("builder-inited", generate_gallery_rst)
-    app.connect("build-finished", copy_binder_files)
-    app.connect("build-finished", create_jupyterlite_contents)
 
+    app.connect("build-finished", copy_binder_files)
+    # Set priority to a small number (higher priority than the default
+    # priority=500) so that create_jupyterlite_contents runs before
+    # jupyterlite_sphinx build-finished
+    app.connect("build-finished", create_jupyterlite_contents, priority=100)
     app.connect("build-finished", summarize_failing_examples)
     app.connect("build-finished", embed_code_links)
     app.connect("build-finished", clean_api_usage_files)
+
     metadata = {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
