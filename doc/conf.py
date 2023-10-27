@@ -148,6 +148,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "show_nav_level": 2,
     "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
+    "navigation_with_keys": False,
     "logo": {
         "text": "🖼️ Sphinx-Gallery",
     },
