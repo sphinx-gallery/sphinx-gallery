@@ -69,7 +69,7 @@ class ExampleRecommender:
         return freq
 
     def dict_vectorizer(self, data):
-        """Convert a dictionary of feature arrays into a matrix.
+        """Convert a dictionary of feature occurrence frequencies  into a matrix.
 
         Parameters
         ----------
