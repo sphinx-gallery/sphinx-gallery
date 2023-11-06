@@ -41,10 +41,18 @@ How to cite
 
 .. This sets the top-level (middle) header items of pydata-sphinx-theme
 
+Contribute
+==========
+
+Thank you for your interest! Please see our 
+:ref:`contributing guide <contribute-guide>` to get started.
+
+ 
 .. toctree::
    :hidden:
 
    User guide <usage>
    Advanced <advanced_index>
    Demo galleries <galleries>
+   Contribution Guide <contribute>
    Changelog <changes>
