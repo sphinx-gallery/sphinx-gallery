@@ -1,7 +1,7 @@
 """Custom Sphinx directives."""
 
 import os
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath, Path
 import shutil
 
 from docutils import nodes
@@ -12,12 +12,28 @@ from docutils.parsers.rst.directives import images
 from sphinx.errors import ExtensionError
 
 
+from .backreferences import (
+    _thumbnail_div,
+    THUMBNAIL_PARENT_DIV,
+    THUMBNAIL_PARENT_DIV_CLOSE,
+)
+from .gen_rst import extract_intro_and_title
+from .py_source_parser import split_code_and_text_blocks
+
+
 class MiniGallery(Directive):
     """Custom directive to insert a mini-gallery.
 
-    The required argument is one or more fully qualified names of objects,
-    separated by spaces.  The mini-gallery will be the subset of gallery
-    examples that make use of that object (from that specific namespace).
+    The required argument is one or more of the following:
+
+    * fully qualified names of objects
+    * pathlike strings to example Python files
+    * glob-style pathlike strings to example Python files
+
+    The string list of arguments is separated by spaces.
+
+    The mini-gallery will be the subset of gallery
+    examples that make use of that object from that specific namespace
 
     Options:
 
@@ -28,8 +44,9 @@ class MiniGallery(Directive):
       character.  If omitted, the default heading level is `'^'`.
     """
 
-    required_arguments = 1
-    optional_arguments = 0
+    required_arguments = 0
+    has_content = True
+    optional_arguments = 1
     final_argument_whitespace = True
     option_spec = {
         "add-heading": directives.unchanged,
@@ -37,7 +54,10 @@ class MiniGallery(Directive):
     }
 
     def run(self):
-        """Insert backreferences file with appropriate heading."""
+        """Generate mini-gallery from backreference and example files."""
+        if not (self.arguments or self.content):
+            raise ExtensionError("No arguments passed to 'minigallery'")
+
         # Respect the same disabling options as the `raw` directive
         if (
             not self.state.document.settings.raw_enabled
@@ -49,8 +69,17 @@ class MiniGallery(Directive):
         config = self.state.document.settings.env.config
         backreferences_dir = config.sphinx_gallery_conf["backreferences_dir"]
 
+        # Retrieve source directory
+        src_dir = config.sphinx_gallery_conf["src_dir"]
+
         # Parse the argument into the individual objects
-        obj_list = self.arguments[0].split()
+
+        obj_list = []
+
+        if self.arguments:
+            obj_list.extend([c.strip() for c in self.arguments[0].split()])
+        if self.content:
+            obj_list.extend([c.strip() for c in self.content])
 
         lines = []
 
@@ -67,34 +96,70 @@ class MiniGallery(Directive):
             lines.append(heading_level * len(heading))
 
         def has_backrefs(obj):
-            src_dir = config.sphinx_gallery_conf["src_dir"]
-            path = os.path.join(src_dir, backreferences_dir, f"{obj}.examples")
-            return os.path.isfile(path) and os.path.getsize(path) > 0
+            path = Path(src_dir, backreferences_dir, f"{obj}.examples")
+            return path if (path.is_file() and (path.stat().st_size > 0)) else False
 
-        if not any(has_backrefs(obj) for obj in obj_list):
+        file_paths = []
+        for obj in obj_list:
+            if path := has_backrefs(obj):
+                file_paths.append((obj, path))
+            elif paths := Path(src_dir).glob(obj):
+                file_paths.extend(
+                    [(obj, p) for p in paths if (obj, p) not in file_paths]
+                )
+
+        if len(file_paths) == 0:
             return []
 
-        # Insert the backreferences file(s) using the `include` directive.
-        # This already includes the opening <div class="sphx-glr-thumbnails">
-        # and its closing </div>.
-        for obj in obj_list:
-            path = os.path.join(
-                "/",  # Sphinx treats this as the source dir
-                backreferences_dir,
-                f"{obj}.examples",
-            )
+        lines.append(THUMBNAIL_PARENT_DIV)
 
-            # Always remove the heading from the file
-            lines.append(
-                f"""\
-.. include:: {path}
-    :start-after: start-sphx-glr-thumbnails"""
-            )
+        # sort on the str(file path but keep (obj, path) pair
+        for obj, path in sorted(
+            file_paths,
+            key=lambda x: config.sphinx_gallery_conf["minigallery_sort_order"](
+                str(x[-1])
+            ),
+        ):
+            if path.suffix == ".examples":
+                # Insert the backreferences file(s) using the `include` directive.
+                # / is the src_dir for include
+                lines.append(
+                    f"""\
+.. include:: /{path.relative_to(src_dir).as_posix()}
+    :start-after: thumbnail-parent-div-open
+    :end-before: thumbnail-parent-div-close"""
+                )
+            else:
+                dirs = [
+                    (e, g)
+                    for e, g in zip(
+                        config.sphinx_gallery_conf["examples_dirs"],
+                        config.sphinx_gallery_conf["gallery_dirs"],
+                    )
+                    if (obj.find(e) != -1)
+                ]
+                if len(dirs) != 1:
+                    raise ExtensionError(
+                        f"Error in gallery lookup: input={obj}, matches={dirs}, "
+                        f"examples={config.sphinx_gallery_conf['examples_dirs']}"
+                    )
 
-        # Parse the assembly of `include` and `raw` directives
+                example_dir, target_dir = [Path(src_dir, d) for d in dirs[0]]
+
+                # finds thumbnails in subdirs
+                target_dir = target_dir / path.relative_to(example_dir).parent
+                _, script_blocks = split_code_and_text_blocks(
+                    str(path), return_node=False
+                )
+                intro, title = extract_intro_and_title(str(path), script_blocks[0][1])
+
+                thumbnail = _thumbnail_div(target_dir, src_dir, path.name, intro, title)
+                lines.append(thumbnail)
+
+        lines.append(THUMBNAIL_PARENT_DIV_CLOSE)
         text = "\n".join(lines)
         include_lines = statemachine.string2lines(text, convert_whitespace=True)
-        self.state_machine.insert_input(include_lines, path)
+        self.state_machine.insert_input(include_lines, str(path))
 
         return []
 

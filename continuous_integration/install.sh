@@ -34,7 +34,7 @@ elif [ "$SPHINX_VERSION" != "default" ]; then
 fi
 
 set -x
-pip install $EXTRA_ARGS $PIP_DEPENDENCIES pytest pytest-cov coverage pydata-sphinx-theme -e .
+pip install $EXTRA_ARGS $PIP_DEPENDENCIES pytest pytest-cov coverage pydata-sphinx-theme lxml -e .
 set +x
 
 # "pip install pygraphviz" does not guarantee graphviz binaries exist

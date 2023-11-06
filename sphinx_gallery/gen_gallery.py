@@ -71,6 +71,7 @@ DEFAULT_GALLERY_CONF = {
     "reset_argv": DefaultResetArgv(),
     "subsection_order": None,
     "within_subsection_order": NumberOfCodeLinesSortKey,
+    "minigallery_sort_order": None,
     "gallery_dirs": "auto_examples",
     "backreferences_dir": None,
     "doc_module": (),

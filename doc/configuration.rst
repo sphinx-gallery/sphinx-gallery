@@ -48,6 +48,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 **Cross-referencing**
 
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
+- ``minigallery_sort_order`` (:ref:`minigallery_order`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
   and ``inspect_global_variables`` (:ref:`references_to_examples`)
 
@@ -418,6 +419,8 @@ which sorts the files based on the number of code lines::
         'within_subsection_order': NumberOfCodeLinesSortKey,
     }
 
+.. _sort_classes:
+
 In addition, multiple convenience classes are provided for use with
 ``within_subsection_order``:
 
@@ -426,7 +429,7 @@ In addition, multiple convenience classes are provided for use with
 - :class:`sphinx_gallery.sorting.FileSizeSortKey` to sort by file size.
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
-
+- :class:`sphinx_gallery.sorting.FunctionSortKey` to sort using an arbitrary function.
 
 .. _link_to_documentation:
 
@@ -500,10 +503,68 @@ In the above example, all fully qualified names matching the regex
 (e.g., module.submodule.meth) when creating links, instead of the short module
 name (e.g., module.meth). All others will use the (default) way of linking.
 
+.. _minigalleries_to_examples:
+
+Add mini-galleries
+==================
+
+Sphinx-Gallery provides the :class:`sphinx_gallery.directives.MiniGallery`
+directive so that you can easily add a reduced version of the Gallery to
+your sphinx documentation ``.rst`` files. The mini-gallery directive therefore
+supports passing a list (space separated) of any of the following:
+
+* full qualified name of object
+* pathlike strings to example Python files
+* glob-style pathlike strings to example Python files
+
+
+For example, the rst below adds the reduced version of the Gallery for all
+examples that use the specific function ``numpy.exp``, the example
+``examples/plot_sin_.py``, and all files matching the string
+``/examples/plot_4*``:
+
+.. code-block:: rst
+
+    .. minigallery::
+        :add-heading:
+
+        numpy.exp
+        ../examples/plot_0_sin.py
+        ../examples/plot_4*
+
+
+Listing multiple items, separated by spaces, merges all the examples into a
+single mini-gallery. The mini-gallery will only be shown if the files exist or
+the items are actually used or referred to in an example.
+
+.. minigallery::
+    :add-heading:
+
+    numpy.exp
+    ../examples/plot_0_sin.py
+    ../examples/plot_4*
+
+
+The ``add-heading`` option adds a heading for the mini-gallery, which will be a
+default generated message "Examples using *{full qualified object name}*" if no
+string is provided as an argument. Specifying a custom heading message is
+recommended for a gallery with multiple items because the default message is
+"Examples of one of multiple objects".
+
+The example mini-gallery shown above uses the default heading level ``^``. This
+can be changed using the ``heading-level`` option, which accepts a single
+character (e.g., ``-``).
+
+The following form of passing inputs to minigallery is also supported:
+
+.. code-block:: rst
+
+    .. minigallery:: numpy.exp , ../examples/plot_0_sin.py
+
 .. _references_to_examples:
 
 Add mini-galleries for API documentation
-========================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When documenting a given function/method/attribute/object/class, Sphinx-Gallery
 enables you to link to any examples that either:
@@ -569,34 +630,60 @@ To exclude the functions mentioned above you would use
 instead of any character, if the name is unambiguous you can also write
 ``pyplot.show`` or just ``show``).
 
-Within your sphinx documentation ``.rst`` files, you can easily
-add this reduced version of the Gallery. For example, the rst below adds
-the reduced version of the Gallery for ``numpy.exp``, which includes all
-examples that use the specific function ``numpy.exp``:
+
+.. _file_based_minigalleries:
+
+Create mini-galleries using file paths
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes you may want to explicitly create a
+:class:`mini-gallery <sphinx_gallery.directives.MiniGallery>` using files that
+do not have functions in common, for example a set of tutorials. The
+mini-gallery directive therefore also supports passing in:
+
+* pathlike strings to sphinx gallery example files
+* glob-style pathlike strings to sphinx-gallery example files
 
 .. code-block:: rst
 
-    .. minigallery:: numpy.exp
-        :add-heading:
+    .. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
 
-The ``add-heading`` option adds a heading for the mini-gallery, which will be a
-default generated message if no string is provided as an argument. The example
-mini-gallery shown above uses the default heading. The level of the heading
-defaults to ``^``, but can be changed using the ``heading-level`` option, which
-accepts a single character (e.g., ``-``). The mini-gallery will only be shown
-if the item (here ``numpy.exp``) is actually used or referred to in an example.
+.. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
+    :add-heading: Mini-gallery using paths
+    :heading-level: ^
 
-You can also list multiple items, separated by spaces, which will merge all
-examples into a single mini-gallery, e.g.:
+.. _minigallery_order:
 
-.. code-block:: rst
+Sort mini-gallery thumbnails from files
+"""""""""""""""""""""""""""""""""""""""
 
-    .. minigallery:: numpy.exp numpy.sin
-        :add-heading: Mini-gallery using ``numpy.exp`` or ``numpy.sin``
-        :heading-level: -
+The mini-gallery directive generates a gallery of thumbnails corresponding to
+the input file strings or object names. The ordering of these thumbnails can be
+set using the ``minigallery_sort_order`` configuration key, which is any
+sphinx-gallery :ref:`sorting <sort-warning>` method. The minigallery directive
+sorts on a list of backreference ``{input}.example`` and file
+``{gallery_example}.py`` path strings.
 
-For such a mini-gallery, specifying a custom heading message is recommended
-because the default message is vague: "Examples of one of multiple objects".
+Here the sorting method :class:`sphinx_gallery.sorting.FunctionSortKey` is used
+to wrap a function that puts the backreference thumbnails at the end of the
+list.
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+    #...,
+    "minigallery_sort_order": FunctionSortKey(
+        lambda x: (not x.startswith("plot_4b"), x)),
+    #...
+    }
+
+Sorting the set of thumbnails generated from
+:ref:`API backreferences <references_to_examples>`, i.e. the thumbnails linked
+to a qualified object name input is not supported, but the sorting function can
+be used to position the entire set of backreference thumbnails since it sees
+the ``{input}.example`` file naming pattern. Thumbnails may be duplicated if
+they correspond to multiple object names or an object name and file/glob input.
+
 
 Auto-documenting your API with links to examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

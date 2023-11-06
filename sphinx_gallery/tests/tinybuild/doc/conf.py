@@ -72,6 +72,21 @@ class MockScrapeProblem:
             colorConverter.to_rgba = self._orig
 
 
+class MockSort:
+    """Fake sort used to test that mini-gallery sort is correct."""
+
+    def __repr__(self):
+        return "MockSort"
+
+    def __call__(self, f):
+        """Sort plot_sub* for one test case."""
+        if f.endswith("plot_sub2.py"):
+            return 0
+        if f.endswith("plot_sub1.py"):
+            return 1
+        return f
+
+
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
@@ -129,6 +144,7 @@ sphinx_gallery_conf = {
     ],
     "backreferences_dir": "gen_modules/backreferences",
     "within_subsection_order": FileNameSortKey,
+    "minigallery_sort_order": MockSort(),
     "image_scrapers": (matplotlib_format_scraper(),),
     "expected_failing_examples": [
         "../examples/future/plot_future_imports_broken.py",

@@ -18,7 +18,7 @@ from datetime import date
 import warnings
 
 import sphinx_gallery
-from sphinx_gallery.sorting import FileNameSortKey
+from sphinx_gallery.sorting import FileNameSortKey, FunctionSortKey
 from sphinx_gallery.notebook import add_markdown_cell, add_code_cell
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -451,6 +451,10 @@ sphinx_gallery_conf = {
     "compress_images": ("images", "thumbnails"),
     # specify the order of examples to be according to filename
     "within_subsection_order": FileNameSortKey,
+    # put duplicate figure at end
+    "minigallery_sort_order": FunctionSortKey(
+        lambda x: (not x.startswith("plot_4b"), x)
+    ),
     "expected_failing_examples": [
         "../examples/no_output/plot_raise.py",
         "../examples/no_output/plot_syntaxerror.py",
