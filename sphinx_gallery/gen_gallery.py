@@ -674,6 +674,7 @@ def generate_gallery_rst(app):
 
             recommender_params = copy.deepcopy(gallery_conf["recommender"])
             recommender_params.pop("enable")
+            recommender_params.pop("rubric_header", None)
             recommender = ExampleRecommender(**recommender_params)
 
             gallery_py_files = []
