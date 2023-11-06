@@ -20,6 +20,7 @@ from sphinx import __version__ as sphinx_version
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
+from sphinx_gallery.recommender import ExampleRecommender
 from sphinx_gallery.utils import (
     _get_image,
     scale_image,
@@ -1276,6 +1277,23 @@ def test_recommend_n_examples(sphinx_app):
 
     assert '<p class="rubric">Related examples</p>' in html
     assert count == n_examples
+
+
+def test_example_recommender_methods():
+    """Test that exactly n_examples thumbnails are displayed."""
+    np = pytest.importorskip("numpy")
+    recommender = ExampleRecommender(n_examples=1, min_df=1)
+    D = [{"foo": 1, "bar": 2}, {"foo": 3, "baz": 1}]
+
+    X = recommender.dict_vectorizer(D)
+    expected_X = np.array([[2.0, 0.0, 1.0], [0.0, 1.0, 3.0]])
+    np.testing.assert_array_equal(X, expected_X)
+
+    X_tfidf = recommender.compute_tf_idf(X)
+    expected_X_tfidf = np.array(
+        [[0.94215562, 0.0, 0.33517574], [0.0, 0.42423963, 0.90554997]]
+    )
+    np.testing.assert_array_almost_equal(X_tfidf, expected_X_tfidf)
 
 
 def test_cpp_rst(sphinx_app):
