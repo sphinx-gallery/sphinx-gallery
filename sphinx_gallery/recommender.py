@@ -250,13 +250,13 @@ def _write_recommendations(recommender, fname, gallery_conf):
     recommend_fname = f"{path_fname.parent / path_fname.stem}.recommendations.new"
     recommended_examples = recommender.predict(fname)
 
-    default_rubric_header = ".. rubric:: Related examples"
+    default_rubric_header = "Related examples"
     rubric_header = gallery_conf["recommender"].get(
         "rubric_header", default_rubric_header
     )
 
     with open(recommend_fname, "w", encoding="utf-8") as ex_file:
-        ex_file.write(f"\n\n{rubric_header}\n")
+        ex_file.write(f"\n\n.. rubric:: {rubric_header}\n")
         ex_file.write(THUMBNAIL_PARENT_DIV)
         for example_fname in recommended_examples:
             example_path = Path(example_fname)
