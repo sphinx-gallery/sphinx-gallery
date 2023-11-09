@@ -32,7 +32,7 @@ def _sphinx_app(tmpdir_factory, buildername):
     def ignore(src, names):
         return ("_build", "gen_modules", "auto_examples")
 
-    shutil.copytree(src_dir, temp_dir, ignore=ignore)
+    shutil.copytree(src_dir, temp_dir, ignore=ignore, dirs_exist_ok=True)
     # For testing iteration, you can get similar behavior just doing `make`
     # inside the tinybuild/doc directory
     conf_dir = op.join(temp_dir, "doc")
