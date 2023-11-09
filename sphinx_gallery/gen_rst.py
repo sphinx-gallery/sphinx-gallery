@@ -32,6 +32,7 @@ import codeop
 
 from sphinx.errors import ExtensionError
 import sphinx.util
+from sphinx.util.console import blue, red, bold
 
 from .scrapers import save_figures, ImagePathIterator, clean_modules, _find_image_ext
 from .utils import (
@@ -645,15 +646,15 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     )
 
     expected = src_file in _expected_failing_examples(gallery_conf)
+    src_file_rel = os.path.relpath(src_file, gallery_conf["src_dir"])
     if expected:
-        func, color = (
-            logger.info,
-            "blue",
-        )
+        func, color, kind = logger.info, blue, "expectedly"
     else:
-        func, color = logger.warning, "red"
-    func(
-        "%s failed to execute correctly: %s", src_file, formatted_exception, color=color
+        func, color, kind = logger.warning, red, "unexpectedly"
+    func(  # needs leading newline to get away from iterator
+        f"\n{bold(color('%s'))} {kind} failed to execute correctly:\n\n%s",
+        src_file_rel,
+        color(indent(formatted_exception, "    ")),
     )
 
     except_rst = codestr2rst(formatted_exception, lang="pytb")

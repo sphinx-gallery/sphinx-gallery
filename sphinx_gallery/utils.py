@@ -8,6 +8,7 @@ Miscellaneous utilities.
 
 import hashlib
 import os
+import re
 from shutil import move, copyfile
 import subprocess
 
@@ -189,3 +190,8 @@ def _has_graphviz():
         )
         return False
     return True
+
+
+def _escape_ansi(s):
+    """Remove ANSI terminal formatting characters from a string."""
+    return re.sub(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]", "", s)
