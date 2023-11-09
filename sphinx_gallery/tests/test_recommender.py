@@ -14,7 +14,7 @@ import pytest
 import sphinx_gallery.gen_rst as sg
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
-from sphinx_gallery.recommender import ExampleRecommender
+from sphinx_gallery.recommender import ExampleRecommender, _write_recommendations
 
 
 @pytest.fixture(scope="module")
@@ -89,9 +89,11 @@ def test_example_recommender_methods():
 
 
 def test_recommendation_files(gallery_conf):
-    """Test generated recommendations are in rst and are relevant."""
+    """Test generated files and that recommendations are relevant."""
     pytest.importorskip("numpy")
-    gallery_conf.update(recommender={"enable": True})
+    gallery_conf["recommender"].update(
+        [("enable", True), ("rubric_header", "Custom header")]
+    )
     file_dict = {
         "fox_jumps_dog.py": "The quick brown fox jumped over the lazy dog",
         "dog_sleeps.py": "The lazy dog slept all day",
@@ -125,3 +127,17 @@ def test_recommendation_files(gallery_conf):
     recommended_example = recommender.predict(file_path)  # dog_jumps_fox.py
 
     assert os.path.basename(recommended_example[0]) == "fox_jumps_dog.py"
+
+    # _write_recommendations needs a thumbnail, we then create a blank png
+    thumb_path = os.path.join(gallery_conf["gallery_dir"], "images/thumb")
+    os.makedirs(thumb_path, exist_ok=True)
+    png_file = "sphx_glr_fox_jumps_dog_thumb.png"
+    png_file_path = os.path.join(thumb_path, png_file)
+    with open(png_file_path, "wb") as f:
+        b"\x89PNG\r\n\x1a\n"  # generic png file signature
+
+    recommendation_file = re.sub(r"\.py$", ".recommendations", file_path)
+    _write_recommendations(recommender, file_path, gallery_conf)
+    with codecs.open(recommendation_file) as f:
+        rst = f.read()
+    assert ".. rubric:: Custom header" in rst
