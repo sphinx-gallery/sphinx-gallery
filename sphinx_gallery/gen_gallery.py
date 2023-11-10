@@ -21,7 +21,7 @@ from xml.sax.saxutils import quoteattr, escape
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
-from sphinx.util.console import blue, red, purple, bold
+from sphinx.util.console import blue, red, yellow, bold
 from . import glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
@@ -1388,7 +1388,7 @@ def summarize_failing_examples(app, exception):
 
     if fail_msgs:
         fail_message = bold(
-            purple(
+            yellow(
                 "Here is a summary of the problems encountered "
                 "when running the examples:\n\n"
                 + "\n".join(fail_msgs)
