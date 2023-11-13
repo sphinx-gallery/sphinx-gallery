@@ -4,71 +4,12 @@
 
 import codecs
 import os
-import os.path as op
 import re
-import shutil
-from io import StringIO
 
 import pytest
 
 import sphinx_gallery.gen_rst as sg
-from sphinx.application import Sphinx
-from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery.recommender import ExampleRecommender, _write_recommendations
-
-
-@pytest.fixture(scope="module")
-def sphinx_app(tmpdir_factory, req_mpl, req_pil):
-    return _sphinx_app(tmpdir_factory, "html")
-
-
-def _sphinx_app(tmpdir_factory, buildername):
-    # Skip if numpy not installed
-    pytest.importorskip("numpy")
-
-    temp_dir = (tmpdir_factory.getbasetemp() / f"root_{buildername}").strpath
-    src_dir = op.join(op.dirname(__file__), "tinybuild")
-
-    def ignore(src, names):
-        return ("_build", "gen_modules", "auto_examples")
-
-    shutil.copytree(src_dir, temp_dir, ignore=ignore, dirs_exist_ok=True)
-    # For testing iteration, you can get similar behavior just doing `make`
-    # inside the tinybuild/doc directory
-    conf_dir = op.join(temp_dir, "doc")
-    out_dir = op.join(conf_dir, "_build", buildername)
-    toctrees_dir = op.join(conf_dir, "_build", "toctrees")
-    # Avoid warnings about re-registration, see:
-    # https://github.com/sphinx-doc/sphinx/issues/5038
-    with docutils_namespace():
-        app = Sphinx(
-            conf_dir,
-            conf_dir,
-            out_dir,
-            toctrees_dir,
-            buildername=buildername,
-            status=StringIO(),
-            warning=StringIO(),
-        )
-        # need to build within the context manager
-        # for automodule and backrefs to work
-        app.build(False, [])
-    return app
-
-
-def test_recommend_n_examples(sphinx_app):
-    """Test exactly n_examples thumbnails are displayed in the tiny gallery."""
-    pytest.importorskip("numpy")
-    root = op.join(sphinx_app.outdir, "auto_examples")
-    fname = op.join(root, "plot_defer_figures.html")
-    with codecs.open(fname, "r", "utf-8") as fid:
-        html = fid.read()
-
-    count = html.count('<div class="sphx-glr-thumbnail-title">')
-    n_examples = sphinx_app.config.sphinx_gallery_conf["recommender"]["n_examples"]
-
-    assert '<p class="rubric">Related examples</p>' in html
-    assert count == n_examples
 
 
 def test_example_recommender_methods():

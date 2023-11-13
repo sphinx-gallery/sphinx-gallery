@@ -1288,3 +1288,18 @@ def test_julia_rst(sphinx_app):
     assert content.count(".. code-block:: Julia", 3)
     assert "Julia example\n=============" in content
     assert "Download Julia source code" in content
+
+
+def test_recommend_n_examples(sphinx_app):
+    """Test exactly n_examples thumbnails are displayed in the tiny gallery."""
+    pytest.importorskip("numpy")
+    root = op.join(sphinx_app.outdir, "auto_examples")
+    fname = op.join(root, "plot_defer_figures.html")
+    with codecs.open(fname, "r", "utf-8") as fid:
+        html = fid.read()
+
+    count = html.count('<div class="sphx-glr-thumbnail-title">')
+    n_examples = sphinx_app.config.sphinx_gallery_conf["recommender"]["n_examples"]
+
+    assert '<p class="rubric">Related examples</p>' in html
+    assert count == n_examples
