@@ -69,7 +69,7 @@ class ExampleRecommender:
         return freq
 
     def dict_vectorizer(self, data):
-        """Convert a dictionary of feature occurrence frequencies  into a matrix.
+        """Convert a dictionary of feature occurrence frequencies into a matrix.
 
         Parameters
         ----------
@@ -127,8 +127,7 @@ class ExampleRecommender:
         return X_tfidf
 
     def cosine_similarity(self, X, Y=None):
-        """
-        Compute the cosine similarity between two vectors X and Y.
+        """Compute the cosine similarity between two vectors X and Y.
 
         Parameters
         ----------
@@ -159,8 +158,7 @@ class ExampleRecommender:
         return similarity
 
     def fit(self, file_names):
-        """
-        Compute the similarity matrix of a group of documents.
+        """Compute the similarity matrix of a group of documents.
 
         Parameters
         ----------

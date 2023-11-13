@@ -128,7 +128,8 @@ def test_recommendation_files(gallery_conf):
 
     assert os.path.basename(recommended_example[0]) == "fox_jumps_dog.py"
 
-    # _write_recommendations needs a thumbnail, we then create a blank png
+    # _write_recommendations needs a thumbnail, for writing the
+    # `_thumbnail_div` we then create a blank png
     thumb_path = os.path.join(gallery_conf["gallery_dir"], "images/thumb")
     os.makedirs(thumb_path, exist_ok=True)
     png_file = "sphx_glr_fox_jumps_dog_thumb.png"
