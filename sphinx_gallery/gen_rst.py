@@ -1472,7 +1472,7 @@ def save_rst_example(
 
     if gallery_conf["recommender"]["enable"]:
         # extract the filename without the extension
-        recommend_fname = os.path.splitext(os.path.split(example_fname)[1])[0]
+        recommend_fname = Path(example_fname).stem
         example_rst += RECOMMENDATIONS_INCLUDE.format(recommend_fname)
 
     if gallery_conf["show_signature"]:
