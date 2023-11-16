@@ -1304,6 +1304,6 @@ def test_recommend_n_examples(sphinx_app):
     assert '<p class="rubric">Related examples</p>' in html
     assert count == n_examples
     # Check the same 3 related examples are shown
-    assert 'sphx-glr-auto-examples-plot-repr-py' in html
-    assert 'sphx-glr-auto-examples-plot-webp-py' in html
-    assert 'sphx-glr-auto-examples-plot-matplotlib-backend-py' in html
+    assert "sphx-glr-auto-examples-plot-repr-py" in html
+    assert "sphx-glr-auto-examples-plot-webp-py" in html
+    assert "sphx-glr-auto-examples-plot-matplotlib-backend-py" in html
