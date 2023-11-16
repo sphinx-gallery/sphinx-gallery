@@ -1291,7 +1291,7 @@ def test_julia_rst(sphinx_app):
 
 
 def test_recommend_n_examples(sphinx_app):
-    """Test exactly n_examples thumbnails are displayed in the tiny gallery."""
+    """Test correct thumbnails are displayed for an example."""
     pytest.importorskip("numpy")
     root = op.join(sphinx_app.outdir, "auto_examples")
     fname = op.join(root, "plot_defer_figures.html")
@@ -1303,3 +1303,7 @@ def test_recommend_n_examples(sphinx_app):
 
     assert '<p class="rubric">Related examples</p>' in html
     assert count == n_examples
+    # Check the same 3 related examples are shown
+    assert 'sphx-glr-auto-examples-plot-repr-py' in html
+    assert 'sphx-glr-auto-examples-plot-webp-py' in html
+    assert 'sphx-glr-auto-examples-plot-matplotlib-backend-py' in html
