@@ -21,6 +21,7 @@ from sphinx_gallery.gen_gallery import (
     fill_gallery_conf_defaults,
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
+from sphinx_gallery.utils import _escape_ansi
 
 
 def test_bad_config():
@@ -441,8 +442,8 @@ def test_only_warn_on_example_error(sphinx_app_wrapper):
         fid.write("raise ValueError")
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
 
-    build_warn = sphinx_app._warning.getvalue()
-    assert "plot_3.py failed to execute correctly" in build_warn
+    build_warn = _escape_ansi(sphinx_app._warning.getvalue())
+    assert "plot_3.py unexpectedly failed to execute correctly" in build_warn
     assert "WARNING: Here is a summary of the problems" in build_warn
 
 
@@ -462,7 +463,8 @@ def test_only_warn_on_example_error_sphinx_warning(sphinx_app_wrapper):
         fid.write("raise ValueError")
     with pytest.raises(SphinxWarning) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
-    assert "plot_3.py failed to execute" in str(excinfo.value)
+    exc = _escape_ansi(str(excinfo.value))
+    assert "plot_3.py unexpectedly failed to execute" in exc
 
 
 @pytest.mark.conf_file(
@@ -476,7 +478,8 @@ sphinx_gallery_conf = {
 def test_examples_not_expected_to_pass(sphinx_app_wrapper):
     with pytest.raises(ExtensionError) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
-    assert "expected to fail, but not failing" in str(excinfo.value)
+    exc = _escape_ansi(str(excinfo.value))
+    assert "expected to fail, but not failing" in exc
 
 
 @pytest.mark.conf_file(

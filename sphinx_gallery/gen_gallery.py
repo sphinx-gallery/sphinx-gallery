@@ -13,6 +13,7 @@ from datetime import timedelta, datetime
 from difflib import get_close_matches
 from importlib import import_module
 from pathlib import Path
+from textwrap import indent
 import re
 import os
 import pathlib
@@ -21,7 +22,7 @@ from itertools import chain
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
-from sphinx.util.console import red
+from sphinx.util.console import blue, red, purple, bold
 from . import glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
@@ -1371,30 +1372,36 @@ def summarize_failing_examples(app, exception):
         gallery_conf
     )
 
+    idt = "    "
     if failing_as_expected:
-        logger.info("Examples failing as expected:", color="brown")
+        logger.info(bold("Examples failing as expected:"), color="blue")
         for fail_example in failing_as_expected:
-            logger.info("%s failed leaving traceback:", fail_example, color="brown")
-            logger.info(gallery_conf["failing_examples"][fail_example], color="brown")
+            path = os.path.relpath(fail_example, gallery_conf["src_dir"])
+            logger.info(
+                f"{bold(blue(path))} failed leaving traceback:\n\n"
+                f"{indent(gallery_conf['failing_examples'][fail_example], idt)}"
+            )
 
     fail_msgs = []
     if failing_unexpectedly:
-        fail_msgs.append(red("Unexpected failing examples:"))
+        fail_msgs.append(bold(red("Unexpected failing examples:\n")))
         for fail_example in failing_unexpectedly:
+            path = os.path.relpath(fail_example, gallery_conf["src_dir"])
             fail_msgs.append(
-                fail_example
-                + " failed leaving traceback:\n"
-                + gallery_conf["failing_examples"][fail_example]
-                + "\n"
+                f"    {bold(red(path))} failed leaving traceback:\n\n"
+                f"{indent(gallery_conf['failing_examples'][fail_example], idt)}"
             )
 
     if passing_unexpectedly:
+        paths = [
+            os.path.relpath(p, gallery_conf["src_dir"]) for p in passing_unexpectedly
+        ]
         fail_msgs.append(
-            red("Examples expected to fail, but not failing:\n")
-            + "Please remove these examples from\n"
-            + "sphinx_gallery_conf['expected_failing_examples']\n"
-            + "in your conf.py file"
-            "\n".join(passing_unexpectedly)
+            bold(red("Examples expected to fail, but not failing:\n\n"))
+            + red("\n".join(indent(p, idt) for p in paths))
+            + "\n\nPlease remove these examples from "
+            + "sphinx_gallery_conf['expected_failing_examples'] "
+            + "in your conf.py file."
         )
 
     # standard message
@@ -1419,9 +1426,14 @@ def summarize_failing_examples(app, exception):
     )
 
     if fail_msgs:
-        fail_message = (
-            "Here is a summary of the problems encountered "
-            "when running the examples\n\n" + "\n".join(fail_msgs) + "\n" + "-" * 79
+        fail_message = bold(
+            purple(
+                "Here is a summary of the problems encountered "
+                "when running the examples:\n\n"
+                + "\n".join(fail_msgs)
+                + "\n"
+                + "-" * 79
+            )
         )
         if gallery_conf["only_warn_on_example_error"]:
             logger.warning(fail_message)
@@ -1521,13 +1533,11 @@ def setup(app):
 
     # Early filling of sphinx_gallery_conf defaults at config-inited
     app.connect("config-inited", fill_gallery_conf_defaults, priority=10)
-    # Set priority to a small number (higher priority than the default
-    # priority=500), so that pre_configure_jupyterlite_sphinx is called before
-    # jupyterlite_sphinx config-inited
+    # set small priority value, so that pre_configure_jupyterlite_sphinx is
+    # called before jupyterlite_sphinx config-inited
     app.connect("config-inited", pre_configure_jupyterlite_sphinx, priority=100)
-    # Set priority to a big number (lower priority than the default
-    # priority=500), so that post_configure_jupyterlite_sphinx is called after
-    # jupyterlite_sphinx config-inited
+    # set high priority value, so that post_configure_jupyterlite_sphinx is
+    # called after jupyterlite_sphinx config-inited
     app.connect("config-inited", post_configure_jupyterlite_sphinx, priority=900)
 
     if "sphinx.ext.autodoc" in app.extensions:
@@ -1544,16 +1554,12 @@ def setup(app):
     # Early update of sphinx_gallery_conf at builder-inited
     app.connect("builder-inited", update_gallery_conf_builder_inited, priority=10)
     app.connect("builder-inited", generate_gallery_rst)
-
     app.connect("build-finished", copy_binder_files)
-    # Set priority to a small number (higher priority than the default
-    # priority=500) so that create_jupyterlite_contents runs before
-    # jupyterlite_sphinx build-finished
-    app.connect("build-finished", create_jupyterlite_contents, priority=100)
+    app.connect("build-finished", create_jupyterlite_contents)
+
     app.connect("build-finished", summarize_failing_examples)
     app.connect("build-finished", embed_code_links)
     app.connect("build-finished", clean_api_usage_files)
-
     metadata = {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
