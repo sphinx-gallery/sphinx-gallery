@@ -1693,6 +1693,8 @@ this tuple in order to define resetting behavior for other visualization librari
 
 To do so, follow the instructions in :ref:`custom_reset`.
 
+.. _reset_modules_order:
+
 Order of resetting modules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -2178,6 +2180,8 @@ look at if you want to learn about a particular module. Setting
 ``show_api_usage`` to ``False`` will not make any graphs or documentation
 about API usage. Note, ``graphviz`` is required for making the unused and
 used API entry graphs.
+
+.. _api_usage_ignore:
 
 Ignoring API entries
 ^^^^^^^^^^^^^^^^^^^^
