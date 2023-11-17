@@ -226,6 +226,10 @@ NOTEBOOK_DOWNLOAD = """
       :download:`Download Jupyter notebook: {0} <{0}>`
 """
 
+RECOMMENDATIONS_INCLUDE = """\n
+.. include:: {0}.recommendations
+"""
+
 
 def codestr2rst(codestr, lang="python", lineno=None):
     """Return reStructuredText code block from code string."""
@@ -1466,6 +1470,11 @@ def save_rst_example(
         example_rst += NOTEBOOK_DOWNLOAD.format(example_file.with_suffix(".ipynb").name)
 
     example_rst += CODE_DOWNLOAD.format(example_file.name, language)
+
+    if gallery_conf["recommender"]["enable"]:
+        # extract the filename without the extension
+        recommend_fname = Path(example_fname).stem
+        example_rst += RECOMMENDATIONS_INCLUDE.format(recommend_fname)
 
     if gallery_conf["show_signature"]:
         example_rst += SPHX_GLR_SIG

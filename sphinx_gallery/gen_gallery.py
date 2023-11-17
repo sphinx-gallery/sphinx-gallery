@@ -18,6 +18,7 @@ import re
 import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
+from itertools import chain
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
@@ -39,6 +40,7 @@ from .interactive_example import pre_configure_jupyterlite_sphinx
 from .interactive_example import post_configure_jupyterlite_sphinx
 from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
+from .recommender import ExampleRecommender, _write_recommendations
 
 _KNOWN_CSS = (
     "sg_gallery",
@@ -85,6 +87,7 @@ DEFAULT_GALLERY_CONF = {
     "download_all_examples": True,
     "abort_on_example_error": False,
     "only_warn_on_example_error": False,
+    "recommender": {"enable": False},
     "failing_examples": {},
     "passing_examples": [],
     "stale_examples": [],  # ones that did not need to be run due to md5sum
@@ -662,6 +665,42 @@ def generate_gallery_rst(app):
 
             costs += subsection_costs
             write_computation_times(gallery_conf, target_dir, subsection_costs)
+
+        # Build recommendation system
+        if gallery_conf["recommender"]["enable"]:
+            try:
+                import numpy as np  # noqa: F401
+            except ImportError:
+                raise ConfigError("gallery_conf['recommender'] requires numpy")
+
+            recommender_params = copy.deepcopy(gallery_conf["recommender"])
+            recommender_params.pop("enable")
+            recommender_params.pop("rubric_header", None)
+            recommender = ExampleRecommender(**recommender_params)
+
+            gallery_py_files = []
+            # root and subsection directories containing python examples
+            gallery_directories = [gallery_dir_abs_path] + subsecs
+            for current_dir in gallery_directories:
+                src_dir = os.path.join(gallery_dir_abs_path, current_dir)
+                # sort python files to have a deterministic input across call
+                py_files = sorted(
+                    [
+                        fname
+                        for fname in Path(src_dir).iterdir()
+                        if fname.suffix == ".py"
+                    ],
+                    key=gallery_conf["within_subsection_order"](src_dir),
+                )
+                gallery_py_files.append(
+                    [os.path.join(src_dir, fname) for fname in py_files]
+                )
+            # flatten the list of list
+            gallery_py_files = list(chain.from_iterable(gallery_py_files))
+
+            recommender.fit(gallery_py_files)
+            for fname in gallery_py_files:
+                _write_recommendations(recommender, fname, gallery_conf)
 
         # generate toctree with subsections
         if gallery_conf["nested_sections"] is True:

@@ -826,8 +826,9 @@ def _rerun(
             lines = fid.readlines()
         with codecs.open(fname, "w", "utf-8") as fid:
             for line in lines:
+                # Make a tiny change that won't affect the recommender
                 if "FYI this" in line:
-                    line = "A " + line
+                    line = line.replace("FYI this", "FYA this")
                 fid.write(line)
         out_of, excluding = N_FAILING + 1, N_GOOD - 1
         n_stale = N_GOOD - 1
@@ -876,9 +877,9 @@ def _rerun(
     # - auto_examples/index
     # - auto_examples/plot_numpy_matplotlib
     if how == "modify":
-        n_ch = "([3-9]|10)"
+        n_ch = "([3-9]|10|11)"
     else:
-        n_ch = "[1-8]"
+        n_ch = "[1-9]"
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
     want = f".*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
@@ -1287,3 +1288,22 @@ def test_julia_rst(sphinx_app):
     assert content.count(".. code-block:: Julia", 3)
     assert "Julia example\n=============" in content
     assert "Download Julia source code" in content
+
+
+def test_recommend_n_examples(sphinx_app):
+    """Test correct thumbnails are displayed for an example."""
+    pytest.importorskip("numpy")
+    root = op.join(sphinx_app.outdir, "auto_examples")
+    fname = op.join(root, "plot_defer_figures.html")
+    with codecs.open(fname, "r", "utf-8") as fid:
+        html = fid.read()
+
+    count = html.count('<div class="sphx-glr-thumbnail-title">')
+    n_examples = sphinx_app.config.sphinx_gallery_conf["recommender"]["n_examples"]
+
+    assert '<p class="rubric">Related examples</p>' in html
+    assert count == n_examples
+    # Check the same 3 related examples are shown
+    assert "sphx-glr-auto-examples-plot-repr-py" in html
+    assert "sphx-glr-auto-examples-plot-webp-py" in html
+    assert "sphx-glr-auto-examples-plot-matplotlib-backend-py" in html

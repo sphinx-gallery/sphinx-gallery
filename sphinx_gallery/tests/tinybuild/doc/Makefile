@@ -19,4 +19,4 @@ latexpdf:
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
 show:
-	@python -c "import webbrowser; webbrowser.open_new_tab('file://$(PWD)/_build/html/index.html')"
+	@python -c "import webbrowser; webbrowser.open_new_tab('file://$(abspath .)/_build/html/index.html')"
