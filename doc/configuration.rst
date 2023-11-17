@@ -20,10 +20,9 @@ Configuration options
 ======================
 
 Most Sphinx-Gallery configuration options are set in the Sphinx ``conf.py``
-file:
+file.
 
-Gallery files and ordering
-^^^^^^^^^^^^^
+**Gallery files and ordering**
 
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
 - ``filename_pattern``, ``ignore_pattern``, ``example_extensions``, and
@@ -33,7 +32,7 @@ Gallery files and ordering
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
 - ``nested_sections`` (:ref:`nested_sections`)
 
-Example execution
+**Example execution**
 
 - ``reset_argv`` (:ref:`reset_argv`)
 - ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
@@ -43,14 +42,13 @@ Example execution
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``only_warn_on_example_error`` (:ref:`warning_on_error`)
 
-Cross-referencing
+**Cross-referencing**
 
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
   and ``inspect_global_variables`` (:ref:`references_to_examples`)
 
-Images and thumbnails
-^^^^^^^^^^
+**Images and thumbnails**
 
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
@@ -58,13 +56,13 @@ Images and thumbnails
 - ``image_scrapers`` (:ref:`image_scrapers`)
 - ``compress_images`` (:ref:`compress_images`)
 
-Compute costs
+**Compute costs**
 
 - ``min_reported_time`` (:ref:`min_reported_time`)
 - ``show_memory`` (:ref:`show_memory`)
 - ``junit`` (:ref:`junit_xml`)
 
-Jupyter notebooks and interactivity
+**Jupyter notebooks and interactivity**
 
 - ``notebook_extensions`` (:ref:`notebook_extensions`)
 - ``promote_jupyter_magic`` (:ref:`promote_jupyter_magic`)
@@ -74,21 +72,19 @@ Jupyter notebooks and interactivity
 - ``binder`` (:ref:`binder_links`)
 - ``jupyterlite`` (:ref:`jupyterlite`)
 
-Appearance
+**Appearance**
 
 - ``line_numbers`` (:ref:`adding_line_numbers`)
 - ``remove_config_comments`` (:ref:`removing_config_comments`)
 - ``show_signature`` (:ref:`show_signature`)
 - ``download_all_examples`` (:ref:`disable_all_scripts_download`)
 
-Miscellaneous
+**Miscellaneous**
 
 - ``reset_modules`` and ``reset_modules_order`` (:ref:`reset_modules`)
 - ``recommender`` (:ref:`recommend_examples`)
 - ``log_level`` (:ref:`log_level`)
 - ``show_api_usage`` and ``api_usage_ignore`` (:ref:`show_api_usage`)
-
-
 
 Some options can also be set or overridden on a file-by-file basis:
 
