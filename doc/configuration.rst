@@ -19,8 +19,11 @@ necessary, and on a case-by-case basis.
 Configuration options
 ======================
 
-Most Sphinx-Gallery configuration options are set in the Sphinx ``conf.py``
-file.
+`conf.py` configurations
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sphinx-Gallery configuration options that can be set in the Sphinx ``conf.py``
+file, inside a `sphinx_gallery_conf` dictionary.
 
 **Gallery files and ordering**
 
@@ -86,6 +89,9 @@ file.
 - ``log_level`` (:ref:`log_level`)
 - ``show_api_usage`` and ``api_usage_ignore`` (:ref:`show_api_usage`)
 
+Configurations inside examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Some options can also be set or overridden on a file-by-file basis:
 
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
@@ -98,18 +104,24 @@ Some options can be set on a per-code-block basis in a file:
 
 - ``# sphinx_gallery_defer_figures`` (:ref:`defer_figures`)
 
+Some options can be set on a per-line basis in a file:
+- ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
+
 See also :ref:`removing_config_comments` to hide config comments in files from
 the rendered examples.
 
-Some options can be set on a per-line basis in a file:
-- ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
+Build options
+^^^^^^^^^^^^^
 
 Some options can be set during the build execution step, e.g. using a Makefile:
 
 - ``make html-noplot`` (:ref:`without_execution`)
 - ``make html_abort_on_example_error`` (:ref:`abort_on_first`)
 
-And some things can be tweaked directly in CSS:
+CSS changes
+^^^^^^^^^^^
+
+Some things can be tweaked directly in CSS:
 
 - ``.sphx-glr-thumbcontainer`` (:ref:`setting_thumbnail_size`)
 
