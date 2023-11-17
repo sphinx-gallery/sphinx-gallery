@@ -4,7 +4,6 @@ pytest
 pytest-coverage
 numpy
 matplotlib
-pillow
 seaborn
 statsmodels
 joblib

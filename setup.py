@@ -34,7 +34,6 @@ extras_require = {
     "recommender": ["numpy"],
     "show_api_usage": ["graphviz"],
     "show_memory": ["memory_profiler"],
-    "thumbnail": ["pillow"],
     "jupyterlite": ["jupyterlite_sphinx"],
 }
 
