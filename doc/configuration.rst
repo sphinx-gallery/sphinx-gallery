@@ -90,10 +90,6 @@ Miscellaneous
 
 
 
-
-
-
-
 Some options can also be set or overridden on a file-by-file basis:
 
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
