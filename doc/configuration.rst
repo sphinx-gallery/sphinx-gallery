@@ -16,54 +16,81 @@ necessary, and on a case-by-case basis.
 
 .. _list_of_options:
 
-List of config options
+Configuration options
 ======================
 
-Most Sphinx-Gallery configuration options are set in the Sphinx ``conf.py``
-file:
+`conf.py` configurations
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sphinx-Gallery configuration options that can be set in the Sphinx ``conf.py``
+file, inside a `sphinx_gallery_conf` dictionary.
+
+**Gallery files and ordering**
 
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
 - ``filename_pattern``, ``ignore_pattern``, ``example_extensions``, and
   ``filetype_parsers`` (:ref:`build_pattern`)
-- ``run_stale_examples`` (:ref:`run_stale_examples`)
-- ``reset_argv`` (:ref:`reset_argv`)
+- ``copyfile_regex`` (:ref:`manual_passthrough`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
+- ``nested_sections`` (:ref:`nested_sections`)
+
+**Example execution**
+
+- ``reset_argv`` (:ref:`reset_argv`)
+- ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
+- ``plot_gallery`` (:ref:`without_execution`)
+- ``run_stale_examples`` (:ref:`run_stale_examples`)
+- ``abort_on_example_error`` (:ref:`abort_on_first`)
+- ``expected_failing_examples`` (:ref:`dont_fail_exit`)
+- ``only_warn_on_example_error`` (:ref:`warning_on_error`)
+
+**Cross-referencing**
+
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
   and ``inspect_global_variables`` (:ref:`references_to_examples`)
+
+**Images and thumbnails**
+
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
-- ``line_numbers`` (:ref:`adding_line_numbers`)
-- ``remove_config_comments`` (:ref:`removing_config_comments`)
-- ``download_all_examples`` (:ref:`disable_all_scripts_download`)
-- ``plot_gallery`` (:ref:`without_execution`)
+- ``image_srcset`` (:ref:`image_srcset`)
 - ``image_scrapers`` (:ref:`image_scrapers`)
 - ``compress_images`` (:ref:`compress_images`)
-- ``image_srcset`` (:ref:`image_srcset`)
-- ``reset_modules`` (:ref:`reset_modules`)
-- ``reset_modules_order`` (:ref:`reset_modules_order`)
-- ``abort_on_example_error`` (:ref:`abort_on_first`)
-- ``only_warn_on_example_error`` (:ref:`warning_on_error`)
-- ``recommender`` (:ref:`recommend_examples`)
-- ``expected_failing_examples`` (:ref:`dont_fail_exit`)
+
+**Compute costs**
+
 - ``min_reported_time`` (:ref:`min_reported_time`)
 - ``show_memory`` (:ref:`show_memory`)
-- ``show_signature`` (:ref:`show_signature`)
-- ``binder`` (:ref:`binder_links`)
-- ``jupyterlite`` (:ref:`jupyterlite`)
+- ``junit`` (:ref:`junit_xml`)
+
+**Jupyter notebooks and interactivity**
+
 - ``notebook_extensions`` (:ref:`notebook_extensions`)
 - ``promote_jupyter_magic`` (:ref:`promote_jupyter_magic`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``notebook_images`` (:ref:`notebook_images`)
 - ``pypandoc`` (:ref:`use_pypandoc`)
-- ``junit`` (:ref:`junit_xml`)
+- ``binder`` (:ref:`binder_links`)
+- ``jupyterlite`` (:ref:`jupyterlite`)
+
+**Appearance**
+
+- ``line_numbers`` (:ref:`adding_line_numbers`)
+- ``remove_config_comments`` (:ref:`removing_config_comments`)
+- ``show_signature`` (:ref:`show_signature`)
+- ``download_all_examples`` (:ref:`disable_all_scripts_download`)
+
+**Miscellaneous**
+
+- ``reset_modules`` and ``reset_modules_order`` (:ref:`reset_modules`)
+- ``recommender`` (:ref:`recommend_examples`)
 - ``log_level`` (:ref:`log_level`)
-- ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
-- ``nested_sections`` (:ref:`nested_sections`)
-- ``api_usage_ignore`` (:ref:`api_usage_ignore`)
-- ``show_api_usage`` (:ref:`show_api_usage`)
-- ``copyfile_regex`` (:ref:`manual_passthrough`)
+- ``show_api_usage`` and ``api_usage_ignore`` (:ref:`show_api_usage`)
+
+Configurations inside examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Some options can also be set or overridden on a file-by-file basis:
 
@@ -77,18 +104,24 @@ Some options can be set on a per-code-block basis in a file:
 
 - ``# sphinx_gallery_defer_figures`` (:ref:`defer_figures`)
 
+Some options can be set on a per-line basis in a file:
+- ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
+
 See also :ref:`removing_config_comments` to hide config comments in files from
 the rendered examples.
 
-Some options can be set on a per-line basis in a file:
-- ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
+Build options
+^^^^^^^^^^^^^
 
 Some options can be set during the build execution step, e.g. using a Makefile:
 
 - ``make html-noplot`` (:ref:`without_execution`)
 - ``make html_abort_on_example_error`` (:ref:`abort_on_first`)
 
-And some things can be tweaked directly in CSS:
+CSS changes
+^^^^^^^^^^^
+
+Some things can be tweaked directly in CSS:
 
 - ``.sphx-glr-thumbcontainer`` (:ref:`setting_thumbnail_size`)
 
@@ -1675,7 +1708,7 @@ To do so, follow the instructions in :ref:`custom_reset`.
 .. _reset_modules_order:
 
 Order of resetting modules
-==========================
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, Sphinx-Gallery will reset modules before each example is run.
 The choices for ``reset_modules_order`` are ``before`` (default), ``after``, and
@@ -2163,7 +2196,7 @@ used API entry graphs.
 .. _api_usage_ignore:
 
 Ignoring API entries
-====================
+^^^^^^^^^^^^^^^^^^^^
 
 By default, ``api_usage_ignore='.*__.*__'`` ignores files that match this
 regular expression in documenting and graphing the usage of API entries
