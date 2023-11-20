@@ -16,7 +16,7 @@ if [ "$DISTRIB" == "mamba" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     PIP_DEPENDENCIES=""
 elif [ "$DISTRIB" == "pip" ]; then
-    PIP_DEPENDENCIES="-r dev-requirements.txt pyqt6"
+    PIP_DEPENDENCIES="-r dev-requirements.txt pillow pyqt6"
     # No VTK on Python 3.12 pip yet
     if [[ "$(python -c "import sys; print(sys.version)")" != "3.12"* ]]; then
         PIP_DEPENDENCIES="$PIP_DEPENDENCIES vtk"

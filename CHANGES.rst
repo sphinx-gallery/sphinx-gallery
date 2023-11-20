@@ -5,6 +5,7 @@ v0.15.0
 -------
 
 Support for Python 3.7 dropped in this release. Requirement is now Python >=3.8.
+Pillow added as a dependency.
 
 v0.14.0
 -------
