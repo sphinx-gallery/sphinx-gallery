@@ -19,11 +19,11 @@ necessary, and on a case-by-case basis.
 Configuration options
 ======================
 
-`conf.py` configurations
-^^^^^^^^^^^^^^^^^^^^^^^^
+``conf.py`` configurations
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sphinx-Gallery configuration options that can be set in the Sphinx ``conf.py``
-file, inside a `sphinx_gallery_conf` dictionary.
+file, inside a ``sphinx_gallery_conf`` dictionary.
 
 **Gallery files and ordering**
 
