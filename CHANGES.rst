@@ -7,6 +7,48 @@ v0.15.0
 Support for Python 3.7 dropped in this release. Requirement is now Python >=3.8.
 Pillow added as a dependency.
 
+**Implemented enhancements:**
+
+-  ENH: Improve logging visibility of errors and filenames `#1225 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1225>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Improve API usage graph `#1203 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1203>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Always write sg_execution_times and make DataTable `#1198 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1198>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Write all computation times `#1197 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1197>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Support source files in any language `#1192 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1192>`__ (`speth <https://github.com/speth>`__)
+-  FEA Add examples recommender system `#1125 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1125>`__ (`ArturoAmorQ <https://github.com/ArturoAmorQ>`__)
+
+**Fixed bugs:**
+
+-  FIX Copy JupyterLite contents early so it runs before jupyterlite_sphinx build-finished `#1213 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1213>`__ (`lesteve <https://github.com/lesteve>`__)
+-  BUG: Fix bug with orphan sg_api_usage `#1207 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1207>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT Fix check for mismatched “ignore” blocks `#1193 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1193>`__ (`speth <https://github.com/speth>`__)
+-  Avoid importing new modules in backrefs `#1177 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1177>`__ (`aganders3 <https://github.com/aganders3>`__)
+
+**Documentation**
+
+-  DOC Put configuration list under headings `#1230 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1230>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC: contributing guide `#1223 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1223>`__ (`story645 <https://github.com/story645>`__)
+-  DOC Note support for python 3.7 dropped in release notes `#1199 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1199>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Project maintenance**
+
+-  [pre-commit.ci] pre-commit autoupdate `#1231 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1231>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MAINT Add ``extras_require`` in ``setup.py`` `#1229 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1229>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1227 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1227>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1224 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1224>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1219 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1219>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MAINT: pydata-sphinx-theme `#1218 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1218>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MAINT: Improve CircleCI time `#1216 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1216>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1215 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1215>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MAINT: Move to GHA `#1214 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1214>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1206 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1206>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1201 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1201>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1196 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1196>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1194 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1194>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1191 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1191>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1189 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1189>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1187 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1187>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MAINT: Bump ver `#1185 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1185>`__ (`larsoner <https://github.com/larsoner>`__)
+
 v0.14.0
 -------
 
