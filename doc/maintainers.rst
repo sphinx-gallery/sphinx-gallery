@@ -78,7 +78,9 @@ How to make a release
    * The **tag version** is whatever the version is in ``__init__.py`` prepended with ``v``. E.g., ``v0.7.0``.
    * The **release title** is ``Release <tag-version>``.
    * The **description** should contain the markdown changelog
-     you generated above (in the ``CHANGELOG.md`` file).
+     you generated above (in the ``CHANGELOG.md`` file) and include a "Full changelog"
+     link at the top, e.g.;
+     ``[Full Changelog](https://github.com/sphinx-gallery/sphinx-gallery/compare/v0.13.0...v0.14.0)``
    * Click **Publish release** when you are done.
    * Confirm that the new version of Sphinx Gallery
      `is posted to PyPI <https://pypi.org/project/sphinx-gallery/#history>`_.
