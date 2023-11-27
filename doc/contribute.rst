@@ -147,7 +147,7 @@ Guidelines
 Testing
 -------
 
-All code contributions should be tested. We use the `pytest <https://docs.pytest.org/>`
+All code contributions should be tested. We use the `pytest <https://docs.pytest.org/>`_
 testing framework and ``tinybuild`` to build test pages. Tests can be found in 
 :file:`sphinx_gallery/tests`
 
@@ -156,10 +156,10 @@ testing framework and ``tinybuild`` to build test pages. Tests can be found in
 tinybuild
 ^^^^^^^^^
 
-tinybuild is designed as the minimal full sphinx doc build that you can run with 
+``tinybuild`` is designed as the minimal full sphinx doc build that you can run with 
 ``make html`` from :file:`tinybuild/doc` to get a traditional build experience. 
 
-tinybuild gets run in :file:`tests/test_full.py` to build a test page using the 
+``tinybuild`` gets run in :file:`tests/test_full.py` to build a test page using the 
 ``.rst`` document files in :file:`tests/doc/tinybuild`. The tests examine the ``html`` 
 output to verify the behavior of the directives in the ``.rst`` files.
 
