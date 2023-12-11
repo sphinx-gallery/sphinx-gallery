@@ -6,7 +6,7 @@ repos:
         args: [--quiet]
         exclude: plot_syntaxerror
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
+    rev: v0.1.7
     hooks:
       - id: ruff
   - repo: https://github.com/codespell-project/codespell
