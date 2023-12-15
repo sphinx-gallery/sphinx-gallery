@@ -109,10 +109,12 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         Contains the configuration of Sphinx-Gallery
     **kwargs : dict
         Additional keyword arguments to pass to
-        :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``.
-        The ``format`` kwarg in particular is used to set the file extension
-        of the output file (currently only 'png', 'jpg', 'svg', 'gif', and
-        'webp' are supported).
+        :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``. The
+        ``format`` keyword argument in particular is used to set the file
+        extension of the output file (currently only 'png', 'jpg', 'svg',
+        'gif', and 'webp' are supported).
+
+        This is not used internally, but intended for use when overriding the scraper.
 
     Returns
     -------
