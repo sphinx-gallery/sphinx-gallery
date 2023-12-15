@@ -52,6 +52,9 @@ N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
 N_RST = f"({N_RST}|{N_RST - 1}|{N_RST - 2})"  # AppVeyor weirdness
 
 pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
+manim = pytest.importorskip("matplotlib.animation")
+if not manim.writers.is_available("ffmpeg"):
+    pytest.skip("ffmpeg is not available", allow_module_level=True)
 
 
 @pytest.fixture(scope="module")

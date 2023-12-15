@@ -1645,9 +1645,19 @@ than a single static image of the animation figure, you should add::
           'matplotlib_animations': True,
       }
 
-HTML embedding options can be changed by setting ``rcParams['animation.html']``
-and related options in your
-`matplotlib rcParams <https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_.
+Alternatively, you can set the option to a tuple that specifies whether it's
+enabled and the file format to use::
+
+      sphinx_gallery_conf = {
+          ...
+          'matplotlib_animations': (True, 'html5'),
+      }
+
+Any file format supported by Matplotlib for animations is allowed. If no format
+is specified here, or it is *None*, then the format is determined by
+``rcParams['animation.html']`` and related options in your `matplotlib rcParams
+<https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_.
+
 It's also recommended to ensure that "imagemagick" is available as a
 ``writer``, which you can check with
 :class:`matplotlib.animation.ImageMagickWriter.isAvailable()
