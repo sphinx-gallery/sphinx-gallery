@@ -134,7 +134,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     # Check for animations
     anims = {}
-    if gallery_conf["matplotlib_animations"]:
+    if gallery_conf["matplotlib_animations"][0]:
         for ani in block_vars["example_globals"].values():
             if isinstance(ani, Animation):
                 anims[ani._fig] = ani
@@ -230,9 +230,16 @@ def _anim_rst(anim, image_path, gallery_conf):
     else:
         writer = None
     anim.save(str(image_path), writer=writer, dpi=use_dpi)
-    html = anim._repr_html_()
-    if html is None:  # plt.rcParams['animation.html'] == 'none'
+
+    _, fmt = gallery_conf["matplotlib_animations"]
+    if fmt == "html5":
+        html = anim.to_html5_video()
+    elif fmt == "jshtml":
         html = anim.to_jshtml()
+    else:
+        html = anim._repr_html_()
+        if html is None:  # plt.rcParams['animation.html'] == 'none'
+            html = anim.to_jshtml()
     html = indent(html, "     ")
     return _ANIMATION_RST.format(html)
 

@@ -340,6 +340,28 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     gallery_conf["compress_images"] = compress_images
     gallery_conf["compress_images_args"] = compress_images_args
 
+    # deal with matplotlib_animations
+    animations = gallery_conf["matplotlib_animations"]
+    if not isinstance(animations, (tuple, list)):
+        # Original option may be only a boolean.
+        animations = (animations,)
+    if len(animations) not in (1, 2):
+        raise ConfigError(
+            "Matplotlib animation options must be a single bool or "
+            f"(enabled: bool, format: str), not {animations!r}"
+        )
+    enabled = animations[0]
+    if not isinstance(enabled, bool):  # On/off boolean.
+        raise ConfigError("Animation enabled must be a bool")
+    if len(animations) > 1:  # File format.
+        fmt = animations[1]
+        if fmt is not None and not isinstance(fmt, str):
+            raise ConfigError("Animation file format must be a string or None")
+    else:
+        fmt = None
+    gallery_conf["matplotlib_animations"] = (enabled, fmt)
+    del animations, enabled, fmt
+
     # deal with resetters
     resetters = gallery_conf["reset_modules"]
     if not isinstance(resetters, (tuple, list)):

@@ -153,7 +153,7 @@ sphinx_gallery_conf = {
     "show_memory": True,
     "compress_images": ("images", "thumbnails"),
     "junit": op.join("sphinx-gallery", "junit-results.xml"),
-    "matplotlib_animations": True,
+    "matplotlib_animations": (True, "html5"),
     "pypandoc": True,
     "image_srcset": ["2x"],
     "exclude_implicit_doc": ["figure_rst"],
