@@ -98,7 +98,7 @@ def _get_docstring_and_rest(filename):
     if not (
         node.body
         and isinstance(node.body[0], ast.Expr)
-        and isinstance(node.body[0].value, ast.Str)
+        and isinstance(node.body[0].value, ast.Constant)
     ):
         raise ExtensionError(
             'Could not find docstring in file "{}". '
@@ -110,7 +110,7 @@ def _get_docstring_and_rest(filename):
     docstring = ast.get_docstring(node)
     assert docstring is not None  # should be guaranteed above
     # This is just for backward compat
-    if len(node.body[0].value.s) and node.body[0].value.s[0] == "\n":
+    if node.body[0].value.value[:1] == "\n":
         # just for strict backward compat here
         docstring = "\n" + docstring
     ts = tokenize.tokenize(BytesIO(content.encode()).readline)
