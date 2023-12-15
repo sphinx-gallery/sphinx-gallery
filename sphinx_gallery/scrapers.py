@@ -131,27 +131,21 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     srcset = gallery_conf["image_srcset"]
 
     # Check for animations
-    anims = list()
+    anims = {}
     if gallery_conf["matplotlib_animations"]:
         for ani in block_vars["example_globals"].values():
             if isinstance(ani, Animation):
-                anims.append(ani)
+                anims[ani._fig] = ani
     # Then standard images
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         image_path = PurePosixPath(image_path)
         if "format" in kwargs:
             image_path = image_path.with_suffix("." + kwargs["format"])
-        # Set the fig_num figure as the current figure as we can't
-        # save a figure that's not the current figure.
+        # Convert figure number to Figure.
         fig = plt.figure(fig_num)
         # Deal with animations
-        cont = False
-        for anim in anims:
-            if anim._fig is fig:
-                image_rsts.append(_anim_rst(anim, str(image_path), gallery_conf))
-                cont = True
-                break
-        if cont:
+        if anim := anims.get(fig):
+            image_rsts.append(_anim_rst(anim, image_path, gallery_conf))
             continue
         # get fig titles
         fig_titles = _matplotlib_fig_titles(fig)
@@ -223,7 +217,7 @@ def _anim_rst(anim, image_path, gallery_conf):
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
     fig = anim._fig
-    image_path = image_path.replace(".png", ".gif")
+    image_path = image_path.with_suffix(".gif")
     fig_size = fig.get_size_inches()
     thumb_size = gallery_conf["thumbnail_size"]
     use_dpi = round(min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
@@ -233,7 +227,7 @@ def _anim_rst(anim, image_path, gallery_conf):
         writer = "imagemagick"
     else:
         writer = None
-    anim.save(image_path, writer=writer, dpi=use_dpi)
+    anim.save(str(image_path), writer=writer, dpi=use_dpi)
     html = anim._repr_html_()
     if html is None:  # plt.rcParams['animation.html'] == 'none'
         html = anim.to_jshtml()
