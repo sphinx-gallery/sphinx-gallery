@@ -128,21 +128,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     image_path_iterator = block_vars["image_path_iterator"]
     image_rsts = []
-    # Check for srcset hidpi images
     srcset = gallery_conf["image_srcset"]
-    srcset_mult_facs = [1]  # one is always supplied...
-    for st in srcset:
-        if (len(st) > 0) and (st[-1] == "x"):
-            # "2x" = "2.0"
-            srcset_mult_facs += [float(st[:-1])]
-        elif st == "":
-            pass
-        else:
-            raise ExtensionError(
-                f'Invalid value for image_srcset parameter: "{st}". '
-                "Must be a list of strings with the multiplicative "
-                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]'
-            )
 
     # Check for animations
     anims = list()
@@ -189,15 +175,13 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             srcsetpaths = {0: image_path}
 
             # save other srcset paths, keyed by multiplication factor:
-            for mult in srcset_mult_facs:
-                if not (mult == 1):
-                    multst = f"{mult:.2f}".replace(".", "_")
-                    name = f"{image_path.stem}_{multst}x{image_path.suffix}"
-                    hipath = image_path.parent / PurePosixPath(name)
-                    hikwargs = these_kwargs.copy()
-                    hikwargs["dpi"] = mult * dpi0
-                    fig.savefig(hipath, **hikwargs)
-                    srcsetpaths[mult] = hipath
+            for mult in srcset:
+                multst = f"{mult:.2f}".replace(".", "_")
+                name = f"{image_path.stem}_{multst}x{image_path.suffix}"
+                hipath = image_path.parent / PurePosixPath(name)
+                hikwargs = {**these_kwargs, "dpi": mult * dpi0}
+                fig.savefig(hipath, **hikwargs)
+                srcsetpaths[mult] = hipath
             srcsetpaths = [srcsetpaths]
         except Exception:
             plt.close("all")

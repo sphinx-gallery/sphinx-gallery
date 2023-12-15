@@ -80,7 +80,7 @@ def test_save_matplotlib_figures(gallery_conf, ext):
 def test_save_matplotlib_figures_hidpi(gallery_conf):
     """Test matplotlib hidpi figure save."""
     ext = "png"
-    gallery_conf["image_srcset"] = ["2x"]
+    gallery_conf["image_srcset"] = [2]
 
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
 
