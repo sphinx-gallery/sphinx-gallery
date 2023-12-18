@@ -191,7 +191,7 @@ class ExampleRecommender:
 
         freq_func = self.token_freqs
         counts_matrix = self.dict_vectorizer(
-            [freq_func(Path(fname).read_text()) for fname in file_names]
+            [freq_func(Path(fname).read_text(encoding="utf-8")) for fname in file_names]
         )
         if isinstance(min_df, float):
             min_df = int(np.ceil(min_df * counts_matrix.shape[0]))
