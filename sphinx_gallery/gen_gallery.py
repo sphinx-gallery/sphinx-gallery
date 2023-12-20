@@ -284,6 +284,30 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     except (ImportError, ValueError):
         pass
 
+    # Check for srcset hidpi images
+    srcset = gallery_conf["image_srcset"]
+    if not isinstance(srcset, (list, tuple)):
+        raise ConfigError(
+            "image_srcset must be a list of strings with the "
+            'multiplicative factor followed by an "x", '
+            'e.g. ["2.0x", "1.5x"]'
+        )
+    srcset_mult_facs = set()
+    for st in srcset:
+        if not isinstance(st, str) or st[-1:] not in ("", "x"):
+            raise ConfigError(
+                f"Invalid value for image_srcset parameter: {st!r}. "
+                "Must be a list of strings with the multiplicative "
+                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]'
+            )
+        if st == "":
+            continue
+        # "2x" = "2.0"
+        srcset_mult_facs.add(float(st[:-1]))
+    srcset_mult_facs -= {1}  # 1x is always saved.
+    gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
+    del srcset, srcset_mult_facs
+
     # compress_images
     compress_images = gallery_conf["compress_images"]
     if isinstance(compress_images, str):

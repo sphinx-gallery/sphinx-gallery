@@ -109,10 +109,12 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
         Contains the configuration of Sphinx-Gallery
     **kwargs : dict
         Additional keyword arguments to pass to
-        :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``.
-        The ``format`` kwarg in particular is used to set the file extension
-        of the output file (currently only 'png', 'jpg', 'svg', 'gif', and
-        'webp' are supported).
+        :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``. The
+        ``format`` keyword argument in particular is used to set the file
+        extension of the output file (currently only 'png', 'jpg', 'svg',
+        'gif', and 'webp' are supported).
+
+        This is not used internally, but intended for use when overriding the scraper.
 
     Returns
     -------
@@ -128,44 +130,24 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     image_path_iterator = block_vars["image_path_iterator"]
     image_rsts = []
-    # Check for srcset hidpi images
     srcset = gallery_conf["image_srcset"]
-    srcset_mult_facs = [1]  # one is always supplied...
-    for st in srcset:
-        if (len(st) > 0) and (st[-1] == "x"):
-            # "2x" = "2.0"
-            srcset_mult_facs += [float(st[:-1])]
-        elif st == "":
-            pass
-        else:
-            raise ExtensionError(
-                f'Invalid value for image_srcset parameter: "{st}". '
-                "Must be a list of strings with the multiplicative "
-                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]'
-            )
 
     # Check for animations
-    anims = list()
+    anims = {}
     if gallery_conf["matplotlib_animations"]:
         for ani in block_vars["example_globals"].values():
             if isinstance(ani, Animation):
-                anims.append(ani)
+                anims[ani._fig] = ani
     # Then standard images
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         image_path = PurePosixPath(image_path)
         if "format" in kwargs:
             image_path = image_path.with_suffix("." + kwargs["format"])
-        # Set the fig_num figure as the current figure as we can't
-        # save a figure that's not the current figure.
+        # Convert figure number to Figure.
         fig = plt.figure(fig_num)
         # Deal with animations
-        cont = False
-        for anim in anims:
-            if anim._fig is fig:
-                image_rsts.append(_anim_rst(anim, str(image_path), gallery_conf))
-                cont = True
-                break
-        if cont:
+        if anim := anims.get(fig):
+            image_rsts.append(_anim_rst(anim, image_path, gallery_conf))
             continue
         # get fig titles
         fig_titles = _matplotlib_fig_titles(fig)
@@ -189,15 +171,13 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             srcsetpaths = {0: image_path}
 
             # save other srcset paths, keyed by multiplication factor:
-            for mult in srcset_mult_facs:
-                if not (mult == 1):
-                    multst = f"{mult:.2f}".replace(".", "_")
-                    name = f"{image_path.stem}_{multst}x{image_path.suffix}"
-                    hipath = image_path.parent / PurePosixPath(name)
-                    hikwargs = these_kwargs.copy()
-                    hikwargs["dpi"] = mult * dpi0
-                    fig.savefig(hipath, **hikwargs)
-                    srcsetpaths[mult] = hipath
+            for mult in srcset:
+                multst = f"{mult:.2f}".replace(".", "_")
+                name = f"{image_path.stem}_{multst}x{image_path.suffix}"
+                hipath = image_path.parent / PurePosixPath(name)
+                hikwargs = {**these_kwargs, "dpi": mult * dpi0}
+                fig.savefig(hipath, **hikwargs)
+                srcsetpaths[mult] = hipath
             srcsetpaths = [srcsetpaths]
         except Exception:
             plt.close("all")
@@ -239,7 +219,7 @@ def _anim_rst(anim, image_path, gallery_conf):
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
     fig = anim._fig
-    image_path = image_path.replace(".png", ".gif")
+    image_path = image_path.with_suffix(".gif")
     fig_size = fig.get_size_inches()
     thumb_size = gallery_conf["thumbnail_size"]
     use_dpi = round(min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
@@ -249,7 +229,7 @@ def _anim_rst(anim, image_path, gallery_conf):
         writer = "imagemagick"
     else:
         writer = None
-    anim.save(image_path, writer=writer, dpi=use_dpi)
+    anim.save(str(image_path), writer=writer, dpi=use_dpi)
     html = anim._repr_html_()
     if html is None:  # plt.rcParams['animation.html'] == 'none'
         html = anim.to_jshtml()

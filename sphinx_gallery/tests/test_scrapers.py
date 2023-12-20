@@ -19,17 +19,20 @@ from sphinx_gallery.scrapers import (
 
 
 @pytest.fixture(scope="function")
-def gallery_conf(tmpdir):
+def make_gallery_conf(tmpdir):
     """Sets up a test sphinx-gallery configuration."""
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
-    gallery_conf = _fill_gallery_conf_defaults({})
-    gallery_conf.update(
-        src_dir=str(tmpdir), examples_dir=str(tmpdir), gallery_dir=str(tmpdir)
-    )
+    def make_gallery_conf(init=None):
+        gallery_conf = _fill_gallery_conf_defaults(init or {})
+        gallery_conf.update(
+            src_dir=str(tmpdir), examples_dir=str(tmpdir), gallery_dir=str(tmpdir)
+        )
 
-    return gallery_conf
+        return gallery_conf
+
+    return make_gallery_conf
 
 
 class matplotlib_svg_scraper:
@@ -44,10 +47,11 @@ class matplotlib_svg_scraper:
 
 
 @pytest.mark.parametrize("ext", ("png", "svg"))
-def test_save_matplotlib_figures(gallery_conf, ext):
+def test_save_matplotlib_figures(make_gallery_conf, ext):
     """Test matplotlib figure save."""
-    if ext == "svg":
-        gallery_conf["image_scrapers"] = (matplotlib_svg_scraper(),)
+    gallery_conf = make_gallery_conf(
+        {"image_scrapers": (matplotlib_svg_scraper(),)} if ext == "svg" else {}
+    )
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
 
     plt.plot(1, 1)
@@ -77,10 +81,24 @@ def test_save_matplotlib_figures(gallery_conf, ext):
         assert os.path.isfile(fname)
 
 
-def test_save_matplotlib_figures_hidpi(gallery_conf):
+def test_image_srcset_config(make_gallery_conf):
+    with pytest.raises(ConfigError, match="image_srcset must be a list of strings"):
+        make_gallery_conf({"image_srcset": "2x"})
+    with pytest.raises(ConfigError, match="Invalid value for image_srcset parameter"):
+        make_gallery_conf({"image_srcset": [False]})
+    with pytest.raises(ConfigError, match="Invalid value for image_srcset parameter"):
+        make_gallery_conf({"image_srcset": ["200"]})
+
+    conf = make_gallery_conf({"image_srcset": ["2x"]})
+    assert conf["image_srcset"] == [2.0]
+    conf = make_gallery_conf({"image_srcset": ["", "1x", "2x"]})
+    assert conf["image_srcset"] == [2.0]  # "" and "1x" are implied.
+
+
+def test_save_matplotlib_figures_hidpi(make_gallery_conf):
     """Test matplotlib hidpi figure save."""
+    gallery_conf = make_gallery_conf({"image_srcset": ["2x"]})
     ext = "png"
-    gallery_conf["image_srcset"] = ["2x"]
 
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
 
@@ -126,7 +144,7 @@ def _custom_func(x, y, z):
     return y["image_path_iterator"].next()
 
 
-def test_custom_scraper(gallery_conf, monkeypatch):
+def test_custom_scraper(make_gallery_conf, monkeypatch):
     """Test custom scrapers."""
     # Test the API contract for custom scrapers
     with monkeypatch.context() as m:
@@ -134,40 +152,37 @@ def test_custom_scraper(gallery_conf, monkeypatch):
             sphinx_gallery, "_get_sg_image_scraper", lambda: _custom_func, raising=False
         )
         for cust in (_custom_func, "sphinx_gallery"):
-            gallery_conf.update(image_scrapers=[cust])
             # smoke test that it works
-            _fill_gallery_conf_defaults(gallery_conf, check_keys=False)
+            make_gallery_conf({"image_scrapers": [cust]})
     # degenerate
     # without the monkey patch to add sphinx_gallery._get_sg_image_scraper,
     # we should get an error
-    gallery_conf.update(image_scrapers=["sphinx_gallery"])
     with pytest.raises(ConfigError, match="has no attribute '_get_sg_image_scraper'"):
-        _fill_gallery_conf_defaults(gallery_conf, check_keys=False)
+        make_gallery_conf({"image_scrapers": ["sphinx_gallery"]})
 
     # other degenerate conditions
-    gallery_conf.update(image_scrapers=["foo"])
     with pytest.raises(ConfigError, match="Unknown image scraper"):
-        _fill_gallery_conf_defaults(gallery_conf, check_keys=False)
-    gallery_conf.update(image_scrapers=[_custom_func])
-    fname_template = os.path.join(gallery_conf["gallery_dir"], "image{0}.png")
-    image_path_iterator = ImagePathIterator(fname_template)
-    block = ("",) * 3
-    block_vars = dict(image_path_iterator=image_path_iterator)
-    with pytest.raises(ExtensionError, match="did not produce expected image"):
-        save_figures(block, block_vars, gallery_conf)
-    gallery_conf.update(image_scrapers=[lambda x, y, z: 1.0])
-    with pytest.raises(ExtensionError, match="was not a string"):
-        save_figures(block, block_vars, gallery_conf)
+        make_gallery_conf({"image_scrapers": ["foo"]})
+    for cust, msg in [
+        (_custom_func, "did not produce expected image"),
+        (lambda x, y, z: 1.0, "was not a string"),
+    ]:
+        conf = make_gallery_conf({"image_scrapers": [cust]})
+        fname_template = os.path.join(conf["gallery_dir"], "image{0}.png")
+        image_path_iterator = ImagePathIterator(fname_template)
+        block = ("",) * 3
+        block_vars = dict(image_path_iterator=image_path_iterator)
+        with pytest.raises(ExtensionError, match=msg):
+            save_figures(block, block_vars, conf)
     # degenerate string interface
-    gallery_conf.update(image_scrapers=["sphinx_gallery"])
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, "_get_sg_image_scraper", "foo", raising=False)
         with pytest.raises(ConfigError, match="^Unknown image.*\n.*callable"):
-            _fill_gallery_conf_defaults(gallery_conf, check_keys=False)
+            make_gallery_conf({"image_scrapers": ["sphinx_gallery"]})
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, "_get_sg_image_scraper", lambda: "foo", raising=False)
         with pytest.raises(ConfigError, match="^Scraper.*was not callable"):
-            _fill_gallery_conf_defaults(gallery_conf, check_keys=False)
+            make_gallery_conf({"image_scrapers": ["sphinx_gallery"]})
 
 
 @pytest.mark.parametrize("ext", _KNOWN_IMG_EXTS)
@@ -230,7 +245,7 @@ def test_figure_rst_srcset():
     assert image_rst == single_image
 
     hipaths += [{0: "second.png", 2.0: "second_2_00.png"}]
-    image_rst = figure_rst(figure_list + ["second.png"], ".", srcsetpaths=hipaths + [])
+    image_rst = figure_rst(figure_list + ["second.png"], ".", srcsetpaths=hipaths)
     image_list_rst = """
 .. rst-class:: sphx-glr-horizontal
 
@@ -268,13 +283,14 @@ def test_iterator():
             pass
 
 
-def test_reset_matplotlib(gallery_conf):
+def test_reset_matplotlib(make_gallery_conf):
     """Test _reset_matplotlib."""
     import matplotlib
 
     matplotlib.rcParams["lines.linewidth"] = 42
     matplotlib.units.registry.clear()
 
+    gallery_conf = make_gallery_conf()
     _reset_matplotlib(gallery_conf, "")
 
     assert matplotlib.rcParams["lines.linewidth"] != 42
