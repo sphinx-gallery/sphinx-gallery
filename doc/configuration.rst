@@ -1650,13 +1650,16 @@ enabled and the file format to use::
 
       sphinx_gallery_conf = {
           ...
-          'matplotlib_animations': (True, 'html5'),
+          'matplotlib_animations': (True, 'mp4'),
       }
 
 Any file format supported by Matplotlib for animations is allowed. If no format
 is specified here, or it is *None*, then the format is determined by
 ``rcParams['animation.html']`` and related options in your `matplotlib rcParams
-<https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_.
+<https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_. If
+the format is ``'html5'`` or ``'jshtml'``, then the animation will effectively
+be embedded in the resulting HTML file, otherwise the animation will be saved
+in an external file.
 
 It's also recommended to ensure that "imagemagick" is available as a
 ``writer``, which you can check with
