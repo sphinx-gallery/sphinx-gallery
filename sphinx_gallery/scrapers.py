@@ -94,6 +94,12 @@ _ANIMATION_RST = """
 
         {0}
 """
+_ANIMATION_VIDEO_RST = """
+.. image:: {video}
+   :height: {height}
+   :width: {width}
+   :class: controls
+"""
 
 
 def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
@@ -215,6 +221,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
 def _anim_rst(anim, image_path, gallery_conf):
     from matplotlib.animation import FFMpegWriter, ImageMagickWriter
+    from matplotlib import rcParams
 
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
@@ -232,16 +239,31 @@ def _anim_rst(anim, image_path, gallery_conf):
     anim.save(str(image_path), writer=writer, dpi=use_dpi)
 
     _, fmt = gallery_conf["matplotlib_animations"]
-    if fmt == "html5":
-        html = anim.to_html5_video()
-    elif fmt == "jshtml":
-        html = anim.to_jshtml()
-    else:
+    html = None
+    if fmt is None:
         html = anim._repr_html_()
         if html is None:  # plt.rcParams['animation.html'] == 'none'
             html = anim.to_jshtml()
-    html = indent(html, "     ")
-    return _ANIMATION_RST.format(html)
+    elif fmt == "html5":
+        html = anim.to_html5_video()
+    elif fmt == "jshtml":
+        html = anim.to_jshtml()
+    if html is not None:
+        html = indent(html, "     ")
+        return _ANIMATION_RST.format(html)
+
+    video = image_path.with_suffix(f".{fmt}")
+    anim.save(video)
+    dpi = rcParams["savefig.dpi"]
+    if dpi == "figure":
+        dpi = fig.dpi
+    video_uri = video.relative_to(gallery_conf["src_dir"]).as_posix()
+    html = _ANIMATION_VIDEO_RST.format(
+        video=f"/{video_uri}",
+        width=int(fig_size[0] * dpi),
+        height=int(fig_size[1] * dpi),
+    )
+    return html
 
 
 _scraper_dict = dict(
