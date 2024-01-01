@@ -52,6 +52,8 @@ An incomplete list:
 * `Cartopy <https://scitools.org.uk/cartopy/docs/latest/gallery/>`_
 * `FURY <https://fury.gl/latest/auto_examples/index.html>`_
 * `pyGIMLi <https://www.pygimli.org/_examples_auto/index.html>`_
+* `HyperSpy <https://hyperspy.org/hyperspy-doc/current/>`_
+* `kikuchipy <https://kikuchipy.org>`_
 * `Matplotlib <https://matplotlib.org/stable/index.html>`_
 * `MNE-Python <https://mne.tools/stable/auto_examples/index.html>`_
 * `Nestle <http://kylebarbary.com/nestle/examples/index.html>`_
@@ -68,6 +70,7 @@ An incomplete list:
 * `PySurfer <https://pysurfer.github.io/>`_
 * `PyTorch tutorials <https://pytorch.org/tutorials>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
+* `pyxem <https://pyxem.readthedocs.io>`_
 * `RADIS <https://radis.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `scikit-image <https://scikit-image.org/docs/dev/auto_examples/>`_
 * `scikit-learn <https://scikit-learn.org/stable/auto_examples/index.html>`_
