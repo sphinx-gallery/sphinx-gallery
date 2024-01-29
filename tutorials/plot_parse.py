@@ -8,7 +8,6 @@ rules. This example demonstrates how to alternate text and code blocks and some
 edge cases. It was designed to be compared with the
 :download:`source Python script <plot_parse.py>`."""
 
-
 # %%
 # This is the first text block and directly follows the header docstring above.
 

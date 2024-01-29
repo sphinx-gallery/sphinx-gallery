@@ -3,6 +3,7 @@ Sphinx Gallery
 ==============
 
 """
+
 import os
 
 # dev versions should have "dev" in them, stable should not.

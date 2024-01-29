@@ -1,4 +1,5 @@
 """Sphinx-Gallery documentation build configuration file."""
+
 # Sphinx-Gallery documentation build configuration file, created by
 # sphinx-quickstart on Mon Nov 17 16:01:26 2014.
 #

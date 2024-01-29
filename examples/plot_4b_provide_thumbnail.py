@@ -8,6 +8,7 @@ thumbnail. This is done by specifying the keyword-value pair
 docstring in the example file. In this example, we specify that we wish the
 figure ``demo.png`` in the folder ``_static`` to be used for the thumbnail.
 """
+
 import numpy as np
 import matplotlib.pyplot as plt
 

@@ -2,6 +2,7 @@
 
 This should not be used at the same time as sphinx_gallery.gen_gallery.
 """
+
 from . import __version__, glr_path_static
 from .directives import ImageSg, imagesg_addnode
 

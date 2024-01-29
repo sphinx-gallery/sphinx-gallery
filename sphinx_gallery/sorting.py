@@ -2,6 +2,7 @@ r"""Sorters for Sphinx-Gallery (sub)sections.
 
 Sorting key functions for gallery subsection folders and section files.
 """
+
 # Created: Sun May 21 20:38:59 2017
 # Author: Óscar Nájera
 # License: 3-clause BSD

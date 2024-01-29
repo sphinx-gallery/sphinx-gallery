@@ -2,6 +2,7 @@ r"""Parser for Jupyter notebooks.
 
 Class that holds the Jupyter notebook information
 """
+
 # Author: Óscar Nájera
 # License: 3-clause BSD
 

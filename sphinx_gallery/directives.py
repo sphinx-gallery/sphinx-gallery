@@ -1,4 +1,5 @@
 """Custom Sphinx directives."""
+
 import os
 from pathlib import PurePosixPath
 import shutil
