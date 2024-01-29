@@ -83,10 +83,10 @@ def test_bug_cases_of_notebook_syntax():
     """
     with open("sphinx_gallery/tests/reference_parse.txt") as reference:
         ref_blocks = ast.literal_eval(reference.read())
-        file_conf, blocks = split_code_and_text_blocks("tutorials/plot_parse.py")
+    file_conf, blocks = split_code_and_text_blocks("tutorials/plot_parse.py")
 
-        assert file_conf == {}
-        assert blocks == ref_blocks
+    assert file_conf == {}
+    assert blocks == ref_blocks
 
 
 def test_direct_comment_after_docstring():
