@@ -1,6 +1,6 @@
 sphinx >= 4, != 5.2.0
 pydata-sphinx-theme
-pytest!=8.0.0
+pytest
 pytest-coverage
 numpy
 matplotlib
