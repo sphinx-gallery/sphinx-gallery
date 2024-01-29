@@ -25,6 +25,7 @@ high-level API `plotly express <https://plotly.com/python/plotly-express/>`_.
 
 .. _plotly library: https://plotly.com/python/
 """
+
 import plotly.express as px
 import numpy as np
 

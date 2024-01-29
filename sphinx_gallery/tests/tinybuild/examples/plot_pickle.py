@@ -4,6 +4,7 @@ Pickling
 
 This example pickles a function.
 """
+
 from math import sqrt
 import pickle
 

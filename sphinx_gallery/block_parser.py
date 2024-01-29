@@ -1,4 +1,5 @@
 """BlockParser divides non `.py` source files into blocks of code and markup text."""
+
 import ast
 import codecs
 from pathlib import Path

@@ -11,6 +11,7 @@ Sphinx-Gallery documentation. The output that is captured with this setting
 is demonstrated in this example. Differences in outputs that would be captured
 with other ``capture_repr`` settings is also explained.
 """
+
 # %%
 # Nothing is captured for the code block below because no data is directed to
 # standard output and the last statement is an assignment, not an expression.
