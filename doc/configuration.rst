@@ -51,6 +51,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 - ``minigallery_sort_order`` (:ref:`minigallery_order`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
   and ``inspect_global_variables`` (:ref:`references_to_examples`)
+- ``minigallery_sort_order`` (:ref:`minigalleries_to_examples`)
 
 **Images and thumbnails**
 
@@ -384,23 +385,8 @@ the converse does not hold.
 
 If you so desire you can implement your own sorting key. It will be
 provided the relative paths to `conf.py` of each sub gallery folder.
-
-.. warning:: If you create your own class for ``'subsection_order'``, ensure
-             that the ``__str__`` of your class is stable across runs.
-             Sphinx determines if the build environment has changed
-             (and thus if *all* documents should be rewritten)
-             by examining the config values using
-             ``md5(str(obj).encode()).hexdigest()`` in
-             ``sphinx/builders/html.py``. Default class instances
-             in Python have their memory address in their ``__repr__`` which
-             will in general change for each build. For ``ExplicitOrder``
-             for example, this is fixed via::
-
-                 def __repr__(self):
-                     return '<%s: %s>' % (self.__class__.__name__, self.ordered_list)
-
-             Thus the files are only all rebuilt if the specified ordered list
-             is changed.
+Note that it will be passed the subfolder path relative to the ``conf.py`` file.
+See :ref:`own_sort_keys` for more.
 
 .. _within_gallery_order:
 
@@ -419,8 +405,6 @@ which sorts the files based on the number of code lines::
         'within_subsection_order': NumberOfCodeLinesSortKey,
     }
 
-.. _sort_classes:
-
 In addition, multiple convenience classes are provided for use with
 ``within_subsection_order``:
 
@@ -429,7 +413,54 @@ In addition, multiple convenience classes are provided for use with
 - :class:`sphinx_gallery.sorting.FileSizeSortKey` to sort by file size.
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
-- :class:`sphinx_gallery.sorting.FunctionSortKey` to sort using an arbitrary function.
+
+You can also create your own using :class:`sphinx_gallery.sorting.FunctionSortKey`.
+Note that it will be passed the example file name.
+See :ref:`own_sort_keys` for more.
+
+.. _own_sort_keys:
+
+You own sort keys
+=================
+
+You can create your own sort key class for the following configurations:
+
+* :ref:`subsection_order <sub_gallery_order>`
+* :ref:`within_subsection_order <within_gallery_order>`
+* :ref:`minigallery_sort_order <minigallery_order>`
+
+We recommend that you use :class:`sphinx_gallery.sorting.FunctionSortKey` class,
+which will ensure ``__repr__`` of your class is stable across runs (see below).
+Simply pass your sort key function when creating a new instance of
+:class:`sphinx_gallery.sorting.FunctionSortKey`. For example, the following
+``within_subsection_order`` configuration will sort using the first 10 letters
+of each filename:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+    #...,
+    "within_subsection_order": FunctionSortKey(
+        lambda filename: filename[:10]),
+    #...
+    }
+
+When creating your own sort key classes, you must ensure
+that the ``__repr__`` of your class is stable across runs.
+Sphinx determines if the build environment has changed
+(and thus if *all* documents should be rewritten)
+by examining the config values using
+``md5(str(obj).encode()).hexdigest()`` in
+``sphinx/builders/html.py``. Default class instances
+in Python have their memory address in their ``__repr__`` which
+will in general change for each build. For example, in
+:class:`sphinx_gallery.sorting.ExplicitOrder` this is fixed via::
+
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.ordered_list)
+
+Thus the files are only all rebuilt if the specified ordered list
+is changed.
 
 .. _link_to_documentation:
 
@@ -510,13 +541,12 @@ Add mini-galleries
 
 Sphinx-Gallery provides the :class:`sphinx_gallery.directives.MiniGallery`
 directive so that you can easily add a reduced version of the Gallery to
-your sphinx documentation ``.rst`` files. The mini-gallery directive therefore
+your Sphinx documentation ``.rst`` files. The mini-gallery directive therefore
 supports passing a list (space separated) of any of the following:
 
 * full qualified name of object
 * pathlike strings to example Python files
 * glob-style pathlike strings to example Python files
-
 
 For example, the rst below adds the reduced version of the Gallery for all
 examples that use the specific function ``numpy.exp``, the example
@@ -532,8 +562,7 @@ examples that use the specific function ``numpy.exp``, the example
         ../examples/plot_0_sin.py
         ../examples/plot_4*
 
-
-Listing multiple items, separated by spaces, merges all the examples into a
+Listing multiple items merges all the examples into a
 single mini-gallery. The mini-gallery will only be shown if the files exist or
 the items are actually used or referred to in an example.
 
@@ -544,22 +573,34 @@ the items are actually used or referred to in an example.
     ../examples/plot_0_sin.py
     ../examples/plot_4*
 
+You can also provide the list of items in the body of the directive like so:
 
-The ``add-heading`` option adds a heading for the mini-gallery, which will be a
-default generated message "Examples using *{full qualified object name}*" if no
-string is provided as an argument. Specifying a custom heading message is
-recommended for a gallery with multiple items because the default message is
+.. code-block:: rst
+
+    .. minigallery::
+        :add-heading:
+
+        numpy.exp
+        ../examples/plot_0_sin.py
+        ../examples/plot_4*
+
+The ``add-heading`` option adds a heading for the mini-gallery. If no string argument
+is provided the default heading will be:
+"Examples using *{full qualified object name}*" (when only a single item is listed).
+Specifying a custom heading message is
+recommended for a gallery with multiple items because otherwise the default message is
 "Examples of one of multiple objects".
 
 The example mini-gallery shown above uses the default heading level ``^``. This
 can be changed using the ``heading-level`` option, which accepts a single
 character (e.g., ``-``).
 
-The following form of passing inputs to minigallery is also supported:
+You can also pass inputs to the minigallery directive as a space separated
+list of arguments:
 
 .. code-block:: rst
 
-    .. minigallery:: numpy.exp , ../examples/plot_0_sin.py
+    .. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
 
 .. _references_to_examples:
 
@@ -630,7 +671,6 @@ To exclude the functions mentioned above you would use
 instead of any character, if the name is unambiguous you can also write
 ``pyplot.show`` or just ``show``).
 
-
 .. _file_based_minigalleries:
 
 Create mini-galleries using file paths
@@ -652,20 +692,24 @@ mini-gallery directive therefore also supports passing in:
     :add-heading: Mini-gallery using paths
     :heading-level: ^
 
+See :ref:`Add mini-galleries <minigalleries_to_examples>` for more details.
+
 .. _minigallery_order:
 
 Sort mini-gallery thumbnails from files
 """""""""""""""""""""""""""""""""""""""
 
-The mini-gallery directive generates a gallery of thumbnails corresponding to
+The minigallery directive generates a gallery of thumbnails corresponding to
 the input file strings or object names. The ordering of these thumbnails can be
-set using the ``minigallery_sort_order`` configuration key, which is any
-sphinx-gallery :ref:`sorting <sort-warning>` method. The minigallery directive
-sorts on a list of backreference ``{input}.example`` and file
-``{gallery_example}.py`` path strings.
+set using the ``minigallery_sort_order`` configuration, which takes a sort key
+function. It will be passed the path to the gallery examples (e.g.,
+``plot_example.py``) as a string
+and backreference file paths (e.g., ``numpy.exp.examples``),
+from all the input items.
+See :ref:`own_sort_keys` for details on writing your own sort key.
 
-Here the sorting method :class:`sphinx_gallery.sorting.FunctionSortKey` is used
-to wrap a function that puts the backreference thumbnails at the end of the
+We recommend using the :class:`sphinx_gallery.sorting.FunctionSortKey` class. Below
+is an example that puts the backreference thumbnails at the end of the
 list.
 
 .. code-block:: python
@@ -673,17 +717,16 @@ list.
     sphinx_gallery_conf = {
     #...,
     "minigallery_sort_order": FunctionSortKey(
-        lambda x: (not x.startswith("plot_4b"), x)),
+        lambda x: (not x.startswith("plot_"), x)),
     #...
     }
 
 Sorting the set of thumbnails generated from
-:ref:`API backreferences <references_to_examples>`, i.e. the thumbnails linked
-to a qualified object name input is not supported, but the sorting function can
-be used to position the entire set of backreference thumbnails since it sees
+:ref:`API backreferences <references_to_examples>` (i.e. the thumbnails linked
+to a qualified object name input) is not supported, but the sorting function can
+be used to position the entire set of backreference thumbnails since it get passed
 the ``{input}.example`` file naming pattern. Thumbnails may be duplicated if
 they correspond to multiple object names or an object name and file/glob input.
-
 
 Auto-documenting your API with links to examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
