@@ -104,9 +104,7 @@ class MiniGallery(Directive):
             if path := has_backrefs(obj):
                 file_paths.append((obj, path))
             elif paths := Path(src_dir).glob(obj):
-                file_paths.extend(
-                    [(obj, p) for p in paths if (obj, p) not in file_paths]
-                )
+                file_paths.extend([(obj, p) for p in paths])
 
         if len(file_paths) == 0:
             return []
@@ -115,7 +113,7 @@ class MiniGallery(Directive):
 
         # sort on the str(file path but keep (obj, path) pair
         for obj, path in sorted(
-            file_paths,
+            set(file_paths),
             key=lambda x: config.sphinx_gallery_conf["minigallery_sort_order"](
                 str(x[-1])
             ),
