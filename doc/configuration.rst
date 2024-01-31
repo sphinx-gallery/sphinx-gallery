@@ -687,11 +687,11 @@ list of arguments:
 Sort mini-gallery thumbnails from files
 """""""""""""""""""""""""""""""""""""""
 
-The minigallery directive generates a gallery of thumbnails corresponding to
-the input file strings or object names.
+The :ref:`minigallery <minigalleries_to_examples>` directive generates a gallery of
+thumbnails corresponding to the input file strings or object names.
 You can specify minigallery thumbnails order via the ``minigallery_sort_order``
-configuration, which gets passed to :py:func:`sorted` ``key`` parameter when sorting
-all minigalleries.
+configuration, which gets passed to the :py:func:`sorted` ``key`` parameter when
+sorting all minigalleries.
 Sorting uses the gallery example filenames (e.g., ``plot_example.py``) and
 backreference filenames (e.g., ``numpy.exp.examples``)
 corresponding to all inputs.

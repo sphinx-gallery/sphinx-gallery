@@ -35,4 +35,4 @@ Minigalllery directive
 
 Sphinx-Gallery provides the ``minigallery`` directive so you can easily add a reduced
 version of the gallery to your documentation.
-See :ref:`minigalleries_to_examples`
+See :ref:`minigalleries_to_examples` for details.
