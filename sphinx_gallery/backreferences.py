@@ -27,9 +27,12 @@ THUMBNAIL_PARENT_DIV = """
 
     <div class="sphx-glr-thumbnails">
 
+.. thumbnail-parent-div-open
 """
 
 THUMBNAIL_PARENT_DIV_CLOSE = """
+.. thumbnail-parent-div-close
+
 .. raw:: html
 
     </div>

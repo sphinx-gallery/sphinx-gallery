@@ -14,6 +14,7 @@ import time
 import glob
 import json
 
+import lxml.html
 from packaging.version import Version
 
 from sphinx import __version__ as sphinx_version
@@ -1069,69 +1070,114 @@ def test_backreference_labels(sphinx_app):
     assert link in html
 
 
-@pytest.mark.parametrize(
-    "test, nlines, filenamesortkey",
-    [
-        # first example, no heading
-        ("Test 1-N", 5, False),
-        # first example, default heading, default level
-        ("Test 1-D-D", 7, False),
-        # first example, default heading, custom level
-        ("Test 1-D-C", 7, False),
-        # first example, custom heading, default level
-        ("Test 1-C-D", 8, False),
-        # both examples, no heading
-        ("Test 2-N", 10, True),
-        # both examples, default heading, default level
-        ("Test 2-D-D", 13, True),
-        # both examples, custom heading, custom level
-        ("Test 2-C-C", 14, True),
-    ],
-)
-def test_minigallery_directive(sphinx_app, test, nlines, filenamesortkey):
-    """Tests the functionality of the minigallery directive."""
+@pytest.fixture(scope="module")
+def minigallery_tree(sphinx_app):
     out_dir = sphinx_app.outdir
     minigallery_html = op.join(out_dir, "minigallery.html")
     with codecs.open(minigallery_html, "r", "utf-8") as fid:
-        lines = fid.readlines()
+        tree = lxml.html.fromstring(fid.read())
 
-    # Regular expressions for matching
-    any_heading = re.compile(r"<h([1-6])>.+<\/h\1>")
-    explicitorder_example = re.compile(
-        r"(?s)<img .+" r"(plot_second_future_imports).+" r"auto_examples\/\1\.html"
+    names = tree.xpath('//p[starts-with(text(), "Test")]')
+    divs = tree.find_class("sphx-glr-thumbnails")
+    assert len(names) == len(divs)
+    return {name.text_content(): div for name, div in zip(names, divs)}
+
+
+@pytest.mark.parametrize(
+    "test, heading, sortkey",
+    [
+        # first example, no heading
+        ("Test 1-N", None, {"explicit"}),
+        # first example, default heading, default level
+        (
+            "Test 1-D-D",
+            ("h2", "Examples using sphinx_gallery.sorting.ExplicitOrder"),
+            {"explicit"},
+        ),
+        # first example, default heading, custom level
+        (
+            "Test 1-D-C",
+            ("h3", "Examples using sphinx_gallery.sorting.ExplicitOrder"),
+            {"explicit"},
+        ),
+        # first example, custom heading, default level
+        ("Test 1-C-D", ("h2", "This is a custom heading"), {"explicit"}),
+        # both examples, no heading
+        ("Test 2-N", None, {"explicit", "filename"}),
+        # both examples, default heading, default level
+        (
+            "Test 2-D-D",
+            ("h2", "Examples using one of multiple objects"),
+            {"explicit", "filename"},
+        ),
+        # both examples, custom heading, custom level
+        (
+            "Test 2-C-C",
+            ("h1", "This is a different custom heading"),
+            {"explicit", "filename"},
+        ),
+        # filepath, no heading
+        ("Test 1-F", None, {"path"}),
+        # glob, no heading
+        ("Test 2-F-G", None, {"glob"}),
+        # all files
+        (
+            "Test 3-F-G-B",
+            ("h2", "All the input types", ""),
+            {"path", "glob", "explicit", "filename"},
+        ),
+        ("Test 1-F-R", None, ["plot_boo", "plot_cos"]),
+        # Also checks sort element is filename only (excluding path)
+        ("Test 1-S", None, ["plot_sub2", "plot_sub1"]),
+        ("Test 3-N", None, {"path", "glob", "explicit", "filename"}),
+    ],
+)
+def test_minigallery_directive(minigallery_tree, test, heading, sortkey):
+    """Tests the functionality of the minigallery directive."""
+    assert test in minigallery_tree
+
+    text = minigallery_tree[test]
+
+    assert text is not None
+
+    heading_element = text.xpath(
+        'preceding-sibling::*[position()=1 and starts-with(name(), "h")]'
     )
-    filenamesortkey_example = re.compile(
-        r"(?s)<img .+" r"(plot_numpy_matplotlib).+" r"auto_examples\/\1\.html"
-    )
-    # Heading strings
-    heading_str = {
-        "Test 1-N": None,
-        "Test 1-D-D": r"<h2>Examples using .+ExplicitOrder.+<\/h2>",
-        "Test 1-D-C": r"<h3>Examples using .+ExplicitOrder.+<\/h3>",
-        "Test 1-C-D": r"<h2>This is a custom heading.*<\/h2>",
-        "Test 2-N": None,
-        "Test 2-D-D": r"<h2>Examples using one of multiple objects.*<\/h2>",
-        "Test 2-C-C": r"<h1>This is a different custom heading.*<\/h1>",
-    }
+    # Check headings
+    if heading:
+        assert heading_element[0].tag == heading[0]
+        assert heading_element[0].text_content().startswith(heading[1])
+    else:
+        assert heading_element == []
 
-    for i in range(len(lines)):
-        if test in lines[i]:
-            text = "".join(lines[i : i + nlines])
-            print(f"{test}: {text}")
-            # Check headings
-            if heading_str[test]:
-                heading = re.compile(heading_str[test])
-                assert heading.search(text) is not None
-            else:
-                # Confirm there isn't a heading
-                assert any_heading.search(text) is None
+    if test in ["Test 1-F-R", "Test 1-S"]:
+        img = text.xpath('descendant::img[starts-with(@src, "_images/sphx_glr")]')
+        href = text.xpath('descendant::a[starts-with(@href, "auto_examples_with_rst")]')
 
-            # Check for examples
-            assert explicitorder_example.search(text) is not None
-            if filenamesortkey:
-                assert filenamesortkey_example.search(text) is not None
+        for p, i, h in zip(sortkey, img, href):
+            assert (p in i.values()[-1]) and (p in h.values()[-1])
+    else:
+        examples = {
+            "explicit": "plot_second_future_imports",
+            "filename": "plot_numpy_matplotlib",
+            "path": "plot_log",
+            "glob": "plot_matplotlib_alt",
+        }
+
+        for key, fname in examples.items():
+            img = text.xpath(
+                f'descendant::img[@src = "_images/sphx_glr_{fname}_thumb.png"]'
+            )
+            href = text.xpath(
+                f'descendant::a[starts-with(@href, "auto_examples/{fname}.html")]'
+            )
+            if key in sortkey:
+                assert img and href
+
             else:
-                assert filenamesortkey_example.search(text) is None
+                assert not (img or href)
+
+    print(f"{test}: {lxml.html.tostring(text)}")
 
 
 def test_matplotlib_warning_filter(sphinx_app):

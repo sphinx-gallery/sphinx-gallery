@@ -29,3 +29,10 @@ This will download directly from PyPI our latest released code and
 save it to the current folder. This is a stripped version of the
 Sphinx-Gallery module to incorporate in your project. You should also
 add it to your version control system.
+
+Minigalllery directive
+======================
+
+Sphinx-Gallery provides the ``minigallery`` directive so you can easily add a reduced
+version of the gallery to your documentation.
+See :ref:`minigalleries_to_examples` for details.

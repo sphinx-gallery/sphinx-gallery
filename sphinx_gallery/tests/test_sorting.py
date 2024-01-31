@@ -12,6 +12,7 @@ from sphinx_gallery.sorting import (
     FileNameSortKey,
     FileSizeSortKey,
     ExampleTitleSortKey,
+    FunctionSortKey,
 )
 
 
@@ -48,3 +49,18 @@ def test_ExplicitOrder_sorting_key():
         assert str(sorter) == f"<{klass.__name__}>"
         out = sorter(op.basename(__file__))
         assert isinstance(out, type_), type(out)
+
+
+def test_Function_sorting_key():
+    data = [(1, 0), (3, 2), (5, 4), (7, 6), (9, 8)]
+
+    def f(x):
+        return x[0] * x[1]
+
+    sorter = FunctionSortKey(f)
+    assert str(sorter).startswith("FunctionSortKey")
+    assert sorted(data, key=f) == sorted(data, key=sorter)
+
+    sorter_repr = FunctionSortKey(f, "f(x,y) = x*y")
+    assert str(sorter_repr).startswith("f(x,y) = x*y")
+    assert sorted(data, key=sorter_repr) == sorted(data, key=sorter)

@@ -12,3 +12,4 @@ absl-py
 graphviz
 packaging
 jupyterlite-sphinx
+lxml
