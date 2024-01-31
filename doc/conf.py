@@ -451,10 +451,6 @@ sphinx_gallery_conf = {
     "compress_images": ("images", "thumbnails"),
     # specify the order of examples to be according to filename
     "within_subsection_order": FileNameSortKey,
-    # put duplicate figure at end
-    "minigallery_sort_order": FunctionSortKey(
-        lambda x: (not x.startswith("plot_4b"), x)
-    ),
     "expected_failing_examples": [
         "../examples/no_output/plot_raise.py",
         "../examples/no_output/plot_syntaxerror.py",

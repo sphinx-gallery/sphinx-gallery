@@ -111,11 +111,11 @@ class MiniGallery(Directive):
 
         lines.append(THUMBNAIL_PARENT_DIV)
 
-        # sort on the str(file path but keep (obj, path) pair
+        # sort on the str(file_path) but keep (obj, path) pair
+        sortkey = config.sphinx_gallery_conf["minigallery_sort_order"]
         for obj, path in sorted(
             set(file_paths),
-            key=lambda x: config.sphinx_gallery_conf["minigallery_sort_order"](
-                str(x[-1])
+            key=((lambda x: sortkey(str(x[-1].name)) if sortkey else None)
             ),
         ):
             if path.suffix == ".examples":

@@ -1127,6 +1127,7 @@ def minigallery_tree(sphinx_app):
             {"path", "glob", "explicit", "filename"},
         ),
         ("Test 1-F-R", None, ["plot_boo", "plot_cos"]),
+        # Also checks sort element is filename only (excluding path)
         ("Test 1-S", None, ["plot_sub2", "plot_sub1"]),
         ("Test 3-N", None, {"path", "glob", "explicit", "filename"}),
     ],

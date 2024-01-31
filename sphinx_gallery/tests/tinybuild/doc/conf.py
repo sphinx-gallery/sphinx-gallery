@@ -80,9 +80,9 @@ class MockSort:
 
     def __call__(self, f):
         """Sort plot_sub* for one test case."""
-        if f.endswith("plot_sub2.py"):
+        if f == "plot_sub2.py":
             return 0
-        if f.endswith("plot_sub1.py"):
+        if f == "plot_sub1.py":
             return 1
         return f
 

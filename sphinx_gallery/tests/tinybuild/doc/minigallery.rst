@@ -43,7 +43,7 @@ Test 1-F
 Test 2-F-G
 
 .. minigallery:: ../examples/plot_matplotlib*.py
-    
+
 
 Test 3-F-G-B
 
@@ -63,8 +63,8 @@ Test 1-S
 Test 3-N
 
 .. minigallery::
-   
-   ../examples/plot_log.py 
-   ../examples/*matplotlib*.py 
-   sphinx_gallery.sorting.ExplicitOrder 
+
+   ../examples/plot_log.py
+   ../examples/*matplotlib*.py
+   sphinx_gallery.sorting.ExplicitOrder
    sphinx_gallery.sorting.FileNameSortKey
