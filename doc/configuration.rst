@@ -421,7 +421,7 @@ You can create a custom sort key callable for the following configurations:
 * :ref:`subsection_order <sub_gallery_order>`
 * :ref:`minigallery_sort_order <minigallery_order>`
 
-When creating a custom sort key callable, you must ensure that the ``__repr__`` of
+When creating a custom sort key callable, you must ensure that the ``__repr__``
 is stable across runs. Sphinx determines if the build environment has
 changed, and thus if *all* documents should be rewritten, by examining the
 config values using ``md5(str(obj).encode()).hexdigest()`` in
@@ -444,7 +444,7 @@ because it will ensure that the ``__repr__`` is stable across runs.
 Create your sort key callable by instantiating a
 :class:`~sphinx_gallery.sorting.FunctionSortKey` instance with your sort key
 function. For example, the following ``minigallery_sort_order`` configuration
-(which sorts on filenames) will sort using the first 10 letters of each filename:
+(which sorts on paths) will sort using the first 10 letters of each filename:
 
 .. code-block:: python
 
@@ -692,9 +692,9 @@ thumbnails corresponding to the input file strings or object names.
 You can specify minigallery thumbnails order via the ``minigallery_sort_order``
 configuration, which gets passed to the :py:func:`sorted` ``key`` parameter when
 sorting all minigalleries.
-Sorting uses the gallery example filenames (e.g., ``plot_example.py``) and
-backreference filenames (e.g., ``numpy.exp.examples``)
-corresponding to all inputs.
+Sorting uses the paths to the gallery examples (e.g., ``path/to/plot_example.py``)
+and backreferences (e.g., ``path/to/numpy.exp.examples``) corresponding to the
+inputs.
 
 See :ref:`own_sort_keys` for details on writing a custom sort key. Below is an
 example of using :class:`sphinx_gallery.sorting.FunctionSortKey` to put
@@ -707,7 +707,7 @@ of ``True`` (as 0 is less than 1).
     sphinx_gallery_conf = {
     #...,
     "minigallery_sort_order": FunctionSortKey(
-        lambda x: (not x.startswith("plot_"), x)),
+        lambda x: (not os.path.basename(x).startswith("plot_"), x)),
     #...
     }
 

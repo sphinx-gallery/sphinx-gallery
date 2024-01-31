@@ -51,7 +51,6 @@ N_OTHER = 9 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
 N_RST = f"({N_RST}|{N_RST - 1}|{N_RST - 2})"  # AppVeyor weirdness
 
-
 pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
 
 
@@ -1127,7 +1126,6 @@ def minigallery_tree(sphinx_app):
             {"path", "glob", "explicit", "filename"},
         ),
         ("Test 1-F-R", None, ["plot_boo", "plot_cos"]),
-        # Also checks sort element is filename only (excluding path)
         ("Test 1-S", None, ["plot_sub2", "plot_sub1"]),
         ("Test 3-N", None, {"path", "glob", "explicit", "filename"}),
     ],
@@ -1151,8 +1149,11 @@ def test_minigallery_directive(minigallery_tree, test, heading, sortkey):
         assert heading_element == []
 
     if test in ["Test 1-F-R", "Test 1-S"]:
+
         img = text.xpath('descendant::img[starts-with(@src, "_images/sphx_glr")]')
-        href = text.xpath('descendant::a[starts-with(@href, "auto_examples_with_rst")]')
+        href = text.xpath('descendant::a[contains(@href, "rst")]')
+
+        assert img and href
 
         for p, i, h in zip(sortkey, img, href):
             assert (p in i.values()[-1]) and (p in h.values()[-1])
