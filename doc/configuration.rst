@@ -420,17 +420,18 @@ information, see :ref:`own_sort_keys`.
 Custom sort keys
 ================
 
-You can create a custom sort key class for the following configurations:
+You can create a custom sort key callable for the following configurations:
 
 * :ref:`subsection_order <sub_gallery_order>`
 * :ref:`within_subsection_order <within_gallery_order>`
 * :ref:`minigallery_sort_order <minigallery_order>`
 
 We recommend that you use the :class:`sphinx_gallery.sorting.FunctionSortKey`
-because it will ensure that the ``__repr__`` of your class is stable across runs
-(see below). Simply pass your sort key function when creating a new instance of
-:class:`sphinx_gallery.sorting.FunctionSortKey`.
+because it will ensure that the ``__repr__`` of your callable is stable across runs
+(see below).
 
+Create your callable by passing your sort key function to
+:class:`~sphinx_gallery.sorting.FunctionSortKey` when initializing an instance.
 For example, the following ``within_subsection_order`` configuration will sort
 using the first 10 letters of each filename:
 
