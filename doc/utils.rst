@@ -30,7 +30,7 @@ save it to the current folder. This is a stripped version of the
 Sphinx-Gallery module to incorporate in your project. You should also
 add it to your version control system.
 
-Minigalllery directive
+Minigallery directive
 ======================
 
 Sphinx-Gallery provides the ``minigallery`` directive so you can easily add a reduced
