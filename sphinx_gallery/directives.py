@@ -115,7 +115,7 @@ class MiniGallery(Directive):
         sortkey = config.sphinx_gallery_conf["minigallery_sort_order"]
         for obj, path in sorted(
             set(file_paths),
-            key=((lambda x: sortkey(str(x[-1].name)) if sortkey else None)),
+            key=((lambda x: sortkey(str(x[-1].name))) if sortkey else None),
         ):
             if path.suffix == ".examples":
                 # Insert the backreferences file(s) using the `include` directive.

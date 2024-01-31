@@ -709,7 +709,7 @@ corresponding to all inputs.
 See :ref:`own_sort_keys` for details on writing a custom sort key. Below is an
 example of using :class:`sphinx_gallery.sorting.FunctionSortKey` to put
 backreference thumbnails at the end. Note that
-backreference filenames do not start with 'plot_' and ``False`` gets sorted ahead
+backreference filenames do not start with "plot\_" and ``False`` gets sorted ahead
 of ``True`` (as 0 is less than 1).
 
 .. code-block:: python
