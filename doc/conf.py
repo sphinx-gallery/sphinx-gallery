@@ -18,7 +18,7 @@ from datetime import date
 import warnings
 
 import sphinx_gallery
-from sphinx_gallery.sorting import FileNameSortKey, FunctionSortKey
+from sphinx_gallery.sorting import FileNameSortKey
 from sphinx_gallery.notebook import add_markdown_cell, add_code_cell
 
 # If extensions (or modules to document with autodoc) are in another directory,
