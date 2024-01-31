@@ -50,7 +50,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
   and ``inspect_global_variables`` (:ref:`references_to_examples`)
-- ``minigallery_sort_order`` (:ref:`minigalleries_to_examples`)
+- ``minigallery_sort_order`` (:ref:`minigallery_order`)
 
 **Images and thumbnails**
 
@@ -537,68 +537,9 @@ directive so that you can easily add a reduced version of the Gallery to
 your Sphinx documentation ``.rst`` files. The mini-gallery directive therefore
 supports passing a list (space separated) of any of the following:
 
-* full qualified name of object
-* pathlike strings to example Python files (relative to ``conf.py``)
-* glob-style pathlike strings to example Python files (relative to ``conf.py``)
-
-For example, the rst below adds the reduced version of the Gallery for all
-examples that use the specific function ``numpy.exp``, the example
-``examples/plot_sin_.py``, and all files matching the string
-``/examples/plot_4*``:
-
-.. code-block:: rst
-
-    .. minigallery::
-        :add-heading:
-
-        numpy.exp
-        ../examples/plot_0_sin.py
-        ../examples/plot_4*
-
-Listing multiple items merges all the examples into a single mini-gallery. The
-mini-gallery will only be shown if the files exist or the items are actually
-used or referred to in an example. Thumbnails may also be duplicated
-if they correspond to multiple object names or an object name and file/glob
-input.
-
-.. minigallery::
-    :add-heading:
-
-    numpy.exp
-    ../examples/plot_0_sin.py
-    ../examples/plot_4*
-
-You can also provide the list of items in the body of the directive:
-
-.. code-block:: rst
-
-    .. minigallery::
-        :add-heading:
-
-        numpy.exp
-        ../examples/plot_0_sin.py
-        ../examples/plot_4*
-
-The ``add-heading`` option adds a heading for the mini-gallery. If no string
-argument is provided, when only a single item is listed the default heading is:
-
-    "Examples using *{full qualified object name}*"
-
-Specifying a custom heading message is recommended for a gallery with multiple
-items because otherwise the default message is:
-
-    "Examples of one of multiple objects".
-
-The example mini-gallery shown above uses the default heading level ``^``. This
-can be changed using the ``heading-level`` option, which accepts a single
-character (e.g., ``-``).
-
-You can also pass inputs to the minigallery directive as a space separated
-list of arguments:
-
-.. code-block:: rst
-
-    .. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
+* full qualified name of object (see :ref:`references_to_examples`)
+* pathlike strings to example Python files, including glob-style
+  (see :ref:`file_based_minigalleries`)
 
 .. _references_to_examples:
 
@@ -682,15 +623,64 @@ mini-gallery directive therefore also supports passing in:
 * pathlike strings to sphinx gallery example files (relative to ``conf.py``)
 * glob-style pathlike strings to sphinx-gallery example files (relative to ``conf.py``)
 
+For example, the rst below adds the reduced version of the Gallery for all
+examples that use the specific function ``numpy.exp``, the example
+``examples/plot_sin_.py``, and all files matching the string
+``/examples/plot_4*``:
+
+.. code-block:: rst
+
+    .. minigallery::
+        :add-heading:
+
+        numpy.exp
+        ../examples/plot_0_sin.py
+        ../examples/plot_4*
+
+Listing multiple items merges all the examples into a single mini-gallery. The
+mini-gallery will only be shown if the files exist or the items are actually
+used or referred to in an example. Thumbnails may also be duplicated
+if they correspond to multiple object names or an object name and file/glob
+input.
+
+.. minigallery::
+    :add-heading:
+
+    numpy.exp
+    ../examples/plot_0_sin.py
+    ../examples/plot_4*
+
+You can also provide the list of items in the body of the directive:
+
+.. code-block:: rst
+
+    .. minigallery::
+        :add-heading:
+
+        numpy.exp
+        ../examples/plot_0_sin.py
+        ../examples/plot_4*
+
+The ``add-heading`` option adds a heading for the mini-gallery. If no string
+argument is provided, when only a single item is listed the default heading is:
+
+    "Examples using *{full qualified object name}*"
+
+Specifying a custom heading message is recommended for a gallery with multiple
+items because otherwise the default message is:
+
+    "Examples of one of multiple objects".
+
+The example mini-gallery shown above uses the default heading level ``^``. This
+can be changed using the ``heading-level`` option, which accepts a single
+character (e.g., ``-``).
+
+You can also pass inputs to the minigallery directive as a space separated
+list of arguments:
+
 .. code-block:: rst
 
     .. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
-
-.. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
-    :add-heading: Mini-gallery using paths
-    :heading-level: ^
-
-See :ref:`Add mini-galleries <minigalleries_to_examples>` for more details.
 
 .. _minigallery_order:
 
