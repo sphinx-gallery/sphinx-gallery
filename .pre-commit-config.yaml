@@ -1,12 +1,12 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.1.1
+    rev: 24.2.0
     hooks:
       - id: black
         args: [--quiet]
         exclude: plot_syntaxerror
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.2.0
+    rev: v0.2.1
     hooks:
       - id: ruff
   - repo: https://github.com/codespell-project/codespell
@@ -22,7 +22,7 @@ repos:
     hooks:
       - id: check-manifest
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.33.0
+    rev: v1.34.0
     hooks:
       - id: yamllint
         args: [--strict, -c, .yamllint.yml]
