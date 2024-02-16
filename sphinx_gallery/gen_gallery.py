@@ -350,8 +350,19 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         )
     if len(animations) > 1:  # File format.
         fmt = animations[1]
-        if fmt is not None and not isinstance(fmt, str):
-            raise ConfigError("Animation file format must be a string or None")
+        if fmt is not None:
+            if not isinstance(fmt, str):
+                raise ConfigError("Animation file format must be a string or None")
+            if app is not None:
+                # An explicit format means we place animations externally and require
+                # this `video` extension to embed them into the HTML.
+                try:
+                    app.setup_extension("sphinxcontrib.video")
+                except ExtensionError as e:
+                    raise ConfigError(
+                        f"matplotlib_animations specifies file format: {fmt}; "
+                        f"this requires the sphinxcontrib.video package."
+                    ) from e
     else:
         fmt = None
     gallery_conf["matplotlib_animations"] = (enabled, fmt)

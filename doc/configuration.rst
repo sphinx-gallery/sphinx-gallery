@@ -1659,7 +1659,8 @@ is specified here, or it is *None*, then the format is determined by
 <https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_. If
 the format is ``'html5'`` or ``'jshtml'``, then the animation will effectively
 be embedded in the resulting HTML file, otherwise the animation will be saved
-in an external file.
+in an external file. When saving to an external file, the `sphinxcontrib-video
+extension <https://pypi.org/project/sphinxcontrib-video/>`_ is required.
 
 It's also recommended to ensure that "imagemagick" is available as a
 ``writer``, which you can check with
