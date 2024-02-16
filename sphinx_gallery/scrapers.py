@@ -95,10 +95,11 @@ _ANIMATION_RST = """
         {0}
 """
 _ANIMATION_VIDEO_RST = """
-.. image:: {video}
+.. video:: {video}
+   :class: sphx-glr-single-img
    :height: {height}
    :width: {width}
-   :class: controls
+{options}
 """
 
 
@@ -254,6 +255,9 @@ def _anim_rst(anim, image_path, gallery_conf):
 
     video = image_path.with_suffix(f".{fmt}")
     anim.save(video)
+    options = ["autoplay"]
+    if getattr(anim, "_repeat", False):
+        options.append("loop")
     dpi = rcParams["savefig.dpi"]
     if dpi == "figure":
         dpi = fig.dpi
@@ -262,6 +266,7 @@ def _anim_rst(anim, image_path, gallery_conf):
         video=f"/{video_uri}",
         width=int(fig_size[0] * dpi),
         height=int(fig_size[1] * dpi),
+        options="".join(f"   :{opt}:\n" for opt in options),
     )
     return html
 
