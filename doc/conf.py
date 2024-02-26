@@ -474,7 +474,7 @@ sphinx_gallery_conf = {
     "capture_repr": ("_repr_html_", "__repr__"),
     "matplotlib_animations": True,
     "image_srcset": ["2x"],
-    "nested_sections": False,
+    "nested_sections": True,
     "show_api_usage": True,
 }
 
