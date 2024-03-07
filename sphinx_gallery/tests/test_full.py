@@ -511,12 +511,8 @@ def test_backreferences(sphinx_app):
     assert op.isfile(html)
     with codecs.open(html, "r", "utf-8") as fid:
         html = fid.read()
-    assert (
-        "sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder" in html
-    )  # noqa: E501
-    assert (
-        "sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules" in html
-    )  # noqa: E501
+    assert "sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder" in html  # noqa: E501
+    assert "sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules" in html  # noqa: E501
     assert "figure_rst.html" not in html  # excluded
 
 
@@ -1149,7 +1145,6 @@ def test_minigallery_directive(minigallery_tree, test, heading, sortkey):
         assert heading_element == []
 
     if test in ["Test 1-F-R", "Test 1-S"]:
-
         img = text.xpath('descendant::img[starts-with(@src, "_images/sphx_glr")]')
         href = text.xpath('descendant::a[contains(@href, "rst")]')
 

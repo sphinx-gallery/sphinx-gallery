@@ -93,8 +93,9 @@ def _get_docstring_and_rest(filename):
 
     if not isinstance(node, ast.Module):
         raise ExtensionError(
-            "This function only supports modules. "
-            "You provided {}".format(node.__class__.__name__)
+            "This function only supports modules. " "You provided {}".format(
+                node.__class__.__name__
+            )
         )
     if not (
         node.body
