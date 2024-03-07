@@ -572,9 +572,7 @@ def generate_dir_rst(
    :hidden:
 
    {}\n
-""".format(
-                    "\n   ".join(subsection_toctree_filenames)
-                )
+""".format("\n   ".join(subsection_toctree_filenames))
                 findex.write(subsection_index_toctree)
 
     if have_index_rst:

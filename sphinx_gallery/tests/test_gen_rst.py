@@ -315,9 +315,7 @@ def test_extract_intro_and_title():
     intro, title = sg.extract_intro_and_title("<string>", "\n".join(CONTENT[1:10]))
     assert title == "Docstring header"
     assert "Docstring" not in intro
-    assert (
-        intro == "This is the description of the example which goes on and on, Óscar"
-    )  # noqa
+    assert intro == "This is the description of the example which goes on and on, Óscar"  # noqa
     assert "second paragraph" not in intro
 
     # SG incorrectly grabbing description when a label is defined (gh-232)
@@ -497,9 +495,7 @@ Plot.
 """
 import matplotlib.pyplot as plt
 plt.plot([0, 1], [0, 1])
-'''.split(
-    "\n"
-)
+'''.split("\n")
 
 
 def _alpha_mpl_scraper(block, block_vars, gallery_conf):
@@ -594,9 +590,7 @@ EXCLUDE_CONTENT = '''
 import numpy
 numpy.pi
 numpy.e
-'''.split(
-    "\n"
-)
+'''.split("\n")
 
 
 @pytest.mark.parametrize(

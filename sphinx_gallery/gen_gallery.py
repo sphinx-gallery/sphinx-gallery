@@ -550,9 +550,7 @@ def _format_toctree(items, includehidden=False):
 """
     st += """
 
-   {}\n""".format(
-        "\n   ".join(items)
-    )
+   {}\n""".format("\n   ".join(items))
 
     st += "\n"
 
