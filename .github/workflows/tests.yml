@@ -3,7 +3,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
 on:  # yamllint disable-line rule:truthy
- push:
+  push:
     branches: ['master']
   pull_request:
     branches: ['master']
