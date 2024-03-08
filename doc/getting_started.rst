@@ -52,9 +52,9 @@ Let's say your Python project has the following structure:
     │   ├── __init__.py
     │   └── mod.py
     └── examples
-      	├── plot_example.py
-      	├── example.py
-      	└── README.txt (or .rst)
+        ├── plot_example.py
+        ├── example.py
+        └── README.txt (or .rst)
 
 * ``doc`` is the Sphinx 'source directory'. It contains the Sphinx base
   configuration files. Default versions of these base files can obtained from

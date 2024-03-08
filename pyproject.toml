@@ -62,6 +62,3 @@ junit_family = "xunit2"
 markers = """
     conf_file:Configuration file.
 """
-
-[tool.black]
-exclude = "(dist/)|(build/)"
