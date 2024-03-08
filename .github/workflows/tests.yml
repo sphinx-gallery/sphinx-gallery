@@ -4,11 +4,9 @@ concurrency:
   cancel-in-progress: true
 on:  # yamllint disable-line rule:truthy
   push:
-    branches:
-      - '*'
+    branches: ['master']
   pull_request:
-    branches:
-      - '*'
+    branches: ['master']
 
 permissions:
   contents: read
@@ -89,7 +87,7 @@ jobs:
           echo "LANG=C" >> $GITHUB_ENV
           echo "LC_CTYPE=C" >> $GITHUB_ENV
         if: matrix.locale == 'C'
-      - run: ./continuous_integration/install.sh
+      - run: .github/install.sh
       - run: pytest sphinx_gallery -v --tb=short
       - name: Remove incompatible doc config entries
         run: |
