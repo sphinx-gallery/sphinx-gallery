@@ -53,7 +53,11 @@ setup(
             "_static/jupyterlite_badge_logo.svg",
         ]
     },
-    scripts=["bin/copy_sphinxgallery.sh", "bin/sphx_glr_python_to_jupyter.py"],
+    entry_points={
+        "console_scripts": [
+            "python_to_jupyter = sphinx_gallery.notebook:python_to_jupyter_cli",
+        ],
+    },
     url="https://sphinx-gallery.github.io",
     project_urls={
         "Source": "https://github.com/sphinx-gallery/sphinx-gallery",
