@@ -1,3 +1,0 @@
-# update README.rst when changing something here
-pillow
-sphinx>=4
