@@ -11,7 +11,7 @@ and give the Python source file as argument:
 
 .. code-block:: console
 
-  $ python -m sphinx_gallery python_to_jupyter python_script.py
+  $ python -m sphinx_gallery_py2jupyter python_script.py
 
 
 Embedding Sphinx-Gallery inside your documentation script extensions

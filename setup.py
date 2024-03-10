@@ -55,7 +55,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "python_to_jupyter = sphinx_gallery.notebook:python_to_jupyter_cli",
+            "sphinx_gallery_py2jupyter = sphinx_gallery.notebook:python_to_jupyter_cli",
         ],
     },
     url="https://sphinx-gallery.github.io",
