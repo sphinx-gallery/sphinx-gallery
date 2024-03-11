@@ -2,12 +2,14 @@ name: Labels
 
 on:  # yamllint disable-line rule:truthy
   pull_request:
-    types: [opened, labeled, unlabeled, synchronize]
+    types: [opened, labeled, unlabeled, synchronize, ready_for_review]
 
 jobs:
   check-type-label:
     name: ensure labeled
     runs-on: ubuntu-latest
+    # skip for draft PRs
+    if: github.event.pull_request.draft == false
     steps:
       - uses: danielchabr/pr-labels-checker@v3
         with:
