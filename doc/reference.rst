@@ -4,7 +4,7 @@
 Sphinx-Gallery API Reference
 ============================
 
-.. note:: 
+.. note::
    Sphinx-Gallery is typically used indirectly via Sphinx execution and
    configuration variables, see :ref:`configuration` for how to do this.
    However, as a standard  Python project, we document many functions and

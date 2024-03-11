@@ -112,6 +112,7 @@ ignore-words = "ignore_words.txt"
 
 [tool.pytest.ini_options]
 addopts = [
+    "--color=yes",
     "--cov-report=",
     "--cov=sphinx_gallery",
     "--durations=5",
