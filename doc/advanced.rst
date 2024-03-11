@@ -227,18 +227,18 @@ but via a class so that the ``__repr__`` can remain stable across Sphinx runs::
             # The `image_path_iterator` is created by Sphinx-Gallery, it will yield
             # a path to a file name that adheres to Sphinx-Gallery naming convention.
             image_path_iterator = block_vars['image_path_iterator']
-     
+
             # Define a list of our already-created figure objects.
             list_of_my_figures = mymodule.get_figures()
-     
+
             # Iterate through figure objects, save to disk, and keep track of paths.
             for fig, image_path in zip(list_of_my_figures, image_path_iterator):
                 fig.save_png(image_path)
                 image_names.append(image_path)
-     
+
             # Close all references to figures so they aren't used later.
             mymodule.close('all')
-     
+
             # Use the `figure_rst` helper function to generate the reST for this
             # code block's figures. Alternatively you can define your own reST.
             return figure_rst(image_names, gallery_conf['src_dir'])
@@ -272,15 +272,15 @@ package in a module called ``scraper``. Here is the scraper code::
     class PNGScraper(object):
         def __init__(self):
             self.seen = set()
- 
+
         def __repr__(self):
             return 'PNGScraper'
- 
+
         def __call__(self, block, block_vars, gallery_conf):
             # Find all PNG files in the directory of this example.
             path_current_example = os.path.dirname(block_vars['src_file'])
             pngs = sorted(glob(os.path.join(path_current_example, '*.png')))
- 
+
             # Iterate through PNGs, copy them to the sphinx-gallery output directory
             image_names = list()
             image_path_iterator = block_vars['image_path_iterator']
@@ -292,7 +292,7 @@ package in a module called ``scraper``. Here is the scraper code::
                     shutil.move(png, this_image_path)
             # Use the `figure_rst` helper function to generate reST for image files
             return figure_rst(image_names, gallery_conf['src_dir'])
- 
+
 
 Then, in our ``conf.py`` file, we include the following code::
 

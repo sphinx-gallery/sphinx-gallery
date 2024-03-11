@@ -44,10 +44,10 @@ How to cite
 Contribute
 ==========
 
-Thank you for your interest! Please see our 
-:ref:`contributing guide <contribute-guide>` to get started.
+Thank you for your interest! Please see our
+ :ref:`contributing guide <contribute-guide>` to get started.
 
- 
+
 .. toctree::
    :hidden:
 
