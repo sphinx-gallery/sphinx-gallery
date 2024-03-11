@@ -2,24 +2,14 @@ name: Labels
 
 on:  # yamllint disable-line rule:truthy
   pull_request:
-    types:
-      - opened
-      - reopened
-      - labeled
-      - unlabeled
-      - synchronize
-
-env:
-  LABELS: ${{ join( github.event.pull_request.labels.*.name, ' ' ) }}
+    types: [opened, labeled, unlabeled, synchronize]
 
 jobs:
   check-type-label:
     name: ensure labeled
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "Labels: $LABELS"
-          if [[ "$LABELS" != *"bug"* ]] && [[ "$LABELS" != *"enhancement"* ]] && [[ "$LABELS" != *"api"* ]] && [[ "$LABELS" != *"maintenance"* ]] && [[ "$LABELS" != *"documentation"* ]]; then
-            echo "Please add a type label to this PR"
-            exit 1
-          fi
+      - uses: danielchabr/pr-labels-checker@v3
+        with:
+          hasSome: 'bug,enhancement,api,maintenance,documentation'
+          githubToken: '${{ secrets.GITHUB_TOKEN }}'
