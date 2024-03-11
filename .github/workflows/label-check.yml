@@ -12,6 +12,9 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - uses: shioyang/check-pr-labels-on-push-action@v1.0.9
+        id: check_pr_labels
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           labels: '["bug", "enhancement", "api", "maintenance", "documentation"]'
+      - name: See result
+        run: echo "${{ steps.check_pr_labels.outputs.result }}"
