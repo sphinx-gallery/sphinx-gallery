@@ -11,7 +11,7 @@ jobs:
     # skip for draft PRs
     if: github.event.pull_request.draft == false
     steps:
-      - uses: danielchabr/pr-labels-checker@v3
+      - uses: danielchabr/pr-labels-checker@v3.3
         with:
           hasSome: 'bug,enhancement,api,maintenance,documentation'
           githubToken: '${{ secrets.GITHUB_TOKEN }}'
