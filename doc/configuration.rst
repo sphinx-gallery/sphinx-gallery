@@ -328,13 +328,13 @@ An example could be::
 
     class ResetArgv:
         def __repr__(self):
-	    return 'ResetArgv'
+        return 'ResetArgv'
 
-	def __call__(self, sphinx_gallery_conf, script_vars):
+    def __call__(self, sphinx_gallery_conf, script_vars):
             if script_vars['src_file'] == 'example1.py':
-	        return ['-a', '1']
+            return ['-a', '1']
             elif script_vars['src_file'] == 'example2.py':
-	        return ['-a', '2']
+            return ['-a', '2']
 
 which is included in the configuration dictionary as::
 
@@ -552,7 +552,7 @@ enables you to link to any examples that either:
 1. Use the function/method/attribute/object or instantiate the class in the
    code (generates *implicit backreferences*).
 2. Refer to that function/method/attribute/object/class using sphinx markup
-   ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a text
+   ``:func:`` / ``:meth:`` / ``:attr:`` / ``:obj:`` / ``:class:`` in a text
    block. You can omit this role markup if you have set the `default_role
    <https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role>`_
    in your ``conf.py`` to any of these roles (generates *explicit
@@ -1879,12 +1879,12 @@ occurs in the execution of the examples scripts. To activate this
 behavior you need to pass a flag at the build process. It can be done
 by including in your ``Makefile``:
 
-.. code-block:: Makefile
+.. code-block:: makefile
 
     html_abort_on_example_error:
-	$(SPHINXBUILD) -D abort_on_example_error=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+        $(SPHINXBUILD) -D abort_on_example_error=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+        @echo
+        @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 Remember that for ``Makefile`` white space is significant and the indentation
 are tabs and not spaces.

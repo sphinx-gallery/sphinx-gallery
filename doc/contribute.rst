@@ -6,21 +6,22 @@ Contribute
 
 We appreciate your help in improving this document and our library!
 
-Please `open an issue <https://github.com/sphinx-gallery/sphinx-gallery/issues>`_ 
-if this document is unclear or missing a step. 
+Please `open an issue <https://github.com/sphinx-gallery/sphinx-gallery/issues>`_
+if this document is unclear or missing a step.
 
 .. _development-workflow:
 
-Development Workflow 
+Development Workflow
 ====================
 
 If you are interested in contributing code or documentation, we strongly recommend
-that you install a development version of sphinx-gallery in a development 
-environment. If you are unfamiliar with the git/github workflow, please see 
-Github's guide to `contributing to projects <https://docs.github.com/en/get-started/quickstart/contributing-to-projects#creating-a-branch-to-work-on>`_.
+ that you install a development version of sphinx-gallery in a development environment.
+ If you are unfamiliar with the git/github workflow, please see Github's guide to
+ `contributing to projects
+ <https://docs.github.com/en/get-started/quickstart/contributing-to-projects#creating-a-branch-to-work-on>`_.
 
-This guide assumes familiarity with the Github workflow and focuses on aspects 
-specific to contributing to Sphinx-Gallery. 
+This guide assumes familiarity with the Github workflow and focuses on aspects
+ specific to contributing to Sphinx-Gallery.
 
 .. _checkout-source:
 
@@ -39,8 +40,8 @@ You can get the latest development source from our `Github repository
 Create a Dedicated Environment
 ------------------------------
 
-We strongly recommend that you create a virtual environment for developing 
-Sphinx Gallery to isolate it from other Python installations on your system. 
+We strongly recommend that you create a virtual environment for developing
+ Sphinx Gallery to isolate it from other Python installations on your system.
 
 Create a new virtual environment:
 
@@ -54,31 +55,31 @@ Activate the virtual environment using one of the following:
 
     source <file folder location>/bin/activate  # Linux/macOS
     <file folder location>\Scripts\activate.bat  # Windows cmd.exe
-    <file folder location>\Scripts\Activate.ps1 
+    <file folder location>\Scripts\Activate.ps1
 
 .. _install-dependencies:
 
 Install Dependencies
 --------------------
 
-Most of the Sphinx Gallery dependencies are listed in :file:`requirements.txt` 
-and :file:`dev-requirements.txt` and can be installed from those files:
+Most of the Sphinx Gallery dependencies are listed in :file:`requirements.txt`
+ and :file:`dev-requirements.txt` and can be installed from those files:
 
 .. code-block:: console
 
     python -m pip install -r requirements.txt -r dev-requirements.txt
 
 
-Sphinx Gallery requires `graphviz <https://graphviz.org/>`_ for drawing API 
-entry graphs:
+Sphinx Gallery requires `graphviz <https://graphviz.org/>`_ for drawing API
+ entry graphs:
 
 .. code-block:: console
 
     python -m pip install graphviz
 
-Sphinx Gallery requires that `setuptools <https://setuptools.pypa.io/en/latest/setuptools.html>`_ 
-is installed. It is usually packaged with python, but if necessary can be installed 
-using ``pip``:
+Sphinx Gallery requires that `setuptools <https://setuptools.pypa.io/en/latest/setuptools.html>`_
+ is installed. It is usually packaged with python, but if necessary can be installed
+ using ``pip``:
 
 .. code-block:: console
 
@@ -90,9 +91,9 @@ using ``pip``:
 Install for Development
 -----------------------
 
-Editable installs means that the environment Python will always use the most 
-recently changed version of your code. To install Sphinx Gallery in editable mode, 
-ensure you are in the sphinx-gallery directory
+Editable installs means that the environment Python will always use the most
+ recently changed version of your code. To install Sphinx Gallery in editable mode,
+ ensure you are in the sphinx-gallery directory
 
 .. code-block:: console
 
@@ -128,8 +129,8 @@ And by building the docs:
 Install pre-commit hooks
 ------------------------
 
-pre-commit hooks check for things like spelling and formatting in contributed 
-code and documentation. To set up pre-commit hooks:
+pre-commit hooks check for things like spelling and formatting in contributed
+ code and documentation. To set up pre-commit hooks:
 
 .. code-block:: console
 
@@ -148,18 +149,18 @@ Testing
 -------
 
 All code contributions should be tested. We use the `pytest <https://docs.pytest.org/>`_
-testing framework and ``tinybuild`` to build test pages. Tests can be found in 
-:file:`sphinx_gallery/tests`
+ testing framework and ``tinybuild`` to build test pages.
+ Tests can be found in :file:`sphinx_gallery/tests`.
 
 .. _testing-tinybuild:
 
 tinybuild
 ^^^^^^^^^
 
-``tinybuild`` is designed as the minimal full sphinx doc build that you can run with 
-``make html`` from :file:`tinybuild/doc` to get a traditional build experience. 
+``tinybuild`` is designed as the minimal full sphinx doc build that you can run with
+ ``make html`` from :file:`tinybuild/doc` to get a traditional build experience.
 
-``tinybuild`` gets run in :file:`tests/test_full.py` to build a test page using the 
-``.rst`` document files in :file:`tests/doc/tinybuild`. The tests examine the ``html`` 
-output to verify the behavior of the directives in the ``.rst`` files.
+``tinybuild`` gets run in :file:`tests/test_full.py` to build a test page using the
+ ``.rst`` document files in :file:`tests/doc/tinybuild`. The tests examine the ``html``
+ output to verify the behavior of the directives in the ``.rst`` files.
 

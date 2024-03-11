@@ -47,21 +47,26 @@ convention = "numpy"
 ]
 
 [tool.pytest.ini_options]
-addopts = """--cov-report= --cov=sphinx_gallery --durations=5 -r a --tb=short --junit-xml=junit-results.xml"""
+addopts = [
+    "--color=yes",
+    "--cov-report=",
+    "--cov=sphinx_gallery",
+    "--durations=5",
+    "-r a",
+    "--tb=short",
+    "--junit-xml=junit-results.xml",
+]
 python_files = "tests/*.py"
 norecursedirs = "build _build auto_examples gen_modules sphinx_gallery/tests/tinybuild"
-filterwarnings = """
-    ignore:.*HasTraits.trait_.*:DeprecationWarning
-    ignore:.*importing the ABCs.*:DeprecationWarning
-    ignore:np.loads is deprecated, use pickle.loads instead:DeprecationWarning
-    ignore:'U' mode is deprecated:DeprecationWarning
-    ignore:node class .* is already registered.*:
-    ignore:node.Node.* is obsoleted by Node.*:
-"""
+filterwarnings = [
+    "ignore:.*HasTraits.trait_.*:DeprecationWarning",
+    "ignore:.*importing the ABCs.*:DeprecationWarning",
+    "ignore:np.loads is deprecated, use pickle.loads instead:DeprecationWarning",
+    "ignore:'U' mode is deprecated:DeprecationWarning",
+    "ignore:node class .* is already registered.*:",
+    "ignore:node.Node.* is obsoleted by Node.*:",
+]
 junit_family = "xunit2"
-markers = """
-    conf_file:Configuration file.
-"""
-
-[tool.black]
-exclude = "(dist/)|(build/)"
+markers = [
+    "conf_file: Configuration file."
+]
