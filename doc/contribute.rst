@@ -15,9 +15,10 @@ Development Workflow
 ====================
 
 If you are interested in contributing code or documentation, we strongly recommend
-that you install a development version of sphinx-gallery in a development environment.
- If you are unfamiliar with the git/github workflow, please see
- Github's guide to `contributing to projects <https://docs.github.com/en/get-started/quickstart/contributing-to-projects#creating-a-branch-to-work-on>`_.
+ that you install a development version of sphinx-gallery in a development environment.
+ If you are unfamiliar with the git/github workflow, please see Github's guide to
+ `contributing to projects
+ <https://docs.github.com/en/get-started/quickstart/contributing-to-projects#creating-a-branch-to-work-on>`_.
 
 This guide assumes familiarity with the Github workflow and focuses on aspects
  specific to contributing to Sphinx-Gallery.
