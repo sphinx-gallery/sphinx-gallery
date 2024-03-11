@@ -49,7 +49,6 @@ show_memory= [
 [project.urls]
 Documentation = "https://sphinx-gallery.github.io"
 Source = "https://github.com/sphinx-gallery/sphinx-gallery"
-
 [project.scripts]
 sphinx_gallery_py2jupyter = "sphinx_gallery.notebook:python_to_jupyter_cli"
 
