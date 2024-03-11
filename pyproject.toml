@@ -29,7 +29,6 @@ classifiers = [
 dynamic = [
   "version",
 ]
-# update README.rst when changing something here
 dependencies = [
   "pillow",
   "sphinx>=4",
