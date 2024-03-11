@@ -29,6 +29,7 @@ classifiers = [
 dynamic = [
   "version",
 ]
+# update README.rst when changing something here
 dependencies = [
   "pillow",
   "sphinx>=4",
@@ -61,7 +62,6 @@ version = {attr = "sphinx_gallery.__version__"}
 [tool.setuptools.packages.find]
 where = ["."]  # list of folders that contain the packages (["."] by default)
 include = ["sphinx_gallery*"]  # package names should match these glob patterns (["*"] by default)
-exclude = ["sphinx_gallery.tests*"]  # exclude packages matching these glob patterns (empty by default)
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [tool.ruff]
