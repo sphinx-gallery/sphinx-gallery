@@ -18,4 +18,6 @@ jobs:
           labels: '["bug", "enhancement", "api", "maintenance", "documentation"]'
       - name: Terminate if no label
         if: steps.check_pr_labels.outputs.result == 'false'
-        run: exit 1
+        run: |
+            echo "A maintainer needs to add an appropriate label before merge"
+            exit 1
