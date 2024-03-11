@@ -15,8 +15,8 @@ Development Workflow
 ====================
 
 If you are interested in contributing code or documentation, we strongly recommend
-that you install a development version of sphinx-gallery in a development
- environment. If you are unfamiliar with the git/github workflow, please see
+that you install a development version of sphinx-gallery in a development environment.
+ If you are unfamiliar with the git/github workflow, please see
  Github's guide to `contributing to projects <https://docs.github.com/en/get-started/quickstart/contributing-to-projects#creating-a-branch-to-work-on>`_.
 
 This guide assumes familiarity with the Github workflow and focuses on aspects
@@ -148,8 +148,8 @@ Testing
 -------
 
 All code contributions should be tested. We use the `pytest <https://docs.pytest.org/>`_
-testing framework and ``tinybuild`` to build test pages. Tests can be found in
- :file:`sphinx_gallery/tests`
+ testing framework and ``tinybuild`` to build test pages.
+ Tests can be found in :file:`sphinx_gallery/tests`.
 
 .. _testing-tinybuild:
 
