@@ -19,6 +19,8 @@ repos:
     rev: "0.49"
     hooks:
       - id: check-manifest
+        args: [--no-build-isolation]
+        additional_dependencies: [setuptools-scm]
 
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.35.1
