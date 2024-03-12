@@ -10,7 +10,6 @@ captured by default. See :ref:`image_scrapers` for details.
 # Author: Michael Waskom & Lucy Liu
 # License: BSD 3 clause
 
-
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt

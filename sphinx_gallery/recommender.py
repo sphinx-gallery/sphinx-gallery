@@ -6,7 +6,6 @@ Generate recommendations based on TF-IDF representation and a KNN model.
 # Author: Arturo Amor
 # License: 3-clause BSD
 
-
 import numbers
 import re
 from collections import defaultdict
