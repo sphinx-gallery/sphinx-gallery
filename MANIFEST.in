@@ -2,9 +2,11 @@ include CHANGES.rst
 include LICENSE
 include ignore_words.txt
 include requirements.txt
-recursive-include sphinx_gallery *.css
-recursive-include sphinx_gallery *.png
-recursive-include sphinx_gallery *.svg
+include sphinx_gallery/_static/sg_gallery*.css
+include sphinx_gallery/ _static/no_image.png
+include sphinx_gallery/_static/broken_example.png
+include sphinx_gallery/_static/binder_badge_logo.svg
+include sphinx_gallery/_static/jupyterlite_badge_logo.svg
 recursive-include examples *.py
 recursive-include examples *.txt
 recursive-include tutorials *.py
