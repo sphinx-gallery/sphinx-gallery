@@ -14,7 +14,7 @@ env:
 
 jobs:
   check-type-label:
-    name: ensure labeled
+    name: Please wait for a maintainer to add a label
     runs-on: ubuntu-latest
     steps:
       - run: |
