@@ -6,7 +6,6 @@ Miscellaneous utilities.
 # Author: Eric Larson
 # License: 3-clause BSD
 
-
 import hashlib
 import os
 import re

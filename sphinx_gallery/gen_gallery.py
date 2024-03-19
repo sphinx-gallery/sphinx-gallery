@@ -6,7 +6,6 @@ Attaches Sphinx-Gallery to Sphinx in order to generate the galleries
 when building the documentation.
 """
 
-
 import codecs
 import copy
 from datetime import timedelta, datetime

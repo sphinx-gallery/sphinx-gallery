@@ -14,12 +14,14 @@ env:
 
 jobs:
   check-type-label:
-    name: ensure labeled
+    name: Please wait for a maintainer to add a label
     runs-on: ubuntu-latest
+    # skip for draft PRs
+    if: github.event.pull_request.draft == false
     steps:
       - run: |
           echo "Labels: $LABELS"
           if [[ "$LABELS" != *"bug"* ]] && [[ "$LABELS" != *"enhancement"* ]] && [[ "$LABELS" != *"api"* ]] && [[ "$LABELS" != *"maintenance"* ]] && [[ "$LABELS" != *"documentation"* ]]; then
-            echo "Please add a type label to this PR"
+            echo "A maintainer needs to add an appropriate label before merge."
             exit 1
           fi
