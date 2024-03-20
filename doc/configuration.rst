@@ -2220,7 +2220,7 @@ etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
     sphinx_gallery_conf = {
         ...
         'capture_repr': ('__repr__'),
-        'ignore_repr_types': r'matplotlib[text, axes]',
+        'ignore_repr_types': r'matplotlib\.(text|axes)',
     }
 
 
