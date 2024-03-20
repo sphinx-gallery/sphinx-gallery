@@ -326,15 +326,20 @@ additional command line arguments to the interpreter.
 
 An example could be::
 
+    from pathlib import Path
+
     class ResetArgv:
         def __repr__(self):
             return 'ResetArgv'
 
         def __call__(self, sphinx_gallery_conf, script_vars):
-            if script_vars['src_file'] == 'example1.py':
+            src_file = Path(script_vars['src_file']).name
+            if src_file == 'example1.py':
                 return ['-a', '1']
-            elif script_vars['src_file'] == 'example2.py':
+            elif src_file == 'example2.py':
                 return ['-a', '2']
+            else:
+                return []
 
 which is included in the configuration dictionary as::
 
