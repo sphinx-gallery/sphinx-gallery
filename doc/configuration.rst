@@ -326,15 +326,20 @@ additional command line arguments to the interpreter.
 
 An example could be::
 
+    from pathlib import Path
+
     class ResetArgv:
         def __repr__(self):
-        return 'ResetArgv'
+            return 'ResetArgv'
 
-    def __call__(self, sphinx_gallery_conf, script_vars):
-            if script_vars['src_file'] == 'example1.py':
-            return ['-a', '1']
-            elif script_vars['src_file'] == 'example2.py':
-            return ['-a', '2']
+        def __call__(self, sphinx_gallery_conf, script_vars):
+            src_file = Path(script_vars['src_file']).name
+            if src_file == 'example1.py':
+                return ['-a', '1']
+            elif src_file == 'example2.py':
+                return ['-a', '2']
+            else:
+                return []
 
 which is included in the configuration dictionary as::
 
@@ -2215,7 +2220,7 @@ etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
     sphinx_gallery_conf = {
         ...
         'capture_repr': ('__repr__'),
-        'ignore_repr_types': r'matplotlib[text, axes]',
+        'ignore_repr_types': r'matplotlib\.(text|axes)',
     }
 
 
