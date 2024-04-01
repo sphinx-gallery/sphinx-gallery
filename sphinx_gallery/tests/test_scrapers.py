@@ -91,8 +91,8 @@ def test_image_srcset_config(make_gallery_conf):
 
     conf = make_gallery_conf({"image_srcset": ["2x"]})
     assert conf["image_srcset"] == [2.0]
-    conf = make_gallery_conf({"image_srcset": ["", "1x", "2x"]})
-    assert conf["image_srcset"] == [2.0]  # "" and "1x" are implied.
+    conf = make_gallery_conf({"image_srcset": ["1x", "2x"]})
+    assert conf["image_srcset"] == [2.0]  # "1x" is implied.
 
 
 def test_save_matplotlib_figures_hidpi(make_gallery_conf):
