@@ -151,11 +151,13 @@ Note that the above Matplotlib warning is removed by default.
 Manage multiple galleries
 =========================
 
-Sphinx-Gallery only supports up to sub-folder level in its gallery directories.
+Sphinx-Gallery only supports one level of subfolder nesting in its gallery directories.
+For example our :ref:`examples-index`, has the parent gallery in `examples/` and
+the sub-gallery in `examples/no_output/`. Further sub-folders are not supported.
 This might be a limitation for you. Or you might want to have separate
-galleries for different purposes, an examples gallery and a tutorials gallery.
-For this you use in your Sphinx ``conf.py`` file a list of directories in
-the sphinx configuration dictionary::
+galleries for different purposes; an examples gallery and a tutorials gallery.
+To do this set the Sphinx-Gallery configuration dictionary keys `examples_dirs` and
+`gallery_dirs` in your Sphinx ``conf.py`` file to be a list of directories::
 
     sphinx_gallery_conf = {
         ...
