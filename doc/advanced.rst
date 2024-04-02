@@ -187,6 +187,9 @@ The function should take the following inputs (in this order):
 
 3. ``gallery_conf`` - dictionary containing the configuration of Sphinx-Gallery,
    set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
+   Of note, the :ref:`image_srcset <image_srcset>` configuration will provide
+   user specified image resolutions (as floats) and can be used by your custom scraper
+   to enable multi-resolution images.
 
 It should return a string containing the reST for embedding this figure in the
 documentation. See :func:`~sphinx_gallery.scrapers.matplotlib_scraper` for an
