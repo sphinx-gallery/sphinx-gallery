@@ -1636,31 +1636,42 @@ to scrape matplotlib images you can do::
 
 The default value is ``'image_scrapers': ('matplotlib',)`` which only scrapes
 Matplotlib images. Note that this includes any images produced by packages that
-are based on Matplotlib, for example Seaborn or Yellowbrick. If you want
-to embed :class:`matplotlib.animation.Animation`\s as animations rather
-than a single static image of the animation figure, you should add::
+are based on Matplotlib, for example Seaborn or Yellowbrick.
 
-      sphinx_gallery_conf = {
-          ...
-          'matplotlib_animations': True,
-      }
+Matplotlib animations
+^^^^^^^^^^^^^^^^^^^^^
 
-Alternatively, you can set the option to a tuple that specifies whether it's
-enabled and the file format to use::
+If you wish to embed :class:`matplotlib.animation.Animation`\s as animations rather
+than a single static image of the animation figure, you should use the
+`matplotlib_animations` configuration. It accepts either a bool, indicating whether
+animations should be enabled, or a tuple of the format (bool, str), where the str
+specifies the file format to use::
 
       sphinx_gallery_conf = {
           ...
           'matplotlib_animations': (True, 'mp4'),
       }
 
+It is `False` by default.
+
 Any file format supported by Matplotlib for animations is allowed. If no format
-is specified here, or it is *None*, then the format is determined by
-``rcParams['animation.html']`` and related options in your `matplotlib rcParams
-<https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_. If
-the format is ``'html5'`` or ``'jshtml'``, then the animation will effectively
-be embedded in the resulting HTML file, otherwise the animation will be saved
-in an external file. When saving to an external file, the `sphinxcontrib-video
-extension <https://pypi.org/project/sphinxcontrib-video/>`_ is required.
+is specified (i.e., it is a single bool), or it is *None*, then the format is
+determined by ``rcParams['animation.html']`` and related options in your
+`matplotlib rcParams <https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_.
+This means that it can be set inside your code block, though note that Sphinx-Gallery
+will reset Matplotib defaults before each example file executes (see
+:ref:`reset_modules`).
+
+If the format is ``'html5'`` or ``'jshtml'``, the animation will effectively
+be embedded in the resulting HTML file. Otherwise the animation will be saved
+in an external file, thus reducing the size of the ReST file generated.
+If you request a format that saves to an external file, you will need the
+`sphinxcontrib-video extension <https://pypi.org/project/sphinxcontrib-video/>`_
+installed in your environment.
+
+Note that while ``matplotlib_animations`` allows you to set the
+``rcParams['animation.html']`` globally, setting it inside a code block will
+override the global setting.
 
 It's also recommended to ensure that "imagemagick" is available as a
 ``writer``, which you can check with
