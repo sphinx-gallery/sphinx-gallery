@@ -240,6 +240,7 @@ def _anim_rst(anim, image_path, gallery_conf):
     anim.save(str(image_path), writer=writer, dpi=use_dpi)
 
     _, fmt = gallery_conf["matplotlib_animations"]
+    # Formats that are embedded in rst
     html = None
     if fmt is None:
         html = anim._repr_html_()
@@ -253,6 +254,7 @@ def _anim_rst(anim, image_path, gallery_conf):
         html = indent(html, "     ")
         return _ANIMATION_RST.format(html)
 
+    # Formats that are saved and use `video` directive
     video = image_path.with_suffix(f".{fmt}")
     anim.save(video)
     options = ["autoplay"]

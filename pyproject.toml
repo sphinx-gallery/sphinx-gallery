@@ -46,6 +46,9 @@ show_api_usage= [
 show_memory= [
   "memory_profiler",
 ]
+animations = [
+  "sphinxcontrib-video",
+]
 [project.urls]
 Documentation = "https://sphinx-gallery.github.io"
 Source = "https://github.com/sphinx-gallery/sphinx-gallery"

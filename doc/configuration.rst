@@ -1644,15 +1644,14 @@ Matplotlib animations
 If you wish to embed :class:`matplotlib.animation.Animation`\s as animations rather
 than a single static image of the animation figure, you should use the
 `matplotlib_animations` configuration. It accepts either a bool, indicating whether
-animations should be enabled, or a tuple of the format (bool, str), where the str
-specifies the file format to use::
+animations should be enabled, or a tuple of the format (enabled: bool, format: str)::
 
       sphinx_gallery_conf = {
           ...
           'matplotlib_animations': (True, 'mp4'),
       }
 
-It is `False` by default.
+`matplotlib_animations` is `False` by default.
 
 Any file format supported by Matplotlib for animations is allowed. If no format
 is specified (i.e., it is a single bool), or it is *None*, then the format is
