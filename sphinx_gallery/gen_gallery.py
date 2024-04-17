@@ -359,8 +359,8 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
                 )
             if fmt not in ("html5", "jshtml"):
                 if app is not None:
-                    # An explicit format means we place animations externally and require
-                    # this `video` extension to embed them into the HTML.
+                    # Other formats mean animations saved externally and require
+                    # this `video` extension to embed them into the HTML
                     try:
                         app.setup_extension("sphinxcontrib.video")
                     except ExtensionError as e:
