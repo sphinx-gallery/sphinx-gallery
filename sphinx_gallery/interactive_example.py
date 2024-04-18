@@ -328,6 +328,8 @@ def post_configure_jupyterlite_sphinx(app, config):
 
 def create_jupyterlite_contents(app, exception):
     """Create Jupyterlite contents according to "jupyterlite" configuration."""
+    from .gen_rst import _get_callables
+
     if exception is not None:
         return
 
@@ -371,6 +373,7 @@ def create_jupyterlite_contents(app, exception):
     if notebook_modification_function is None:
         return
 
+    (notebook_modification_function,) = _get_callables(gallery_conf, "jupyterlite")
     notebook_pattern = os.path.join(contents_dir, "**", "*.ipynb")
     notebook_filename_list = sorted(glob.glob(notebook_pattern, recursive=True))
 

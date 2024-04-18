@@ -13,10 +13,11 @@ import copy
 import contextlib
 import ast
 import codecs
-from functools import partial
+from functools import partial, lru_cache
 import gc
 import pickle
 import importlib
+import inspect
 from io import StringIO
 import os
 from pathlib import Path
@@ -30,11 +31,18 @@ import sys
 import traceback
 import codeop
 
-from sphinx.errors import ExtensionError
+from sphinx.errors import ExtensionError, ConfigError
 import sphinx.util
 from sphinx.util.console import blue, red, bold
 
-from .scrapers import save_figures, ImagePathIterator, clean_modules, _find_image_ext
+from .scrapers import (
+    save_figures,
+    ImagePathIterator,
+    clean_modules,
+    _find_image_ext,
+    _scraper_dict,
+    _reset_dict,
+)
 from .utils import (
     scale_image,
     get_md5sum,
@@ -420,7 +428,7 @@ def _get_readme(dir_, gallery_conf, raise_error=True):
         if os.path.isfile(fpth):
             return None
     # now look for README.txt, README.rst etc...
-    extensions = [".txt"] + sorted(gallery_conf["app"].config["source_suffix"])
+    extensions = [".txt"] + sorted(gallery_conf["source_suffix"])
     for ext in extensions:
         for fname in ("README", "readme"):
             fpth = os.path.join(dir_, fname + ext)
@@ -511,7 +519,7 @@ def generate_dir_rst(
     ]
     # sort them
     sorted_listdir = sorted(
-        listdir, key=gallery_conf["within_subsection_order"](src_dir)
+        listdir, key=_get_class(gallery_conf, "within_subsection_order")(src_dir)
     )
 
     # Add div containing all thumbnails;
@@ -627,7 +635,7 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     root = os.path.dirname(__file__) + os.sep
     for ii, s in enumerate(stack, 1):
         # Trim our internal stack
-        if s.filename.startswith(root + "gen_gallery.py") and s.name == "call_memory":
+        if s.name.startswith("_sg_call_memory"):
             start = max(ii, start)
         elif s.filename.startswith(root + "gen_rst.py"):
             # SyntaxError
@@ -723,10 +731,8 @@ class _exec_once:
                         sys.modules["__main__"] = old_main
 
 
-def _get_memory_base(gallery_conf):
+def _get_memory_base():
     """Get the base amount of memory used by running a Python process."""
-    if not gallery_conf["plot_gallery"]:
-        return 0.0
     # There might be a cleaner way to do this at some point
     from memory_profiler import memory_usage
 
@@ -793,11 +799,12 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_va
     src_file = script_vars["src_file"]
     # capture output if last line is expression
     is_last_expr = False
+    call_memory, _ = _get_call_memory_and_base(gallery_conf)
     if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
         is_last_expr = True
         last_val = code_ast.body.pop().value
         # exec body minus last expression
-        mem_body, _ = gallery_conf["call_memory"](
+        mem_body, _ = call_memory(
             _exec_once(compiler(code_ast, src_file, "exec"), script_vars["fake_main"])
         )
         # exec last expression, made into assignment
@@ -806,14 +813,14 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_va
         ]
         last_val_ast = ast_Module(body=body)
         ast.fix_missing_locations(last_val_ast)
-        mem_last, _ = gallery_conf["call_memory"](
+        mem_last, _ = call_memory(
             _exec_once(
                 compiler(last_val_ast, src_file, "exec"), script_vars["fake_main"]
             )
         )
         mem_max = max(mem_body, mem_last)
     else:
-        mem_max, _ = gallery_conf["call_memory"](
+        mem_max, _ = call_memory(
             _exec_once(compiler(code_ast, src_file, "exec"), script_vars["fake_main"])
         )
     return is_last_expr, mem_max
@@ -1060,6 +1067,8 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
     # for in example scikit-learn if the example uses multiprocessing.
     # Here we create a new __main__ module, and temporarily change
     # sys.modules when running our example
+    call_memory, _ = _get_call_memory_and_base(gallery_conf)
+
     fake_main = importlib.util.module_from_spec(
         importlib.util.spec_from_loader("__main__", None)
     )
@@ -1087,9 +1096,10 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
         # https://github.com/sphinx-gallery/sphinx-gallery/pull/252
         # for more details.
         sys.argv[0] = script_vars["src_file"]
-        sys.argv[1:] = gallery_conf["reset_argv"](gallery_conf, script_vars)
+        (reset_argv,) = _get_callables(gallery_conf, "reset_argv")
+        sys.argv[1:] = reset_argv(gallery_conf, script_vars)
         gc.collect()
-        memory_start, _ = gallery_conf["call_memory"](lambda: None)
+        memory_start, _ = call_memory(lambda: None)
     else:
         memory_start = 0.0
 
@@ -1242,7 +1252,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     example_rst = rst_blocks(
         script_blocks, output_blocks, file_conf, gallery_conf, language=language
     )
-    memory_used = gallery_conf["memory_base"] + script_vars["memory_delta"]
+    _, memory_base = _get_call_memory_and_base(gallery_conf)
+    memory_used = memory_base + script_vars["memory_delta"]
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
     save_rst_example(
@@ -1267,7 +1278,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         global_variables = script_vars["example_globals"]
     else:
         global_variables = None
-    ref_regex = _make_ref_regex(gallery_conf["app"].config)
+    ref_regex = _make_ref_regex(gallery_conf["default_role"])
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
         codeobj_fname = target_file.with_name(target_file.stem + "_codeobj.pickle.new")
@@ -1487,3 +1498,139 @@ def save_rst_example(
     # in case it wasn't in our pattern, only replace the file if it's
     # still stale.
     _replace_md5(write_file_new, mode="t")
+
+
+def _get_class(gallery_conf, key):
+    what = f"sphinx_gallery_conf[{repr(key)}]"
+    val = gallery_conf[key]
+    if key == "within_subsection_order":
+        alias = (  # convenience aliases
+            "ExampleTitleSortKey",
+            "FileNameSortKey",
+            "FileSizeSortKey",
+            "NumberOfCodeLinesSortKey",
+        )
+        if val in alias:
+            val = f"sphinx_gallery.sorting.{val}"
+    if isinstance(val, str):
+        if "." not in val:
+            raise ConfigError(
+                f"{what} must be a fully qualified name string, got {val}"
+            )
+        mod, attr = val.rsplit(".", 1)
+        try:
+            val = getattr(importlib.import_module(mod), attr)
+        except Exception:
+            raise ConfigError(
+                f"{what} must be a fully qualified name string, could not import "
+                f"{attr} from {mod}"
+            )
+    if not inspect.isclass(val):
+        raise ConfigError(
+            f"{what} must be 1) a fully qualified name (string) that resolves "
+            f"to a class or 2) or a class itself, got {val.__class__.__name__} "
+            f"({repr(val)})"
+        )
+    return val
+
+
+def _get_callables(gallery_conf, key):
+    # the following should be the case (internal use only)
+    singletons = ("reset_argv", "minigallery_sort_order")
+    assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key
+    which = gallery_conf[key]
+    if key == "jupyterlite":
+        which = [which["notebook_modification_function"]]
+    elif key in singletons:
+        which = [which]
+    if not isinstance(which, (tuple, list)):
+        which = [which]
+    which = list(which)
+    for wi, what in enumerate(which):
+        if key == "jupyterlite":
+            readable = f"{key}['notebook_modification_function']"
+        elif key in singletons:
+            readable = f"{key}={repr(what)}"
+        else:
+            readable = f"{key}[{wi}]={repr(what)}"
+        if isinstance(what, str):
+            if "." in what:
+                mod, attr = what.rsplit(".", 1)
+                try:
+                    what = getattr(importlib.import_module(mod), attr)
+                except Exception:
+                    raise ConfigError(
+                        f"Unknown string option {readable} "
+                        f"when importing {attr} from {mod}"
+                    )
+            elif key == "image_scrapers":
+                if what in _scraper_dict:
+                    what = _scraper_dict[what]
+                else:
+                    try:
+                        what = importlib.import_module(what)
+                        what = getattr(what, "_get_sg_image_scraper")
+                        what = what()
+                    except Exception:
+                        raise ConfigError(f"Unknown string option for {readable}")
+            elif key == "reset_modules":
+                if what not in _reset_dict:
+                    raise ConfigError(f"Unknown string option for {readable}: {what}")
+                what = _reset_dict[what]
+            which[wi] = what
+        if inspect.isclass(what):
+            raise ConfigError(
+                f"Got class rather than callable instance for {readable}: {what}"
+            )
+        if not callable(what):
+            raise ConfigError(f"{readable} must be callable")
+    return tuple(which)
+
+
+# Default no-op version
+def _sg_call_memory_noop(func):
+    return 0.0, func()
+
+
+def _get_call_memory_and_base(gallery_conf):
+    show_memory = gallery_conf["show_memory"]
+
+    # Default to no-op version
+    call_memory = _sg_call_memory_noop
+    memory_base = 0.0
+
+    if show_memory:
+        if callable(show_memory):
+            call_memory = show_memory
+        elif gallery_conf["plot_gallery"]:  # True-like
+            out = _get_memprof_call_memory()
+            if out is not None:
+                call_memory, memory_base = out
+
+    assert callable(call_memory)
+
+    return call_memory, memory_base
+
+
+def _sg_call_memory_memprof(func):
+    from memory_profiler import memory_usage  # noqa
+
+    mem, out = memory_usage(func, max_usage=True, retval=True, multiprocess=True)
+    try:
+        mem = mem[0]  # old MP always returned a list
+    except TypeError:  # 'float' object is not subscriptable
+        pass
+    return mem, out
+
+
+@lru_cache()
+def _get_memprof_call_memory():
+    try:
+        from memory_profiler import memory_usage  # noqa
+    except ImportError:
+        logger.warning(
+            "Please install 'memory_profiler' to enable peak memory measurements."
+        )
+        return None
+    else:
+        return _sg_call_memory_memprof, _get_memory_base()

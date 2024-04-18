@@ -137,7 +137,7 @@ def test_identify_names(unicode_sample, gallery_conf):
         ],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
-    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
+    ref_regex = sg._make_ref_regex()
     res = sg.identify_names(script_blocks, ref_regex)
     assert expected == res
 
@@ -217,7 +217,7 @@ h.i.j()
     fname.write(code_str, "wb")
 
     _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
+    ref_regex = sg._make_ref_regex()
     res = sg.identify_names(script_blocks, ref_regex)
 
     assert expected == res
@@ -257,10 +257,9 @@ cobj = dict(module="m", module_short="m", name="n", is_class=False, is_explicit=
 # and docutils.sourceforge.io/docs/ref/rst/roles.html
 def test_identify_names_explicit(text, default_role, ref, cobj, gallery_conf):
     """Test explicit name identification."""
-    if default_role:
-        gallery_conf["app"].config["default_role"] = default_role
+    default_role = "" if default_role is None else default_role
     script_blocks = [("text", text, 1)]
     expected = {ref: [cobj]} if ref else {}
-    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
+    ref_regex = sg._make_ref_regex(default_role)
     actual = sg.identify_names(script_blocks, ref_regex)
     assert expected == actual

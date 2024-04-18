@@ -1,6 +1,22 @@
 Changelog
 =========
 
+v0.16.0
+-------
+Sphinx 7.3.2 and above changed caching and serialization checks. Now instead of passing
+instantiated classes like ``ResetArgv()``, classes like ``FileNameSortKey``, or
+callables like ``notebook_modification_function`` in  ``sphinx_gallery_conf``,
+you should pass fully qualified names to classes (that SG will instantiate for you) or
+instantiated instances that have a stable ``__repr__``. For example, instead of defining
+a ``ResetArgV`` class in ``conf.py``, define it in an importable module somewhere in
+your path. This could be for example:
+
+- ``"mymod.utils._ResetArgv"`` where you define a ``_ResetArgv`` class in
+  ``mymod.utils``
+- ``sphinxext.reset.ResetArgv`` where you define a ``ResetArgv`` class in
+  ``doc/sphinxext/reset.py`` and do something like
+  ``sys.path.insert(0, os.path.dirname(__file__) + "/sphinxext")`` in your ``conf.py``
+
 v0.15.0
 -------
 

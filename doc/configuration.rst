@@ -403,11 +403,15 @@ set to
 :class:`NumberOfCodeLinesSortKey(src_dir) <sphinx_gallery.sorting.NumberOfCodeLinesSortKey>`,
 which sorts the files based on the number of code lines::
 
-    from sphinx_gallery.sorting import NumberOfCodeLinesSortKey
     sphinx_gallery_conf = {
         ...
-        'within_subsection_order': NumberOfCodeLinesSortKey,
+        'within_subsection_order': "NumberOfCodeLinesSortKey",
     }
+
+Note that you must provide a *class* here, not an instance of the class. Because of how
+sphinx caches the environment, this should be provided as a fully qualified string
+that can be imported (though passing a class directly is supported for backward
+compatibility).
 
 In addition, multiple convenience classes are provided for use with
 ``within_subsection_order``:
@@ -417,6 +421,17 @@ In addition, multiple convenience classes are provided for use with
 - :class:`sphinx_gallery.sorting.FileSizeSortKey` to sort by file size.
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
+
+Each of these can be used by passing the class name as a string to
+``within_subsection_order``. For example, to sort by file size::
+
+    sphinx_gallery_conf = {
+        ...
+        'within_subsection_order': "FileSizeSortKey",
+    }
+
+This is equivalent to passing the fully qualified name
+``'sphinx_gallery.sorting.FileSizeSortKey'``.
 
 .. _own_sort_keys:
 
@@ -1365,7 +1380,7 @@ You can configure JupyterLite integration by setting
       ...
       'jupyterlite': {
          'use_jupyter_lab': <bool>, # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
-         'notebook_modification_function': <function>, # function that implements JupyterLite-specific modifications of notebooks
+         'notebook_modification_function': <str>, # fully qualified name of a function that implements JupyterLite-specific modifications of notebooks
          'jupyterlite_contents': <str>, # where to copy the example notebooks (relative to Sphinx source directory)
          }
     }
@@ -1376,8 +1391,9 @@ use_jupyter_lab (type: bool, default: ``True``)
   Whether the default interface activated by the JupyterLite link will be for
   Jupyter Lab or the RetroLab Notebook interface.
 
-notebook_modification_function (type: function, default: ``None``)
-  Function that implements JupyterLite-specific modifications of notebooks. By
+notebook_modification_function (type: str, default: ``None``)
+  Fully qualified name of a
+  function that implements JupyterLite-specific modifications of notebooks. By
   default, it is ``None`` which means that notebooks are not going to be
   modified. Its signature should be ``notebook_modification_function(json_dict:
   dict, notebook_filename: str) -> None`` where ``json_dict`` is what you get
@@ -1389,7 +1405,8 @@ notebook_modification_function (type: function, default: ``None``)
   are installing additional packages with a ``%pip install seaborn`` code cell,
   or adding a markdown cell to indicate that a notebook is not expected to work
   inside JupyterLite, for example because it is using packages that are not
-  packaged inside Pyodide.
+  packaged inside Pyodide. For backward compatibility it can also be a callable
+  but this is incompatible with Sphinx 7.3.2 and above.
 
 jupyterlite_contents (type: string, default: ``jupyterlite_contents``)
   The name of a folder where the built Jupyter notebooks will be copied,
