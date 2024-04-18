@@ -1606,6 +1606,8 @@ def _get_call_memory_and_base(gallery_conf):
             out = _get_memprof_call_memory()
             if out is not None:
                 call_memory, memory_base = out
+            else:
+                gallery_conf["show_memory"] = False
 
     assert callable(call_memory)
 
