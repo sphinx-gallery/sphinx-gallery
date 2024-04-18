@@ -97,7 +97,7 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     [
         pytest.param(
             ConfigError,
-            "Unknown string option reset_modules",
+            "Unknown string option for reset_modules",
             id="Resetter unknown",
             marks=pytest.mark.conf_file(
                 content="sphinx_gallery_conf={'reset_modules': ('f',)}"
