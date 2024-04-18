@@ -12,12 +12,12 @@ somewhere in your path and instatiate an instance of it. For ``ResetArgv`` this 
 for example either of:
 
 1. ``"mymod.utils.reset_argv"`` where you define a ``class _ResetArgv`` class in
-  ``mymod.utils`` and instantiate it in your ``conf.py`` as
-  ``reset_argv = _ResetArgv()``.
+   ``mymod.utils`` and instantiate it in your ``conf.py`` as
+   ``reset_argv = _ResetArgv()``.
 2. ``"sphinxext.reset.ResetArgv"`` where you define a ``ResetArgv`` class in
-  ``doc/sphinxext/reset.py``, instantiate an instance with ``reset_argv = ResetArgv()``,
-  and do something like
-  ``sys.path.insert(0, os.path.dirname(__file__) + "/sphinxext")`` in your ``conf.py``.
+   ``doc/sphinxext/reset.py``, instantiate an instance with
+   ``reset_argv = ResetArgv()``, and do something like
+   ``sys.path.insert(0, os.path.dirname(__file__) + "/sphinxext")`` in your ``conf.py``.
 
 Built in classes like :class:`sphinx_gallery.sorting.FileNameSortKey` and similar can
 be used with shorter direct alias strings like ``"FileNameSortKey"``.

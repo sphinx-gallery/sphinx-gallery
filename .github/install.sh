@@ -31,6 +31,8 @@ if [ "$SPHINX_VERSION" == "dev" ]; then
     PIP_DEPENDENCIES="--upgrade --pre https://api.github.com/repos/sphinx-doc/sphinx/zipball/master --default-timeout=60 --extra-index-url 'https://pypi.anaconda.org/scientific-python-nightly-wheels/simple' $PIP_DEPENDENCIES"
 elif [ "$SPHINX_VERSION" != "default" ]; then
     PIP_DEPENDENCIES="sphinx==${SPHINX_VERSION}.* $PIP_DEPENDENCIES"
+else
+    PIP_DEPENDENCIES="sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6"
 fi
 
 set -x
