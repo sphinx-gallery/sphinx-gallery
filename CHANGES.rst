@@ -6,16 +6,21 @@ v0.16.0
 Sphinx 7.3.2 and above changed caching and serialization checks. Now instead of passing
 instantiated classes like ``ResetArgv()``, classes like ``FileNameSortKey``, or
 callables like ``notebook_modification_function`` in  ``sphinx_gallery_conf``,
-you should pass fully qualified names to classes (that SG will instantiate for you) or
-instantiated instances that have a stable ``__repr__``. For example, instead of defining
-a ``ResetArgV`` class in ``conf.py``, define it in an importable module somewhere in
-your path. This could be for example:
+you should pass fully qualified names to classes or callables. For example, instead of
+defining a ``ResetArgV`` class in ``conf.py``, define it in an importable module
+somewhere in your path and instatiate an instance of it. For ``ResetArgv`` this could be
+for example either of:
 
-- ``"mymod.utils._ResetArgv"`` where you define a ``_ResetArgv`` class in
-  ``mymod.utils``
-- ``sphinxext.reset.ResetArgv`` where you define a ``ResetArgv`` class in
-  ``doc/sphinxext/reset.py`` and do something like
-  ``sys.path.insert(0, os.path.dirname(__file__) + "/sphinxext")`` in your ``conf.py``
+1. ``"mymod.utils.reset_argv"`` where you define a ``class _ResetArgv`` class in
+  ``mymod.utils`` and instantiate it in your ``conf.py`` as
+  ``reset_argv = _ResetArgv()``.
+2. ``"sphinxext.reset.ResetArgv"`` where you define a ``ResetArgv`` class in
+  ``doc/sphinxext/reset.py``, instantiate an instance with ``reset_argv = ResetArgv()``,
+  and do something like
+  ``sys.path.insert(0, os.path.dirname(__file__) + "/sphinxext")`` in your ``conf.py``.
+
+Built in classes like :class:`sphinx_gallery.sorting.FileNameSortKey` and similar can
+be used with shorter direct alias strings like ``"FileNameSortKey"``.
 
 v0.15.0
 -------
