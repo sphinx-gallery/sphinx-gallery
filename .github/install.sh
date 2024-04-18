@@ -32,7 +32,7 @@ if [ "$SPHINX_VERSION" == "dev" ]; then
 elif [ "$SPHINX_VERSION" != "default" ]; then
     PIP_DEPENDENCIES="sphinx==${SPHINX_VERSION}.* $PIP_DEPENDENCIES"
 else
-    PIP_DEPENDENCIES="sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6"
+    PIP_DEPENDENCIES="sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6 $PIP_DEPENDENCIES"
 fi
 
 set -x
