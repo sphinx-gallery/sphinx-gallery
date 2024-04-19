@@ -96,3 +96,8 @@ mock_scrape_problem = MockScrapeProblem()
 matplotlib_format_scraper = MatplotlibFormatScraper()
 reset_argv = ResetArgv()
 mock_sort = MockSort()
+
+
+def noop_key(x):
+    """Sortkey that passes x."""
+    return x

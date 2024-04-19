@@ -58,6 +58,7 @@ sphinx_gallery_conf = {
         "auto_examples_rst_index",
     ],
     "backreferences_dir": "gen_modules/backreferences",
+    "subsection_order": f"{util_root}.noop_key",
     "within_subsection_order": "FileNameSortKey",
     "minigallery_sort_order": f"{util_root}.mock_sort",
     "image_scrapers": (f"{util_root}.matplotlib_format_scraper",),

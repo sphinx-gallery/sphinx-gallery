@@ -1536,7 +1536,7 @@ def _get_class(gallery_conf, key):
 
 def _get_callables(gallery_conf, key):
     # the following should be the case (internal use only)
-    singletons = ("reset_argv", "minigallery_sort_order")
+    singletons = ("reset_argv", "minigallery_sort_order", "subsection_order")
     assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key
     which = gallery_conf[key]
     if key == "jupyterlite":

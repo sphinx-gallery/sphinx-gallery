@@ -8,8 +8,8 @@ instantiated classes like ``ResetArgv()``, classes like ``FileNameSortKey``, or
 callables like ``notebook_modification_function`` in  ``sphinx_gallery_conf``,
 you should pass fully qualified names to classes or callables. For example, instead of
 defining a ``ResetArgV`` class in ``conf.py``, define it in an importable module
-somewhere in your path and instatiate an instance of it. For ``ResetArgv`` this could be
-for example either of:
+somewhere in your path and instantiate an instance of it. For ``ResetArgv`` this could
+be for example either of:
 
 1. ``"mymod.utils.reset_argv"`` where you define a ``class _ResetArgv`` class in
    ``mymod.utils`` and instantiate it in your ``conf.py`` as

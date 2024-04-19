@@ -444,7 +444,10 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
     out : list
         sorted list of gallery subsection folder names
     """
-    sortkey = gallery_conf["subsection_order"]
+    if gallery_conf["subsection_order"] is None:
+        sortkey = None
+    else:
+        (sortkey,) = _get_callables(gallery_conf, "subsection_order")
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
     if check_for_index:
         subfolders = [
