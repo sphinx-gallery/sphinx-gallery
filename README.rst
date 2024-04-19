@@ -78,7 +78,7 @@ Add examples to your docs
 Let's assume simple scenario, you have a Python package with a directory structure like this:
 
 .. code-block::
-    .
+
     ├── doc
     │   ├── conf.py
     │   ├── index.rst
