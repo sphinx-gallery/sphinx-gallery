@@ -41,9 +41,13 @@ HTML gallery of examples from any set of Python scripts.
 Quickstart
 ==========
 
-Sphinx-Gallery can be used to generate an example gallery for a library, as well as a stand-alone web page showcasing examples of a particular Python package, module, or class.
+Sphinx-Gallery can be used to generate an example gallery for a library,
+ as well as a stand-alone web page showcasing examples of a particular
+ Python package, module, or class.
 
-Let's get started with a simple example or checkout the `documentation <sphinx-gallery.github.io>`_ for introductions on how to use it and more...
+Let's get started with a simple example or checkout the
+ `documentation <sphinx-gallery.github.io>`_ for introductions on how
+ to use it and more...
 
 Install via ``pip``
 -------------------
@@ -102,7 +106,10 @@ Then you just add the following to your ``doc/conf.py``:
         'gallery_dirs': 'gallery',  # path to where to save gallery generated output
     }
 
-Finally just compile your docs as usual. You will see a new section "gallery" in your docs with the examples.
+Finally just compile your docs as usual.
+ You will find a new page "gallery" in your docs with the examples.
+ To get it linked from the main page, add a link ``gallery/index.rst``
+ in your ``doc/index.rst``.
 
 Who uses Sphinx-Gallery
 =======================
