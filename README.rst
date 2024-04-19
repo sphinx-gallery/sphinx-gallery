@@ -68,7 +68,7 @@ You can do a direct install via ``pip`` by using:
 
 .. note::
     Sphinx-Gallery also has support for scraping images from Matplotlib
-    and Matplotlib-based packages such as Seaborn and PyVista.
+    and Matplotlib-based packages such as Seaborn.
     We recommend installing system ``optipng`` binaries to reduce
     the file sizes of the generated PNG files.
 
