@@ -67,8 +67,8 @@ You can do a direct install via ``pip`` by using:
     are **Sphinx >= 4** and Pillow, which we use for scaling images.
 
 .. note::
-    Sphinx-Gallery has also support for scraping images from packages like
-    Matplotlib, Seaborn, and PyVista. We recommend installing system ``optipng``
+    Sphinx-Gallery has also support for scraping images from Matplotlib and Matplotlib based
+    packages such as Seaborn, and PyVista. We recommend installing system ``optipng``
     binaries to reduce the file sizes of the generated PNG files.
 
 .. installation-end-content
