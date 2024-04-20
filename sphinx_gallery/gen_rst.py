@@ -1501,6 +1501,7 @@ def save_rst_example(
 
 
 def _get_class(gallery_conf, key):
+    """Get a class for the given conf key."""
     what = f"sphinx_gallery_conf[{repr(key)}]"
     val = gallery_conf[key]
     if key == "within_subsection_order":
@@ -1535,8 +1536,9 @@ def _get_class(gallery_conf, key):
 
 
 def _get_callables(gallery_conf, key):
-    # the following should be the case (internal use only)
+    """Get callables for the given conf key."""
     singletons = ("reset_argv", "minigallery_sort_order", "subsection_order")
+    # the following should be the case (internal use only):
     assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key
     which = gallery_conf[key]
     if key == "jupyterlite":
