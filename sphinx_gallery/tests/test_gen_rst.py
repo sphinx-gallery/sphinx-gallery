@@ -1196,7 +1196,7 @@ def test_textio_compat(log_collector_wrap):
     assert tee.writable()
 
 
-def test_fileno(monkeypatch, log_collector_wrap):
+def test_fileno(log_collector_wrap):
     _, _, tee, _ = log_collector_wrap
     with pytest.raises(io.UnsupportedOperation):
         tee.fileno()
