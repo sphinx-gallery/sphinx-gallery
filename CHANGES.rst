@@ -12,7 +12,7 @@ somewhere in your path and instantiate an instance of it. For ``ResetArgv`` this
 be for example either of:
 
 1. ``"mymod.utils.reset_argv"`` where you define a ``class _ResetArgv`` class in
-   ``mymod.utils`` and instantiate it in your ``conf.py`` as
+   ``mymod.utils`` and instantiate it an instance of it in ``mymod/utils.py`` with
    ``reset_argv = _ResetArgv()``.
 2. ``"sphinxext.reset.ResetArgv"`` where you define a ``ResetArgv`` class in
    ``doc/sphinxext/reset.py``, instantiate an instance with
