@@ -413,8 +413,7 @@ specified using just the stem for example as ``"NumberOfLinesSortKey"``, which i
 functionally equivalent to providing the fully qualified name
 ``"sphinx_gallery.sorting.NumberOfCodeLinesSortKey"``.
 
-In addition, multiple convenience classes are provided for use with
-``within_subsection_order``:
+Built in convenience classes supported by ``within_subsection_order``:
 
 - :class:`sphinx_gallery.sorting.NumberOfCodeLinesSortKey` (default) to sort by
   the number of code lines.

@@ -3,7 +3,7 @@ Changelog
 
 v0.16.0
 -------
-Sphinx 7.3.2 and above changed caching and serialization checks. Now instead of passing
+Sphinx 7.3.0 and above changed caching and serialization checks. Now instead of passing
 instantiated classes like ``ResetArgv()``, classes like ``FileNameSortKey``, or
 callables like ``notebook_modification_function`` in  ``sphinx_gallery_conf``,
 you should pass fully qualified names to classes or callables. For example, instead of
