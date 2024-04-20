@@ -1648,12 +1648,13 @@ than a single static image of the animation figure, you should add::
 HTML embedding options can be changed by setting ``rcParams['animation.html']``
 and related options in your
 `matplotlib rcParams <https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_.
-It's also recommended to ensure that "imagemagick" is available as a
-``writer``, which you can check with
-:class:`matplotlib.animation.ImageMagickWriter.isAvailable()
-<matplotlib.animation.ImageMagickWriter>`.
-The FFmpeg writer in some light testing did not work as well for
-creating GIF thumbnails for the gallery pages.
+It's also recommended to ensure that "FFmpeg" or "imagemagick" is available as a
+``writer``. Use
+:class:`matplotlib.animation.ImageMagickWriter.isAvailable() <matplotlib.animation.ImageMagickWriter>`
+or
+:class:`matplotlib.animation.FFMpegWriter.isAvailable() <matplotlib.animation.FFMpegWriter>`
+to check.
+We recommend FFMpeg writer, unless you are using Matplotlib <3.3.1.
 
 The following scrapers are supported:
 
