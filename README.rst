@@ -42,7 +42,7 @@ Checkout the `documentation <sphinx-gallery.github.io>`_ for introductions on ho
 Quickstart
 ==========
 
-Sphinx-Gallery can be used to generate an example gallery from `.py` files
+Sphinx-Gallery can be used to generate an example gallery from ``.py`` files
 for a library,
  as well as a stand-alone web page showcasing examples of a particular
  Python package, module, or class.
@@ -110,7 +110,7 @@ Enable Sphinx-Gallery by adding the following to your ``doc/conf.py``:
     }
 
 Finally just compile your docs as usual.
-Sphinx-Gallery will generated reST files, adding execution outputs, and save them in `auto_examples/`.
+Sphinx-Gallery will generated reST files, adding execution outputs, and save them in ``auto_examples/``.
 Add a link to ``auto_examples/index.rst`` to include the gallery in your documentation.
  in your ``doc/index.rst``.
 
