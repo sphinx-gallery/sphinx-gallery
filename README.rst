@@ -62,12 +62,12 @@ You can do a direct install via ``pip`` by using:
 
     $ pip install sphinx-gallery "sphinx>=4.0" pillow
 
-.. warning::
+.. important::
     Sphinx-Gallery will not manage its dependencies when installing, thus
     you are required to install them manually. Our minimal dependencies
     are **Sphinx >= 4** and Pillow, which we use for scaling images.
 
-.. note::
+.. tip::
     Sphinx-Gallery also has support for scraping images from Matplotlib
     and Matplotlib-based packages such as Seaborn.
     We recommend installing system ``optipng`` binaries to reduce
