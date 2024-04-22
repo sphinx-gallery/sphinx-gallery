@@ -326,7 +326,7 @@ needs to be a Callable that accepts the ``gallery_conf`` and ``script_vars``
 dictionaries as input and returns a list of strings that are passed as
 additional command line arguments to the interpreter.
 
-An example in ``doc/sphinxext.py`` (assuming you have added ``doc/`` to ``sys.path`` so
+A ``reset_argv`` example defined in ``doc/sphinxext.py`` (assuming you have added ``doc/`` to ``sys.path`` so
 that ``sphinxext.reset_argv`` can be resolved by importlib) could be::
 
     from pathlib import Path
@@ -432,7 +432,7 @@ You can create a custom sort key callable for the following configurations:
 * :ref:`minigallery_sort_order <minigallery_order>`
 
 The best way to do this is to make use of a single instance of each class you want
-to use in some fully resolvable path, and then tell sphinx-gallery to resolve the
+to use, in some fully resolvable path, and then tell sphinx-gallery to resolve the
 callable from the fully qualified name. For example, you could write a function
 ``def my_sorter`` and put it in ``mymod/utils.py``, then use::
 
@@ -460,8 +460,8 @@ And set in your configuration::
     #...
     }
 
-And sphinx-gallery would resolve ``"sphinxext.function_sorter"`` to the
-``function_sorter`` object because the ``doc/`` directory is first on the path.
+And sphinx-gallery would resolve ``"sphinxext.plotted_sorter"`` to the
+``plotted_sorter`` object because the ``doc/`` directory is first on the path.
 
 .. _link_to_documentation:
 
