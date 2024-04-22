@@ -11,12 +11,10 @@ defining a ``ResetArgV`` class in ``conf.py``, define it in an importable module
 somewhere in your path and instantiate an instance of it. For ``ResetArgv`` this could
 be for example either of:
 
-1. ``"reset_argv": "mymod.utils.reset_argv"`` where you define a ``class _ResetArgv`` class in
-   ``mymod.utils`` and instantiate an instance of it in ``mymod/utils.py`` with
-   ``reset_argv = _ResetArgv()``.
-2. ``"reset_argv": "sphinxext.reset.ResetArgv"`` where you define a ``ResetArgv`` class in
-   ``doc/sphinxext/reset.py``, instantiate an instance with
-   ``reset_argv = ResetArgv()``, and do something like
+1. ``"reset_argv": "mymod.utils.reset_argv"`` where you define function
+   ``def reset_argv`` class in ``mymod.utils``.
+2. ``"reset_argv": "sphinxext.reset.reset_argv"`` where you define a ``def reset_argv``
+   in ``doc/sphinxext/reset.py``, and do something like
    ``sys.path.insert(0, os.path.dirname(__file__) + "/sphinxext")`` in your ``conf.py``.
 
 Built in classes like :class:`sphinx_gallery.sorting.FileNameSortKey` and similar can

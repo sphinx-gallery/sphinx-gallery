@@ -347,12 +347,11 @@ which is included in the configuration dictionary as::
         'reset_argv': "sphinxext.reset_argv",
     }
 
-which is then used by Sphinx-Gallery as::
+which is then resolved by Sphinx-Gallery to the callable ``reset_argv`` and used as::
 
     import sys
     sys.argv[0] = script_vars['src_file']
-    sys.argv[1:] = gallery_conf['reset_argv'](gallery_conf, script_vars)
-
+    sys.argv[1:] = reset_argv(gallery_conf, script_vars)
 
 
 .. _sub_gallery_order:
