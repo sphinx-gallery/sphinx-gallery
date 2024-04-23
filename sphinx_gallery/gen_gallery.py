@@ -45,6 +45,8 @@ from .interactive_example import post_configure_jupyterlite_sphinx
 from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
 from .recommender import ExampleRecommender, _write_recommendations
+from .sorting import ExplicitOrder
+
 
 _KNOWN_CSS = (
     "sg_gallery",
@@ -448,6 +450,8 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
         sortkey = None
     else:
         (sortkey,) = _get_callables(gallery_conf, "subsection_order")
+        if isinstance(sortkey, list):
+            sortkey = ExplicitOrder(sortkey)
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
     if check_for_index:
         subfolders = [
