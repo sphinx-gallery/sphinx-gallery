@@ -6,19 +6,11 @@ v0.16.0
 Sphinx 7.3.0 and above changed caching and serialization checks. Now instead of passing
 instantiated classes like ``ResetArgv()``, classes like ``FileNameSortKey``, or
 callables like ``notebook_modification_function`` in  ``sphinx_gallery_conf``,
-you should pass fully qualified names to classes or callables. For example, instead of
-defining a ``ResetArgV`` class in ``conf.py``, define it in an importable module
-somewhere in your path and instantiate an instance of it. For ``ResetArgv`` this could
-be for example either of:
+you should pass fully qualified name strings to classes or callables. If you change
+to using name strings, you can simply use function as the use of classes to ensure
+a stable ``__repr__`` would be redundant.
 
-1. ``"reset_argv": "mymod.utils.reset_argv"`` where you define function
-   ``def reset_argv`` class in ``mymod.utils``.
-2. ``"reset_argv": "sphinxext.reset.reset_argv"`` where you define a ``def reset_argv``
-   in ``doc/sphinxext/reset.py``, and do something like
-   ``sys.path.insert(0, os.path.dirname(__file__) + "/sphinxext")`` in your ``conf.py``.
-
-Built in classes like :class:`sphinx_gallery.sorting.FileNameSortKey` and similar can
-be used with shorter direct alias strings like ``"FileNameSortKey"``.
+See :ref:`importing_callables` for details.
 
 v0.15.0
 -------

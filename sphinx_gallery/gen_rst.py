@@ -1536,7 +1536,7 @@ def _get_class(gallery_conf, key):
 
 
 def _get_callables(gallery_conf, key):
-    """Get callables for the given conf key."""
+    """Get callables for the given conf key, returning tuple of callable(s)."""
     singletons = ("reset_argv", "minigallery_sort_order", "subsection_order")
     # the following should be the case (internal use only):
     assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key

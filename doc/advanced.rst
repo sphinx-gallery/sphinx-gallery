@@ -216,8 +216,7 @@ It uses an approach similar to what
 :func:`sphinx_gallery.scrapers.matplotlib_scraper` does under the hood, which
 use the helper function :func:`sphinx_gallery.scrapers.figure_rst` to
 create the standardized reST. If your package will be used to write an image
-file to disk (e.g., PNG or JPEG), we recommend you use a similar approach,
-but via a class so that the ``__repr__`` can remain stable across Sphinx runs::
+file to disk (e.g., PNG or JPEG), we recommend you use a similar approach::
 
     def my_module_scraper(block, block_vars, gallery_conf):
         import mymodule
@@ -242,16 +241,16 @@ but via a class so that the ``__repr__`` can remain stable across Sphinx runs::
         # code block's figures. Alternatively you can define your own reST.
         return figure_rst(image_names, gallery_conf['src_dir'])
 
-This code would be defined either in your ``conf.py`` file, or as a module that
-you import into your ``conf.py`` file. The configuration needed to use this
-scraper would look like::
+This code could be defined either in your ``conf.py`` file, or as a module that
+you import into your ``conf.py`` file (see :ref:`importing_callables`).
+The configuration needed to use this scraper would look like::
 
     sphinx_gallery_conf = {
         ...
         'image_scrapers': ('matplotlib', "my_module._scraper.my_module_scraper"),
     }
 
-Where sphinx-gallery will parse the string ``"my_module._scraper.my_module_scraper"``
+Where Sphinx-Gallery will parse the string ``"my_module._scraper.my_module_scraper"``
 to import the callable function.
 
 Example 2: detecting image files on disk
@@ -263,46 +262,37 @@ the reST needed to embed them in the documentation. Note that the example script
 will still need to be executed to scrape the files, but the images
 don't need to be produced during the execution.
 
-We'll use a callable class in this case, and assume it is defined within your
-package in a module called ``scraper``. Here is the scraper code::
+We assume the function is defined within your
+package in a module called ``_scraper``. Here is the scraper code::
 
     from glob import glob
     import shutil
     import os
     from sphinx_gallery.scrapers import figure_rst
 
-    class PNGScraper(object):
-        def __init__(self):
-            self.seen = set()
+    def png_scraper(block, block_vars, gallery_conf):
+        # Find all PNG files in the directory of this example.
+        path_current_example = os.path.dirname(block_vars['src_file'])
+        pngs = sorted(glob(os.path.join(path_current_example, '*.png')))
 
-        def __repr__(self):
-            return 'PNGScraper'
-
-        def __call__(self, block, block_vars, gallery_conf):
-            # Find all PNG files in the directory of this example.
-            path_current_example = os.path.dirname(block_vars['src_file'])
-            pngs = sorted(glob(os.path.join(path_current_example, '*.png')))
-
-            # Iterate through PNGs, copy them to the sphinx-gallery output directory
-            image_names = list()
-            image_path_iterator = block_vars['image_path_iterator']
-            for png in pngs:
-                if png not in self.seen:
-                    self.seen |= set(png)
-                    this_image_path = image_path_iterator.next()
-                    image_names.append(this_image_path)
-                    shutil.move(png, this_image_path)
-            # Use the `figure_rst` helper function to generate reST for image files
-            return figure_rst(image_names, gallery_conf['src_dir'])
-
+        # Iterate through PNGs, copy them to the Sphinx-Gallery output directory
+        image_names = list()
+        image_path_iterator = block_vars['image_path_iterator']
+        seen = set()
+        for png in pngs:
+            if png not in seen:
+                seen |= set(png)
+                this_image_path = image_path_iterator.next()
+                image_names.append(this_image_path)
+                shutil.move(png, this_image_path)
+        # Use the `figure_rst` helper function to generate reST for image files
+        return figure_rst(image_names, gallery_conf['src_dir'])
 
 Then, in our ``conf.py`` file, we include the following code::
 
-   from mymodule.scraper import PNGScraper
-
    sphinx_gallery_conf = {
        ...
-       'image_scrapers': ('matplotlib', PNGScraper()),
+       'image_scrapers': ('matplotlib', 'my_module._scraper.png_scraper'),
    }
 
 Example 3: matplotlib with SVG format
@@ -310,14 +300,13 @@ Example 3: matplotlib with SVG format
 The :func:`sphinx_gallery.scrapers.matplotlib_scraper` supports ``**kwargs``
 to pass to :meth:`matplotlib.figure.Figure.savefig`, one of which is the
 ``format`` argument. See :ref:`custom_scraper` for supported formats.
-To use SVG, you can do in a ``doc/sphinxext.py`` for example::
+To use SVG you can define the following function and ensure it is
+:ref:`importable <importing_callables>`::
 
     def matplotlib_svg_scraper(*args, **kwargs):
         return matplotlib_scraper(*args, format='svg', **kwargs)
 
 Then in your ``conf.py``::
-
-    sys.path.insert(0, os.path.dirname(__file__))
 
     sphinx_gallery_conf = {
         ...
@@ -332,7 +321,7 @@ writing a customized scraper class or function.
 
 Example 4: Mayavi scraper
 -------------------------
-Historically, sphinx-gallery supported scraping Mayavi figures as well as
+Historically, Sphinx-Gallery supported scraping Mayavi figures as well as
 matplotlib figures. However, due to the complexity of maintaining the scraper,
 support was deprecated in version 0.12.0. To continue using a Mayavi scraping,
 consider using something like the following::

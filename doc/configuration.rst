@@ -146,6 +146,88 @@ to your ``conf.py`` file.
 
 Note that the above Matplotlib warning is removed by default.
 
+.. _importing_callables:
+
+Importing callables
+===================
+
+Sphinx-Gallery configuration values that are instantiated classes, classes
+or functions should be passed as fully qualified name strings to the objects.
+The object needs to be importable by Sphinx-Gallery.
+
+Two common ways to achieve this are:
+
+1. Define your object with your package. For example, you could write a function
+   ``def my_sorter`` and put it in ``mymod/utils.py``, then use::
+
+        sphinx_gallery_conf = {
+        #...,
+        "minigallery_sort_order": "mymod.utils.my_sorter",
+        #...
+        }
+
+2. Define your object with your documentation. For example,
+   you can add documentation-specific stuff in a different path and ensure
+   that it can be resolved at build time. For example, you could create a file
+   ``doc/sphinxext.py``::
+
+        def plotted_sorter(fname):
+            return not fname.startswith("plot_"), fname
+        )
+
+    And set in your configuration::
+
+        sys.path.insert(0, os.path.dirname(__file__))
+
+        sphinx_gallery_conf = {
+        #...,
+        "minigallery_sort_order": "sphinxext.plotted_sorter",
+        #...
+        }
+
+    And Sphinx-Gallery would resolve ``"sphinxext.plotted_sorter"`` to the
+    ``plotted_sorter`` object because the ``doc/`` directory is first on the path.
+
+Built in classes like :class:`sphinx_gallery.sorting.FileNameSortKey` and similar can
+be used with shorter direct alias strings like ``"FileNameSortKey"`` (see
+:ref:`within_gallery_order` for details).
+
+.. note::
+    Sphinx-Gallery >0.16.0 supports use of fully qualified name strings as a response
+    to the Sphinx >7.3.0 changes to caching and serialization checks of the
+    ``conf.py`` file.
+
+    This means that the previous use of class instances as configuration values to
+    ensure the ``__repr__`` was stable across builds is redundant *if* you are passing
+    configuration values via name strings. When using name strings, the configuration
+    object can just be a function.
+
+.. _stable_repr::
+
+Ensuring a stable ``__repr__``
+==============================
+
+For backwards compatibility Sphinx-Gallery allows certain configuration values to be
+a callable object instead of a :ref:`importable name string <importing_callables>`.
+
+If you wish to use a callable object you will have to ensure that the ``__repr__``
+is stable across runs. Sphinx determines if the build environment has
+changed, and thus if *all* documents should be rewritten, by examining the
+config values using ``md5(str(obj).encode()).hexdigest()`` in
+``sphinx/builders/html.py``. Default class instances in Python have their
+memory address in their ``__repr__`` which is why generally the ``__repr__``
+changes in each build.
+
+Your callable should be a class that defines a stable ``__repr__`` method.
+For example, :class:`sphinx_gallery.sorting.ExplicitOrder` stability is
+ensured via the custom ``__repr__``::
+
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.ordered_list)
+
+Therefore, the files are only all rebuilt when the specified ordered list
+is changed.
+
 .. _multiple_galleries_config:
 
 Manage multiple galleries
@@ -322,12 +404,11 @@ Passing command line arguments to example scripts
 By default, Sphinx-Gallery will not pass any command line arguments to example
 scripts. By setting the ``reset_argv`` option, it is possible to change this
 behavior and pass command line arguments to example scripts. ``reset_argv``
-needs to be a Callable that accepts the ``gallery_conf`` and ``script_vars``
+needs to be a ``Callable`` that accepts the ``gallery_conf`` and ``script_vars``
 dictionaries as input and returns a list of strings that are passed as
 additional command line arguments to the interpreter.
 
-A ``reset_argv`` example defined in ``doc/sphinxext.py`` (assuming you have added ``doc/`` to ``sys.path`` so
-that ``sphinxext.reset_argv`` can be resolved by importlib) could be::
+A ``reset_argv`` example could be::
 
     from pathlib import Path
 
@@ -340,7 +421,10 @@ that ``sphinxext.reset_argv`` can be resolved by importlib) could be::
         else:
             return []
 
-which is included in the configuration dictionary as::
+This function is defined in ``doc/sphinxext.py`` and we ensured that it is importable
+(see :ref:`importing_callables`).
+
+This can be included in the configuration dictionary as::
 
     sphinx_gallery_conf = {
         ...
@@ -353,6 +437,10 @@ which is then resolved by Sphinx-Gallery to the callable ``reset_argv`` and used
     sys.argv[0] = script_vars['src_file']
     sys.argv[1:] = reset_argv(gallery_conf, script_vars)
 
+.. note::
+    For backwards compatibility you can also set your configuration to be a callable
+    object but you will have to ensure that the ``__repr__`` is stable across runs.
+    See :ref:`stable_repr`.
 
 .. _sub_gallery_order:
 
@@ -404,14 +492,6 @@ which sorts the files based on the number of code lines::
         'within_subsection_order': "NumberOfCodeLinesSortKey",
     }
 
-Note that you must provide a *class* here, not an instance of the class. Because of how
-sphinx caches the environment, this should be provided as a fully qualified string
-that can be imported (though passing a class directly is supported for backward
-compatibility). Built in sphinx-gallery classes, however, for convenience can be
-specified using just the stem for example as ``"NumberOfLinesSortKey"``, which is
-functionally equivalent to providing the fully qualified name
-``"sphinx_gallery.sorting.NumberOfCodeLinesSortKey"``.
-
 Built in convenience classes supported by ``within_subsection_order``:
 
 - :class:`sphinx_gallery.sorting.NumberOfCodeLinesSortKey` (default) to sort by
@@ -419,6 +499,13 @@ Built in convenience classes supported by ``within_subsection_order``:
 - :class:`sphinx_gallery.sorting.FileSizeSortKey` to sort by file size.
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
+
+.. note::
+    These built in Sphinx-Gallery classes can be
+    specified using just the stem, e.g., ``"NumberOfLinesSortKey"``. It is
+    functionally equivalent to providing the fully qualified name
+    ``"sphinx_gallery.sorting.NumberOfCodeLinesSortKey"``. See
+    :ref:`importing_callables` for details.
 
 .. _own_sort_keys:
 
@@ -430,28 +517,13 @@ You can create a custom sort key callable for the following configurations:
 * :ref:`subsection_order <sub_gallery_order>`
 * :ref:`minigallery_sort_order <minigallery_order>`
 
-The best way to do this is to make use of a single instance of each class you want
-to use, in some fully resolvable path, and then tell sphinx-gallery to resolve the
-callable from the fully qualified name. For example, you could write a function
-``def my_sorter`` and put it in ``mymod/utils.py``, then use::
-
-    sphinx_gallery_conf = {
-    #...,
-    "minigallery_sort_order": "mymod.utils.my_sorter",
-    #...
-    }
-
-Another option is to add documentation-specific stuff in a different path and ensure
-that it can be resolved at build time. For example, you could create a file
-``doc/sphinxext.py``::
+The best way to do this is to define a sort function, that takes the passed path
+string::
 
     def plotted_sorter(fname):
         return not fname.startswith("plot_"), fname
-    )
 
-And set in your configuration::
-
-    sys.path.insert(0, os.path.dirname(__file__))
+ensure it is importable (see :ref:`importing_callables`) and set your configuration::
 
     sphinx_gallery_conf = {
     #...,
@@ -459,8 +531,27 @@ And set in your configuration::
     #...
     }
 
-And sphinx-gallery would resolve ``"sphinxext.plotted_sorter"`` to the
-``plotted_sorter`` object because the ``doc/`` directory is first on the path.
+For backwards compatibility you can also set your configuration to be a callable
+object but you will have to ensure that the ``__repr__`` is stable across runs.
+See :ref:`stable_repr` for details.
+
+We recommend that you use the :class:`sphinx_gallery.sorting.FunctionSortKey`
+because it will ensure that the ``__repr__`` is stable across runs.
+
+:class:`sphinx_gallery.sorting.FunctionSortKey` takes a function on init.
+You can create your sort key callable by instantiating a
+:class:`~sphinx_gallery.sorting.FunctionSortKey` instance with your sort key
+function. For example, the following ``minigallery_sort_order`` configuration
+(which sorts on paths) will sort using the first 10 letters of each filename:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+    #...,
+    "minigallery_sort_order": FunctionSortKey(
+        lambda filename: filename[:10]),
+    #...
+    }
 
 .. _link_to_documentation:
 
@@ -628,7 +719,7 @@ do not have functions in common, for example a set of tutorials. The
 mini-gallery directive therefore also supports passing in:
 
 * pathlike strings to sphinx gallery example files (relative to ``conf.py``)
-* glob-style pathlike strings to sphinx-gallery example files (relative to ``conf.py``)
+* glob-style pathlike strings to Sphinx-Gallery example files (relative to ``conf.py``)
 
 For example, the rst below adds the reduced version of the Gallery for all
 examples that use the specific function ``numpy.exp``, the example
@@ -703,13 +794,17 @@ Sorting uses the paths to the gallery examples (e.g., ``path/to/plot_example.py`
 and backreferences (e.g., ``path/to/numpy.exp.examples``) corresponding to the
 inputs.
 
-See :ref:`own_sort_keys` for details on writing a custom sort key. Below is an
-example of using :class:`sphinx_gallery.sorting.FunctionSortKey` to put
-backreference thumbnails at the end. Note that
-backreference filenames do not start with "plot\_" and ``False`` gets sorted ahead
-of ``True`` (as 0 is less than 1). ::
+See :ref:`own_sort_keys` for details on writing a custom sort key.
 
-    sys.path.insert(0, os.path.dirname(__file__))
+As an example, to put backreference thumbnails at the end, we could define the function
+below in ``doc/sphinxext.py`` (note that backreference filenames do not start with
+"plot\_" and ``False`` gets sorted ahead of ``True`` as 0 is less than 1)::
+
+    def function_sorter(x)
+        return (not os.path.basename(x).startswith("plot_"), x)::
+
+We can then set the configuration to be (ensuring the function is
+:ref:`importable <importing_callables>`)::
 
     sphinx_gallery_conf = {
     #...,
@@ -717,12 +812,7 @@ of ``True`` (as 0 is less than 1). ::
     #...
     }
 
-And then in ``doc/sphinxext.py`` you would have::
-
-    def function_sorter(x)
-        return (not os.path.basename(x).startswith("plot_"), x)
-
-And sphinx-gallery would resolve ``"sphinxext.function_sorter"`` to the
+Sphinx-Gallery would resolve ``"sphinxext.function_sorter"`` to the
 ``function_sorter`` object.
 
 Sorting the set of thumbnails generated from
@@ -961,14 +1051,14 @@ the following first cell:
 
 .. code-block:: ipython
 
-    # This cell is added by sphinx-gallery
+    # This cell is added by Sphinx-Gallery
     # It can be customized to whatever you like
 
 Which is achieved by the following configuration::
 
     sphinx_gallery_conf = {
         ...
-        'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+        'first_notebook_cell': ("# This cell is added by Sphinx-Gallery\n"
                                 "# It can be customized to whatever you like\n"
                                 )
     }
@@ -978,7 +1068,7 @@ parameter::
 
     sphinx_gallery_conf = {
         ...
-        'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+        'first_notebook_cell': ("# This cell is added by Sphinx-Gallery\n"
                                 "# It can be customized to whatever you like\n"
                                 ),
         'last_notebook_cell': "# This is the last cell",
@@ -1426,7 +1516,7 @@ extra things will happen:
    server in your browser with the current example as notebook
 
 If, for some reason, you want to enable the ``jupyterlite-sphinx`` extension
-but not use sphinx-gallery Jupyterlite integration you can do::
+but not use Sphinx-Gallery Jupyterlite integration you can do::
 
     extensions = [
         ...,
@@ -1999,7 +2089,7 @@ max_df (type: float in range [0.0, 1.0] | int, default: 0.9)
 rubric_header (type: str, default: "Related examples")
   Customizable rubric header. It can be edited to more descriptive text or to
   add external links, e.g. to the API doc of the recommender system on the
-  sphinx-gallery documentation.
+  Sphinx-Gallery documentation.
 
 The parameters ``min_df`` and ``max_df`` can be customized by the user to trim
 the very rare/very common words. This may improve the recommendations quality,
