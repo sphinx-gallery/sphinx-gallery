@@ -169,13 +169,16 @@ Two common ways to achieve this are:
 2. Define your object with your documentation. For example,
    you can add documentation-specific stuff in a different path and ensure
    that it can be resolved at build time. For example, you could create a file
-   ``doc/sphinxext.py``::
+   ``doc/sphinxext.py``:
+
+    .. code-block::
 
         def plotted_sorter(fname):
             return not fname.startswith("plot_"), fname
-        )
 
-    And set in your configuration::
+    And set in your configuration:
+
+    .. code-block::
 
         sys.path.insert(0, os.path.dirname(__file__))
 
