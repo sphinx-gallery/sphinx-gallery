@@ -169,14 +169,14 @@ Two common ways to achieve this are:
 2. Define your object with your documentation. For example,
    you can add documentation-specific stuff in a different path and ensure
    that it can be resolved at build time. For example, you could create a file
-   ``doc/sphinxext.py``:
+   ``doc/sphinxext.py`` and define your function:
 
     .. code-block::
 
         def plotted_sorter(fname):
             return not fname.startswith("plot_"), fname
 
-    And set in your configuration:
+   And set in your configuration:
 
     .. code-block::
 
@@ -188,8 +188,8 @@ Two common ways to achieve this are:
         #...
         }
 
-    And Sphinx-Gallery would resolve ``"sphinxext.plotted_sorter"`` to the
-    ``plotted_sorter`` object because the ``doc/`` directory is first on the path.
+   And Sphinx-Gallery would resolve ``"sphinxext.plotted_sorter"`` to the
+   ``plotted_sorter`` object because the ``doc/`` directory is first on the path.
 
 Built in classes like :class:`sphinx_gallery.sorting.FileNameSortKey` and similar can
 be used with shorter direct alias strings like ``"FileNameSortKey"`` (see
@@ -205,7 +205,7 @@ be used with shorter direct alias strings like ``"FileNameSortKey"`` (see
     configuration values via name strings. When using name strings, the configuration
     object can just be a function.
 
-.. _stable_repr::
+.. _stable_repr:
 
 Ensuring a stable ``__repr__``
 ==============================

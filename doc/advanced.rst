@@ -404,7 +404,7 @@ For example, to reset matplotlib to always use the ``ggplot`` style, you could d
 
 Any custom functions can be defined (or imported) in ``conf.py`` and given to
 the ``reset_modules`` configuration key. To add the function defined above (assuming
-you've defined it in a ``doc/sphinxext.py`` where ``doc/`` is in your ``sys.path``)::
+you've make it :ref:`importable <importing_callables>`)::
 
    sphinx_gallery_conf = {
        ...
