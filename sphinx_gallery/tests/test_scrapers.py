@@ -157,11 +157,11 @@ def test_custom_scraper(make_gallery_conf, monkeypatch):
     # degenerate
     # without the monkey patch to add sphinx_gallery._get_sg_image_scraper,
     # we should get an error
-    with pytest.raises(ConfigError, match="has no attribute '_get_sg_image_scraper'"):
+    with pytest.raises(ConfigError, match="Unknown string option"):
         make_gallery_conf({"image_scrapers": ["sphinx_gallery"]})
 
     # other degenerate conditions
-    with pytest.raises(ConfigError, match="Unknown image scraper"):
+    with pytest.raises(ConfigError, match="Unknown string option for image_scraper"):
         make_gallery_conf({"image_scrapers": ["foo"]})
     for cust, msg in [
         (_custom_func, "did not produce expected image"),
@@ -177,11 +177,11 @@ def test_custom_scraper(make_gallery_conf, monkeypatch):
     # degenerate string interface
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, "_get_sg_image_scraper", "foo", raising=False)
-        with pytest.raises(ConfigError, match="^Unknown image.*\n.*callable"):
+        with pytest.raises(ConfigError, match="^Unknown string option for image_"):
             make_gallery_conf({"image_scrapers": ["sphinx_gallery"]})
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, "_get_sg_image_scraper", lambda: "foo", raising=False)
-        with pytest.raises(ConfigError, match="^Scraper.*was not callable"):
+        with pytest.raises(ConfigError, match="craper.*must be callable"):
             make_gallery_conf({"image_scrapers": ["sphinx_gallery"]})
 
 

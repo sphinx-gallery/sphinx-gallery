@@ -32,6 +32,8 @@ from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 from sphinx_gallery.interactive_example import check_binder_conf
 
+root = Path(__file__).parents[2]
+
 CONTENT = [
     '"""',
     "================",
@@ -69,7 +71,9 @@ CONTENT = [
 
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split."""
-    file_conf, blocks = split_code_and_text_blocks("examples/no_output/just_code.py")
+    file_conf, blocks = split_code_and_text_blocks(
+        root / "examples" / "no_output" / "just_code.py",
+    )
 
     assert file_conf == {}
     assert blocks[0][0] == "text"
@@ -81,9 +85,10 @@ def test_bug_cases_of_notebook_syntax():
 
     `plot_parse.py` uses both '#'s' and '#%%' as cell separators.
     """
-    with open("sphinx_gallery/tests/reference_parse.txt") as reference:
-        ref_blocks = ast.literal_eval(reference.read())
-    file_conf, blocks = split_code_and_text_blocks("tutorials/plot_parse.py")
+    ref_blocks = ast.literal_eval(
+        (Path(__file__).parent / "reference_parse.txt").read_text("utf-8")
+    )
+    file_conf, blocks = split_code_and_text_blocks(root / "tutorials" / "plot_parse.py")
 
     assert file_conf == {}
     assert blocks == ref_blocks

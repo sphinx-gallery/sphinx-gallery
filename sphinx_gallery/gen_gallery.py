@@ -10,7 +10,6 @@ import codecs
 import copy
 from datetime import timedelta, datetime
 from difflib import get_close_matches
-from importlib import import_module
 from pathlib import Path
 from textwrap import indent
 import re
@@ -25,11 +24,17 @@ from sphinx.util.console import blue, red, purple, bold
 from . import glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
-from .gen_rst import generate_dir_rst, SPHX_GLR_SIG, _get_memory_base, _get_readme
-from .scrapers import _scraper_dict, _reset_dict, _import_matplotlib
+from .gen_rst import (
+    generate_dir_rst,
+    SPHX_GLR_SIG,
+    _get_readme,
+    _get_class,
+    _get_callables,
+    _get_call_memory_and_base,
+)
+from .scrapers import _import_matplotlib
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
-from .sorting import NumberOfCodeLinesSortKey
 from .interactive_example import (
     copy_binder_files,
     check_binder_conf,
@@ -69,7 +74,7 @@ DEFAULT_GALLERY_CONF = {
     "notebook_extensions": {".py"},
     "reset_argv": DefaultResetArgv(),
     "subsection_order": None,
-    "within_subsection_order": NumberOfCodeLinesSortKey,
+    "within_subsection_order": "NumberOfCodeLinesSortKey",
     "minigallery_sort_order": None,
     "gallery_dirs": "auto_examples",
     "backreferences_dir": None,
@@ -189,7 +194,14 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         "run_stale_examples",
     ):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
-    gallery_conf["app"] = app
+    gallery_conf["default_role"] = ""
+    gallery_conf["source_suffix"] = {".rst": "restructuredtext"}
+    if app is not None:
+        if app.config["default_role"]:
+            gallery_conf["default_role"] = app.config["default_role"]
+        gallery_conf["source_suffix"] = app.config["source_suffix"]
+        if isinstance(gallery_conf["source_suffix"], str):
+            gallery_conf["source_suffix"] = {gallery_conf["source_suffix"]: None}
 
     # Check capture_repr
     capture_repr = gallery_conf["capture_repr"]
@@ -211,65 +223,19 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         )
 
     # deal with show_memory
-    gallery_conf["memory_base"] = 0.0
-    if gallery_conf["show_memory"]:
-        if not callable(gallery_conf["show_memory"]):  # True-like
-            try:
-                from memory_profiler import memory_usage  # noqa
-            except ImportError:
-                logger.warning(
-                    "Please install 'memory_profiler' to enable "
-                    "peak memory measurements."
-                )
-                gallery_conf["show_memory"] = False
-            else:
+    _get_call_memory_and_base(gallery_conf)
 
-                def call_memory(func):
-                    mem, out = memory_usage(
-                        func, max_usage=True, retval=True, multiprocess=True
-                    )
-                    try:
-                        mem = mem[0]  # old MP always returned a list
-                    except TypeError:  # 'float' object is not subscriptable
-                        pass
-                    return mem, out
+    # check callables
+    for key in (
+        "image_scrapers",
+        "reset_argv",
+        "minigallery_sort_order",
+        "reset_modules",
+    ):
+        if key == "minigallery_sort_order" and gallery_conf[key] is None:
+            continue
+        _get_callables(gallery_conf, key)
 
-                gallery_conf["call_memory"] = call_memory
-                gallery_conf["memory_base"] = _get_memory_base(gallery_conf)
-        else:
-            gallery_conf["call_memory"] = gallery_conf["show_memory"]
-    if not gallery_conf["show_memory"]:  # can be set to False above
-
-        def call_memory(func):
-            return 0.0, func()
-
-        gallery_conf["call_memory"] = call_memory
-    assert callable(gallery_conf["call_memory"])
-
-    # deal with scrapers
-    scrapers = gallery_conf["image_scrapers"]
-    if not isinstance(scrapers, (tuple, list)):
-        scrapers = [scrapers]
-    scrapers = list(scrapers)
-    for si, scraper in enumerate(scrapers):
-        if isinstance(scraper, str):
-            if scraper in _scraper_dict:
-                scraper = _scraper_dict[scraper]
-            else:
-                orig_scraper = scraper
-                try:
-                    scraper = import_module(scraper)
-                    scraper = getattr(scraper, "_get_sg_image_scraper")
-                    scraper = scraper()
-                except Exception as exp:
-                    raise ConfigError(
-                        f"Unknown image scraper {orig_scraper!r}, got:\n{exp}"
-                    )
-            scrapers[si] = scraper
-        if not callable(scraper):
-            raise ConfigError(f"Scraper {scraper!r} was not callable")
-    gallery_conf["image_scrapers"] = tuple(scrapers)
-    del scrapers
     # Here we try to set up matplotlib but don't raise an error,
     # we will raise an error later when we actually try to use it
     # (if we do so) in scrapers.py.
@@ -338,19 +304,8 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     gallery_conf["compress_images"] = compress_images
     gallery_conf["compress_images_args"] = compress_images_args
 
-    # deal with resetters
-    resetters = gallery_conf["reset_modules"]
-    if not isinstance(resetters, (tuple, list)):
-        resetters = [resetters]
-    resetters = list(resetters)
-    for ri, resetter in enumerate(resetters):
-        if isinstance(resetter, str):
-            if resetter not in _reset_dict:
-                raise ConfigError(f"Unknown module resetter named {resetter!r}")
-            resetters[ri] = _reset_dict[resetter]
-        elif not callable(resetter):
-            raise ConfigError(f"Module resetter {resetter!r} was not callable")
-    gallery_conf["reset_modules"] = tuple(resetters)
+    # check resetters
+    _get_callables(gallery_conf, "reset_modules")
 
     if not isinstance(gallery_conf["reset_modules_order"], str):
         raise ConfigError(
@@ -363,8 +318,6 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             "['before', 'after', 'both'], "
             f"got {gallery_conf['reset_modules_order']!r}"
         )
-
-    del resetters
 
     # Ensure the first cell text is a string if we have it
     first_cell = gallery_conf.get("first_notebook_cell")
@@ -434,7 +387,8 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
 
     # jupyterlite
     gallery_conf["jupyterlite"] = check_jupyterlite_conf(
-        gallery_conf.get("jupyterlite", {}), app
+        gallery_conf["jupyterlite"],
+        app,
     )
 
     if not isinstance(gallery_conf["css"], (list, tuple)):
@@ -444,8 +398,8 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     for css in gallery_conf["css"]:
         if css not in _KNOWN_CSS:
             raise ConfigError(f"Unknown css {css!r}, must be one of {_KNOWN_CSS!r}")
-        if gallery_conf["app"] is not None:  # can be None in testing
-            gallery_conf["app"].add_css_file(css + ".css")
+        if app is not None:  # can be None in testing
+            app.add_css_file(css + ".css")
 
     # check API usage
     if not isinstance(gallery_conf["api_usage_ignore"], str):
@@ -462,6 +416,9 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             'gallery_conf["show_api_usage"] must be True, False or "unused", '
             f'got {gallery_conf["show_api_usage"]}'
         )
+
+    # classes (not pickleable so need to resolve using fully qualified name)
+    _get_class(gallery_conf, "within_subsection_order")  # make sure it works
 
     _update_gallery_conf_exclude_implicit_doc(gallery_conf)
 
@@ -487,7 +444,10 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
     out : list
         sorted list of gallery subsection folder names
     """
-    sortkey = gallery_conf["subsection_order"]
+    if gallery_conf["subsection_order"] is None:
+        sortkey = None
+    else:
+        (sortkey,) = _get_callables(gallery_conf, "subsection_order")
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
     if check_for_index:
         subfolders = [
@@ -710,7 +670,7 @@ def generate_gallery_rst(app):
                         for fname in Path(src_dir).iterdir()
                         if fname.suffix == ".py"
                     ],
-                    key=gallery_conf["within_subsection_order"](src_dir),
+                    key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
                 )
                 gallery_py_files.append(
                     [os.path.join(src_dir, fname) for fname in py_files]

@@ -17,7 +17,7 @@ from sphinx_gallery.scrapers import _import_matplotlib
 from sphinx_gallery.utils import _get_image
 
 
-def pytest_report_header(config, startdir):
+def pytest_report_header(config, startdir=None):
     """Add information to the pytest run header."""
     return f"Sphinx:  {sphinx.__version__} ({sphinx.__file__})"
 

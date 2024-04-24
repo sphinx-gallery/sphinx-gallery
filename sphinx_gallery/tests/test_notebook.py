@@ -4,6 +4,7 @@ r"""Testing the Jupyter notebook parser."""
 
 from collections import defaultdict
 from itertools import count
+from pathlib import Path
 import json
 import tempfile
 import os
@@ -23,6 +24,8 @@ from sphinx_gallery.notebook import (
     promote_jupyter_cell_magic,
     python_to_jupyter_cli,
 )
+
+root = Path(__file__).parents[2]
 
 
 def test_latex_conversion(gallery_conf):
@@ -339,7 +342,7 @@ def test_notebook_images_data_uri(gallery_conf):
 
 def test_jupyter_notebook(gallery_conf):
     """Test that written ipython notebook file corresponds to python object."""
-    file_conf, blocks = split_code_and_text_blocks("tutorials/plot_parse.py")
+    file_conf, blocks = split_code_and_text_blocks(root / "tutorials" / "plot_parse.py")
     target_dir = "tutorials"
     example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
 
@@ -407,8 +410,9 @@ def test_missing_file():
     excinfo.match(r"No such file or directory.+nofile\.py")
 
 
-def test_file_is_generated():
+def test_file_is_generated(tmp_path):
     """Check notebook file created when user passes good python file."""
-    python_to_jupyter_cli(["examples/plot_0_sin.py"])
-    assert os.path.isfile("examples/plot_0_sin.ipynb")
-    os.remove("examples/plot_0_sin.ipynb")
+    out = str(tmp_path / "plot_0_sin.py")
+    shutil.copyfile(root / "examples" / "plot_0_sin.py", out)
+    python_to_jupyter_cli([out])
+    assert os.path.isfile(f"{out[:-3]}.ipynb")

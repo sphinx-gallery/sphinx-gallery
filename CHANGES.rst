@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.16.0
+-------
+Sphinx 7.3.0 and above changed caching and serialization checks. Now instead of passing
+instantiated classes like ``ResetArgv()``, classes like ``FileNameSortKey``, or
+callables like ``notebook_modification_function`` in  ``sphinx_gallery_conf``,
+you should pass fully qualified name strings to classes or callables. If you change
+to using name strings, you can simply use a function as the use of classes to ensure
+a stable ``__repr__`` would be redundant.
+
+See :ref:`importing_callables` for details.
+
 v0.15.0
 -------
 
