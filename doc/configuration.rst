@@ -171,22 +171,22 @@ Two common ways to achieve this are:
    that it can be resolved at build time. For example, you could create a file
    ``doc/sphinxext.py`` and define your function:
 
-    .. code-block::
+.. code-block::
 
-        def plotted_sorter(fname):
-            return not fname.startswith("plot_"), fname
+    def plotted_sorter(fname):
+        return not fname.startswith("plot_"), fname
 
    And set in your configuration:
 
-    .. code-block::
+.. code-block::
 
-        sys.path.insert(0, os.path.dirname(__file__))
+    sys.path.insert(0, os.path.dirname(__file__))
 
-        sphinx_gallery_conf = {
-        #...,
-        "minigallery_sort_order": "sphinxext.plotted_sorter",
-        #...
-        }
+    sphinx_gallery_conf = {
+    #...,
+    "minigallery_sort_order": "sphinxext.plotted_sorter",
+    #...
+    }
 
    And Sphinx-Gallery would resolve ``"sphinxext.plotted_sorter"`` to the
    ``plotted_sorter`` object because the ``doc/`` directory is first on the path.
