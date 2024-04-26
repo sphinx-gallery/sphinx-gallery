@@ -452,32 +452,50 @@ Sorting gallery subsections
 
 Gallery subsections are sorted by default alphabetically by their folder
 name, and as such you can always organize them by changing your folder
-names. An alternative option is to use a sortkey to organize those
-subsections. We provide an explicit order sortkey where you have to define
-the order of all subfolders in your galleries::
+names. Alternatively, you can specify the order via the config value
+'subsection_order' by providing a list of the subsections as paths
+relative to :file:`conf.py` in the desired order::
 
-    from sphinx_gallery.sorting import ExplicitOrder
     sphinx_gallery_conf = {
         ...
         'examples_dirs': ['../examples','../tutorials'],
-        'subsection_order': ExplicitOrder(['../examples/sin_func',
-                                           '../examples/no_output',
-                                           '../tutorials/seaborn']),
+        'subsection_order': ['../examples/sin_func',
+                             '../examples/no_output',
+                             '../tutorials/seaborn'],
     }
 
 Here we build 2 main galleries `examples` and `tutorials`, each of them
-with subsections. To specify their order explicitly in the gallery we
-import :class:`sphinx_gallery.sorting.ExplicitOrder` and initialize it with
-the list of all subfolders with their paths relative to `conf.py` in the
-order you prefer them to appear. Keep in mind that we use a single sort key
+with subsections. You must list all subsections. If that's too cumbersome,
+one entry can be "*", which will collect all not-listed subsections, e.g.
+``["first_subsection", "*", "last_subsection"]``.
+
+Even more generally, you can set 'subsection_order' to any callable, which
+will be used as sorting key function on the subsection paths. See
+:ref:`own_sort_keys` for more information.
+
+In fact, the
+above list is a convenience shortcut and it is internally wrapped in
+:class:`sphinx_gallery.sorting.ExplicitOrder` as a sortkey.
+
+.. note::
+
+    Sphinx-Gallery <0.16.0 required to wrap the list in
+    :class:`.ExplicitOrder` ::
+
+        from sphinx_gallery.sorting import ExplicitOrder
+        sphinx_gallery_conf = {
+            ...
+            'subsection_order': ExplicitOrder([...])
+        }
+
+    This pattern is discouraged in favor of passing the simple list.
+
+Keep in mind that we use a single sort key
 for all the galleries that are built, thus we include the prefix of each
 gallery in the corresponding subsection folders. One does not define a
 sortkey per gallery. You can use Linux paths, and if your documentation is
 built in a Windows system, paths will be transformed to work accordingly,
 the converse does not hold.
-
-If you implement your own sort key, it will be passed the subfolder path,
-relative to the ``conf.py`` file. See :ref:`own_sort_keys` for more information.
 
 .. _within_gallery_order:
 
