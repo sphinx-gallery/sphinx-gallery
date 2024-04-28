@@ -18,13 +18,11 @@ from datetime import date
 import warnings
 
 import sphinx_gallery
-from sphinx_gallery.sorting import FileNameSortKey
-from sphinx_gallery.notebook import add_markdown_cell, add_code_cell
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "sphinxext"))
 
 # -- General configuration ------------------------------------------------
 
@@ -89,7 +87,7 @@ release = sphinx_gallery.__version__ + "-git"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["_build"]
+exclude_patterns = ["_build", "sphinxext"]
 
 # See warnings about bad links
 nitpicky = True
@@ -384,61 +382,6 @@ if "SOURCE_DATE_EPOCH" in os.environ:
     min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
 
 
-def notebook_modification_function(notebook_content, notebook_filename):
-    """Implement JupyterLite-specific modifications of notebooks."""
-    notebook_content_str = str(notebook_content)
-    warning_template = "\n".join(
-        [
-            "<div class='alert alert-{message_class}'>",
-            "",
-            "# JupyterLite warning",
-            "",
-            "{message}",
-            "</div>",
-        ]
-    )
-
-    if "pyvista_examples" in notebook_filename:
-        message_class = "danger"
-        message = (
-            "PyVista is not packaged in Pyodide, this notebook is not "
-            "expected to work inside JupyterLite"
-        )
-    elif "import plotly" in notebook_content_str:
-        message_class = "danger"
-        message = (
-            "This notebook is not expected to work inside JupyterLite for now."
-            " There seems to be some issues with Plotly, see "
-            "[this]('https://github.com/jupyterlite/jupyterlite/pull/950') "
-            "for more details."
-        )
-    else:
-        message_class = "warning"
-        message = (
-            "JupyterLite integration in sphinx-gallery is beta "
-            "and it may break in unexpected ways"
-        )
-
-    markdown = warning_template.format(message_class=message_class, message=message)
-
-    dummy_notebook_content = {"cells": []}
-    add_markdown_cell(dummy_notebook_content, markdown)
-
-    code_lines = []
-
-    if "seaborn" in notebook_content_str:
-        code_lines.append("%pip install seaborn")
-
-    if code_lines:
-        code_lines = ["# JupyterLite-specific code"] + code_lines
-        code = "\n".join(code_lines)
-        add_code_cell(dummy_notebook_content, code)
-
-    notebook_content["cells"] = (
-        dummy_notebook_content["cells"] + notebook_content["cells"]
-    )
-
-
 sphinx_gallery_conf = {
     "backreferences_dir": "gen_modules/backreferences",
     "doc_module": ("sphinx_gallery", "numpy"),
@@ -450,7 +393,7 @@ sphinx_gallery_conf = {
     "image_scrapers": image_scrapers,
     "compress_images": ("images", "thumbnails"),
     # specify the order of examples to be according to filename
-    "within_subsection_order": FileNameSortKey,
+    "within_subsection_order": "FileNameSortKey",
     "expected_failing_examples": [
         "../examples/no_output/plot_raise.py",
         "../examples/no_output/plot_syntaxerror.py",
@@ -465,7 +408,9 @@ sphinx_gallery_conf = {
         "notebooks_dir": "notebooks",
         "use_jupyter_lab": True,
     },
-    "jupyterlite": {"notebook_modification_function": notebook_modification_function},
+    "jupyterlite": {
+        "notebook_modification_function": "sg_doc_build.notebook_modification_function",
+    },
     "show_memory": True,
     "promote_jupyter_magic": False,
     "junit": os.path.join("sphinx-gallery", "junit-results.xml"),

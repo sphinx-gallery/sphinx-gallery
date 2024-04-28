@@ -216,12 +216,11 @@ def _get_short_module_name(module_name, obj_name):
     return short_name
 
 
-def _make_ref_regex(config=None):
+def _make_ref_regex(default_role=""):
     """Make regex to find reference to python objects."""
     # keep roles variable in sync values shown in configuration.rst
     # "Add mini-galleries for API documentation"
     roles = "func|meth|attr|obj|class"
-    default_role = config["default_role"] or "" if config else ""
     def_role_regex = (
         "|[^:]?" if re.fullmatch(f"(?:py:)?({roles})", default_role) else ""
     )

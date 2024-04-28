@@ -19,7 +19,10 @@ from .py_source_parser import split_code_and_text_blocks
 class ExplicitOrder:
     """Sorting key for all gallery subsections.
 
-    This requires all folders to be listed otherwise an exception is raised.
+    All subsections folders must be listed, otherwise an exception is raised.
+    However, you can add '*' as a placeholder to the list. All not-listed
+    subsection folders will be inserted at the given position and no
+    exception is raised.
 
     Parameters
     ----------
@@ -40,18 +43,45 @@ class ExplicitOrder:
                 "the paths of each gallery subfolder"
             )
 
-        self.ordered_list = list(os.path.normpath(path) for path in ordered_list)
+        self.ordered_list = [
+            "*" if path == "*" else os.path.normpath(path) for path in ordered_list
+        ]
+        try:
+            i = ordered_list.index("*")
+            self.has_wildcard = True
+            self.ordered_list_start = self.ordered_list[:i]
+            self.ordered_list_end = self.ordered_list[i + 1 :]
+        except ValueError:  # from index("*")
+            self.has_wildcard = False
+            self.ordered_list_start = []
+            self.ordered_list_end = self.ordered_list
 
     def __call__(self, item):
-        """Return index of item in `ordered_list`, raising error if it is missing."""
-        if item in self.ordered_list:
-            return self.ordered_list.index(item)
+        """
+        Return an integer suited for ordering the items.
+
+        If the ordered_list contains a wildcard "*", items before "*" will return
+        negative numbers, items after "*" will have positive numbers, and
+        not-listed items will return 0.
+
+        If there is no wildcard, all items with return positive numbers, and
+        not-listed items will raise a ConfigError.
+        """
+        if item in self.ordered_list_start:
+            return self.ordered_list_start.index(item) - len(self.ordered_list_start)
+        elif item in self.ordered_list_end:
+            return self.ordered_list_end.index(item) + 1
         else:
-            raise ConfigError(
-                "If you use an explicit folder ordering, you "
-                "must specify all folders. Explicit order not "
-                "found for {}".format(item)
-            )
+            if self.has_wildcard:
+                return 0
+            else:
+                raise ConfigError(
+                    "The subsection folder {!r} was not found in the "
+                    "'subsection_order' config. If you use an explicit "
+                    "'subsection_order', you must specify all subsection folders "
+                    "or add '*' as a wildcard to collect all not-listed subsection "
+                    "folders.".format(item)
+                )
 
     def __repr__(self):
         return f"<{self.__class__.__name__} : {self.ordered_list}>"
