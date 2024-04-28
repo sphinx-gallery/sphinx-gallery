@@ -109,7 +109,9 @@ convention = "numpy"
 
 [tool.codespell]
 builtin = "clear,rare,informal,names,usage"
-ignore-words = "ignore_words.txt"
+# comma separated list of words to be ignored by codespell.
+# Words are case sensitive based on how they are written in the dictionary file
+ignore-words-list = "master"
 
 [tool.pytest.ini_options]
 addopts = [
