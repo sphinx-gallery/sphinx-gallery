@@ -1484,8 +1484,10 @@ def save_rst_example(
 
     zip_downloads = gallery_conf.get("zip_downloads", False)
     if save_notebook:
-        ipynb_download_file = example_file.with_suffix(".ipynb").name 
-        ipynb_download_file = ipynb_download_file + ".zip" if zip_downloads else ipynb_download_file
+        ipynb_download_file = example_file.with_suffix(".ipynb").name
+        ipynb_download_file = (
+            ipynb_download_file + ".zip" if zip_downloads else ipynb_download_file
+        )
         example_rst += NOTEBOOK_DOWNLOAD.format(ipynb_download_file)
 
     download_file = example_file.name + ".zip" if zip_downloads else example_file.name
