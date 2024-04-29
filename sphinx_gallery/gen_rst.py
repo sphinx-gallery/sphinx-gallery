@@ -1266,7 +1266,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         language=language,
     )
 
-    # Save zip file version if required
+    # Save zip file version
     if gallery_conf["zip_downloads"]:
         _zip_single_file(target_file)
 

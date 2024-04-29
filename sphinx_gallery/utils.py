@@ -170,9 +170,8 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
 
 def _zip_single_file(filename):
     zipname = str(filename) + ".zip"
-    print(f"Zipping {filename} -> {zipname} ({os.path.relpath(filename, zipname)})")
     with zipfile.ZipFile(zipname, mode="w") as zipf:
-        zipf.write(filename, os.path.relpath(filename, zipname))
+        zipf.write(filename, filename.name)
     return zipname
 
 
