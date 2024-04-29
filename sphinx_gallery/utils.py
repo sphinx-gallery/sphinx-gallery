@@ -11,6 +11,7 @@ import os
 import re
 from shutil import move, copyfile
 import subprocess
+import zipfile
 
 from sphinx.errors import ExtensionError
 import sphinx.util
@@ -165,6 +166,14 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
         else:
             copyfile(fname_new, fname_old)
     assert os.path.isfile(fname_old)
+
+
+def _zip_single_file(filename):
+    zipname = str(filename) + ".zip"
+    print(f"Zipping {filename} -> {zipname} ({os.path.relpath(filename, zipname)})")
+    with zipfile.ZipFile(zipname, mode="w") as zipf:
+        zipf.write(filename, os.path.relpath(filename, zipname))
+    return zipname
 
 
 def _has_pypandoc():

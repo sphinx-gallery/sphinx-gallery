@@ -89,6 +89,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 - ``recommender`` (:ref:`recommend_examples`)
 - ``log_level`` (:ref:`log_level`)
 - ``show_api_usage`` and ``api_usage_ignore`` (:ref:`show_api_usage`)
+- ``zip_downloads`` (:ref:`zip_downloads`)
 
 Configurations inside examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2449,3 +2450,14 @@ within the example gallery. This regular expression can be modified to
 ignore any kind of file that should not be considered. The default regular
 expression ignores functions like ``__len__()`` for which it may not be
 desirable to document if they are used in examples.
+
+.. _zip_downloads:
+
+Zip downloads
+=============
+
+Some web-servers, hosts and browsers can prevent downloads of potentially malicious
+code and scripts. To work around this the ``zip_downloads` option will replace
+download links with `.zip` equivalents. This is slightly less convenient for users
+(as they have to unzip the files before using) but does work around an otherwise
+unsolvable issue.

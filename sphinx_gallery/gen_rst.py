@@ -44,6 +44,7 @@ from .scrapers import (
     _reset_dict,
 )
 from .utils import (
+    _zip_single_file,
     scale_image,
     get_md5sum,
     _replace_md5,
@@ -1265,6 +1266,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         language=language,
     )
 
+    # Save zip file version if required
+    if gallery_conf["zip_downloads"]:
+        _zip_single_file(target_file)
+
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
     if target_file.suffix in gallery_conf["notebook_extensions"]:
@@ -1272,6 +1277,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         ipy_fname = target_file.with_suffix(".ipynb.new")
         save_notebook(example_nb, ipy_fname)
         _replace_md5(ipy_fname, mode="t")
+        if gallery_conf["zip_downloads"]:
+            _zip_single_file(target_file.with_suffix(".ipynb"))
 
     # Write names
     if gallery_conf["inspect_global_variables"]:
@@ -1475,10 +1482,14 @@ def save_rst_example(
         jupyterlite_rst = indent(jupyterlite_rst, "  ")  # need an extra two
         example_rst += jupyterlite_rst
 
+    zip_downloads = gallery_conf.get("zip_downloads", False)
     if save_notebook:
-        example_rst += NOTEBOOK_DOWNLOAD.format(example_file.with_suffix(".ipynb").name)
+        ipynb_download_file = example_file.with_suffix(".ipynb").name 
+        ipynb_download_file = ipynb_download_file + ".zip" if zip_downloads else ipynb_download_file
+        example_rst += NOTEBOOK_DOWNLOAD.format(ipynb_download_file)
 
-    example_rst += CODE_DOWNLOAD.format(example_file.name, language)
+    download_file = example_file.name + ".zip" if zip_downloads else example_file.name
+    example_rst += CODE_DOWNLOAD.format(download_file, language)
 
     if gallery_conf["recommender"]["enable"]:
         # extract the filename without the extension
