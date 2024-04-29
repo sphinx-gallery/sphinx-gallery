@@ -1,6 +1,5 @@
 include CHANGES.rst
 include LICENSE
-include ignore_words.txt
 include requirements.txt
 include sphinx_gallery/_static/sg_gallery*.css
 include sphinx_gallery/_static/no_image.png
