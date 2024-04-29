@@ -2457,7 +2457,7 @@ Zip downloads
 =============
 
 Some web-servers, hosts and browsers can prevent downloads of potentially malicious
-code and scripts. To work around this the ``zip_downloads` option will replace
+code and scripts. To work around this the `zip_downloads` option will replace
 download links with `.zip` equivalents. This is slightly less convenient for users
 (as they have to unzip the files before using) but does work around an otherwise
 unsolvable issue.
