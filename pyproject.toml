@@ -34,6 +34,9 @@ dependencies = [
   "sphinx>=4",
 ]
 [project.optional-dependencies]
+animations = [
+  "sphinxcontrib-video",
+]
 jupyterlite= [
   "jupyterlite_sphinx",
 ]
