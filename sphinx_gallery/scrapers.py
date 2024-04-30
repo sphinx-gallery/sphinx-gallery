@@ -368,10 +368,12 @@ def save_figures(block, block_vars, gallery_conf):
     images_rst : str
         rst code to embed the images in the document.
     """
+    from .gen_rst import _get_callables
+
     image_path_iterator = block_vars["image_path_iterator"]
     all_rst = ""
     prev_count = len(image_path_iterator)
-    for scraper in gallery_conf["image_scrapers"]:
+    for scraper in _get_callables(gallery_conf, "image_scrapers"):
         rst = scraper(block, block_vars, gallery_conf)
         if not isinstance(rst, str):
             raise ExtensionError(
@@ -582,7 +584,9 @@ def clean_modules(gallery_conf, fname, when):
         This parameter is only forwarded when the callables accept 3
         parameters.
     """
-    for reset_module in gallery_conf["reset_modules"]:
+    from .gen_rst import _get_callables
+
+    for reset_module in _get_callables(gallery_conf, "reset_modules"):
         sig = inspect.signature(reset_module)
         if len(sig.parameters) == 3:
             third_param = list(sig.parameters.keys())[2]

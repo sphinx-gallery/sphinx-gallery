@@ -18,21 +18,10 @@ from sphinx_gallery.sorting import (
 
 def test_ExplicitOrder_sorting_key():
     """Test ExplicitOrder."""
-    all_folders = ["e", "f", "d", "c", "01b", "a"]
     explicit_folders = ["f", "d"]
     key = ExplicitOrder(explicit_folders)
     sorted_folders = sorted(["d", "f"], key=key)
     assert sorted_folders == explicit_folders
-
-    # Test fails on wrong input
-    with pytest.raises(ConfigError) as excinfo:
-        ExplicitOrder("nope")
-    excinfo.match("ExplicitOrder sorting key takes a list")
-
-    # Test missing folder
-    with pytest.raises(ConfigError) as excinfo:
-        sorted_folders = sorted(all_folders, key=key)
-    excinfo.match("If you use an explicit folder ordering")
 
     # str(obj) stability for sphinx non-rebuilds
     assert str(key).startswith("<ExplicitOrder : ")
@@ -49,6 +38,30 @@ def test_ExplicitOrder_sorting_key():
         assert str(sorter) == f"<{klass.__name__}>"
         out = sorter(op.basename(__file__))
         assert isinstance(out, type_), type(out)
+
+
+def test_ExplicitOrder_sorting_wildcard():
+    # wildcard at start
+    sorted_folders = sorted(list("abcd"), key=ExplicitOrder(["*", "b", "a"]))
+    assert sorted_folders == ["c", "d", "b", "a"]
+
+    # wildcard in the middle
+    sorted_folders = sorted(list("abcde"), key=ExplicitOrder(["b", "a", "*", "c"]))
+    assert sorted_folders == ["b", "a", "d", "e", "c"]
+
+    # wildcard at end
+    sorted_folders = sorted(list("abcd"), key=ExplicitOrder(["b", "a", "*"]))
+    assert sorted_folders == ["b", "a", "c", "d"]
+
+
+def test_ExplicitOrder_sorting_errors():
+    # Test fails on wrong input
+    with pytest.raises(ConfigError, match="ExplicitOrder sorting key takes a list"):
+        ExplicitOrder("nope")
+
+    # Test folder not listed in ExplicitOrder
+    with pytest.raises(ConfigError, match="subsection folder .* was not found"):
+        sorted(["a", "b", "c"], key=ExplicitOrder(["a", "b"]))
 
 
 def test_Function_sorting_key():

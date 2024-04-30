@@ -10,6 +10,7 @@ import json
 
 import pytest
 
+from sphinx.config import is_serializable
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     check_duplicate_filenames,
@@ -29,12 +30,21 @@ def test_bad_config():
     sphinx_gallery_conf = dict(example_dir="")
     with pytest.raises(
         ConfigError, match="example_dir.*did you mean 'examples_dirs'?.*"
-    ):  # noqa: E501
+    ):
         _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(n_subsection_order="")
     with pytest.raises(
         ConfigError, match=r"did you mean one of \['subsection_order', 'within_.*"
-    ):  # noqa: E501
+    ):
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
+    sphinx_gallery_conf = dict(within_subsection_order="sphinx_gallery.a.b.Key")
+    with pytest.raises(ConfigError, match="must be a fully qualified"):
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
+    sphinx_gallery_conf = dict(within_subsection_order=1.0)
+    with pytest.raises(ConfigError, match="a fully qualified.*got float"):
+        _fill_gallery_conf_defaults(sphinx_gallery_conf)
+    sphinx_gallery_conf = dict(minigallery_sort_order=int)
+    with pytest.raises(ConfigError, match="Got class rather than callable instance"):
         _fill_gallery_conf_defaults(sphinx_gallery_conf)
 
 
@@ -47,6 +57,17 @@ def test_default_config(sphinx_app_wrapper):
     with pytest.raises(ExtensionError) as excinfo:
         sphinx_app.add_config_value("sphinx_gallery_conf", "x", True)
     assert "already present" in str(excinfo.value)
+
+
+def test_serializable(sphinx_app_wrapper):
+    """Test that the default config is serializable."""
+    bad = list()
+    for key, val in _fill_gallery_conf_defaults({}).items():
+        if not is_serializable(val):
+            bad.append(f"{repr(key)}: {repr(val)}")
+
+    bad = "\n".join(bad)
+    assert not bad, f"Non-serializable values found:\n{bad}"
 
 
 @pytest.mark.conf_file(
@@ -76,7 +97,7 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     [
         pytest.param(
             ConfigError,
-            "Unknown module resetter",
+            "Unknown string option for reset_modules",
             id="Resetter unknown",
             marks=pytest.mark.conf_file(
                 content="sphinx_gallery_conf={'reset_modules': ('f',)}"
@@ -84,7 +105,7 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
         ),
         pytest.param(
             ConfigError,
-            "Module resetter .* was not callab",
+            "reset_modules.* must be callable",
             id="Resetter not callable",
             marks=pytest.mark.conf_file(
                 content="sphinx_gallery_conf={'reset_modules': (1.,),}"
@@ -254,11 +275,10 @@ def test_example_sorting_default(sphinx_app_wrapper):
 
 @pytest.mark.conf_file(
     content="""
-from sphinx_gallery.sorting import FileSizeSortKey
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
-    'within_subsection_order': FileSizeSortKey,
+    'within_subsection_order': "FileSizeSortKey",
 }"""
 )
 def test_example_sorting_filesize(sphinx_app_wrapper):
@@ -269,11 +289,10 @@ def test_example_sorting_filesize(sphinx_app_wrapper):
 
 @pytest.mark.conf_file(
     content="""
-from sphinx_gallery.sorting import FileNameSortKey
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
-    'within_subsection_order': FileNameSortKey,
+    'within_subsection_order': "FileNameSortKey",
 }"""
 )
 def test_example_sorting_filename(sphinx_app_wrapper):
@@ -284,11 +303,10 @@ def test_example_sorting_filename(sphinx_app_wrapper):
 
 @pytest.mark.conf_file(
     content="""
-from sphinx_gallery.sorting import ExampleTitleSortKey
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
-    'within_subsection_order': ExampleTitleSortKey,
+    'within_subsection_order': "ExampleTitleSortKey",
 }"""
 )
 def test_example_sorting_title(sphinx_app_wrapper):
@@ -484,8 +502,10 @@ def test_examples_not_expected_to_pass(sphinx_app_wrapper):
 
 @pytest.mark.conf_file(
     content="""
+from sphinx_gallery.gen_rst import _sg_call_memory_noop
+
 sphinx_gallery_conf = {
-    'show_memory': lambda func: (0., func()),
+    'show_memory': _sg_call_memory_noop,
     'gallery_dirs': 'ex',
 }"""
 )
