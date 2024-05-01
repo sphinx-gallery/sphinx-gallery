@@ -13,7 +13,7 @@ import copy
 import contextlib
 import ast
 import codecs
-from functools import partial, lru_cache
+from functools import lru_cache
 import gc
 import pickle
 import importlib
@@ -753,15 +753,6 @@ def _get_memory_base():
     return memory_base
 
 
-def _ast_module():
-    """Get ast.Module function, dealing with: https://bugs.python.org/issue35894."""
-    if sys.version_info >= (3, 8):
-        ast_Module = partial(ast.Module, type_ignores=[])
-    else:
-        ast_Module = ast.Module
-    return ast_Module
-
-
 def _check_reset_logging_tee(src_file):
     # Helper to deal with our tests not necessarily calling execute_script
     # but rather execute_code_block directly
@@ -773,15 +764,13 @@ def _check_reset_logging_tee(src_file):
     return logging_tee
 
 
-def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_vars):
+def _exec_and_get_memory(compiler, *, code_ast, gallery_conf, script_vars):
     """Execute ast, capturing output if last line expression and get max mem usage.
 
     Parameters
     ----------
     compiler : codeop.Compile
         Compiler to compile AST of code block.
-    ast_Module : Callable
-        ast.Module function.
     code_ast : ast.Module
         AST parsed code to execute.
     gallery_conf : Dict[str, Any]
@@ -811,7 +800,7 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_va
         body = [
             ast.Assign(targets=[ast.Name(id="___", ctx=ast.Store())], value=last_val)
         ]
-        last_val_ast = ast_Module(body=body)
+        last_val_ast = ast.Module(body=body, type_ignores=[])
         ast.fix_missing_locations(last_val_ast)
         mem_last, _ = call_memory(
             _exec_once(
@@ -966,14 +955,20 @@ def execute_code_block(
     need_save_figures = match is None
 
     try:
-        ast_Module = _ast_module()
-        code_ast = ast_Module([bcontent])
-        flags = ast.PyCF_ONLY_AST | compiler.flags
-        code_ast = compile(bcontent, src_file, "exec", flags, dont_inherit=1)
-        ast.increment_lineno(code_ast, lineno - 1)
-
+        # The "compile" step itself can fail on a SyntaxError, so just prepend
+        # newlines to get the correct failing line to show up in the traceback
+        code_ast = compile(
+            "\n" * (lineno - 1) + bcontent,
+            src_file,
+            "exec",
+            flags=ast.PyCF_ONLY_AST | compiler.flags,
+            dont_inherit=1,
+        )
         is_last_expr, mem_max = _exec_and_get_memory(
-            compiler, ast_Module, code_ast, gallery_conf, script_vars
+            compiler,
+            code_ast=code_ast,
+            gallery_conf=gallery_conf,
+            script_vars=script_vars,
         )
         script_vars["memory_delta"].append(mem_max)
         # This should be inside the try block, e.g., in case of a savefig error
