@@ -745,8 +745,7 @@ def _get_memory_base():
         close_fds=True,
     )
     memories = memory_usage(proc, interval=1e-3, timeout=timeout)
-    kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
-    proc.communicate(**kwargs)
+    proc.communicate(timeout=timeout)
     # On OSX sometimes the last entry can be None
     memories = [mem for mem in memories if mem is not None] + [0.0]
     memory_base = max(memories)

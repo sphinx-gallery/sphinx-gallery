@@ -4,7 +4,6 @@
 
 import os
 import tempfile
-import sys
 
 import pytest
 
@@ -34,10 +33,6 @@ def test_shelve(tmpdir):
 
     # test if cached data is available after temporary file has vanished
     assert sg.get_data(f.name, tmp_cache) == test_string
-
-    # shelve keys need to be str in python 2, deal with unicode input
-    if sys.version_info[0] == 2:
-        assert sg.get_data(f.name, tmp_cache) == test_string
 
 
 def test_parse_sphinx_docopts():
