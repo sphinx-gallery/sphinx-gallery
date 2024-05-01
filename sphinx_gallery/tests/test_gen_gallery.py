@@ -2,7 +2,6 @@
 # License: 3-clause BSD
 r"""Test Sphinx-Gallery gallery generation."""
 
-import codecs
 import os
 import re
 from pathlib import Path
@@ -23,6 +22,16 @@ from sphinx_gallery.gen_gallery import (
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 from sphinx_gallery.utils import _escape_ansi
+
+
+MINIMAL_HEADER = """
+'''
+Title
+-----
+Description.
+'''
+
+"""
 
 
 def test_bad_config():
@@ -252,7 +261,7 @@ def _check_order(sphinx_app, key):
     index_fname = os.path.join(sphinx_app.outdir, "..", "ex", "index.rst")
     order = list()
     regex = f".*:{key}=(.):.*"
-    with codecs.open(index_fname, "r", "utf-8") as fid:
+    with open(index_fname, "r", encoding="utf-8") as fid:
         for line in fid:
             if "sphx-glr-thumbcontainer" in line:
                 order.append(int(re.match(regex, line).group(1)))
@@ -420,13 +429,29 @@ sphinx_gallery_conf = {
 )
 def test_failing_examples_raise_exception(sphinx_app_wrapper):
     example_dir = os.path.join(sphinx_app_wrapper.srcdir, "src")
-    with codecs.open(
-        os.path.join(example_dir, "plot_3.py"), "a", encoding="utf-8"
-    ) as fid:
-        fid.write("raise SyntaxError")
+    bad_line = "print(f'{a[}')"  # never closed bracket inside print -> SyntaxError
+    bad_code = f"""\
+'''
+Failing example
+---------------
+Should emit a syntax error in the second code block.
+'''
+1 + 2
+
+# %%
+# More
+
+{bad_line}
+"""
+    bad_line_no = bad_code.split("\n").index(bad_line) + 1
+    with open(os.path.join(example_dir, "plot_3.py"), "w", encoding="utf-8") as fid:
+        fid.write(bad_code)
     with pytest.raises(ExtensionError) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
-    assert "Unexpected failing examples" in str(excinfo.value)
+    tb = str(excinfo.value)
+    assert "Unexpected failing examples" in tb
+    assert f"line {bad_line_no}" in tb
+    assert bad_line in tb
 
 
 @pytest.mark.conf_file(
@@ -456,8 +481,8 @@ sphinx_gallery_conf = {
 def test_only_warn_on_example_error(sphinx_app_wrapper):
     """Test behaviour of only_warn_on_example_error flag."""
     example_dir = Path(sphinx_app_wrapper.srcdir) / "src"
-    with codecs.open(example_dir / "plot_3.py", "a", encoding="utf-8") as fid:
-        fid.write("raise ValueError")
+    with open(example_dir / "plot_3.py", "w", encoding="utf-8") as fid:
+        fid.write(f"{MINIMAL_HEADER}raise ValueError")
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
 
     build_warn = _escape_ansi(sphinx_app._warning.getvalue())
@@ -477,8 +502,8 @@ def test_only_warn_on_example_error_sphinx_warning(sphinx_app_wrapper):
     """Test behaviour of only_warn_on_example_error flag."""
     sphinx_app_wrapper.kwargs["warningiserror"] = True
     example_dir = Path(sphinx_app_wrapper.srcdir) / "src"
-    with codecs.open(example_dir / "plot_3.py", "a", encoding="utf-8") as fid:
-        fid.write("raise ValueError")
+    with open(example_dir / "plot_3.py", "w", encoding="utf-8") as fid:
+        fid.write(f"{MINIMAL_HEADER}raise ValueError")
     with pytest.raises(SphinxWarning) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
     exc = _escape_ansi(str(excinfo.value))
