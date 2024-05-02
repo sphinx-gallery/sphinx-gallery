@@ -799,6 +799,7 @@ def _exec_and_get_memory(compiler, *, code_ast, gallery_conf, script_vars):
         body = [
             ast.Assign(targets=[ast.Name(id="___", ctx=ast.Store())], value=last_val)
         ]
+        # `type_ignores` empty list deals with: https://bugs.python.org/issue3589
         last_val_ast = ast.Module(body=body, type_ignores=[])
         ast.fix_missing_locations(last_val_ast)
         mem_last, _ = call_memory(

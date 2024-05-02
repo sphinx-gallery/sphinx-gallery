@@ -450,6 +450,7 @@ Should emit a syntax error in the second code block.
         sphinx_app_wrapper.build_sphinx_app()
     tb = str(excinfo.value)
     assert "Unexpected failing examples" in tb
+    # Check traceback points to correct line (see #1301)
     assert f"line {bad_line_no}" in tb
     assert bad_line in tb
 
