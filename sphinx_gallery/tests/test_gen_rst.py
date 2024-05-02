@@ -12,7 +12,6 @@ import tempfile
 import re
 import os
 import shutil
-import sys
 from unittest import mock
 import zipfile
 import codeop
@@ -621,10 +620,7 @@ def test_exclude_implicit(gallery_conf, exclusion, expected, monkeypatch, req_pi
         gallery_conf["exclude_implicit_doc"] = exclusion
         _update_gallery_conf_exclude_implicit_doc(gallery_conf)
     _generate_rst(gallery_conf, "test_exclude_implicit.py", EXCLUDE_CONTENT)
-    if sys.version_info >= (3, 8, 0):
-        assert mock_write_backreferences.call_args.args[0] == expected
-    else:
-        assert mock_write_backreferences.call_args[0][0] == expected
+    assert mock_write_backreferences.call_args.args[0] == expected
 
 
 @pytest.mark.parametrize("ext", (".txt", ".rst", ".bad"))
