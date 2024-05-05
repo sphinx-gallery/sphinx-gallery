@@ -3,6 +3,7 @@ r"""Parser for python source files."""
 # Created Sun Nov 27 14:03:07 2016
 # Author: Óscar Nájera
 
+from collections import namedtuple
 import codecs
 import ast
 from io import BytesIO
@@ -149,6 +150,12 @@ def extract_file_config(content):
     return file_conf
 
 
+Block = namedtuple("Block", ["type", "content", "lineno"])
+# type: "text" or "code"
+# content (str): the block lines as str
+# lineno (int): the line number where the block starts
+
+
 def split_code_and_text_blocks(source_file, return_node=False):
     """Return list with source file separated into code and text blocks.
 
@@ -172,7 +179,7 @@ def split_code_and_text_blocks(source_file, return_node=False):
         The parsed ast node.
     """
     docstring, rest_of_content, lineno, node = _get_docstring_and_rest(source_file)
-    blocks = [("text", docstring, 1)]
+    blocks = [Block("text", docstring, 1)]
 
     file_conf = extract_file_config(rest_of_content)
 
@@ -186,21 +193,21 @@ def split_code_and_text_blocks(source_file, return_node=False):
     for match in re.finditer(pattern, rest_of_content):
         code_block_content = rest_of_content[pos_so_far : match.start()]
         if code_block_content.strip():
-            blocks.append(("code", code_block_content, lineno))
+            blocks.append(Block("code", code_block_content, lineno))
         lineno += code_block_content.count("\n")
 
         lineno += 1  # Ignored header line of hashes.
         text_content = match.group("text_content")
         text_block_content = dedent(re.sub(sub_pat, "", text_content)).lstrip()
         if text_block_content.strip():
-            blocks.append(("text", text_block_content, lineno))
+            blocks.append(Block("text", text_block_content, lineno))
         lineno += text_content.count("\n")
 
         pos_so_far = match.end()
 
     remaining_content = rest_of_content[pos_so_far:]
     if remaining_content.strip():
-        blocks.append(("code", remaining_content, lineno))
+        blocks.append(Block("code", remaining_content, lineno))
 
     out = (file_conf, blocks)
     if return_node:

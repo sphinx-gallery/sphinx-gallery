@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 from sphinx.errors import ExtensionError
 
 import sphinx_gallery.backreferences as sg
-from sphinx_gallery.py_source_parser import split_code_and_text_blocks
+from sphinx_gallery.py_source_parser import split_code_and_text_blocks, Block
 from sphinx_gallery.gen_rst import _sanitize_rst
 
 
@@ -258,7 +258,7 @@ cobj = dict(module="m", module_short="m", name="n", is_class=False, is_explicit=
 def test_identify_names_explicit(text, default_role, ref, cobj, gallery_conf):
     """Test explicit name identification."""
     default_role = "" if default_role is None else default_role
-    script_blocks = [("text", text, 1)]
+    script_blocks = [Block("text", text, 1)]
     expected = {ref: [cobj]} if ref else {}
     ref_regex = sg._make_ref_regex(default_role)
     actual = sg.identify_names(script_blocks, ref_regex)

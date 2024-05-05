@@ -18,6 +18,7 @@ from itertools import compress  # noqa
 import matplotlib
 import matplotlib.pyplot as plt
 import sphinx_gallery.backreferences
+from sphinx_gallery.py_source_parser import Block
 
 from local_module import N  # N = 1000
 
@@ -40,7 +41,7 @@ x = Figure()  # plt.Figure should be decorated (class), x shouldn't (inst)
 rng = np.random.RandomState(0)
 # test Issue 583
 sphinx_gallery.backreferences.identify_names(
-    [("text", "Text block", 1)],
+    [Block("text", "Text block", 1)],
     sphinx_gallery.backreferences._make_ref_regex(),
 )
 # 583: methods don't link properly
