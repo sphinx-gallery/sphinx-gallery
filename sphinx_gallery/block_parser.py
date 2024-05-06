@@ -301,7 +301,11 @@ class BlockParser:
         if len(blocks) >= 2 and blocks[0].type == "code" and blocks[1].type == "text":
             blocks[0], blocks[1] = blocks[1], blocks[0]
             if len(blocks) >= 3 and blocks[2].type == "code":
-                blocks[1] = Block("code", f"{blocks[1].content}\n{blocks[2].content}", blocks[1].lineno)
+                blocks[1] = Block(
+                    "code",
+                    f"{blocks[1].content}\n{blocks[2].content}",
+                    blocks[1].lineno,
+                )
                 blocks.pop(2)
 
         return file_conf, blocks, None

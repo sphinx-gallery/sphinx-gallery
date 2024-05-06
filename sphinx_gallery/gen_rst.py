@@ -950,7 +950,7 @@ def execute_code_block(
     match = re.search(
         r"^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?",
         block.content,
-        re.MULTILINE
+        re.MULTILINE,
     )
     need_save_figures = match is None
 
@@ -1234,7 +1234,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
 
     if gallery_conf["remove_config_comments"]:
         script_blocks = [
-            py_source_parser.Block(label, parser.remove_config_comments(content), line_number)
+            py_source_parser.Block(
+                label, parser.remove_config_comments(content), line_number
+            )
             for label, content, line_number in script_blocks
         ]
 
@@ -1366,15 +1368,13 @@ def rst_blocks(
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
     example_rst = ""
-    for bi, (script_block, code_output) in enumerate(
-        zip(script_blocks, output_blocks)
-    ):
+    for bi, (script_block, code_output) in enumerate(zip(script_blocks, output_blocks)):
         # do not add comment to the title block, otherwise the linking does
         # not work properly
         if bi > 0:
             example_rst += RST_BLOCK_HEADER.format(
                 script_block.lineno,
-                script_block.lineno + script_block.content.count("\n")
+                script_block.lineno + script_block.content.count("\n"),
             )
         if script_block.type == "code":
             lineno = (
@@ -1383,7 +1383,9 @@ def rst_blocks(
                 else None
             )
 
-            code_rst = codestr2rst(script_block.content, lang=language, lineno=lineno) + "\n"
+            code_rst = (
+                codestr2rst(script_block.content, lang=language, lineno=lineno) + "\n"
+            )
             if is_example_notebook_like:
                 example_rst += code_rst
                 example_rst += code_output
@@ -1394,7 +1396,9 @@ def rst_blocks(
                     example_rst += "\n\n|\n\n"
                 example_rst += code_rst
         else:
-            block_separator = "\n\n" if not script_block.content.endswith("\n") else "\n"
+            block_separator = (
+                "\n\n" if not script_block.content.endswith("\n") else "\n"
+            )
             example_rst += script_block.content + block_separator
 
     return example_rst

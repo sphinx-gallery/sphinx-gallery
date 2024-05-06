@@ -111,8 +111,7 @@ class NumberOfCodeLinesSortKey(_SortKey):
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
         amount_of_code = sum(
-            len(block.content)
-            for block in script_blocks if block.type == "code"
+            len(block.content) for block in script_blocks if block.type == "code"
         )
         return amount_of_code
 

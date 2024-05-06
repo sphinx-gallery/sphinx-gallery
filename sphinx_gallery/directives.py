@@ -155,7 +155,9 @@ class MiniGallery(Directive):
                 _, script_blocks = split_code_and_text_blocks(
                     str(path), return_node=False
                 )
-                intro, title = extract_intro_and_title(str(path), script_blocks[0].content)
+                intro, title = extract_intro_and_title(
+                    str(path), script_blocks[0].content
+                )
 
                 thumbnail = _thumbnail_div(target_dir, src_dir, path.name, intro, title)
                 lines.append(thumbnail)
