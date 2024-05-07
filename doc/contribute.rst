@@ -67,7 +67,7 @@ Most of the Sphinx Gallery dependencies are listed in :file:`requirements.txt`
 
 .. code-block:: console
 
-    python -m pip install -r requirements.txt -r dev-requirements.txt
+    python -m pip install -r dev-requirements.txt
 
 
 Sphinx Gallery requires `graphviz <https://graphviz.org/>`_ for drawing API
