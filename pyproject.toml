@@ -51,6 +51,7 @@ optional-dependencies.show_memory = [
 urls.Documentation = "https://sphinx-gallery.github.io"
 urls.Source = "https://github.com/sphinx-gallery/sphinx-gallery"
 scripts.sphinx_gallery_py2jupyter = "sphinx_gallery.notebook:python_to_jupyter_cli"
+
 [tool.setuptools]
 include-package-data = true
 
