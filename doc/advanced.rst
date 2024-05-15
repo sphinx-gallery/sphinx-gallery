@@ -162,14 +162,14 @@ The function should take the following inputs (in this order):
 
 1. ``block`` - a Sphinx-Gallery ``.py`` file is separated into consecutive
    lines of 'code' and reST 'text', called 'blocks'. For each
-   block, a tuple containing the (label, content, line_number)
-   (e.g. ``('code', 'print("Hello world")', 5)``) of the block is created.
+   block, a `namedtuple` with ("type", "content", "lineno") items
+   (e.g. ``('code', 'print("Hello world")', 5)``) is created.
 
    * 'label' is a string that can either be ``'text'`` or ``'code'``. In this
      context, it should only be ``'code'`` as this function is only called for
      code blocks.
    * 'content' is a string containing the actual content of the code block.
-   * 'line_number' is an integer, indicating the line number that the block
+   * 'lineno' is an integer, indicating the line number that the block
      starts at.
 
 2. ``block_vars`` - dictionary of configuration and runtime variables. Of

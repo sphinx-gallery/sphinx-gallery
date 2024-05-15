@@ -108,8 +108,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : sphinx_gallery.py_source_parser.Block
+        The code block to be executed. Format (label, content, lineno).
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict
@@ -356,8 +356,8 @@ def save_figures(block, block_vars, gallery_conf):
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : sphinx_gallery.py_source_parser.Block
+        The code block to be executed. Format (label, content, lineno).
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict
