@@ -111,11 +111,7 @@ class NumberOfCodeLinesSortKey(_SortKey):
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
         amount_of_code = sum(
-            [
-                len(bcontent)
-                for blabel, bcontent, lineno in script_blocks
-                if blabel == "code"
-            ]
+            len(block.content) for block in script_blocks if block.type == "code"
         )
         return amount_of_code
 
@@ -162,7 +158,7 @@ class ExampleTitleSortKey(_SortKey):
         """Return title of example."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         _, script_blocks = split_code_and_text_blocks(src_file)
-        _, title = extract_intro_and_title(src_file, script_blocks[0][1])
+        _, title = extract_intro_and_title(src_file, script_blocks[0].content)
         return title
 
 

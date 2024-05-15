@@ -260,7 +260,7 @@ def _write_recommendations(recommender, fname, gallery_conf):
             _, script_blocks = split_code_and_text_blocks(
                 example_fname, return_node=False
             )
-            intro, title = extract_intro_and_title(fname, script_blocks[0][1])
+            intro, title = extract_intro_and_title(fname, script_blocks[0].content)
             ex_file.write(
                 _thumbnail_div(
                     example_path.parent,

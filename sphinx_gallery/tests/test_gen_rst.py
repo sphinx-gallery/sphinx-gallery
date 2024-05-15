@@ -27,7 +27,7 @@ from sphinx_gallery.gen_gallery import (
 )
 
 # TODO: The tests of this method should probably be moved to test_py_source_parser.py
-from sphinx_gallery.py_source_parser import split_code_and_text_blocks
+from sphinx_gallery.py_source_parser import split_code_and_text_blocks, Block
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 from sphinx_gallery.interactive_example import check_binder_conf
 
@@ -800,7 +800,7 @@ def test_output_indentation(gallery_conf, script_vars):
 
     test_string = r"\n".join(["  A B", "A 1 2", "B 3 4"])
     code = "print('" + test_string + "')"
-    code_block = ("code", code, 1)
+    code_block = Block("code", code, 1)
     file_conf = {}
     output = sg.execute_code_block(
         compiler, code_block, None, script_vars, gallery_conf, file_conf
@@ -820,7 +820,7 @@ def test_output_no_ansi(gallery_conf, script_vars):
     compiler = codeop.Compile()
 
     code = 'print("\033[94m0.25")'
-    code_block = ("code", code, 1)
+    code_block = Block("code", code, 1)
     file_conf = {}
     output = sg.execute_code_block(
         compiler, code_block, None, script_vars, gallery_conf, file_conf
@@ -843,7 +843,7 @@ def test_absl_logging(gallery_conf, script_vars):
     compiler = codeop.Compile()
     code = 'from absl import logging\nlogging.info("Should not crash!")'
     sg.execute_code_block(
-        compiler, ("code", code, 1), None, script_vars, gallery_conf, {}
+        compiler, Block("code", code, 1), None, script_vars, gallery_conf, {}
     )
 
     # Previously, absl crashed during shutdown, after all tests had run, so
@@ -857,7 +857,7 @@ def test_empty_output_box(gallery_conf, script_vars):
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
 
-    code_block = ("code", "print(__doc__)", 1)
+    code_block = Block("code", "print(__doc__)", 1)
     file_conf = {}
 
     output = sg.execute_code_block(
@@ -1015,7 +1015,7 @@ def test_capture_repr(
 ):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
-    code_block = ("code", code, 1)
+    code_block = Block("code", code, 1)
     gallery_conf["capture_repr"] = capture_repr
     file_conf = {}
     output = sg.execute_code_block(
@@ -1042,7 +1042,7 @@ def test_per_file_capture_repr(
 ):
     """Tests that per file capture_repr overrides gallery_conf."""
     compiler = codeop.Compile()
-    code_block = ("code", "a=2\n2", 1)
+    code_block = Block("code", "a=2\n2", 1)
     gallery_conf["capture_repr"] = caprepr_gallery
     file_conf = {"capture_repr": caprepr_file}
     output = sg.execute_code_block(
@@ -1054,7 +1054,7 @@ def test_per_file_capture_repr(
 def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
-    code_block = ("code", "a=2\na", 1)
+    code_block = Block("code", "a=2\na", 1)
     gallery_conf["ignore_repr_types"] = r"int"
     file_conf = {}
     output = sg.execute_code_block(
