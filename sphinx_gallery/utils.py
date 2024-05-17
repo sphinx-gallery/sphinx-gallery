@@ -168,10 +168,14 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
     assert os.path.isfile(fname_old)
 
 
-def _zip_single_file(filename):
-    zipname = str(filename) + ".zip"
-    with zipfile.ZipFile(zipname, mode="w") as zipf:
-        zipf.write(filename, filename.name)
+def zip_files(file_list, zipname, relative_to, extension=None):
+    zipname_new = str(zipname) + ".new"
+    with zipfile.ZipFile(zipname_new, mode="w") as zipf:
+        for fname in file_list:
+            if extension is not None:
+                fname = os.path.splitext(fname)[0] + extension
+            zipf.write(fname, os.path.relpath(fname, relative_to))
+    _replace_md5(zipname_new)
     return zipname
 
 

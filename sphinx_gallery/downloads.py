@@ -4,9 +4,8 @@ r"""Utilities for downloadable items."""
 # License: 3-clause BSD
 
 import os
-import zipfile
 
-from .utils import _replace_md5
+from .utils import zip_files
 
 
 CODE_ZIP_DOWNLOAD = """
@@ -53,14 +52,7 @@ def python_zip(file_list, gallery_path, extension=".py"):
     elif extension == ".ipynb":
         zipname += "_jupyter"
     zipname = os.path.join(gallery_path, zipname + ".zip")
-    zipname_new = zipname + ".new"
-    with zipfile.ZipFile(zipname_new, mode="w") as zipf:
-        for fname in file_list:
-            if extension is not None:
-                fname = os.path.splitext(fname)[0] + extension
-            zipf.write(fname, os.path.relpath(fname, gallery_path))
-    _replace_md5(zipname_new)
-    return zipname
+    return zip_files(file_list, zipname, gallery_path, extension)
 
 
 def list_downloadable_sources(target_dir, extensions=(".py",)):

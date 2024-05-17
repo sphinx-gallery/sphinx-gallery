@@ -85,7 +85,6 @@ DEFAULT_GALLERY_CONF = {
     "reference_url": {},
     "capture_repr": ("_repr_html_", "__repr__"),
     "ignore_repr_types": r"",
-    "zip_downloads": False,
     # Build options
     # -------------
     # 'plot_gallery' also accepts strings that evaluate to a bool, e.g. "True",
