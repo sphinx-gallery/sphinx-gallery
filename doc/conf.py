@@ -379,7 +379,7 @@ else:
 
 min_reported_time = 0
 if "SOURCE_DATE_EPOCH" in os.environ:
-    min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
+    min_reported_time = sys.maxsize
 
 
 sphinx_gallery_conf = {

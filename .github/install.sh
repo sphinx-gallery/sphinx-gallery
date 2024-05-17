@@ -36,13 +36,16 @@ else
 fi
 
 set -x
-pip install $EXTRA_ARGS $PIP_DEPENDENCIES pytest pytest-cov coverage pydata-sphinx-theme lxml -e .
+pip install $EXTRA_ARGS $PIP_DEPENDENCIES \
+    pytest pytest-cov coverage pydata-sphinx-theme lxml \
+    "sphinxcontrib-video>=0.2.1rc0" \
+    -e .
 set +x
 
 # "pip install pygraphviz" does not guarantee graphviz binaries exist
 if [[ "$DISTRIB" != "mamba" ]]; then
     if [[ "$PLATFORM" == "Linux" ]]; then
-        sudo apt install graphviz
+        sudo apt install ffmpeg graphviz
     else  # could use brew on macOS pip but it'll take time to install
         echo "Removing pygraphviz on $PLATFORM when DISTRIB=$DISTRIB"
         pip uninstall -y graphviz

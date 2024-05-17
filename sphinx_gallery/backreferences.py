@@ -262,7 +262,7 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
                 backreference (referred to by sphinx markup) (bool)
     """
     if node == "":  # mostly convenience for testing functions
-        c = "\n".join(txt for kind, txt, _ in script_blocks if kind == "code")
+        c = "\n".join(block.content for block in script_blocks if block.type == "code")
         node = ast.parse(c)
     # Get matches from the code (AST, implicit matches)
     finder = NameFinder(global_variables)
@@ -270,7 +270,7 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
         finder.visit(node)
     names = list(finder.get_mapping())
     # Get matches from docstring inspection (explicit matches)
-    text = "\n".join(txt for kind, txt, _ in script_blocks if kind == "text")
+    text = "\n".join(block.content for block in script_blocks if block.type == "text")
     names.extend((x, x, False, False, True) for x in re.findall(ref_regex, text))
     example_code_obj = collections.OrderedDict()  # order is important
     # Make a list of all guesses, in `_embed_code_links` we will break

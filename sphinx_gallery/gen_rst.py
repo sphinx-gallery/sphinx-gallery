@@ -13,7 +13,7 @@ import copy
 import contextlib
 import ast
 import codecs
-from functools import partial, lru_cache
+from functools import lru_cache
 import gc
 import pickle
 import importlib
@@ -752,21 +752,11 @@ def _get_memory_base():
         close_fds=True,
     )
     memories = memory_usage(proc, interval=1e-3, timeout=timeout)
-    kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
-    proc.communicate(**kwargs)
+    proc.communicate(timeout=timeout)
     # On OSX sometimes the last entry can be None
     memories = [mem for mem in memories if mem is not None] + [0.0]
     memory_base = max(memories)
     return memory_base
-
-
-def _ast_module():
-    """Get ast.Module function, dealing with: https://bugs.python.org/issue35894."""
-    if sys.version_info >= (3, 8):
-        ast_Module = partial(ast.Module, type_ignores=[])
-    else:
-        ast_Module = ast.Module
-    return ast_Module
 
 
 def _check_reset_logging_tee(src_file):
@@ -780,15 +770,13 @@ def _check_reset_logging_tee(src_file):
     return logging_tee
 
 
-def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_vars):
+def _exec_and_get_memory(compiler, *, code_ast, gallery_conf, script_vars):
     """Execute ast, capturing output if last line expression and get max mem usage.
 
     Parameters
     ----------
     compiler : codeop.Compile
         Compiler to compile AST of code block.
-    ast_Module : Callable
-        ast.Module function.
     code_ast : ast.Module
         AST parsed code to execute.
     gallery_conf : Dict[str, Any]
@@ -818,7 +806,8 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_va
         body = [
             ast.Assign(targets=[ast.Name(id="___", ctx=ast.Store())], value=last_val)
         ]
-        last_val_ast = ast_Module(body=body)
+        # `type_ignores` empty list deals with: https://bugs.python.org/issue3589
+        last_val_ast = ast.Module(body=body, type_ignores=[])
         ast.fix_missing_locations(last_val_ast)
         mem_last, _ = call_memory(
             _exec_once(
@@ -928,9 +917,8 @@ def execute_code_block(
     ----------
     compiler : codeop.Compile
         Compiler to compile AST of code block.
-    block : List[Tuple[str, str, int]]
-        List of Tuples, each Tuple contains label ('text' or 'code'),
-        the corresponding content string of block and the leading line number.
+    block : sphinx_gallery.py_source_parser.Block
+        The code block to be executed.
     example_globals: Dict[str, Any]
         Global variables for examples.
     script_vars : Dict[str, Any]
@@ -948,9 +936,8 @@ def execute_code_block(
     """
     if example_globals is None:  # testing shortcut
         example_globals = script_vars["fake_main"].__dict__
-    blabel, bcontent, lineno = block
     # If example is not suitable to run, skip executing its blocks
-    if not script_vars["execute_script"] or blabel == "text":
+    if not script_vars["execute_script"] or block.type == "text":
         return ""
 
     cwd = os.getcwd()
@@ -968,19 +955,27 @@ def execute_code_block(
 
     # Save figures unless there is a `sphinx_gallery_defer_figures` flag
     match = re.search(
-        r"^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?", bcontent, re.MULTILINE
+        r"^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?",
+        block.content,
+        re.MULTILINE,
     )
     need_save_figures = match is None
 
     try:
-        ast_Module = _ast_module()
-        code_ast = ast_Module([bcontent])
-        flags = ast.PyCF_ONLY_AST | compiler.flags
-        code_ast = compile(bcontent, src_file, "exec", flags, dont_inherit=1)
-        ast.increment_lineno(code_ast, lineno - 1)
-
+        # The "compile" step itself can fail on a SyntaxError, so just prepend
+        # newlines to get the correct failing line to show up in the traceback
+        code_ast = compile(
+            "\n" * (block.lineno - 1) + block.content,
+            src_file,
+            "exec",
+            flags=ast.PyCF_ONLY_AST | compiler.flags,
+            dont_inherit=1,
+        )
         is_last_expr, mem_max = _exec_and_get_memory(
-            compiler, ast_Module, code_ast, gallery_conf, script_vars
+            compiler,
+            code_ast=code_ast,
+            gallery_conf=gallery_conf,
+            script_vars=script_vars,
         )
         script_vars["memory_delta"].append(mem_max)
         # This should be inside the try block, e.g., in case of a savefig error
@@ -1183,7 +1178,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         src_file, return_node=True
     )
 
-    intro, title = extract_intro_and_title(fname, script_blocks[0][1])
+    intro, title = extract_intro_and_title(fname, script_blocks[0].content)
     gallery_conf["titles"][src_file] = title
 
     executable = executable_script(src_file, gallery_conf)
@@ -1240,19 +1235,21 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     # Ignore blocks must be processed before the
     # remaining config comments are removed.
     script_blocks = [
-        (label, parser.remove_ignore_blocks(content), line_number)
+        py_source_parser.Block(label, parser.remove_ignore_blocks(content), line_number)
         for label, content, line_number in script_blocks
     ]
 
     if gallery_conf["remove_config_comments"]:
         script_blocks = [
-            (label, parser.remove_config_comments(content), line_number)
+            py_source_parser.Block(
+                label, parser.remove_config_comments(content), line_number
+            )
             for label, content, line_number in script_blocks
         ]
 
     # Remove final empty block, which can occur after config comments
     # are removed
-    if script_blocks[-1][1].isspace():
+    if script_blocks[-1].content.isspace():
         script_blocks = script_blocks[:-1]
         output_blocks = output_blocks[:-1]
 
@@ -1383,20 +1380,24 @@ def rst_blocks(
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
     example_rst = ""
-    for bi, ((blabel, bcontent, lineno), code_output) in enumerate(
-        zip(script_blocks, output_blocks)
-    ):
+    for bi, (script_block, code_output) in enumerate(zip(script_blocks, output_blocks)):
         # do not add comment to the title block, otherwise the linking does
         # not work properly
         if bi > 0:
             example_rst += RST_BLOCK_HEADER.format(
-                lineno, lineno + bcontent.count("\n")
+                script_block.lineno,
+                script_block.lineno + script_block.content.count("\n"),
             )
-        if blabel == "code":
-            if not file_conf.get("line_numbers", gallery_conf["line_numbers"]):
-                lineno = None
+        if script_block.type == "code":
+            lineno = (
+                script_block.lineno
+                if file_conf.get("line_numbers", gallery_conf["line_numbers"])
+                else None
+            )
 
-            code_rst = codestr2rst(bcontent, lang=language, lineno=lineno) + "\n"
+            code_rst = (
+                codestr2rst(script_block.content, lang=language, lineno=lineno) + "\n"
+            )
             if is_example_notebook_like:
                 example_rst += code_rst
                 example_rst += code_output
@@ -1407,8 +1408,10 @@ def rst_blocks(
                     example_rst += "\n\n|\n\n"
                 example_rst += code_rst
         else:
-            block_separator = "\n\n" if not bcontent.endswith("\n") else "\n"
-            example_rst += bcontent + block_separator
+            block_separator = (
+                "\n\n" if not script_block.content.endswith("\n") else "\n"
+            )
+            example_rst += script_block.content + block_separator
 
     return example_rst
 

@@ -52,6 +52,9 @@ N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
 N_RST = f"({N_RST}|{N_RST - 1}|{N_RST - 2})"  # AppVeyor weirdness
 
 pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
+manim = pytest.importorskip("matplotlib.animation")
+if not manim.writers.is_available("ffmpeg"):
+    pytest.skip("ffmpeg is not available", allow_module_level=True)
 
 
 @pytest.fixture(scope="module")
@@ -321,11 +324,12 @@ def test_image_formats(sphinx_app):
         assert want_html in html
     # the original GIF does not get copied because it's not used in the
     # reST/HTML, so can't add it to this check
-    for ex, ext, nums, extra in (
-        ("plot_svg", "svg", [1], None),
-        ("plot_numpy_matplotlib", "png", [1], None),
-        ("plot_animation", "png", [1, 3], "function Animation"),
-        ("plot_webp", "webp", [1], None),
+    for ex, ext, nums in (
+        ("plot_svg", "svg", [1]),
+        ("plot_numpy_matplotlib", "png", [1]),
+        ("plot_animation", "png", [1, 3]),
+        ("plot_animation", "mp4", [2]),
+        ("plot_webp", "webp", [1]),
     ):
         html_fname = op.join(generated_examples_dir, f"{ex}.html")
         with codecs.open(html_fname, "r", "utf-8") as fid:
@@ -343,9 +347,6 @@ def test_image_formats(sphinx_app):
                 # check 2.00x (tests directive)
                 assert op.isfile(file_fname2), file_fname2
                 assert want_html in html
-
-        if extra is not None:
-            assert extra in html
 
 
 def test_repr_html_classes(sphinx_app):

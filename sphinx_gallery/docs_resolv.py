@@ -10,7 +10,6 @@ import pickle
 import posixpath
 import re
 import shelve
-import sys
 import urllib.request as urllib_request
 import urllib.parse as urllib_parse
 from pathlib import Path
@@ -49,10 +48,6 @@ def _get_data(url):
 
 def get_data(url, gallery_dir):
     """Persistent dictionary usage to retrieve the search indexes."""
-    # shelve keys need to be str in python 2
-    if sys.version_info[0] == 2 and isinstance(url, str):
-        url = url.encode("utf-8")
-
     cached_file = os.path.join(gallery_dir, "searchindex")
     search_index = shelve.open(cached_file)
     if url in search_index:

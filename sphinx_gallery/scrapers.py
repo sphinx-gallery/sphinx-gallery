@@ -94,6 +94,13 @@ _ANIMATION_RST = """
 
         {0}
 """
+_ANIMATION_VIDEO_RST = """
+.. video:: {video}
+   :class: sphx-glr-single-img
+   :height: {height}
+   :width: {width}
+{options}
+"""
 
 
 def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
@@ -101,8 +108,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : sphinx_gallery.py_source_parser.Block
+        The code block to be executed. Format (label, content, lineno).
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict
@@ -134,7 +141,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
     # Check for animations
     anims = {}
-    if gallery_conf["matplotlib_animations"]:
+    if gallery_conf["matplotlib_animations"][0]:
         for ani in block_vars["example_globals"].values():
             if isinstance(ani, Animation):
                 anims[ani._fig] = ani
@@ -215,6 +222,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
 def _anim_rst(anim, image_path, gallery_conf):
     from matplotlib.animation import FFMpegWriter, ImageMagickWriter
+    from matplotlib import rcParams
 
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
@@ -230,11 +238,39 @@ def _anim_rst(anim, image_path, gallery_conf):
     else:
         writer = None
     anim.save(str(image_path), writer=writer, dpi=use_dpi)
-    html = anim._repr_html_()
-    if html is None:  # plt.rcParams['animation.html'] == 'none'
+
+    _, fmt = gallery_conf["matplotlib_animations"]
+    # Formats that are embedded in rst
+    html = None
+    if fmt is None:
+        html = anim._repr_html_()
+        if html is None:  # plt.rcParams['animation.html'] == 'none'
+            html = anim.to_jshtml()
+    elif fmt == "html5":
+        html = anim.to_html5_video()
+    elif fmt == "jshtml":
         html = anim.to_jshtml()
-    html = indent(html, "     ")
-    return _ANIMATION_RST.format(html)
+    if html is not None:
+        html = indent(html, "     ")
+        return _ANIMATION_RST.format(html)
+
+    # Formats that are saved and use `video` directive
+    video = image_path.with_suffix(f".{fmt}")
+    anim.save(video)
+    options = ["autoplay"]
+    if getattr(anim, "_repeat", False):
+        options.append("loop")
+    dpi = rcParams["savefig.dpi"]
+    if dpi == "figure":
+        dpi = fig.dpi
+    video_uri = video.relative_to(gallery_conf["src_dir"]).as_posix()
+    html = _ANIMATION_VIDEO_RST.format(
+        video=f"/{video_uri}",
+        width=int(fig_size[0] * dpi),
+        height=int(fig_size[1] * dpi),
+        options="".join(f"   :{opt}:\n" for opt in options),
+    )
+    return html
 
 
 _scraper_dict = dict(
@@ -320,8 +356,8 @@ def save_figures(block, block_vars, gallery_conf):
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : sphinx_gallery.py_source_parser.Block
+        The code block to be executed. Format (label, content, lineno).
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict

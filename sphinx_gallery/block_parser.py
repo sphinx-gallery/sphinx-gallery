@@ -11,7 +11,7 @@ from textwrap import dedent
 from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
 
-from .py_source_parser import FLAG_BODY
+from .py_source_parser import FLAG_BODY, Block
 
 logger = getLogger("sphinx-gallery")
 
@@ -224,7 +224,7 @@ class BlockParser:
                 text = dedent("\n".join(block[first:last]))
             else:
                 text = "\n".join(block)
-            return mode, text, n - len(block)
+            return Block(mode, text, n - len(block))
 
         block = []
         mode = None
@@ -298,10 +298,14 @@ class BlockParser:
         # For examples that start with a code block before the file docstring due to
         # language conventions or requirements, swap these blocks so the title block
         # comes first and merge consecutive code blocks if needed.
-        if len(blocks) >= 2 and blocks[0][0] == "code" and blocks[1][0] == "text":
+        if len(blocks) >= 2 and blocks[0].type == "code" and blocks[1].type == "text":
             blocks[0], blocks[1] = blocks[1], blocks[0]
-            if len(blocks) >= 3 and blocks[2][0] == "code":
-                blocks[1] = ("code", f"{blocks[1][1]}\n{blocks[2][1]}", blocks[1][2])
+            if len(blocks) >= 3 and blocks[2].type == "code":
+                blocks[1] = Block(
+                    "code",
+                    f"{blocks[1].content}\n{blocks[2].content}",
+                    blocks[1].lineno,
+                )
                 blocks.pop(2)
 
         return file_conf, blocks, None
