@@ -31,7 +31,7 @@ Sphinx-Gallery
 
 A `Sphinx <https://www.sphinx-doc.org/en/master/>`_ extension that builds an
 HTML gallery of examples from any set of Python scripts.
-Checkout the `documentation <sphinx-gallery.github.io>`_ for introductions on how to use it and more...
+Checkout the `documentation <https://sphinx-gallery.github.io>`_ for introductions on how to use it and more...
 
 .. tagline-end-content
 
@@ -48,7 +48,7 @@ as well as a stand-alone web page showcasing examples of a particular
 Python package, module, or class.
 
 Let's get started with a simple example or checkout the
- `documentation <sphinx-gallery.github.io>`_ for introductions on how
+ `documentation <https://sphinx-gallery.github.io/>`_ for introductions on how
  to use it and more...
 
 Install via ``pip``
