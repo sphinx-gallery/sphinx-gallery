@@ -188,6 +188,6 @@ How to cite
 If you would like to cite Sphinx-Gallery you can do so using our `Zenodo
 deposit <https://zenodo.org/record/3741780>`_.
 
-.. citation-end-content
-
 .. _documentation: https://sphinx-gallery.github.io/
+
+.. citation-end-content
