@@ -169,6 +169,8 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
 
 
 def zip_files(file_list, zipname, relative_to, extension=None):
+    """Creates a zip file with name `zipname` containing the files listed in `file_list`. The zip file contents will be stored with their paths stripped to be relative to `relative_to`.
+    """
     zipname_new = str(zipname) + ".new"
     with zipfile.ZipFile(zipname_new, mode="w") as zipf:
         for fname in file_list:
