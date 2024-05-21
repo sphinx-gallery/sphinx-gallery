@@ -128,6 +128,12 @@ highlight_language = "python3"
 html_theme = "pydata_sphinx_theme"
 
 
+def add_per_page_css(app, pagename, templatename, context, doctree):
+    """Add CSS file per page."""
+    if pagename.startswith("auto_examples/"):
+        app.add_css_file("hide_links.css")
+
+
 def setup(app):
     """Sphinx setup function."""
     app.add_css_file("theme_override.css")
@@ -137,6 +143,7 @@ def setup(app):
         objname="configuration value",
         indextemplate="pair: %s; configuration value",
     )
+    app.connect("html-page-context", add_per_page_css)
 
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -163,6 +170,9 @@ html_theme_options = {
             "icon": "fa-solid fa-box",
         },
     ],
+    "secondary_sidebar_items": {
+        "auto_examples/*": ["page-toc", "sg_download_links", "sg_launcher_links"],
+    },
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

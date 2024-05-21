@@ -1,0 +1,11 @@
+{# Displays the launcher badges for the example. #}
+{% set launcher_links = get_launcher_links() %}
+{% for key, link_info in launcher_links.items() %}
+  {% if link_info %}
+    <div class="{{ key }}-badge-sidebar">
+      <a href="{{ link_info.link }}">
+        <img src="{{ link_info.img_src }}" alt="{{ link_info.img_alt }}" height="20">
+      </a>
+    </div>
+  {% endif %}
+{% endfor %}

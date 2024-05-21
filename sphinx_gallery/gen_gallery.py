@@ -17,6 +17,7 @@ import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
 from itertools import chain
+from docutils import nodes
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
@@ -1543,8 +1544,73 @@ def update_gallery_conf_builder_inited(app):
     )
 
 
+def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doctree):
+    """Set up the getters for download and launcher links.
+
+    The getters are added to the sphinx context so as to be used in templates. They are
+    currently needed for the secondary sidebar components particularly for pydata sphinx
+    theme.
+    """
+
+    def find_containers_with_class(class_name):
+        return doctree.findall(
+            lambda x: isinstance(x, nodes.container)
+            and class_name in x.attributes.get("classes", [])
+        )
+
+    def get_download_links():
+        """Get the download links for the example.
+
+        This returns a dictionary with keys in ["python", "jupyter"], depending on their
+        availability. The values contain:
+        - link: The relative path to the download file
+        - label: The "Download {label}" text
+        - title: The title to show when hovering over the link
+        """
+        links = {}
+        for key, label in [("python", "source code"), ("jupyter", "Jupyter notebook")]:
+            containers = find_containers_with_class(f"sphx-glr-download-{key}")
+            if container := next(containers, None):
+                attrs = container.children[0].children[0].attributes
+                if link := attrs.get("filename"):
+                    links[key] = {
+                        "link": f"_downloads/{link}",
+                        "label": label,
+                        "title": attrs.get("reftarget"),
+                    }
+        return links
+
+    def get_launcher_links():
+        """Get the launcher links for the example.
+
+        This returns a dictionary with keys in ["lite", "binder"], depending on their
+        availability. The values contain:
+        - link: The URL to Binder or JupyterLite link of the example
+        - img_alt: The alt text for the link badge
+        - img_src: The source URL of the link badge
+        """
+        links = {}
+        for key in ["lite", "binder"]:
+            containers = find_containers_with_class(f"{key}-badge")
+            if container := next(containers, None):
+                anchor = container.children[0]
+                image = anchor.children[0]
+                if link := anchor.attributes.get("refuri"):
+                    links[key] = {
+                        "link": link,
+                        "img_alt": image.attributes.get("alt"),
+                        "img_src": image.attributes.get("uri"),
+                    }
+        return links
+
+    context["get_download_links"] = get_download_links
+    context["get_launcher_links"] = get_launcher_links
+
+
 def setup(app):
     """Setup Sphinx-Gallery sphinx extension."""
+    here = Path(__file__).parent.resolve()
+
     app.add_config_value("sphinx_gallery_conf", DEFAULT_GALLERY_CONF, "html")
     for key in ["plot_gallery", "abort_on_example_error"]:
         app.add_config_value(key, get_default_config_value(key), "html")
@@ -1578,6 +1644,12 @@ def setup(app):
     app.connect("build-finished", summarize_failing_examples)
     app.connect("build-finished", embed_code_links)
     app.connect("build-finished", clean_api_usage_files)
+
+    app.connect("html-page-context", setup_pst_secondary_sidebar_links)
+
+    # Include component templates
+    app.config.templates_path.append(str(here / "components"))
+
     metadata = {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
