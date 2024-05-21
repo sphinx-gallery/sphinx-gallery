@@ -238,7 +238,7 @@ NOTEBOOK_DOWNLOAD = """
 ZIP_DOWNLOAD = """
     .. container:: sphx-glr-download sphx-glr-download-zip
 
-      :download:`Download all: {0} <{0}>`
+      :download:`Download both (zipped): {0} <{0}>`
 """
 
 RECOMMENDATIONS_INCLUDE = """\n
