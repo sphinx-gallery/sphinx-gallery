@@ -369,6 +369,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     # read specification of the figure to display as thumbnail from main text
     thumbnail_number = file_conf.get("thumbnail_number", None)
     thumbnail_path = file_conf.get("thumbnail_path", None)
+    ignore_thumbnail = False  # only used for failing examples with no given thumbnail
     # thumbnail_number has priority.
     if thumbnail_number is None and thumbnail_path is None:
         # If no number AND no path, set to default thumbnail_number
@@ -376,6 +377,8 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     if thumbnail_number is None:
         image_path = os.path.join(gallery_conf["src_dir"], thumbnail_path)
     else:
+        if src_file in gallery_conf["failing_examples"]:
+            ignore_thumbnail = True
         if not isinstance(thumbnail_number, int):
             raise ExtensionError(
                 "sphinx_gallery_thumbnail_number setting is not a number, "
@@ -391,7 +394,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir, f"sphx_glr_{base_image_name}_thumb.{ext}")
 
-    if src_file in gallery_conf["failing_examples"]:
+    if src_file in gallery_conf["failing_examples"] and ignore_thumbnail:
         img = os.path.join(glr_path_static(), "broken_example.png")
     elif os.path.exists(thumbnail_image_path):
         img = thumbnail_image_path
