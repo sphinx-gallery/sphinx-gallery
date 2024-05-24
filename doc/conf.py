@@ -171,6 +171,7 @@ html_theme_options = {
         },
     ],
     "secondary_sidebar_items": {
+        "**": ["page-toc"],
         "auto_examples/*": ["page-toc", "sg_download_links", "sg_launcher_links"],
     },
 }
