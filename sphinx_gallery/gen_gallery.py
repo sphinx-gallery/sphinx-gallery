@@ -1565,14 +1565,18 @@ def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doct
         `doctree` provided in the `html-page-context` event. This function will then
         be added to the context of the page and can be accessed in the template.
 
-        This returns a dictionary with keys in ["python", "jupyter"], depending on their
-        availability. The values contain:
+        This returns a dictionary with keys in ["python", "jupyter", "zip"], depending
+        on their availability. The values contain:
         - link: The relative path to the download file
         - label: The "Download {label}" text
         - title: The title to show when hovering over the link
         """
         links = {}
-        for key, label in [("python", "source code"), ("jupyter", "Jupyter notebook")]:
+        for key, label in [
+            ("python", "source code"),
+            ("jupyter", "Jupyter notebook"),
+            ("zip", "both (zipped)"),
+        ]:
             containers = _find_containers_with_class(f"sphx-glr-download-{key}")
             if container := next(containers, None):
                 attrs = container.children[0].children[0].attributes
