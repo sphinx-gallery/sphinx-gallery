@@ -7,15 +7,16 @@ image stamp as their gallery thumbnail. However, this may not be desired, e.g.
 if only part of the example is expected to fail and it should not look like the
 entire example fails.
 
-In these cases, the `sphinx_gallery_thumbnail_path` variable can be set to
-specify a desired thumbnail.
+In these cases, the `sphinx_gallery_failing_thumbnail` variable can be set to
+``False``, which will change the thumbnail selection to the default behaviour
+as for non-failing examples.
 """
 
 # Code source: Thomas S. Binns
 # License: BSD 3 clause
 # sphinx_gallery_line_numbers = True
 
-# sphinx_gallery_thumbnail_path = 'auto_examples/no_output/images/sphx_glr_plot_raise_001.png'  # noqa
+# sphinx_gallery_failing_thumbnail = False
 
 import numpy as np
 import matplotlib.pyplot as plt
