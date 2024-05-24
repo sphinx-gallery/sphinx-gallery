@@ -46,6 +46,7 @@ from .scrapers import (
 from .utils import (
     scale_image,
     get_md5sum,
+    zip_files,
     _replace_md5,
     optipng,
     status_iterator,
@@ -232,6 +233,12 @@ NOTEBOOK_DOWNLOAD = """
     .. container:: sphx-glr-download sphx-glr-download-jupyter
 
       :download:`Download Jupyter notebook: {0} <{0}>`
+"""
+
+ZIP_DOWNLOAD = """
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download both (zipped): {0} <{0}>`
 """
 
 RECOMMENDATIONS_INCLUDE = """\n
@@ -1263,12 +1270,17 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     )
 
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
+    files_to_zip = [target_file]
 
     if target_file.suffix in gallery_conf["notebook_extensions"]:
         example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
         ipy_fname = target_file.with_suffix(".ipynb.new")
         save_notebook(example_nb, ipy_fname)
         _replace_md5(ipy_fname, mode="t")
+        files_to_zip += [target_file.with_suffix(".ipynb")]
+
+    # Produce the zip file of all sources
+    zip_files(files_to_zip, target_file.with_suffix(".zip"), target_dir)
 
     # Write names
     if gallery_conf["inspect_global_variables"]:
@@ -1479,9 +1491,11 @@ def save_rst_example(
         example_rst += jupyterlite_rst
 
     if save_notebook:
-        example_rst += NOTEBOOK_DOWNLOAD.format(example_file.with_suffix(".ipynb").name)
+        ipynb_download_file = example_file.with_suffix(".ipynb").name
+        example_rst += NOTEBOOK_DOWNLOAD.format(ipynb_download_file)
 
     example_rst += CODE_DOWNLOAD.format(example_file.name, language)
+    example_rst += ZIP_DOWNLOAD.format(example_file.with_suffix(".zip").name)
 
     if gallery_conf["recommender"]["enable"]:
         # extract the filename without the extension
