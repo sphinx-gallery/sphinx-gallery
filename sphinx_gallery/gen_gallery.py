@@ -1552,7 +1552,7 @@ def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doct
     theme.
     """
 
-    def find_containers_with_class(class_name):
+    def _find_containers_with_class(class_name):
         return doctree.findall(
             lambda x: isinstance(x, nodes.container)
             and class_name in x.attributes.get("classes", [])
@@ -1560,6 +1560,10 @@ def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doct
 
     def get_download_links():
         """Get the download links for the example.
+
+        This function relies on `_find_containers_with_class` which in turn relies on
+        `doctree` provided in the `html-page-context` event. This function will then
+        be added to the context of the page and can be accessed in the template.
 
         This returns a dictionary with keys in ["python", "jupyter"], depending on their
         availability. The values contain:
@@ -1569,7 +1573,7 @@ def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doct
         """
         links = {}
         for key, label in [("python", "source code"), ("jupyter", "Jupyter notebook")]:
-            containers = find_containers_with_class(f"sphx-glr-download-{key}")
+            containers = _find_containers_with_class(f"sphx-glr-download-{key}")
             if container := next(containers, None):
                 attrs = container.children[0].children[0].attributes
                 if link := attrs.get("filename"):
@@ -1583,6 +1587,10 @@ def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doct
     def get_launcher_links():
         """Get the launcher links for the example.
 
+        This function relies on `_find_containers_with_class` which in turn relies on
+        `doctree` provided in the `html-page-context` event. This function will then
+        be added to the context of the page and can be accessed in the template.
+
         This returns a dictionary with keys in ["lite", "binder"], depending on their
         availability. The values contain:
         - link: The URL to Binder or JupyterLite link of the example
@@ -1591,7 +1599,7 @@ def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doct
         """
         links = {}
         for key in ["lite", "binder"]:
-            containers = find_containers_with_class(f"{key}-badge")
+            containers = _find_containers_with_class(f"{key}-badge")
             if container := next(containers, None):
                 anchor = container.children[0]
                 image = anchor.children[0]
