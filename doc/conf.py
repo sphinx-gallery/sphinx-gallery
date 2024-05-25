@@ -431,7 +431,7 @@ sphinx_gallery_conf = {
     "image_srcset": ["2x"],
     "nested_sections": True,
     "show_api_usage": True,
-    "template_links_pattern": ["auto_examples/*"],
+    "components_pattern": ["auto_examples/*"],
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show

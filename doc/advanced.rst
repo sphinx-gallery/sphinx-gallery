@@ -467,6 +467,8 @@ Custom css can be used for example to alter the appearance of
 :ref:`code links <stylizing_code_links>` and
 :ref:`thumbnail size <setting_thumbnail_size>`.
 
+.. _hide_download_buttons-note:
+
 Hide the download buttons in the example headers
 ------------------------------------------------
 

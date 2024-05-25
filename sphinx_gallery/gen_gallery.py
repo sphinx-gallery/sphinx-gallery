@@ -131,7 +131,7 @@ DEFAULT_GALLERY_CONF = {
     "api_usage_ignore": ".*__.*__",
     "show_api_usage": False,  # if this changes, change write_api_entries, too
     "copyfile_regex": "",
-    "template_links_pattern": [],
+    "components_pattern": [],
 }
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -1553,7 +1553,7 @@ def setup_template_link_getters(app, pagename, templatename, context, doctree):
     """
     if not any(
         patmatch(pagename, pat)
-        for pat in app.config.sphinx_gallery_conf["template_links_pattern"]
+        for pat in app.config.sphinx_gallery_conf["components_pattern"]
     ):
         context["get_download_links"] = lambda: {}
         context["get_launcher_links"] = lambda: {}
