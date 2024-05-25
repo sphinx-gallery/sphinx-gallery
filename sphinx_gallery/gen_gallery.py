@@ -131,7 +131,7 @@ DEFAULT_GALLERY_CONF = {
     "api_usage_ignore": ".*__.*__",
     "show_api_usage": False,  # if this changes, change write_api_entries, too
     "copyfile_regex": "",
-    "pst_secondary_sidebar_links_pattern": [],
+    "template_links_pattern": [],
 }
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -1546,16 +1546,14 @@ def update_gallery_conf_builder_inited(app):
     )
 
 
-def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doctree):
+def setup_template_link_getters(app, pagename, templatename, context, doctree):
     """Set up the getters for download and launcher links.
 
-    The getters are added to the sphinx context so as to be used in templates. They are
-    currently needed for the secondary sidebar components particularly for pydata sphinx
-    theme.
+    The getters are added to the sphinx context so as to be used in templates.
     """
     if not any(
         patmatch(pagename, pat)
-        for pat in app.config.sphinx_gallery_conf["pst_secondary_sidebar_links_pattern"]
+        for pat in app.config.sphinx_gallery_conf["template_links_pattern"]
     ):
         context["get_download_links"] = lambda: {}
         context["get_launcher_links"] = lambda: {}
@@ -1666,7 +1664,7 @@ def setup(app):
     app.connect("build-finished", embed_code_links)
     app.connect("build-finished", clean_api_usage_files)
 
-    app.connect("html-page-context", setup_pst_secondary_sidebar_links)
+    app.connect("html-page-context", setup_template_link_getters)
 
     # Include component templates
     app.config.templates_path.append(str(here / "components"))
