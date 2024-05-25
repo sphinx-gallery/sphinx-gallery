@@ -22,6 +22,7 @@ from docutils import nodes
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
 from sphinx.util.console import blue, red, purple, bold
+from sphinx.util.matching import patmatch
 from . import glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
@@ -130,6 +131,7 @@ DEFAULT_GALLERY_CONF = {
     "api_usage_ignore": ".*__.*__",
     "show_api_usage": False,  # if this changes, change write_api_entries, too
     "copyfile_regex": "",
+    "pst_secondary_sidebar_links_pattern": [],
 }
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -1551,6 +1553,13 @@ def setup_pst_secondary_sidebar_links(app, pagename, templatename, context, doct
     currently needed for the secondary sidebar components particularly for pydata sphinx
     theme.
     """
+    if not any(
+        patmatch(pagename, pat)
+        for pat in app.config.sphinx_gallery_conf["pst_secondary_sidebar_links_pattern"]
+    ):
+        context["get_download_links"] = lambda: {}
+        context["get_launcher_links"] = lambda: {}
+        return
 
     def _find_containers_with_class(class_name):
         return doctree.findall(
