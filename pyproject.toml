@@ -77,6 +77,12 @@ lint.select = [
   "F",
   "W",
 ]
+lint.ignore = [
+  # TODO: A lot of these we should actually fix eventually
+  "D105", # Missing docstring in magic method
+  "D401", # First line of docstring should be in imperative mood
+]
+
 lint.per-file-ignores."*examples*/*.py" = [
   "D205", # 1 blank line required between summary line and description
   "D400", # First line should end with a period
@@ -108,11 +114,6 @@ lint.per-file-ignores."tutorials/plot_parse.py" = [
 ]
 # Example files cannot satisfy below rules due to header and imports in code blocks
 lint.pydocstyle.convention = "numpy"
-lint.ignore = [
-  # TODO: A lot of these we should actually fix eventually
-  "D105", # Missing docstring in magic method
-  "D401", # First line of docstring should be in imperative mood
-]
 
 [tool.codespell]
 builtin = "clear,rare,informal,names,usage"
