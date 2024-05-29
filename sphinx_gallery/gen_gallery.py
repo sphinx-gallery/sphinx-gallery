@@ -130,7 +130,6 @@ DEFAULT_GALLERY_CONF = {
     "api_usage_ignore": ".*__.*__",
     "show_api_usage": False,  # if this changes, change write_api_entries, too
     "copyfile_regex": "",
-    "components_pattern": [],
 }
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
