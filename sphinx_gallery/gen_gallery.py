@@ -1581,7 +1581,7 @@ def setup_template_link_getters(app, pagename, templatename, context, doctree):
         for key, label in [
             ("python", "source code"),
             ("jupyter", "Jupyter notebook"),
-            ("zip", "both (zipped)"),
+            ("zip", "zipped"),
         ]:
             containers = _find_containers_with_class(f"sphx-glr-download-{key}")
             if container := next(containers, None):

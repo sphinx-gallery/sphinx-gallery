@@ -1350,3 +1350,42 @@ def test_recommend_n_examples(sphinx_app):
     assert "sphx-glr-auto-examples-plot-repr-py" in html
     assert "sphx-glr-auto-examples-plot-webp-py" in html
     assert "sphx-glr-auto-examples-plot-matplotlib-backend-py" in html
+
+
+def test_sidebar_components_download_links(sphinx_app):
+    """Test that the `sg_download_links.html` component works as expected."""
+    example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
+    with codecs.open(example_file, "r", "utf-8") as fid:
+        tree = lxml.html.fromstring(fid.read())
+
+    for class_name, desc in [
+        ("sphx-glr-download-python", "Download source code"),
+        ("sphx-glr-download-jupyter", "Download Jupyter notebook"),
+        ("sphx-glr-download-zip", "Download zipped"),
+    ]:
+        orig_href = (
+            tree.find_class(class_name)[0]
+            .getchildren()[0]
+            .getchildren()[0]
+            .attrib["href"]
+        )
+        sidebar_div = tree.find_class(f"{class_name}-sidebar")[0]
+        assert sidebar_div.attrib["title"] == os.path.basename(orig_href)
+        assert sidebar_div.getchildren()[0].attrib["href"] == orig_href
+        assert sidebar_div.getchildren()[0].text_content().strip() == desc
+
+
+def test_sidebar_components_launcher_links(sphinx_app):
+    """Test that the `sg_launcher_links.html` component works as expected."""
+    example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
+    with codecs.open(example_file, "r", "utf-8") as fid:
+        tree = lxml.html.fromstring(fid.read())
+
+    for class_name in ["binder-badge", "lite-badge"]:
+        orig_anchor = tree.find_class(class_name)[0].getchildren()[0]
+        orig_href = orig_anchor.attrib["href"]
+        orig_img = orig_anchor.getchildren()[0]
+        sidebar_anchor = tree.find_class(f"{class_name}-sidebar")[0].getchildren()[0]
+        assert sidebar_anchor.attrib["href"] == orig_href
+        assert sidebar_anchor.getchildren()[0].attrib["src"] == orig_img.attrib["src"]
+        assert sidebar_anchor.getchildren()[0].attrib["alt"] == orig_img.attrib["alt"]

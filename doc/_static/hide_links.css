@@ -3,7 +3,7 @@
 .lite-badge,                  /* Lite launch badge in footer */
 .sphx-glr-download-jupyter,   /* Download Jupyter notebook link in footer */
 .sphx-glr-download-python,    /* Download Python script link in footer */
-.sphx-glr-download-zip        /* Download both (zipped) link in footer */
+.sphx-glr-download-zip        /* Download zipped link in footer */
 {
   display: none;
 }
