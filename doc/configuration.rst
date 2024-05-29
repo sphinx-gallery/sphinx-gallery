@@ -98,6 +98,7 @@ Some options can also be set or overridden on a file-by-file basis:
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
 - ``# sphinx_gallery_thumbnail_path`` (:ref:`providing_thumbnail`)
+- ``# sphinx_gallery_failing_thumbnail`` (:ref:`failing_thumbnail`)
 - ``# sphinx_gallery_dummy_images`` (:ref:`dummy_images`)
 - ``# sphinx_gallery_capture_repr`` (:ref:`capture_repr`)
 
@@ -1315,6 +1316,26 @@ Note that ``sphinx_gallery_thumbnail_number`` overrules
 ``sphinx_gallery_thumbnail_path``. See
 :ref:`sphx_glr_auto_examples_plot_4b_provide_thumbnail.py` for an example of
 this functionality.
+
+.. _failing_thumbnail:
+
+Controlling thumbnail behaviour in failing examples
+===================================================
+
+By default, expected failing examples will have their thumbnail image as a
+stamp with the word "BROKEN". This behaviour is controlled by
+``sphinx_gallery_failing_thumbnail``, which is by default ``True``. In cases
+where control over the thumbnail image is desired (e.g. the default behaviour
+of using the first figure created, using a specific image, etc...), this should
+be set to ``False``::
+
+    # sphinx_gallery_failing_thumbnail = False
+
+Compare the thumbnails of
+:ref:`sphx_glr_auto_examples_no_output_plot_raise_thumbnail.py` (where the
+option is ``False``) and :ref:`sphx_glr_auto_examples_no_output_plot_raise.py`
+(where the option is the default ``True``) for an example of this
+functionality.
 
 
 .. _binder_links:
