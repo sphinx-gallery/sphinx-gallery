@@ -1529,6 +1529,11 @@ def fill_gallery_conf_defaults(app, config, check_keys=True):
     config.sphinx_gallery_conf = new_sphinx_gallery_conf
     config.html_static_path.append(glr_path_static())
 
+    # This must be done in "config-inited" for Sphinx 5 and 6 because otherwise the
+    # `templates_path` will be overwritten and Sphinx will not be able to discover our
+    # component templates
+    config.templates_path.append(str(Path(__file__).parent / "components"))
+
 
 def update_gallery_conf_builder_inited(app):
     """Update the the sphinx-gallery config at builder-inited."""
@@ -1622,8 +1627,6 @@ def setup_template_link_getters(app, pagename, templatename, context, doctree):
 
 def setup(app):
     """Setup Sphinx-Gallery sphinx extension."""
-    here = Path(__file__).parent.resolve()
-
     app.add_config_value("sphinx_gallery_conf", DEFAULT_GALLERY_CONF, "html")
     for key in ["plot_gallery", "abort_on_example_error"]:
         app.add_config_value(key, get_default_config_value(key), "html")
@@ -1659,9 +1662,6 @@ def setup(app):
     app.connect("build-finished", clean_api_usage_files)
 
     app.connect("html-page-context", setup_template_link_getters)
-
-    # Include component templates
-    app.config.templates_path.append(str(here / "components"))
 
     metadata = {
         "parallel_read_safe": True,
