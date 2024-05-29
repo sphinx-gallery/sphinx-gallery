@@ -514,12 +514,13 @@ templates, e.g., `html_sidebars
 Note that it is safe to use these components on any page, even if the page is not a
 sphinx-gallery example page. The components work by grabbing specific sphinx-gallery
 classes from the page, hence for non-sphinx-gallery pages, the components will simply
-not render anything. Moreover, if specific links do not exist on an example page (e.g.,
-if one does not activate the launchers), the corresponding links will not be rendered
-by the components either.
+not render anything.
 
-In order to hide the original download and launcher links on the page, one can use
-``display: none`` in CSS. The relevant classes are:
+Using these components do not mean that the original download and launcher links will
+be removed from the page. In fact, they cannot be removed as otherwise the components
+cannot grab the necessary information. To visually remove the original links in favor
+of the components, one can use ``display: none`` in CSS to hide them. The relevant
+classes are:
 
 .. literalinclude:: _static/hide_links.css
    :language: css
