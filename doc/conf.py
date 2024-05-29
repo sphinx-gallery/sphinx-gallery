@@ -128,24 +128,16 @@ highlight_language = "python3"
 html_theme = "pydata_sphinx_theme"
 
 
-def add_per_page_css(app, pagename, templatename, context, doctree):
-    """Add CSS file per page."""
-    # Hide download and launcher links for all pages under `auto_examples/` because we
-    # will use the secondary sidebar links for these pages
-    if pagename.startswith("auto_examples/"):
-        app.add_css_file("hide_links.css")
-
-
 def setup(app):
     """Sphinx setup function."""
     app.add_css_file("theme_override.css")
+    app.add_css_file("hide_links.css")
     app.add_object_type(
         "confval",
         "confval",
         objname="configuration value",
         indextemplate="pair: %s; configuration value",
     )
-    app.connect("html-page-context", add_per_page_css)
 
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -431,7 +423,6 @@ sphinx_gallery_conf = {
     "image_srcset": ["2x"],
     "nested_sections": True,
     "show_api_usage": True,
-    "components_pattern": ["auto_examples/*"],
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show

@@ -22,7 +22,6 @@ from docutils import nodes
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
 from sphinx.util.console import blue, red, purple, bold
-from sphinx.util.matching import patmatch
 from . import glr_path_static, __version__ as _sg_version
 from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
@@ -1551,15 +1550,11 @@ def setup_template_link_getters(app, pagename, templatename, context, doctree):
 
     The getters are added to the sphinx context so as to be used in templates.
     """
-    if not any(
-        patmatch(pagename, pat)
-        for pat in app.config.sphinx_gallery_conf["components_pattern"]
-    ):
-        context["get_download_links"] = lambda: {}
-        context["get_launcher_links"] = lambda: {}
-        return
 
     def _find_containers_with_class(class_name):
+        if doctree is None:
+            return iter([])
+
         return doctree.findall(
             lambda x: isinstance(x, nodes.container)
             and class_name in x.attributes.get("classes", [])
