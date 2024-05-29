@@ -1,6 +1,6 @@
 """
-Example that fails to execute (with a specified thumbnail)
-==========================================================
+Example that fails to execute (with normal thumbnail behaviour)
+===============================================================
 
 By default, examples with code blocks that raise an error will have the broken
 image stamp as their gallery thumbnail. However, this may not be desired, e.g.
