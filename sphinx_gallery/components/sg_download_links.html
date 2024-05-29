@@ -2,7 +2,7 @@
 {% set download_links = get_download_links() %}
 {% for key, link_info in download_links.items() %}
   {% if link_info %}
-    <div class="sphx-glr-link-sidebar sphx-glr-download-{{ key }}-sidebar" title="{{ link_info.title }}">
+    <div class="sphx-glr-sidebar-item sphx-glr-download-{{ key }}-sidebar" title="{{ link_info.title }}">
       <a download href="{{ pathto(link_info.link, 1) }}">
         <i class="fa-solid fa-download"></i>
         Download {{ link_info.label }}
