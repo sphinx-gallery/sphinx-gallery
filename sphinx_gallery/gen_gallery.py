@@ -17,6 +17,7 @@ import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
 from itertools import chain
+from docutils import nodes
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
@@ -1528,6 +1529,11 @@ def fill_gallery_conf_defaults(app, config, check_keys=True):
     config.sphinx_gallery_conf = new_sphinx_gallery_conf
     config.html_static_path.append(glr_path_static())
 
+    # This must be done in "config-inited" for Sphinx 5 and 6 because otherwise the
+    # `templates_path` will be overwritten and Sphinx will not be able to discover our
+    # component templates
+    config.templates_path.append(str(Path(__file__).parent / "components"))
+
 
 def update_gallery_conf_builder_inited(app):
     """Update the the sphinx-gallery config at builder-inited."""
@@ -1541,6 +1547,82 @@ def update_gallery_conf_builder_inited(app):
         abort_on_example_error=abort_on_example_error,
         builder_name=app.builder.name,
     )
+
+
+def setup_template_link_getters(app, pagename, templatename, context, doctree):
+    """Set up the getters for download and launcher links.
+
+    The getters are added to the sphinx context so as to be used in templates.
+    """
+
+    def _find_containers_with_class(class_name):
+        if doctree is None:
+            return iter([])
+
+        return doctree.findall(
+            lambda x: isinstance(x, nodes.container)
+            and class_name in x.attributes.get("classes", [])
+        )
+
+    def get_download_links():
+        """Get the download links for the example.
+
+        This function relies on `_find_containers_with_class` which in turn relies on
+        `doctree` provided in the `html-page-context` event. This function will then
+        be added to the context of the page and can be accessed in the template.
+
+        This returns a dictionary with keys in ["python", "jupyter", "zip"], depending
+        on their availability. The values contain:
+        - link: The relative path to the download file
+        - label: The "Download {label}" text
+        - title: The title to show when hovering over the link
+        """
+        links = {}
+        for key, label in [
+            ("python", "source code"),
+            ("jupyter", "Jupyter notebook"),
+            ("zip", "zipped"),
+        ]:
+            containers = _find_containers_with_class(f"sphx-glr-download-{key}")
+            if container := next(containers, None):
+                attrs = container.children[0].children[0].attributes
+                if link := attrs.get("filename"):
+                    links[key] = {
+                        "link": f"_downloads/{link}",
+                        "label": label,
+                        "title": attrs.get("reftarget"),
+                    }
+        return links
+
+    def get_launcher_links():
+        """Get the launcher links for the example.
+
+        This function relies on `_find_containers_with_class` which in turn relies on
+        `doctree` provided in the `html-page-context` event. This function will then
+        be added to the context of the page and can be accessed in the template.
+
+        This returns a dictionary with keys in ["lite", "binder"], depending on their
+        availability. The values contain:
+        - link: The URL to Binder or JupyterLite link of the example
+        - img_alt: The alt text for the link badge
+        - img_src: The source URL of the link badge
+        """
+        links = {}
+        for key in ["lite", "binder"]:
+            containers = _find_containers_with_class(f"{key}-badge")
+            if container := next(containers, None):
+                anchor = container.children[0]
+                image = anchor.children[0]
+                if link := anchor.attributes.get("refuri"):
+                    links[key] = {
+                        "link": link,
+                        "img_alt": image.attributes.get("alt"),
+                        "img_src": image.attributes.get("uri"),
+                    }
+        return links
+
+    context["get_download_links"] = get_download_links
+    context["get_launcher_links"] = get_launcher_links
 
 
 def setup(app):
@@ -1578,6 +1660,9 @@ def setup(app):
     app.connect("build-finished", summarize_failing_examples)
     app.connect("build-finished", embed_code_links)
     app.connect("build-finished", clean_api_usage_files)
+
+    app.connect("html-page-context", setup_template_link_getters)
+
     metadata = {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
