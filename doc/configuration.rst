@@ -1325,9 +1325,12 @@ Controlling thumbnail behaviour in failing examples
 By default, expected failing examples will have their thumbnail image as a
 stamp with the word "BROKEN". This behaviour is controlled by
 ``sphinx_gallery_failing_thumbnail``, which is by default ``True``. In cases
-where control over the thumbnail image is desired (e.g. the default behaviour
-of using the first figure created, using a specific image, etc...), this should
-be set to ``False``::
+where control over the thumbnail image is desired, this should be set to
+``False``. This will return thumbnail behaviour to 'normal', whereby
+thumbnail will be either the first figure created (or the
+:ref:`default thumbnail <custom_default_thumb>` if no figure is created)
+or :ref:`provided thumbnail <providing_thumbnail>`::
+
 
     # sphinx_gallery_failing_thumbnail = False
 
