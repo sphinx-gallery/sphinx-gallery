@@ -33,25 +33,25 @@ dependencies = [
   "pillow",
   "sphinx>=4",
 ]
+optional-dependencies.animations = [
+  "sphinxcontrib-video",
+]
 optional-dependencies.dev = [
+  "absl-py",
+  "graphviz",
+  "joblib",
+  "jupyterlite-sphinx",
+  "lxml",
+  "matplotlib",
+  "numpy",
+  "packaging",
+  "plotly",
   "pydata-sphinx-theme",
   "pytest",
   "pytest-coverage",
-  "numpy",
-  "matplotlib",
   "seaborn",
+  "sphinxcontrib-video",
   "statsmodels",
-  "joblib",
-  "plotly",
-  "absl-py",
-  "graphviz",
-  "packaging",
-  "jupyterlite-sphinx",
-  "lxml",
-  "sphinxcontrib-video",
-]
-optional-dependencies.animations = [
-  "sphinxcontrib-video",
 ]
 optional-dependencies.jupyterlite = [
   "jupyterlite-sphinx",
