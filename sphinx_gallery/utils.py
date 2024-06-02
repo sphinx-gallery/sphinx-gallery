@@ -11,6 +11,7 @@ import os
 import re
 from shutil import move, copyfile
 import subprocess
+import zipfile
 
 from sphinx.errors import ExtensionError
 import sphinx.util
@@ -165,6 +166,24 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
         else:
             copyfile(fname_new, fname_old)
     assert os.path.isfile(fname_old)
+
+
+def zip_files(file_list, zipname, relative_to, extension=None):
+    """
+    Creates a zip file with the given files.
+
+    A zip file named `zipname` will be created containing the files listed in
+    `file_list`. The zip file contents will be stored with their paths stripped to be
+    relative to `relative_to`.
+    """
+    zipname_new = str(zipname) + ".new"
+    with zipfile.ZipFile(zipname_new, mode="w") as zipf:
+        for fname in file_list:
+            if extension is not None:
+                fname = os.path.splitext(fname)[0] + extension
+            zipf.write(fname, os.path.relpath(fname, relative_to))
+    _replace_md5(zipname_new)
+    return zipname
 
 
 def _has_pypandoc():

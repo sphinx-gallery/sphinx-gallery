@@ -131,6 +131,7 @@ html_theme = "pydata_sphinx_theme"
 def setup(app):
     """Sphinx setup function."""
     app.add_css_file("theme_override.css")
+    app.add_css_file("hide_links.css")
     app.add_object_type(
         "confval",
         "confval",
@@ -163,6 +164,7 @@ html_theme_options = {
             "icon": "fa-solid fa-box",
         },
     ],
+    "secondary_sidebar_items": ["page-toc", "sg_download_links", "sg_launcher_links"],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

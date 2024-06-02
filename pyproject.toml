@@ -85,14 +85,14 @@ include = [
 namespaces = true # to disable scanning PEP 420 namespaces (true by default)
 
 [tool.ruff]
+exclude = [
+  "__init__.py",
+]
 lint.select = [
+  "D",
   "E",
   "F",
   "W",
-  "D",
-]
-exclude = [
-  "__init__.py",
 ]
 lint.ignore = [
   # TODO: A lot of these we should actually fix eventually
@@ -100,40 +100,37 @@ lint.ignore = [
   "D401", # First line of docstring should be in imperative mood
 ]
 
-[tool.ruff.lint.pydocstyle]
-convention = "numpy"
-
-[tool.ruff.lint.per-file-ignores]
-"sphinx_gallery/tests/*.py" = [
-  "E501", # line too long
-  "D103", # Missing docstring in public function
+lint.per-file-ignores."*examples*/*.py" = [
+  "D205", # 1 blank line required between summary line and description
+  "D400", # First line should end with a period
+  "E402", # Module level import not at top of file
 ]
-"examples/no_output/plot_syntaxerror.py" = [
+lint.per-file-ignores."bin/*.py" = [
+  "D205", # 1 blank line required between summary line and description
+  "D400", # First line should end with a period
+]
+lint.per-file-ignores."examples/no_output/plot_syntaxerror.py" = [
   "E999", # SyntaxError
 ]
-"tutorials/plot_parse.py" = [
+lint.per-file-ignores."sphinx_gallery/tests/*.py" = [
+  "D103", # Missing docstring in public function
+  "E501", # line too long
+]
+lint.per-file-ignores."sphinx_gallery/tests/testconfs/src/*.py" = [
+  "D205", # 1 blank line required between summary line and description
+  "D400", # First line should end with a period
+]
+lint.per-file-ignores."tutorials/*.py" = [
+  "D205", # 1 blank line required between summary line and description
+  "D400", # First line should end with a period
+  "E402", # Module level import not at top of file
+]
+lint.per-file-ignores."tutorials/plot_parse.py" = [
   "D202", # [*] No blank lines allowed after function docstring (found 1)
   "D209", # Multi-line docstring closing quotes should be on a separate line
 ]
 # Example files cannot satisfy below rules due to header and imports in code blocks
-"*examples*/*.py" = [
-  "D400", # First line should end with a period
-  "E402", # Module level import not at top of file
-  "D205", # 1 blank line required between summary line and description
-]
-"tutorials/*.py" = [
-  "D400", # First line should end with a period
-  "E402", # Module level import not at top of file
-  "D205", # 1 blank line required between summary line and description
-]
-"bin/*.py" = [
-  "D400", # First line should end with a period
-  "D205", # 1 blank line required between summary line and description
-]
-"sphinx_gallery/tests/testconfs/src/*.py" = [
-  "D400", # First line should end with a period
-  "D205", # 1 blank line required between summary line and description
-]
+lint.pydocstyle.convention = "numpy"
 
 [tool.codespell]
 builtin = "clear,rare,informal,names,usage"

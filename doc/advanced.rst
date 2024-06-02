@@ -495,3 +495,76 @@ the ``sphinx_gallery.gen_gallery`` extension, you can use in ``conf.py``::
     extensions = ['sphinx_gallery.load_style']
 
 This will only cause the ``gallery.css`` file to be added to your build.
+
+Using Sphinx-Gallery sidebar components
+=======================================
+
+Sphinx-Gallery provides two built-in components (which are essentially `Sphinx templates
+<https://www.sphinx-doc.org/en/master/development/templating.html>`__):
+``sg_download_links`` and ``sg_launcher_links``. They are primarily designed for use in
+`secondary sidebars <https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/layout.html#secondary-sidebar-right>`__
+of ``pydata-sphinx-theme``, but also work with any other configuration that uses
+templates, e.g., `html_sidebars
+<https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_sidebars>`__.
+
+- ``sg_download_links``: Displays the download links of source code, Jupyter notebook,
+  and the zip of them for an example.
+- ``sg_launcher_links``: Displays the launcher links for JupyterLite and Binder for an
+  example.
+
+Note that it is safe to use these components on any page, even if the page is not a
+Sphinx-Gallery example page. The components work by grabbing specific Sphinx-Gallery
+classes from the page, hence for non-Sphinx-Gallery pages, the components will simply
+not render anything.
+
+Using these components does not mean that the original download and launcher links will
+be removed from the page. In fact, they cannot be removed as otherwise the components
+cannot grab the necessary information. To visually remove the original links in favor
+of the components, one can use ``display: none`` in CSS to hide them. The relevant
+classes are:
+
+.. literalinclude:: _static/hide_links.css
+   :language: css
+
+Example
+-------
+
+Here we will show an example of how to use these components in the secondary sidebar of
+``pydata-sphinx-theme``. Navigate around :ref:`examples-index` for an example of what
+the sidebar would look like.
+
+Configure the components to be used in the secondary sidebar:
+
+.. code-block:: python
+
+    html_theme_options = {
+        ...
+        "secondary_sidebar_items": ["page-toc", "sg_download_links", "sg_launcher_links"],
+    }
+
+Add the CSS to hide the original download and launcher links (suppose that the CSS is
+placed in ``_static/hide_links.css``):
+
+.. code-block:: python
+
+    html_static_path = ["_static"]
+
+    def setup(app):
+        # ...
+        app.add_css_file("hide_links.css")
+
+The above will include the CSS in all pages. If one wants to add the CSS only for
+certain pages, one can alternatively do the following (only add to pages that start with
+``auto_examples/``):
+
+.. code-block:: python
+
+    html_static_path = ["_static"]
+
+    def hide_sg_links(app, pagename, templatename, context, doctree):
+        if pagename.startswith("auto_examples/"):
+            app.add_css_file("hide_links.css")
+
+    def setup(app):
+        # ...
+        app.connect("html-page-context", hide_sg_links)

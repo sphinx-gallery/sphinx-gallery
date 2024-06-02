@@ -27,7 +27,14 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest", None),
 }
-
+html_sidebars = {
+    "**": [
+        "globaltoc.html",
+        "searchbox.html",
+        "sg_download_links.html",
+        "sg_launcher_links.html",
+    ]
+}
 
 sphinx_gallery_conf = {
     "doc_module": ("sphinx_gallery",),
