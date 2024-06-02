@@ -1,6 +1,5 @@
 include CHANGES.rst
 include LICENSE
-include requirements.txt
 include sphinx_gallery/_static/sg_gallery*.css
 include sphinx_gallery/_static/no_image.png
 include sphinx_gallery/_static/broken_example.png
@@ -31,7 +30,6 @@ recursive-exclude doc *
 exclude doc
 exclude *.yml
 global-exclude *.pyc
-exclude dev-requirements.txt
 recursive-exclude .circleci *
 exclude .circleci
 prune **/__pycache__

@@ -99,7 +99,6 @@ How to make a release
 2. Check and update **minimum supported (old)** Python and Sphinx versions (older than
    2 years) plus check for any **new** ones, and update if necessary in a PR:
 
-   - ``setup.py::python_requires`` (old)
-   - ``requirements.txt`` (old)
+   - ``pyproject.toml`` (old)
    - ``.github/workflows/tests.yml`` (old and new)
    - ``README.rst::Installation`` (old)
