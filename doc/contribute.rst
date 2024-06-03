@@ -14,14 +14,14 @@ if this document is unclear or missing a step.
 Development Workflow
 ====================
 
-If you are interested in contributing code or documentation, we strongly recommend
- that you install a development version of sphinx-gallery in a development environment.
- If you are unfamiliar with the git/github workflow, please see Github's guide to
- `contributing to projects
- <https://docs.github.com/en/get-started/quickstart/contributing-to-projects#creating-a-branch-to-work-on>`_.
+If you are interested in contributing code or documentation, we strongly
+recommend that you install a development version of sphinx-gallery in a
+development environment. If you are unfamiliar with the git/github workflow,
+please see Github's guide to `contributing to projects
+<https://docs.github.com/en/get-started/quickstart/contributing-to-projects#creating-a-branch-to-work-on>`_.
 
 This guide assumes familiarity with the Github workflow and focuses on aspects
- specific to contributing to Sphinx-Gallery.
+specific to contributing to Sphinx-Gallery.
 
 .. _checkout-source:
 
@@ -41,7 +41,7 @@ Create a Dedicated Environment
 ------------------------------
 
 We strongly recommend that you create a virtual environment for developing
- Sphinx Gallery to isolate it from other Python installations on your system.
+Sphinx Gallery to isolate it from other Python installations on your system.
 
 Create a new virtual environment:
 
@@ -69,9 +69,9 @@ installed from those files:
 
     python -m pip install --editable ".[dev]"
 
-Sphinx Gallery requires that `setuptools <https://setuptools.pypa.io/en/latest/setuptools.html>`_
- is installed. It is usually packaged with python, but if necessary can be installed
- using ``pip``:
+Sphinx Gallery requires that `setuptools
+<https://setuptools.pypa.io/en/latest/setuptools.html>`_ is installed. It is
+usually packaged with python, but if necessary can be installed using ``pip``:
 
 .. code-block:: console
 
@@ -84,8 +84,8 @@ Install for Development
 -----------------------
 
 Editable installs means that the environment Python will always use the most
- recently changed version of your code. To install Sphinx Gallery in editable mode,
- ensure you are in the sphinx-gallery directory
+recently changed version of your code. To install Sphinx Gallery in editable
+mode, ensure you are in the sphinx-gallery directory
 
 .. code-block:: console
 
@@ -122,7 +122,7 @@ Install pre-commit hooks
 ------------------------
 
 pre-commit hooks check for things like spelling and formatting in contributed
- code and documentation. To set up pre-commit hooks:
+code and documentation. To set up pre-commit hooks:
 
 .. code-block:: console
 
@@ -140,19 +140,20 @@ Guidelines
 Testing
 -------
 
-All code contributions should be tested. We use the `pytest <https://docs.pytest.org/>`_
- testing framework and ``tinybuild`` to build test pages.
- Tests can be found in :file:`sphinx_gallery/tests`.
+All code contributions should be tested. We use the `pytest
+<https://docs.pytest.org/>`_ testing framework and ``tinybuild`` to build test
+pages. Tests can be found in :file:`sphinx_gallery/tests`.
 
 .. _testing-tinybuild:
 
 tinybuild
 ^^^^^^^^^
 
-``tinybuild`` is designed as the minimal full sphinx doc build that you can run with
- ``make html`` from :file:`tinybuild/doc` to get a traditional build experience.
+``tinybuild`` is designed as the minimal full sphinx doc build that you can run
+with ``make html`` from :file:`tinybuild/doc` to get a traditional build
+experience.
 
-``tinybuild`` gets run in :file:`tests/test_full.py` to build a test page using the
- ``.rst`` document files in :file:`tests/doc/tinybuild`. The tests examine the ``html``
- output to verify the behavior of the directives in the ``.rst`` files.
-
+``tinybuild`` gets run in :file:`tests/test_full.py` to build a test page using
+the ``.rst`` document files in :file:`tests/doc/tinybuild`. The tests examine
+the ``html`` output to verify the behavior of the directives in the ``.rst``
+files.
