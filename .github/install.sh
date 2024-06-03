@@ -6,6 +6,7 @@ set -eo pipefail
 
 python -m pip install --upgrade pip setuptools wheel
 PLATFORM=$(python -c "import platform; print(platform.system())")
+DEP_OPT=""
 if [ "$DISTRIB" == "mamba" ]; then
     conda config --set solver libmamba
     # memory_profiler is unreliable on macOS and Windows (lots of zombie processes)
@@ -16,7 +17,8 @@ if [ "$DISTRIB" == "mamba" ]; then
 elif [ "$DISTRIB" == "minimal" ]; then
     PIP_DEPENDENCIES=""
 elif [ "$DISTRIB" == "pip" ]; then
-    PIP_DEPENDENCIES="-r dev-requirements.txt pillow pyqt6"
+    PIP_DEPENDENCIES="pillow pyqt6"
+    DEP_OPT="[dev]"
     # No VTK on Python 3.12 pip yet
     if [[ "$(python -c "import sys; print(sys.version)")" != "3.12"* ]]; then
         PIP_DEPENDENCIES="$PIP_DEPENDENCIES vtk"
@@ -39,7 +41,7 @@ set -x
 pip install $EXTRA_ARGS $PIP_DEPENDENCIES \
     pytest pytest-cov coverage pydata-sphinx-theme lxml \
     "sphinxcontrib-video>=0.2.1rc0" \
-    -e .
+    -e .${DEP_OPT}
 set +x
 
 # "pip install pygraphviz" does not guarantee graphviz binaries exist

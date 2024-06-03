@@ -36,6 +36,23 @@ dependencies = [
 optional-dependencies.animations = [
   "sphinxcontrib-video",
 ]
+optional-dependencies.dev = [
+  "absl-py",
+  "graphviz",
+  "joblib",
+  "jupyterlite-sphinx",
+  "lxml",
+  "matplotlib",
+  "numpy",
+  "packaging",
+  "plotly",
+  "pydata-sphinx-theme",
+  "pytest",
+  "pytest-coverage",
+  "seaborn",
+  "sphinxcontrib-video",
+  "statsmodels",
+]
 optional-dependencies.jupyterlite = [
   "jupyterlite-sphinx",
 ]
@@ -65,7 +82,7 @@ where = [
 include = [
   "sphinx_gallery*",
 ] # package names should match these glob patterns (["*"] by default)
-namespaces = false # to disable scanning PEP 420 namespaces (true by default)
+namespaces = true # allow scanning PEP 420 namespaces (true by default)
 
 [tool.ruff]
 exclude = [

@@ -62,12 +62,12 @@ Activate the virtual environment using one of the following:
 Install Dependencies
 --------------------
 
-Most of the Sphinx Gallery dependencies are listed in :file:`requirements.txt`
- and :file:`dev-requirements.txt` and can be installed from those files:
+Most of the Sphinx Gallery dependencies are listed in :file:`pyproject.toml` and can be
+installed from those files:
 
 .. code-block:: console
 
-    python -m pip install -r dev-requirements.txt
+    python -m pip install --editable ".[dev]"
 
 Sphinx Gallery requires that `setuptools <https://setuptools.pypa.io/en/latest/setuptools.html>`_
  is installed. It is usually packaged with python, but if necessary can be installed
