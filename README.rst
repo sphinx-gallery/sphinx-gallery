@@ -165,7 +165,7 @@ you can do:
     $ git clone https://github.com/sphinx-gallery/sphinx-gallery
     $ cd sphinx-gallery
     $ conda install graphviz  # if using conda, you can get graphviz this way
-    $ pip install -e ".[dev]"
+    $ pip install -e .[dev]
 
 
 Check that you are all set by running:
