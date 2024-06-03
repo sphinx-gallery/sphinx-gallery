@@ -387,6 +387,10 @@ def test_embed_links_and_styles(sphinx_app):
     assert ".html#matplotlib.figure.Figure.tight_layout" in lines
     assert "matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" in lines
     assert "matplotlib_configuration_api.html#matplotlib.RcParams" in lines
+    assert (
+        "mpl_toolkits.mplot3d.axes3d.Axes3D.plot.html#mpl_toolkits.mplot3d.axes3d.Axes3D.plot"
+        in lines
+    )
     assert "stdtypes.html#list" in lines
     assert "warnings.html#warnings.warn" in lines
     assert "itertools.html#itertools.compress" in lines
@@ -1349,7 +1353,7 @@ def test_recommend_n_examples(sphinx_app):
     # Check the same 3 related examples are shown
     assert "sphx-glr-auto-examples-plot-repr-py" in html
     assert "sphx-glr-auto-examples-plot-webp-py" in html
-    assert "sphx-glr-auto-examples-plot-matplotlib-backend-py" in html
+    assert "sphx-glr-auto-examples-plot-numpy-matplotlib-py" in html
 
 
 def test_sidebar_components_download_links(sphinx_app):
