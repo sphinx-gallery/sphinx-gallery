@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Seaborn example
 ===============
@@ -7,11 +6,9 @@ This example demonstrates a Seaborn plot. Figures produced Matplotlib **and**
 by any package that is based on Matplotlib (e.g., Seaborn), will be
 captured by default. See :ref:`image_scrapers` for details.
 """
+
 # Author: Michael Waskom & Lucy Liu
 # License: BSD 3 clause
-
-from __future__ import division, absolute_import, print_function
-
 
 import numpy as np
 import seaborn as sns
@@ -25,7 +22,7 @@ x_array = np.array([])
 rs = np.random.RandomState(8)
 for _ in range(15):
     x = np.linspace(0, 30 / 2, 30)
-    y = np.sin(x) + rs.normal(0, 1.5) + rs.normal(0, .3, 30)
+    y = np.sin(x) + rs.normal(0, 1.5) + rs.normal(0, 0.3, 30)
     y_array = np.append(y_array, y)
     x_array = np.append(x_array, x)
 

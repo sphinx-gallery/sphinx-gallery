@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
-"""
-Testing the rst files generator
-"""
-from __future__ import division, absolute_import, print_function
+"""Testing the rst files generator."""
+
 import os
 import tempfile
-import sys
 
 import pytest
 
@@ -17,16 +13,15 @@ import sphinx_gallery.docs_resolv as sg
 
 def test_embed_code_links_get_data():
     """Test that we can get data for code links."""
-    sg._get_data('https://numpy.org/doc/1.18/reference')
-    sg._get_data('http://scikit-learn.org/stable/')  # GZip
+    sg._get_data("https://numpy.org/doc/1.18/reference")
+    sg._get_data("http://scikit-learn.org/stable/")  # GZip
 
 
 def test_shelve(tmpdir):
-    """Test if shelve can be caches information
-    retrieved after file is deleted"""
-    test_string = 'test information'
+    """Test if shelve can cache and retrieve data after file is deleted."""
+    test_string = "test information"
     tmp_cache = str(tmpdir)
-    with tempfile.NamedTemporaryFile('w', delete=False) as f:
+    with tempfile.NamedTemporaryFile("w", delete=False) as f:
         f.write(test_string)
     try:
         # recovers data from temporary file and caches it in the shelve
@@ -39,13 +34,9 @@ def test_shelve(tmpdir):
     # test if cached data is available after temporary file has vanished
     assert sg.get_data(f.name, tmp_cache) == test_string
 
-    # shelve keys need to be str in python 2, deal with unicode input
-    if sys.version_info[0] == 2:
-        assert sg.get_data(f.name, tmp_cache) == test_string
-
 
 def test_parse_sphinx_docopts():
-    data = '''
+    data = """
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -56,17 +47,17 @@ def test_parse_sphinx_docopts():
         SOURCELINK_SUFFIX: '.txt'
       };
     </script>
-    '''
+    """
     assert sg.parse_sphinx_docopts(data) == {
-        'URL_ROOT': './',
-        'VERSION': '2.0.2',
-        'COLLAPSE_INDEX': False,
-        'FILE_SUFFIX': '.html',
-        'HAS_SOURCE': True,
-        'SOURCELINK_SUFFIX': '.txt'
+        "URL_ROOT": "./",
+        "VERSION": "2.0.2",
+        "COLLAPSE_INDEX": False,
+        "FILE_SUFFIX": ".html",
+        "HAS_SOURCE": True,
+        "SOURCELINK_SUFFIX": ".txt",
     }
 
-    data_sphinx_175 = '''
+    data_sphinx_175 = """
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT: document.getElementById("documentation_options")\
@@ -78,20 +69,20 @@ def test_parse_sphinx_docopts():
         SOURCELINK_SUFFIX: '.txt'
       };
     </script>
-    '''
+    """
     assert sg.parse_sphinx_docopts(data_sphinx_175) == {
-        'VERSION': '2.0.2',
-        'COLLAPSE_INDEX': False,
-        'FILE_SUFFIX': '.html',
-        'HAS_SOURCE': True,
-        'SOURCELINK_SUFFIX': '.txt'
+        "VERSION": "2.0.2",
+        "COLLAPSE_INDEX": False,
+        "FILE_SUFFIX": ".html",
+        "HAS_SOURCE": True,
+        "SOURCELINK_SUFFIX": ".txt",
     }
 
     with pytest.raises(ExtensionError):
-        sg.parse_sphinx_docopts('empty input')
+        sg.parse_sphinx_docopts("empty input")
 
     with pytest.raises(ExtensionError):
-        sg.parse_sphinx_docopts('DOCUMENTATION_OPTIONS = ')
+        sg.parse_sphinx_docopts("DOCUMENTATION_OPTIONS = ")
 
     with pytest.raises(ExtensionError):
-        sg.parse_sphinx_docopts('DOCUMENTATION_OPTIONS = {')
+        sg.parse_sphinx_docopts("DOCUMENTATION_OPTIONS = {")

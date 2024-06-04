@@ -1,0 +1,111 @@
+name: 'Tests'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
+  cancel-in-progress: true
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: '${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.distrib }} / ${{ matrix.sphinx_version }}'
+    timeout-minutes: 30
+    continue-on-error: true
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    env:
+      PYTHON_VERSION: '${{ matrix.python }}'
+      SPHINX_VERSION: '${{ matrix.sphinx_version }}'
+      DISTRIB: '${{ matrix.distrib }}'
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest  # newest possible
+            python: '3.12'
+            sphinx_version: dev
+            distrib: pip
+            locale: C
+          - os: ubuntu-latest  # oldest supported Python and Sphinx
+            python: '3.8'
+            sphinx_version: '4'
+            distrib: mamba
+          - os: ubuntu-latest
+            python: '3.11'
+            sphinx_version: '5'
+            distrib: pip
+          - os: ubuntu-latest
+            python: '3.11'
+            sphinx_version: '6'
+            distrib: mamba
+          - os: ubuntu-latest
+            python: '3.8'
+            sphinx_version: '7'
+            distrib: minimal
+          - os: macos-latest
+            python: '3.11'
+            sphinx_version: 'default'
+            distrib: mamba  # only use mamba on macOS to avoid Python shell issues
+          - os: windows-latest
+            python: '3.11'
+            sphinx_version: 'default'
+            distrib: pip
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Xvfb/OpenGL
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+          pyvista: false
+      # Python (if pip)
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+        if: matrix.distrib != 'mamba'
+      # Python (if conda)
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-name: test
+          init-shell: bash
+          create-args: >-
+            python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow
+            pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv
+            pygraphviz memory_profiler ipython pypandoc lxml conda-libmamba-solver mamba
+            ffmpeg
+        if: matrix.distrib == 'mamba'
+      # Make sure that things work even if the locale is set to C (which
+      # effectively means ASCII). Some of the input rst files have unicode
+      # characters and we need to deal with this gracefully.
+      - name: Set env vars
+        shell: bash -e {0}
+        run: |
+          echo "LC_ALL=C" >> $GITHUB_ENV
+          echo "LANG=C" >> $GITHUB_ENV
+          echo "LC_CTYPE=C" >> $GITHUB_ENV
+        if: matrix.locale == 'C'
+      - run: .github/install.sh
+      - run: pytest sphinx_gallery -v --tb=short
+      - name: Remove incompatible doc config entries
+        run: |
+          if [[ "$(uname)" == "Darwin" ]]; then
+            CMD="sed -i ''"
+          else
+            CMD="sed -i"
+          fi
+          $CMD "/show_memory/d" doc/conf.py
+          $CMD "/compress_images/d" doc/conf.py
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      # pydata-sphinx-theme is not compatible with Sphinx 4
+      - run: make -C doc SPHINXOPTS= html-noplot
+        if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
+      - run: make -C doc SPHINXOPTS= html -j 2
+        if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
+      - uses: codecov/codecov-action@v3

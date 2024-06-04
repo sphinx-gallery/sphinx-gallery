@@ -7,4 +7,5 @@ a "zero-size reduction" error in ``fig.savefig``.
 """
 
 import matplotlib.pyplot as plt
+
 fig = plt.figure()

@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.7
+    hooks:
+      - id: ruff-format
+        exclude: plot_syntaxerror
+      - id: ruff
+        args: ["--fix"]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli
+        files: ^sphinx_gallery/|^doc/|^.*_examples/|^tutorials/
+        types_or: [python, bib, rst, inc]
+
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: "0.49"
+    hooks:
+      - id: check-manifest
+        args: [--no-build-isolation]
+        additional_dependencies: [setuptools-scm]
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [--strict, -c, .yamllint.yml]
+
+  - repo: https://github.com/sphinx-contrib/sphinx-lint
+    rev: v0.9.1
+    hooks:
+      - id: sphinx-lint
+
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: 2.1.3
+    hooks:
+      - id: pyproject-fmt
+        additional_dependencies: [tox]
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.18
+    hooks:
+      - id: validate-pyproject

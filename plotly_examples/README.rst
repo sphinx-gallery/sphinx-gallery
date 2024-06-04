@@ -1,7 +1,7 @@
 .. _plotly-examples-index:
 
-Gallery of Examples using Plotly
-================================
+Plotly Gallery
+==============
 
 .. _general_plotly_examples:
 

@@ -1,9 +1,9 @@
-[('text',
+[('text',  # 0
   '\n'
   'Alternating text and code\n'
   '=========================\n'
   '\n'
-  'Sphinx-Gallery is capable of transforming Python files into rST files\n'
+  'Sphinx-Gallery is capable of transforming Python files into reST files\n'
   'with a notebook structure. For this to be used you need to respect some '
   'syntax\n'
   'rules. This example demonstrates how to alternate text and code blocks and '
@@ -11,12 +11,13 @@
   'edge cases. It was designed to be compared with the\n'
   ':download:`source Python script <plot_parse.py>`.',
   1),
-('text',
+('text',  # 1
   'This is the first text block and directly follows the header docstring '
   'above.\n',
-  14),
-('code', '\nimport numpy as np\n\n', 15),
-('code',
+  12,
+),
+('code', '\nimport numpy as np  # noqa: F401\n\n', 13),  # 2
+('code',  # 3
   '\n'
   "# You can separate code blocks using either a single line of ``#``'s\n"
   '# (>=20 columns), ``#%%``, or ``# %%``. For consistency, it is recommend '
@@ -25,13 +26,14 @@
   'project.\n'
   'A = 1\n'
   '\n'
-  'import matplotlib.pyplot as plt\n'
+  'import matplotlib.pyplot as plt  # noqa: F401\n'
   '\n',
-  19),
+  17),
 ('text',
   'Block splitters allow you alternate between code and text blocks **and**\n'
   'separate sequential blocks of code (above) and text (below).\n',
-  28),
+  26,
+),
 ('text',
   "A line of ``#``'s also works for separating blocks. The above line of "
   "``#``'s\n"
@@ -39,26 +41,29 @@
   'separated text blocks only shows as a new lines between text, in the '
   'rendered\n'
   'output.\n',
-  32),
-('code',
+  30),
+('code',  # 4
+  '\n'
   '\n'
   'def dummy():\n'
-  '    """This should not be part of a \'text\' block\'"""\n'
+  '    """This should not be part of a \'text\' block\'"""  # noqa: D404\n'
   '\n'
   '    # %%\n'
   '    # This comment inside a code block will remain in the code block\n'
   '    pass\n'
   '\n'
+  '\n'
   "# this line should not be part of a 'text' block\n"
   '\n',
-  36),
+  34),
 ('text',
   '####################################################################\n'
   '\n'
   'The above syntax makes a line cut in Sphinx. Note the space between the '
   'first\n'
   "``#`` and the line of ``#``'s.\n",
-  47),
+  47,
+),
 ('text',
   '.. warning::\n'
   '    The next kind of comments are not supported (notice the line of '
@@ -83,28 +88,32 @@
   '"""Free strings are not supported. They will be rendered as a code '
   'block"""\n'
   '\n',
-  69),
+  69,
+),
 ('text',
   'New lines can be included in your text block and the parser\n'
   'is capable of retaining this important whitespace to work with Sphinx.\n'
   'Everything after a block splitter and starting with ``#`` then one space,\n'
-  'is interpreted by Sphinx-Gallery to be a rST text block. Keep your text\n'
+  'is interpreted by Sphinx-Gallery to be a reST text block. Keep your text\n'
   'block together using ``#`` and a space at the beginning of each line.\n'
   '\n'
-  'rST header within text block\n'
-  '^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
-  73),
-('code', "\nprint('one')\n\n", 81),
+  'reST header within text block\n'
+  '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n',
+  73,
+),
+('code', '\nprint("one")\n\n', 81),
 ('code',
   '\n# another way to separate code blocks shown above\nB = 1\n\n',
-  86),
+  86,
+),
 ('text',
   'Code blocks containing Jupyter magic are executable\n'
   '    .. code-block:: bash\n'
   '\n'
   '      %%bash\n'
   '      # This could be run!\n\n',
-  91),
+  91,
+),
 ('text',
   'Last text block.\n'
   '\n'
@@ -113,4 +122,5 @@
   '.. literalinclude:: plot_parse.py\n'
   '\n'
   '\n',
-  99)]
+  99,
+)]

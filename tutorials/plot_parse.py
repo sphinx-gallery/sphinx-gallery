@@ -1,19 +1,17 @@
-# -*- coding: utf-8 -*-
 """
 Alternating text and code
 =========================
 
-Sphinx-Gallery is capable of transforming Python files into rST files
+Sphinx-Gallery is capable of transforming Python files into reST files
 with a notebook structure. For this to be used you need to respect some syntax
 rules. This example demonstrates how to alternate text and code blocks and some
 edge cases. It was designed to be compared with the
 :download:`source Python script <plot_parse.py>`."""
 
-
 # %%
 # This is the first text block and directly follows the header docstring above.
 
-import numpy as np
+import numpy as np  # noqa: F401
 
 # %%
 
@@ -22,7 +20,7 @@ import numpy as np
 # you use only one of the above three 'block splitter' options in your project.
 A = 1
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: F401
 
 # %%
 # Block splitters allow you alternate between code and text blocks **and**
@@ -34,12 +32,14 @@ import matplotlib.pyplot as plt
 # separated text blocks only shows as a new lines between text, in the rendered
 # output.
 
+
 def dummy():
-    """This should not be part of a 'text' block'"""
+    """This should not be part of a 'text' block'"""  # noqa: D404
 
     # %%
     # This comment inside a code block will remain in the code block
     pass
+
 
 # this line should not be part of a 'text' block
 
@@ -73,13 +73,13 @@ def dummy():
 # New lines can be included in your text block and the parser
 # is capable of retaining this important whitespace to work with Sphinx.
 # Everything after a block splitter and starting with ``#`` then one space,
-# is interpreted by Sphinx-Gallery to be a rST text block. Keep your text
+# is interpreted by Sphinx-Gallery to be a reST text block. Keep your text
 # block together using ``#`` and a space at the beginning of each line.
 #
-# rST header within text block
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# reST header within text block
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-print('one')
+print("one")
 
 # %%
 #

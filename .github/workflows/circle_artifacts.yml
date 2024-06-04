@@ -1,0 +1,13 @@
+on: [status]  # yamllint disable-line rule:truthy
+jobs:
+  circleci_artifacts_redirector_job:
+    runs-on: ubuntu-latest
+    name: Run CircleCI artifacts redirector
+    steps:
+      - name: GitHub Action step
+        uses: larsoner/circleci-artifacts-redirector-action@master
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          api-token: ${{ secrets.CIRCLECI_TOKEN }}
+          artifact-path: 0/html/index.html
+          circleci-jobs: build_docs

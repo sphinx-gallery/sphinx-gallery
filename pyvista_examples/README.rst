@@ -1,8 +1,7 @@
 .. _pyvista-examples-index:
 
-Gallery of Examples using PyVista
-=================================
-
+PyVista Gallery
+===============
 
 .. _general_pyvista_examples:
 

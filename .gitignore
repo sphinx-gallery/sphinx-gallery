@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .coverage*
+.vscode
 
 # C extensions
 *.so
@@ -44,7 +45,9 @@ coverage.xml
 *.orig
 .pytest_cache
 CHANGELOG.md
+CHANGELOG.rst
 junit-results.xml
+.github_changelog_generator/
 
 # Translations
 *.mo
@@ -56,16 +59,17 @@ junit-results.xml
 # Sphinx documentation
 doc/_build/
 doc/auto_examples
-doc/auto_mayavi_examples
 doc/auto_plotly_examples
 doc/auto_pyvista_examples
 doc/tutorials/
 doc/gen_modules/
+doc/sg_execution_times.rst
 
 # Test builds
-sphinx_gallery/tests/tinybuild/gen_modules/
-sphinx_gallery/tests/tinybuild/auto_examples/
-sphinx_gallery/tests/tinybuild/_build/
+sphinx_gallery/tests/tinybuild/doc/gen_modules/
+sphinx_gallery/tests/tinybuild/doc/auto_*/
+sphinx_gallery/tests/tinybuild/doc/_build/
+sphinx_gallery/tests/tinybuild/doc/sg_execution_times.rst
 sphinx_gallery/tests/tinybuild/tiny_html/
 junit-results.xml
 
@@ -81,3 +85,6 @@ target/
 
 # Jupyter notebooks
 .ipynb_checkpoints
+
+# Default JupyterLite content
+jupyterlite_contents

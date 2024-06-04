@@ -9,6 +9,7 @@ test this... we require Python 3 nowadays so the __future__ statements there
 don't do anything. So for now let's repurpose this to look at some
 backreferences. We should probably also change the filename in another PR!
 """
+
 # sphinx_gallery_thumbnail_path = '_static_nonstandard/demo.png'
 
 from sphinx_gallery.sorting import ExplicitOrder
@@ -17,5 +18,5 @@ from sphinx_gallery.scrapers import figure_rst, clean_modules
 ExplicitOrder([])  # must actually be used to become a backref target!
 
 assert 3 / 2 == 1.5
-assert figure_rst([], '') == ''
-assert clean_modules(dict(reset_modules=[]), '', 'before') is None
+assert figure_rst([], "") == ""
+assert clean_modules(dict(reset_modules=[]), "", "before") is None

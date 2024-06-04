@@ -283,6 +283,10 @@ div.sphx-glr-download a:hover {
   background-color: var(--sg-download-a-hover-background-color);
 }
 
+div.sphx-glr-sidebar-item img {
+  max-height: 20px;
+}
+
 .sphx-glr-example-title:target::before {
   display: block;
   content: "";

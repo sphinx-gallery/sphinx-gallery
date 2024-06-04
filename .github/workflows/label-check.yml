@@ -1,0 +1,27 @@
+name: Labels
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+
+env:
+  LABELS: ${{ join( github.event.pull_request.labels.*.name, ' ' ) }}
+
+jobs:
+  check-type-label:
+    name: Please wait for a maintainer to add a label
+    runs-on: ubuntu-latest
+    # skip for draft PRs
+    if: github.event.pull_request.draft == false
+    steps:
+      - run: |
+          echo "Labels: $LABELS"
+          if [[ "$LABELS" != *"bug"* ]] && [[ "$LABELS" != *"enhancement"* ]] && [[ "$LABELS" != *"api"* ]] && [[ "$LABELS" != *"maintenance"* ]] && [[ "$LABELS" != *"documentation"* ]]; then
+            echo "A maintainer needs to add an appropriate label before merge."
+            exit 1
+          fi

@@ -1,18 +1,27 @@
 include CHANGES.rst
 include LICENSE
-include requirements.txt
+include sphinx_gallery/_static/sg_gallery*.css
+include sphinx_gallery/_static/no_image.png
+include sphinx_gallery/_static/broken_example.png
+include sphinx_gallery/_static/binder_badge_logo.svg
+include sphinx_gallery/_static/jupyterlite_badge_logo.svg
+include sphinx_gallery/components/sg_download_links.html
+include sphinx_gallery/components/sg_launcher_links.html
 recursive-include examples *.py
 recursive-include examples *.txt
 recursive-include tutorials *.py
 recursive-include tutorials *.txt
-recursive-include mayavi_examples *.py
-recursive-include mayavi_examples *.rst
 recursive-include plotly_examples *.py
 recursive-include plotly_examples *.rst
 recursive-include pyvista_examples *.py
 recursive-include pyvista_examples *.rst
 recursive-include sphinx_gallery *.py
 recursive-include sphinx_gallery/tests/testconfs *
+recursive-exclude sphinx_gallery/tests/tinybuild/doc/_build *
+recursive-exclude sphinx_gallery/tests/tinybuild/doc/jupyterlite_contents *
+recursive-exclude sphinx_gallery/tests/tinybuild/doc/gen_modules *
+recursive-exclude sphinx_gallery/tests/tinybuild/doc/auto_* *
+exclude sphinx_gallery/tests/tinybuild/doc/sg_execution_times.rst
 recursive-include sphinx_gallery/tests/tinybuild *
 include sphinx_gallery/tests/reference_parse.txt
 exclude sphinx_gallery/_static/broken_stamp.svg
@@ -23,7 +32,6 @@ recursive-exclude doc *
 exclude doc
 exclude *.yml
 global-exclude *.pyc
-exclude dev-requirements.txt
 recursive-exclude .circleci *
 exclude .circleci
 prune **/__pycache__
@@ -31,3 +39,6 @@ exclude __pycache__
 recursive-exclude */gen_modules *
 exclude gen_modules
 exclude .DS_store
+exclude .github_changelog_generator
+exclude .git-blame-ignore-revs
+exclude .pre-commit-config.yaml

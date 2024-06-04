@@ -1,0 +1,164 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools",
+  "setuptools-scm",
+]
+
+[project]
+name = "sphinx-gallery"
+description = "A Sphinx extension that builds an HTML gallery of examples from any set of Python scripts."
+readme = "README.rst"
+license = { "text" = '3-clause BSD' }
+authors = [
+  { name = "Óscar Nájera", email = 'najera.oscar@gmail.com' },
+]
+requires-python = ">=3.8"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Framework :: Sphinx :: Extension",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dynamic = [
+  "version",
+]
+dependencies = [
+  "pillow",
+  "sphinx>=4",
+]
+optional-dependencies.animations = [
+  "sphinxcontrib-video",
+]
+optional-dependencies.dev = [
+  "absl-py",
+  "graphviz",
+  "joblib",
+  "jupyterlite-sphinx",
+  "lxml",
+  "matplotlib",
+  "numpy",
+  "packaging",
+  "plotly",
+  "pydata-sphinx-theme",
+  "pytest",
+  "pytest-coverage",
+  "seaborn",
+  "sphinxcontrib-video",
+  "statsmodels",
+]
+optional-dependencies.jupyterlite = [
+  "jupyterlite-sphinx",
+]
+optional-dependencies.recommender = [
+  "numpy",
+]
+optional-dependencies.show_api_usage = [
+  "graphviz",
+]
+optional-dependencies.show_memory = [
+  "memory-profiler",
+]
+urls.Documentation = "https://sphinx-gallery.github.io"
+urls.Source = "https://github.com/sphinx-gallery/sphinx-gallery"
+scripts.sphinx_gallery_py2jupyter = "sphinx_gallery.notebook:python_to_jupyter_cli"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { attr = "sphinx_gallery.__version__" }
+
+[tool.setuptools.packages.find]
+where = [
+  ".",
+] # list of folders that contain the packages (["."] by default)
+include = [
+  "sphinx_gallery*",
+] # package names should match these glob patterns (["*"] by default)
+namespaces = true # allow scanning PEP 420 namespaces (true by default)
+
+[tool.ruff]
+exclude = [
+  "__init__.py",
+]
+lint.select = [
+  "D",
+  "E",
+  "F",
+  "W",
+]
+lint.ignore = [
+  # TODO: A lot of these we should actually fix eventually
+  "D105", # Missing docstring in magic method
+  "D401", # First line of docstring should be in imperative mood
+]
+
+lint.per-file-ignores."*examples*/*.py" = [
+  "D205", # 1 blank line required between summary line and description
+  "D400", # First line should end with a period
+  "E402", # Module level import not at top of file
+]
+lint.per-file-ignores."bin/*.py" = [
+  "D205", # 1 blank line required between summary line and description
+  "D400", # First line should end with a period
+]
+lint.per-file-ignores."examples/no_output/plot_syntaxerror.py" = [
+  "E999", # SyntaxError
+]
+lint.per-file-ignores."sphinx_gallery/tests/*.py" = [
+  "D103", # Missing docstring in public function
+  "E501", # line too long
+]
+lint.per-file-ignores."sphinx_gallery/tests/testconfs/src/*.py" = [
+  "D205", # 1 blank line required between summary line and description
+  "D400", # First line should end with a period
+]
+lint.per-file-ignores."tutorials/*.py" = [
+  "D205", # 1 blank line required between summary line and description
+  "D400", # First line should end with a period
+  "E402", # Module level import not at top of file
+]
+lint.per-file-ignores."tutorials/plot_parse.py" = [
+  "D202", # [*] No blank lines allowed after function docstring (found 1)
+  "D209", # Multi-line docstring closing quotes should be on a separate line
+]
+# Example files cannot satisfy below rules due to header and imports in code blocks
+lint.pydocstyle.convention = "numpy"
+
+[tool.codespell]
+builtin = "clear,rare,informal,names,usage"
+# comma separated list of words to be ignored by codespell.
+# Words are case sensitive based on how they are written in the dictionary file
+ignore-words-list = "master"
+
+[tool.pytest.ini_options]
+addopts = [
+  "--color=yes",
+  "--cov-report=",
+  "--cov=sphinx_gallery",
+  "--durations=5",
+  "-r a",
+  "--tb=short",
+  "--junit-xml=junit-results.xml",
+]
+python_files = "tests/*.py"
+norecursedirs = "build _build auto_examples gen_modules sphinx_gallery/tests/tinybuild"
+filterwarnings = [
+  "ignore:.*HasTraits.trait_.*:DeprecationWarning",
+  "ignore:.*importing the ABCs.*:DeprecationWarning",
+  "ignore:np.loads is deprecated, use pickle.loads instead:DeprecationWarning",
+  "ignore:'U' mode is deprecated:DeprecationWarning",
+  "ignore:node class .* is already registered.*:",
+  "ignore:node.Node.* is obsoleted by Node.*:",
+]
+junit_family = "xunit2"
+markers = [
+  "conf_file: Configuration file.",
+]
