@@ -83,6 +83,7 @@ sphinx_gallery_conf = {
     "show_api_usage": True,
     "copyfile_regex": r".*\.rst",
     "recommender": {"enable": True, "n_examples": 3},
+    "parallel": 2,
 }
 nitpicky = True
 highlight_language = "python3"

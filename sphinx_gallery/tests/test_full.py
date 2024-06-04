@@ -55,6 +55,7 @@ pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
 manim = pytest.importorskip("matplotlib.animation")
 if not manim.writers.is_available("ffmpeg"):
     pytest.skip("ffmpeg is not available", allow_module_level=True)
+pytest.importorskip("joblib")
 
 
 @pytest.fixture(scope="module")

@@ -460,6 +460,19 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
 
     _update_gallery_conf_exclude_implicit_doc(gallery_conf)
 
+    if not isinstance(gallery_conf["parallel"], (bool, int)):
+        raise TypeError(
+            'gallery_conf["parallel"] must be bool or int, got '
+            f'{type(gallery_conf["parallel"])}'
+        )
+    if gallery_conf["parallel"] is True:
+        gallery_conf["parallel"] = app.parallel
+    if gallery_conf["parallel"]:
+        try:
+            import joblib  # noqa
+        except Exception:
+            raise ValueError("joblib must be importable when parallel mode is enabled")
+
     return gallery_conf
 
 
@@ -571,8 +584,11 @@ def generate_gallery_rst(app):
     Eventually, we create a toctree in the current index file
     which points to section index files.
     """
-    logger.info("generating gallery...", color="white")
     gallery_conf = app.config.sphinx_gallery_conf
+    extra = ""
+    if gallery_conf["parallel"]:
+        extra = f" (with parallel={gallery_conf['parallel']})"
+    logger.info(f"generating gallery{extra}...", color="white")
 
     seen_backrefs = set()
 
@@ -1356,7 +1372,8 @@ def _expected_failing_examples(gallery_conf):
 
 def _parse_failures(gallery_conf):
     """Split the failures."""
-    failing_examples = set(gallery_conf["failing_examples"].keys())
+    print(gallery_conf["failing_examples"])
+    failing_examples = set(gallery_conf["failing_examples"])
     expected_failing_examples = _expected_failing_examples(gallery_conf)
     failing_as_expected = failing_examples.intersection(expected_failing_examples)
     failing_unexpectedly = failing_examples.difference(expected_failing_examples)

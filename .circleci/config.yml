@@ -70,7 +70,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - bash_env
-      - run: sphinx-build doc doc/_build/html -nW --keep-going -b html 2>&1 | tee sphinx_log.txt
+      - run: sphinx-build doc doc/_build/html -nW --keep-going -b html -j2 2>&1 | tee sphinx_log.txt
       - run:
           name: Check sphinx log for warnings (which are treated as errors)
           when: always

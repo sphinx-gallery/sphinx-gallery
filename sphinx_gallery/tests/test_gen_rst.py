@@ -477,9 +477,18 @@ def _generate_rst(gallery_conf, fname, content):
         os.path.join(gallery_conf["examples_dir"], fname), mode="w", encoding="utf-8"
     ) as f:
         f.write("\n".join(content))
+    with codecs.open(
+        os.path.join(gallery_conf["examples_dir"], "README.txt"), "w", "utf8"
+    ):
+        pass
+
     # generate rst file
-    sg.generate_file_rst(
-        fname, gallery_conf["gallery_dir"], gallery_conf["examples_dir"], gallery_conf
+    generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        include_toctree=False,
     )
     # read rst file and check if it contains code output
     rst_fname = os.path.splitext(fname)[0] + ".rst"

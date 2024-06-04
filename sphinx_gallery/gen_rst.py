@@ -398,7 +398,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir, f"sphx_glr_{base_image_name}_thumb.{ext}")
 
-    if src_file in gallery_conf["failing_examples"]:
+    if script_vars.get("formatted_exception", None):
         img = os.path.join(glr_path_static(), "broken_example.png")
     elif os.path.exists(thumbnail_image_path):
         img = thumbnail_image_path
@@ -543,18 +543,25 @@ def generate_dir_rst(
         length=len(sorted_listdir),
     )
 
-    # if gallery_conf['parallel']:
-    #    if gallery_conf["parallel"] is True:
     parallel = list
     p_fun = generate_file_rst
+    if gallery_conf["parallel"]:
+        from joblib import Parallel, delayed
 
-    # TODO: seen_backrefs gets modified in place and needs to be merged
+        p_fun = delayed(generate_file_rst)
+        parallel = Parallel(n_jobs=gallery_conf["parallel"])
+
     results = parallel(
-        p_fun(fname, target_dir, src_dir, gallery_conf, seen_backrefs)
-        for fname in iterator
+        p_fun(fname, target_dir, src_dir, gallery_conf) for fname in iterator
     )
-    for fname, (intro, title, (t, mem)) in zip(sorted_listdir, results):
+    for fi, (intro, title, (t, mem), out_vars) in enumerate(results):
+        fname = sorted_listdir[fi]
         src_file = os.path.normpath(os.path.join(src_dir, fname))
+        gallery_conf["titles"][src_file] = title
+        if "formatted_exception" in out_vars:
+            gallery_conf["failing_examples"][src_file] = out_vars["formatted_exception"]
+        if "passing" in out_vars:
+            gallery_conf["passing_examples"].append(src_file)
         costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
         gallery_item_filename = (
             (Path(build_target_dir) / fname).with_suffix("").as_posix()
@@ -564,6 +571,18 @@ def generate_dir_rst(
         )
         entries_text.append(this_entry)
         subsection_toctree_filenames.append("/" + gallery_item_filename)
+
+        # Write backreferences
+        if "backrefs" in out_vars:
+            _write_backreferences(
+                out_vars["backrefs"],
+                seen_backrefs,
+                gallery_conf,
+                target_dir,
+                fname,
+                intro,
+                title,
+            )
 
     for entry_text in entries_text:
         subsection_index_content += entry_text
@@ -688,7 +707,7 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     if gallery_conf["abort_on_example_error"]:
         raise
     # Stores failing file
-    gallery_conf["failing_examples"][src_file] = formatted_exception
+    script_vars["formatted_exception"] = formatted_exception
     script_vars["execute_script"] = False
 
     # Ensure it's marked as our style
@@ -1141,12 +1160,12 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
         # shall not cache md5sum) and has built correctly
         with open(script_vars["target_file"] + ".md5", "w") as file_checksum:
             file_checksum.write(get_md5sum(script_vars["target_file"], "t"))
-        gallery_conf["passing_examples"].append(script_vars["src_file"])
+        script_vars["passing"] = True
 
     return output_blocks, time_elapsed
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=None):
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """Generate the rst file for a given example.
 
     Parameters
@@ -1159,18 +1178,21 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         Absolute path to directory where source examples are stored.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery.
-    seen_backrefs : set
-        The seen backreferences.
 
     Returns
     -------
     intro: str
         The introduction of the example.
+    title : str
+        The example title.
     cost : tuple
         A tuple containing the ``(time_elapsed, memory_used)`` required to run the
         script.
+    backrefs : set
+        The backrefs seen in this example.
+    out_vars : dict
+        Variables used to run the script.
     """
-    seen_backrefs = set() if seen_backrefs is None else seen_backrefs
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     target_file = Path(target_dir) / fname
     _replace_md5(src_file, target_file, "copy", mode="t")
@@ -1187,7 +1209,6 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     )
 
     intro, title = extract_intro_and_title(fname, script_blocks[0].content)
-    gallery_conf["titles"][src_file] = title
 
     executable = executable_script(src_file, gallery_conf)
 
@@ -1199,11 +1220,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
             else:
                 gallery_conf["stale_examples"].append(str(target_file))
         if do_return:
-            return intro, title, (0, 0)
+            return intro, title, (0, 0), {}
 
     image_dir = os.path.join(target_dir, "images")
-    if not os.path.exists(image_dir):
-        os.makedirs(image_dir)
+    os.makedirs(image_dir, exist_ok=True)
 
     base_image_name = os.path.splitext(fname)[0]
     image_fname = "sphx_glr_" + base_image_name + "_{0:03}.png"
@@ -1315,19 +1335,18 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         )
     }
 
-    # Write backreferences
-    _write_backreferences(
-        backrefs, seen_backrefs, gallery_conf, target_dir, fname, intro, title
-    )
-
     # This can help with garbage collection in some instances
     if global_variables is not None and "___" in global_variables:
         del global_variables["___"]
+    out_vars = dict(backrefs=backrefs)
+    for key in ("passing", "formatted_exception"):
+        if key in script_vars:
+            out_vars[key] = script_vars[key]
     del script_vars, global_variables  # don't keep these during reset
     if executable and gallery_conf["reset_modules_order"] in ["after", "both"]:
         clean_modules(gallery_conf, fname, "after")
 
-    return intro, title, (time_elapsed, memory_used)
+    return intro, title, (time_elapsed, memory_used), out_vars
 
 
 EXAMPLE_HEADER = """
