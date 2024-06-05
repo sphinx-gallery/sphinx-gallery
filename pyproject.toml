@@ -39,6 +39,7 @@ optional-dependencies.animations = [
 optional-dependencies.dev = [
   "absl-py",
   "graphviz",
+  "intersphinx-registry",
   "joblib",
   "jupyterlite-sphinx",
   "lxml",
@@ -55,6 +56,9 @@ optional-dependencies.dev = [
 ]
 optional-dependencies.jupyterlite = [
   "jupyterlite-sphinx",
+]
+optional-dependencies.parallel = [
+  "joblib",
 ]
 optional-dependencies.recommender = [
   "numpy",
