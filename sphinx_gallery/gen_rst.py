@@ -1637,7 +1637,9 @@ def _get_call_memory_and_base(gallery_conf, *, update=False):
     memory_base = 0.0
 
     if gallery_conf["show_memory"] and gallery_conf["plot_gallery"]:
-        if gallery_conf["parallel"]:
+        if callable(gallery_conf["show_memory"]):
+            call_memory = gallery_conf["show_memory"]
+        elif gallery_conf["parallel"]:
             if update:
                 logger.warning(
                     f"{gallery_conf['show_memory']=} disabled due to "
