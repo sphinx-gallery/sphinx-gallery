@@ -397,7 +397,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir, f"sphx_glr_{base_image_name}_thumb.{ext}")
 
-    if script_vars.get("formatted_exception", None):
+    if "formatted_exception" in script_vars:
         img = os.path.join(glr_path_static(), "broken_example.png")
     elif os.path.exists(thumbnail_image_path):
         img = thumbnail_image_path
@@ -564,7 +564,7 @@ def generate_dir_rst(
         elif "passing" in out_vars:
             assert "stale" not in out_vars
             gallery_conf["passing_examples"].append(src_file)
-        else:  # should be guaranteed stale is in out_vars
+        elif "stale" in out_vars:  # non-executable files have none of these three
             gallery_conf["stale_examples"].append(out_vars["stale"])
         costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
         gallery_item_filename = (
