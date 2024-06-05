@@ -1632,13 +1632,15 @@ def _sg_call_memory_noop(func):
 
 
 def _get_call_memory_and_base(gallery_conf, *, update=False):
+    show_memory = gallery_conf["show_memory"]
+
     # Default to no-op version
     call_memory = _sg_call_memory_noop
     memory_base = 0.0
 
-    if gallery_conf["show_memory"] and gallery_conf["plot_gallery"]:
-        if callable(gallery_conf["show_memory"]):
-            call_memory = gallery_conf["show_memory"]
+    if show_memory and gallery_conf["plot_gallery"]:
+        if callable(show_memory):
+            call_memory = show_memory
         elif gallery_conf["parallel"]:
             if update:
                 logger.warning(
