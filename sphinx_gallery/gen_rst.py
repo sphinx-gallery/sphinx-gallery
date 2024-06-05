@@ -548,7 +548,11 @@ def generate_dir_rst(
         from joblib import Parallel, delayed
 
         p_fun = delayed(generate_file_rst)
-        parallel = Parallel(n_jobs=gallery_conf["parallel"])
+        parallel = Parallel(
+            n_jobs=gallery_conf["parallel"],
+            pre_dispatch="n_jobs",
+            prefer="processes",
+        )
 
     results = parallel(
         p_fun(fname, target_dir, src_dir, gallery_conf) for fname in iterator
