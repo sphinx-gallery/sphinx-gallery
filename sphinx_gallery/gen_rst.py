@@ -63,8 +63,11 @@ from . import py_source_parser
 from .block_parser import BlockParser
 
 from .notebook import jupyter_notebook, save_notebook
-from .interactive_example import gen_binder_rst
-from .interactive_example import gen_jupyterlite_rst
+from .interactive_example import (
+    _add_jupyterlite_badge_logo,
+    gen_binder_rst,
+    gen_jupyterlite_rst,
+)
 
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -369,8 +372,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
         Sphinx-Gallery configuration dictionary
     """
     thumb_dir = os.path.join(os.path.dirname(image_path_template), "thumb")
-    if not os.path.exists(thumb_dir):
-        os.makedirs(thumb_dir)
+    os.makedirs(thumb_dir, exist_ok=True)
 
     # read specification of the figure to display as thumbnail from main text
     thumbnail_number = file_conf.get("thumbnail_number", None)
@@ -505,8 +507,15 @@ def generate_dir_rst(
     # Add empty lines to avoid bug in issue #165
     subsection_index_content += "\n\n"
 
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
+    # Make all dirs ahead of time to avoid collisions in parallel processing
+    os.makedirs(target_dir, exist_ok=True)
+    image_dir = os.path.join(target_dir, "images")
+    os.makedirs(image_dir, exist_ok=True)
+    thumb_dir = os.path.join(image_dir, "thumb")
+    os.makedirs(thumb_dir, exist_ok=True)
+    if gallery_conf["jupyterlite"] is not None:
+        _add_jupyterlite_badge_logo(image_dir)
+
     # get filenames
     listdir = [
         fname

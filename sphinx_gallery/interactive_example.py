@@ -168,8 +168,7 @@ def _copy_binder_reqs(app, binder_conf):
             )
 
     binder_folder = os.path.join(app.outdir, "binder")
-    if not os.path.isdir(binder_folder):
-        os.makedirs(binder_folder)
+    os.makedirs(binder_folder, exist_ok=True)
 
     # Copy over the requirements to the output directory
     for path in path_reqs:
@@ -207,7 +206,7 @@ def _copy_binder_notebooks(app):
     binder_conf = gallery_conf["binder"]
     notebooks_dir = os.path.join(app.outdir, binder_conf["notebooks_dir"])
     shutil.rmtree(notebooks_dir, ignore_errors=True)
-    os.makedirs(notebooks_dir)
+    os.makedirs(notebooks_dir, exist_ok=True)
 
     if not isinstance(gallery_dirs, (list, tuple)):
         gallery_dirs = [gallery_dirs]
@@ -425,14 +424,8 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
 
     # Similar work-around for badge file as in
     # gen_binder_rst
-    physical_path = os.path.join(
-        os.path.dirname(fpath), "images", "jupyterlite_badge_logo.svg"
-    )
-    os.makedirs(os.path.dirname(physical_path), exist_ok=True)
-    if not os.path.isfile(physical_path):
-        shutil.copyfile(
-            os.path.join(glr_path_static(), "jupyterlite_badge_logo.svg"), physical_path
-        )
+    image_dir = os.path.join(os.path.dirname(fpath), "images")
+    _add_jupyterlite_badge_logo(image_dir)
     rst = (
         "\n"
         "  .. container:: lite-badge\n\n"
@@ -442,6 +435,15 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
         "      :width: 150 px\n"
     ).format(lite_url)
     return rst
+
+
+def _add_jupyterlite_badge_logo(image_dir):
+    os.makedirs(image_dir, exist_ok=True)
+    physical_path = os.path.join(image_dir, "jupyterlite_badge_logo.svg")
+    if not os.path.isfile(physical_path):
+        shutil.copyfile(
+            os.path.join(glr_path_static(), "jupyterlite_badge_logo.svg"), physical_path
+        )
 
 
 def check_jupyterlite_conf(jupyterlite_conf, app):

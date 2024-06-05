@@ -460,12 +460,8 @@ def test_embed_links_and_styles(sphinx_app):
     )  # noqa: E501
     assert dummy_class_prop.search(lines) is not None
 
-    try:
-        import memory_profiler  # noqa: F401
-    except ImportError:
-        assert "memory usage" not in lines
-    else:
-        assert "memory usage" in lines
+    # We do a parallel build so there should not be memory usage reported
+    assert "memory usage" not in lines
 
     # CSS styles
     assert 'class="sphx-glr-signature"' in lines
@@ -613,7 +609,7 @@ def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
                 op.getmtime(new),
                 atol=1e-3,
                 rtol=1e-20,
-                err_msg=op.basename(orig),
+                err_msg=f"{op.basename(orig)} was updated but should not have been",
             )
 
 
@@ -979,7 +975,7 @@ def test_error_messages(sphinx_app, name, want):
     """Test that informative error messages are added."""
     src_dir = Path(sphinx_app.srcdir)
     rst = (src_dir / "auto_examples" / (name + ".rst")).read_text("utf-8")
-    assert re.match(want, rst, re.DOTALL) is not None
+    assert re.match(want, rst, re.DOTALL) is not None, f"{name} should have had: {want}"
 
 
 @pytest.mark.parametrize(

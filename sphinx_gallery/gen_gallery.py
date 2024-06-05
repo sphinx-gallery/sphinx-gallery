@@ -545,8 +545,7 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
 
     if bool(gallery_conf["backreferences_dir"]):
         backreferences_dir = os.path.join(srcdir, gallery_conf["backreferences_dir"])
-        if not os.path.exists(backreferences_dir):
-            os.makedirs(backreferences_dir)
+        os.makedirs(backreferences_dir, exist_ok=True)
 
     return list(zip(examples_dirs, gallery_dirs))
 
@@ -1339,8 +1338,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     # Actually write it
     fname = os.path.normpath(os.path.join(target_dir, gallery_conf["junit"]))
     junit_dir = os.path.dirname(fname)
-    if not os.path.isdir(junit_dir):
-        os.makedirs(junit_dir)
+    os.makedirs(junit_dir, exist_ok=True)
     with codecs.open(fname, "w", encoding="utf-8") as fid:
         fid.write(output)
 
