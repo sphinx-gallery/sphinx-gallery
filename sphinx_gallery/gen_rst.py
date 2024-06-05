@@ -26,7 +26,6 @@ import stat
 from textwrap import indent
 import warnings
 from shutil import copyfile
-import subprocess
 import sys
 import traceback
 import codeop
@@ -562,6 +561,8 @@ def generate_dir_rst(
             gallery_conf["failing_examples"][src_file] = out_vars["formatted_exception"]
         if "passing" in out_vars:
             gallery_conf["passing_examples"].append(src_file)
+        if "stale" in out_vars:
+            gallery_conf["stale_examples"].append(out_vars["stale"])
         costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
         gallery_item_filename = (
             (Path(build_target_dir) / fname).with_suffix("").as_posix()
@@ -765,24 +766,13 @@ class _exec_once:
                         sys.modules["__main__"] = old_main
 
 
+@lru_cache()
 def _get_memory_base():
-    """Get the base amount of memory used by running a Python process."""
+    """Get the base amount of memory used by the current Python process."""
     # There might be a cleaner way to do this at some point
     from memory_profiler import memory_usage
 
-    if sys.platform in ("win32", "darwin"):
-        sleep, timeout = (1, 2)
-    else:
-        sleep, timeout = (0.5, 1)
-    proc = subprocess.Popen(
-        [sys.executable, "-c", f"import time, sys; time.sleep({sleep}); sys.exit(0)"],
-        close_fds=True,
-    )
-    memories = memory_usage(proc, interval=1e-3, timeout=timeout)
-    proc.communicate(timeout=timeout)
-    # On OSX sometimes the last entry can be None
-    memories = [mem for mem in memories if mem is not None] + [0.0]
-    memory_base = max(memories)
+    memory_base = memory_usage(max_usage=True)
     return memory_base
 
 
@@ -1194,6 +1184,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         Variables used to run the script.
     """
     src_file = os.path.normpath(os.path.join(src_dir, fname))
+    out_vars = dict()
     target_file = Path(target_dir) / fname
     _replace_md5(src_file, target_file, "copy", mode="t")
 
@@ -1218,9 +1209,9 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             if gallery_conf["run_stale_examples"]:
                 do_return = False
             else:
-                gallery_conf["stale_examples"].append(str(target_file))
+                out_vars["stale"] = str(target_file)
         if do_return:
-            return intro, title, (0, 0), {}
+            return intro, title, (0, 0), out_vars
 
     image_dir = os.path.join(target_dir, "images")
     os.makedirs(image_dir, exist_ok=True)
@@ -1338,7 +1329,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     # This can help with garbage collection in some instances
     if global_variables is not None and "___" in global_variables:
         del global_variables["___"]
-    out_vars = dict(backrefs=backrefs)
+    out_vars["backrefs"] = backrefs
     for key in ("passing", "formatted_exception"):
         if key in script_vars:
             out_vars[key] = script_vars[key]
@@ -1638,21 +1629,24 @@ def _sg_call_memory_noop(func):
     return 0.0, func()
 
 
-def _get_call_memory_and_base(gallery_conf):
-    show_memory = gallery_conf["show_memory"]
-
+def _get_call_memory_and_base(gallery_conf, *, update=False):
     # Default to no-op version
     call_memory = _sg_call_memory_noop
     memory_base = 0.0
 
-    if show_memory:
-        if callable(show_memory):
-            call_memory = show_memory
-        elif gallery_conf["plot_gallery"]:  # True-like
-            out = _get_memprof_call_memory()
+    if gallery_conf["show_memory"] and gallery_conf["plot_gallery"]:
+        if gallery_conf["parallel"]:
+            if update:
+                logger.warning(
+                    f"{gallery_conf['show_memory']=} disabled due to "
+                    f"{gallery_conf['parallel']=}."
+                )
+                gallery_conf["show_memory"] = False
+        else:
+            out = _get_memprof_call_memory(warn=update)
             if out is not None:
                 call_memory, memory_base = out
-            else:
+            elif update:
                 gallery_conf["show_memory"] = False
 
     assert callable(call_memory)
@@ -1671,14 +1665,14 @@ def _sg_call_memory_memprof(func):
     return mem, out
 
 
-@lru_cache()
-def _get_memprof_call_memory():
+def _get_memprof_call_memory(*, warn=False):
     try:
         from memory_profiler import memory_usage  # noqa
     except ImportError:
-        logger.warning(
-            "Please install 'memory_profiler' to enable peak memory measurements."
-        )
+        if warn:
+            logger.warning(
+                "Please install 'memory_profiler' to enable peak memory measurements."
+            )
         return None
     else:
         return _sg_call_memory_memprof, _get_memory_base()

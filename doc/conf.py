@@ -369,27 +369,9 @@ try:
     import plotly.io
 except ImportError:
     plotly = None
-
-
-def reset_others(gallery_conf, fname):
-    """Reset plotting functions."""
-    if pyvista is not None:
-        pyvista.OFF_SCREEN = True
-        # Preferred plotting style for documentation
-        pyvista.set_plot_theme("document")
-        pyvista.global_theme.window_size = [1024, 768]
-        pyvista.global_theme.font.size = 22
-        pyvista.global_theme.font.label_size = 22
-        pyvista.global_theme.font.title_size = 22
-        pyvista.global_theme.return_cpos = False
-        # necessary when building the sphinx gallery
-        pyvista.BUILDING_GALLERY = True
-        pyvista.set_jupyter_backend(None)
-    if plotly is not None:
-        plotly.io.renderers.default = "sphinx_gallery"
-        examples_dirs.append("../plotly_examples")
-        gallery_dirs.append("auto_plotly_examples")
-
+else:
+    examples_dirs.append("../plotly_examples")
+    gallery_dirs.append("auto_plotly_examples")
 
 min_reported_time = 0
 if "SOURCE_DATE_EPOCH" in os.environ:
@@ -405,7 +387,7 @@ sphinx_gallery_conf = {
     "examples_dirs": examples_dirs,
     "gallery_dirs": gallery_dirs,
     "image_scrapers": image_scrapers,
-    "reset_modules": ("matplotlib", "seaborn", reset_others),
+    "reset_modules": ("matplotlib", "seaborn", "sg_doc_build.reset_others"),
     "compress_images": ("images", "thumbnails"),
     # specify the order of examples to be according to filename
     "within_subsection_order": "FileNameSortKey",
@@ -436,7 +418,7 @@ sphinx_gallery_conf = {
     "image_srcset": ["2x"],
     "nested_sections": True,
     "show_api_usage": True,
-    "parallel": True,
+    "parallel": True,  # can run with -j2 for example for speed
 }
 
 # Remove matplotlib agg warnings from generated doc when using plt.show

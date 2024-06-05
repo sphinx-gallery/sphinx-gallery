@@ -226,8 +226,23 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             + type(gallery_conf["ignore_repr_types"])
         )
 
+    if not isinstance(gallery_conf["parallel"], (bool, int)):
+        raise TypeError(
+            'gallery_conf["parallel"] must be bool or int, got '
+            f'{type(gallery_conf["parallel"])}'
+        )
+    if gallery_conf["parallel"] is True:
+        gallery_conf["parallel"] = app.parallel
+    if gallery_conf["parallel"] == 1:
+        gallery_conf["parallel"] = False
+    if gallery_conf["parallel"]:
+        try:
+            import joblib  # noqa
+        except Exception:
+            raise ValueError("joblib must be importable when parallel mode is enabled")
+
     # deal with show_memory
-    _get_call_memory_and_base(gallery_conf)
+    _get_call_memory_and_base(gallery_conf, update=True)
 
     # check callables
     for key in (
@@ -459,19 +474,6 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     _get_class(gallery_conf, "within_subsection_order")  # make sure it works
 
     _update_gallery_conf_exclude_implicit_doc(gallery_conf)
-
-    if not isinstance(gallery_conf["parallel"], (bool, int)):
-        raise TypeError(
-            'gallery_conf["parallel"] must be bool or int, got '
-            f'{type(gallery_conf["parallel"])}'
-        )
-    if gallery_conf["parallel"] is True:
-        gallery_conf["parallel"] = app.parallel
-    if gallery_conf["parallel"]:
-        try:
-            import joblib  # noqa
-        except Exception:
-            raise ValueError("joblib must be importable when parallel mode is enabled")
 
     return gallery_conf
 
