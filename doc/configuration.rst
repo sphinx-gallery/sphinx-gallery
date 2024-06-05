@@ -2376,8 +2376,11 @@ Nesting gallery sections
 
 By default, ``nested_sections=True``.
 In this case, for each folder present in the gallery's root folder,
-Sphinx-Gallery expects to find a readme and uses it to build
-a specific index file for this subsection.
+Sphinx-Gallery expects to find a file ``GALLERY_HEADER.[ext]``, where
+``[ext]`` is 'txt' or an entry in ``sphinx_gallery_conf["source_suffix"]``
+(or ``README.[ext]`` for backward-compatibility). Default recommendation
+is to use ``GALLERY_HEADER.rst``. Sphinx-gallery uses that file
+to build a specific index file for this subsection.
 This index file will contain the section's description and a toctree
 linking to each gallery item which belongs to this subsection.
 
@@ -2409,7 +2412,8 @@ Manually passing files
 
 By default, Sphinx-Gallery creates all the files that are written in the
 sphinx-build directory, either by generating rst and images from a ``*.py``
-in the gallery-source, or from  creating ``index.rst`` from ``README.txt``
+in the gallery-source, or from  creating ``index.rst`` from
+``GALLERY_HEADER.rst`` (or ``README.[rst/txt]`` for backward-compatibility)
 in the gallery-source.  However, sometimes it is desirable to pass files
 from the gallery-source to the sphinx-build.  For example, you may want
 to pass an image that a gallery refers to, but does not generate itself.
@@ -2427,15 +2431,15 @@ across rst files. ::
 Note that if you copy across files rst files, for instance, it is your
 responsibility to ensure that they are in a sphinx ``toctree`` somewhere
 in your document.  You can, of course, add a ``toctree`` to your
-``README.txt``.
+``GALLERY_HEADER.rst``.
 
 Manually passing ``index.rst``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can bypass Sphinx-Gallery automatically creating an  ``index.rst`` from a
-``README.txt`` in a gallery directory or subdirectory. If your
+``GALLERY_HEADER.rst`` in a gallery directory or subdirectory. If your
 ``copyfile_regex`` includes ``index.rst``, and you have an ``index.rst`` in the
-gallery-source instead of the README, Sphinx-Gallery will use that instead of
+gallery-source instead of the 'GALLERY_HEADER' file, Sphinx-Gallery will use that instead of
 the index it automatically makes.  If you do this, you are responsible for
 adding your own Sphinx ``toctree`` in that index (or elsewhere in your Sphinx
 documentation) that includes any gallery items or other files in that

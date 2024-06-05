@@ -627,15 +627,15 @@ def test_exclude_implicit(gallery_conf, exclusion, expected, monkeypatch, req_pi
 def test_gen_dir_rst(gallery_conf, ext):
     """Test gen_dir_rst."""
     print(os.listdir(gallery_conf["examples_dir"]))
-    fname_readme = os.path.join(gallery_conf["src_dir"], "README.txt")
-    with open(fname_readme, "wb") as fid:
+    fname_gallery_header = os.path.join(gallery_conf["src_dir"], "README.txt")
+    with open(fname_gallery_header, "wb") as fid:
         fid.write("Testing\n=======\n\nÓscar here.".encode())
-    fname_out = os.path.splitext(fname_readme)[0] + ext
-    if fname_readme != fname_out:
-        shutil.move(fname_readme, fname_out)
+    fname_out = os.path.splitext(fname_gallery_header)[0] + ext
+    if fname_gallery_header != fname_out:
+        shutil.move(fname_gallery_header, fname_out)
     args = (gallery_conf["src_dir"], gallery_conf["gallery_dir"], gallery_conf, [])
     if ext == ".bad":  # not found with correct ext
-        with pytest.raises(ExtensionError, match="does not have a README"):
+        with pytest.raises(ExtensionError, match="does not have a GALLERY_HEADER"):
             generate_dir_rst(*args)
     else:
         out = generate_dir_rst(*args)
