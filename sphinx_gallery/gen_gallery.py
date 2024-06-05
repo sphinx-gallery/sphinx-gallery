@@ -1374,7 +1374,6 @@ def _expected_failing_examples(gallery_conf):
 
 def _parse_failures(gallery_conf):
     """Split the failures."""
-    print(gallery_conf["failing_examples"])
     failing_examples = set(gallery_conf["failing_examples"])
     expected_failing_examples = _expected_failing_examples(gallery_conf)
     failing_as_expected = failing_examples.intersection(expected_failing_examples)

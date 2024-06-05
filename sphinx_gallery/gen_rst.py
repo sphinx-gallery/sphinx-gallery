@@ -558,10 +558,13 @@ def generate_dir_rst(
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         gallery_conf["titles"][src_file] = title
         if "formatted_exception" in out_vars:
+            assert "passing" not in out_vars
+            assert "stale" not in out_vars
             gallery_conf["failing_examples"][src_file] = out_vars["formatted_exception"]
-        if "passing" in out_vars:
+        elif "passing" in out_vars:
+            assert "stale" not in out_vars
             gallery_conf["passing_examples"].append(src_file)
-        if "stale" in out_vars:
+        else:  # should be guaranteed stale is in out_vars
             gallery_conf["stale_examples"].append(out_vars["stale"])
         costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
         gallery_item_filename = (
@@ -766,7 +769,6 @@ class _exec_once:
                         sys.modules["__main__"] = old_main
 
 
-@lru_cache()
 def _get_memory_base():
     """Get the base amount of memory used by the current Python process."""
     # There might be a cleaner way to do this at some point
@@ -1643,7 +1645,7 @@ def _get_call_memory_and_base(gallery_conf, *, update=False):
                 )
                 gallery_conf["show_memory"] = False
         else:
-            out = _get_memprof_call_memory(warn=update)
+            out = _get_memprof_call_memory()
             if out is not None:
                 call_memory, memory_base = out
             elif update:
@@ -1665,14 +1667,14 @@ def _sg_call_memory_memprof(func):
     return mem, out
 
 
-def _get_memprof_call_memory(*, warn=False):
+@lru_cache()
+def _get_memprof_call_memory():
     try:
         from memory_profiler import memory_usage  # noqa
     except ImportError:
-        if warn:
-            logger.warning(
-                "Please install 'memory_profiler' to enable peak memory measurements."
-            )
+        logger.warning(
+            "Please install 'memory_profiler' to enable peak memory measurements."
+        )
         return None
     else:
         return _sg_call_memory_memprof, _get_memory_base()

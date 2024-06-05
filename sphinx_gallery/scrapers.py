@@ -265,7 +265,7 @@ def _anim_rst(anim, image_path, gallery_conf):
         dpi = fig.dpi
     video_uri = video.relative_to(gallery_conf["src_dir"]).as_posix()
     html = _ANIMATION_VIDEO_RST.format(
-        video=video_uri,
+        video=f"/{video_uri}",
         width=int(fig_size[0] * dpi),
         height=int(fig_size[1] * dpi),
         options="".join(f"   :{opt}:\n" for opt in options),

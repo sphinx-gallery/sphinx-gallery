@@ -2115,6 +2115,8 @@ Sphinx. If an ``int``, then that number of jobs will be passed to
     set variables in a :ref:`custom resetter <custom_reset>` for example to ensure
     that all spawned processes are properly set up and torn down.
 
+    Using parallel building will also disable memory measurements.
+
 .. _recommend_examples:
 
 Enabling the example recommender system
