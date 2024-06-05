@@ -38,3 +38,4 @@ This tests that mini-gallery reference labels work:
    auto_examples/index.rst
    auto_examples_with_rst/index.rst
    auto_examples_rst_index/index.rst
+   auto_examples_README_header/index.rst

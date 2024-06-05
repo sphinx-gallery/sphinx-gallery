@@ -33,19 +33,26 @@ import pytest
 
 # file inventory for tinybuild:
 
-# total number of plot_*.py files in tinybuild/examples + examples_rst_index
-# + examples_with_rst
-N_EXAMPLES = 15 + 3 + 2
+# The following numbers accumulate values across the sub-galleries
+# - tinybuild/examples
+# - tinybuild/examples_rst_index
+# - tinybuild/examples_with_rst
+# - tinybuild/examples_README_header
+#
+# total number of plot_*.py files in
+# (examples + examples_rst_index + examples_with_rst + examples_README_header)
+N_EXAMPLES = 15 + 3 + 2 + 1
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
-# passthroughs and non-executed examples in examples + examples_rst_index
-# + examples_with_rst
-N_PASS = 3 + 0 + 2
-# indices SG generates  (extra non-plot*.py file)
-# + examples_rst_index + examples_with_rst
-N_INDEX = 2 + 1 + 3
-# SG execution times (examples + examples_rst_index + examples_with_rst + root-level)
-N_EXECUTE = 2 + 3 + 1 + 1
+# passthroughs and non-executed examples in
+# (examples + examples_rst_index + examples_with_rst + examples_README_header)
+N_PASS = 3 + 0 + 2 + 0
+# indices SG generates  (extra non-plot*.py file) in
+# (examples + examples_rst_index + examples_with_rst + examples_README_header)
+N_INDEX = 2 + 1 + 3 + 1
+# SG execution times
+# (examples + examples_rst_index + examples_with_rst + examples_README_header + root-level)
+N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 9 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
@@ -233,6 +240,7 @@ def test_run_sphinx(sphinx_app):
     assert "auto_examples" in out_files
     assert "auto_examples_with_rst" in out_files
     assert "auto_examples_rst_index" in out_files
+    assert "auto_examples_README_header" in out_files
     generated_examples_dir = op.join(out_dir, "auto_examples")
     assert op.isdir(generated_examples_dir)
     # make sure that indices are properly being passed forward...
