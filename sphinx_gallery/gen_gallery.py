@@ -1284,11 +1284,6 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     failing_as_expected, failing_unexpectedly, passing_unexpectedly = _parse_failures(
         gallery_conf
     )
-    import sys
-
-    print(f"{failing_as_expected=}", file=sys.__stderr__)
-    print(f"{failing_unexpectedly=}", file=sys.__stderr__)
-    print(f"{passing_unexpectedly=}", file=sys.__stderr__)
     n_tests = 0
     n_failures = 0
     n_skips = 0
