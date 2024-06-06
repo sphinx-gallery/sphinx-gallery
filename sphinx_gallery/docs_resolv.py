@@ -342,7 +342,7 @@ def _write_code_obj(target_file, example_code_obj):
             example_code_obj,
             fid,
             ensure_ascii=False,
-            indent=2,
+            indent=1,
             check_circular=False,
         )
     _replace_md5(codeobj_fname)
