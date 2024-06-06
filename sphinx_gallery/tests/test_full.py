@@ -596,7 +596,7 @@ def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
     good_sphinx = Version(sphinx_version) >= Version("4.1")
     for orig, new in zip(list_orig, list_new):
         check_name = op.splitext(op.basename(orig))[0]
-        if check_name.endswith("_codeobj"):
+        if check_name.endswith(".codeobj"):
             check_name = check_name[:-8]
         if check_name in different:
             if good_sphinx:

@@ -161,10 +161,6 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
         else:
             logger.debug(f"Replacing stale {fname_old} with {fname_new}")
     if replace:
-        if str(fname_old).endswith(".json") and os.path.isfile(fname_old):
-            step = os.path.basename(fname_old)
-            copyfile(fname_old, f"/Users/larsoner/Desktop/old_{step}")
-            copyfile(fname_new, f"/Users/larsoner/Desktop/new_{step}")
         if method == "move":
             move(fname_new, fname_old)
         else:
