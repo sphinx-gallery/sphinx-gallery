@@ -341,11 +341,12 @@ def _write_code_obj(target_file, example_code_obj):
         json.dump(
             example_code_obj,
             fid,
+            sort_keys=True,
             ensure_ascii=False,
             indent=1,
             check_circular=False,
         )
-    _replace_md5(codeobj_fname)
+    _replace_md5(codeobj_fname, check="json")
 
 
 def _embed_code_links(app, gallery_conf, gallery_dir):

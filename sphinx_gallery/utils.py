@@ -6,8 +6,11 @@ Miscellaneous utilities.
 # Author: Eric Larson
 # License: 3-clause BSD
 
+from functools import partial
 import hashlib
+import json
 import os
+from pathlib import Path
 import re
 from shutil import move, copyfile
 import subprocess
@@ -146,7 +149,7 @@ def get_md5sum(src_file, mode="b"):
         return hashlib.md5(src_content).hexdigest()
 
 
-def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
+def _replace_md5(fname_new, fname_old=None, *, method="move", mode="b", check="md5"):
     fname_new = str(fname_new)  # convert possible Path
     assert method in ("move", "copy")
     if fname_old is None:
@@ -154,7 +157,19 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
         fname_old = os.path.splitext(fname_new)[0]
     replace = True
     if os.path.isfile(fname_old):
-        if get_md5sum(fname_old, mode) == get_md5sum(fname_new, mode):
+        if check == "md5":  # default
+            func = partial(get_md5sum, mode=mode)
+        else:
+            assert check == "json"
+
+            def func(x):
+                return json.loads(Path(x).read_text("utf-8"))
+
+        try:
+            equiv = func(fname_old) == func(fname_new)
+        except Exception:  # e.g., old JSON file is a problem
+            equiv = False
+        if equiv:
             replace = False
             if method == "move":
                 os.remove(fname_new)

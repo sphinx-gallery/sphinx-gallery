@@ -1199,7 +1199,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     out_vars = dict()
     target_file = Path(target_dir) / fname
-    _replace_md5(src_file, target_file, "copy", mode="t")
+    _replace_md5(src_file, target_file, method="copy", mode="t")
 
     if fname.endswith(".py"):
         parser = py_source_parser
