@@ -156,11 +156,19 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
     if os.path.isfile(fname_old):
         if get_md5sum(fname_old, mode) == get_md5sum(fname_new, mode):
             replace = False
+            if str(fname_old).endswith(".json"):
+                import sys
+
+                print(f"Keeping {fname_old}", file=sys.__stderr__)
             if method == "move":
                 os.remove(fname_new)
         else:
             logger.debug(f"Replacing stale {fname_old} with {fname_new}")
     if replace:
+        if str(fname_old).endswith(".json") and os.path.isfile(fname_old):
+            step = os.path.basename(fname_old)
+            copyfile(fname_old, f"/Users/larsoner/Desktop/old_{step}")
+            copyfile(fname_new, f"/Users/larsoner/Desktop/new_{step}")
         if method == "move":
             move(fname_new, fname_old)
         else:

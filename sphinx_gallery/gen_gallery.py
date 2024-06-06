@@ -1284,6 +1284,11 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     failing_as_expected, failing_unexpectedly, passing_unexpectedly = _parse_failures(
         gallery_conf
     )
+    import sys
+
+    print(f"{failing_as_expected=}", file=sys.__stderr__)
+    print(f"{failing_unexpectedly=}", file=sys.__stderr__)
+    print(f"{passing_unexpectedly=}", file=sys.__stderr__)
     n_tests = 0
     n_failures = 0
     n_skips = 0
@@ -1378,11 +1383,11 @@ def _parse_failures(gallery_conf):
     failing_unexpectedly = failing_examples.difference(expected_failing_examples)
     passing_unexpectedly = expected_failing_examples.difference(failing_examples)
     # filter from examples actually run
-    passing_unexpectedly = [
+    passing_unexpectedly = set(
         src_file
         for src_file in passing_unexpectedly
         if re.search(gallery_conf["filename_pattern"], src_file)
-    ]
+    )
     return failing_as_expected, failing_unexpectedly, passing_unexpectedly
 
 

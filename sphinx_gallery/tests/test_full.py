@@ -487,9 +487,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert re.match(want_warn, lines, re.DOTALL) is not None
     sys.stdout.write(lines)
 
-    example_file = op.join(examples_dir, "plot_pickle.html")
-    with codecs.open(example_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    lines = (Path(examples_dir) / "plot_pickle.html").read_text("utf-8")
     assert "joblib.Parallel.html" in lines
 
 
@@ -645,10 +643,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         for f in os.listdir(op.join(old_src_dir, "auto_examples"))
         if f.endswith(".rst")
     )
-    generated_pickle_0 = sorted(
+    generated_json_0 = sorted(
         op.join(old_src_dir, "auto_examples", f)
         for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".pickle")
+        if f.endswith(".json")
     )
     copied_py_0 = sorted(
         op.join(old_src_dir, "auto_examples", f)
@@ -663,7 +661,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     assert len(generated_modules_0) > 0
     assert len(generated_backrefs_0) > 0
     assert len(generated_rst_0) > 0
-    assert len(generated_pickle_0) > 0
+    assert len(generated_json_0) > 0
     assert len(copied_py_0) > 0
     assert len(copied_ipy_0) > 0
     assert len(sphinx_app.config.sphinx_gallery_conf["stale_examples"]) == 0
@@ -737,10 +735,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
         if f.endswith(".rst")
     )
-    generated_pickle_1 = sorted(
+    generated_json_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
         for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".pickle")
+        if f.endswith(".json")
     )
     copied_py_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
@@ -771,8 +769,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     )
     _assert_mtimes(generated_rst_0, generated_rst_1, ignore=ignore)
 
-    # mtimes for pickles
-    _assert_mtimes(generated_pickle_0, generated_pickle_1)
+    # mtimes for jsons
+    _assert_mtimes(generated_json_0, generated_json_1)
 
     # mtimes for .py files (gh-395)
     _assert_mtimes(copied_py_0, copied_py_1)
@@ -796,7 +794,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
             generated_modules_0,
             generated_backrefs_0,
             generated_rst_0,
-            generated_pickle_0,
+            generated_json_0,
             copied_py_0,
             copied_ipy_0,
         )
@@ -811,7 +809,7 @@ def _rerun(
     generated_modules_0,
     generated_backrefs_0,
     generated_rst_0,
-    generated_pickle_0,
+    generated_json_0,
     copied_py_0,
     copied_ipy_0,
 ):
@@ -906,10 +904,10 @@ def _rerun(
         for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
         if f.endswith(".rst")
     )
-    generated_pickle_1 = sorted(
+    generated_json_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
         for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".pickle")
+        if f.endswith(".json")
     )
     copied_py_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
@@ -945,9 +943,9 @@ def _rerun(
     if not bad:
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
 
-        # mtimes for pickles
+        # mtimes for jsons
         use_different = () if how == "run_stale" else different
-        _assert_mtimes(generated_pickle_0, generated_pickle_1, ignore=ignore)
+        _assert_mtimes(generated_json_0, generated_json_1, ignore=ignore)
 
         # mtimes for .py files (gh-395)
         _assert_mtimes(copied_py_0, copied_py_1, different=use_different)

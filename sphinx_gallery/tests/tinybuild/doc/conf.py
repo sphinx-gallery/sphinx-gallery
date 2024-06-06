@@ -73,7 +73,7 @@ sphinx_gallery_conf = {
         "../examples/future/plot_future_imports_broken.py",
         "../examples/plot_scraper_broken.py",
     ],
-    "show_memory": True,
+    "show_memory": False,
     "compress_images": ("images", "thumbnails"),
     "junit": op.join("sphinx-gallery", "junit-results.xml"),
     "matplotlib_animations": (True, "mp4"),

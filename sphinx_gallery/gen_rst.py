@@ -12,10 +12,8 @@ from time import time
 import copy
 import contextlib
 import ast
-import codecs
 from functools import lru_cache
 import gc
-import pickle
 import importlib
 import inspect
 from io import StringIO
@@ -61,7 +59,7 @@ from .backreferences import (
 )
 from . import py_source_parser
 from .block_parser import BlockParser
-
+from .docs_resolv import _write_code_obj
 from .notebook import jupyter_notebook, save_notebook
 from .interactive_example import (
     _add_jupyterlite_badge_logo,
@@ -498,7 +496,7 @@ def generate_dir_rst(
     subsection_readme_fname = _get_readme(src_dir, gallery_conf)
     have_index_rst = False
     if subsection_readme_fname:
-        with codecs.open(subsection_readme_fname, "r", encoding="utf-8") as fid:
+        with open(subsection_readme_fname, "r", encoding="utf-8") as fid:
             subsection_readme_content = fid.read()
             subsection_index_content += subsection_readme_content
     else:
@@ -612,7 +610,7 @@ def generate_dir_rst(
     subsection_index_path = None
     if gallery_conf["nested_sections"] is True and not have_index_rst:
         subsection_index_path = os.path.join(target_dir, "index.rst.new")
-        with codecs.open(subsection_index_path, "w", encoding="utf-8") as (findex):
+        with open(subsection_index_path, "w", encoding="utf-8") as (findex):
             findex.write(
                 "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.path.sep, "_"))
             )
@@ -1324,10 +1322,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     ref_regex = _make_ref_regex(gallery_conf["default_role"])
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
-        codeobj_fname = target_file.with_name(target_file.stem + "_codeobj.pickle.new")
-        with open(codeobj_fname, "wb") as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
-        _replace_md5(codeobj_fname)
+        _write_code_obj(target_file, example_code_obj)
     exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
     backrefs = {
         "{module_short}.{name}".format(**cobj)
@@ -1539,7 +1534,7 @@ def save_rst_example(
         example_rst += SPHX_GLR_SIG
 
     write_file_new = example_file.with_suffix(".rst.new")
-    with codecs.open(write_file_new, "w", encoding="utf-8") as f:
+    with open(write_file_new, "w", encoding="utf-8") as f:
         f.write(example_rst)
     # make it read-only so that people don't try to edit it
     mode = os.stat(write_file_new).st_mode
