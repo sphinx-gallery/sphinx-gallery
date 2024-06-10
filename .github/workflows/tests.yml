@@ -66,7 +66,7 @@ jobs:
           qt: true
           pyvista: false
       # Python (if pip)
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
         if: matrix.distrib != 'mamba'
@@ -108,4 +108,4 @@ jobs:
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
       - run: make -C doc SPHINXOPTS= html -j 2
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
