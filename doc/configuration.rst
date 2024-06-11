@@ -2406,7 +2406,7 @@ If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
 previous to version 0.10.2.
 Specifically, it will generate a single index file for the whole gallery.
 This index file will contain headers for the root gallery and each sub-gallery, with
-header followed by a toctree that links to every example in the root/sub-gallery.
+each header followed by a toctree that links to every example in the root/sub-gallery.
 In particular, sidebars generated using these toctrees might list all gallery items
 with a flat structure and not reflect the nested folder structure of sub-galleries.
 
