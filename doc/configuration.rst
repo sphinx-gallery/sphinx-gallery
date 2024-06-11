@@ -2433,7 +2433,7 @@ across rst files. ::
        'copyfile_regex': r'.*\.rst',
     }
 
-Note that if you copy across files rst files, for instance, it is your
+Note that if you copy across rst files, for instance, it is your
 responsibility to ensure that they are in a sphinx ``toctree`` somewhere
 in your document.  You can, of course, add a ``toctree`` to your
 ``GALLERY_HEADER.rst``.
