@@ -11,10 +11,10 @@ this gallery looks like this:
 .. code-block:: none
 
     examples/           # base 'Basics Gallery with Matplotlib' directory
-    ├── README.txt
+    ├── GALLERY_HEADER.rst
     ├── <.py files>
     └── no_output/      # generates the 'No image output examples' sub-gallery
-        ├── README.txt
+        ├── GALLERY_HEADER.rst
         └── <.py files>
 
 .. _general_examples:
