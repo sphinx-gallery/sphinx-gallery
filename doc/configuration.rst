@@ -2374,21 +2374,26 @@ etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
 Nesting gallery sections
 ========================
 
-By default, ``nested_sections=True``.
-In this case, for each folder present in the gallery's root folder,
-Sphinx-Gallery expects to find a file ``GALLERY_HEADER.[ext]``, where
-``[ext]`` is 'txt' or an entry in ``sphinx_gallery_conf["source_suffix"]``
-(or ``README.[ext]`` for backward-compatibility). Default recommendation
-is to use ``GALLERY_HEADER.rst``. Sphinx-gallery uses that file
-to build a specific index file for this subsection.
-This index file will contain the section's description and a toctree
+``nested_sections`` lets you control how ``toctree`` sections are generated in your
+gallery ``index.rst`` files when your gallery has sub-galleries.
+This can be useful for controlling sidebar appearance.
+
+With default ``nested_sections=True``, Sphinx-Gallery will use the
+``GALLERY_HEADER.[ext]`` (or ``README.[ext]`` for backward-compatibility) files
+for the root gallery and each sub-gallery to build a index files for the root
+gallery and each sub-gallery.
+Sub-gallery index files will contain the sub-gallery's header (from the
+``GALLERY_HEADER.[ext]`` file) and a toctree
 linking to each gallery item which belongs to this subsection.
+The root gallery's main ``index.rst`` file will contain:
 
-Eventually, the gallery's main index files will contain the gallery's
-description and a toctree linking to each subsections's index file.
+* root gallery header followed by a toctree linking to each gallery item in the root
+  gallery, and
+* each sub-gallery's header followed by a toctree linking to each
+  sub-gallery's index file.
 
-With this behaviour, generated file structure and toctrees mimic that of
-the original gallery folder. This is useful to generate sidebars with
+With this behaviour the generated file structure and toctrees mimic that of
+the root gallery folder. This is useful for generating sidebars with
 nested sections representing the gallery's file structure.
 
 .. note::
@@ -2400,10 +2405,10 @@ nested sections representing the gallery's file structure.
 If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
 previous to version 0.10.2.
 Specifically, it will generate a single index file for the whole gallery.
-This index file will contain descriptions for the whole gallery as well as for
-each subsection, and a specific toctree for each subsection.
-In particular, sidebars generated using these toctrees might not reflect the
-actual section / folder structure.
+This index file will contain headers for the root gallery and each sub-gallery, with
+header followed by a toctree that links to every example in the root/sub-gallery.
+In particular, sidebars generated using these toctrees might list all gallery items
+with a flat structure and not reflect the nested folder structure of sub-galleries.
 
 .. _manual_passthrough:
 
