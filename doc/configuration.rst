@@ -2399,7 +2399,7 @@ nested sections representing the gallery's file structure.
 .. note::
 
     When ``nested_sections=True``, gallery examples located in the gallery's root
-    folder should be moved to a new subfolder, otherwise the sidebar
+    folder should be moved to it's own subfolder, otherwise the sidebar
     might not behave as expected (due to the fuzzy toctree structure).
 
 If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
