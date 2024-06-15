@@ -2375,22 +2375,22 @@ Nesting gallery sections
 ========================
 
 ``nested_sections`` lets you control how ``toctree`` sections are generated in your
-gallery ``index.rst`` files when your gallery has sub-galleries.
+gallery ``index.rst`` files when your gallery has sub-sections (aka sub-galleries).
 This can be useful for controlling sidebar appearance.
 
 With default ``nested_sections=True``, Sphinx-Gallery will use the
 ``GALLERY_HEADER.[ext]`` (or ``README.[ext]`` for backward-compatibility) files
-for the root gallery and each sub-gallery to build a index files for the root
-gallery and each sub-gallery.
-Sub-gallery index files will contain the sub-gallery's header (from the
+for the root gallery and each sub-section to build a index files for the root
+gallery and each sub-section.
+Sub-section index files will contain the sub-section's header (from the
 ``GALLERY_HEADER.[ext]`` file) and a toctree
 linking to each gallery item which belongs to this subsection.
-The root gallery's main ``index.rst`` file will contain:
+The root gallery's main ``index.rst`` file will contain, in sequence:
 
-* root gallery header followed by a toctree linking to each gallery item in the root
-  gallery, and
-* each sub-gallery's header followed by a toctree linking to each
-  sub-gallery's index file.
+* root gallery header followed by gallery thumbnails,
+* a toctree linking to each gallery item in the root gallery,
+* sub-section header followed by sub-section thumbnails, for all subsections,
+* a final toctree linking to each sub-section's index file.
 
 With this behaviour the generated file structure and toctrees mimic that of
 the root gallery folder. This is useful for generating sidebars with
@@ -2398,15 +2398,15 @@ nested sections representing the gallery's file structure.
 
 .. note::
 
-    When ``nested_sections=True``, gallery items located in the gallery's root folder
-    should be move to a new subfolder, otherwise the sidebar
+    When ``nested_sections=True``, gallery examples located in the gallery's root
+    folder should be moved to a new subfolder, otherwise the sidebar
     might not behave as expected (due to the fuzzy toctree structure).
 
 If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
 previous to version 0.10.2.
 Specifically, it will generate a single index file for the whole gallery.
-This index file will contain headers for the root gallery and each sub-gallery, with
-each header followed by a toctree that links to every example in the root/sub-gallery.
+This index file will contain headers for the root gallery and each sub-section, with
+each header followed by a toctree that links to every example in the root/sub-section.
 In particular, sidebars generated using these toctrees might list all gallery items
 with a flat structure and not reflect the nested folder structure of sub-galleries.
 
