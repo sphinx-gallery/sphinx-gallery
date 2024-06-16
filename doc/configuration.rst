@@ -2400,7 +2400,7 @@ nested sections representing the gallery's file structure.
 
     When ``nested_sections=True`` and there are gallery examples in the gallery's
     root folder, the root gallery ``index.rst`` file will contain two toctrees.
-    This may cause undesirable behaviour in the sidebar.
+    This may cause undesirable duplication in the sidebar.
     Try moving the root gallery examples to their own sub-folder to prevent this,
     as this will result in only a single toctree in the root gallery ``index.rst``.
 
