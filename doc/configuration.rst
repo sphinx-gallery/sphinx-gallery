@@ -2390,7 +2390,7 @@ The root gallery's main ``index.rst`` file will contain, in sequence:
 * root gallery header followed by gallery thumbnails,
 * a toctree linking to each gallery item in the root gallery,
 * sub-section header followed by sub-section thumbnails, for all subsections,
-* a final toctree linking to each sub-section's index file.
+* a second toctree, at the end of the file, linking to each sub-section's index file.
 
 With this behaviour the generated file structure and toctrees mimic that of
 the root gallery folder. This is useful for generating sidebars with
@@ -2398,9 +2398,10 @@ nested sections representing the gallery's file structure.
 
 .. note::
 
-    When ``nested_sections=True``, gallery examples located in the gallery's root
-    folder should be moved to it's own subfolder, otherwise the sidebar
-    might not behave as expected (due to the fuzzy toctree structure).
+    When ``nested_sections=True`` and there are gallery examples in the gallery's
+    root folder, the root gallery ``index.rst`` file will contain two toctrees.
+    This may cause undesirable behaviour in the sidebar.
+    Try moving the root gallery examples to their own sub-folder to prevent this.
 
 If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
 previous to version 0.10.2.
