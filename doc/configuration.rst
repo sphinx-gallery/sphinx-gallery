@@ -2374,42 +2374,44 @@ etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
 Nesting gallery sections
 ========================
 
-``nested_sections`` lets you control how ``toctree`` sections are generated in your
-gallery ``index.rst`` files when your gallery has sub-sections (aka sub-galleries).
-This can be useful for controlling sidebar appearance.
+``nested_sections`` lets you control how gallery ``index.rst`` files are generated
+when your gallery has sub-sections (aka sub-galleries).
+This can be useful for controlling sidebar appearance. The most suitable
+``nested_sections`` setting generally depends on the theme of your documentation.
 
 With default ``nested_sections=True``, Sphinx-Gallery will use the
 ``GALLERY_HEADER.[ext]`` (or ``README.[ext]`` for backward-compatibility) files
-for the root gallery and each sub-section to build a index files for the root
+for the root gallery and each sub-section to build separate index files for the root
 gallery and each sub-section.
 Sub-section index files will contain the sub-section's header (from the
 ``GALLERY_HEADER.[ext]`` file) and a toctree
-linking to each gallery item which belongs to this subsection.
+linking to each gallery example in the subsection.
 The root gallery's main ``index.rst`` file will contain, in sequence:
 
 * root gallery header followed by gallery thumbnails,
-* a toctree linking to each gallery item in the root gallery,
+* a toctree linking to each gallery example in the root gallery,
 * sub-section header followed by sub-section thumbnails, for all subsections,
-* a second toctree, at the end of the file, linking to each sub-section's index file.
+* a second toctree, at the end of the file, linking to all sub-section index files.
 
-With this behaviour the generated file structure and toctrees mimic that of
-the root gallery folder. This is useful for generating sidebars with
-nested sections representing the gallery's file structure.
+With this behaviour, the generated file structure and toctrees mimic that of
+the root gallery folder. For some themes, this may be needed for generating sidebars
+with nested sections.
 
 .. note::
 
     When ``nested_sections=True`` and there are gallery examples in the gallery's
     root folder, the root gallery ``index.rst`` file will contain two toctrees.
     This may cause undesirable duplication in the sidebar.
-    Try moving the root gallery examples to their own sub-folder to prevent this,
-    as this will result in only a single toctree in the root gallery ``index.rst``.
+    Try moving all root gallery examples to their own sub-folder to prevent this,
+    as this will result in a single toctree in the root gallery ``index.rst``.
 
 If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
-previous to version 0.10.2.
+prior to version 0.10.2.
 Specifically, it will generate a single index file for the whole gallery.
 This index file will contain headers for the root gallery and each sub-section, with
-each header followed by a toctree that links to every example in the root/sub-section.
-In particular, sidebars generated using these toctrees might list all gallery items
+each header followed by a toctree that links to every example in the
+root gallery/sub-section.
+For some themes, sidebars generated using these toctrees would list all gallery items
 with a flat structure and not reflect the nested folder structure of sub-galleries.
 
 .. _manual_passthrough:
