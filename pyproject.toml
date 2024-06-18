@@ -39,7 +39,7 @@ optional-dependencies.animations = [
 optional-dependencies.dev = [
   "absl-py",
   "graphviz",
-  "ipython"
+  "ipython",
   "joblib",
   "jupyterlite-sphinx",
   "lxml",
