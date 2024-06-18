@@ -60,12 +60,7 @@ You can do a direct install via ``pip`` by using:
 
 .. code-block:: bash
 
-    $ pip install sphinx-gallery "sphinx>=4.0" pillow
-
-.. important::
-    Sphinx-Gallery will not manage its dependencies when installing, thus
-    you are required to install them manually. Our minimal dependencies
-    are **Sphinx >= 4** and Pillow, which we use for scaling images.
+    $ pip install sphinx-gallery
 
 .. tip::
     Sphinx-Gallery also has support for scraping images from Matplotlib
@@ -169,9 +164,8 @@ you can do:
 
     $ git clone https://github.com/sphinx-gallery/sphinx-gallery
     $ cd sphinx-gallery
-    $ pip install -r requirements.txt -r dev-requirements.txt
     $ conda install graphviz  # if using conda, you can get graphviz this way
-    $ pip install -e .
+    $ pip install -e .[dev]
 
 
 Check that you are all set by running:

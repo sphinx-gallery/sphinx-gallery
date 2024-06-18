@@ -33,19 +33,26 @@ import pytest
 
 # file inventory for tinybuild:
 
-# total number of plot_*.py files in tinybuild/examples + examples_rst_index
-# + examples_with_rst
-N_EXAMPLES = 15 + 3 + 2
+# The following numbers accumulate values across the sub-galleries
+# - tinybuild/examples
+# - tinybuild/examples_rst_index
+# - tinybuild/examples_with_rst
+# - tinybuild/examples_README_header
+#
+# total number of plot_*.py files in
+# (examples + examples_rst_index + examples_with_rst + examples_README_header)
+N_EXAMPLES = 15 + 3 + 2 + 1
 N_FAILING = 2
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
-# passthroughs and non-executed examples in examples + examples_rst_index
-# + examples_with_rst
-N_PASS = 3 + 0 + 2
-# indices SG generates  (extra non-plot*.py file)
-# + examples_rst_index + examples_with_rst
-N_INDEX = 2 + 1 + 3
-# SG execution times (examples + examples_rst_index + examples_with_rst + root-level)
-N_EXECUTE = 2 + 3 + 1 + 1
+# passthroughs and non-executed examples in
+# (examples + examples_rst_index + examples_with_rst + examples_README_header)
+N_PASS = 3 + 0 + 2 + 0
+# indices SG generates  (extra non-plot*.py file) in
+# (examples + examples_rst_index + examples_with_rst + examples_README_header)
+N_INDEX = 2 + 1 + 3 + 1
+# SG execution times
+# (examples + examples_rst_index + examples_with_rst + examples_README_header + root-level)
+N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 9 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
@@ -233,6 +240,7 @@ def test_run_sphinx(sphinx_app):
     assert "auto_examples" in out_files
     assert "auto_examples_with_rst" in out_files
     assert "auto_examples_rst_index" in out_files
+    assert "auto_examples_README_header" in out_files
     generated_examples_dir = op.join(out_dir, "auto_examples")
     assert op.isdir(generated_examples_dir)
     # make sure that indices are properly being passed forward...
@@ -387,6 +395,10 @@ def test_embed_links_and_styles(sphinx_app):
     assert ".html#matplotlib.figure.Figure.tight_layout" in lines
     assert "matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" in lines
     assert "matplotlib_configuration_api.html#matplotlib.RcParams" in lines
+    assert (
+        "mpl_toolkits.mplot3d.axes3d.Axes3D.plot.html#mpl_toolkits.mplot3d.axes3d.Axes3D.plot"
+        in lines
+    )
     assert "stdtypes.html#list" in lines
     assert "warnings.html#warnings.warn" in lines
     assert "itertools.html#itertools.compress" in lines
@@ -1349,4 +1361,43 @@ def test_recommend_n_examples(sphinx_app):
     # Check the same 3 related examples are shown
     assert "sphx-glr-auto-examples-plot-repr-py" in html
     assert "sphx-glr-auto-examples-plot-webp-py" in html
-    assert "sphx-glr-auto-examples-plot-matplotlib-backend-py" in html
+    assert "sphx-glr-auto-examples-plot-numpy-matplotlib-py" in html
+
+
+def test_sidebar_components_download_links(sphinx_app):
+    """Test that the `sg_download_links.html` component works as expected."""
+    example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
+    with codecs.open(example_file, "r", "utf-8") as fid:
+        tree = lxml.html.fromstring(fid.read())
+
+    for class_name, desc in [
+        ("sphx-glr-download-python", "Download source code"),
+        ("sphx-glr-download-jupyter", "Download Jupyter notebook"),
+        ("sphx-glr-download-zip", "Download zipped"),
+    ]:
+        orig_href = (
+            tree.find_class(class_name)[0]
+            .getchildren()[0]
+            .getchildren()[0]
+            .attrib["href"]
+        )
+        sidebar_div = tree.find_class(f"{class_name}-sidebar")[0]
+        assert sidebar_div.attrib["title"] == os.path.basename(orig_href)
+        assert sidebar_div.getchildren()[0].attrib["href"] == orig_href
+        assert sidebar_div.getchildren()[0].text_content().strip() == desc
+
+
+def test_sidebar_components_launcher_links(sphinx_app):
+    """Test that the `sg_launcher_links.html` component works as expected."""
+    example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
+    with codecs.open(example_file, "r", "utf-8") as fid:
+        tree = lxml.html.fromstring(fid.read())
+
+    for class_name in ["binder-badge", "lite-badge"]:
+        orig_anchor = tree.find_class(class_name)[0].getchildren()[0]
+        orig_href = orig_anchor.attrib["href"]
+        orig_img = orig_anchor.getchildren()[0]
+        sidebar_anchor = tree.find_class(f"{class_name}-sidebar")[0].getchildren()[0]
+        assert sidebar_anchor.attrib["href"] == orig_href
+        assert sidebar_anchor.getchildren()[0].attrib["src"] == orig_img.attrib["src"]
+        assert sidebar_anchor.getchildren()[0].attrib["alt"] == orig_img.attrib["alt"]

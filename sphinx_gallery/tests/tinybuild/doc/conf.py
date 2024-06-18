@@ -27,7 +27,14 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest", None),
 }
-
+html_sidebars = {
+    "**": [
+        "globaltoc.html",
+        "searchbox.html",
+        "sg_download_links.html",
+        "sg_launcher_links.html",
+    ]
+}
 
 sphinx_gallery_conf = {
     "doc_module": ("sphinx_gallery",),
@@ -47,7 +54,12 @@ sphinx_gallery_conf = {
     "jupyterlite": {
         "notebook_modification_function": f"{util_root}.notebook_modification_function",
     },
-    "examples_dirs": ["../examples/", "../examples_with_rst/", "../examples_rst_index"],
+    "examples_dirs": [
+        "../examples/",
+        "../examples_with_rst/",
+        "../examples_rst_index",
+        "../examples_README_header",
+    ],
     "example_extensions": {".py", ".cpp", ".m", ".jl"},
     "filetype_parsers": {".m": "Matlab"},
     "reset_argv": f"{util_root}.reset_argv",
@@ -56,6 +68,7 @@ sphinx_gallery_conf = {
         "auto_examples",
         "auto_examples_with_rst",
         "auto_examples_rst_index",
+        "auto_examples_README_header",
     ],
     "backreferences_dir": "gen_modules/backreferences",
     "subsection_order": f"{util_root}.noop_key",

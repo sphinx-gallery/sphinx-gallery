@@ -17,6 +17,7 @@ import os
 import pathlib
 from xml.sax.saxutils import quoteattr, escape
 from itertools import chain
+from docutils import nodes
 
 from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
@@ -27,7 +28,7 @@ from .backreferences import _finalize_backreferences
 from .gen_rst import (
     generate_dir_rst,
     SPHX_GLR_SIG,
-    _get_readme,
+    _get_gallery_header,
     _get_class,
     _get_callables,
     _get_call_memory_and_base,
@@ -473,7 +474,7 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
     check_for_index : bool
-        only return subfolders with a ReadMe, default True
+        only return subfolders contain a GALLERY_HEADER file, default True
 
     Returns
     -------
@@ -491,7 +492,7 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
         subfolders = [
             subfolder
             for subfolder in subfolders
-            if _get_readme(
+            if _get_gallery_header(
                 os.path.join(examples_dir, subfolder), gallery_conf, raise_error=False
             )
             is not None
@@ -604,7 +605,7 @@ def generate_gallery_rst(app):
             include_toctree=False,
         )
 
-        has_readme = this_content is not None
+        has_gallery_header = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
@@ -631,7 +632,7 @@ def generate_gallery_rst(app):
             app.builder.srcdir,
             examples_dir_abs_path,
             gallery_conf,
-            check_for_index=has_readme,
+            check_for_index=has_gallery_header,
         )
         for subsection in subsecs:
             src_dir = os.path.join(examples_dir_abs_path, subsection)
@@ -663,9 +664,9 @@ def generate_gallery_rst(app):
                 )
 
                 indexst += subsection_index_content
-                has_readme_subsection = True
+                has_subsection_header = True
             else:
-                has_readme_subsection = False
+                has_subsection_header = False
 
             # Write subsection toctree in main file only if
             # nested_sections is False or None, and
@@ -678,7 +679,7 @@ def generate_gallery_rst(app):
                     indexst += subsection_index_toctree
             # Otherwise, a new index.rst.new file should
             # have been created and it needs to be parsed
-            elif has_readme_subsection:
+            elif has_subsection_header:
                 _replace_md5(subsection_index_path, mode="t")
 
             costs += subsection_costs
@@ -739,7 +740,7 @@ def generate_gallery_rst(app):
         if app.config.sphinx_gallery_conf["show_signature"]:
             indexst += SPHX_GLR_SIG
 
-        if has_readme:
+        if has_gallery_header:
             index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
             with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
                 fhindex.write(indexst)
@@ -1528,6 +1529,11 @@ def fill_gallery_conf_defaults(app, config, check_keys=True):
     config.sphinx_gallery_conf = new_sphinx_gallery_conf
     config.html_static_path.append(glr_path_static())
 
+    # This must be done in "config-inited" for Sphinx 5 and 6 because otherwise the
+    # `templates_path` will be overwritten and Sphinx will not be able to discover our
+    # component templates
+    config.templates_path.append(str(Path(__file__).parent / "components"))
+
 
 def update_gallery_conf_builder_inited(app):
     """Update the the sphinx-gallery config at builder-inited."""
@@ -1541,6 +1547,82 @@ def update_gallery_conf_builder_inited(app):
         abort_on_example_error=abort_on_example_error,
         builder_name=app.builder.name,
     )
+
+
+def setup_template_link_getters(app, pagename, templatename, context, doctree):
+    """Set up the getters for download and launcher links.
+
+    The getters are added to the sphinx context so as to be used in templates.
+    """
+
+    def _find_containers_with_class(class_name):
+        if doctree is None:
+            return iter([])
+
+        return doctree.findall(
+            lambda x: isinstance(x, nodes.container)
+            and class_name in x.attributes.get("classes", [])
+        )
+
+    def get_download_links():
+        """Get the download links for the example.
+
+        This function relies on `_find_containers_with_class` which in turn relies on
+        `doctree` provided in the `html-page-context` event. This function will then
+        be added to the context of the page and can be accessed in the template.
+
+        This returns a dictionary with keys in ["python", "jupyter", "zip"], depending
+        on their availability. The values contain:
+        - link: The relative path to the download file
+        - label: The "Download {label}" text
+        - title: The title to show when hovering over the link
+        """
+        links = {}
+        for key, label in [
+            ("python", "source code"),
+            ("jupyter", "Jupyter notebook"),
+            ("zip", "zipped"),
+        ]:
+            containers = _find_containers_with_class(f"sphx-glr-download-{key}")
+            if container := next(containers, None):
+                attrs = container.children[0].children[0].attributes
+                if link := attrs.get("filename"):
+                    links[key] = {
+                        "link": f"_downloads/{link}",
+                        "label": label,
+                        "title": attrs.get("reftarget"),
+                    }
+        return links
+
+    def get_launcher_links():
+        """Get the launcher links for the example.
+
+        This function relies on `_find_containers_with_class` which in turn relies on
+        `doctree` provided in the `html-page-context` event. This function will then
+        be added to the context of the page and can be accessed in the template.
+
+        This returns a dictionary with keys in ["lite", "binder"], depending on their
+        availability. The values contain:
+        - link: The URL to Binder or JupyterLite link of the example
+        - img_alt: The alt text for the link badge
+        - img_src: The source URL of the link badge
+        """
+        links = {}
+        for key in ["lite", "binder"]:
+            containers = _find_containers_with_class(f"{key}-badge")
+            if container := next(containers, None):
+                anchor = container.children[0]
+                image = anchor.children[0]
+                if link := anchor.attributes.get("refuri"):
+                    links[key] = {
+                        "link": link,
+                        "img_alt": image.attributes.get("alt"),
+                        "img_src": image.attributes.get("uri"),
+                    }
+        return links
+
+    context["get_download_links"] = get_download_links
+    context["get_launcher_links"] = get_launcher_links
 
 
 def setup(app):
@@ -1578,6 +1660,9 @@ def setup(app):
     app.connect("build-finished", summarize_failing_examples)
     app.connect("build-finished", embed_code_links)
     app.connect("build-finished", clean_api_usage_files)
+
+    app.connect("html-page-context", setup_template_link_getters)
+
     metadata = {
         "parallel_read_safe": True,
         "parallel_write_safe": True,

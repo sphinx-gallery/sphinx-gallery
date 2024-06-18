@@ -307,6 +307,34 @@ def _sanitize_css_class(s):
     return s
 
 
+def _get_intersphinx_inventory(app):
+    """
+    Get the mapping between module names and intersphinx inventories.
+
+    In some cases, intersphinx inventories may provide documentation for modules _other_
+    than the one given by the intersphinx_mapping key (e.g., the Python inventory
+    contains documentation for all standard library modules, or Matplotlib contains
+    several `mpl_toolkits`` modules), so this checks py:module for all inventories and
+    adds that additional module mapping.
+    """
+    if inventory := getattr(app.env, "sg_intersphinx_inventory", None):
+        return inventory
+
+    # Make a copy of the inventories, because this dict is created by intersphinx and we
+    # don't want to break whatever assumptions it has made about it.
+    intersphinx_inv_orig = getattr(app.env, "intersphinx_named_inventory", dict())
+    intersphinx_inv = intersphinx_inv_orig.copy()
+    for module_name, inventory in intersphinx_inv_orig.items():
+        documented_modules = {
+            qualname.split(".")[0] for qualname in inventory.get("py:module", dict())
+        }
+        for other_module_name in documented_modules - {module_name}:
+            intersphinx_inv[other_module_name] = inventory
+
+    app.env.sg_intersphinx_inventory = intersphinx_inv
+    return intersphinx_inv
+
+
 def _embed_code_links(app, gallery_conf, gallery_dir):
     """Add resolvers for the packages for which we want to show links."""
     doc_resolvers = {}
@@ -349,10 +377,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         length=len(flat),
         stringify_func=lambda x: os.path.basename(x[1]),
     )
-    intersphinx_inv = getattr(app.env, "intersphinx_named_inventory", dict())
-    builtin_modules = set(
-        intersphinx_inv.get("python", dict()).get("py:module", dict()).keys()
-    )
+    intersphinx_inv = _get_intersphinx_inventory(app)
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1 :]
@@ -390,8 +415,6 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
 
                     # next try intersphinx
                     if this_module == modname == "builtins":
-                        this_module = "python"
-                    elif modname in builtin_modules:
                         this_module = "python"
                     if link is None and this_module in intersphinx_inv:
                         inv = intersphinx_inv[this_module]

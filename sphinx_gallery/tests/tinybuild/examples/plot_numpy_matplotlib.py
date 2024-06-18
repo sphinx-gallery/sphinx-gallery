@@ -33,6 +33,8 @@ orig_dpi = 80.0 if matplotlib.__version__[0] < "2" else 100.0
 assert plt.rcParams["figure.dpi"] == orig_dpi
 plt.rcParams["figure.dpi"] = 70.0
 assert plt.rcParams["figure.dpi"] == 70.0
+fig3d, ax3d = plt.subplots(subplot_kw={"projection": "3d"})
+ax3d.plot(t, t, win, color="r")  # This should map to Axes3D.plot, not Axes.plot.
 listy = [0, 1]
 compress("abc", [0, 0, 1])
 warn("This warning should show up in the output", RuntimeWarning)
