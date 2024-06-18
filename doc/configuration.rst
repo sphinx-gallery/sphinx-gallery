@@ -2393,17 +2393,12 @@ The root gallery's main ``index.rst`` file will contain, in sequence:
 * sub-section header followed by sub-section thumbnails, for all subsections,
 * a second toctree, at the end of the file, linking to all sub-section index files.
 
-With this behaviour, the generated file structure and toctrees mimic that of
-the root gallery folder. For some themes, this may be needed for generating sidebars
-with nested sections.
+The generated file structure and toctrees mimic that of the root gallery folder,
+which may be needed for generating sidebars with nested sections for some themes.
 
-.. note::
-
-    When ``nested_sections=True`` and there are gallery examples in the gallery's
-    root folder, the root gallery ``index.rst`` file will contain two toctrees.
-    This may cause undesirable duplication in the sidebar.
-    Try moving all root gallery examples to their own sub-folder to prevent this,
-    as this will result in a single toctree in the root gallery ``index.rst``.
+For other themes, having two toctrees can cause undesirable duplication in the sidebar.
+In this case you can try moving all root gallery examples to their own sub-folder
+as this will result in a single toctree in the root gallery ``index.rst``.
 
 If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
 prior to version 0.10.2.
