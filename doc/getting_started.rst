@@ -54,7 +54,7 @@ Let's say your Python project has the following structure:
     └── examples
         ├── plot_example.py
         ├── example.py
-        └── README.txt (or .rst)
+        └── GALLERY_HEADER.rst (or README.rst/.txt)
 
 * ``doc`` is the Sphinx 'source directory'. It contains the Sphinx base
   configuration files. Default versions of these base files can obtained from
@@ -80,7 +80,8 @@ Structure the examples folder
 In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
-* **The gallery header**: A file named ``README.txt`` or ``README.rst`` that
+* **The gallery header**: A file named ``GALLERY_HEADER.rst`` (or for
+  backward-compatibility ``README.rst/.txt``) that
   contains reST to be used as a header for the gallery welcome page, which will
   also include thumbnails generated from this folder. It must have at least a
   title. For example::
@@ -106,7 +107,8 @@ this folder must have the following things:
       tuned. See :ref:`capture_repr`.
     * You can have sub-directories in your ``examples`` directory. These will be
       included as sub-sections of your gallery. They **must** contain their own
-      ``README.txt`` or ``README.rst`` file as well.
+      ``GALLERY_HEADER.rst`` (or for backward-compatibility ``README.rst/.txt``)
+      file as well.
 
 .. warning::
 

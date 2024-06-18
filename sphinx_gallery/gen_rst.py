@@ -426,24 +426,25 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     _replace_md5(thumb_file, fname_old=fname_old)
 
 
-def _get_readme(dir_, gallery_conf, raise_error=True):
+def _get_gallery_header(dir_, gallery_conf, raise_error=True):
     # first check if there is an index.rst and that index.rst is in the
     # copyfile regexp:
     if re.match(gallery_conf["copyfile_regex"], "index.rst"):
         fpth = os.path.join(dir_, "index.rst")
         if os.path.isfile(fpth):
             return None
-    # now look for README.txt, README.rst etc...
+    # now look for GALLERY_HEADER.txt, GALLERY_HEADER.rst, and
+    # for backward-compatibility README.txt, README.rst etc...
     extensions = [".txt"] + sorted(gallery_conf["source_suffix"])
     for ext in extensions:
-        for fname in ("README", "readme"):
+        for fname in ("GALLERY_HEADER", "README", "readme"):
             fpth = os.path.join(dir_, fname + ext)
             if os.path.isfile(fpth):
                 return fpth
     if raise_error:
         raise ExtensionError(
-            "Example directory {} does not have a README file with one "
-            "of the expected file extensions {}. Please write one to "
+            "Example directory {} does not have a GALLERY_HEADER file with "
+            "one of the expected file extensions {}. Please write one to "
             "introduce your gallery.".format(dir_, extensions)
         )
     return None
@@ -493,12 +494,12 @@ def generate_dir_rst(
     head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
 
     subsection_index_content = ""
-    subsection_readme_fname = _get_readme(src_dir, gallery_conf)
+    subsection_header_fname = _get_gallery_header(src_dir, gallery_conf)
     have_index_rst = False
-    if subsection_readme_fname:
-        with open(subsection_readme_fname, "r", encoding="utf-8") as fid:
-            subsection_readme_content = fid.read()
-            subsection_index_content += subsection_readme_content
+    if subsection_header_fname:
+        with open(subsection_header_fname, "r", encoding="utf-8") as fid:
+            subsection_header_content = fid.read()
+            subsection_index_content += subsection_header_content
     else:
         have_index_rst = True
 
@@ -640,10 +641,12 @@ def generate_dir_rst(
     copyregex = gallery_conf["copyfile_regex"]
     if copyregex:
         listdir = [fname for fname in os.listdir(src_dir) if re.match(copyregex, fname)]
-        readme = _get_readme(src_dir, gallery_conf, raise_error=False)
-        # don't copy over the readme
-        if readme:
-            listdir = [fname for fname in listdir if fname != os.path.basename(readme)]
+        header_fname = _get_gallery_header(src_dir, gallery_conf, raise_error=False)
+        # don't copy over the gallery_header file
+        if header_fname:
+            listdir = [
+                fname for fname in listdir if fname != os.path.basename(header_fname)
+            ]
         for fname in listdir:
             src_file = os.path.normpath(os.path.join(src_dir, fname))
             target_file = os.path.join(target_dir, fname)

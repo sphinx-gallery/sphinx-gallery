@@ -329,7 +329,7 @@ def test_collect_gallery_files(tmpdir, gallery_conf):
     rel_filepaths = [
         "examples/file1.py",
         "examples/test.rst",
-        "examples/README.txt",
+        "examples/GALLERY_HEADER.rst",
         "examples/folder1/file1.py",
         "examples/folder1/file2.py",
         "examples/folder2/file1.py",

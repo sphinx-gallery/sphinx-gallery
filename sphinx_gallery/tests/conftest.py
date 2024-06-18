@@ -193,7 +193,7 @@ def sphinx_app_wrapper(tmpdir, conf_file, req_mpl, req_pil):
 import os
 import sphinx_gallery
 extensions = {conf_file['extensions']!r}
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'src']
 source_suffix = '.rst'
 master_doc = 'index'
 # General information about the project.

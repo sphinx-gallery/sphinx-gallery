@@ -28,7 +28,7 @@ from .backreferences import _finalize_backreferences
 from .gen_rst import (
     generate_dir_rst,
     SPHX_GLR_SIG,
-    _get_readme,
+    _get_gallery_header,
     _get_class,
     _get_callables,
     _get_call_memory_and_base,
@@ -490,7 +490,7 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
     check_for_index : bool
-        only return subfolders with a ReadMe, default True
+        only return subfolders contain a GALLERY_HEADER file, default True
 
     Returns
     -------
@@ -508,7 +508,7 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
         subfolders = [
             subfolder
             for subfolder in subfolders
-            if _get_readme(
+            if _get_gallery_header(
                 os.path.join(examples_dir, subfolder), gallery_conf, raise_error=False
             )
             is not None
@@ -623,7 +623,7 @@ def generate_gallery_rst(app):
             include_toctree=False,
         )
 
-        has_readme = this_content is not None
+        has_gallery_header = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
@@ -650,7 +650,7 @@ def generate_gallery_rst(app):
             app.builder.srcdir,
             examples_dir_abs_path,
             gallery_conf,
-            check_for_index=has_readme,
+            check_for_index=has_gallery_header,
         )
         for subsection in subsecs:
             src_dir = os.path.join(examples_dir_abs_path, subsection)
@@ -682,9 +682,9 @@ def generate_gallery_rst(app):
                 )
 
                 indexst += subsection_index_content
-                has_readme_subsection = True
+                has_subsection_header = True
             else:
-                has_readme_subsection = False
+                has_subsection_header = False
 
             # Write subsection toctree in main file only if
             # nested_sections is False or None, and
@@ -697,7 +697,7 @@ def generate_gallery_rst(app):
                     indexst += subsection_index_toctree
             # Otherwise, a new index.rst.new file should
             # have been created and it needs to be parsed
-            elif has_readme_subsection:
+            elif has_subsection_header:
                 _replace_md5(subsection_index_path, mode="t")
 
             costs += subsection_costs
@@ -758,7 +758,7 @@ def generate_gallery_rst(app):
         if app.config.sphinx_gallery_conf["show_signature"]:
             indexst += SPHX_GLR_SIG
 
-        if has_readme:
+        if has_gallery_header:
             index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
             with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
                 fhindex.write(indexst)

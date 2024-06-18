@@ -8,7 +8,7 @@ include sphinx_gallery/_static/jupyterlite_badge_logo.svg
 include sphinx_gallery/components/sg_download_links.html
 include sphinx_gallery/components/sg_launcher_links.html
 recursive-include examples *.py
-recursive-include examples *.txt
+recursive-include examples *.rst
 recursive-include tutorials *.py
 recursive-include tutorials *.txt
 recursive-include plotly_examples *.py

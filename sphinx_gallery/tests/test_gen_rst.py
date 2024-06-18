@@ -632,23 +632,38 @@ def test_exclude_implicit(gallery_conf, exclusion, expected, monkeypatch, req_pi
     assert mock_write_backreferences.call_args.args[0] == expected
 
 
-@pytest.mark.parametrize("ext", (".txt", ".rst", ".bad"))
-def test_gen_dir_rst(gallery_conf, ext):
+@pytest.mark.parametrize(
+    "gallery_header",
+    [
+        "GALLERY_HEADER.rst",
+        "README.txt",
+        "README.rst",
+    ],
+)
+def test_gen_dir_rst(gallery_conf, gallery_header):
     """Test gen_dir_rst."""
-    print(os.listdir(gallery_conf["examples_dir"]))
-    fname_readme = os.path.join(gallery_conf["src_dir"], "README.txt")
-    with open(fname_readme, "wb") as fid:
+    with open(os.path.join(gallery_conf["src_dir"], gallery_header), "wb") as fid:
         fid.write("Testing\n=======\n\nÓscar here.".encode())
-    fname_out = os.path.splitext(fname_readme)[0] + ext
-    if fname_readme != fname_out:
-        shutil.move(fname_readme, fname_out)
-    args = (gallery_conf["src_dir"], gallery_conf["gallery_dir"], gallery_conf, [])
-    if ext == ".bad":  # not found with correct ext
-        with pytest.raises(ExtensionError, match="does not have a README"):
-            generate_dir_rst(*args)
-    else:
-        out = generate_dir_rst(*args)
-        assert "Óscar here" in out[1]
+    out = generate_dir_rst(
+        gallery_conf["src_dir"], gallery_conf["gallery_dir"], gallery_conf, []
+    )
+    assert "Óscar here" in out[1]
+
+
+@pytest.mark.parametrize(
+    "gallery_header",
+    [
+        "GALLERY_HEADER.bad",
+        "README.bad",
+    ],
+)
+def test_gen_dir_rst_invalid_header(gallery_conf, gallery_header):
+    with open(os.path.join(gallery_conf["src_dir"], gallery_header), "wb") as fid:
+        fid.write("Testing\n=======\n\nÓscar here.".encode())
+    with pytest.raises(ExtensionError, match="does not have a GALLERY_HEADER"):
+        generate_dir_rst(
+            gallery_conf["src_dir"], gallery_conf["gallery_dir"], gallery_conf, []
+        )
 
 
 def test_pattern_matching(gallery_conf, log_collector, req_pil):

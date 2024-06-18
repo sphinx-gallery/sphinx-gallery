@@ -5,8 +5,9 @@ all: clean html show
 clean:
 	rm -rf _build/*
 	rm -rf auto_examples/
-	rm -rf auto_examples_with_rst/
+	rm -rf auto_examples_README_header/
 	rm -rf auto_examples_rst_index/
+	rm -rf auto_examples_with_rst/
 	rm -rf gen_modules/
 
 html:
