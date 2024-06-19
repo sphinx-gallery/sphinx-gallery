@@ -552,6 +552,45 @@ def _format_toctree(items, includehidden=False):
 
     return st
 
+def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
+    """Build recommender and write recommendations."""
+    if gallery_conf["recommender"]["enable"]:
+        try:
+            import numpy as np  # noqa: F401
+        except ImportError:
+            raise ConfigError("gallery_conf['recommender'] requires numpy")
+
+        recommender_params = copy.deepcopy(gallery_conf["recommender"])
+        recommender_params.pop("enable")
+        recommender_params.pop("rubric_header", None)
+        recommender = ExampleRecommender(**recommender_params)
+
+        gallery_py_files = []
+        # root and subsection directories containing python examples
+        gallery_directories = [gallery_dir_abs_path] + subsecs
+        for current_dir in gallery_directories:
+            src_dir = os.path.join(gallery_dir_abs_path, current_dir)
+            # sort python files to have a deterministic input across call
+            py_files = sorted(
+                # NOTE we don't take account of `ignore_pattern` and ignore
+                # ext in `example_extensions`
+                [
+                    fname
+                    for fname in Path(src_dir).iterdir()
+                    if fname.suffix == ".py"
+                ],
+                key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
+            )
+            gallery_py_files.append(
+                [os.path.join(src_dir, fname) for fname in py_files]
+            )
+        # flatten the list of list
+        gallery_py_files = list(chain.from_iterable(gallery_py_files))
+
+        recommender.fit(gallery_py_files)
+        for fname in gallery_py_files:
+            _write_recommendations(recommender, fname, gallery_conf)
+
 
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText.
@@ -685,41 +724,8 @@ def generate_gallery_rst(app):
             costs += subsection_costs
             write_computation_times(gallery_conf, target_dir, subsection_costs)
 
-        # Build recommendation system
-        if gallery_conf["recommender"]["enable"]:
-            try:
-                import numpy as np  # noqa: F401
-            except ImportError:
-                raise ConfigError("gallery_conf['recommender'] requires numpy")
-
-            recommender_params = copy.deepcopy(gallery_conf["recommender"])
-            recommender_params.pop("enable")
-            recommender_params.pop("rubric_header", None)
-            recommender = ExampleRecommender(**recommender_params)
-
-            gallery_py_files = []
-            # root and subsection directories containing python examples
-            gallery_directories = [gallery_dir_abs_path] + subsecs
-            for current_dir in gallery_directories:
-                src_dir = os.path.join(gallery_dir_abs_path, current_dir)
-                # sort python files to have a deterministic input across call
-                py_files = sorted(
-                    [
-                        fname
-                        for fname in Path(src_dir).iterdir()
-                        if fname.suffix == ".py"
-                    ],
-                    key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
-                )
-                gallery_py_files.append(
-                    [os.path.join(src_dir, fname) for fname in py_files]
-                )
-            # flatten the list of list
-            gallery_py_files = list(chain.from_iterable(gallery_py_files))
-
-            recommender.fit(gallery_py_files)
-            for fname in gallery_py_files:
-                _write_recommendations(recommender, fname, gallery_conf)
+        # Build recommendation system and write recommendations
+        _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
 
         # generate toctree with subsections
         if gallery_conf["nested_sections"] is True:
