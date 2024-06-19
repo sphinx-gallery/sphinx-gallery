@@ -464,11 +464,9 @@ def generate_dir_rst(
     Parameters
     ----------
     src_dir: str,
-        Path to example directory containing python files
-        and possibly sub categories
+        Path to root or sub gallery directory containing example files
     target_dir: str,
-        Path where parsed examples (rst, python files, etc)
-        will be outputted
+        Path where parsed examples (rst, python files, etc) will be outputted
     gallery_conf : Dict[str, Any]
         Gallery configurations.
     seen_backrefs: set,
@@ -481,17 +479,16 @@ def generate_dir_rst(
 
     Returns
     -------
-    index_path: str,
-        Path to index rst file presenting the current example gallery
-    index_content: str,
-        Content which will be written to the index rst file
-        presenting the current example gallery
+    index_path: str or None
+        Path to index rst file for the `src_dir`. None if user provided
+        own index.
+    index_content: str or None
+        Gallery header content. `None` when user provided own index.rst.
     costs: List[Dict]
         List of dicts of costs for building each element of the gallery
          with keys "t", "mem", "src_file", and "target_dir".
     toctree_items: list,
-        List of files included in toctree
-        (independent of include_toctree's value)
+        List of example file names we generated ReST for.
     """
     head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
 
