@@ -557,13 +557,13 @@ def _filter_tags(subsection_index_content):
 
 
 def _finish_index_rst(
-        app,
-        gallery_conf,
-        indexst,
-        sg_root_index,
-        subsection_index_files,
-        gallery_dir_abs_path,
-    ):
+    app,
+    gallery_conf,
+    indexst,
+    sg_root_index,
+    subsection_index_files,
+    gallery_dir_abs_path,
+):
     """Add toctree, download and signature if required and write file,"""
     # Generate toctree containing subsection index files
     if (
@@ -615,11 +615,7 @@ def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
             py_files = sorted(
                 # NOTE we don't take account of `ignore_pattern` and ignore
                 # ext in `example_extensions`
-                [
-                    fname
-                    for fname in Path(src_dir).iterdir()
-                    if fname.suffix == ".py"
-                ],
+                [fname for fname in Path(src_dir).iterdir() if fname.suffix == ".py"],
                 key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
             )
             gallery_py_files.append(
@@ -749,9 +745,7 @@ def generate_gallery_rst(app):
                 and not gallery_conf["nested_sections"]
                 and len(subsection_toctree_filenames) > 0
             ):
-                subsection_index_toctree = _format_toctree(
-                    subsection_toctree_filenames
-                )
+                subsection_index_toctree = _format_toctree(subsection_toctree_filenames)
                 indexst += subsection_index_toctree
             # Otherwise, a new subsection index.rst.new file should
             # have been created and it needs to be parsed
@@ -764,13 +758,13 @@ def generate_gallery_rst(app):
         # Per gallery - items below run once per gallery
         # Finish index.rst and write to file
         _finish_index_rst(
-                app,
-                gallery_conf,
-                indexst,
-                sg_root_index,
-                subsection_index_files,
-                gallery_dir_abs_path,
-            )
+            app,
+            gallery_conf,
+            indexst,
+            sg_root_index,
+            subsection_index_files,
+            gallery_dir_abs_path,
+        )
         # Build recommendation system
         _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
 

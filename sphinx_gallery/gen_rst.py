@@ -494,9 +494,7 @@ def _copy_non_example_files(gallery_conf, src_dir, header_fname, target_dir):
         listdir = [fname for fname in os.listdir(src_dir) if re.match(copyregex, fname)]
         if header_fname:
             # Don't copy over the gallery_header file
-            listdir = [
-                fname for fname in listdir if fname != Path(header_fname).name
-            ]
+            listdir = [fname for fname in listdir if fname != Path(header_fname).name]
         for fname in listdir:
             src_file = os.path.normpath(os.path.join(src_dir, fname))
             target_file = os.path.join(target_dir, fname)
