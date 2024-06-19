@@ -522,7 +522,7 @@ def generate_dir_rst(
         Back references encountered when parsing this gallery
         will be stored in this set.
     is_subsection: bool, default=True
-        Wether `src_dir` is a subsection dir. If subsection dir, we write
+        Weather `src_dir` is a subsection dir. If subsection dir, we write
         a `index.rst` file with toctree listing every example file.
 
     Returns
