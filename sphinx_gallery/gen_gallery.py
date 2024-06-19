@@ -592,6 +592,24 @@ def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
             _write_recommendations(recommender, fname, gallery_conf)
 
 
+def _log_costs(costs, gallery_conf):
+    """Log computation time."""
+    logger.info("computation time summary:", color="white")
+    lines, lens = _format_for_writing(
+        costs, src_dir=gallery_conf["src_dir"], kind="console"
+    )
+    for name, t, m in lines:
+        text = (f"    - {name}:   ").ljust(lens[0] + 10)
+        if t is None:
+            text += "(not run)"
+            logger.info(text)
+        else:
+            t_float = float(t.split()[0])
+            if t_float >= gallery_conf["min_reported_time"]:
+                text += t.rjust(lens[1]) + "   " + m.rjust(lens[2])
+                logger.info(text)
+
+
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText.
 
@@ -760,20 +778,7 @@ def generate_gallery_rst(app):
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf["plot_gallery"]:
-        logger.info("computation time summary:", color="white")
-        lines, lens = _format_for_writing(
-            costs, src_dir=gallery_conf["src_dir"], kind="console"
-        )
-        for name, t, m in lines:
-            text = (f"    - {name}:   ").ljust(lens[0] + 10)
-            if t is None:
-                text += "(not run)"
-                logger.info(text)
-            else:
-                t_float = float(t.split()[0])
-                if t_float >= gallery_conf["min_reported_time"]:
-                    text += t.rjust(lens[1]) + "   " + m.rjust(lens[2])
-                    logger.info(text)
+        _log_costs(costs, gallery_conf)
         # Also create a junit.xml file, useful e.g. on CircleCI
         write_junit_xml(gallery_conf, app.builder.outdir, costs)
 
