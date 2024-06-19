@@ -493,14 +493,14 @@ def generate_dir_rst(
     head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
 
     index_content = ""
-    subsection_header_fname = _get_gallery_header(src_dir, gallery_conf)
-    have_index_rst = False
-    if subsection_header_fname:
-        with codecs.open(subsection_header_fname, "r", encoding="utf-8") as fid:
-            subsection_header_content = fid.read()
-            index_content += subsection_header_content
-    else:
-        have_index_rst = True
+    # `_get_gallery_header` returns `None` if user supplied `index.rst`
+    header_fname = _get_gallery_header(src_dir, gallery_conf)
+    user_index_rst = True
+    if header_fname:
+        user_index_rst = False
+        with codecs.open(header_fname, "r", encoding="utf-8") as fid:
+            header_content = fid.read()
+            index_content += header_content
 
     # Add empty lines to avoid bug in issue #165
     index_content += "\n\n"
@@ -552,7 +552,7 @@ def generate_dir_rst(
     # Write subsection index file
     # only if nested_sections is True
     index_path = None
-    if gallery_conf["nested_sections"] is True and not have_index_rst:
+    if gallery_conf["nested_sections"] is True and not user_index_rst:
         index_path = os.path.join(target_dir, "index.rst.new")
         with codecs.open(index_path, "w", encoding="utf-8") as (findex):
             findex.write(
@@ -576,7 +576,7 @@ def generate_dir_rst(
 """.format("\n   ".join(toctree_filenames))
                 findex.write(subsection_index_toctree)
 
-    if have_index_rst:
+    if user_index_rst:
         # the user has supplied index.rst, so blank out the content
         index_content = None
 
