@@ -649,7 +649,7 @@ def generate_gallery_rst(app):
         )
 
         # `this_context` is None when user provides own index.rst
-        has_gallery_header = this_content is not None
+        sg_root_index = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
@@ -674,7 +674,7 @@ def generate_gallery_rst(app):
             app.builder.srcdir,
             examples_dir_abs_path,
             gallery_conf,
-            check_for_index=has_gallery_header,
+            check_for_index=sg_root_index,
         )
         for subsection in subsecs:
             src_dir = os.path.join(examples_dir_abs_path, subsection)
@@ -749,7 +749,7 @@ def generate_gallery_rst(app):
         if app.config.sphinx_gallery_conf["show_signature"]:
             indexst += SPHX_GLR_SIG
 
-        if has_gallery_header:
+        if sg_root_index:
             index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
             with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
                 fhindex.write(indexst)
