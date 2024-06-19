@@ -452,6 +452,7 @@ def _get_gallery_header(dir_, gallery_conf, raise_error=True):
         )
     return None
 
+
 def _write_subsection_index(
     gallery_conf,
     user_index_rst,
@@ -506,10 +507,9 @@ def generate_dir_rst(
     seen_backrefs: set,
         Back references encountered when parsing this gallery
         will be stored in this set.
-    is_subsection: bool
-        Whether or not toctree should be included
-        in generated rst file.
-        Default = True.
+    is_subsection: bool, default=True
+        Wether `src_dir` is a subsection dir. If subsection dir, we write
+        a `index.rst` file with toctree listing every example file.
 
     Returns
     -------
@@ -524,8 +524,6 @@ def generate_dir_rst(
     toctree_items: list,
         List of example file names we generated ReST for.
     """
-    head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
-
     index_content = ""
     # `_get_gallery_header` returns `None` if user supplied `index.rst`
     header_fname = _get_gallery_header(src_dir, gallery_conf)
@@ -553,7 +551,6 @@ def generate_dir_rst(
     # this is helpful for controlling grid or flexbox behaviours
     index_content += THUMBNAIL_PARENT_DIV
 
-    entries_text = []
     costs = []
     toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf["src_dir"])
@@ -574,11 +571,8 @@ def generate_dir_rst(
         this_entry = _thumbnail_div(
             target_dir, gallery_conf["src_dir"], fname, intro, title
         )
-        entries_text.append(this_entry)
+        index_content += this_entry
         toctree_filenames.append("/" + gallery_item_filename)
-
-    for entry_text in entries_text:
-        index_content += entry_text
 
     # Close thumbnail parent div
     index_content += THUMBNAIL_PARENT_DIV_CLOSE
