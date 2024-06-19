@@ -45,6 +45,7 @@ from .scrapers import (
 )
 from .utils import (
     _collect_gallery_files,
+    _format_toctree,
     scale_image,
     get_md5sum,
     zip_files,
@@ -451,13 +452,46 @@ def _get_gallery_header(dir_, gallery_conf, raise_error=True):
         )
     return None
 
+def _write_subsection_index(
+    gallery_conf,
+    user_index_rst,
+    is_subsection,
+    target_dir,
+    index_content,
+    toctree_filenames,
+):
+    """Write `index.rst` file for subsection if user has not provided index file.
+
+    Returns path to index file written or `None` if no index file written as user
+    provided one.
+    """
+    index_path = None
+    if (
+        gallery_conf["nested_sections"] is True
+        and not user_index_rst
+        and is_subsection
+    ):
+        index_path = os.path.join(target_dir, "index.rst.new")
+        head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
+        with codecs.open(index_path, "w", encoding="utf-8") as (findex):
+            findex.write(
+                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.path.sep, "_"))
+            )
+            findex.write(index_content)
+            # Create toctree with all gallery examples and add to index file
+            if len(toctree_filenames) > 0:
+                subsection_index_toctree = _format_toctree(toctree_filenames)
+                findex.write(subsection_index_toctree)
+
+    return index_path
+
 
 def generate_dir_rst(
     src_dir,
     target_dir,
     gallery_conf,
     seen_backrefs,
-    include_toctree=True,
+    is_subsection=True,
 ):
     """Generate the gallery reStructuredText for an example directory.
 
@@ -472,7 +506,7 @@ def generate_dir_rst(
     seen_backrefs: set,
         Back references encountered when parsing this gallery
         will be stored in this set.
-    include_toctree: bool
+    is_subsection: bool
         Whether or not toctree should be included
         in generated rst file.
         Default = True.
@@ -549,32 +583,15 @@ def generate_dir_rst(
     # Close thumbnail parent div
     index_content += THUMBNAIL_PARENT_DIV_CLOSE
 
-    # Write subsection index file
-    # only if nested_sections is True
-    index_path = None
-    if gallery_conf["nested_sections"] is True and not user_index_rst:
-        index_path = os.path.join(target_dir, "index.rst.new")
-        with codecs.open(index_path, "w", encoding="utf-8") as (findex):
-            findex.write(
-                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.path.sep, "_"))
-            )
-            findex.write(index_content)
-
-            # Create toctree for index file
-            # with all gallery items which belong to current subsection
-            # and add it to generated index rst file if need be.
-            # Toctree cannot be empty
-            # and won't be added if include_toctree is false
-            # (this is useful when generating the example gallery's main
-            # index rst file, which should contain only one toctree)
-            if len(toctree_filenames) > 0 and include_toctree:
-                subsection_index_toctree = """
-.. toctree::
-   :hidden:
-
-   {}\n
-""".format("\n   ".join(toctree_filenames))
-                findex.write(subsection_index_toctree)
+    # Write index file if required
+    index_path = _write_subsection_index(
+        gallery_conf,
+        user_index_rst,
+        is_subsection,
+        target_dir,
+        index_content,
+        toctree_filenames,
+    )
 
     if user_index_rst:
         # the user has supplied index.rst, so blank out the content

@@ -291,3 +291,21 @@ def _has_graphviz():
 def _escape_ansi(s):
     """Remove ANSI terminal formatting characters from a string."""
     return re.sub(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]", "", s)
+
+
+def _format_toctree(items, includehidden=False):
+    """Format a toc tree."""
+    st = """
+.. toctree::
+   :hidden:"""
+    if includehidden:
+        st += """
+   :includehidden:
+"""
+    st += """
+
+   {}\n""".format("\n   ".join(items))
+
+    st += "\n"
+
+    return st
