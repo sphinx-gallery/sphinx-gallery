@@ -471,11 +471,7 @@ def _write_subsection_index(
     provided one.
     """
     index_path = None
-    if (
-        gallery_conf["nested_sections"] is True
-        and not user_index_rst
-        and is_subsection
-    ):
+    if gallery_conf["nested_sections"] and not user_index_rst and is_subsection:
         index_path = os.path.join(target_dir, "index.rst.new")
         head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
         with codecs.open(index_path, "w", encoding="utf-8") as (findex):

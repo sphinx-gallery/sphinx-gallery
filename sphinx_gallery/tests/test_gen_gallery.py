@@ -16,8 +16,6 @@ from sphinx_gallery.gen_gallery import (
     _fill_gallery_conf_defaults,
     write_api_entry_usage,
     fill_gallery_conf_defaults,
-    # check_duplicate_filenames,
-    # check_spaces_in_filenames,
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 from sphinx_gallery.utils import (
@@ -383,7 +381,9 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
     gallery_conf["ignore_pattern"] = r"one"
     examples_path = tmpdir.join("examples")
     dirs = [examples_path.strpath]
-    collected_files = set(_collect_gallery_files(dirs, gallery_conf, check_filenames=True))
+    collected_files = set(
+        _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
+    )
     expected_files = {
         ap.strpath
         for ap in abs_paths

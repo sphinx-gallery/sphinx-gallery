@@ -542,6 +542,57 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     return list(zip(examples_dirs, gallery_dirs))
 
 
+def _filter_tags(subsection_index_content):
+    """Filter out tags from `subsection_index_content`."""
+    tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
+    subsection_index_content = "\n".join(
+        [
+            line
+            for line in subsection_index_content.splitlines()
+            if re.match(tag_regex, line) is None
+        ]
+        + [""]
+    )
+    return subsection_index_content
+
+
+def _finish_index_rst(
+        app,
+        gallery_conf,
+        indexst,
+        sg_root_index,
+        subsection_index_files,
+        gallery_dir_abs_path,
+    ):
+    """Add toctree, download and signature if required and write file,"""
+    # Generate toctree containing subsection index files
+    if (
+        sg_root_index
+        and gallery_conf["nested_sections"] is True
+        and len(subsection_index_files) > 0
+    ):
+        subsections_toctree = _format_toctree(
+            subsection_index_files, includehidden=True
+        )
+        indexst += subsections_toctree
+
+    if sg_root_index:
+        # Download examples
+        if gallery_conf["download_all_examples"]:
+            download_fhindex = generate_zipfiles(
+                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
+            )
+            indexst += download_fhindex
+        # Signature
+        if app.config.sphinx_gallery_conf["show_signature"]:
+            indexst += SPHX_GLR_SIG
+        # Write index to file
+        index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
+        with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
+            fhindex.write(indexst)
+        _replace_md5(index_rst_new, mode="t")
+
+
 def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
     """Build recommender and write recommendations."""
     if gallery_conf["recommender"]["enable"]:
@@ -580,43 +631,6 @@ def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
         recommender.fit(gallery_py_files)
         for fname in gallery_py_files:
             _write_recommendations(recommender, fname, gallery_conf)
-
-
-def _finish_index_rst(
-        app,
-        gallery_conf,
-        indexst,
-        sg_root_index,
-        subsection_index_files,
-        gallery_dir_abs_path,
-    ):
-    """Add toctree, download and signature if required and write file,"""
-    # Generate toctree containing subsection index files
-    if (
-        sg_root_index
-        and gallery_conf["nested_sections"] is True
-        and len(subsection_index_files) > 0
-    ):
-        subsections_toctree = _format_toctree(
-            subsection_index_files, includehidden=True
-        )
-        indexst += subsections_toctree
-
-    if sg_root_index:
-        # Download examples
-        if gallery_conf["download_all_examples"]:
-            download_fhindex = generate_zipfiles(
-                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
-            )
-            indexst += download_fhindex
-        # Signature
-        if app.config.sphinx_gallery_conf["show_signature"]:
-            indexst += SPHX_GLR_SIG
-        # Write index to file
-        index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
-        with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
-            fhindex.write(indexst)
-        _replace_md5(index_rst_new, mode="t")
 
 
 def _log_costs(costs, gallery_conf):
@@ -723,25 +737,13 @@ def generate_gallery_rst(app):
                 subsection_toctree_filenames,
             ) = generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs)
 
+            has_subsection_header = False
             if subsection_index_content:
-                # Filter out tags from subsection content
-                # to prevent tag duplication across the documentation
-                tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
-                subsection_index_content = "\n".join(
-                    [
-                        line
-                        for line in subsection_index_content.splitlines()
-                        if re.match(tag_regex, line) is None
-                    ]
-                    + [""]
-                )
-
-                indexst += subsection_index_content
+                # Filter tags to prevent tag duplication across the documentation
+                indexst += _filter_tags(subsection_index_content)
                 has_subsection_header = True
-            else:
-                has_subsection_header = False
 
-            # Write subsection toctree containing all filenames
+            # Write subsection toctree containing all filenames, if req.
             if (
                 sg_root_index
                 and not gallery_conf["nested_sections"]
@@ -751,7 +753,7 @@ def generate_gallery_rst(app):
                     subsection_toctree_filenames
                 )
                 indexst += subsection_index_toctree
-            # Otherwise, a new index.rst.new file should
+            # Otherwise, a new subsection index.rst.new file should
             # have been created and it needs to be parsed
             elif has_subsection_header:
                 _replace_md5(subsection_index_path, mode="t")
