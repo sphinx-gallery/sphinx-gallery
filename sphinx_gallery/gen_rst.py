@@ -487,6 +487,22 @@ def _write_subsection_index(
     return index_path
 
 
+def _copy_non_example_files(gallery_conf, src_dir, header_fname, target_dir):
+    """Copy non-example files to `target_dir`."""
+    copyregex = gallery_conf["copyfile_regex"]
+    if copyregex:
+        listdir = [fname for fname in os.listdir(src_dir) if re.match(copyregex, fname)]
+        if header_fname:
+            # Don't copy over the gallery_header file
+            listdir = [
+                fname for fname in listdir if fname != Path(header_fname).name
+            ]
+        for fname in listdir:
+            src_file = os.path.normpath(os.path.join(src_dir, fname))
+            target_file = os.path.join(target_dir, fname)
+            _replace_md5(src_file, fname_old=target_file, method="copy")
+
+
 def generate_dir_rst(
     src_dir,
     target_dir,
@@ -588,23 +604,11 @@ def generate_dir_rst(
     )
 
     if user_index_rst:
-        # the user has supplied index.rst, so blank out the content
+        # User has supplied index.rst, so blank out the content
         index_content = None
 
-    # Copy over any other files.
-    copyregex = gallery_conf["copyfile_regex"]
-    if copyregex:
-        listdir = [fname for fname in os.listdir(src_dir) if re.match(copyregex, fname)]
-        header_fname = _get_gallery_header(src_dir, gallery_conf, raise_error=False)
-        # don't copy over the gallery_header file
-        if header_fname:
-            listdir = [
-                fname for fname in listdir if fname != os.path.basename(header_fname)
-            ]
-        for fname in listdir:
-            src_file = os.path.normpath(os.path.join(src_dir, fname))
-            target_file = os.path.join(target_dir, fname)
-            _replace_md5(src_file, fname_old=target_file, method="copy")
+    # Copy over any other (non-example) files.
+    _copy_non_example_files(gallery_conf, src_dir, header_fname, target_dir)
 
     return (
         index_path,
