@@ -582,6 +582,43 @@ def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
             _write_recommendations(recommender, fname, gallery_conf)
 
 
+def _finish_index_rst(
+        app,
+        gallery_conf,
+        indexst,
+        sg_root_index,
+        subsection_index_files,
+        gallery_dir_abs_path,
+    ):
+    """Add toctree, download and signature if required and write file,"""
+    # Generate toctree containing subsection index files
+    if (
+        sg_root_index
+        and gallery_conf["nested_sections"] is True
+        and len(subsection_index_files) > 0
+    ):
+        subsections_toctree = _format_toctree(
+            subsection_index_files, includehidden=True
+        )
+        indexst += subsections_toctree
+
+    if sg_root_index:
+        # Download examples
+        if gallery_conf["download_all_examples"]:
+            download_fhindex = generate_zipfiles(
+                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
+            )
+            indexst += download_fhindex
+        # Signature
+        if app.config.sphinx_gallery_conf["show_signature"]:
+            indexst += SPHX_GLR_SIG
+        # Write index to file
+        index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
+        with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
+            fhindex.write(indexst)
+        _replace_md5(index_rst_new, mode="t")
+
+
 def _log_costs(costs, gallery_conf):
     """Log computation time."""
     logger.info("computation time summary:", color="white")
@@ -653,20 +690,14 @@ def generate_gallery_rst(app):
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
-        # We create an index.rst with all examples
-
-        if this_content:
+        # Create root gallery index.rst
+        if sg_root_index:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             indexst = ":orphan:\n\n" + this_content
-        else:
-            # we are not going to use the index.rst.new that gets made here,
-            # but go through the motions to run through all the subsections...
-            indexst = "Never used!"
-
-        # Write toctree with gallery items from gallery root folder
-        if len(this_toctree_items) > 0:
-            this_toctree = _format_toctree(this_toctree_items)
-            indexst += this_toctree
+            # Write toctree with gallery items from gallery root folder
+            if len(this_toctree_items) > 0:
+                this_toctree = _format_toctree(this_toctree_items)
+                indexst += this_toctree
 
         # list all paths to subsection index files in this array
         subsection_index_files = []
@@ -710,15 +741,16 @@ def generate_gallery_rst(app):
             else:
                 has_subsection_header = False
 
-            # Write subsection toctree in main file only if
-            # nested_sections is False or None, and
-            # toctree filenames were generated for the subsection.
-            if not gallery_conf["nested_sections"]:
-                if len(subsection_toctree_filenames) > 0:
-                    subsection_index_toctree = _format_toctree(
-                        subsection_toctree_filenames
-                    )
-                    indexst += subsection_index_toctree
+            # Write subsection toctree containing all filenames
+            if (
+                sg_root_index
+                and not gallery_conf["nested_sections"]
+                and len(subsection_toctree_filenames) > 0
+            ):
+                subsection_index_toctree = _format_toctree(
+                    subsection_toctree_filenames
+                )
+                indexst += subsection_index_toctree
             # Otherwise, a new index.rst.new file should
             # have been created and it needs to be parsed
             elif has_subsection_header:
@@ -727,34 +759,20 @@ def generate_gallery_rst(app):
             costs += subsection_costs
             write_computation_times(gallery_conf, target_dir, subsection_costs)
 
-        # Build recommendation system and write recommendations
+        # Per gallery - items below run once per gallery
+        # Finish index.rst and write to file
+        _finish_index_rst(
+                app,
+                gallery_conf,
+                indexst,
+                sg_root_index,
+                subsection_index_files,
+                gallery_dir_abs_path,
+            )
+        # Build recommendation system
         _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
 
-        # generate toctree with subsections
-        if gallery_conf["nested_sections"] is True:
-            subsections_toctree = _format_toctree(
-                subsection_index_files, includehidden=True
-            )
-
-            # add toctree to file only if there are subsections
-            if len(subsection_index_files) > 0:
-                indexst += subsections_toctree
-
-        if gallery_conf["download_all_examples"]:
-            download_fhindex = generate_zipfiles(
-                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
-            )
-            indexst += download_fhindex
-
-        if app.config.sphinx_gallery_conf["show_signature"]:
-            indexst += SPHX_GLR_SIG
-
-        if sg_root_index:
-            index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
-            with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
-                fhindex.write(indexst)
-            _replace_md5(index_rst_new, mode="t")
-
+    # Per project - items below run once only (for all galleries)
     # Write a single global sg_execution_times
     write_computation_times(gallery_conf, None, costs)
 
