@@ -495,18 +495,18 @@ def generate_dir_rst(
     """
     head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
 
-    subsection_index_content = ""
+    index_content = ""
     subsection_header_fname = _get_gallery_header(src_dir, gallery_conf)
     have_index_rst = False
     if subsection_header_fname:
         with codecs.open(subsection_header_fname, "r", encoding="utf-8") as fid:
             subsection_header_content = fid.read()
-            subsection_index_content += subsection_header_content
+            index_content += subsection_header_content
     else:
         have_index_rst = True
 
     # Add empty lines to avoid bug in issue #165
-    subsection_index_content += "\n\n"
+    index_content += "\n\n"
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
@@ -520,11 +520,11 @@ def generate_dir_rst(
 
     # Add div containing all thumbnails;
     # this is helpful for controlling grid or flexbox behaviours
-    subsection_index_content += THUMBNAIL_PARENT_DIV
+    index_content += THUMBNAIL_PARENT_DIV
 
     entries_text = []
     costs = []
-    subsection_toctree_filenames = []
+    toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf["src_dir"])
     iterator = status_iterator(
         sorted_listdir,
@@ -544,24 +544,24 @@ def generate_dir_rst(
             target_dir, gallery_conf["src_dir"], fname, intro, title
         )
         entries_text.append(this_entry)
-        subsection_toctree_filenames.append("/" + gallery_item_filename)
+        toctree_filenames.append("/" + gallery_item_filename)
 
     for entry_text in entries_text:
-        subsection_index_content += entry_text
+        index_content += entry_text
 
     # Close thumbnail parent div
-    subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
+    index_content += THUMBNAIL_PARENT_DIV_CLOSE
 
     # Write subsection index file
     # only if nested_sections is True
-    subsection_index_path = None
+    index_path = None
     if gallery_conf["nested_sections"] is True and not have_index_rst:
-        subsection_index_path = os.path.join(target_dir, "index.rst.new")
-        with codecs.open(subsection_index_path, "w", encoding="utf-8") as (findex):
+        index_path = os.path.join(target_dir, "index.rst.new")
+        with codecs.open(index_path, "w", encoding="utf-8") as (findex):
             findex.write(
                 "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.path.sep, "_"))
             )
-            findex.write(subsection_index_content)
+            findex.write(index_content)
 
             # Create toctree for index file
             # with all gallery items which belong to current subsection
@@ -570,18 +570,18 @@ def generate_dir_rst(
             # and won't be added if include_toctree is false
             # (this is useful when generating the example gallery's main
             # index rst file, which should contain only one toctree)
-            if len(subsection_toctree_filenames) > 0 and include_toctree:
+            if len(toctree_filenames) > 0 and include_toctree:
                 subsection_index_toctree = """
 .. toctree::
    :hidden:
 
    {}\n
-""".format("\n   ".join(subsection_toctree_filenames))
+""".format("\n   ".join(toctree_filenames))
                 findex.write(subsection_index_toctree)
 
     if have_index_rst:
         # the user has supplied index.rst, so blank out the content
-        subsection_index_content = None
+        index_content = None
 
     # Copy over any other files.
     copyregex = gallery_conf["copyfile_regex"]
@@ -599,10 +599,10 @@ def generate_dir_rst(
             _replace_md5(src_file, fname_old=target_file, method="copy")
 
     return (
-        subsection_index_path,
-        subsection_index_content,
+        index_path,
+        index_content,
         costs,
-        subsection_toctree_filenames,
+        toctree_filenames,
     )
 
 
