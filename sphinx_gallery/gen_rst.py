@@ -44,6 +44,7 @@ from .scrapers import (
     _reset_dict,
 )
 from .utils import (
+    _collect_gallery_files,
     scale_image,
     get_md5sum,
     zip_files,
@@ -509,22 +510,9 @@ def generate_dir_rst(
 
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
-    # get filenames
-    listdir = [
-        fname
-        for fname in os.listdir(src_dir)
-        if (s := Path(fname).suffix) and s in gallery_conf["example_extensions"]
-    ]
-    # limit which to look at based on regex (similar to filename_pattern)
-    listdir = [
-        fname
-        for fname in listdir
-        if re.search(
-            gallery_conf["ignore_pattern"],
-            os.path.normpath(os.path.join(src_dir, fname)),
-        )
-        is None
-    ]
+
+    # Get example filenames from `src_dir`
+    listdir = _collect_gallery_files([src_dir], gallery_conf)
     # sort them
     sorted_listdir = sorted(
         listdir, key=_get_class(gallery_conf, "within_subsection_order")(src_dir)

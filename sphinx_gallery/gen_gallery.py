@@ -23,7 +23,6 @@ from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
 from sphinx.util.console import blue, red, purple, bold
 from . import glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (
     generate_dir_rst,
@@ -47,6 +46,13 @@ from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
 from .recommender import ExampleRecommender, _write_recommendations
 from .sorting import ExplicitOrder
+from .utils import (
+    _collect_gallery_files,
+    _has_optipng,
+    _has_pypandoc,
+    _has_graphviz,
+    _replace_md5,
+)
 
 
 _KNOWN_CSS = (
@@ -552,6 +558,7 @@ def _format_toctree(items, includehidden=False):
 
     return st
 
+
 def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
     """Build recommender and write recommendations."""
     if gallery_conf["recommender"]["enable"]:
@@ -637,9 +644,7 @@ def generate_gallery_rst(app):
 
     # Check for duplicate filenames to make sure linking works as expected
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
-    files = collect_gallery_files(examples_dirs, gallery_conf)
-    check_duplicate_filenames(files)
-    check_spaces_in_filenames(files)
+    _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
 
     for examples_dir, gallery_dir in workdirs:
         examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
@@ -1471,51 +1476,51 @@ def summarize_failing_examples(app, exception):
             raise ExtensionError(fail_message)
 
 
-def collect_gallery_files(examples_dirs, gallery_conf):
-    """Collect python files from the gallery example directories."""
-    files = []
-    for example_dir in examples_dirs:
-        for root, dirnames, filenames in os.walk(example_dir):
-            for filename in filenames:
-                if filename.endswith(".py"):
-                    if re.search(gallery_conf["ignore_pattern"], filename) is None:
-                        files.append(os.path.join(root, filename))
-    return files
+# def collect_gallery_files(examples_dirs, gallery_conf):
+#     """Collect python files from the gallery example directories."""
+#     files = []
+#     for example_dir in examples_dirs:
+#         for root, dirnames, filenames in os.walk(example_dir):
+#             for filename in filenames:
+#                 if filename.endswith(".py"):
+#                     if re.search(gallery_conf["ignore_pattern"], filename) is None:
+#                         files.append(os.path.join(root, filename))
+#     return files
 
 
-def check_duplicate_filenames(files):
-    """Check for duplicate filenames across gallery directories."""
-    # Check whether we'll have duplicates
-    used_names = set()
-    dup_names = list()
+# def check_duplicate_filenames(files):
+#     """Check for duplicate filenames across gallery directories."""
+#     # Check whether we'll have duplicates
+#     used_names = set()
+#     dup_names = list()
 
-    for this_file in files:
-        this_fname = os.path.basename(this_file)
-        if this_fname in used_names:
-            dup_names.append(this_file)
-        else:
-            used_names.add(this_fname)
+#     for this_file in files:
+#         this_fname = os.path.basename(this_file)
+#         if this_fname in used_names:
+#             dup_names.append(this_file)
+#         else:
+#             used_names.add(this_fname)
 
-    if len(dup_names) > 0:
-        logger.warning(
-            "Duplicate example file name(s) found. Having duplicate file "
-            "names will break some links. "
-            "List of files: %s",
-            sorted(dup_names),
-        )
+#     if len(dup_names) > 0:
+#         logger.warning(
+#             "Duplicate example file name(s) found. Having duplicate file "
+#             "names will break some links. "
+#             "List of files: %s",
+#             sorted(dup_names),
+#         )
 
 
-def check_spaces_in_filenames(files):
-    """Check for spaces in filenames across example directories."""
-    regex = re.compile(r"[\s]")
-    files_with_space = list(filter(regex.search, files))
-    if files_with_space:
-        logger.warning(
-            "Example file name(s) with space(s) found. Having space(s) in "
-            "file names will break some links. "
-            "List of files: %s",
-            sorted(files_with_space),
-        )
+# def check_spaces_in_filenames(files):
+#     """Check for spaces in filenames across example directories."""
+#     regex = re.compile(r"[\s]")
+#     files_with_space = list(filter(regex.search, files))
+#     if files_with_space:
+#         logger.warning(
+#             "Example file name(s) with space(s) found. Having space(s) in "
+#             "file names will break some links. "
+#             "List of files: %s",
+#             sorted(files_with_space),
+#         )
 
 
 def get_default_config_value(key):
