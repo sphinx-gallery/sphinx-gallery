@@ -430,14 +430,18 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
 
 
 def _get_gallery_header(dir_, gallery_conf, raise_error=True):
-    # first check if there is an index.rst and that index.rst is in the
+    """Get gallery header from GALLERY_HEADER.[ext] or README.[ext] file.
+
+    Returns `None` if user supplied an index.rst or no gallery header file
+    found and `raise_error=False`.
+    """
+    # First check if user supplies an index.rst and that index.rst is in the
     # copyfile regexp:
     if re.match(gallery_conf["copyfile_regex"], "index.rst"):
         fpth = os.path.join(dir_, "index.rst")
         if os.path.isfile(fpth):
             return None
-    # now look for GALLERY_HEADER.txt, GALLERY_HEADER.rst, and
-    # for backward-compatibility README.txt, README.rst etc...
+    # Next look for GALLERY_HEADER.[ext] (and for backward-compatibility README.[ext]
     extensions = [".txt"] + sorted(gallery_conf["source_suffix"])
     for ext in extensions:
         for fname in ("GALLERY_HEADER", "README", "readme"):
@@ -607,7 +611,7 @@ def generate_dir_rst(
         # User has supplied index.rst, so blank out the content
         index_content = None
 
-    # Copy over any other (non-example) files.
+    # Copy over any other (non-gallery-example) files.
     _copy_non_example_files(gallery_conf, src_dir, header_fname, target_dir)
 
     return (

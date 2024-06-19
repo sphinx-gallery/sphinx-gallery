@@ -603,8 +603,8 @@ def _log_costs(costs, gallery_conf):
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText.
 
-    Start the Sphinx-Gallery configuration and recursively scan the examples
-    directories in order to populate the examples gallery.
+    Fill Sphinx-Gallery configuration and scan example directories
+    (up to one level depth of sub-directory) to generate example reST files.
 
     We create a 2-level nested structure by iterating through every
     sibling folder of the current index file.
@@ -633,10 +633,8 @@ def generate_gallery_rst(app):
         examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
         gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
 
-        # Create section rst files and fetch content which will
-        # be added to current index file. This only includes content
-        # from files located in the root folder of the current gallery
-        # (ie not in subfolders)
+        # Create example rst files for root gallery directory examples
+        # (excl. sub-dir examples) and fetch gallery header for root index.rst
         (
             _,
             this_content,
@@ -650,6 +648,7 @@ def generate_gallery_rst(app):
             is_subsection=False,
         )
 
+        # `this_context` is None when user provides own index.rst
         has_gallery_header = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
