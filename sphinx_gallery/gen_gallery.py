@@ -23,7 +23,6 @@ from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
 from sphinx.util.console import blue, red, purple, bold
 from . import glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (
     generate_dir_rst,
@@ -47,6 +46,14 @@ from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
 from .recommender import ExampleRecommender, _write_recommendations
 from .sorting import ExplicitOrder
+from .utils import (
+    _collect_gallery_files,
+    _format_toctree,
+    _has_optipng,
+    _has_pypandoc,
+    _has_graphviz,
+    _replace_md5,
+)
 
 
 _KNOWN_CSS = (
@@ -576,40 +583,135 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     return list(zip(examples_dirs, gallery_dirs))
 
 
-def _format_toctree(items, includehidden=False):
-    """Format a toc tree."""
-    st = """
-.. toctree::
-   :hidden:"""
-    if includehidden:
-        st += """
-   :includehidden:
-"""
-    st += """
+def _filter_tags(subsection_index_content):
+    """Filter out tags from `subsection_index_content`."""
+    tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
+    subsection_index_content = "\n".join(
+        [
+            line
+            for line in subsection_index_content.splitlines()
+            if re.match(tag_regex, line) is None
+        ]
+        + [""]
+    )
+    return subsection_index_content
 
-   {}\n""".format("\n   ".join(items))
 
-    st += "\n"
+def _finish_index_rst(
+    app,
+    gallery_conf,
+    indexst,
+    sg_root_index,
+    subsection_index_files,
+    gallery_dir_abs_path,
+):
+    """Add toctree, download and signature, if req, to index and write file."""
+    # Generate toctree containing subsection index files
+    if (
+        sg_root_index
+        and gallery_conf["nested_sections"] is True
+        and len(subsection_index_files) > 0
+    ):
+        subsections_toctree = _format_toctree(
+            subsection_index_files, includehidden=True
+        )
+        indexst += subsections_toctree
 
-    return st
+    if sg_root_index:
+        # Download examples
+        if gallery_conf["download_all_examples"]:
+            download_fhindex = generate_zipfiles(
+                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
+            )
+            indexst += download_fhindex
+        # Signature
+        if app.config.sphinx_gallery_conf["show_signature"]:
+            indexst += SPHX_GLR_SIG
+        # Write index to file
+        index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
+        with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
+            fhindex.write(indexst)
+        _replace_md5(index_rst_new, mode="t")
+
+
+def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
+    """Build recommender and write recommendations."""
+    if gallery_conf["recommender"]["enable"]:
+        try:
+            import numpy as np  # noqa: F401
+        except ImportError:
+            raise ConfigError("gallery_conf['recommender'] requires numpy")
+
+        recommender_params = copy.deepcopy(gallery_conf["recommender"])
+        recommender_params.pop("enable")
+        recommender_params.pop("rubric_header", None)
+        recommender = ExampleRecommender(**recommender_params)
+
+        gallery_py_files = []
+        # root and subsection directories containing python examples
+        gallery_directories = [gallery_dir_abs_path] + subsecs
+        for current_dir in gallery_directories:
+            src_dir = os.path.join(gallery_dir_abs_path, current_dir)
+            # sort python files to have a deterministic input across call
+            py_files = sorted(
+                # NOTE we don't take account of `ignore_pattern` and ignore
+                # ext in `example_extensions`
+                [fname for fname in Path(src_dir).iterdir() if fname.suffix == ".py"],
+                key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
+            )
+            gallery_py_files.append(
+                [os.path.join(src_dir, fname) for fname in py_files]
+            )
+        # flatten the list of list
+        gallery_py_files = list(chain.from_iterable(gallery_py_files))
+
+        recommender.fit(gallery_py_files)
+        for fname in gallery_py_files:
+            _write_recommendations(recommender, fname, gallery_conf)
+
+
+def _log_costs(costs, gallery_conf):
+    """Log computation time."""
+    logger.info("computation time summary:", color="white")
+    lines, lens = _format_for_writing(
+        costs, src_dir=gallery_conf["src_dir"], kind="console"
+    )
+    for name, t, m in lines:
+        text = (f"    - {name}:   ").ljust(lens[0] + 10)
+        if t is None:
+            text += "(not run)"
+            logger.info(text)
+        else:
+            t_float = float(t.split()[0])
+            if t_float >= gallery_conf["min_reported_time"]:
+                text += t.rjust(lens[1]) + "   " + m.rjust(lens[2])
+                logger.info(text)
 
 
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText.
 
-    Start the Sphinx-Gallery configuration and recursively scan the examples
-    directories in order to populate the examples gallery.
+    Fill Sphinx-Gallery configuration and scan example directories
+    (up to one level depth of sub-directory) to generate example reST files.
 
-    We create a 2-level nested structure by iterating through every
-    sibling folder of the current index file.
-    In each of these folders, we look for a section index file,
-    for which we generate a toctree pointing to sibling scripts.
-    Then, we append the content of this section index file
-    to the current index file,
-    after we remove toctree (to keep a clean nested structure)
-    and sphinx tags (to prevent tag duplication)
-    Eventually, we create a toctree in the current index file
-    which points to section index files.
+    Iterate through each example directory and any of its sub-directories
+    (creates sub-sections) that has a header/index file.
+    Generate gallery example ReST files and `index.rst` file(s).
+
+    If `nested_sections=True` we generate `index.rst` files for all
+    sub-directories, which includes toctree linking to all sub-dir examples.
+    The root example directory `index.rst` file will contain, in sequence,:
+
+    * root gallery header then thumbnails,
+    * toctree linking all examples in root gallery,
+    * sub-section header followed by sub-section thumbnails, for all subsections,
+    * a second final toctree, at the end of the file, linking to all sub-section
+      index files.
+
+    If `nested_sections=True` we generate a single `index.rst` file per
+    example directory. It will contain headers for the root gallery and
+    each sub-section, with each header followed by a toctree linking to
+    every example in the root gallery/sub-section.
     """
     logger.info("generating gallery...", color="white")
     gallery_conf = app.config.sphinx_gallery_conf
@@ -621,18 +723,14 @@ def generate_gallery_rst(app):
 
     # Check for duplicate filenames to make sure linking works as expected
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
-    files = collect_gallery_files(examples_dirs, gallery_conf)
-    check_duplicate_filenames(files)
-    check_spaces_in_filenames(files)
+    _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
 
     for examples_dir, gallery_dir in workdirs:
         examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
         gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
 
-        # Create section rst files and fetch content which will
-        # be added to current index file. This only includes content
-        # from files located in the root folder of the current gallery
-        # (ie not in subfolders)
+        # Create example rst files for root gallery directory examples
+        # (excl. sub-dir examples) and fetch gallery header for root index.rst
         (
             _,
             this_content,
@@ -643,29 +741,22 @@ def generate_gallery_rst(app):
             gallery_dir_abs_path,
             gallery_conf,
             seen_backrefs,
-            include_toctree=False,
+            is_subsection=False,
         )
 
-        has_gallery_header = this_content is not None
+        # `this_context` is None when user provides own index.rst
+        sg_root_index = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
-        # We create an index.rst with all examples
-        # (this will overwrite the rst file generated by the previous call
-        # to generate_dir_rst)
-
-        if this_content:
+        # Create root gallery index.rst
+        if sg_root_index:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             indexst = ":orphan:\n\n" + this_content
-        else:
-            # we are not going to use the index.rst.new that gets made here,
-            # but go through the motions to run through all the subsections...
-            indexst = "Never used!"
-
-        # Write toctree with gallery items from gallery root folder
-        if len(this_toctree_items) > 0:
-            this_toctree = _format_toctree(this_toctree_items)
-            indexst += this_toctree
+            # Write toctree with gallery items from gallery root folder
+            if len(this_toctree_items) > 0:
+                this_toctree = _format_toctree(this_toctree_items)
+                indexst += this_toctree
 
         # list all paths to subsection index files in this array
         subsection_index_files = []
@@ -673,7 +764,7 @@ def generate_gallery_rst(app):
             app.builder.srcdir,
             examples_dir_abs_path,
             gallery_conf,
-            check_for_index=has_gallery_header,
+            check_for_index=sg_root_index,
         )
         for subsection in subsecs:
             src_dir = os.path.join(examples_dir_abs_path, subsection)
@@ -691,34 +782,21 @@ def generate_gallery_rst(app):
                 subsection_toctree_filenames,
             ) = generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs)
 
+            has_subsection_header = False
             if subsection_index_content:
-                # Filter out tags from subsection content
-                # to prevent tag duplication across the documentation
-                tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
-                subsection_index_content = "\n".join(
-                    [
-                        line
-                        for line in subsection_index_content.splitlines()
-                        if re.match(tag_regex, line) is None
-                    ]
-                    + [""]
-                )
-
-                indexst += subsection_index_content
+                # Filter tags to prevent tag duplication across the documentation
+                indexst += _filter_tags(subsection_index_content)
                 has_subsection_header = True
-            else:
-                has_subsection_header = False
 
-            # Write subsection toctree in main file only if
-            # nested_sections is False or None, and
-            # toctree filenames were generated for the subsection.
-            if not gallery_conf["nested_sections"]:
-                if len(subsection_toctree_filenames) > 0:
-                    subsection_index_toctree = _format_toctree(
-                        subsection_toctree_filenames
-                    )
-                    indexst += subsection_index_toctree
-            # Otherwise, a new index.rst.new file should
+            # Write subsection toctree containing all filenames, if req.
+            if (
+                sg_root_index
+                and not gallery_conf["nested_sections"]
+                and len(subsection_toctree_filenames) > 0
+            ):
+                subsection_index_toctree = _format_toctree(subsection_toctree_filenames)
+                indexst += subsection_index_toctree
+            # Otherwise, a new subsection index.rst.new file should
             # have been created and it needs to be parsed
             elif has_subsection_header:
                 _replace_md5(subsection_index_path, mode="t")
@@ -726,67 +804,20 @@ def generate_gallery_rst(app):
             costs += subsection_costs
             write_computation_times(gallery_conf, target_dir, subsection_costs)
 
+        # Per gallery - items below run once per gallery
+        # Finish index.rst and write to file
+        _finish_index_rst(
+            app,
+            gallery_conf,
+            indexst,
+            sg_root_index,
+            subsection_index_files,
+            gallery_dir_abs_path,
+        )
         # Build recommendation system
-        if gallery_conf["recommender"]["enable"]:
-            try:
-                import numpy as np  # noqa: F401
-            except ImportError:
-                raise ConfigError("gallery_conf['recommender'] requires numpy")
+        _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
 
-            recommender_params = copy.deepcopy(gallery_conf["recommender"])
-            recommender_params.pop("enable")
-            recommender_params.pop("rubric_header", None)
-            recommender = ExampleRecommender(**recommender_params)
-
-            gallery_py_files = []
-            # root and subsection directories containing python examples
-            gallery_directories = [gallery_dir_abs_path] + subsecs
-            for current_dir in gallery_directories:
-                src_dir = os.path.join(gallery_dir_abs_path, current_dir)
-                # sort python files to have a deterministic input across call
-                py_files = sorted(
-                    [
-                        fname
-                        for fname in Path(src_dir).iterdir()
-                        if fname.suffix == ".py"
-                    ],
-                    key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
-                )
-                gallery_py_files.append(
-                    [os.path.join(src_dir, fname) for fname in py_files]
-                )
-            # flatten the list of list
-            gallery_py_files = list(chain.from_iterable(gallery_py_files))
-
-            recommender.fit(gallery_py_files)
-            for fname in gallery_py_files:
-                _write_recommendations(recommender, fname, gallery_conf)
-
-        # generate toctree with subsections
-        if gallery_conf["nested_sections"] is True:
-            subsections_toctree = _format_toctree(
-                subsection_index_files, includehidden=True
-            )
-
-            # add toctree to file only if there are subsections
-            if len(subsection_index_files) > 0:
-                indexst += subsections_toctree
-
-        if gallery_conf["download_all_examples"]:
-            download_fhindex = generate_zipfiles(
-                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
-            )
-            indexst += download_fhindex
-
-        if app.config.sphinx_gallery_conf["show_signature"]:
-            indexst += SPHX_GLR_SIG
-
-        if has_gallery_header:
-            index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
-            with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
-                fhindex.write(indexst)
-            _replace_md5(index_rst_new, mode="t")
-
+    # Per project - items below run once only (for all galleries)
     # Write a single global sg_execution_times
     write_computation_times(gallery_conf, None, costs)
 
@@ -795,20 +826,7 @@ def generate_gallery_rst(app):
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf["plot_gallery"]:
-        logger.info("computation time summary:", color="white")
-        lines, lens = _format_for_writing(
-            costs, src_dir=gallery_conf["src_dir"], kind="console"
-        )
-        for name, t, m in lines:
-            text = (f"    - {name}:   ").ljust(lens[0] + 10)
-            if t is None:
-                text += "(not run)"
-                logger.info(text)
-            else:
-                t_float = float(t.split()[0])
-                if t_float >= gallery_conf["min_reported_time"]:
-                    text += t.rjust(lens[1]) + "   " + m.rjust(lens[2])
-                    logger.info(text)
+        _log_costs(costs, gallery_conf)
         # Also create a junit.xml file, useful e.g. on CircleCI
         write_junit_xml(gallery_conf, app.builder.outdir, costs)
 
@@ -1499,53 +1517,6 @@ def summarize_failing_examples(app, exception):
             logger.warning(fail_message)
         else:
             raise ExtensionError(fail_message)
-
-
-def collect_gallery_files(examples_dirs, gallery_conf):
-    """Collect python files from the gallery example directories."""
-    files = []
-    for example_dir in examples_dirs:
-        for root, dirnames, filenames in os.walk(example_dir):
-            for filename in filenames:
-                if filename.endswith(".py"):
-                    if re.search(gallery_conf["ignore_pattern"], filename) is None:
-                        files.append(os.path.join(root, filename))
-    return files
-
-
-def check_duplicate_filenames(files):
-    """Check for duplicate filenames across gallery directories."""
-    # Check whether we'll have duplicates
-    used_names = set()
-    dup_names = list()
-
-    for this_file in files:
-        this_fname = os.path.basename(this_file)
-        if this_fname in used_names:
-            dup_names.append(this_file)
-        else:
-            used_names.add(this_fname)
-
-    if len(dup_names) > 0:
-        logger.warning(
-            "Duplicate example file name(s) found. Having duplicate file "
-            "names will break some links. "
-            "List of files: %s",
-            sorted(dup_names),
-        )
-
-
-def check_spaces_in_filenames(files):
-    """Check for spaces in filenames across example directories."""
-    regex = re.compile(r"[\s]")
-    files_with_space = list(filter(regex.search, files))
-    if files_with_space:
-        logger.warning(
-            "Example file name(s) with space(s) found. Having space(s) in "
-            "file names will break some links. "
-            "List of files: %s",
-            sorted(files_with_space),
-        )
 
 
 def get_default_config_value(key):
