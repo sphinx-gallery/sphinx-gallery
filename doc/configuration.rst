@@ -238,8 +238,8 @@ Manage multiple galleries
 
 Sphinx-Gallery only supports one level of subfolder nesting in its gallery directories.
 For example our :ref:`examples-index`, has the parent gallery in `examples/` and
-the sub-gallery in `examples/no_output/`. Further sub-folders are not supported.
-This might be a limitation for you. Or you might want to have separate
+the subsection (aka sub-gallery) in `examples/no_output/`. Further sub-folders are
+not supported. This might be a limitation for you. Or you might want to have separate
 galleries for different purposes; an examples gallery and a tutorials gallery.
 To do this set the Sphinx-Gallery configuration dictionary keys `examples_dirs` and
 `gallery_dirs` in your Sphinx ``conf.py`` file to be a list of directories::
@@ -255,7 +255,8 @@ Keep in mind that both lists have to be of the same length.
 .. note:: If your examples take a long time to run, consider looking at the
           :ref:`execution times <sphx_glr_auto_examples_sg_execution_times>`
           file that is generated for each gallery dir (as long as any examples
-          were actually executed in that directory during the build).
+          were actually executed in that directory during the build)
+          and globally for all galleries.
 
 .. _build_pattern:
 
@@ -450,8 +451,8 @@ which is then resolved by Sphinx-Gallery to the callable ``reset_argv`` and used
 Sorting gallery subsections
 ===========================
 
-Gallery subsections are sorted by default alphabetically by their folder
-name, and as such you can always organize them by changing your folder
+Gallery subsections (aka sub-galleries) are sorted by default alphabetically by
+their folder name, and as such you can always organize them by changing your folder
 names. Alternatively, you can specify the order via the config value
 'subsection_order' by providing a list of the subsections as paths
 relative to :file:`conf.py` in the desired order::
@@ -2375,37 +2376,43 @@ Nesting gallery sections
 ========================
 
 ``nested_sections`` lets you control how gallery ``index.rst`` files are generated
-when your gallery has sub-sections (aka sub-galleries).
-This can be useful for controlling sidebar appearance. The most suitable
-``nested_sections`` setting generally depends on the theme of your documentation.
+when your :ref:`gallery <multiple_galleries_config>` has subsections
+(sub-folders inside `examples_dirs`, aka sub-galleries). This can be useful for
+controlling sidebar appearance. The default is set to ``nested_sections=True``
+because it generally works with the popular
+[``pydata-sphinx-theme``](https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html)
+theme. It can however cause undesirable duplication in the sidebar in other
+themes so users are advised to choose the most suitable ``nested_sections`` setting
+for their documentation theme.
 
 With default ``nested_sections=True``, Sphinx-Gallery will use the
 ``GALLERY_HEADER.[ext]`` (or ``README.[ext]`` for backward-compatibility) files
-for the root gallery and each sub-section to build separate index files for the root
-gallery and each sub-section.
-Sub-section index files will contain the sub-section's header (from the
+for the parent gallery and each subsection to build separate index files for the
+parent gallery and each subsection.
+subsection index files will contain the subsection's header (from the
 ``GALLERY_HEADER.[ext]`` file) and a toctree
 linking to each gallery example in the subsection.
-The root gallery's main ``index.rst`` file will contain, in sequence:
+The parent gallery's main ``index.rst`` file will contain, in sequence:
 
-* root gallery header followed by gallery thumbnails,
-* a toctree linking to each gallery example in the root gallery,
-* sub-section header followed by sub-section thumbnails, for all subsections,
-* a second toctree, at the end of the file, linking to all sub-section index files.
+* parent gallery header followed by gallery thumbnails,
+* a toctree linking to each gallery example in the parent gallery,
+* subsection header followed by subsection thumbnails, for all subsections,
+* a second toctree, at the end of the file, linking to all subsection index files.
 
-The generated file structure and toctrees mimic that of the root gallery folder,
+The generated file structure and toctrees mimic that of the parent gallery folder,
 which may be needed for generating sidebars with nested sections for some themes.
 
 For other themes, having two toctrees can cause undesirable duplication in the sidebar.
-In this case you can try moving all root gallery examples to their own sub-folder
-as this will result in a single toctree in the root gallery ``index.rst``.
+In this case you can try moving all parent gallery examples to their own sub-folder,
+as this will result in a single toctree in the parent gallery ``index.rst``, or
+using ``nested_sections=False``.
 
-If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
+``nested_sections=False`` makes Sphinx-Gallery behave as it used to
 prior to version 0.10.2.
 Specifically, it will generate a single index file for the whole gallery.
-This index file will contain headers for the root gallery and each sub-section, with
+This index file will contain headers for the parent gallery and each subsection, with
 each header followed by a toctree that links to every example in the
-root gallery/sub-section.
+parent gallery/subsection.
 For some themes, sidebars generated using these toctrees would list all gallery items
 with a flat structure and not reflect the nested folder structure of sub-galleries.
 
