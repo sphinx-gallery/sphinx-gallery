@@ -762,6 +762,17 @@ def _get_memory_base():
     return memory_base
 
 
+def _get_parser(fname, gallery_conf):
+    """Get parser and language."""
+    if fname.endswith(".py"):
+        parser = py_source_parser
+        language = "Python"
+    else:
+        parser = BlockParser(fname, gallery_conf)
+        language = parser.language
+    return parser, language
+
+
 def _check_reset_logging_tee(src_file):
     # Helper to deal with our tests not necessarily calling execute_script
     # but rather execute_code_block directly
@@ -1247,12 +1258,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     target_file = Path(target_dir) / fname
     _replace_md5(src_file, target_file, "copy", mode="t")
 
-    if fname.endswith(".py"):
-        parser = py_source_parser
-        language = "Python"
-    else:
-        parser = BlockParser(fname, gallery_conf)
-        language = parser.language
+    parser, language = _get_parser(fname, gallery_conf)
 
     file_conf, script_blocks, node = parser.split_code_and_text_blocks(
         src_file, return_node=True
