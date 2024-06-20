@@ -190,6 +190,44 @@ def _check_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
         raise ConfigError(msg.strip())
 
 
+def _check_pypandoc_config(gallery_conf):
+    """Check `pypandoc` config."""
+    pypandoc = gallery_conf["pypandoc"]
+    if not isinstance(pypandoc, (dict, bool)):
+        raise ConfigError(
+            "'pypandoc' parameter must be of type bool or dict,"
+            f"got: {type(pypandoc)}."
+        )
+    gallery_conf["pypandoc"] = dict() if pypandoc is True else pypandoc
+    has_pypandoc, version = _has_pypandoc()
+    if isinstance(gallery_conf["pypandoc"], dict) and has_pypandoc is None:
+        logger.warning(
+            "'pypandoc' not available. Using Sphinx-Gallery to "
+            "convert rst text blocks to markdown for .ipynb files."
+        )
+        gallery_conf["pypandoc"] = False
+    elif isinstance(gallery_conf["pypandoc"], dict):
+        logger.info(
+            "Using pandoc version: %s to convert rst text blocks to "
+            "markdown for .ipynb files",
+            version,
+        )
+    else:
+        logger.info(
+            "Using Sphinx-Gallery to convert rst text blocks to "
+            "markdown for .ipynb files."
+        )
+    if isinstance(pypandoc, dict):
+        accepted_keys = ("extra_args", "filters")
+        for key in pypandoc:
+            if key not in accepted_keys:
+                raise ConfigError(
+                    "'pypandoc' only accepts the following key "
+                    f"values: {accepted_keys}, got: {key}."
+                )
+    return gallery_conf
+
+
 def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     """Handle user configs, update default gallery configs and check values."""
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
@@ -364,49 +402,17 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         )
 
     # Ensure the first/last cell text is a string if we have it
-    cell_config_key = ("first_notebook_cell", "last_notebook_cell")
-    for conf_key in cell_config_key:
+    cell_config_keys = ("first_notebook_cell", "last_notebook_cell")
+    for conf_key in cell_config_keys:
         cell_config = gallery_conf.get(conf_key)
-    if (not isinstance(cell_config, str)) and (cell_config is not None):
-        raise ConfigError(
-            f"The {conf_key} parameter must be type "
-            f"str or None, found type {type(cell_config)}"
-        )
+        if (not isinstance(cell_config, str)) and (cell_config is not None):
+            raise ConfigError(
+                f"The {conf_key} parameter must be type "
+                f"str or None, found type {type(cell_config)}"
+            )
 
     # Check pypandoc
-    pypandoc = gallery_conf["pypandoc"]
-    if not isinstance(pypandoc, (dict, bool)):
-        raise ConfigError(
-            "'pypandoc' parameter must be of type bool or dict,"
-            f"got: {type(pypandoc)}."
-        )
-    gallery_conf["pypandoc"] = dict() if pypandoc is True else pypandoc
-    has_pypandoc, version = _has_pypandoc()
-    if isinstance(gallery_conf["pypandoc"], dict) and has_pypandoc is None:
-        logger.warning(
-            "'pypandoc' not available. Using Sphinx-Gallery to "
-            "convert rst text blocks to markdown for .ipynb files."
-        )
-        gallery_conf["pypandoc"] = False
-    elif isinstance(gallery_conf["pypandoc"], dict):
-        logger.info(
-            "Using pandoc version: %s to convert rst text blocks to "
-            "markdown for .ipynb files",
-            version,
-        )
-    else:
-        logger.info(
-            "Using Sphinx-Gallery to convert rst text blocks to "
-            "markdown for .ipynb files."
-        )
-    if isinstance(pypandoc, dict):
-        accepted_keys = ("extra_args", "filters")
-        for key in pypandoc:
-            if key not in accepted_keys:
-                raise ConfigError(
-                    "'pypandoc' only accepts the following key "
-                    f"values: {accepted_keys}, got: {key}."
-                )
+    gallery_conf = _check_pypandoc_config(gallery_conf)
 
     gallery_conf["titles"] = {}
     # Ensure 'backreferences_dir' is str, pathlib.Path or None
