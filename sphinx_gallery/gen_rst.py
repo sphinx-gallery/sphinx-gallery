@@ -761,6 +761,17 @@ def _get_memory_base():
     return memory_base
 
 
+def _get_parser(fname, gallery_conf):
+    """Get parser and language."""
+    if fname.endswith(".py"):
+        parser = py_source_parser
+        language = "Python"
+    else:
+        parser = BlockParser(fname, gallery_conf)
+        language = parser.language
+    return parser, language
+
+
 def _check_reset_logging_tee(src_file):
     # Helper to deal with our tests not necessarily calling execute_script
     # but rather execute_code_block directly
@@ -1140,6 +1151,83 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
     return output_blocks, time_elapsed
 
 
+def _make_dummy_images(executable, file_conf, script_vars):
+    """Make dummy images when not executing the example."""
+    if not executable:
+        dummy_image = file_conf.get("dummy_images", None)
+        if dummy_image is not None:
+            if isinstance(dummy_image, bool) or not isinstance(dummy_image, int):
+                raise ExtensionError(
+                    "sphinx_gallery_dummy_images setting is not an integer, "
+                    "got {dummy_image!r}"
+                )
+
+            image_path_iterator = script_vars["image_path_iterator"]
+            stock_img = os.path.join(glr_path_static(), "no_image.png")
+            for _, path in zip(range(dummy_image), image_path_iterator):
+                if not os.path.isfile(path):
+                    copyfile(stock_img, path)
+
+
+def _clean_script_blocks(gallery_conf, parser, script_blocks, output_blocks):
+    """Remove ignore blocks, config comments and final empty blocks."""
+    # Ignore blocks must be processed before the
+    # remaining config comments are removed.
+    script_blocks = [
+        py_source_parser.Block(label, parser.remove_ignore_blocks(content), line_number)
+        for label, content, line_number in script_blocks
+    ]
+
+    if gallery_conf["remove_config_comments"]:
+        script_blocks = [
+            py_source_parser.Block(
+                label, parser.remove_config_comments(content), line_number
+            )
+            for label, content, line_number in script_blocks
+        ]
+
+    # Remove final empty block, (can occur after config comments removed)
+    if script_blocks[-1].content.isspace():
+        script_blocks = script_blocks[:-1]
+        output_blocks = output_blocks[:-1]
+
+    return script_blocks, output_blocks
+
+
+def _get_backreferences(gallery_conf, script_vars, script_blocks, node, target_file):
+    """Get example backreferences for `script_blocks` and write _codeobj."""
+    if gallery_conf["inspect_global_variables"]:
+        global_variables = script_vars["example_globals"]
+    else:
+        global_variables = None
+    ref_regex = _make_ref_regex(gallery_conf["default_role"])
+    example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
+    if example_code_obj:
+        codeobj_fname = target_file.with_name(target_file.stem + "_codeobj.pickle.new")
+        with open(codeobj_fname, "wb") as fid:
+            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
+        _replace_md5(codeobj_fname)
+    exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
+    backrefs = {
+        "{module_short}.{name}".format(**cobj)
+        for cobjs in example_code_obj.values()
+        for cobj in cobjs
+        if cobj["module"].startswith(gallery_conf["doc_module"])
+        and (
+            cobj["is_explicit"]
+            or (not exclude_regex)
+            or (not exclude_regex.search("{module}.{name}".format(**cobj)))
+        )
+    }
+
+    # This can help with garbage collection in some instances
+    if global_variables is not None and "___" in global_variables:
+        del global_variables["___"]
+    del global_variables
+
+    return backrefs
+
+
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=None):
     """Generate the rst file for a given example.
 
@@ -1169,12 +1257,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     target_file = Path(target_dir) / fname
     _replace_md5(src_file, target_file, "copy", mode="t")
 
-    if fname.endswith(".py"):
-        parser = py_source_parser
-        language = "Python"
-    else:
-        parser = BlockParser(fname, gallery_conf)
-        language = parser.language
+    parser, language = _get_parser(fname, gallery_conf)
 
     file_conf, script_blocks, node = parser.split_code_and_text_blocks(
         src_file, return_node=True
@@ -1219,44 +1302,21 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
 
     # Create dummy images
-    if not executable:
-        dummy_image = file_conf.get("dummy_images", None)
-        if dummy_image is not None:
-            if isinstance(dummy_image, bool) or not isinstance(dummy_image, int):
-                raise ExtensionError(
-                    "sphinx_gallery_dummy_images setting is not an integer, "
-                    "got {dummy_image!r}"
-                )
+    _make_dummy_images(executable, file_conf, script_vars)
 
-            image_path_iterator = script_vars["image_path_iterator"]
-            stock_img = os.path.join(glr_path_static(), "no_image.png")
-            for _, path in zip(range(dummy_image), image_path_iterator):
-                if not os.path.isfile(path):
-                    copyfile(stock_img, path)
-
-    # Ignore blocks must be processed before the
-    # remaining config comments are removed.
-    script_blocks = [
-        py_source_parser.Block(label, parser.remove_ignore_blocks(content), line_number)
-        for label, content, line_number in script_blocks
-    ]
-
-    if gallery_conf["remove_config_comments"]:
-        script_blocks = [
-            py_source_parser.Block(
-                label, parser.remove_config_comments(content), line_number
-            )
-            for label, content, line_number in script_blocks
-        ]
-
-    # Remove final empty block, which can occur after config comments
-    # are removed
-    if script_blocks[-1].content.isspace():
-        script_blocks = script_blocks[:-1]
-        output_blocks = output_blocks[:-1]
+    script_blocks, output_blocks = _clean_script_blocks(
+        gallery_conf,
+        parser,
+        script_blocks,
+        output_blocks,
+    )
 
     example_rst = rst_blocks(
-        script_blocks, output_blocks, file_conf, gallery_conf, language=language
+        script_blocks,
+        output_blocks,
+        file_conf,
+        gallery_conf,
+        language=language,
     )
     _, memory_base = _get_call_memory_and_base(gallery_conf)
     memory_used = memory_base + script_vars["memory_delta"]
@@ -1285,39 +1345,21 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     zip_files(files_to_zip, target_file.with_suffix(".zip"), target_dir)
 
     # Write names
-    if gallery_conf["inspect_global_variables"]:
-        global_variables = script_vars["example_globals"]
-    else:
-        global_variables = None
-    ref_regex = _make_ref_regex(gallery_conf["default_role"])
-    example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
-    if example_code_obj:
-        codeobj_fname = target_file.with_name(target_file.stem + "_codeobj.pickle.new")
-        with open(codeobj_fname, "wb") as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
-        _replace_md5(codeobj_fname)
-    exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
-    backrefs = {
-        "{module_short}.{name}".format(**cobj)
-        for cobjs in example_code_obj.values()
-        for cobj in cobjs
-        if cobj["module"].startswith(gallery_conf["doc_module"])
-        and (
-            cobj["is_explicit"]
-            or (not exclude_regex)
-            or (not exclude_regex.search("{module}.{name}".format(**cobj)))
-        )
-    }
+    backrefs = _get_backreferences(
+        gallery_conf,
+        script_vars,
+        script_blocks,
+        node,
+        target_file,
+    )
 
     # Write backreferences
     _write_backreferences(
         backrefs, seen_backrefs, gallery_conf, target_dir, fname, intro, title
     )
 
-    # This can help with garbage collection in some instances
-    if global_variables is not None and "___" in global_variables:
-        del global_variables["___"]
-    del script_vars, global_variables  # don't keep these during reset
+    # Don't keep this during reset
+    del script_vars
     if executable and gallery_conf["reset_modules_order"] in ["after", "both"]:
         clean_modules(gallery_conf, fname, "after")
 
