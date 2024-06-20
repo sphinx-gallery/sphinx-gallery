@@ -15,6 +15,7 @@ import glob
 import json
 
 import lxml.html
+import lxml.etree
 from packaging.version import Version
 
 from sphinx import __version__ as sphinx_version
@@ -186,11 +187,20 @@ def test_junit(sphinx_app, tmpdir):
     out_dir = sphinx_app.outdir
     junit_file = op.join(out_dir, "sphinx-gallery", "junit-results.xml")
     assert op.isfile(junit_file)
-    with codecs.open(junit_file, "r", "utf-8") as fid:
+    with open(junit_file, "rb") as fid:
         contents = fid.read()
-    assert contents.startswith("<?xml")
-    assert 'errors="0" failures="0"' in contents
-    assert f'tests="{N_EXAMPLES}"' in contents
+    suite = lxml.etree.fromstring(contents)
+    want = dict(
+        errors="0",
+        failures="0",
+        skipped="2",
+        tests=f"{N_EXAMPLES}",
+        name="sphinx-gallery",
+    )
+    got = dict(suite.attrib)
+    del got["time"]
+    assert got == want
+    contents = contents.decode("utf-8")
     assert "local_module" not in contents  # it's not actually run as an ex
     assert "expected example failure" in contents
     assert "<failure message" not in contents
@@ -224,11 +234,15 @@ def test_junit(sphinx_app, tmpdir):
             app.build(False, [])
     junit_file = op.join(new_out_dir, "sphinx-gallery", "junit-results.xml")
     assert op.isfile(junit_file)
-    with codecs.open(junit_file, "r", "utf-8") as fid:
+    with open(junit_file, "rb") as fid:
         contents = fid.read()
-    assert 'errors="0" failures="2"' in contents
+    suite = lxml.etree.fromstring(contents)
     # this time we only ran the stale files
-    assert f'tests="{N_FAILING + 1}"' in contents
+    want.update(failures="2", skipped="1", tests="3")
+    got = dict(suite.attrib)
+    del got["time"]
+    assert got == want
+    contents = contents.decode("utf-8")
     assert '<failure message="RuntimeError: Forcing' in contents
     assert "Passed even though it was marked to fail" in contents
 
