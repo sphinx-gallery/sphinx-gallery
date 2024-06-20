@@ -17,7 +17,7 @@ from sphinx.errors import ExtensionError
 import sphinx.util
 
 from .scrapers import _find_image_ext
-from .utils import _replace_md5
+from .utils import _replace_md5, _W_KW
 
 
 THUMBNAIL_PARENT_DIV = """
@@ -390,7 +390,8 @@ def _write_backreferences(
             f"{backref}.examples.new",
         )
         seen = backref in seen_backrefs
-        with open(include_path, "a" if seen else "w", encoding="utf-8") as ex_file:
+        mode = "a" if seen else "w"
+        with open(include_path, mode, **_W_KW) as ex_file:
             if not seen:
                 # Be aware that if the number of lines of this heading changes,
                 #   the minigallery directive should be modified accordingly
@@ -429,7 +430,7 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
         if os.path.isfile(path):
             # Close div containing all thumbnails
             # (it was open in _write_backreferences)
-            with open(path, "a", encoding="utf-8") as ex_file:
+            with open(path, "a", **_W_KW) as ex_file:
                 ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
             _replace_md5(path, mode="t")
         else:

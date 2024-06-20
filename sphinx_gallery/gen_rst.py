@@ -49,6 +49,7 @@ from .utils import (
     _replace_md5,
     optipng,
     status_iterator,
+    _W_KW,
 )
 from . import glr_path_static, py_source_parser
 from .backreferences import (
@@ -341,16 +342,16 @@ def extract_intro_and_title(filename, docstring):
 
 def md5sum_is_current(src_file, mode="b"):
     """Checks whether src_file has the same md5 hash as the one on disk."""
-    src_md5 = get_md5sum(src_file, mode)
+    src_md5 = get_md5sum(src_file, mode=mode)
 
     src_md5_file = str(src_file) + ".md5"
-    if os.path.exists(src_md5_file):
-        with open(src_md5_file) as file_checksum:
-            ref_md5 = file_checksum.read()
+    if not os.path.exists(src_md5_file):
+        return False
 
-        return src_md5 == ref_md5
+    with open(src_md5_file) as file_cs:
+        ref_md5 = file_cs.read()
 
-    return False
+    return src_md5 == ref_md5
 
 
 def save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf):
@@ -472,7 +473,7 @@ def _write_subsection_index(
     if gallery_conf["nested_sections"] and not user_index_rst and is_subsection:
         index_path = os.path.join(target_dir, "index.rst.new")
         head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
-        with open(index_path, "w", encoding="utf-8") as (findex):
+        with open(index_path, "w", **_W_KW) as findex:
             findex.write(
                 "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.sep, "_"))
             )
@@ -1172,8 +1173,8 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
         script_vars["memory_delta"] -= memory_start
         # Write md5 checksum if the example was meant to run (no-plot
         # shall not cache md5sum) and has built correctly
-        with open(script_vars["target_file"] + ".md5", "w") as file_checksum:
-            file_checksum.write(get_md5sum(script_vars["target_file"], "t"))
+        with open(script_vars["target_file"] + ".md5", "w") as file_cs:
+            file_cs.write(get_md5sum(script_vars["target_file"], mode="t"))
         script_vars["passing"] = True
 
     return output_blocks, time_elapsed
@@ -1298,6 +1299,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     if md5sum_is_current(target_file, mode="t"):
         do_return = True
+        logger.debug(f"md5sum is current: {target_file}")
         if executable:
             if gallery_conf["run_stale_examples"]:
                 do_return = False
@@ -1574,7 +1576,7 @@ def save_rst_example(
         example_rst += SPHX_GLR_SIG
 
     write_file_new = example_file.with_suffix(".rst.new")
-    with open(write_file_new, "w", encoding="utf-8") as f:
+    with open(write_file_new, "w", **_W_KW) as f:
         f.write(example_rst)
     # make it read-only so that people don't try to edit it
     mode = os.stat(write_file_new).st_mode

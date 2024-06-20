@@ -18,7 +18,7 @@ from sphinx.errors import ExtensionError
 from sphinx.search import js_index
 import sphinx.util
 
-from .utils import status_iterator, _replace_md5
+from .utils import status_iterator, _replace_md5, _W_KW
 
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -337,7 +337,7 @@ def _get_intersphinx_inventory(app):
 # _embed_code_links
 def _write_code_obj(target_file, example_code_obj):
     codeobj_fname = target_file.with_name(target_file.stem + ".codeobj.json.new")
-    with open(codeobj_fname, "w", encoding="utf-8") as fid:
+    with open(codeobj_fname, "w", **_W_KW) as fid:
         json.dump(
             example_code_obj,
             fid,
@@ -490,7 +490,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         if len(str_repl) > 0:
             with open(full_fname, "r", encoding="utf-8") as fid:
                 lines_in = fid.readlines()
-            with open(full_fname, "w", encoding="utf-8") as fid:
+            with open(full_fname, "w", **_W_KW) as fid:
                 for line in lines_in:
                     line_out = regex.sub(substitute_link, line)
                     fid.write(line_out)

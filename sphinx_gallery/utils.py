@@ -28,6 +28,10 @@ except Exception:  # Sphinx < 6
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
+# Text writing kwargs for builtins.open
+_W_KW = dict(encoding="utf-8", newline="\n")
+
+
 def _get_image():
     try:
         from PIL import Image
@@ -142,7 +146,8 @@ def get_md5sum(src_file, mode="b"):
         kwargs = {"errors": "surrogateescape", "encoding": "utf-8"}
     else:
         kwargs = {}
-    with open(src_file, "r" + mode, **kwargs) as src_data:
+    # Universal newline mode is intentional here
+    with open(src_file, f"r{mode}", **kwargs) as src_data:
         src_content = src_data.read()
         if mode == "t":
             src_content = src_content.encode(**kwargs)
