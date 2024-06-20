@@ -12,9 +12,9 @@ import json
 import os
 from pathlib import Path
 import re
-from shutil import move, copyfile
 import subprocess
 import zipfile
+from shutil import move, copyfile
 
 from sphinx.errors import ExtensionError
 import sphinx.util
@@ -183,6 +183,70 @@ def _replace_md5(fname_new, fname_old=None, *, method="move", mode="b", check="m
     assert os.path.isfile(fname_old)
 
 
+def check_duplicate_filenames(files):
+    """Check for duplicate filenames across gallery directories."""
+    # Check whether we'll have duplicates
+    used_names = set()
+    dup_names = list()
+
+    for this_file in files:
+        this_fname = os.path.basename(this_file)
+        if this_fname in used_names:
+            dup_names.append(this_file)
+        else:
+            used_names.add(this_fname)
+
+    if len(dup_names) > 0:
+        logger.warning(
+            "Duplicate example file name(s) found. Having duplicate file "
+            "names will break some links. "
+            "List of files: %s",
+            sorted(dup_names),
+        )
+
+
+def check_spaces_in_filenames(files):
+    """Check for spaces in filenames across example directories."""
+    regex = re.compile(r"[\s]")
+    files_with_space = list(filter(regex.search, files))
+    if files_with_space:
+        logger.warning(
+            "Example file name(s) with spaces found. Having spaces in "
+            "file names will break some links. "
+            "List of files: %s",
+            sorted(files_with_space),
+        )
+
+
+def _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=False):
+    """Collect files with `example_extensions`, accounting for `ignore_pattern`.
+
+    If `check_filenames` we check one level of sub-folders as well as root
+    `example_dirs` for gallery example files. We then check for duplicate and
+    spaces in full file paths.
+    """
+    exts = gallery_conf["example_extensions"]
+    max_depth = 1 if check_filenames else 0
+    files = []
+    for example_dir in examples_dirs:
+        example_depth = os.path.abspath(example_dir).count(os.sep)
+        for root, _, filenames in os.walk(example_dir):
+            root = os.path.normpath(root)
+            if (root.count(os.sep) - example_depth) > max_depth:
+                break
+            for filename in filenames:
+                if (s := Path(filename).suffix) and s in exts:
+                    if re.search(gallery_conf["ignore_pattern"], filename) is None:
+                        file = filename
+                        if check_filenames:
+                            file = os.path.join(root, filename)
+                        files.append(file)
+    if check_filenames:
+        check_duplicate_filenames(files)
+        check_spaces_in_filenames(files)
+    return files
+
+
 def zip_files(file_list, zipname, relative_to, extension=None):
     """
     Creates a zip file with the given files.
@@ -229,3 +293,21 @@ def _has_graphviz():
 def _escape_ansi(s):
     """Remove ANSI terminal formatting characters from a string."""
     return re.sub(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]", "", s)
+
+
+def _format_toctree(items, includehidden=False):
+    """Format a toc tree."""
+    st = """
+.. toctree::
+   :hidden:"""
+    if includehidden:
+        st += """
+   :includehidden:
+"""
+    st += """
+
+   {}\n""".format("\n   ".join(items))
+
+    st += "\n"
+
+    return st

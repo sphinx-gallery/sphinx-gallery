@@ -350,7 +350,7 @@ def _thumbnail_div(
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
 
-    ref_name = os.path.join(full_dir, fname).replace(os.path.sep, "_")
+    ref_name = os.path.join(full_dir, fname).replace(os.sep, "_")
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
     return template.format(

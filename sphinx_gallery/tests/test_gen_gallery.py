@@ -12,17 +12,18 @@ import pytest
 from sphinx.config import is_serializable
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
-    check_duplicate_filenames,
-    check_spaces_in_filenames,
-    collect_gallery_files,
     write_computation_times,
     _fill_gallery_conf_defaults,
     write_api_entry_usage,
     fill_gallery_conf_defaults,
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
-from sphinx_gallery.utils import _escape_ansi
-
+from sphinx_gallery.utils import (
+    _collect_gallery_files,
+    _escape_ansi,
+    check_duplicate_filenames,
+    check_spaces_in_filenames,
+)
 
 MINIMAL_HEADER = """
 '''
@@ -132,7 +133,7 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
     [
         pytest.param(
             ConfigError,
-            "reset_modules_order must be a str",
+            "'reset_modules_order' config allowed types",
             id="Resetter unknown",
             marks=pytest.mark.conf_file(
                 content=("sphinx_gallery_conf=" "{'reset_modules_order': 1,}")
@@ -166,7 +167,7 @@ def test_bad_reset_modules_order(sphinx_app_wrapper, err_class, err_match):
         ),
         pytest.param(
             ConfigError,
-            "must be list or tuple",
+            "config allowed types:",
             id="CSS type error",
             marks=pytest.mark.conf_file(content="sphinx_gallery_conf={'css': 1.}"),
         ),
@@ -181,7 +182,7 @@ def test_bad_css(sphinx_app_wrapper, err_class, err_match):
 def test_bad_api():
     """Test that we raise an error for bad API usage arguments."""
     sphinx_gallery_conf = dict(api_usage_ignore=("foo",))
-    with pytest.raises(ConfigError, match=".*must be str.*"):
+    with pytest.raises(ConfigError, match="'api_usage_ignore' config allowed"):
         _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(show_api_usage="foo")
     with pytest.raises(ConfigError, match='.*must be True, False or "unused".*'):
@@ -236,7 +237,7 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
 
     files = ["./a/file1.py", "./a/file2.py", "./a/file 3.py"]
     msg = (
-        "Example file name(s) with space(s) found. Having space(s) in "
+        "Example file name(s) with spaces found. Having spaces in "
         "file names will break some links. "
         "List of files: {}"
     )
@@ -333,8 +334,8 @@ def test_collect_gallery_files(tmpdir, gallery_conf):
         "examples/folder1/file1.py",
         "examples/folder1/file2.py",
         "examples/folder2/file1.py",
-        "tutorials/folder1/subfolder/file1.py",
-        "tutorials/folder2/subfolder/subsubfolder/file1.py",
+        "tutorials/folder1/file1.py",
+        "tutorials/folder2/file1.py",
     ]
 
     abs_paths = [tmpdir.join(rp) for rp in rel_filepaths]
@@ -343,7 +344,9 @@ def test_collect_gallery_files(tmpdir, gallery_conf):
 
     examples_path = tmpdir.join("examples")
     dirs = [examples_path.strpath]
-    collected_files = set(collect_gallery_files(dirs, gallery_conf))
+    collected_files = set(
+        _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
+    )
     expected_files = {
         ap.strpath for ap in abs_paths if re.search(r"examples.*\.py$", ap.strpath)
     }
@@ -352,7 +355,9 @@ def test_collect_gallery_files(tmpdir, gallery_conf):
 
     tutorials_path = tmpdir.join("tutorials")
     dirs = [examples_path.strpath, tutorials_path.strpath]
-    collected_files = set(collect_gallery_files(dirs, gallery_conf))
+    collected_files = set(
+        _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
+    )
     expected_files = {
         ap.strpath for ap in abs_paths if re.search(r".*\.py$", ap.strpath)
     }
@@ -376,7 +381,9 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
     gallery_conf["ignore_pattern"] = r"one"
     examples_path = tmpdir.join("examples")
     dirs = [examples_path.strpath]
-    collected_files = set(collect_gallery_files(dirs, gallery_conf))
+    collected_files = set(
+        _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
+    )
     expected_files = {
         ap.strpath
         for ap in abs_paths
@@ -573,9 +580,7 @@ sphinx_gallery_conf = {
 )
 def test_backreferences_dir_config(sphinx_app_wrapper):
     """Tests 'backreferences_dir' type checking."""
-    with pytest.raises(
-        ConfigError, match="The 'backreferences_dir' parameter must be of"
-    ):
+    with pytest.raises(ConfigError, match="'backreferences_dir' config allowed types"):
         app = sphinx_app_wrapper.create_sphinx_app()
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
@@ -612,7 +617,8 @@ sphinx_gallery_conf = {
 def test_pypandoc_config_list(sphinx_app_wrapper):
     """Tests 'pypandoc' type checking."""
     with pytest.raises(
-        ConfigError, match="'pypandoc' parameter must be of type bool or " "dict"
+        ConfigError,
+        match=r"'pypandoc' config allowed types: \['dict', 'bool'\].",
     ):
         app = sphinx_app_wrapper.create_sphinx_app()
         fill_gallery_conf_defaults(app, app.config, check_keys=False)

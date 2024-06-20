@@ -23,7 +23,6 @@ from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
 from sphinx.util.console import blue, red, purple, bold
 from . import glr_path_static, __version__ as _sg_version
-from .utils import _replace_md5, _has_optipng, _has_pypandoc, _has_graphviz
 from .backreferences import _finalize_backreferences
 from .gen_rst import (
     generate_dir_rst,
@@ -47,6 +46,14 @@ from .interactive_example import create_jupyterlite_contents
 from .directives import MiniGallery, ImageSg, imagesg_addnode
 from .recommender import ExampleRecommender, _write_recommendations
 from .sorting import ExplicitOrder
+from .utils import (
+    _collect_gallery_files,
+    _format_toctree,
+    _has_optipng,
+    _has_pypandoc,
+    _has_graphviz,
+    _replace_md5,
+)
 
 
 _KNOWN_CSS = (
@@ -174,9 +181,8 @@ def _update_gallery_conf_builder_inited(
     sphinx_gallery_conf["builder_name"] = builder_name
 
 
-def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
-    """Handle user configs and update default gallery configs."""
-    gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
+def _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
+    """Check SG config keys, optionally raising if any extra keys present."""
     options = sorted(gallery_conf)
     extra_keys = sorted(set(sphinx_gallery_conf) - set(options))
     if extra_keys and check_keys:
@@ -190,6 +196,175 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
                 msg += f", did you mean one of {options!r}?"
             msg += "\n"
         raise ConfigError(msg.strip())
+
+
+def _check_config_type(
+    gallery_conf,
+    conf_key,
+    types,
+    str_to_list=False,
+    allow_none=False,
+):
+    """Check config type, optionally converting str to list or allowing None."""
+    conf_value = gallery_conf[conf_key]
+    # Early exit if type correct
+    if isinstance(conf_value, types) or (allow_none and conf_value is None):
+        if str_to_list:
+            if isinstance(conf_value, str):
+                gallery_conf[conf_key] = [conf_value]
+            return gallery_conf
+        return
+    # Otherwise raise error
+    msg = "'{conf_key}' config allowed types: {types}{or_none}. Got {conf_type}."
+    if isinstance(types, type):
+        types = (types,)
+    str_types = [t.__name__ for t in types]
+    or_none = " or None" if allow_none else ""
+    conf_type = type(conf_value).__name__
+    msg = msg.format(
+        conf_key=conf_key,
+        types=str_types,
+        or_none=or_none,
+        conf_type=conf_type,
+    )
+    raise ConfigError(msg)
+
+
+def _check_image_srcset(gallery_conf):
+    """Check `_check_image_srcset`, convert to float and removing '1'."""
+    gallery_conf = _check_config_type(
+        gallery_conf,
+        "image_srcset",
+        (list, tuple),
+        str_to_list=True,
+    )
+    srcset_mult_facs = set()
+    for st in gallery_conf["image_srcset"]:
+        if not (isinstance(st, str) and st[-1:] == "x"):
+            raise ConfigError(
+                f"Invalid value for image_srcset parameter: {st!r}. "
+                "Must be a list of strings with the multiplicative "
+                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]'
+            )
+        # "2x" -> "2.0"
+        srcset_mult_facs.add(float(st[:-1]))
+    srcset_mult_facs -= {1}  # 1x is always saved.
+    gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
+    return gallery_conf
+
+
+def _check_compress_images(gallery_conf):
+    """Check `compress_images`, getting any command line args."""
+    gallery_conf = _check_config_type(
+        gallery_conf,
+        "compress_images",
+        (str, tuple, list),
+        str_to_list=True,
+    )
+    compress_images = gallery_conf["compress_images"]
+    compress_images = list(compress_images)
+    allowed_values = ("images", "thumbnails")
+    pops = list()
+    # Get command-line switches
+    for ki, kind in enumerate(compress_images):
+        if kind not in allowed_values:
+            if kind.startswith("-"):
+                pops.append(ki)
+                continue
+            raise ConfigError(
+                "All entries in compress_images must be one of "
+                f"{allowed_values} or a command-line switch "
+                f'starting with "-", got {kind!r}'
+            )
+    compress_images_args = [compress_images.pop(p) for p in pops[::-1]]
+    if len(compress_images) and not _has_optipng():
+        logger.warning(
+            "optipng binaries not found, PNG %s will not be optimized",
+            " and ".join(compress_images),
+        )
+        compress_images = ()
+    gallery_conf["compress_images"] = compress_images
+    gallery_conf["compress_images_args"] = compress_images_args
+
+    return gallery_conf
+
+
+def _check_matplotlib_animations(gallery_conf, app):
+    """Check `matplotlib_animations` config."""
+    animations = gallery_conf["matplotlib_animations"]
+    if isinstance(animations, bool):
+        # We allow single boolean for backwards compatibility reasons
+        animations = (animations,)
+        fmt = None
+    if not (len(animations) in (1, 2) and isinstance(enabled := animations[0], bool)):
+        raise ConfigError(
+            "'matplotlib_animations' must be a single bool or "
+            f"(enabled: bool, format: str), not {animations!r}"
+        )
+    # Handle file format
+    if len(animations) > 1:
+        fmt = animations[1]
+        if fmt is not None:
+            if not isinstance(fmt, str):
+                raise ConfigError(
+                    "'matplotlib_animations' file format must be a string or None"
+                )
+            if fmt not in ("html5", "jshtml"):
+                if app is not None:
+                    # Other formats mean animations saved externally and require
+                    # this `video` extension to embed them into the HTML
+                    try:
+                        app.setup_extension("sphinxcontrib.video")
+                    except ExtensionError as e:
+                        raise ConfigError(
+                            f"'matplotlib_animations' specifies file format: {fmt}; "
+                            f"this requires the sphinxcontrib.video package."
+                        ) from e
+
+    gallery_conf["matplotlib_animations"] = (enabled, fmt)
+    return gallery_conf
+
+
+def _check_pypandoc_config(gallery_conf):
+    """Check `pypandoc` config."""
+    pypandoc = gallery_conf["pypandoc"]
+    _check_config_type(gallery_conf, "pypandoc", (dict, bool))
+
+    gallery_conf["pypandoc"] = dict() if pypandoc is True else pypandoc
+    has_pypandoc, version = _has_pypandoc()
+    if isinstance(gallery_conf["pypandoc"], dict) and has_pypandoc is None:
+        logger.warning(
+            "'pypandoc' not available. Using Sphinx-Gallery to "
+            "convert rst text blocks to markdown for .ipynb files."
+        )
+        gallery_conf["pypandoc"] = False
+    elif isinstance(gallery_conf["pypandoc"], dict):
+        logger.info(
+            "Using pandoc version: %s to convert rst text blocks to "
+            "markdown for .ipynb files",
+            version,
+        )
+    else:
+        logger.info(
+            "Using Sphinx-Gallery to convert rst text blocks to "
+            "markdown for .ipynb files."
+        )
+    if isinstance(pypandoc, dict):
+        accepted_keys = ("extra_args", "filters")
+        for key in pypandoc:
+            if key not in accepted_keys:
+                raise ConfigError(
+                    "'pypandoc' only accepts the following key "
+                    f"values: {accepted_keys}, got: {key}."
+                )
+    return gallery_conf
+
+
+def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
+    """Handle user configs, update default gallery configs and check values."""
+    gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
+    _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys)
+
     gallery_conf.update(sphinx_gallery_conf)
     # XXX anything that can only be a bool (rather than str) should probably be
     # evaluated this way as it allows setting via -D on the command line
@@ -198,6 +373,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         "run_stale_examples",
     ):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
+
     gallery_conf["default_role"] = ""
     gallery_conf["source_suffix"] = {".rst": "restructuredtext"}
     if app is not None:
@@ -208,23 +384,21 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             gallery_conf["source_suffix"] = {gallery_conf["source_suffix"]: None}
 
     # Check capture_repr
-    capture_repr = gallery_conf["capture_repr"]
+    gallery_conf = _check_config_type(
+        gallery_conf,
+        "capture_repr",
+        (tuple, list),
+        str_to_list=True,
+    )
     supported_reprs = ["__repr__", "__str__", "_repr_html_"]
-    if isinstance(capture_repr, tuple):
-        for rep in capture_repr:
-            if rep not in supported_reprs:
-                raise ConfigError(
-                    "All entries in 'capture_repr' must be one "
-                    f"of {supported_reprs}, got: {rep}"
-                )
-    else:
-        raise ConfigError(f"'capture_repr' must be a tuple, got: {type(capture_repr)}")
+    for rep in gallery_conf["capture_repr"]:
+        if rep not in supported_reprs:
+            raise ConfigError(
+                "All entries in 'capture_repr' must be one "
+                f"of {supported_reprs}, got: {rep}"
+            )
     # Check ignore_repr_types
-    if not isinstance(gallery_conf["ignore_repr_types"], str):
-        raise ConfigError(
-            "'ignore_repr_types' must be a string, got: "
-            + type(gallery_conf["ignore_repr_types"])
-        )
+    _check_config_type(gallery_conf, "ignore_repr_types", str)
 
     if not isinstance(gallery_conf["parallel"], (bool, int)):
         raise TypeError(
@@ -270,101 +444,18 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         pass
 
     # Check for srcset hidpi images
-    srcset = gallery_conf["image_srcset"]
-    if not isinstance(srcset, (list, tuple)):
-        raise ConfigError(
-            "image_srcset must be a list of strings with the "
-            'multiplicative factor followed by an "x", '
-            'e.g. ["2.0x", "1.5x"]'
-        )
-    srcset_mult_facs = set()
-    for st in srcset:
-        if not (isinstance(st, str) and st[-1:] == "x"):
-            raise ConfigError(
-                f"Invalid value for image_srcset parameter: {st!r}. "
-                "Must be a list of strings with the multiplicative "
-                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]'
-            )
-        # "2x" -> "2.0"
-        srcset_mult_facs.add(float(st[:-1]))
-    srcset_mult_facs -= {1}  # 1x is always saved.
-    gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
-    del srcset, srcset_mult_facs
+    gallery_conf = _check_image_srcset(gallery_conf)
 
-    # compress_images
-    compress_images = gallery_conf["compress_images"]
-    if isinstance(compress_images, str):
-        compress_images = [compress_images]
-    elif not isinstance(compress_images, (tuple, list)):
-        raise ConfigError(
-            "compress_images must be a tuple, list, or str, "
-            f"got {type(compress_images)}"
-        )
-    compress_images = list(compress_images)
-    allowed_values = ("images", "thumbnails")
-    pops = list()
-    for ki, kind in enumerate(compress_images):
-        if kind not in allowed_values:
-            if kind.startswith("-"):
-                pops.append(ki)
-                continue
-            raise ConfigError(
-                "All entries in compress_images must be one of "
-                f"{allowed_values} or a command-line switch "
-                f'starting with "-", got {kind!r}'
-            )
-    compress_images_args = [compress_images.pop(p) for p in pops[::-1]]
-    if len(compress_images) and not _has_optipng():
-        logger.warning(
-            "optipng binaries not found, PNG %s will not be optimized",
-            " and ".join(compress_images),
-        )
-        compress_images = ()
-    gallery_conf["compress_images"] = compress_images
-    gallery_conf["compress_images_args"] = compress_images_args
+    # Check `compress_images`
+    gallery_conf = _check_compress_images(gallery_conf)
 
-    # deal with matplotlib_animations
-    animations = gallery_conf["matplotlib_animations"]
-    if not isinstance(animations, (tuple, list)):
-        # We allow single boolean for backwards compatibility reasons
-        animations = (animations,)
-        fmt = None
-    if not (len(animations) in (1, 2) and isinstance(enabled := animations[0], bool)):
-        raise ConfigError(
-            "'matplotlib_animations' must be a single bool or "
-            f"(enabled: bool, format: str), not {animations!r}"
-        )
-    # Handle file format
-    if len(animations) > 1:
-        fmt = animations[1]
-        if fmt is not None:
-            if not isinstance(fmt, str):
-                raise ConfigError(
-                    "'matplotlib_animations' file format must be a string or None"
-                )
-            if fmt not in ("html5", "jshtml"):
-                if app is not None:
-                    # Other formats mean animations saved externally and require
-                    # this `video` extension to embed them into the HTML
-                    try:
-                        app.setup_extension("sphinxcontrib.video")
-                    except ExtensionError as e:
-                        raise ConfigError(
-                            f"'matplotlib_animations' specifies file format: {fmt}; "
-                            f"this requires the sphinxcontrib.video package."
-                        ) from e
+    # Check `matplotlib_animations`
+    gallery_conf = _check_matplotlib_animations(gallery_conf, app)
 
-    gallery_conf["matplotlib_animations"] = (enabled, fmt)
-    del animations, enabled, fmt
-
-    # check resetters
+    # Check resetters
     _get_callables(gallery_conf, "reset_modules")
 
-    if not isinstance(gallery_conf["reset_modules_order"], str):
-        raise ConfigError(
-            "reset_modules_order must be a str, "
-            f'got {gallery_conf["reset_modules_order"]!r}'
-        )
+    _check_config_type(gallery_conf, "reset_modules_order", str)
     if gallery_conf["reset_modules_order"] not in ["before", "after", "both"]:
         raise ConfigError(
             "reset_modules_order must be in"
@@ -372,66 +463,25 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             f"got {gallery_conf['reset_modules_order']!r}"
         )
 
-    # Ensure the first cell text is a string if we have it
-    first_cell = gallery_conf.get("first_notebook_cell")
-    if (not isinstance(first_cell, str)) and (first_cell is not None):
-        raise ConfigError(
-            "The 'first_notebook_cell' parameter must be type "
-            f"str or None, found type {type(first_cell)}"
-        )
-    # Ensure the last cell text is a string if we have it
-    last_cell = gallery_conf.get("last_notebook_cell")
-    if (not isinstance(last_cell, str)) and (last_cell is not None):
-        raise ConfigError(
-            "The 'last_notebook_cell' parameter must be type str"
-            f" or None, found type {type(last_cell)}"
-        )
+    # Ensure the first/last cell text is a string if we have it
+    cell_config_keys = ("first_notebook_cell", "last_notebook_cell")
+    for conf_key in cell_config_keys:
+        _check_config_type(gallery_conf, conf_key, str, allow_none=True)
+
     # Check pypandoc
-    pypandoc = gallery_conf["pypandoc"]
-    if not isinstance(pypandoc, (dict, bool)):
-        raise ConfigError(
-            "'pypandoc' parameter must be of type bool or dict,"
-            f"got: {type(pypandoc)}."
-        )
-    gallery_conf["pypandoc"] = dict() if pypandoc is True else pypandoc
-    has_pypandoc, version = _has_pypandoc()
-    if isinstance(gallery_conf["pypandoc"], dict) and has_pypandoc is None:
-        logger.warning(
-            "'pypandoc' not available. Using Sphinx-Gallery to "
-            "convert rst text blocks to markdown for .ipynb files."
-        )
-        gallery_conf["pypandoc"] = False
-    elif isinstance(gallery_conf["pypandoc"], dict):
-        logger.info(
-            "Using pandoc version: %s to convert rst text blocks to "
-            "markdown for .ipynb files",
-            version,
-        )
-    else:
-        logger.info(
-            "Using Sphinx-Gallery to convert rst text blocks to "
-            "markdown for .ipynb files."
-        )
-    if isinstance(pypandoc, dict):
-        accepted_keys = ("extra_args", "filters")
-        for key in pypandoc:
-            if key not in accepted_keys:
-                raise ConfigError(
-                    "'pypandoc' only accepts the following key "
-                    f"values: {accepted_keys}, got: {key}."
-                )
+    gallery_conf = _check_pypandoc_config(gallery_conf)
 
     gallery_conf["titles"] = {}
     # Ensure 'backreferences_dir' is str, pathlib.Path or None
-    backref = gallery_conf["backreferences_dir"]
-    if (not isinstance(backref, (str, pathlib.Path))) and (backref is not None):
-        raise ConfigError(
-            "The 'backreferences_dir' parameter must be of type "
-            "str, pathlib.Path or None, "
-            f"found type {type(backref)}"
-        )
+    _check_config_type(
+        gallery_conf,
+        "backreferences_dir",
+        (str, pathlib.Path),
+        allow_none=True,
+    )
     # if 'backreferences_dir' is pathlib.Path, make str for Python <=3.5
     # compatibility
+    backref = gallery_conf["backreferences_dir"]
     if isinstance(backref, pathlib.Path):
         gallery_conf["backreferences_dir"] = str(backref)
 
@@ -444,10 +494,13 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         app,
     )
 
-    if not isinstance(gallery_conf["css"], (list, tuple)):
-        raise ConfigError(
-            'gallery_conf["css"] must be list or tuple, got ' f'{gallery_conf["css"]!r}'
-        )
+    # css
+    gallery_conf = _check_config_type(
+        gallery_conf,
+        "css",
+        (list, tuple),
+        str_to_list=True,
+    )
     for css in gallery_conf["css"]:
         if css not in _KNOWN_CSS:
             raise ConfigError(f"Unknown css {css!r}, must be one of {_KNOWN_CSS!r}")
@@ -455,12 +508,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             app.add_css_file(css + ".css")
 
     # check API usage
-    if not isinstance(gallery_conf["api_usage_ignore"], str):
-        raise ConfigError(
-            'gallery_conf["api_usage_ignore"] must be str, '
-            f'got {type(gallery_conf["api_usage_ignore"])}'
-        )
-
+    _check_config_type(gallery_conf, "api_usage_ignore", str)
     if (
         not isinstance(gallery_conf["show_api_usage"], bool)
         and gallery_conf["show_api_usage"] != "unused"
@@ -550,40 +598,135 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     return list(zip(examples_dirs, gallery_dirs))
 
 
-def _format_toctree(items, includehidden=False):
-    """Format a toc tree."""
-    st = """
-.. toctree::
-   :hidden:"""
-    if includehidden:
-        st += """
-   :includehidden:
-"""
-    st += """
+def _filter_tags(subsection_index_content):
+    """Filter out tags from `subsection_index_content`."""
+    tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
+    subsection_index_content = "\n".join(
+        [
+            line
+            for line in subsection_index_content.splitlines()
+            if re.match(tag_regex, line) is None
+        ]
+        + [""]
+    )
+    return subsection_index_content
 
-   {}\n""".format("\n   ".join(items))
 
-    st += "\n"
+def _finish_index_rst(
+    app,
+    gallery_conf,
+    indexst,
+    sg_root_index,
+    subsection_index_files,
+    gallery_dir_abs_path,
+):
+    """Add toctree, download and signature, if req, to index and write file."""
+    # Generate toctree containing subsection index files
+    if (
+        sg_root_index
+        and gallery_conf["nested_sections"] is True
+        and len(subsection_index_files) > 0
+    ):
+        subsections_toctree = _format_toctree(
+            subsection_index_files, includehidden=True
+        )
+        indexst += subsections_toctree
 
-    return st
+    if sg_root_index:
+        # Download examples
+        if gallery_conf["download_all_examples"]:
+            download_fhindex = generate_zipfiles(
+                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
+            )
+            indexst += download_fhindex
+        # Signature
+        if app.config.sphinx_gallery_conf["show_signature"]:
+            indexst += SPHX_GLR_SIG
+        # Write index to file
+        index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
+        with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
+            fhindex.write(indexst)
+        _replace_md5(index_rst_new, mode="t")
+
+
+def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
+    """Build recommender and write recommendations."""
+    if gallery_conf["recommender"]["enable"]:
+        try:
+            import numpy as np  # noqa: F401
+        except ImportError:
+            raise ConfigError("gallery_conf['recommender'] requires numpy")
+
+        recommender_params = copy.deepcopy(gallery_conf["recommender"])
+        recommender_params.pop("enable")
+        recommender_params.pop("rubric_header", None)
+        recommender = ExampleRecommender(**recommender_params)
+
+        gallery_py_files = []
+        # root and subsection directories containing python examples
+        gallery_directories = [gallery_dir_abs_path] + subsecs
+        for current_dir in gallery_directories:
+            src_dir = os.path.join(gallery_dir_abs_path, current_dir)
+            # sort python files to have a deterministic input across call
+            py_files = sorted(
+                # NOTE we don't take account of `ignore_pattern` and ignore
+                # ext in `example_extensions`
+                [fname for fname in Path(src_dir).iterdir() if fname.suffix == ".py"],
+                key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
+            )
+            gallery_py_files.append(
+                [os.path.join(src_dir, fname) for fname in py_files]
+            )
+        # flatten the list of list
+        gallery_py_files = list(chain.from_iterable(gallery_py_files))
+
+        recommender.fit(gallery_py_files)
+        for fname in gallery_py_files:
+            _write_recommendations(recommender, fname, gallery_conf)
+
+
+def _log_costs(costs, gallery_conf):
+    """Log computation time."""
+    logger.info("computation time summary:", color="white")
+    lines, lens = _format_for_writing(
+        costs, src_dir=gallery_conf["src_dir"], kind="console"
+    )
+    for name, t, m in lines:
+        text = (f"    - {name}:   ").ljust(lens[0] + 10)
+        if t is None:
+            text += "(not run)"
+            logger.info(text)
+        else:
+            t_float = float(t.split()[0])
+            if t_float >= gallery_conf["min_reported_time"]:
+                text += t.rjust(lens[1]) + "   " + m.rjust(lens[2])
+                logger.info(text)
 
 
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText.
 
-    Start the Sphinx-Gallery configuration and recursively scan the examples
-    directories in order to populate the examples gallery.
+    Fill Sphinx-Gallery configuration and scan example directories
+    (up to one level depth of sub-directory) to generate example reST files.
 
-    We create a 2-level nested structure by iterating through every
-    sibling folder of the current index file.
-    In each of these folders, we look for a section index file,
-    for which we generate a toctree pointing to sibling scripts.
-    Then, we append the content of this section index file
-    to the current index file,
-    after we remove toctree (to keep a clean nested structure)
-    and sphinx tags (to prevent tag duplication)
-    Eventually, we create a toctree in the current index file
-    which points to section index files.
+    Iterate through each example directory and any of its sub-directories
+    (creates sub-sections) that has a header/index file.
+    Generate gallery example ReST files and `index.rst` file(s).
+
+    If `nested_sections=True` we generate `index.rst` files for all
+    sub-directories, which includes toctree linking to all sub-dir examples.
+    The root example directory `index.rst` file will contain, in sequence,:
+
+    * root gallery header then thumbnails,
+    * toctree linking all examples in root gallery,
+    * sub-section header followed by sub-section thumbnails, for all subsections,
+    * a second final toctree, at the end of the file, linking to all sub-section
+      index files.
+
+    If `nested_sections=True` we generate a single `index.rst` file per
+    example directory. It will contain headers for the root gallery and
+    each sub-section, with each header followed by a toctree linking to
+    every example in the root gallery/sub-section.
     """
     gallery_conf = app.config.sphinx_gallery_conf
     extra = ""
@@ -598,18 +741,14 @@ def generate_gallery_rst(app):
 
     # Check for duplicate filenames to make sure linking works as expected
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
-    files = collect_gallery_files(examples_dirs, gallery_conf)
-    check_duplicate_filenames(files)
-    check_spaces_in_filenames(files)
+    _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
 
     for examples_dir, gallery_dir in workdirs:
         examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
         gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
 
-        # Create section rst files and fetch content which will
-        # be added to current index file. This only includes content
-        # from files located in the root folder of the current gallery
-        # (ie not in subfolders)
+        # Create example rst files for root gallery directory examples
+        # (excl. sub-dir examples) and fetch gallery header for root index.rst
         (
             _,
             this_content,
@@ -620,29 +759,22 @@ def generate_gallery_rst(app):
             gallery_dir_abs_path,
             gallery_conf,
             seen_backrefs,
-            include_toctree=False,
+            is_subsection=False,
         )
 
-        has_gallery_header = this_content is not None
+        # `this_context` is None when user provides own index.rst
+        sg_root_index = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
-        # We create an index.rst with all examples
-        # (this will overwrite the rst file generated by the previous call
-        # to generate_dir_rst)
-
-        if this_content:
+        # Create root gallery index.rst
+        if sg_root_index:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             indexst = ":orphan:\n\n" + this_content
-        else:
-            # we are not going to use the index.rst.new that gets made here,
-            # but go through the motions to run through all the subsections...
-            indexst = "Never used!"
-
-        # Write toctree with gallery items from gallery root folder
-        if len(this_toctree_items) > 0:
-            this_toctree = _format_toctree(this_toctree_items)
-            indexst += this_toctree
+            # Write toctree with gallery items from gallery root folder
+            if len(this_toctree_items) > 0:
+                this_toctree = _format_toctree(this_toctree_items)
+                indexst += this_toctree
 
         # list all paths to subsection index files in this array
         subsection_index_files = []
@@ -650,7 +782,7 @@ def generate_gallery_rst(app):
             app.builder.srcdir,
             examples_dir_abs_path,
             gallery_conf,
-            check_for_index=has_gallery_header,
+            check_for_index=sg_root_index,
         )
         for subsection in subsecs:
             src_dir = os.path.join(examples_dir_abs_path, subsection)
@@ -668,34 +800,21 @@ def generate_gallery_rst(app):
                 subsection_toctree_filenames,
             ) = generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs)
 
+            has_subsection_header = False
             if subsection_index_content:
-                # Filter out tags from subsection content
-                # to prevent tag duplication across the documentation
-                tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
-                subsection_index_content = "\n".join(
-                    [
-                        line
-                        for line in subsection_index_content.splitlines()
-                        if re.match(tag_regex, line) is None
-                    ]
-                    + [""]
-                )
-
-                indexst += subsection_index_content
+                # Filter tags to prevent tag duplication across the documentation
+                indexst += _filter_tags(subsection_index_content)
                 has_subsection_header = True
-            else:
-                has_subsection_header = False
 
-            # Write subsection toctree in main file only if
-            # nested_sections is False or None, and
-            # toctree filenames were generated for the subsection.
-            if not gallery_conf["nested_sections"]:
-                if len(subsection_toctree_filenames) > 0:
-                    subsection_index_toctree = _format_toctree(
-                        subsection_toctree_filenames
-                    )
-                    indexst += subsection_index_toctree
-            # Otherwise, a new index.rst.new file should
+            # Write subsection toctree containing all filenames, if req.
+            if (
+                sg_root_index
+                and not gallery_conf["nested_sections"]
+                and len(subsection_toctree_filenames) > 0
+            ):
+                subsection_index_toctree = _format_toctree(subsection_toctree_filenames)
+                indexst += subsection_index_toctree
+            # Otherwise, a new subsection index.rst.new file should
             # have been created and it needs to be parsed
             elif has_subsection_header:
                 _replace_md5(subsection_index_path, mode="t")
@@ -703,67 +822,20 @@ def generate_gallery_rst(app):
             costs += subsection_costs
             write_computation_times(gallery_conf, target_dir, subsection_costs)
 
+        # Per gallery - items below run once per gallery
+        # Finish index.rst and write to file
+        _finish_index_rst(
+            app,
+            gallery_conf,
+            indexst,
+            sg_root_index,
+            subsection_index_files,
+            gallery_dir_abs_path,
+        )
         # Build recommendation system
-        if gallery_conf["recommender"]["enable"]:
-            try:
-                import numpy as np  # noqa: F401
-            except ImportError:
-                raise ConfigError("gallery_conf['recommender'] requires numpy")
+        _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
 
-            recommender_params = copy.deepcopy(gallery_conf["recommender"])
-            recommender_params.pop("enable")
-            recommender_params.pop("rubric_header", None)
-            recommender = ExampleRecommender(**recommender_params)
-
-            gallery_py_files = []
-            # root and subsection directories containing python examples
-            gallery_directories = [gallery_dir_abs_path] + subsecs
-            for current_dir in gallery_directories:
-                src_dir = os.path.join(gallery_dir_abs_path, current_dir)
-                # sort python files to have a deterministic input across call
-                py_files = sorted(
-                    [
-                        fname
-                        for fname in Path(src_dir).iterdir()
-                        if fname.suffix == ".py"
-                    ],
-                    key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
-                )
-                gallery_py_files.append(
-                    [os.path.join(src_dir, fname) for fname in py_files]
-                )
-            # flatten the list of list
-            gallery_py_files = list(chain.from_iterable(gallery_py_files))
-
-            recommender.fit(gallery_py_files)
-            for fname in gallery_py_files:
-                _write_recommendations(recommender, fname, gallery_conf)
-
-        # generate toctree with subsections
-        if gallery_conf["nested_sections"] is True:
-            subsections_toctree = _format_toctree(
-                subsection_index_files, includehidden=True
-            )
-
-            # add toctree to file only if there are subsections
-            if len(subsection_index_files) > 0:
-                indexst += subsections_toctree
-
-        if gallery_conf["download_all_examples"]:
-            download_fhindex = generate_zipfiles(
-                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
-            )
-            indexst += download_fhindex
-
-        if app.config.sphinx_gallery_conf["show_signature"]:
-            indexst += SPHX_GLR_SIG
-
-        if has_gallery_header:
-            index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
-            with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
-                fhindex.write(indexst)
-            _replace_md5(index_rst_new, mode="t")
-
+    # Per project - items below run once only (for all galleries)
     # Write a single global sg_execution_times
     write_computation_times(gallery_conf, None, costs)
 
@@ -772,20 +844,7 @@ def generate_gallery_rst(app):
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf["plot_gallery"]:
-        logger.info("computation time summary:", color="white")
-        lines, lens = _format_for_writing(
-            costs, src_dir=gallery_conf["src_dir"], kind="console"
-        )
-        for name, t, m in lines:
-            text = (f"    - {name}:   ").ljust(lens[0] + 10)
-            if t is None:
-                text += "(not run)"
-                logger.info(text)
-            else:
-                t_float = float(t.split()[0])
-                if t_float >= gallery_conf["min_reported_time"]:
-                    text += t.rjust(lens[1]) + "   " + m.rjust(lens[2])
-                    logger.info(text)
+        _log_costs(costs, gallery_conf)
         # Also create a junit.xml file, useful e.g. on CircleCI
         write_junit_xml(gallery_conf, app.builder.outdir, costs)
 
@@ -853,7 +912,7 @@ def _format_for_writing(costs, *, src_dir, kind="rst"):
         rel_path = os.path.relpath(src_file, src_dir)
         if kind in ("rst", "rst-full"):  # like in sg_execution_times
             target_dir_clean = os.path.relpath(cost["target_dir"], src_dir).replace(
-                os.path.sep, "_"
+                os.sep, "_"
             )
             paren = rel_path if kind == "rst-full" else os.path.basename(src_file)
             name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
@@ -892,7 +951,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
         out_dir = target_dir
         where = os.path.relpath(target_dir, gallery_conf["src_dir"])
         kind = "rst"
-        ref_extra = f'{where.replace(os.path.sep, "_")}_'
+        ref_extra = f'{where.replace(os.sep, "_")}_'
     new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
     out_file = Path(out_dir) / "sg_execution_times.rst"
     if out_file.is_file() and total_time == 0:  # a re-run
@@ -1475,53 +1534,6 @@ def summarize_failing_examples(app, exception):
             logger.warning(fail_message)
         else:
             raise ExtensionError(fail_message)
-
-
-def collect_gallery_files(examples_dirs, gallery_conf):
-    """Collect python files from the gallery example directories."""
-    files = []
-    for example_dir in examples_dirs:
-        for root, dirnames, filenames in os.walk(example_dir):
-            for filename in filenames:
-                if filename.endswith(".py"):
-                    if re.search(gallery_conf["ignore_pattern"], filename) is None:
-                        files.append(os.path.join(root, filename))
-    return files
-
-
-def check_duplicate_filenames(files):
-    """Check for duplicate filenames across gallery directories."""
-    # Check whether we'll have duplicates
-    used_names = set()
-    dup_names = list()
-
-    for this_file in files:
-        this_fname = os.path.basename(this_file)
-        if this_fname in used_names:
-            dup_names.append(this_file)
-        else:
-            used_names.add(this_fname)
-
-    if len(dup_names) > 0:
-        logger.warning(
-            "Duplicate example file name(s) found. Having duplicate file "
-            "names will break some links. "
-            "List of files: %s",
-            sorted(dup_names),
-        )
-
-
-def check_spaces_in_filenames(files):
-    """Check for spaces in filenames across example directories."""
-    regex = re.compile(r"[\s]")
-    files_with_space = list(filter(regex.search, files))
-    if files_with_space:
-        logger.warning(
-            "Example file name(s) with space(s) found. Having space(s) in "
-            "file names will break some links. "
-            "List of files: %s",
-            sorted(files_with_space),
-        )
 
 
 def get_default_config_value(key):
