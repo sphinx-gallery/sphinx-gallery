@@ -488,7 +488,7 @@ def _generate_rst(gallery_conf, fname, content):
         gallery_conf["gallery_dir"],
         gallery_conf,
         set(),
-        include_toctree=False,
+        is_subsection=False,
     )
     # read rst file and check if it contains code output
     rst_fname = os.path.splitext(fname)[0] + ".rst"
