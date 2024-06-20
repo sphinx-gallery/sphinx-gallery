@@ -653,16 +653,24 @@ def generate_gallery_rst(app):
     Fill Sphinx-Gallery configuration and scan example directories
     (up to one level depth of sub-directory) to generate example reST files.
 
-    We create a 2-level nested structure by iterating through every
-    sibling folder of the current index file.
-    In each of these folders, we look for a section index file,
-    for which we generate a toctree pointing to sibling scripts.
-    Then, we append the content of this section index file
-    to the current index file,
-    after we remove toctree (to keep a clean nested structure)
-    and sphinx tags (to prevent tag duplication)
-    Eventually, we create a toctree in the current index file
-    which points to section index files.
+    Iterate through each example directory and any of its sub-directories
+    (creates sub-sections) that has a header/index file.
+    Generate gallery example ReST files and `index.rst` file(s).
+
+    If `nested_sections=True` we generate `index.rst` files for all
+    sub-directories, which includes toctree linking to all sub-dir examples.
+    The root example directory `index.rst` file will contain, in sequence,:
+
+    * root gallery header then thumbnails,
+    * toctree linking all examples in root gallery,
+    * sub-section header followed by sub-section thumbnails, for all subsections,
+    * a second final toctree, at the end of the file, linking to all sub-section
+      index files.
+
+    If `nested_sections=True` we generate a single `index.rst` file per
+    example directory. It will contain headers for the root gallery and
+    each sub-section, with each header followed by a toctree linking to
+    every example in the root gallery/sub-section.
     """
     logger.info("generating gallery...", color="white")
     gallery_conf = app.config.sphinx_gallery_conf
@@ -1468,53 +1476,6 @@ def summarize_failing_examples(app, exception):
             logger.warning(fail_message)
         else:
             raise ExtensionError(fail_message)
-
-
-# def collect_gallery_files(examples_dirs, gallery_conf):
-#     """Collect python files from the gallery example directories."""
-#     files = []
-#     for example_dir in examples_dirs:
-#         for root, dirnames, filenames in os.walk(example_dir):
-#             for filename in filenames:
-#                 if filename.endswith(".py"):
-#                     if re.search(gallery_conf["ignore_pattern"], filename) is None:
-#                         files.append(os.path.join(root, filename))
-#     return files
-
-
-# def check_duplicate_filenames(files):
-#     """Check for duplicate filenames across gallery directories."""
-#     # Check whether we'll have duplicates
-#     used_names = set()
-#     dup_names = list()
-
-#     for this_file in files:
-#         this_fname = os.path.basename(this_file)
-#         if this_fname in used_names:
-#             dup_names.append(this_file)
-#         else:
-#             used_names.add(this_fname)
-
-#     if len(dup_names) > 0:
-#         logger.warning(
-#             "Duplicate example file name(s) found. Having duplicate file "
-#             "names will break some links. "
-#             "List of files: %s",
-#             sorted(dup_names),
-#         )
-
-
-# def check_spaces_in_filenames(files):
-#     """Check for spaces in filenames across example directories."""
-#     regex = re.compile(r"[\s]")
-#     files_with_space = list(filter(regex.search, files))
-#     if files_with_space:
-#         logger.warning(
-#             "Example file name(s) with space(s) found. Having space(s) in "
-#             "file names will break some links. "
-#             "List of files: %s",
-#             sorted(files_with_space),
-#         )
 
 
 def get_default_config_value(key):

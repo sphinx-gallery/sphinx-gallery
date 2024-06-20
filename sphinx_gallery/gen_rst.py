@@ -521,9 +521,10 @@ def generate_dir_rst(
     seen_backrefs: set,
         Back references encountered when parsing this gallery
         will be stored in this set.
-    is_subsection: bool, default=True
+    is_subsection: bool,
         Weather `src_dir` is a subsection dir. If subsection dir, we write
         a `index.rst` file with toctree listing every example file.
+        Default=True.
 
     Returns
     -------
