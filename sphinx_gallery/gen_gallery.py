@@ -203,6 +203,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         "run_stale_examples",
     ):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
+
     gallery_conf["default_role"] = ""
     gallery_conf["source_suffix"] = {".rst": "restructuredtext"}
     if app is not None:
@@ -362,20 +363,16 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             f"got {gallery_conf['reset_modules_order']!r}"
         )
 
-    # Ensure the first cell text is a string if we have it
-    first_cell = gallery_conf.get("first_notebook_cell")
-    if (not isinstance(first_cell, str)) and (first_cell is not None):
+    # Ensure the first/last cell text is a string if we have it
+    cell_config_key = ("first_notebook_cell", "last_notebook_cell")
+    for conf_key in cell_config_key:
+        cell_config = gallery_conf.get(conf_key)
+    if (not isinstance(cell_config, str)) and (cell_config is not None):
         raise ConfigError(
-            "The 'first_notebook_cell' parameter must be type "
-            f"str or None, found type {type(first_cell)}"
+            f"The {conf_key} parameter must be type "
+            f"str or None, found type {type(cell_config)}"
         )
-    # Ensure the last cell text is a string if we have it
-    last_cell = gallery_conf.get("last_notebook_cell")
-    if (not isinstance(last_cell, str)) and (last_cell is not None):
-        raise ConfigError(
-            "The 'last_notebook_cell' parameter must be type str"
-            f" or None, found type {type(last_cell)}"
-        )
+
     # Check pypandoc
     pypandoc = gallery_conf["pypandoc"]
     if not isinstance(pypandoc, (dict, bool)):
