@@ -571,7 +571,7 @@ def generate_dir_rst(
         subsection_index_path = os.path.join(target_dir, "index.rst.new")
         with codecs.open(subsection_index_path, "w", encoding="utf-8") as (findex):
             findex.write(
-                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.path.sep, "_"))
+                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.sep, "_"))
             )
             findex.write(subsection_index_content)
 
@@ -1447,7 +1447,7 @@ def save_rst_example(
     """
     example_file = Path(example_file)
     example_fname = str(example_file.relative_to(gallery_conf["src_dir"]))
-    ref_fname = example_fname.replace(os.path.sep, "_")
+    ref_fname = example_fname.replace(os.sep, "_")
 
     binder_conf = gallery_conf["binder"]
     is_binder_enabled = len(binder_conf) > 0
