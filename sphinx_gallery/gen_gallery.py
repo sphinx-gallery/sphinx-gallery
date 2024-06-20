@@ -853,7 +853,7 @@ def _format_for_writing(costs, *, src_dir, kind="rst"):
         rel_path = os.path.relpath(src_file, src_dir)
         if kind in ("rst", "rst-full"):  # like in sg_execution_times
             target_dir_clean = os.path.relpath(cost["target_dir"], src_dir).replace(
-                os.path.sep, "_"
+                os.sep, "_"
             )
             paren = rel_path if kind == "rst-full" else os.path.basename(src_file)
             name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
@@ -892,7 +892,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
         out_dir = target_dir
         where = os.path.relpath(target_dir, gallery_conf["src_dir"])
         kind = "rst"
-        ref_extra = f'{where.replace(os.path.sep, "_")}_'
+        ref_extra = f'{where.replace(os.sep, "_")}_'
     new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
     out_file = Path(out_dir) / "sg_execution_times.rst"
     if out_file.is_file() and total_time == 0:  # a re-run

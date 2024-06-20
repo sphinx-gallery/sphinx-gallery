@@ -476,7 +476,7 @@ def _write_subsection_index(
         head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
         with codecs.open(index_path, "w", encoding="utf-8") as (findex):
             findex.write(
-                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.path.sep, "_"))
+                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.sep, "_"))
             )
             findex.write(index_content)
             # Create toctree with all gallery examples and add to index file
@@ -1446,7 +1446,7 @@ def save_rst_example(
     """
     example_file = Path(example_file)
     example_fname = str(example_file.relative_to(gallery_conf["src_dir"]))
-    ref_fname = example_fname.replace(os.path.sep, "_")
+    ref_fname = example_fname.replace(os.sep, "_")
 
     binder_conf = gallery_conf["binder"]
     is_binder_enabled = len(binder_conf) > 0
