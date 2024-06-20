@@ -82,7 +82,7 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
 
 
 def test_image_srcset_config(make_gallery_conf):
-    with pytest.raises(ConfigError, match="image_srcset must be a list of strings"):
+    with pytest.raises(ConfigError, match="'image_srcset' config allowed"):
         make_gallery_conf({"image_srcset": "2x"})
     with pytest.raises(ConfigError, match="Invalid value for image_srcset parameter"):
         make_gallery_conf({"image_srcset": [False]})
