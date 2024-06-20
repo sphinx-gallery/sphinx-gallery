@@ -132,7 +132,7 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
     [
         pytest.param(
             ConfigError,
-            "reset_modules_order must be a str",
+            "'reset_modules_order' config allowed types",
             id="Resetter unknown",
             marks=pytest.mark.conf_file(
                 content=("sphinx_gallery_conf=" "{'reset_modules_order': 1,}")
@@ -166,7 +166,7 @@ def test_bad_reset_modules_order(sphinx_app_wrapper, err_class, err_match):
         ),
         pytest.param(
             ConfigError,
-            "must be list or tuple",
+            "config allowed types:",
             id="CSS type error",
             marks=pytest.mark.conf_file(content="sphinx_gallery_conf={'css': 1.}"),
         ),
@@ -181,7 +181,7 @@ def test_bad_css(sphinx_app_wrapper, err_class, err_match):
 def test_bad_api():
     """Test that we raise an error for bad API usage arguments."""
     sphinx_gallery_conf = dict(api_usage_ignore=("foo",))
-    with pytest.raises(ConfigError, match=".*must be str.*"):
+    with pytest.raises(ConfigError, match="'api_usage_ignore' config allowed"):
         _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(show_api_usage="foo")
     with pytest.raises(ConfigError, match='.*must be True, False or "unused".*'):
@@ -574,7 +574,7 @@ sphinx_gallery_conf = {
 def test_backreferences_dir_config(sphinx_app_wrapper):
     """Tests 'backreferences_dir' type checking."""
     with pytest.raises(
-        ConfigError, match="The 'backreferences_dir' parameter must be of"
+        ConfigError, match="'backreferences_dir' config allowed types"
     ):
         app = sphinx_app_wrapper.create_sphinx_app()
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
@@ -612,7 +612,8 @@ sphinx_gallery_conf = {
 def test_pypandoc_config_list(sphinx_app_wrapper):
     """Tests 'pypandoc' type checking."""
     with pytest.raises(
-        ConfigError, match="'pypandoc' parameter must be of type bool or " "dict"
+        ConfigError,
+        match=r"'pypandoc' config allowed types: \['dict', 'bool'\].",
     ):
         app = sphinx_app_wrapper.create_sphinx_app()
         fill_gallery_conf_defaults(app, app.config, check_keys=False)

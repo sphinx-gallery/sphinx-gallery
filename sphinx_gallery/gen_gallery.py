@@ -173,7 +173,7 @@ def _update_gallery_conf_builder_inited(
     sphinx_gallery_conf["builder_name"] = builder_name
 
 
-def _check_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
+def _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
     """Check SG config keys, optionally raising if any extra keys present."""
     options = sorted(gallery_conf)
     extra_keys = sorted(set(sphinx_gallery_conf) - set(options))
@@ -190,16 +190,57 @@ def _check_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
         raise ConfigError(msg.strip())
 
 
+def _check_config_type(
+    gallery_conf, conf_key, types, str_to_list=False, allow_none=False,
+):
+    """Check config type, optionally converting str to list or allowing None."""
+    conf_value = gallery_conf[conf_key]
+    # Early exit if type correct
+    if isinstance(conf_value, types) or (allow_none and conf_value is None):
+        if str_to_list:
+            if isinstance(conf_value, str):
+                gallery_conf[conf_key] = [conf_value]
+            return gallery_conf
+        return
+    # Otherwise raise error
+    msg = "'{conf_key}' config allowed types: {types}{or_none}. Got {conf_type}."
+    if isinstance(types, type):
+        types = (types,)
+    str_types = [t.__name__ for t in types]
+    or_none = " or None" if allow_none else ""
+    conf_type =type(conf_value).__name__
+    msg = msg.format(
+        conf_key=conf_key, types=str_types, or_none=or_none, conf_type=conf_type,
+    )
+    raise ConfigError(msg)
+
+
+def _check_image_srcset(gallery_conf):
+    """Check `_check_image_srcset`."""
+    gallery_conf = _check_config_type(
+        gallery_conf, "image_srcset", (list, tuple), str_to_list=True,
+    )
+    srcset_mult_facs = set()
+    for st in gallery_conf["image_srcset"]:
+        if not (isinstance(st, str) and st[-1:] == "x"):
+            raise ConfigError(
+                f"Invalid value for image_srcset parameter: {st!r}. "
+                "Must be a list of strings with the multiplicative "
+                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]'
+            )
+        # "2x" -> "2.0"
+        srcset_mult_facs.add(float(st[:-1]))
+    srcset_mult_facs -= {1}  # 1x is always saved.
+    gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
+    return gallery_conf
+
+
 def _check_compress_images(gallery_conf):
     """Check `compress_images`, getting any command line args."""
+    gallery_conf = _check_config_type(
+        gallery_conf, 'compress_images', (str, tuple, list), str_to_list=True,
+    )
     compress_images = gallery_conf["compress_images"]
-    if isinstance(compress_images, str):
-        compress_images = [compress_images]
-    elif not isinstance(compress_images, (tuple, list)):
-        raise ConfigError(
-            "compress_images must be a tuple, list, or str, "
-            f"got {type(compress_images)}"
-        )
     compress_images = list(compress_images)
     allowed_values = ("images", "thumbnails")
     pops = list()
@@ -266,11 +307,8 @@ def _check_matplotlib_animations(gallery_conf, app):
 def _check_pypandoc_config(gallery_conf):
     """Check `pypandoc` config."""
     pypandoc = gallery_conf["pypandoc"]
-    if not isinstance(pypandoc, (dict, bool)):
-        raise ConfigError(
-            "'pypandoc' parameter must be of type bool or dict,"
-            f"got: {type(pypandoc)}."
-        )
+    _check_config_type(gallery_conf, "pypandoc", (dict, bool))
+
     gallery_conf["pypandoc"] = dict() if pypandoc is True else pypandoc
     has_pypandoc, version = _has_pypandoc()
     if isinstance(gallery_conf["pypandoc"], dict) and has_pypandoc is None:
@@ -304,7 +342,7 @@ def _check_pypandoc_config(gallery_conf):
 def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     """Handle user configs, update default gallery configs and check values."""
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
-    _check_config_keys(gallery_conf, sphinx_gallery_conf, check_keys)
+    _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys)
 
     gallery_conf.update(sphinx_gallery_conf)
     # XXX anything that can only be a bool (rather than str) should probably be
@@ -325,23 +363,18 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             gallery_conf["source_suffix"] = {gallery_conf["source_suffix"]: None}
 
     # Check capture_repr
-    capture_repr = gallery_conf["capture_repr"]
+    gallery_conf = _check_config_type(
+        gallery_conf, "capture_repr", (tuple, list), str_to_list=True,
+    )
     supported_reprs = ["__repr__", "__str__", "_repr_html_"]
-    if isinstance(capture_repr, tuple):
-        for rep in capture_repr:
-            if rep not in supported_reprs:
-                raise ConfigError(
-                    "All entries in 'capture_repr' must be one "
-                    f"of {supported_reprs}, got: {rep}"
-                )
-    else:
-        raise ConfigError(f"'capture_repr' must be a tuple, got: {type(capture_repr)}")
+    for rep in gallery_conf["capture_repr"]:
+        if rep not in supported_reprs:
+            raise ConfigError(
+                "All entries in 'capture_repr' must be one "
+                f"of {supported_reprs}, got: {rep}"
+            )
     # Check ignore_repr_types
-    if not isinstance(gallery_conf["ignore_repr_types"], str):
-        raise ConfigError(
-            "'ignore_repr_types' must be a string, got: "
-            + type(gallery_conf["ignore_repr_types"])
-        )
+    _check_config_type(gallery_conf, "ignore_repr_types", str)
 
     # deal with show_memory
     _get_call_memory_and_base(gallery_conf)
@@ -372,15 +405,11 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         pass
 
     # Check for srcset hidpi images
-    srcset = gallery_conf["image_srcset"]
-    if not isinstance(srcset, (list, tuple)):
-        raise ConfigError(
-            "image_srcset must be a list of strings with the "
-            'multiplicative factor followed by an "x", '
-            'e.g. ["2.0x", "1.5x"]'
-        )
+    gallery_conf = _check_config_type(
+        gallery_conf, "image_srcset", (list, tuple), str_to_list=True,
+    )
     srcset_mult_facs = set()
-    for st in srcset:
+    for st in gallery_conf["image_srcset"]:
         if not (isinstance(st, str) and st[-1:] == "x"):
             raise ConfigError(
                 f"Invalid value for image_srcset parameter: {st!r}. "
@@ -391,7 +420,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         srcset_mult_facs.add(float(st[:-1]))
     srcset_mult_facs -= {1}  # 1x is always saved.
     gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
-    del srcset, srcset_mult_facs
+    del srcset_mult_facs
 
     # Check `compress_images`
     gallery_conf = _check_compress_images(gallery_conf)
@@ -399,14 +428,10 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     # Check `matplotlib_animations`
     gallery_conf = _check_matplotlib_animations(gallery_conf, app)
 
-    # check resetters
+    # Check resetters
     _get_callables(gallery_conf, "reset_modules")
 
-    if not isinstance(gallery_conf["reset_modules_order"], str):
-        raise ConfigError(
-            "reset_modules_order must be a str, "
-            f'got {gallery_conf["reset_modules_order"]!r}'
-        )
+    _check_config_type(gallery_conf, "reset_modules_order", str)
     if gallery_conf["reset_modules_order"] not in ["before", "after", "both"]:
         raise ConfigError(
             "reset_modules_order must be in"
@@ -417,27 +442,19 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     # Ensure the first/last cell text is a string if we have it
     cell_config_keys = ("first_notebook_cell", "last_notebook_cell")
     for conf_key in cell_config_keys:
-        cell_config = gallery_conf.get(conf_key)
-        if (not isinstance(cell_config, str)) and (cell_config is not None):
-            raise ConfigError(
-                f"The {conf_key} parameter must be type "
-                f"str or None, found type {type(cell_config)}"
-            )
+        _check_config_type(gallery_conf, conf_key, str, allow_none=True)
 
     # Check pypandoc
     gallery_conf = _check_pypandoc_config(gallery_conf)
 
     gallery_conf["titles"] = {}
     # Ensure 'backreferences_dir' is str, pathlib.Path or None
-    backref = gallery_conf["backreferences_dir"]
-    if (not isinstance(backref, (str, pathlib.Path))) and (backref is not None):
-        raise ConfigError(
-            "The 'backreferences_dir' parameter must be of type "
-            "str, pathlib.Path or None, "
-            f"found type {type(backref)}"
-        )
+    _check_config_type(
+        gallery_conf, "backreferences_dir", (str, pathlib.Path), allow_none=True,
+    )
     # if 'backreferences_dir' is pathlib.Path, make str for Python <=3.5
     # compatibility
+    backref = gallery_conf["backreferences_dir"]
     if isinstance(backref, pathlib.Path):
         gallery_conf["backreferences_dir"] = str(backref)
 
@@ -450,10 +467,9 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         app,
     )
 
-    if not isinstance(gallery_conf["css"], (list, tuple)):
-        raise ConfigError(
-            'gallery_conf["css"] must be list or tuple, got ' f'{gallery_conf["css"]!r}'
-        )
+    gallery_conf = _check_config_type(
+        gallery_conf, "css", (list, tuple), str_to_list=True,
+    )
     for css in gallery_conf["css"]:
         if css not in _KNOWN_CSS:
             raise ConfigError(f"Unknown css {css!r}, must be one of {_KNOWN_CSS!r}")
@@ -461,12 +477,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             app.add_css_file(css + ".css")
 
     # check API usage
-    if not isinstance(gallery_conf["api_usage_ignore"], str):
-        raise ConfigError(
-            'gallery_conf["api_usage_ignore"] must be str, '
-            f'got {type(gallery_conf["api_usage_ignore"])}'
-        )
-
+    _check_config_type(gallery_conf, "api_usage_ignore", str)
     if (
         not isinstance(gallery_conf["show_api_usage"], bool)
         and gallery_conf["show_api_usage"] != "unused"
