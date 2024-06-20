@@ -241,6 +241,13 @@ def test_junit(sphinx_app, tmpdir):
     want.update(failures="2", skipped="1", tests="3")
     got = dict(suite.attrib)
     del got["time"]
+    assert len(suite) == 3
+    assert suite[0].attrib["classname"] == "plot_numpy_matplotlib"
+    assert suite[0][0].tag == "failure", suite[0].attrib["classname"]
+    assert suite[1].attrib["classname"] == "plot_scraper_broken"
+    assert suite[1][0].tag == "skipped", suite[1].attrib["classname"]
+    assert suite[2].attrib["classname"] == "plot_future_imports_broken"
+    assert suite[2][0].tag == "failure", suite[2].attrib["classname"]
     assert got == want
     contents = contents.decode("utf-8")
     assert '<failure message="RuntimeError: Forcing' in contents
