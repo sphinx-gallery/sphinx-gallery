@@ -233,18 +233,6 @@ def _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=False):
     return files
 
 
-def collect_gallery_files(examples_dirs, gallery_conf):
-    """Collect python files from the gallery example directories."""
-    files = []
-    for example_dir in examples_dirs:
-        for root, dirnames, filenames in os.walk(example_dir):
-            for filename in filenames:
-                if filename.endswith(".py"):
-                    if re.search(gallery_conf["ignore_pattern"], filename) is None:
-                        files.append(os.path.join(root, filename))
-    return files
-
-
 def zip_files(file_list, zipname, relative_to, extension=None):
     """
     Creates a zip file with the given files.

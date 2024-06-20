@@ -564,7 +564,7 @@ def _finish_index_rst(
     subsection_index_files,
     gallery_dir_abs_path,
 ):
-    """Add toctree, download and signature if required and write file."""
+    """Add toctree, download and signature, if req, to index and write file."""
     # Generate toctree containing subsection index files
     if (
         sg_root_index
