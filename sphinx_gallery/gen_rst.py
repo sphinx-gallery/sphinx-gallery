@@ -1306,11 +1306,18 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
     _make_dummy_images(executable, file_conf, script_vars)
 
     script_blocks, output_blocks = _clean_script_blocks(
-        gallery_conf, parser, script_blocks, output_blocks,
+        gallery_conf,
+        parser,
+        script_blocks,
+        output_blocks,
     )
 
     example_rst = rst_blocks(
-        script_blocks, output_blocks, file_conf, gallery_conf, language=language,
+        script_blocks,
+        output_blocks,
+        file_conf,
+        gallery_conf,
+        language=language,
     )
     _, memory_base = _get_call_memory_and_base(gallery_conf)
     memory_used = memory_base + script_vars["memory_delta"]
@@ -1340,7 +1347,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
 
     # Write names
     backrefs = _get_backreferences(
-        gallery_conf, script_vars, script_blocks, node, target_file,
+        gallery_conf,
+        script_vars,
+        script_blocks,
+        node,
+        target_file,
     )
 
     # Write backreferences
