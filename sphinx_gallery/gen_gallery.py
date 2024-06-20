@@ -173,9 +173,8 @@ def _update_gallery_conf_builder_inited(
     sphinx_gallery_conf["builder_name"] = builder_name
 
 
-def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
-    """Handle user configs and update default gallery configs."""
-    gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
+def _check_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
+    """Check SG config keys, optionally raising if any extra keys present."""
     options = sorted(gallery_conf)
     extra_keys = sorted(set(sphinx_gallery_conf) - set(options))
     if extra_keys and check_keys:
@@ -189,6 +188,13 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
                 msg += f", did you mean one of {options!r}?"
             msg += "\n"
         raise ConfigError(msg.strip())
+
+
+def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
+    """Handle user configs, update default gallery configs and check values."""
+    gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
+    _check_config_keys(gallery_conf, sphinx_gallery_conf, check_keys)
+
     gallery_conf.update(sphinx_gallery_conf)
     # XXX anything that can only be a bool (rather than str) should probably be
     # evaluated this way as it allows setting via -D on the command line
