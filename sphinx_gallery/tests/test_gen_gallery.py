@@ -573,9 +573,7 @@ sphinx_gallery_conf = {
 )
 def test_backreferences_dir_config(sphinx_app_wrapper):
     """Tests 'backreferences_dir' type checking."""
-    with pytest.raises(
-        ConfigError, match="'backreferences_dir' config allowed types"
-    ):
+    with pytest.raises(ConfigError, match="'backreferences_dir' config allowed types"):
         app = sphinx_app_wrapper.create_sphinx_app()
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
 

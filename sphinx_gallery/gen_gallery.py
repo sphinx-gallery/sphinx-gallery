@@ -191,7 +191,11 @@ def _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
 
 
 def _check_config_type(
-    gallery_conf, conf_key, types, str_to_list=False, allow_none=False,
+    gallery_conf,
+    conf_key,
+    types,
+    str_to_list=False,
+    allow_none=False,
 ):
     """Check config type, optionally converting str to list or allowing None."""
     conf_value = gallery_conf[conf_key]
@@ -208,9 +212,12 @@ def _check_config_type(
         types = (types,)
     str_types = [t.__name__ for t in types]
     or_none = " or None" if allow_none else ""
-    conf_type =type(conf_value).__name__
+    conf_type = type(conf_value).__name__
     msg = msg.format(
-        conf_key=conf_key, types=str_types, or_none=or_none, conf_type=conf_type,
+        conf_key=conf_key,
+        types=str_types,
+        or_none=or_none,
+        conf_type=conf_type,
     )
     raise ConfigError(msg)
 
@@ -218,7 +225,10 @@ def _check_config_type(
 def _check_image_srcset(gallery_conf):
     """Check `_check_image_srcset`, convert to float and removing '1'."""
     gallery_conf = _check_config_type(
-        gallery_conf, "image_srcset", (list, tuple), str_to_list=True,
+        gallery_conf,
+        "image_srcset",
+        (list, tuple),
+        str_to_list=True,
     )
     srcset_mult_facs = set()
     for st in gallery_conf["image_srcset"]:
@@ -238,7 +248,10 @@ def _check_image_srcset(gallery_conf):
 def _check_compress_images(gallery_conf):
     """Check `compress_images`, getting any command line args."""
     gallery_conf = _check_config_type(
-        gallery_conf, 'compress_images', (str, tuple, list), str_to_list=True,
+        gallery_conf,
+        "compress_images",
+        (str, tuple, list),
+        str_to_list=True,
     )
     compress_images = gallery_conf["compress_images"]
     compress_images = list(compress_images)
@@ -364,7 +377,10 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
 
     # Check capture_repr
     gallery_conf = _check_config_type(
-        gallery_conf, "capture_repr", (tuple, list), str_to_list=True,
+        gallery_conf,
+        "capture_repr",
+        (tuple, list),
+        str_to_list=True,
     )
     supported_reprs = ["__repr__", "__str__", "_repr_html_"]
     for rep in gallery_conf["capture_repr"]:
@@ -435,7 +451,10 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     gallery_conf["titles"] = {}
     # Ensure 'backreferences_dir' is str, pathlib.Path or None
     _check_config_type(
-        gallery_conf, "backreferences_dir", (str, pathlib.Path), allow_none=True,
+        gallery_conf,
+        "backreferences_dir",
+        (str, pathlib.Path),
+        allow_none=True,
     )
     # if 'backreferences_dir' is pathlib.Path, make str for Python <=3.5
     # compatibility
@@ -454,7 +473,10 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
 
     # css
     gallery_conf = _check_config_type(
-        gallery_conf, "css", (list, tuple), str_to_list=True,
+        gallery_conf,
+        "css",
+        (list, tuple),
+        str_to_list=True,
     )
     for css in gallery_conf["css"]:
         if css not in _KNOWN_CSS:
