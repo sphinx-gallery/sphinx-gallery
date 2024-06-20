@@ -58,7 +58,7 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
         path_link = "/".join([fpath_prefix.strip("/"), path_link])
 
     # Make sure we have the right slashes (in case we're on Windows)
-    path_link = path_link.replace(os.path.sep, "/")
+    path_link = path_link.replace(os.sep, "/")
 
     # Create the URL
     binder_url = "/".join(
@@ -408,13 +408,13 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     relative_link = os.path.relpath(fpath, gallery_conf["src_dir"])
     notebook_location = relative_link.replace(".py", ".ipynb")
     # Make sure we have the right slashes (in case we're on Windows)
-    notebook_location = notebook_location.replace(os.path.sep, "/")
+    notebook_location = notebook_location.replace(os.sep, "/")
 
     lite_root_url = os.path.relpath(
         os.path.join(gallery_conf["src_dir"], "lite"), os.path.dirname(fpath)
     )
     # Make sure we have the right slashes (in case we're on Windows)
-    lite_root_url = lite_root_url.replace(os.path.sep, "/")
+    lite_root_url = lite_root_url.replace(os.sep, "/")
 
     if gallery_conf["jupyterlite"]["use_jupyter_lab"]:
         lite_root_url += "/lab"
