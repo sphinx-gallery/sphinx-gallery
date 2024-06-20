@@ -2381,9 +2381,9 @@ when your :ref:`gallery <multiple_galleries_config>` has subsections
 controlling sidebar appearance. The default is set to ``nested_sections=True``
 because it generally works with the popular
 [``pydata-sphinx-theme``](https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html)
-theme. It can however cause undesirable duplication in the sidebar in other
+theme. It can however, cause undesirable duplication in the sidebar with other
 themes so users are advised to choose the most suitable ``nested_sections`` setting
-for their documentation theme.
+for their theme.
 
 With default ``nested_sections=True``, Sphinx-Gallery will use the
 ``GALLERY_HEADER.[ext]`` (or ``README.[ext]`` for backward-compatibility) files
