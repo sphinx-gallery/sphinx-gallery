@@ -190,6 +190,43 @@ def _check_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
         raise ConfigError(msg.strip())
 
 
+def _check_compress_images(gallery_conf):
+    """Check `compress_images`, getting any command line args."""
+    compress_images = gallery_conf["compress_images"]
+    if isinstance(compress_images, str):
+        compress_images = [compress_images]
+    elif not isinstance(compress_images, (tuple, list)):
+        raise ConfigError(
+            "compress_images must be a tuple, list, or str, "
+            f"got {type(compress_images)}"
+        )
+    compress_images = list(compress_images)
+    allowed_values = ("images", "thumbnails")
+    pops = list()
+    # Get command-line switches
+    for ki, kind in enumerate(compress_images):
+        if kind not in allowed_values:
+            if kind.startswith("-"):
+                pops.append(ki)
+                continue
+            raise ConfigError(
+                "All entries in compress_images must be one of "
+                f"{allowed_values} or a command-line switch "
+                f'starting with "-", got {kind!r}'
+            )
+    compress_images_args = [compress_images.pop(p) for p in pops[::-1]]
+    if len(compress_images) and not _has_optipng():
+        logger.warning(
+            "optipng binaries not found, PNG %s will not be optimized",
+            " and ".join(compress_images),
+        )
+        compress_images = ()
+    gallery_conf["compress_images"] = compress_images
+    gallery_conf["compress_images_args"] = compress_images_args
+
+    return gallery_conf
+
+
 def _check_pypandoc_config(gallery_conf):
     """Check `pypandoc` config."""
     pypandoc = gallery_conf["pypandoc"]
@@ -320,37 +357,8 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
     del srcset, srcset_mult_facs
 
-    # compress_images
-    compress_images = gallery_conf["compress_images"]
-    if isinstance(compress_images, str):
-        compress_images = [compress_images]
-    elif not isinstance(compress_images, (tuple, list)):
-        raise ConfigError(
-            "compress_images must be a tuple, list, or str, "
-            f"got {type(compress_images)}"
-        )
-    compress_images = list(compress_images)
-    allowed_values = ("images", "thumbnails")
-    pops = list()
-    for ki, kind in enumerate(compress_images):
-        if kind not in allowed_values:
-            if kind.startswith("-"):
-                pops.append(ki)
-                continue
-            raise ConfigError(
-                "All entries in compress_images must be one of "
-                f"{allowed_values} or a command-line switch "
-                f'starting with "-", got {kind!r}'
-            )
-    compress_images_args = [compress_images.pop(p) for p in pops[::-1]]
-    if len(compress_images) and not _has_optipng():
-        logger.warning(
-            "optipng binaries not found, PNG %s will not be optimized",
-            " and ".join(compress_images),
-        )
-        compress_images = ()
-    gallery_conf["compress_images"] = compress_images
-    gallery_conf["compress_images_args"] = compress_images_args
+    # Check `compress_images`
+    gallery_conf = _check_compress_images(gallery_conf)
 
     # deal with matplotlib_animations
     animations = gallery_conf["matplotlib_animations"]
