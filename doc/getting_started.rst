@@ -165,7 +165,8 @@ files and directories:
   example ``.py`` files (more details in :ref:`image_scrapers`) and thumbnail
   images for the gallery.
 * A directory for each sub-directory in ``'example_dirs'``. Within each
-  directory will be the above and below listed files for that 'sub-gallery'.
+  directory will be the above and below listed files for that 'sub-gallery'
+  (aka subsection).
 
 Additionally for **each** ``.py`` file, a file with the following suffix is
 generated:
