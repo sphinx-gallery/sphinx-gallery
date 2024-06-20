@@ -216,7 +216,7 @@ def _check_config_type(
 
 
 def _check_image_srcset(gallery_conf):
-    """Check `_check_image_srcset`."""
+    """Check `_check_image_srcset`, convert to float and removing '1'."""
     gallery_conf = _check_config_type(
         gallery_conf, "image_srcset", (list, tuple), str_to_list=True,
     )
@@ -405,22 +405,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         pass
 
     # Check for srcset hidpi images
-    gallery_conf = _check_config_type(
-        gallery_conf, "image_srcset", (list, tuple), str_to_list=True,
-    )
-    srcset_mult_facs = set()
-    for st in gallery_conf["image_srcset"]:
-        if not (isinstance(st, str) and st[-1:] == "x"):
-            raise ConfigError(
-                f"Invalid value for image_srcset parameter: {st!r}. "
-                "Must be a list of strings with the multiplicative "
-                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]'
-            )
-        # "2x" -> "2.0"
-        srcset_mult_facs.add(float(st[:-1]))
-    srcset_mult_facs -= {1}  # 1x is always saved.
-    gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
-    del srcset_mult_facs
+    gallery_conf = _check_image_srcset(gallery_conf)
 
     # Check `compress_images`
     gallery_conf = _check_compress_images(gallery_conf)
@@ -467,6 +452,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         app,
     )
 
+    # css
     gallery_conf = _check_config_type(
         gallery_conf, "css", (list, tuple), str_to_list=True,
     )
