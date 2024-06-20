@@ -227,6 +227,42 @@ def _check_compress_images(gallery_conf):
     return gallery_conf
 
 
+def _check_matplotlib_animations(gallery_conf, app):
+    """Check `matplotlib_animations` config."""
+    animations = gallery_conf["matplotlib_animations"]
+    if isinstance(animations, bool):
+        # We allow single boolean for backwards compatibility reasons
+        animations = (animations,)
+        fmt = None
+    if not (len(animations) in (1, 2) and isinstance(enabled := animations[0], bool)):
+        raise ConfigError(
+            "'matplotlib_animations' must be a single bool or "
+            f"(enabled: bool, format: str), not {animations!r}"
+        )
+    # Handle file format
+    if len(animations) > 1:
+        fmt = animations[1]
+        if fmt is not None:
+            if not isinstance(fmt, str):
+                raise ConfigError(
+                    "'matplotlib_animations' file format must be a string or None"
+                )
+            if fmt not in ("html5", "jshtml"):
+                if app is not None:
+                    # Other formats mean animations saved externally and require
+                    # this `video` extension to embed them into the HTML
+                    try:
+                        app.setup_extension("sphinxcontrib.video")
+                    except ExtensionError as e:
+                        raise ConfigError(
+                            f"'matplotlib_animations' specifies file format: {fmt}; "
+                            f"this requires the sphinxcontrib.video package."
+                        ) from e
+
+    gallery_conf["matplotlib_animations"] = (enabled, fmt)
+    return gallery_conf
+
+
 def _check_pypandoc_config(gallery_conf):
     """Check `pypandoc` config."""
     pypandoc = gallery_conf["pypandoc"]
@@ -360,39 +396,8 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     # Check `compress_images`
     gallery_conf = _check_compress_images(gallery_conf)
 
-    # deal with matplotlib_animations
-    animations = gallery_conf["matplotlib_animations"]
-    if not isinstance(animations, (tuple, list)):
-        # We allow single boolean for backwards compatibility reasons
-        animations = (animations,)
-        fmt = None
-    if not (len(animations) in (1, 2) and isinstance(enabled := animations[0], bool)):
-        raise ConfigError(
-            "'matplotlib_animations' must be a single bool or "
-            f"(enabled: bool, format: str), not {animations!r}"
-        )
-    # Handle file format
-    if len(animations) > 1:
-        fmt = animations[1]
-        if fmt is not None:
-            if not isinstance(fmt, str):
-                raise ConfigError(
-                    "'matplotlib_animations' file format must be a string or None"
-                )
-            if fmt not in ("html5", "jshtml"):
-                if app is not None:
-                    # Other formats mean animations saved externally and require
-                    # this `video` extension to embed them into the HTML
-                    try:
-                        app.setup_extension("sphinxcontrib.video")
-                    except ExtensionError as e:
-                        raise ConfigError(
-                            f"'matplotlib_animations' specifies file format: {fmt}; "
-                            f"this requires the sphinxcontrib.video package."
-                        ) from e
-
-    gallery_conf["matplotlib_animations"] = (enabled, fmt)
-    del animations, enabled, fmt
+    # Check `matplotlib_animations`
+    gallery_conf = _check_matplotlib_animations(gallery_conf, app)
 
     # check resetters
     _get_callables(gallery_conf, "reset_modules")
