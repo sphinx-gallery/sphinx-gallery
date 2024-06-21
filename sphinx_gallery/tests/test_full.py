@@ -186,7 +186,7 @@ def test_optipng(sphinx_app):
 def test_junit(sphinx_app, tmp_path):
     """Test junit output."""
     out_dir = sphinx_app.outdir
-    junit_file = out_dir / "sphinx-gallery" / "junit-results.xml"
+    junit_file = Path(out_dir) / "sphinx-gallery" / "junit-results.xml"
     assert junit_file.is_file()
     with open(junit_file, "rb") as fid:
         contents = fid.read()
@@ -205,7 +205,7 @@ def test_junit(sphinx_app, tmp_path):
     assert "local_module" not in contents  # it's not actually run as an ex
     assert "expected example failure" in contents
     assert "<failure message" not in contents
-    src_dir = sphinx_app.srcdir
+    src_dir = Path(sphinx_app.srcdir)
     new_root_dir = tmp_path / "src"
     shutil.copytree(src_dir.parent, new_root_dir)
     del src_dir
@@ -264,7 +264,7 @@ def test_junit(sphinx_app, tmp_path):
 
 def test_run_sphinx(sphinx_app):
     """Test basic outputs."""
-    out_dir = sphinx_app.outdir
+    out_dir = Path(sphinx_app.outdir)
     out_files = os.listdir(out_dir)
     assert "index.html" in out_files
     assert "auto_examples" in out_files
