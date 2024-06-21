@@ -219,6 +219,7 @@ def test_junit(sphinx_app, tmp_path):
     shutil.move(passing_fname, passing_fname + ".temp")
     shutil.move(failing_fname, passing_fname)
     shutil.move(passing_fname + ".temp", failing_fname)
+    print(sphinx_app._status.getvalue())
     with docutils_namespace():
         app = Sphinx(
             new_src_dir,
@@ -235,8 +236,7 @@ def test_junit(sphinx_app, tmp_path):
     junit_file = op.join(new_out_dir, "sphinx-gallery", "junit-results.xml")
     assert op.isfile(junit_file)
     with open(junit_file, "rb") as fid:
-        contents = fid.read()
-    suite = lxml.etree.fromstring(contents)
+        suite = lxml.etree.fromstring(fid.read())
     # this time we only ran the stale files
     from pprint import pprint
     from sphinx_gallery.gen_gallery import _parse_failures

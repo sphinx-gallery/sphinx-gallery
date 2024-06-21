@@ -1003,6 +1003,8 @@ def execute_code_block(
     )
     need_save_figures = match is None
 
+    print(f'{script_vars["src_file"]}\n{block}\n', file=sys.__stderr__)
+
     try:
         # The "compile" step itself can fail on a SyntaxError, so just prepend
         # newlines to get the correct failing line to show up in the traceback
