@@ -1003,8 +1003,6 @@ def execute_code_block(
     )
     need_save_figures = match is None
 
-    print(f'{script_vars["src_file"]}\n{block}\n', file=sys.__stderr__)
-
     try:
         # The "compile" step itself can fail on a SyntaxError, so just prepend
         # newlines to get the correct failing line to show up in the traceback
@@ -1029,8 +1027,14 @@ def execute_code_block(
             images_rst = save_figures(block, script_vars, gallery_conf)
         else:
             images_rst = ""
-    except Exception:
+    except Exception as e:
         logging_tee.restore_std()
+        print("*" * 120, file=sys.__stdout__)
+        print(f'{script_vars["src_file"]}\n{block}\n', file=sys.__stdout__)
+        print(
+            "".join(traceback.format_exception(type(e), e, e.__traceback__)),
+            file=sys.__stdout__,
+        )
         except_rst = handle_exception(
             sys.exc_info(), src_file, script_vars, gallery_conf
         )
