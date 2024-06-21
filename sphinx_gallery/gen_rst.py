@@ -1030,7 +1030,8 @@ def execute_code_block(
     except Exception as e:
         logging_tee.restore_std()
         print("*" * 120, file=sys.__stdout__)
-        print(f'{script_vars["src_file"]}\n{block}\n', file=sys.__stdout__)
+        # print(f'{script_vars["src_file"]}\n{block}\n', file=sys.__stdout__)
+        print(f'{script_vars["src_file"]}\n{sys.path=}\n', file=sys.__stdout__)
         print(
             "".join(traceback.format_exception(type(e), e, e.__traceback__)),
             file=sys.__stdout__,

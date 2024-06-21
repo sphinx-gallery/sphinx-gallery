@@ -211,6 +211,7 @@ def test_junit(sphinx_app, tmp_path):
     new_src_dir = op.join(new_src_dir, "doc")
     new_out_dir = op.join(new_src_dir, "_build", "html")
     new_toctree_dir = op.join(new_src_dir, "_build", "toctrees")
+    # swap numpy_matplotlib (passing) with future_imports_broken (failing)
     passing_fname = op.join(new_src_dir, "../examples", "plot_numpy_matplotlib.py")
     failing_fname = op.join(
         new_src_dir, "../examples", "future", "plot_future_imports_broken.py"
