@@ -242,11 +242,6 @@ def test_junit(sphinx_app, tmp_path):
     with open(junit_file, "rb") as fid:
         suite = lxml.etree.fromstring(fid.read())
     # this time we only ran the stale files
-    from pprint import pprint
-    from sphinx_gallery.gen_gallery import _parse_failures
-
-    pprint(list(app.config.sphinx_gallery_conf["failing_examples"]))
-    pprint(_parse_failures(app.config.sphinx_gallery_conf))
     want.update(failures="2", skipped="1", tests="3")
     got = dict(suite.attrib)
     del got["time"]
