@@ -31,7 +31,7 @@ dynamic = [
 ]
 dependencies = [
   "pillow",
-  "sphinx>=4",
+  "sphinx>=5",
 ]
 optional-dependencies.animations = [
   "sphinxcontrib-video",

@@ -1027,15 +1027,8 @@ def execute_code_block(
             images_rst = save_figures(block, script_vars, gallery_conf)
         else:
             images_rst = ""
-    except Exception as e:
+    except Exception:
         logging_tee.restore_std()
-        print("*" * 120, file=sys.__stdout__)
-        # print(f'{script_vars["src_file"]}\n{block}\n', file=sys.__stdout__)
-        print(f'{script_vars["src_file"]}\n{sys.path=}\n', file=sys.__stdout__)
-        print(
-            "".join(traceback.format_exception(type(e), e, e.__traceback__)),
-            file=sys.__stdout__,
-        )
         except_rst = handle_exception(
             sys.exc_info(), src_file, script_vars, gallery_conf
         )

@@ -80,8 +80,8 @@ def _sphinx_app(tmpdir_factory, buildername):
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
-    temp_dir = (tmpdir_factory.getbasetemp() / f"root_{buildername}").strpath
-    src_dir = op.join(op.dirname(__file__), "tinybuild")
+    temp_dir = tmpdir_factory.getbasetemp() / f"root_{buildername}"
+    src_dir = Path(__file__).parent / "tinybuild"
 
     def ignore(src, names):
         return ("_build", "gen_modules", "auto_examples")
@@ -89,9 +89,9 @@ def _sphinx_app(tmpdir_factory, buildername):
     shutil.copytree(src_dir, temp_dir, ignore=ignore)
     # For testing iteration, you can get similar behavior just doing `make`
     # inside the tinybuild/doc directory
-    conf_dir = op.join(temp_dir, "doc")
-    out_dir = op.join(conf_dir, "_build", buildername)
-    toctrees_dir = op.join(conf_dir, "_build", "toctrees")
+    conf_dir = temp_dir / "doc"
+    out_dir = conf_dir / "_build" / buildername
+    toctrees_dir = conf_dir / "_build" / "toctrees"
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
@@ -184,9 +184,10 @@ def test_optipng(sphinx_app):
 
 
 def test_junit(sphinx_app, tmp_path):
+    """Test junit output."""
     out_dir = sphinx_app.outdir
-    junit_file = op.join(out_dir, "sphinx-gallery", "junit-results.xml")
-    assert op.isfile(junit_file)
+    junit_file = out_dir / "sphinx-gallery" / "junit-results.xml"
+    assert junit_file.is_file()
     with open(junit_file, "rb") as fid:
         contents = fid.read()
     suite = lxml.etree.fromstring(contents)
@@ -205,22 +206,24 @@ def test_junit(sphinx_app, tmp_path):
     assert "expected example failure" in contents
     assert "<failure message" not in contents
     src_dir = sphinx_app.srcdir
-    new_src_dir = op.join(str(tmp_path), "src")
-    shutil.copytree(op.join(src_dir, "../"), new_src_dir)
+    new_root_dir = tmp_path / "src"
+    shutil.copytree(src_dir.parent, new_root_dir)
     del src_dir
-    new_src_dir = op.join(new_src_dir, "doc")
-    new_out_dir = op.join(new_src_dir, "_build", "html")
-    new_toctree_dir = op.join(new_src_dir, "_build", "toctrees")
+    new_src_dir = new_root_dir / "doc"
+    new_out_dir = new_src_dir / "_build" / "html"
+    new_toctree_dir = new_src_dir / "_build" / "toctrees"
+    new_examples_dir = new_src_dir.parent / "examples"
     # swap numpy_matplotlib (passing) with future_imports_broken (failing)
-    passing_fname = op.join(new_src_dir, "../examples", "plot_numpy_matplotlib.py")
-    failing_fname = op.join(
-        new_src_dir, "../examples", "future", "plot_future_imports_broken.py"
-    )
+    passing_fname = new_examples_dir / "plot_numpy_matplotlib.py"
+    failing_fname = new_examples_dir / "future" / "plot_future_imports_broken.py"
     print("Names", passing_fname, failing_fname)
-    shutil.move(passing_fname, passing_fname + ".temp")
+    shutil.move(passing_fname, passing_fname.with_suffix(".temp"))
     shutil.move(failing_fname, passing_fname)
-    shutil.move(passing_fname + ".temp", failing_fname)
-    print(sphinx_app._status.getvalue())
+    shutil.move(passing_fname.with_suffix(".temp"), failing_fname)
+    shutil.copyfile(
+        new_examples_dir / "local_module.py",
+        new_examples_dir / "future" / "local_module.py",
+    )
     with docutils_namespace():
         app = Sphinx(
             new_src_dir,
@@ -234,8 +237,8 @@ def test_junit(sphinx_app, tmp_path):
         # for automodule and backrefs to work
         with pytest.raises(ExtensionError, match="Here is a summary of the "):
             app.build(False, [])
-    junit_file = op.join(new_out_dir, "sphinx-gallery", "junit-results.xml")
-    assert op.isfile(junit_file)
+    junit_file = new_out_dir / "sphinx-gallery" / "junit-results.xml"
+    assert junit_file.is_file()
     with open(junit_file, "rb") as fid:
         suite = lxml.etree.fromstring(fid.read())
     # this time we only ran the stale files
@@ -257,20 +260,19 @@ def test_junit(sphinx_app, tmp_path):
     assert suite[2][0].tag == "failure", suite[2].attrib["classname"]
     assert suite[2][0].attrib["message"] == "Passed even though it was marked to fail"
     assert got == want
-    raise RuntimeError
 
 
 def test_run_sphinx(sphinx_app):
     """Test basic outputs."""
-    out_dir = str(sphinx_app.outdir)
+    out_dir = sphinx_app.outdir
     out_files = os.listdir(out_dir)
     assert "index.html" in out_files
     assert "auto_examples" in out_files
     assert "auto_examples_with_rst" in out_files
     assert "auto_examples_rst_index" in out_files
     assert "auto_examples_README_header" in out_files
-    generated_examples_dir = op.join(out_dir, "auto_examples")
-    assert op.isdir(generated_examples_dir)
+    generated_examples_dir = out_dir / "auto_examples"
+    assert generated_examples_dir.is_dir()
     # make sure that indices are properly being passed forward...
     files_to_check = [
         "auto_examples_rst_index/examp_subdir1/index.html",
@@ -278,7 +280,7 @@ def test_run_sphinx(sphinx_app):
         "auto_examples_rst_index/index.html",
     ]
     for f in files_to_check:
-        assert op.isfile(out_dir + "/" + f)
+        assert (out_dir / f).is_file()
     status = sphinx_app._status.getvalue()
     assert f"executed {N_GOOD} out of {N_EXAMPLES}" in status
     assert "after excluding 0" in status
