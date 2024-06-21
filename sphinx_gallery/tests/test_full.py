@@ -183,7 +183,7 @@ def test_optipng(sphinx_app):
     assert "optipng version" not in status.lower()  # catch the --version
 
 
-def test_junit(sphinx_app, tmpdir):
+def test_junit(sphinx_app, tmp_path):
     out_dir = sphinx_app.outdir
     junit_file = op.join(out_dir, "sphinx-gallery", "junit-results.xml")
     assert op.isfile(junit_file)
@@ -205,7 +205,7 @@ def test_junit(sphinx_app, tmpdir):
     assert "expected example failure" in contents
     assert "<failure message" not in contents
     src_dir = sphinx_app.srcdir
-    new_src_dir = op.join(str(tmpdir), "src")
+    new_src_dir = op.join(str(tmp_path), "src")
     shutil.copytree(op.join(src_dir, "../"), new_src_dir)
     del src_dir
     new_src_dir = op.join(new_src_dir, "doc")
@@ -226,7 +226,7 @@ def test_junit(sphinx_app, tmpdir):
             new_out_dir,
             new_toctree_dir,
             buildername="html",
-            status=StringIO(),
+            verbosity=1,
         )
         # need to build within the context manager
         # for automodule and backrefs to work
@@ -238,20 +238,25 @@ def test_junit(sphinx_app, tmpdir):
         contents = fid.read()
     suite = lxml.etree.fromstring(contents)
     # this time we only ran the stale files
+    from pprint import pprint
+    from sphinx_gallery.gen_gallery import _parse_failures
+
+    pprint(list(app.config.sphinx_gallery_conf["failing_examples"]))
+    pprint(_parse_failures(app.config.sphinx_gallery_conf))
     want.update(failures="2", skipped="1", tests="3")
     got = dict(suite.attrib)
     del got["time"]
     assert len(suite) == 3
     assert suite[0].attrib["classname"] == "plot_numpy_matplotlib"
     assert suite[0][0].tag == "failure", suite[0].attrib["classname"]
+    assert suite[0][0].attrib["message"].startswith("RuntimeError: Forcing")
     assert suite[1].attrib["classname"] == "plot_scraper_broken"
     assert suite[1][0].tag == "skipped", suite[1].attrib["classname"]
     assert suite[2].attrib["classname"] == "plot_future_imports_broken"
     assert suite[2][0].tag == "failure", suite[2].attrib["classname"]
+    assert suite[2][0].attrib["message"] == "Passed even though it was marked to fail"
     assert got == want
-    contents = contents.decode("utf-8")
-    assert '<failure message="RuntimeError: Forcing' in contents
-    assert "Passed even though it was marked to fail" in contents
+    raise RuntimeError
 
 
 def test_run_sphinx(sphinx_app):
