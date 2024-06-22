@@ -3,18 +3,18 @@
 import os
 
 import pytest
-
 from sphinx.errors import ConfigError, ExtensionError
+
 import sphinx_gallery
 from sphinx_gallery.gen_gallery import _fill_gallery_conf_defaults
 from sphinx_gallery.scrapers import (
-    figure_rst,
-    SG_IMAGE,
-    matplotlib_scraper,
-    ImagePathIterator,
-    save_figures,
     _KNOWN_IMG_EXTS,
+    SG_IMAGE,
+    ImagePathIterator,
     _reset_matplotlib,
+    figure_rst,
+    matplotlib_scraper,
+    save_figures,
 )
 
 

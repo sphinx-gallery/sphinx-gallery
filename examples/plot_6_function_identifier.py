@@ -27,9 +27,11 @@ This functionality is used to add documentation hyperlinks to your code
 # License: BSD 3 clause
 
 import os.path as op  # noqa, analysis:ignore
+
 import matplotlib.pyplot as plt
+
 import sphinx_gallery
-from sphinx_gallery.backreferences import identify_names, _make_ref_regex
+from sphinx_gallery.backreferences import _make_ref_regex, identify_names
 from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 
 filename = "plot_6_function_identifier.py"

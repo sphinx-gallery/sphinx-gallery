@@ -12,10 +12,10 @@ import re
 import subprocess
 import zipfile
 from pathlib import Path
-from shutil import move, copyfile
+from shutil import copyfile, move
 
-from sphinx.errors import ExtensionError
 import sphinx.util
+from sphinx.errors import ExtensionError
 
 try:
     from sphinx.util.display import status_iterator  # noqa: F401

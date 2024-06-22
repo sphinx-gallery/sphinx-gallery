@@ -9,18 +9,18 @@ Use :mod:`sphinx_gallery` to link to other packages, like
 FYI this gallery uses :obj:`sphinx_gallery.sorting.FileNameSortKey`.
 """
 
+from itertools import compress  # noqa
 from warnings import warn
 
-import numpy as np
-from matplotlib.colors import is_color_like
-from matplotlib.figure import Figure
-from itertools import compress  # noqa
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+from local_module import N  # N = 1000
+from matplotlib.colors import is_color_like
+from matplotlib.figure import Figure
+
 import sphinx_gallery.backreferences
 from sphinx_gallery.py_source_parser import Block
-
-from local_module import N  # N = 1000
 
 t = np.arange(N) / float(N)
 win = np.hanning(N)

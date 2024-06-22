@@ -7,7 +7,6 @@ import os
 
 from .utils import zip_files
 
-
 CODE_ZIP_DOWNLOAD = """
 .. only:: html
 

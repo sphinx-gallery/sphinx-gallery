@@ -1,17 +1,17 @@
 """Pytest fixtures."""
 
-from contextlib import contextmanager
-from io import StringIO
 import os
 import shutil
+from contextlib import contextmanager
+from io import StringIO
 from unittest.mock import Mock
 
 import pytest
-
 import sphinx
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
+
 from sphinx_gallery import docs_resolv, gen_gallery, gen_rst, py_source_parser
 from sphinx_gallery.scrapers import _import_matplotlib
 from sphinx_gallery.utils import _get_image

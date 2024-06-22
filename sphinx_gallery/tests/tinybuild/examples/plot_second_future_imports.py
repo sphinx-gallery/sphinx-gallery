@@ -12,8 +12,8 @@ backreferences. We should probably also change the filename in another PR!
 
 # sphinx_gallery_thumbnail_path = '_static_nonstandard/demo.png'
 
+from sphinx_gallery.scrapers import clean_modules, figure_rst
 from sphinx_gallery.sorting import ExplicitOrder
-from sphinx_gallery.scrapers import figure_rst, clean_modules
 
 ExplicitOrder([])  # must actually be used to become a backref target!
 
