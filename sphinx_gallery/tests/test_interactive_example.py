@@ -204,7 +204,7 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     image_rst = " .. image:: images/jupyterlite_badge_logo.svg"
 
     target_rst_template = (
-        ":target: {root_url}/lite/{jupyter_part}.+path={notebook_path}"
+        ":target: {root_url}/lite/{jupyter_part}.+index.html.+path={notebook_path}"
     )
     if "subdir" not in file_path:
         root_url = r"\.\."
