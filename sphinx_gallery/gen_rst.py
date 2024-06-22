@@ -589,6 +589,7 @@ def generate_dir_rst(
         parallel = Parallel(
             n_jobs=gallery_conf["parallel"],
             pre_dispatch="n_jobs",
+            batch_size=1,
             backend="loky",
         )
 
