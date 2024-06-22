@@ -1,9 +1,10 @@
 """test BlockParser."""
 
 import os
-import pytest
 import tempfile
 from textwrap import dedent
+
+import pytest
 
 from sphinx_gallery.block_parser import BlockParser
 from sphinx_gallery.gen_gallery import DEFAULT_GALLERY_CONF

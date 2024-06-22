@@ -1,6 +1,7 @@
 """Testing sphinx_gallery.load_style extension."""
 
 import os
+
 import pytest
 
 

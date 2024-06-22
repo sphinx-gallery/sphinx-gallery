@@ -8,53 +8,54 @@ when building the documentation.
 
 import codecs
 import copy
-from datetime import timedelta, datetime
-from difflib import get_close_matches
-from pathlib import Path
-from textwrap import indent
-import re
 import os
 import pathlib
-from xml.sax.saxutils import quoteattr, escape
+import re
+from datetime import datetime, timedelta
+from difflib import get_close_matches
 from itertools import chain
-from docutils import nodes
+from pathlib import Path
+from textwrap import indent
+from xml.sax.saxutils import escape, quoteattr
 
-from sphinx.errors import ConfigError, ExtensionError
 import sphinx.util
-from sphinx.util.console import blue, red, purple, bold
-from . import glr_path_static, __version__ as _sg_version
+from docutils import nodes
+from sphinx.errors import ConfigError, ExtensionError
+from sphinx.util.console import blue, bold, purple, red
+
+from . import __version__ as _sg_version
+from . import glr_path_static
 from .backreferences import _finalize_backreferences
-from .gen_rst import (
-    generate_dir_rst,
-    SPHX_GLR_SIG,
-    _get_gallery_header,
-    _get_class,
-    _get_callables,
-    _get_call_memory_and_base,
-)
-from .scrapers import _import_matplotlib
+from .directives import ImageSg, MiniGallery, imagesg_addnode
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
+from .gen_rst import (
+    SPHX_GLR_SIG,
+    _get_call_memory_and_base,
+    _get_callables,
+    _get_class,
+    _get_gallery_header,
+    generate_dir_rst,
+)
 from .interactive_example import (
-    copy_binder_files,
     check_binder_conf,
     check_jupyterlite_conf,
+    copy_binder_files,
+    create_jupyterlite_contents,
+    post_configure_jupyterlite_sphinx,
+    pre_configure_jupyterlite_sphinx,
 )
-from .interactive_example import pre_configure_jupyterlite_sphinx
-from .interactive_example import post_configure_jupyterlite_sphinx
-from .interactive_example import create_jupyterlite_contents
-from .directives import MiniGallery, ImageSg, imagesg_addnode
 from .recommender import ExampleRecommender, _write_recommendations
+from .scrapers import _import_matplotlib
 from .sorting import ExplicitOrder
 from .utils import (
     _collect_gallery_files,
     _format_toctree,
+    _has_graphviz,
     _has_optipng,
     _has_pypandoc,
-    _has_graphviz,
     _replace_md5,
 )
-
 
 _KNOWN_CSS = (
     "sg_gallery",

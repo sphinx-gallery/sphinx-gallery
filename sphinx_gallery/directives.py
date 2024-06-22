@@ -1,21 +1,18 @@
 """Custom Sphinx directives."""
 
 import os
-from pathlib import PurePosixPath, Path
 import shutil
+from pathlib import Path, PurePosixPath
 
-from docutils import nodes
-from docutils import statemachine
+from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.directives import images
-
 from sphinx.errors import ExtensionError
 
-
 from .backreferences import (
-    _thumbnail_div,
     THUMBNAIL_PARENT_DIV,
     THUMBNAIL_PARENT_DIV_CLOSE,
+    _thumbnail_div,
 )
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks

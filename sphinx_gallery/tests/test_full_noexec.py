@@ -1,14 +1,13 @@
 # License: 3-clause BSD
 """Test the SG pipeline using Sphinx and tinybuild."""
 
-from io import StringIO
 import os.path as op
 import shutil
-
-from sphinx.application import Sphinx
-from sphinx.util.docutils import docutils_namespace
+from io import StringIO
 
 import pytest
+from sphinx.application import Sphinx
+from sphinx.util.docutils import docutils_namespace
 
 
 @pytest.fixture(scope="module")

@@ -5,9 +5,9 @@ Animation support
 Show an animation, which should end up nicely embedded below.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Adapted from
 # https://matplotlib.org/gallery/animation/basic_example.html

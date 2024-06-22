@@ -3,16 +3,17 @@
 r"""Tests for sorting keys on gallery (sub)sections."""
 
 import os.path as op
-import pytest
 
+import pytest
 from sphinx.errors import ConfigError
+
 from sphinx_gallery.sorting import (
+    ExampleTitleSortKey,
     ExplicitOrder,
-    NumberOfCodeLinesSortKey,
     FileNameSortKey,
     FileSizeSortKey,
-    ExampleTitleSortKey,
     FunctionSortKey,
+    NumberOfCodeLinesSortKey,
 )
 
 

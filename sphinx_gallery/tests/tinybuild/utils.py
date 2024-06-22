@@ -1,6 +1,7 @@
 """Utility functions for doc building."""
 
 import os.path as op
+
 from sphinx_gallery.scrapers import matplotlib_scraper
 
 

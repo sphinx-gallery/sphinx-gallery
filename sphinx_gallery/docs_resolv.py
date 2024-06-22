@@ -4,23 +4,22 @@
 
 import codecs
 import gzip
-from io import BytesIO
 import os
 import pickle
 import posixpath
 import re
 import shelve
-import urllib.request as urllib_request
 import urllib.parse as urllib_parse
+import urllib.request as urllib_request
+from io import BytesIO
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 
+import sphinx.util
 from sphinx.errors import ExtensionError
 from sphinx.search import js_index
-import sphinx.util
 
 from .utils import status_iterator
-
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 

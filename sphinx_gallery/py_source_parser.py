@@ -3,12 +3,12 @@ r"""Parser for python source files."""
 # Created Sun Nov 27 14:03:07 2016
 # Author: Óscar Nájera
 
-from collections import namedtuple
-import codecs
 import ast
-from io import BytesIO
+import codecs
 import re
 import tokenize
+from collections import namedtuple
+from io import BytesIO
 from textwrap import dedent
 
 from sphinx.errors import ExtensionError

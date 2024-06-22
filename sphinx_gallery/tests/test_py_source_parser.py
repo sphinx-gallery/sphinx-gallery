@@ -3,9 +3,11 @@
 r"""Test source parser."""
 
 import os.path as op
-import pytest
 import textwrap
+
+import pytest
 from sphinx.errors import ExtensionError
+
 import sphinx_gallery.py_source_parser as sg
 
 

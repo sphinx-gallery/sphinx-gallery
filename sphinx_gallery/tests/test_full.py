@@ -3,33 +3,32 @@
 """Test the SG pipeline used with Sphinx and tinybuild."""
 
 import codecs
-from io import StringIO
+import glob
+import json
 import os
 import os.path as op
-from pathlib import Path
 import re
 import shutil
 import sys
 import time
-import glob
-import json
+from io import StringIO
+from pathlib import Path
 
 import lxml.html
+import pytest
 from packaging.version import Version
-
 from sphinx import __version__ as sphinx_version
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
+
 from sphinx_gallery.utils import (
     _get_image,
-    scale_image,
+    _has_graphviz,
     _has_optipng,
     _has_pypandoc,
-    _has_graphviz,
+    scale_image,
 )
-
-import pytest
 
 # file inventory for tinybuild:
 
