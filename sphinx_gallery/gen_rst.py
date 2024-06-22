@@ -8,67 +8,66 @@ example files.
 Files that generate images should start with 'plot'.
 """
 
-from time import time
-import copy
-import contextlib
 import ast
-from functools import lru_cache
+import codeop
+import contextlib
+import copy
 import gc
 import importlib
 import inspect
-from io import StringIO
 import os
-from pathlib import Path
 import re
 import stat
-from textwrap import indent
-import warnings
-from shutil import copyfile
 import sys
 import traceback
-import codeop
+import warnings
+from functools import lru_cache
+from io import StringIO
+from pathlib import Path
+from shutil import copyfile
+from textwrap import indent
+from time import time
 
-from sphinx.errors import ExtensionError, ConfigError
 import sphinx.util
-from sphinx.util.console import blue, red, bold
+from sphinx.errors import ConfigError, ExtensionError
+from sphinx.util.console import blue, bold, red
 
-from .scrapers import (
-    save_figures,
-    ImagePathIterator,
-    clean_modules,
-    _find_image_ext,
-    _scraper_dict,
-    _reset_dict,
-)
-from .utils import (
-    _collect_gallery_files,
-    _format_toctree,
-    scale_image,
-    get_md5sum,
-    zip_files,
-    _replace_md5,
-    optipng,
-    status_iterator,
-    _W_KW,
-)
 from . import glr_path_static, py_source_parser
 from .backreferences import (
-    _write_backreferences,
-    _thumbnail_div,
-    identify_names,
-    _make_ref_regex,
     THUMBNAIL_PARENT_DIV,
     THUMBNAIL_PARENT_DIV_CLOSE,
+    _make_ref_regex,
+    _thumbnail_div,
+    _write_backreferences,
+    identify_names,
 )
 from .block_parser import BlockParser
 from .docs_resolv import _write_code_obj
-from .notebook import jupyter_notebook, save_notebook
 from .interactive_example import (
     _add_jupyterlite_badge_logo,
     gen_binder_rst,
     gen_jupyterlite_rst,
 )
-
+from .notebook import jupyter_notebook, save_notebook
+from .scrapers import (
+    ImagePathIterator,
+    _find_image_ext,
+    _reset_dict,
+    _scraper_dict,
+    clean_modules,
+    save_figures,
+)
+from .utils import (
+    _W_KW,
+    _collect_gallery_files,
+    _format_toctree,
+    _replace_md5,
+    get_md5sum,
+    optipng,
+    scale_image,
+    status_iterator,
+    zip_files,
+)
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 

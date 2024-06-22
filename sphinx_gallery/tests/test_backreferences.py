@@ -2,16 +2,15 @@
 # License: 3-clause BSD
 """Testing the rst files generator."""
 
-import pytest
 import sys
 from unittest.mock import MagicMock, patch
 
+import pytest
 from sphinx.errors import ExtensionError
 
 import sphinx_gallery.backreferences as sg
-from sphinx_gallery.py_source_parser import split_code_and_text_blocks, Block
 from sphinx_gallery.gen_rst import _sanitize_rst
-
+from sphinx_gallery.py_source_parser import Block, split_code_and_text_blocks
 
 REFERENCE = r"""
 .. raw:: html

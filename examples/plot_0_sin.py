@@ -39,8 +39,8 @@ not need to do this in text blocks (see below).
 # Code source: Óscar Nájera
 # License: BSD 3 clause
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 x = np.linspace(0, 2 * np.pi, 100)
 y = np.sin(x)

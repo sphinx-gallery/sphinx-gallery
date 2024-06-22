@@ -13,13 +13,14 @@ file generated for each example script.
 import importlib
 import inspect
 import os
-import sys
 import re
-from textwrap import indent
+import sys
 from pathlib import PurePosixPath
+from textwrap import indent
 from warnings import filterwarnings
 
 from sphinx.errors import ExtensionError
+
 from .utils import optipng
 
 __all__ = [
@@ -132,7 +133,6 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     # Do not use _import_matplotlib() to avoid potentially changing the backend
     import matplotlib
     import matplotlib.pyplot as plt
-
     from matplotlib.animation import Animation
 
     image_path_iterator = block_vars["image_path_iterator"]
@@ -221,8 +221,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
 
 
 def _anim_rst(anim, image_path, gallery_conf):
-    from matplotlib.animation import FFMpegWriter, ImageMagickWriter
     from matplotlib import rcParams
+    from matplotlib.animation import FFMpegWriter, ImageMagickWriter
 
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail

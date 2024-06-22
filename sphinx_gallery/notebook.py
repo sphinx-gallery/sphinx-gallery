@@ -6,22 +6,22 @@ Class that holds the Jupyter notebook information
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from collections import defaultdict
-from functools import partial
-from itertools import count
 import argparse
 import base64
 import copy
 import json
 import mimetypes
 import os
-from pathlib import Path
 import re
 import sys
 import textwrap
+from collections import defaultdict
+from functools import partial
+from itertools import count
+from pathlib import Path
 
-from sphinx.errors import ExtensionError
 import sphinx.util
+from sphinx.errors import ExtensionError
 
 from .py_source_parser import split_code_and_text_blocks
 

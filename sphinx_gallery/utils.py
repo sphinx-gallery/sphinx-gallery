@@ -6,18 +6,18 @@ Miscellaneous utilities.
 # Author: Eric Larson
 # License: 3-clause BSD
 
-from functools import partial
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import subprocess
 import zipfile
-from shutil import move, copyfile
+from functools import partial
+from pathlib import Path
+from shutil import copyfile, move
 
-from sphinx.errors import ExtensionError
 import sphinx.util
+from sphinx.errors import ExtensionError
 
 try:
     from sphinx.util.display import status_iterator  # noqa: F401

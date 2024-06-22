@@ -26,8 +26,8 @@ high-level API `plotly express <https://plotly.com/python/plotly-express/>`_.
 .. _plotly library: https://plotly.com/python/
 """
 
-import plotly.express as px
 import numpy as np
+import plotly.express as px
 
 df = px.data.tips()
 fig = px.bar(
@@ -67,8 +67,8 @@ fig
 # library, complex figures mixing different types of traces can be made
 # with the low-level ``graph_objects`` imperative API.
 
-from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 fig = make_subplots(rows=1, cols=2, specs=[[{}, {"type": "domain"}]])
 fig.add_trace(go.Bar(x=[2018, 2019, 2020], y=[3, 2, 5], showlegend=False), 1, 1)

@@ -6,19 +6,18 @@ Parses example file code in order to keep track of used functions.
 """
 
 import ast
-from html import escape
 import inspect
 import os
-from pathlib import Path
 import re
 import sys
+from html import escape
+from pathlib import Path
 
-from sphinx.errors import ExtensionError
 import sphinx.util
+from sphinx.errors import ExtensionError
 
 from .scrapers import _find_image_ext
-from .utils import _replace_md5, _W_KW
-
+from .utils import _W_KW, _replace_md5
 
 THUMBNAIL_PARENT_DIV = """
 .. raw:: html

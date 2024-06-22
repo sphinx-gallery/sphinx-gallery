@@ -1,8 +1,8 @@
 """Sphinx configuration for tinybuild."""
 
 import os.path as op
-import sphinx
 
+import sphinx
 
 # Where our helpers live
 util_root = "sphinx_gallery.tests.tinybuild.utils"

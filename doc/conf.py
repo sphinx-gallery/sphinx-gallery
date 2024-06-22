@@ -12,10 +12,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
-from datetime import date
+import sys
 import warnings
+from datetime import date
 
 from intersphinx_registry import get_intersphinx_mapping
 

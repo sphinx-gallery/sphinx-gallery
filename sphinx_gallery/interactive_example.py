@@ -12,19 +12,18 @@ this API may change in the future.
 
 """
 
-import os
-from pathlib import Path
-import shutil
-from urllib.parse import quote
 import glob
 import json
+import os
+import shutil
+from pathlib import Path
+from urllib.parse import quote
 
-from sphinx.errors import ConfigError
 import sphinx.util
+from sphinx.errors import ConfigError
 
-from .utils import status_iterator
 from . import glr_path_static
-
+from .utils import status_iterator
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -420,7 +419,7 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     else:
         lite_root_url += "/retro/notebooks"
 
-    lite_url = f"{lite_root_url}/?path={notebook_location}"
+    lite_url = f"{lite_root_url}/index.html?path={notebook_location}"
 
     # Similar work-around for badge file as in
     # gen_binder_rst

@@ -6,8 +6,8 @@ import os
 import tempfile
 
 import pytest
-
 from sphinx.errors import ExtensionError
+
 import sphinx_gallery.docs_resolv as sg
 
 

@@ -2,20 +2,20 @@
 # License: 3-clause BSD
 r"""Test Sphinx-Gallery gallery generation."""
 
+import json
 import os
 import re
 from pathlib import Path
-import json
 
 import pytest
-
 from sphinx.config import is_serializable
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
+
 from sphinx_gallery.gen_gallery import (
-    write_computation_times,
     _fill_gallery_conf_defaults,
-    write_api_entry_usage,
     fill_gallery_conf_defaults,
+    write_api_entry_usage,
+    write_computation_times,
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 from sphinx_gallery.utils import (
