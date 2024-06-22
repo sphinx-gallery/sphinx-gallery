@@ -421,7 +421,7 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     else:
         lite_root_url += "/retro/notebooks"
 
-    lite_url = f"{lite_root_url}/?path={notebook_location}"
+    lite_url = f"{lite_root_url}/index.html?path={notebook_location}"
 
     # Similar work-around for badge file as in
     # gen_binder_rst
