@@ -1470,7 +1470,9 @@ def summarize_failing_examples(app, exception):
 
     idt = "    "
     if failing_as_expected:
-        logger.info(bold("Examples failing as expected:"), color="blue")
+        logger.info(
+            bold(blue(f"Examples failing as expected ({len(failing_as_expected)}):"))
+        )
         for fail_example in failing_as_expected:
             path = os.path.relpath(fail_example, gallery_conf["src_dir"])
             logger.info(
@@ -1480,7 +1482,9 @@ def summarize_failing_examples(app, exception):
 
     fail_msgs = []
     if failing_unexpectedly:
-        fail_msgs.append(bold(red("Unexpected failing examples:\n")))
+        fail_msgs.append(
+            bold(red(f"Unexpected failing examples ({len(failing_unexpectedly)}):\n"))
+        )
         for fail_example in failing_unexpectedly:
             path = os.path.relpath(fail_example, gallery_conf["src_dir"])
             fail_msgs.append(
@@ -1493,7 +1497,7 @@ def summarize_failing_examples(app, exception):
             os.path.relpath(p, gallery_conf["src_dir"]) for p in passing_unexpectedly
         ]
         fail_msgs.append(
-            bold(red("Examples expected to fail, but not failing:\n\n"))
+            bold(red(f"Examples expected to fail, but not failing ({len(paths)}):\n\n"))
             + red("\n".join(indent(p, idt) for p in paths))
             + "\n\nPlease remove these examples from "
             + "sphinx_gallery_conf['expected_failing_examples'] "
