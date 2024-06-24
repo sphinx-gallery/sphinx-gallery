@@ -2104,12 +2104,12 @@ Sphinx-Gallery can be configured to run examples simultaneously using
 
     sphinx_gallery_conf = {
         ...
-        'parallel': True,
+        'parallel': 2,
     }
 
+If an ``int``, then that number of jobs will be passed to :class:`joblib.Parallel`.
 If ``True``, then the same number of jobs will be used as the ``-j`` flag for
-Sphinx. If an ``int``, then that number of jobs will be passed to
-:class:`joblib.Parallel`.
+Sphinx.
 
 .. warning::
     Some packages might not play nicely with parallel processing, so this feature
