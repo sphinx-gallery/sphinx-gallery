@@ -2112,12 +2112,14 @@ Sphinx. If an ``int``, then that number of jobs will be passed to
 :class:`joblib.Parallel`.
 
 .. warning::
-    Some packages might not play nicely with parallel processing. You might need to
-    set variables in a :ref:`custom resetter <custom_reset>` for example to ensure
-    that all spawned processes are properly set up and torn down. Parallelism is
-    achieved through the Loky backend of joblib, see :ref:`joblib:parallel` for
-    documentation of many relevant conisderations (e.g., pickling, oversubscription
-    of CPU resources, etc.).
+    Some packages might not play nicely with parallel processing, so this feature
+    is considered **experimental**!
+
+    For example, you might need to set variables or call functions in a
+    :ref:`custom resetter <custom_reset>` to ensure that all spawned processes are
+    properly set up and torn down. Parallelism is achieved through the Loky backend of
+    joblib, see :ref:`joblib:parallel` for documentation of many relevant conisderations
+    (e.g., pickling, oversubscription of CPU resources, etc.).
 
     Using parallel building will also disable memory measurements.
 
