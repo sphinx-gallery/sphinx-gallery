@@ -2377,10 +2377,11 @@ Nesting gallery sections
 
 ``nested_sections`` lets you control how gallery ``index.rst`` files are generated
 when your :ref:`gallery <multiple_galleries_config>` has subsections
-(sub-folders inside `examples_dirs`, aka sub-galleries). This can be useful for
+(sub-folders inside :ref:`examples_dirs <multiple_galleries_config>`, aka
+sub-galleries). This can be useful for
 controlling sidebar appearance. The default is set to ``nested_sections=True``
 because it generally works with the popular
-[``pydata-sphinx-theme``](https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html)
+`pydata-sphinx-theme <https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html>`_
 theme. It can however, cause undesirable duplication in the sidebar with other
 themes so users are advised to choose the most suitable ``nested_sections`` setting
 for their theme.
