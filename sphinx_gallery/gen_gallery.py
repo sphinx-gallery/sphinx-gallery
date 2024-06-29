@@ -401,11 +401,8 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     # Check ignore_repr_types
     _check_config_type(gallery_conf, "ignore_repr_types", str)
 
-    if not isinstance(gallery_conf["parallel"], (bool, int)):
-        raise TypeError(
-            'gallery_conf["parallel"] must be bool or int, got '
-            f'{type(gallery_conf["parallel"])}'
-        )
+    # Check parallel
+    _check_config_type(gallery_conf, "parallel", (bool, int))
     if gallery_conf["parallel"] is True:
         gallery_conf["parallel"] = app.parallel
     if gallery_conf["parallel"] == 1:

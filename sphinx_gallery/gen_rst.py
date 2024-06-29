@@ -599,6 +599,8 @@ def generate_dir_rst(
         fname = sorted_listdir[fi]
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         gallery_conf["titles"][src_file] = title
+        # n.b. non-executable files have none of these three variables defined,
+        # so the last conditional must be "elif" not just "else"
         if "formatted_exception" in out_vars:
             assert "passing" not in out_vars
             assert "stale" not in out_vars
@@ -606,7 +608,7 @@ def generate_dir_rst(
         elif "passing" in out_vars:
             assert "stale" not in out_vars
             gallery_conf["passing_examples"].append(src_file)
-        elif "stale" in out_vars:  # non-executable files have none of these three
+        elif "stale" in out_vars:
             gallery_conf["stale_examples"].append(out_vars["stale"])
         costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
         gallery_item_filename = (
@@ -783,7 +785,6 @@ class _exec_once:
 
 def _get_memory_base():
     """Get the base amount of memory used by the current Python process."""
-    # There might be a cleaner way to do this at some point
     from memory_profiler import memory_usage
 
     memory_base = memory_usage(max_usage=True)
@@ -1277,10 +1278,17 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     cost : tuple
         A tuple containing the ``(time_elapsed, memory_used)`` required to run the
         script.
-    backrefs : set
-        The backrefs seen in this example.
     out_vars : dict
-        Variables used to run the script.
+        Variables used to run the script, possibly with entries:
+
+        "stale"
+            True if the example was stale.
+        "backrefs"
+            The backreferences.
+        "passing"
+            True if the example passed.
+        "formatted_exception"
+            Formatted string of the exception.
     """
     src_file = os.path.normpath(os.path.join(src_dir, fname))
     out_vars = dict()
