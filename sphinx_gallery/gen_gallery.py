@@ -138,6 +138,7 @@ DEFAULT_GALLERY_CONF = {
     "api_usage_ignore": ".*__.*__",
     "show_api_usage": False,  # if this changes, change write_api_entries, too
     "copyfile_regex": "",
+    "parallel": False,
 }
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -400,8 +401,20 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     # Check ignore_repr_types
     _check_config_type(gallery_conf, "ignore_repr_types", str)
 
+    # Check parallel
+    _check_config_type(gallery_conf, "parallel", (bool, int))
+    if gallery_conf["parallel"] is True:
+        gallery_conf["parallel"] = app.parallel
+    if gallery_conf["parallel"] == 1:
+        gallery_conf["parallel"] = False
+    if gallery_conf["parallel"]:
+        try:
+            import joblib  # noqa
+        except Exception:
+            raise ValueError("joblib must be importable when parallel mode is enabled")
+
     # deal with show_memory
-    _get_call_memory_and_base(gallery_conf)
+    _get_call_memory_and_base(gallery_conf, update=True)
 
     # check callables
     for key in (
@@ -578,8 +591,7 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
 
     if bool(gallery_conf["backreferences_dir"]):
         backreferences_dir = os.path.join(srcdir, gallery_conf["backreferences_dir"])
-        if not os.path.exists(backreferences_dir):
-            os.makedirs(backreferences_dir)
+        os.makedirs(backreferences_dir, exist_ok=True)
 
     return list(zip(examples_dirs, gallery_dirs))
 
@@ -714,8 +726,11 @@ def generate_gallery_rst(app):
     each sub-section, with each header followed by a toctree linking to
     every example in the root gallery/sub-section.
     """
-    logger.info("generating gallery...", color="white")
     gallery_conf = app.config.sphinx_gallery_conf
+    extra = ""
+    if gallery_conf["parallel"]:
+        extra = f" (with parallel={gallery_conf['parallel']})"
+    logger.info(f"generating gallery{extra}...", color="white")
 
     seen_backrefs = set()
 
@@ -1380,8 +1395,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
     # Actually write it
     fname = os.path.normpath(os.path.join(target_dir, gallery_conf["junit"]))
     junit_dir = os.path.dirname(fname)
-    if not os.path.isdir(junit_dir):
-        os.makedirs(junit_dir)
+    os.makedirs(junit_dir, exist_ok=True)
     with codecs.open(fname, "w", encoding="utf-8") as fid:
         fid.write(output)
 
@@ -1415,17 +1429,17 @@ def _expected_failing_examples(gallery_conf):
 
 def _parse_failures(gallery_conf):
     """Split the failures."""
-    failing_examples = set(gallery_conf["failing_examples"].keys())
+    failing_examples = set(gallery_conf["failing_examples"])
     expected_failing_examples = _expected_failing_examples(gallery_conf)
     failing_as_expected = failing_examples.intersection(expected_failing_examples)
     failing_unexpectedly = failing_examples.difference(expected_failing_examples)
     passing_unexpectedly = expected_failing_examples.difference(failing_examples)
     # filter from examples actually run
-    passing_unexpectedly = [
+    passing_unexpectedly = set(
         src_file
         for src_file in passing_unexpectedly
         if re.search(gallery_conf["filename_pattern"], src_file)
-    ]
+    )
     return failing_as_expected, failing_unexpectedly, passing_unexpectedly
 
 
@@ -1453,7 +1467,9 @@ def summarize_failing_examples(app, exception):
 
     idt = "    "
     if failing_as_expected:
-        logger.info(bold("Examples failing as expected:"), color="blue")
+        logger.info(
+            bold(blue(f"Examples failing as expected ({len(failing_as_expected)}):"))
+        )
         for fail_example in failing_as_expected:
             path = os.path.relpath(fail_example, gallery_conf["src_dir"])
             logger.info(
@@ -1463,7 +1479,9 @@ def summarize_failing_examples(app, exception):
 
     fail_msgs = []
     if failing_unexpectedly:
-        fail_msgs.append(bold(red("Unexpected failing examples:\n")))
+        fail_msgs.append(
+            bold(red(f"Unexpected failing examples ({len(failing_unexpectedly)}):\n"))
+        )
         for fail_example in failing_unexpectedly:
             path = os.path.relpath(fail_example, gallery_conf["src_dir"])
             fail_msgs.append(
@@ -1476,7 +1494,7 @@ def summarize_failing_examples(app, exception):
             os.path.relpath(p, gallery_conf["src_dir"]) for p in passing_unexpectedly
         ]
         fail_msgs.append(
-            bold(red("Examples expected to fail, but not failing:\n\n"))
+            bold(red(f"Examples expected to fail, but not failing ({len(paths)}):\n\n"))
             + red("\n".join(indent(p, idt) for p in paths))
             + "\n\nPlease remove these examples from "
             + "sphinx_gallery_conf['expected_failing_examples'] "

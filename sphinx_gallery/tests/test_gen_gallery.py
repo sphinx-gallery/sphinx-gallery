@@ -545,7 +545,7 @@ sphinx_gallery_conf = {
 def test_show_memory_callable(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
     status = sphinx_app._status.getvalue()
-    assert "0.0 MB" in status
+    assert "0.0 MB" in status, status
 
 
 @pytest.mark.parametrize(

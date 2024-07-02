@@ -7,10 +7,12 @@ Miscellaneous utilities.
 # License: 3-clause BSD
 
 import hashlib
+import json
 import os
 import re
 import subprocess
 import zipfile
+from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
 
@@ -24,6 +26,10 @@ except Exception:  # Sphinx < 6
 
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
+
+
+# Text writing kwargs for builtins.open
+_W_KW = dict(encoding="utf-8", newline="\n")
 
 
 def _get_image():
@@ -140,14 +146,15 @@ def get_md5sum(src_file, mode="b"):
         kwargs = {"errors": "surrogateescape", "encoding": "utf-8"}
     else:
         kwargs = {}
-    with open(src_file, "r" + mode, **kwargs) as src_data:
+    # Universal newline mode is intentional here
+    with open(src_file, f"r{mode}", **kwargs) as src_data:
         src_content = src_data.read()
         if mode == "t":
             src_content = src_content.encode(**kwargs)
         return hashlib.md5(src_content).hexdigest()
 
 
-def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
+def _replace_md5(fname_new, fname_old=None, *, method="move", mode="b", check="md5"):
     fname_new = str(fname_new)  # convert possible Path
     assert method in ("move", "copy")
     if fname_old is None:
@@ -155,7 +162,19 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
         fname_old = os.path.splitext(fname_new)[0]
     replace = True
     if os.path.isfile(fname_old):
-        if get_md5sum(fname_old, mode) == get_md5sum(fname_new, mode):
+        if check == "md5":  # default
+            func = partial(get_md5sum, mode=mode)
+        else:
+            assert check == "json"
+
+            def func(x):
+                return json.loads(Path(x).read_text("utf-8"))
+
+        try:
+            equiv = func(fname_old) == func(fname_new)
+        except Exception:  # e.g., old JSON file is a problem
+            equiv = False
+        if equiv:
             replace = False
             if method == "move":
                 os.remove(fname_new)

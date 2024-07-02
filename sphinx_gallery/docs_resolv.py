@@ -2,10 +2,9 @@
 # License: 3-clause BSD
 """Link resolver objects."""
 
-import codecs
 import gzip
+import json
 import os
-import pickle
 import posixpath
 import re
 import shelve
@@ -19,7 +18,7 @@ import sphinx.util
 from sphinx.errors import ExtensionError
 from sphinx.search import js_index
 
-from .utils import status_iterator
+from .utils import _W_KW, _replace_md5, status_iterator
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -39,7 +38,7 @@ def _get_data(url):
             raise ExtensionError(f"unknown encoding {encoding!r}")
         data = data.decode("utf-8")
     else:
-        with codecs.open(url, mode="r", encoding="utf-8") as fid:
+        with open(url, mode="r", encoding="utf-8") as fid:
             data = fid.read()
 
     return data
@@ -243,8 +242,8 @@ class SphinxDocLinkResolver:
 
         Parameters
         ----------
-        cobj : OrderedDict[str, Any]
-            OrderedDict with information about the "code object" for which we are
+        cobj : Dict[str, Any]
+            Dict with information about the "code object" for which we are
             resolving a link.
 
                 - cobj['name'] : function or class name (str)
@@ -253,7 +252,6 @@ class SphinxDocLinkResolver:
                 - cobj['is_class'] : whether object is class (bool)
                 - cobj['is_explicit'] : whether object is an explicit
                   backreference (referred to by sphinx markup) (bool)
-
         this_url: str
             URL of the current page. Needed to construct relative URLs
             (only used if relative=True in constructor).
@@ -334,6 +332,22 @@ def _get_intersphinx_inventory(app):
     return intersphinx_inv
 
 
+# Whatever mechanism is used for writing here should be paired with reading in
+# _embed_code_links
+def _write_code_obj(target_file, example_code_obj):
+    codeobj_fname = target_file.with_name(target_file.stem + ".codeobj.json.new")
+    with open(codeobj_fname, "w", **_W_KW) as fid:
+        json.dump(
+            example_code_obj,
+            fid,
+            sort_keys=True,
+            ensure_ascii=False,
+            indent=1,
+            check_circular=False,
+        )
+    _replace_md5(codeobj_fname, check="json")
+
+
 def _embed_code_links(app, gallery_conf, gallery_dir):
     """Add resolvers for the packages for which we want to show links."""
     doc_resolvers = {}
@@ -368,6 +382,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         [dirpath, filename]
         for dirpath, _, filenames in os.walk(html_gallery_dir)
         for filename in filenames
+        if filename.endswith(".html")
     ]
     iterator = status_iterator(
         flat,
@@ -380,15 +395,15 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1 :]
-        pickle_fname = os.path.join(
-            src_gallery_dir, subpath, fname[:-5] + "_codeobj.pickle"
+        json_fname = os.path.join(
+            src_gallery_dir, subpath, fname[:-5] + ".codeobj.json"
         )
-        if not os.path.exists(pickle_fname):
+        if not os.path.exists(json_fname):
             continue
 
-        # we have a pickle file with the objects to embed links for
-        with open(pickle_fname, "rb") as fid:
-            example_code_obj = pickle.load(fid)
+        # we have a json file with the objects to embed links for
+        with open(json_fname, "r", encoding="utf-8") as fid:
+            example_code_obj = json.load(fid)
         # generate replacement strings with the links
         str_repl = {}
         for name in sorted(example_code_obj):
@@ -472,9 +487,9 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             return str_repl[match.group()]
 
         if len(str_repl) > 0:
-            with codecs.open(full_fname, "r", "utf-8") as fid:
+            with open(full_fname, "r", encoding="utf-8") as fid:
                 lines_in = fid.readlines()
-            with codecs.open(full_fname, "w", "utf-8") as fid:
+            with open(full_fname, "w", **_W_KW) as fid:
                 for line in lines_in:
                     line_out = regex.sub(substitute_link, line)
                     fid.write(line_out)
