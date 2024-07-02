@@ -88,6 +88,7 @@ namespaces = true # allow scanning PEP 420 namespaces (true by default)
 [tool.ruff]
 exclude = [
   "__init__.py",
+  "plot_syntaxerror.py",
 ]
 lint.select = [
   "D",
