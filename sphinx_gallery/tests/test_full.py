@@ -14,6 +14,7 @@ import time
 from io import StringIO
 from pathlib import Path
 
+import lxml.etree
 import lxml.html
 import pytest
 from packaging.version import Version
@@ -61,6 +62,7 @@ pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
 manim = pytest.importorskip("matplotlib.animation")
 if not manim.writers.is_available("ffmpeg"):
     pytest.skip("ffmpeg is not available", allow_module_level=True)
+pytest.importorskip("joblib")
 
 
 @pytest.fixture(scope="module")
@@ -77,8 +79,8 @@ def _sphinx_app(tmpdir_factory, buildername):
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
-    temp_dir = (tmpdir_factory.getbasetemp() / f"root_{buildername}").strpath
-    src_dir = op.join(op.dirname(__file__), "tinybuild")
+    temp_dir = tmpdir_factory.getbasetemp() / f"root_{buildername}"
+    src_dir = Path(__file__).parent / "tinybuild"
 
     def ignore(src, names):
         return ("_build", "gen_modules", "auto_examples")
@@ -86,9 +88,9 @@ def _sphinx_app(tmpdir_factory, buildername):
     shutil.copytree(src_dir, temp_dir, ignore=ignore)
     # For testing iteration, you can get similar behavior just doing `make`
     # inside the tinybuild/doc directory
-    conf_dir = op.join(temp_dir, "doc")
-    out_dir = op.join(conf_dir, "_build", buildername)
-    toctrees_dir = op.join(conf_dir, "_build", "toctrees")
+    conf_dir = temp_dir / "doc"
+    out_dir = conf_dir / "_build" / buildername
+    toctrees_dir = conf_dir / "_build" / "toctrees"
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     with docutils_namespace():
@@ -180,33 +182,47 @@ def test_optipng(sphinx_app):
     assert "optipng version" not in status.lower()  # catch the --version
 
 
-def test_junit(sphinx_app, tmpdir):
+def test_junit(sphinx_app, tmp_path):
+    """Test junit output."""
     out_dir = sphinx_app.outdir
-    junit_file = op.join(out_dir, "sphinx-gallery", "junit-results.xml")
-    assert op.isfile(junit_file)
-    with codecs.open(junit_file, "r", "utf-8") as fid:
+    junit_file = Path(out_dir) / "sphinx-gallery" / "junit-results.xml"
+    assert junit_file.is_file()
+    with open(junit_file, "rb") as fid:
         contents = fid.read()
-    assert contents.startswith("<?xml")
-    assert 'errors="0" failures="0"' in contents
-    assert f'tests="{N_EXAMPLES}"' in contents
+    suite = lxml.etree.fromstring(contents)
+    want = dict(
+        errors="0",
+        failures="0",
+        skipped="2",
+        tests=f"{N_EXAMPLES}",
+        name="sphinx-gallery",
+    )
+    got = dict(suite.attrib)
+    del got["time"]
+    assert got == want
+    contents = contents.decode("utf-8")
     assert "local_module" not in contents  # it's not actually run as an ex
     assert "expected example failure" in contents
     assert "<failure message" not in contents
-    src_dir = sphinx_app.srcdir
-    new_src_dir = op.join(str(tmpdir), "src")
-    shutil.copytree(op.join(src_dir, "../"), new_src_dir)
+    src_dir = Path(sphinx_app.srcdir)
+    new_root_dir = tmp_path / "src"
+    shutil.copytree(src_dir.parent, new_root_dir)
     del src_dir
-    new_src_dir = op.join(new_src_dir, "doc")
-    new_out_dir = op.join(new_src_dir, "_build", "html")
-    new_toctree_dir = op.join(new_src_dir, "_build", "toctrees")
-    passing_fname = op.join(new_src_dir, "../examples", "plot_numpy_matplotlib.py")
-    failing_fname = op.join(
-        new_src_dir, "../examples", "future", "plot_future_imports_broken.py"
-    )
+    new_src_dir = new_root_dir / "doc"
+    new_out_dir = new_src_dir / "_build" / "html"
+    new_toctree_dir = new_src_dir / "_build" / "toctrees"
+    new_examples_dir = new_src_dir.parent / "examples"
+    # swap numpy_matplotlib (passing) with future_imports_broken (failing)
+    passing_fname = new_examples_dir / "plot_numpy_matplotlib.py"
+    failing_fname = new_examples_dir / "future" / "plot_future_imports_broken.py"
     print("Names", passing_fname, failing_fname)
-    shutil.move(passing_fname, passing_fname + ".temp")
+    shutil.move(passing_fname, passing_fname.with_suffix(".temp"))
     shutil.move(failing_fname, passing_fname)
-    shutil.move(passing_fname + ".temp", failing_fname)
+    shutil.move(passing_fname.with_suffix(".temp"), failing_fname)
+    shutil.copyfile(
+        new_examples_dir / "local_module.py",
+        new_examples_dir / "future" / "local_module.py",
+    )
     with docutils_namespace():
         app = Sphinx(
             new_src_dir,
@@ -214,34 +230,43 @@ def test_junit(sphinx_app, tmpdir):
             new_out_dir,
             new_toctree_dir,
             buildername="html",
-            status=StringIO(),
+            verbosity=1,
         )
         # need to build within the context manager
         # for automodule and backrefs to work
         with pytest.raises(ExtensionError, match="Here is a summary of the "):
             app.build(False, [])
-    junit_file = op.join(new_out_dir, "sphinx-gallery", "junit-results.xml")
-    assert op.isfile(junit_file)
-    with codecs.open(junit_file, "r", "utf-8") as fid:
-        contents = fid.read()
-    assert 'errors="0" failures="2"' in contents
+    junit_file = new_out_dir / "sphinx-gallery" / "junit-results.xml"
+    assert junit_file.is_file()
+    with open(junit_file, "rb") as fid:
+        suite = lxml.etree.fromstring(fid.read())
     # this time we only ran the stale files
-    assert f'tests="{N_FAILING + 1}"' in contents
-    assert '<failure message="RuntimeError: Forcing' in contents
-    assert "Passed even though it was marked to fail" in contents
+    want.update(failures="2", skipped="1", tests="3")
+    got = dict(suite.attrib)
+    del got["time"]
+    assert len(suite) == 3
+    assert suite[0].attrib["classname"] == "plot_numpy_matplotlib"
+    assert suite[0][0].tag == "failure", suite[0].attrib["classname"]
+    assert suite[0][0].attrib["message"].startswith("RuntimeError: Forcing")
+    assert suite[1].attrib["classname"] == "plot_scraper_broken"
+    assert suite[1][0].tag == "skipped", suite[1].attrib["classname"]
+    assert suite[2].attrib["classname"] == "plot_future_imports_broken"
+    assert suite[2][0].tag == "failure", suite[2].attrib["classname"]
+    assert suite[2][0].attrib["message"] == "Passed even though it was marked to fail"
+    assert got == want
 
 
 def test_run_sphinx(sphinx_app):
     """Test basic outputs."""
-    out_dir = str(sphinx_app.outdir)
+    out_dir = Path(sphinx_app.outdir)
     out_files = os.listdir(out_dir)
     assert "index.html" in out_files
     assert "auto_examples" in out_files
     assert "auto_examples_with_rst" in out_files
     assert "auto_examples_rst_index" in out_files
     assert "auto_examples_README_header" in out_files
-    generated_examples_dir = op.join(out_dir, "auto_examples")
-    assert op.isdir(generated_examples_dir)
+    generated_examples_dir = out_dir / "auto_examples"
+    assert generated_examples_dir.is_dir()
     # make sure that indices are properly being passed forward...
     files_to_check = [
         "auto_examples_rst_index/examp_subdir1/index.html",
@@ -249,7 +274,7 @@ def test_run_sphinx(sphinx_app):
         "auto_examples_rst_index/index.html",
     ]
     for f in files_to_check:
-        assert op.isfile(out_dir + "/" + f)
+        assert (out_dir / f).is_file()
     status = sphinx_app._status.getvalue()
     assert f"executed {N_GOOD} out of {N_EXAMPLES}" in status
     assert "after excluding 0" in status
@@ -466,12 +491,8 @@ def test_embed_links_and_styles(sphinx_app):
     )  # noqa: E501
     assert dummy_class_prop.search(lines) is not None
 
-    try:
-        import memory_profiler  # noqa: F401
-    except ImportError:
-        assert "memory usage" not in lines
-    else:
-        assert "memory usage" in lines
+    # We do a parallel build so there should not be memory usage reported
+    assert "memory usage" not in lines
 
     # CSS styles
     assert 'class="sphx-glr-signature"' in lines
@@ -497,9 +518,7 @@ def test_embed_links_and_styles(sphinx_app):
     assert re.match(want_warn, lines, re.DOTALL) is not None
     sys.stdout.write(lines)
 
-    example_file = op.join(examples_dir, "plot_pickle.html")
-    with codecs.open(example_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    lines = (Path(examples_dir) / "plot_pickle.html").read_text("utf-8")
     assert "joblib.Parallel.html" in lines
 
 
@@ -608,7 +627,7 @@ def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
     good_sphinx = Version(sphinx_version) >= Version("4.1")
     for orig, new in zip(list_orig, list_new):
         check_name = op.splitext(op.basename(orig))[0]
-        if check_name.endswith("_codeobj"):
+        if check_name.endswith(".codeobj"):
             check_name = check_name[:-8]
         if check_name in different:
             if good_sphinx:
@@ -619,7 +638,7 @@ def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
                 op.getmtime(new),
                 atol=1e-3,
                 rtol=1e-20,
-                err_msg=op.basename(orig),
+                err_msg=f"{op.basename(orig)} was updated but should not have been",
             )
 
 
@@ -655,10 +674,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         for f in os.listdir(op.join(old_src_dir, "auto_examples"))
         if f.endswith(".rst")
     )
-    generated_pickle_0 = sorted(
+    generated_json_0 = sorted(
         op.join(old_src_dir, "auto_examples", f)
         for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".pickle")
+        if f.endswith(".json")
     )
     copied_py_0 = sorted(
         op.join(old_src_dir, "auto_examples", f)
@@ -673,7 +692,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     assert len(generated_modules_0) > 0
     assert len(generated_backrefs_0) > 0
     assert len(generated_rst_0) > 0
-    assert len(generated_pickle_0) > 0
+    assert len(generated_json_0) > 0
     assert len(copied_py_0) > 0
     assert len(copied_ipy_0) > 0
     assert len(sphinx_app.config.sphinx_gallery_conf["stale_examples"]) == 0
@@ -747,10 +766,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
         if f.endswith(".rst")
     )
-    generated_pickle_1 = sorted(
+    generated_json_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
         for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".pickle")
+        if f.endswith(".json")
     )
     copied_py_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
@@ -781,8 +800,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     )
     _assert_mtimes(generated_rst_0, generated_rst_1, ignore=ignore)
 
-    # mtimes for pickles
-    _assert_mtimes(generated_pickle_0, generated_pickle_1)
+    # mtimes for jsons
+    _assert_mtimes(generated_json_0, generated_json_1)
 
     # mtimes for .py files (gh-395)
     _assert_mtimes(copied_py_0, copied_py_1)
@@ -806,7 +825,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
             generated_modules_0,
             generated_backrefs_0,
             generated_rst_0,
-            generated_pickle_0,
+            generated_json_0,
             copied_py_0,
             copied_ipy_0,
         )
@@ -821,7 +840,7 @@ def _rerun(
     generated_modules_0,
     generated_backrefs_0,
     generated_rst_0,
-    generated_pickle_0,
+    generated_json_0,
     copied_py_0,
     copied_ipy_0,
 ):
@@ -916,10 +935,10 @@ def _rerun(
         for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
         if f.endswith(".rst")
     )
-    generated_pickle_1 = sorted(
+    generated_json_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
         for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".pickle")
+        if f.endswith(".json")
     )
     copied_py_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
@@ -955,9 +974,9 @@ def _rerun(
     if not bad:
         _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
 
-        # mtimes for pickles
+        # mtimes for jsons
         use_different = () if how == "run_stale" else different
-        _assert_mtimes(generated_pickle_0, generated_pickle_1, ignore=ignore)
+        _assert_mtimes(generated_json_0, generated_json_1, ignore=ignore)
 
         # mtimes for .py files (gh-395)
         _assert_mtimes(copied_py_0, copied_py_1, different=use_different)
@@ -985,7 +1004,7 @@ def test_error_messages(sphinx_app, name, want):
     """Test that informative error messages are added."""
     src_dir = Path(sphinx_app.srcdir)
     rst = (src_dir / "auto_examples" / (name + ".rst")).read_text("utf-8")
-    assert re.match(want, rst, re.DOTALL) is not None
+    assert re.match(want, rst, re.DOTALL) is not None, f"{name} should have had: {want}"
 
 
 @pytest.mark.parametrize(

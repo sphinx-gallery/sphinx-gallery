@@ -376,26 +376,20 @@ def test_extract_intro_and_title():
         ["t", "ea8a570e9f3afc0a7c3f2a17a48b8047"],
     ),
 )
-def test_md5sums(mode, expected_md5):
+def test_md5sums(mode, expected_md5, tmp_path):
     """Test md5sum check functions work on know file content."""
     file_content = b"Local test\r\n"
-    with tempfile.NamedTemporaryFile("wb", delete=False) as f:
-        f.write(file_content)
-    try:
-        file_md5 = sg.get_md5sum(f.name, mode)
-        # verify correct md5sum
-        assert file_md5 == expected_md5
-        # False because is a new file
-        assert not sg.md5sum_is_current(f.name)
-        # Write md5sum to file to check is current
-        with open(f.name + ".md5", "w") as file_checksum:
-            file_checksum.write(file_md5)
-        try:
-            assert sg.md5sum_is_current(f.name, mode)
-        finally:
-            os.remove(f.name + ".md5")
-    finally:
-        os.remove(f.name)
+    fname = tmp_path / "test"
+    fname.write_bytes(file_content)
+    file_md5 = sg.get_md5sum(fname, mode)
+    # verify correct md5sum
+    assert file_md5 == expected_md5, mode
+    # False because is a new file
+    assert not sg.md5sum_is_current(fname), mode
+    # Write md5sum to file to check is current
+    with open(str(fname) + ".md5", "w") as file_checksum:
+        file_checksum.write(file_md5)
+    assert sg.md5sum_is_current(fname, mode), mode
 
 
 @pytest.mark.parametrize(
@@ -477,9 +471,18 @@ def _generate_rst(gallery_conf, fname, content):
         os.path.join(gallery_conf["examples_dir"], fname), mode="w", encoding="utf-8"
     ) as f:
         f.write("\n".join(content))
+    with codecs.open(
+        os.path.join(gallery_conf["examples_dir"], "README.txt"), "w", "utf8"
+    ):
+        pass
+
     # generate rst file
-    sg.generate_file_rst(
-        fname, gallery_conf["gallery_dir"], gallery_conf["examples_dir"], gallery_conf
+    generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
     )
     # read rst file and check if it contains code output
     rst_fname = os.path.splitext(fname)[0] + ".rst"

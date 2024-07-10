@@ -44,6 +44,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``only_warn_on_example_error`` (:ref:`warning_on_error`)
+- ``parallel`` (:ref:`parallel`)
 
 **Cross-referencing**
 
@@ -2092,6 +2093,35 @@ flag is passed to ``sphinx-build``. This can be enabled by setting::
         'only_warn_on_example_error': True
     }
 
+
+.. _parallel:
+
+Build examples in parallel
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sphinx-Gallery can be configured to run examples simultaneously using
+:mod:`joblib`. This can be enabled by setting::
+
+    sphinx_gallery_conf = {
+        ...
+        'parallel': 2,
+    }
+
+If an ``int``, then that number of jobs will be passed to :class:`joblib.Parallel`.
+If ``True``, then the same number of jobs will be used as the ``-j`` flag for
+Sphinx.
+
+.. warning::
+    Some packages might not play nicely with parallel processing, so this feature
+    is considered **experimental**!
+
+    For example, you might need to set variables or call functions in a
+    :ref:`custom resetter <custom_reset>` to ensure that all spawned processes are
+    properly set up and torn down. Parallelism is achieved through the Loky backend of
+    joblib, see :ref:`joblib:parallel` for documentation of many relevant conisderations
+    (e.g., pickling, oversubscription of CPU resources, etc.).
+
+    Using parallel building will also disable memory measurements.
 
 .. _recommend_examples:
 

@@ -178,7 +178,7 @@ generated:
 * ``.py`` - to enable the user to download a ``.py`` version of the example.
 * ``.py.md5`` - a md5 hash of the ``.py`` file, used to determine if changes
   have been made to the file and thus if new output files need to be generated.
-* ``_codeobj.pickle`` - used to identify function names and to which module
+* ``.codeobj.json`` - used to identify function names and to which module
   they belong (more details in
   :ref:`sphx_glr_auto_examples_plot_6_function_identifier.py`)
 
