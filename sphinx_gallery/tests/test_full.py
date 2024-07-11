@@ -1254,10 +1254,13 @@ def test_interactive_example_logo_exists(sphinx_app):
     root = op.join(sphinx_app.outdir, "auto_examples")
     with codecs.open(op.join(root, "plot_svg.html"), "r", "utf-8") as fid:
         html = fid.read()
+    img_strs = "\n" + "\n".join(re.findall("<img [^>]+>", html, re.DOTALL))
     path = re.match(
-        r'.*<img alt="Launch binder" src="([^"]*)" width=.*\/>.*', html, re.DOTALL
+        r'.*<img alt="Launch binder" src="([^"]+)" (width|style)=[^/>]+\/>.*',
+        html,
+        re.DOTALL,
     )
-    assert path is not None
+    assert path is not None, img_strs
     path = path.groups()[0]
     img_fname = op.abspath(op.join(root, path))
     assert "binder_badge_logo" in img_fname  # can have numbers appended
@@ -1268,7 +1271,9 @@ def test_interactive_example_logo_exists(sphinx_app):
     )  # noqa: E501
 
     path = re.match(
-        r'.*<img alt="Launch JupyterLite" src="([^"]*)" width=.*\/>.*', html, re.DOTALL
+        r'.*<img alt="Launch JupyterLite" src="([^"]*)" (width|style)=[^/>]+\/>.*',
+        html,
+        re.DOTALL,
     )
     assert path is not None
     path = path.groups()[0]
