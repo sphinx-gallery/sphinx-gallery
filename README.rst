@@ -126,7 +126,7 @@ An incomplete list:
 * `kikuchipy <https://kikuchipy.org>`_
 * `Matplotlib <https://matplotlib.org/stable/index.html>`_
 * `MNE-Python <https://mne.tools/stable/auto_examples/index.html>`_
-* `napari <https://napari.org/stable/>`_
+* `napari <https://napari.org/stable/gallery.html>`_
 * `Nestle <http://kylebarbary.com/nestle/examples/index.html>`_
 * `NetworkX <https://networkx.org/documentation/stable/auto_examples/index.html>`_
 * `Neuraxle <https://www.neuraxle.org/stable/examples/index.html>`_
