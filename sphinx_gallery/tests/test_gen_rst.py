@@ -352,15 +352,14 @@ def test_extract_intro_and_title():
     )  # noqa: E501
     assert title == '"-`Header"-with:; punct mark\'s'
 
-    # Long intro paragraph gets shortened
+    # Long intro paragraph are preserved
     intro_paragraph = "\n".join(["this is one line" for _ in range(10)])
     intro, _ = sg.extract_intro_and_title(
         "filename", "Title\n-----\n\n" + intro_paragraph
     )
     assert len(intro_paragraph) > 100
-    assert len(intro) < 100
-    assert intro.endswith("...")
-    assert intro_paragraph.replace("\n", " ")[:95] == intro[:95]
+    assert len(intro) > 100
+    assert intro_paragraph.replace("\n", " ") == intro
 
     # Errors
     with pytest.raises(ExtensionError, match="should have a header"):

@@ -331,9 +331,6 @@ def extract_intro_and_title(filename, docstring):
     # Concatenate all lines of the first paragraph and truncate at 95 chars
     intro = re.sub("\n", " ", intro_paragraph)
     intro = _sanitize_rst(intro)
-    if len(intro) > 95:
-        intro = intro[:95] + "..."
-
     title = _sanitize_rst(title)
 
     return intro, title
