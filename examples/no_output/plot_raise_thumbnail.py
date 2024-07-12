@@ -18,8 +18,8 @@ as for non-failing examples.
 
 # sphinx_gallery_failing_thumbnail = False
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 plt.pcolormesh(np.random.randn(100, 100))
 
