@@ -2,22 +2,22 @@
 # License: 3-clause BSD
 """Testing the binder badge functionality."""
 
-from copy import deepcopy
 import os
 import re
+from copy import deepcopy
 from unittest.mock import Mock
 
 import pytest
-
 from sphinx.application import Sphinx
 from sphinx.errors import ConfigError
+
 from sphinx_gallery.interactive_example import (
-    gen_binder_url,
-    check_binder_conf,
     _copy_binder_reqs,
-    gen_binder_rst,
-    gen_jupyterlite_rst,
+    check_binder_conf,
     check_jupyterlite_conf,
+    gen_binder_rst,
+    gen_binder_url,
+    gen_jupyterlite_rst,
 )
 
 
@@ -204,7 +204,7 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     image_rst = " .. image:: images/jupyterlite_badge_logo.svg"
 
     target_rst_template = (
-        ":target: {root_url}/lite/{jupyter_part}.+path={notebook_path}"
+        ":target: {root_url}/lite/{jupyter_part}.+index.html.+path={notebook_path}"
     )
     if "subdir" not in file_path:
         root_url = r"\.\."

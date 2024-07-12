@@ -2,12 +2,12 @@
 
 import ast
 import codecs
-from pathlib import Path
-import pygments.lexers
-import pygments.token
 import re
+from pathlib import Path
 from textwrap import dedent
 
+import pygments.lexers
+import pygments.token
 from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
 

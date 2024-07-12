@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.17.0
+-------
+
+Support for Python 3.8 and Sphinx 4 dropped in this release.
+Requirement is now Python >= 3.9 and Sphinx >= 5.
+
 v0.16.0
 -------
 Sphinx 7.3.0 and above changed caching and serialization checks. Now instead of passing

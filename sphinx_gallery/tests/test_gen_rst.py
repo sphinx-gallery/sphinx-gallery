@@ -4,32 +4,32 @@
 
 import ast
 import codecs
+import codeop
 import importlib
 import io
 import logging
-from pathlib import Path
-import tempfile
-import re
 import os
+import re
 import shutil
-from unittest import mock
+import tempfile
 import zipfile
-import codeop
+from pathlib import Path
+from unittest import mock
 
 import pytest
-
 from sphinx.errors import ExtensionError
+
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import (
-    generate_dir_rst,
     _update_gallery_conf_exclude_implicit_doc,
+    generate_dir_rst,
 )
+from sphinx_gallery.interactive_example import check_binder_conf
 
 # TODO: The tests of this method should probably be moved to test_py_source_parser.py
-from sphinx_gallery.py_source_parser import split_code_and_text_blocks, Block
+from sphinx_gallery.py_source_parser import Block, split_code_and_text_blocks
 from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
-from sphinx_gallery.interactive_example import check_binder_conf
 
 root = Path(__file__).parents[2]
 
@@ -352,15 +352,14 @@ def test_extract_intro_and_title():
     )  # noqa: E501
     assert title == '"-`Header"-with:; punct mark\'s'
 
-    # Long intro paragraph gets shortened
+    # Long intro paragraph are preserved
     intro_paragraph = "\n".join(["this is one line" for _ in range(10)])
     intro, _ = sg.extract_intro_and_title(
         "filename", "Title\n-----\n\n" + intro_paragraph
     )
     assert len(intro_paragraph) > 100
-    assert len(intro) < 100
-    assert intro.endswith("...")
-    assert intro_paragraph.replace("\n", " ")[:95] == intro[:95]
+    assert len(intro) > 100
+    assert intro_paragraph.replace("\n", " ") == intro
 
     # Errors
     with pytest.raises(ExtensionError, match="should have a header"):
@@ -376,26 +375,20 @@ def test_extract_intro_and_title():
         ["t", "ea8a570e9f3afc0a7c3f2a17a48b8047"],
     ),
 )
-def test_md5sums(mode, expected_md5):
+def test_md5sums(mode, expected_md5, tmp_path):
     """Test md5sum check functions work on know file content."""
     file_content = b"Local test\r\n"
-    with tempfile.NamedTemporaryFile("wb", delete=False) as f:
-        f.write(file_content)
-    try:
-        file_md5 = sg.get_md5sum(f.name, mode)
-        # verify correct md5sum
-        assert file_md5 == expected_md5
-        # False because is a new file
-        assert not sg.md5sum_is_current(f.name)
-        # Write md5sum to file to check is current
-        with open(f.name + ".md5", "w") as file_checksum:
-            file_checksum.write(file_md5)
-        try:
-            assert sg.md5sum_is_current(f.name, mode)
-        finally:
-            os.remove(f.name + ".md5")
-    finally:
-        os.remove(f.name)
+    fname = tmp_path / "test"
+    fname.write_bytes(file_content)
+    file_md5 = sg.get_md5sum(fname, mode)
+    # verify correct md5sum
+    assert file_md5 == expected_md5, mode
+    # False because is a new file
+    assert not sg.md5sum_is_current(fname), mode
+    # Write md5sum to file to check is current
+    with open(str(fname) + ".md5", "w") as file_checksum:
+        file_checksum.write(file_md5)
+    assert sg.md5sum_is_current(fname, mode), mode
 
 
 @pytest.mark.parametrize(
@@ -477,9 +470,18 @@ def _generate_rst(gallery_conf, fname, content):
         os.path.join(gallery_conf["examples_dir"], fname), mode="w", encoding="utf-8"
     ) as f:
         f.write("\n".join(content))
+    with codecs.open(
+        os.path.join(gallery_conf["examples_dir"], "README.txt"), "w", "utf8"
+    ):
+        pass
+
     # generate rst file
-    sg.generate_file_rst(
-        fname, gallery_conf["gallery_dir"], gallery_conf["examples_dir"], gallery_conf
+    generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
     )
     # read rst file and check if it contains code output
     rst_fname = os.path.splitext(fname)[0] + ".rst"

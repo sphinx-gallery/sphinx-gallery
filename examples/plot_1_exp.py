@@ -12,8 +12,8 @@ output appears before the code block.
 # Code source: Óscar Nájera
 # License: BSD 3 clause
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 # You can use modules local to the example being run, here we import
 # N from local_module

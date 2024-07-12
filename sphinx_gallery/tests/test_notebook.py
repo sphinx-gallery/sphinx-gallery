@@ -2,28 +2,28 @@
 # License: 3-clause BSD
 r"""Testing the Jupyter notebook parser."""
 
+import base64
+import json
+import os
+import re
+import shutil
+import tempfile
+import textwrap
 from collections import defaultdict
 from itertools import count
 from pathlib import Path
-import json
-import tempfile
-import os
-import pytest
-import re
-import base64
-import shutil
-import textwrap
 
+import pytest
 from sphinx.errors import ExtensionError
 
-from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.notebook import (
-    rst2md,
     jupyter_notebook,
-    save_notebook,
     promote_jupyter_cell_magic,
     python_to_jupyter_cli,
+    rst2md,
+    save_notebook,
 )
+from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 
 root = Path(__file__).parents[2]
 

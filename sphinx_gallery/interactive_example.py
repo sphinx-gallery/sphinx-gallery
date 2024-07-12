@@ -12,19 +12,18 @@ this API may change in the future.
 
 """
 
-import os
-from pathlib import Path
-import shutil
-from urllib.parse import quote
 import glob
 import json
+import os
+import shutil
+from pathlib import Path
+from urllib.parse import quote
 
-from sphinx.errors import ConfigError
 import sphinx.util
+from sphinx.errors import ConfigError
 
-from .utils import status_iterator
 from . import glr_path_static
-
+from .utils import status_iterator
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -58,7 +57,7 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
         path_link = "/".join([fpath_prefix.strip("/"), path_link])
 
     # Make sure we have the right slashes (in case we're on Windows)
-    path_link = path_link.replace(os.path.sep, "/")
+    path_link = path_link.replace(os.sep, "/")
 
     # Create the URL
     binder_url = "/".join(
@@ -168,8 +167,7 @@ def _copy_binder_reqs(app, binder_conf):
             )
 
     binder_folder = os.path.join(app.outdir, "binder")
-    if not os.path.isdir(binder_folder):
-        os.makedirs(binder_folder)
+    os.makedirs(binder_folder, exist_ok=True)
 
     # Copy over the requirements to the output directory
     for path in path_reqs:
@@ -207,7 +205,7 @@ def _copy_binder_notebooks(app):
     binder_conf = gallery_conf["binder"]
     notebooks_dir = os.path.join(app.outdir, binder_conf["notebooks_dir"])
     shutil.rmtree(notebooks_dir, ignore_errors=True)
-    os.makedirs(notebooks_dir)
+    os.makedirs(notebooks_dir, exist_ok=True)
 
     if not isinstance(gallery_dirs, (list, tuple)):
         gallery_dirs = [gallery_dirs]
@@ -408,31 +406,25 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     relative_link = os.path.relpath(fpath, gallery_conf["src_dir"])
     notebook_location = relative_link.replace(".py", ".ipynb")
     # Make sure we have the right slashes (in case we're on Windows)
-    notebook_location = notebook_location.replace(os.path.sep, "/")
+    notebook_location = notebook_location.replace(os.sep, "/")
 
     lite_root_url = os.path.relpath(
         os.path.join(gallery_conf["src_dir"], "lite"), os.path.dirname(fpath)
     )
     # Make sure we have the right slashes (in case we're on Windows)
-    lite_root_url = lite_root_url.replace(os.path.sep, "/")
+    lite_root_url = lite_root_url.replace(os.sep, "/")
 
     if gallery_conf["jupyterlite"]["use_jupyter_lab"]:
         lite_root_url += "/lab"
     else:
         lite_root_url += "/retro/notebooks"
 
-    lite_url = f"{lite_root_url}/?path={notebook_location}"
+    lite_url = f"{lite_root_url}/index.html?path={notebook_location}"
 
     # Similar work-around for badge file as in
     # gen_binder_rst
-    physical_path = os.path.join(
-        os.path.dirname(fpath), "images", "jupyterlite_badge_logo.svg"
-    )
-    os.makedirs(os.path.dirname(physical_path), exist_ok=True)
-    if not os.path.isfile(physical_path):
-        shutil.copyfile(
-            os.path.join(glr_path_static(), "jupyterlite_badge_logo.svg"), physical_path
-        )
+    image_dir = os.path.join(os.path.dirname(fpath), "images")
+    _add_jupyterlite_badge_logo(image_dir)
     rst = (
         "\n"
         "  .. container:: lite-badge\n\n"
@@ -442,6 +434,15 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
         "      :width: 150 px\n"
     ).format(lite_url)
     return rst
+
+
+def _add_jupyterlite_badge_logo(image_dir):
+    os.makedirs(image_dir, exist_ok=True)
+    physical_path = os.path.join(image_dir, "jupyterlite_badge_logo.svg")
+    if not os.path.isfile(physical_path):
+        shutil.copyfile(
+            os.path.join(glr_path_static(), "jupyterlite_badge_logo.svg"), physical_path
+        )
 
 
 def check_jupyterlite_conf(jupyterlite_conf, app):

@@ -3,18 +3,18 @@
 import os
 
 import pytest
-
 from sphinx.errors import ConfigError, ExtensionError
+
 import sphinx_gallery
 from sphinx_gallery.gen_gallery import _fill_gallery_conf_defaults
 from sphinx_gallery.scrapers import (
-    figure_rst,
-    SG_IMAGE,
-    matplotlib_scraper,
-    ImagePathIterator,
-    save_figures,
     _KNOWN_IMG_EXTS,
+    SG_IMAGE,
+    ImagePathIterator,
     _reset_matplotlib,
+    figure_rst,
+    matplotlib_scraper,
+    save_figures,
 )
 
 
@@ -82,7 +82,7 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
 
 
 def test_image_srcset_config(make_gallery_conf):
-    with pytest.raises(ConfigError, match="image_srcset must be a list of strings"):
+    with pytest.raises(ConfigError, match="'image_srcset' config allowed"):
         make_gallery_conf({"image_srcset": "2x"})
     with pytest.raises(ConfigError, match="Invalid value for image_srcset parameter"):
         make_gallery_conf({"image_srcset": [False]})

@@ -12,12 +12,12 @@ from collections import defaultdict
 from pathlib import Path
 
 from .backreferences import (
-    _thumbnail_div,
     THUMBNAIL_PARENT_DIV,
     THUMBNAIL_PARENT_DIV_CLOSE,
+    _thumbnail_div,
 )
-from .py_source_parser import split_code_and_text_blocks
 from .gen_rst import extract_intro_and_title
+from .py_source_parser import split_code_and_text_blocks
 from .utils import _replace_md5
 
 

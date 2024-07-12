@@ -12,10 +12,12 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
-from datetime import date
+import sys
 import warnings
+from datetime import date
+
+from intersphinx_registry import get_intersphinx_mapping
 
 import sphinx_gallery
 
@@ -332,15 +334,18 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {
-    "python": (f"https://docs.python.org/{sys.version_info.major}", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable", None),
-    "pyvista": ("https://docs.pyvista.org/version/stable", None),
-    "sklearn": ("https://scikit-learn.org/stable", None),
-    "sphinx": ("https://www.sphinx-doc.org/en/master", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
-}
+intersphinx_mapping = get_intersphinx_mapping(
+    packages={
+        "joblib",
+        "matplotlib",
+        "numpy",
+        "pandas",
+        "python",
+        "pyvista",
+        "sklearn",
+        "sphinx",
+    },
+)
 
 examples_dirs = ["../examples", "../tutorials"]
 gallery_dirs = ["auto_examples", "tutorials"]
@@ -352,30 +357,19 @@ try:
     # installed
     import pyvista
 except Exception:  # can raise all sorts of errors
-    pass
+    pyvista = None
 else:
     image_scrapers += ("pyvista",)
     examples_dirs.append("../pyvista_examples")
     gallery_dirs.append("auto_pyvista_examples")
-    pyvista.OFF_SCREEN = True
-    # Preferred plotting style for documentation
-    pyvista.set_plot_theme("document")
-    pyvista.global_theme.window_size = [1024, 768]
-    pyvista.global_theme.font.size = 22
-    pyvista.global_theme.font.label_size = 22
-    pyvista.global_theme.font.title_size = 22
-    pyvista.global_theme.return_cpos = False
-    # necessary when building the sphinx gallery
-    pyvista.BUILDING_GALLERY = True
-    pyvista.set_jupyter_backend(None)
 
 # Set plotly renderer to capture _repr_html_ for sphinx-gallery
 try:
+    import plotly
     import plotly.io
 except ImportError:
-    pass
+    plotly = None
 else:
-    plotly.io.renderers.default = "sphinx_gallery"
     examples_dirs.append("../plotly_examples")
     gallery_dirs.append("auto_plotly_examples")
 
@@ -393,6 +387,7 @@ sphinx_gallery_conf = {
     "examples_dirs": examples_dirs,
     "gallery_dirs": gallery_dirs,
     "image_scrapers": image_scrapers,
+    "reset_modules": ("matplotlib", "seaborn", "sg_doc_build.reset_others"),
     "compress_images": ("images", "thumbnails"),
     # specify the order of examples to be according to filename
     "within_subsection_order": "FileNameSortKey",

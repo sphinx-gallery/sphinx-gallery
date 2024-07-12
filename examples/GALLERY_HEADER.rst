@@ -3,8 +3,8 @@
 Basics Gallery with Matplotlib
 ==============================
 
-This page consists of the 'Basics Gallery with matplotlib' and a sub-gallery,
-'No image output examples'. This sub-gallery is generated from a
+This page consists of the 'Basics Gallery with matplotlib' and a sub-gallery
+(aka subsection), 'No image output examples'. This sub-gallery is generated from a
 sub-directory within the general examples directory. The file structure of
 this gallery looks like this:
 

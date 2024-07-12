@@ -1,8 +1,8 @@
 """Sphinx configuration for tinybuild."""
 
 import os.path as op
-import sphinx
 
+import sphinx
 
 # Where our helpers live
 util_root = "sphinx_gallery.tests.tinybuild.utils"
@@ -79,7 +79,7 @@ sphinx_gallery_conf = {
         "../examples/future/plot_future_imports_broken.py",
         "../examples/plot_scraper_broken.py",
     ],
-    "show_memory": True,
+    "show_memory": False,
     "compress_images": ("images", "thumbnails"),
     "junit": op.join("sphinx-gallery", "junit-results.xml"),
     "matplotlib_animations": (True, "mp4"),
@@ -89,6 +89,7 @@ sphinx_gallery_conf = {
     "show_api_usage": True,
     "copyfile_regex": r".*\.rst",
     "recommender": {"enable": True, "n_examples": 3},
+    "parallel": 2,
 }
 nitpicky = True
 highlight_language = "python3"

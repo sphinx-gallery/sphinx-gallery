@@ -3,12 +3,11 @@ r"""Parser for python source files."""
 # Created Sun Nov 27 14:03:07 2016
 # Author: Óscar Nájera
 
-from collections import namedtuple
-import codecs
 import ast
-from io import BytesIO
 import re
 import tokenize
+from collections import namedtuple
+from io import BytesIO
 from textwrap import dedent
 
 from sphinx.errors import ExtensionError
@@ -57,10 +56,9 @@ def parse_source_file(filename):
     node : AST node
     content : utf-8 encoded string
     """
-    with codecs.open(filename, "r", "utf-8") as fid:
+    # builtin open automatically converts \r\n to \n
+    with open(filename, "r", encoding="utf-8") as fid:
         content = fid.read()
-    # change from Windows format to UNIX for uniformity
-    content = content.replace("\r\n", "\n")
 
     try:
         node = ast.parse(content)

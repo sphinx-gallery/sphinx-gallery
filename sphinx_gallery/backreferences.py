@@ -6,21 +6,18 @@ Parses example file code in order to keep track of used functions.
 """
 
 import ast
-import codecs
-import collections
-from html import escape
 import inspect
 import os
-from pathlib import Path
 import re
 import sys
+from html import escape
+from pathlib import Path
 
-from sphinx.errors import ExtensionError
 import sphinx.util
+from sphinx.errors import ExtensionError
 
 from .scrapers import _find_image_ext
-from .utils import _replace_md5
-
+from .utils import _W_KW, _replace_md5
 
 THUMBNAIL_PARENT_DIV = """
 .. raw:: html
@@ -250,9 +247,9 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
 
     Returns
     -------
-    example_code_obj : OrderedDict[str, Any]
-        OrderedDict with information about all code object references found in an
-        example. OrderedDict contains the following keys:
+    example_code_obj : Dict[str, Any]
+        Dict with information about all code object references found in an
+        example. Dict contains the following keys:
 
             - example_code_obj['name'] : function or class name (str)
             - example_code_obj['module'] : module name (str)
@@ -272,7 +269,7 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
     # Get matches from docstring inspection (explicit matches)
     text = "\n".join(block.content for block in script_blocks if block.type == "text")
     names.extend((x, x, False, False, True) for x in re.findall(ref_regex, text))
-    example_code_obj = collections.OrderedDict()  # order is important
+    example_code_obj = dict()  # native dict preserves order nowadays
     # Make a list of all guesses, in `_embed_code_links` we will break
     # when we find a match
     for name, full_name, class_like, is_class, is_explicit in names:
@@ -293,13 +290,13 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
 
         # get shortened module name
         module_short = _get_short_module_name(module, attribute)
-        cobj = {
-            "name": attribute,
-            "module": module,
-            "module_short": module_short or module,
-            "is_class": is_class,
-            "is_explicit": is_explicit,
-        }
+        cobj = dict(
+            name=attribute,
+            module=module,
+            module_short=module_short or module,
+            is_class=is_class,
+            is_explicit=is_explicit,
+        )
         example_code_obj[name].append(cobj)
     return example_code_obj
 
@@ -352,7 +349,7 @@ def _thumbnail_div(
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
 
-    ref_name = os.path.join(full_dir, fname).replace(os.path.sep, "_")
+    ref_name = os.path.join(full_dir, fname).replace(os.sep, "_")
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
     return template.format(
@@ -392,9 +389,8 @@ def _write_backreferences(
             f"{backref}.examples.new",
         )
         seen = backref in seen_backrefs
-        with codecs.open(
-            include_path, "a" if seen else "w", encoding="utf-8"
-        ) as ex_file:
+        mode = "a" if seen else "w"
+        with open(include_path, mode, **_W_KW) as ex_file:
             if not seen:
                 # Be aware that if the number of lines of this heading changes,
                 #   the minigallery directive should be modified accordingly
@@ -433,7 +429,7 @@ def _finalize_backreferences(seen_backrefs, gallery_conf):
         if os.path.isfile(path):
             # Close div containing all thumbnails
             # (it was open in _write_backreferences)
-            with codecs.open(path, "a", encoding="utf-8") as ex_file:
+            with open(path, "a", **_W_KW) as ex_file:
                 ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
             _replace_md5(path, mode="t")
         else:
