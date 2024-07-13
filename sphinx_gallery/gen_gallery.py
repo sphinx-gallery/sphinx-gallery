@@ -213,7 +213,7 @@ def _check_config_type(
         if str_to_list:
             if isinstance(conf_value, str):
                 gallery_conf[conf_key] = [conf_value]
-            return gallery_conf
+            return
         return
     # Otherwise raise error
     msg = "'{conf_key}' config allowed types: {types}{or_none}. Got {conf_type}."
@@ -233,12 +233,7 @@ def _check_config_type(
 
 def _check_image_srcset(gallery_conf):
     """Check `_check_image_srcset`, convert to float and removing '1'."""
-    gallery_conf = _check_config_type(
-        gallery_conf,
-        "image_srcset",
-        (list, tuple),
-        str_to_list=True,
-    )
+    _check_config_type(gallery_conf, "image_srcset", (list, tuple), str_to_list=True)
     srcset_mult_facs = set()
     for st in gallery_conf["image_srcset"]:
         if not (isinstance(st, str) and st[-1:] == "x"):
@@ -251,12 +246,11 @@ def _check_image_srcset(gallery_conf):
         srcset_mult_facs.add(float(st[:-1]))
     srcset_mult_facs -= {1}  # 1x is always saved.
     gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
-    return gallery_conf
 
 
 def _check_compress_images(gallery_conf):
     """Check `compress_images`, getting any command line args."""
-    gallery_conf = _check_config_type(
+    _check_config_type(
         gallery_conf,
         "compress_images",
         (str, tuple, list),
@@ -286,8 +280,6 @@ def _check_compress_images(gallery_conf):
         compress_images = ()
     gallery_conf["compress_images"] = compress_images
     gallery_conf["compress_images_args"] = compress_images_args
-
-    return gallery_conf
 
 
 def _check_matplotlib_animations(gallery_conf, app):
@@ -323,7 +315,6 @@ def _check_matplotlib_animations(gallery_conf, app):
                         ) from e
 
     gallery_conf["matplotlib_animations"] = (enabled, fmt)
-    return gallery_conf
 
 
 def _check_pypandoc_config(gallery_conf):
@@ -358,7 +349,6 @@ def _check_pypandoc_config(gallery_conf):
                     "'pypandoc' only accepts the following key "
                     f"values: {accepted_keys}, got: {key}."
                 )
-    return gallery_conf
 
 
 def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
@@ -385,12 +375,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             gallery_conf["source_suffix"] = {gallery_conf["source_suffix"]: None}
 
     # Check capture_repr
-    gallery_conf = _check_config_type(
-        gallery_conf,
-        "capture_repr",
-        (tuple, list),
-        str_to_list=True,
-    )
+    _check_config_type(gallery_conf, "capture_repr", (tuple, list), str_to_list=True)
     supported_reprs = ["__repr__", "__str__", "_repr_html_"]
     for rep in gallery_conf["capture_repr"]:
         if rep not in supported_reprs:
@@ -442,13 +427,11 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         pass
 
     # Check for srcset hidpi images
-    gallery_conf = _check_image_srcset(gallery_conf)
-
+    _check_image_srcset(gallery_conf)
     # Check `compress_images`
-    gallery_conf = _check_compress_images(gallery_conf)
-
+    _check_compress_images(gallery_conf)
     # Check `matplotlib_animations`
-    gallery_conf = _check_matplotlib_animations(gallery_conf, app)
+    _check_matplotlib_animations(gallery_conf, app)
 
     # Check resetters
     _get_callables(gallery_conf, "reset_modules")
@@ -467,7 +450,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         _check_config_type(gallery_conf, conf_key, str, allow_none=True)
 
     # Check pypandoc
-    gallery_conf = _check_pypandoc_config(gallery_conf)
+    _check_pypandoc_config(gallery_conf)
 
     gallery_conf["titles"] = {}
     # Ensure 'backreferences_dir' is str, pathlib.Path or None
@@ -493,12 +476,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     )
 
     # css
-    gallery_conf = _check_config_type(
-        gallery_conf,
-        "css",
-        (list, tuple),
-        str_to_list=True,
-    )
+    _check_config_type(gallery_conf, "css", (list, tuple), str_to_list=True)
     for css in gallery_conf["css"]:
         if css not in _KNOWN_CSS:
             raise ConfigError(f"Unknown css {css!r}, must be one of {_KNOWN_CSS!r}")
