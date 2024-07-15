@@ -193,7 +193,7 @@ def test_junit(sphinx_app, tmp_path):
     want = dict(
         errors="0",
         failures="0",
-        skipped="2",
+        skipped="4",
         tests=f"{N_EXAMPLES}",
         name="sphinx-gallery",
     )
