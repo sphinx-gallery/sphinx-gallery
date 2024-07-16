@@ -392,7 +392,7 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
     thumbnail = np.asarray(Image.open(thumb_fname))
     assert broken_stamp.shape[:2] == thumbnail.shape[:2]
     corr = np.corrcoef(broken_stamp[..., :3].ravel(), thumbnail[..., :3].ravel())[0, 1]
-    assert corr < 0.99  # i.e. thumbnail and "BROKEN" stamp are not identical
+    assert corr < 0.7  # i.e. thumbnail and "BROKEN" stamp are not identical
 
 
 def test_command_line_args_img(sphinx_app):
