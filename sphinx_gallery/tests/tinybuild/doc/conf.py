@@ -78,6 +78,8 @@ sphinx_gallery_conf = {
     "expected_failing_examples": [
         "../examples/future/plot_future_imports_broken.py",
         "../examples/plot_scraper_broken.py",
+        "../examples/plot_failing_example.py",
+        "../examples/plot_failing_example_thumbnail.py",
     ],
     "show_memory": False,
     "compress_images": ("images", "thumbnails"),

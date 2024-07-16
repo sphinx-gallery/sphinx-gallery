@@ -1239,6 +1239,5 @@ def test_newlines(log_collector_wrap):
     assert tee.newlines == tee.output.newlines
 
 
-# TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are executed after a no-plot and produce
 #       the correct image in the thumbnail

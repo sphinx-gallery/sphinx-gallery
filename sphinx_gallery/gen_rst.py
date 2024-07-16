@@ -395,7 +395,9 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir, f"sphx_glr_{base_image_name}_thumb.{ext}")
 
-    if "formatted_exception" in script_vars:
+    if "formatted_exception" in script_vars and file_conf.get(
+        "failing_thumbnail", True
+    ):
         img = os.path.join(glr_path_static(), "broken_example.png")
     elif os.path.exists(thumbnail_image_path):
         img = thumbnail_image_path
