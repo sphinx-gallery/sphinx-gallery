@@ -241,18 +241,42 @@ def test_junit(sphinx_app, tmp_path):
     with open(junit_file, "rb") as fid:
         suite = lxml.etree.fromstring(fid.read())
     # this time we only ran the stale files
-    want.update(failures="2", skipped="1", tests="3")
+    want.update(failures="2", skipped="3", tests="5")
     got = dict(suite.attrib)
     del got["time"]
-    assert len(suite) == 3
-    assert suite[0].attrib["classname"] == "plot_numpy_matplotlib"
-    assert suite[0][0].tag == "failure", suite[0].attrib["classname"]
-    assert suite[0][0].attrib["message"].startswith("RuntimeError: Forcing")
-    assert suite[1].attrib["classname"] == "plot_scraper_broken"
-    assert suite[1][0].tag == "skipped", suite[1].attrib["classname"]
-    assert suite[2].attrib["classname"] == "plot_future_imports_broken"
-    assert suite[2][0].tag == "failure", suite[2].attrib["classname"]
-    assert suite[2][0].attrib["message"] == "Passed even though it was marked to fail"
+    skips_and_fails = [
+        {
+            "classname": "plot_failing_example",
+            "tag": "skipped",
+            "message": None,
+        },
+        {
+            "classname": "plot_failing_example_thumbnail",
+            "tag": "skipped",
+            "message": None,
+        },
+        {
+            "classname": "plot_numpy_matplotlib",
+            "tag": "failure",
+            "message": "RuntimeError: Forcing",
+        },
+        {
+            "classname": "plot_scraper_broken",
+            "tag": "skipped",
+            "message": None,
+        },
+        {
+            "classname": "plot_future_imports_broken",
+            "tag": "failure",
+            "message": "Passed even though it was marked to fail",
+        },
+    ]
+    assert len(suite) == len(skips_and_fails)
+    for this_suite, this_example in zip(suite, skips_and_fails):
+        assert this_suite.attrib["classname"] == this_example["classname"]
+        assert this_suite[0].tag == this_example["tag"], this_suite.attrib["classname"]
+        if this_example["message"] is not None:
+            assert this_suite[0].attrib["message"].startswith(this_example["message"])
     assert got == want
 
 
@@ -838,6 +862,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         "sg_api_usage",
         "plot_future_imports_broken",
         "plot_scraper_broken",
+        "plot_failing_example",
+        "plot_failing_example_thumbnail",
     )
     _assert_mtimes(generated_rst_0, generated_rst_1, ignore=ignore)
 
@@ -931,6 +957,8 @@ def _rerun(
     #
     # - auto_examples/future/plot_future_imports_broken
     # - auto_examples/future/sg_execution_times
+    # - auto_examples/plot_failing_example
+    # - auto_examples/plot_failing_example_thumbnail
     # - auto_examples/plot_scraper_broken
     # - auto_examples/sg_execution_times
     # - auto_examples_rst_index/sg_execution_times
@@ -945,9 +973,9 @@ def _rerun(
     # - auto_examples/index
     # - auto_examples/plot_numpy_matplotlib
     if how == "modify":
-        n_ch = "([3-9]|10|11)"
+        n_ch = "([3-9]|1[0-3])"  # 3-13
     else:
-        n_ch = "[1-9]"
+        n_ch = "([1-9]|1[01])"  # 1-11
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
     want = f".*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
@@ -1009,6 +1037,8 @@ def _rerun(
         # this one will not change even though it was retried
         "plot_future_imports_broken",
         "plot_scraper_broken",
+        "plot_failing_example",
+        "plot_failing_example_thumbnail",
     )
     # not reliable on Windows and one Ubuntu run
     bad = sys.platform.startswith("win") or os.getenv("BAD_MTIME", "0") == "1"
@@ -1422,10 +1452,10 @@ def test_recommend_n_examples(sphinx_app):
 
     assert '<p class="rubric">Related examples</p>' in html
     assert count == n_examples
-    # Check the same 3 related examples are shown
+    # Check the same 3 related examples are shown (can change when new examples added)
     assert "sphx-glr-auto-examples-plot-repr-py" in html
-    assert "sphx-glr-auto-examples-plot-webp-py" in html
-    assert "sphx-glr-auto-examples-plot-numpy-matplotlib-py" in html
+    assert "sphx-glr-auto-examples-plot-matplotlib-backend-py" in html
+    assert "sphx-glr-auto-examples-plot-second-future-imports-py" in html
 
 
 def test_sidebar_components_download_links(sphinx_app):
