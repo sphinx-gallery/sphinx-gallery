@@ -7,6 +7,58 @@ v0.17.0
 Support for Python 3.8 and Sphinx 4 dropped in this release.
 Requirement is now Python >= 3.9 and Sphinx >= 5.
 
+**Implemented enhancements:**
+
+-  Introduction tooltip corresponds to the first paragraph `#1344 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1344>`__ (`fgmacedo <https://github.com/fgmacedo>`__)
+-  FIX Jupyterlite in CircleCI artifact `#1336 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1336>`__ (`lesteve <https://github.com/lesteve>`__)
+-  MNT: Rename README.rst to GALLERY_HEADER.rst `#1321 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1321>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [ENH] Add custom thumbnails for failing examples `#1313 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1313>`__ (`tsbinns <https://github.com/tsbinns>`__)
+-  ENH integrate download/launcher links into ``pydata-sphinx-theme`` secondary sidebar `#1312 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1312>`__ (`Charlie-XIAO <https://github.com/Charlie-XIAO>`__)
+-  add option for zip downloads `#1299 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1299>`__ (`jamiecook <https://github.com/jamiecook>`__)
+-  Allow setting animation format from gallery config `#1243 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1243>`__ (`QuLogic <https://github.com/QuLogic>`__)
+
+**Fixed bugs:**
+
+-  Fix handling of multi-module intersphinx registries `#1320 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1320>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  BUG: Fix bug with traceback with SyntaxError `#1301 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1301>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Documentation**
+
+-  DOC Add napari to users `#1346 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1346>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Fix nested_sections `#1339 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1339>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Improve ``nested_sections`` `#1326 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1326>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC: Remove definition lists from contribution guide `#1318 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1318>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  MNT: fixed documentation links in the readme `#1310 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1310>`__ (`story645 <https://github.com/story645>`__)
+
+**Project maintenance**
+
+-  [pre-commit.ci] pre-commit autoupdate `#1348 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1348>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT: Fix ``gallery_conf`` changes do not need to be returned `#1347 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1347>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1345 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1345>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1342 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1342>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1338 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1338>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT: Sort imports and add to pre commit `#1337 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1337>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MNT: Refactor ``generate_file_rst`` `#1335 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1335>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MNT: Refactor ``_fill_gallery_conf_defaults`` `#1334 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1334>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MNT Use ``os.sep`` everywhere `#1333 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1333>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MNT: Refactor ``generate_dir_rst`` and ``generate_gallery_rst`` `#1332 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1332>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MNT: Add ipython to dev dependencies `#1329 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1329>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1328 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1328>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Fix make file clean in tinybuild `#1327 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1327>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Bump the actions group with 5 updates `#1325 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1325>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1324 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1324>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1319 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1319>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Include dev dependencies in pyproject.toml and update docs on requirements `#1317 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1317>`__ (`AlexSzatmary <https://github.com/AlexSzatmary>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1314 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1314>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1311 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1311>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1307 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1307>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MAINT Add ``sphinxcontrib-video`` to dev requirements `#1305 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1305>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1304 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1304>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT: Turn the block tuple into a namedtuple `#1303 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1303>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1300 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1300>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  lint: define codespell in ``pyproject.toml`` `#1298 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1298>`__ (`Borda <https://github.com/Borda>`__)
+-  MAINT Bump version 0.17 `#1297 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1297>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.16.0
 -------
 Sphinx 7.3.0 and above changed caching and serialization checks. Now instead of passing
