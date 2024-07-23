@@ -41,8 +41,7 @@ jobs:
                 numpy matplotlib seaborn statsmodels pillow joblib \
                 "sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6" pytest \
                 traits memory_profiler "ipython!=8.7.0" plotly graphviz \
-                "git+https://github.com/pyvista/pyvista" \
-                "docutils>=0.18" imageio pydata-sphinx-theme \
+                "pyvista>=0.44.0" "docutils>=0.18" imageio pydata-sphinx-theme \
                 "jupyterlite-sphinx>=0.8.0,<0.9.0" "jupyterlite-pyodide-kernel<0.1.0" \
                 libarchive-c "sphinxcontrib-video>=0.2.1rc0" intersphinx_registry
             pip uninstall -yq vtk  # pyvista installs vtk above
