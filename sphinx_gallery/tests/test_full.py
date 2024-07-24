@@ -83,7 +83,14 @@ def _sphinx_app(tmpdir_factory, buildername):
     src_dir = Path(__file__).parent / "tinybuild"
 
     def ignore(src, names):
-        return ("_build", "gen_modules", "auto_examples")
+        return (
+            "_build",
+            "gen_modules",
+            "auto_examples",
+            "auto_examples_README_header",
+            "auto_examples_rst_index",
+            "auto_examples_with_rst",
+        )
 
     shutil.copytree(src_dir, temp_dir, ignore=ignore)
     # For testing iteration, you can get similar behavior just doing `make`
@@ -306,6 +313,13 @@ def test_run_sphinx(sphinx_app):
     warning = sphinx_app._warning.getvalue()
     want = ".*fetching .*wrong_url.*404.*"
     assert re.match(want, warning, re.DOTALL) is not None, warning
+
+
+def test_user_index_download(sphinx_app):
+    """Test download zipfiles still generated when user supplies index.rst"""
+    src_dir = Path(sphinx_app.srcdir) / "auto_examples_rst_index"
+    assert (src_dir / "auto_examples_rst_index_jupyter.zip").is_file()
+    assert (src_dir / "auto_examples_rst_index_python.zip").is_file()
 
 
 def test_thumbnail_path(sphinx_app, tmpdir):
@@ -607,8 +621,12 @@ def test_backreferences(sphinx_app):
     assert op.isfile(html)
     with codecs.open(html, "r", "utf-8") as fid:
         html = fid.read()
-    assert "sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder" in html  # noqa: E501
-    assert "sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules" in html  # noqa: E501
+    assert (
+        "sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder" in html
+    )  # noqa: E501
+    assert (
+        "sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules" in html
+    )  # noqa: E501
     assert "figure_rst.html" not in html  # excluded
 
 
