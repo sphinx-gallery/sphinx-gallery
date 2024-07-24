@@ -608,13 +608,15 @@ def _finish_index_rst(
         )
         indexst += subsections_toctree
 
-    if sg_root_index:
-        # Download examples
-        if gallery_conf["download_all_examples"]:
-            download_fhindex = generate_zipfiles(
-                gallery_dir_abs_path, app.builder.srcdir, gallery_conf
-            )
+    # Always generate download zipfiles, only add to index.rst if required
+    if gallery_conf["download_all_examples"]:
+        download_fhindex = generate_zipfiles(
+            gallery_dir_abs_path, app.builder.srcdir, gallery_conf
+        )
+        if sg_root_index:
             indexst += download_fhindex
+
+    if sg_root_index:
         # Signature
         if app.config.sphinx_gallery_conf["show_signature"]:
             indexst += SPHX_GLR_SIG
