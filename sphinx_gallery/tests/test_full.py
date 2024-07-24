@@ -621,12 +621,8 @@ def test_backreferences(sphinx_app):
     assert op.isfile(html)
     with codecs.open(html, "r", "utf-8") as fid:
         html = fid.read()
-    assert (
-        "sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder" in html
-    )  # noqa: E501
-    assert (
-        "sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules" in html
-    )  # noqa: E501
+    assert "sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder" in html  # noqa: E501
+    assert "sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules" in html  # noqa: E501
     assert "figure_rst.html" not in html  # excluded
 
 
