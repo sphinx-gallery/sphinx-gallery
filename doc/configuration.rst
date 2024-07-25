@@ -656,10 +656,10 @@ Add mini-galleries
 
 Sphinx-Gallery provides the :class:`sphinx_gallery.directives.MiniGallery`
 directive so that you can easily add a reduced version of the Gallery to
-your Sphinx documentation ``.rst`` files. The mini-gallery directive therefore
+your Sphinx documentation ``.rst`` files. The minigallery directive therefore
 supports passing a list (space separated) of any of the following:
 
-* full qualified name of object (see :ref:`references_to_examples`) - this
+* fully qualified name of object (see :ref:`references_to_examples`) - this
   adds all examples where the object was used in the code or referenced in
   the example text
 * pathlike strings to example Python files, including glob-style
@@ -676,24 +676,30 @@ and all entries will be treated as pathlike strings.
 Add mini-galleries for API documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When documenting a given function/method/attribute/object/class, Sphinx-Gallery
-enables you to link to any examples that either:
+Sphinx-Gallery can generate minigalleries for objects for specified modules,
+consisting of all examples that either:
 
 1. Use the function/method/attribute/object or instantiate the class in the
-   code (generates *implicit backreferences*).
+   code (called *implicit backreferences*) or
 2. Refer to that function/method/attribute/object/class using sphinx markup
    ``:func:`` / ``:meth:`` / ``:attr:`` / ``:obj:`` / ``:class:`` in a text
    block. You can omit this role markup if you have set the `default_role
    <https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role>`_
-   in your ``conf.py`` to any of these roles (generates *explicit
+   in your ``conf.py`` to any of these roles (called *explicit
    backreferences*).
 
-The former is useful for auto-documenting functions/methods/attributes/objects
-that are used and classes that are explicitly instantiated. The generated links
-are called implicit backreferences. The latter is useful for classes that are
-typically implicitly returned rather than explicitly instantiated (e.g.,
+This allows you to pass a fully qualified name of an object (e.g., function, method,
+attribute, class) to the minigallery directive to add a minigallery of all examples
+relevant to that object. This can be useful in API documentation.
+
+**Implicit backreferences** are useful for auto-documenting objects
+that are used and classes that are explicitly instantiated, in the code. Any examples
+where an object is used in the code are added *implicitly* as backreferences.
+**Explicit backreferences** are for objects that are *explicitly* referred to
+in an example's text. They are useful for classes that are
+typically implicitly returned in the code rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
-within function calls). Such links are called explicit backreferences.
+within function calls)..
 
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
