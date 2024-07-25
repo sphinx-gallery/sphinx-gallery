@@ -152,8 +152,7 @@ class MiniGallery(Directive):
                 if len(dirs) != 1:
                     raise ExtensionError(
                         f"Error in minigallery file lookup: input={obj}, "
-                        f"matches={dirs}, "
-                        f"examples_dirs={config.sphinx_gallery_conf['examples_dirs']}"
+                        f"matches={dirs}, examples_dirs={examples_dirs}"
                     )
 
                 example_dir, target_dir = [Path(src_dir, d) for d in dirs[0]]
