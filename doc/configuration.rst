@@ -50,7 +50,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
-  and ``inspect_global_variables`` (:ref:`references_to_examples`)
+  and ``inspect_global_variables`` (:ref:`minigalleries_to_examples`)
 - ``minigallery_sort_order`` (:ref:`minigallery_order`)
 
 **Images and thumbnails**
@@ -659,9 +659,17 @@ directive so that you can easily add a reduced version of the Gallery to
 your Sphinx documentation ``.rst`` files. The mini-gallery directive therefore
 supports passing a list (space separated) of any of the following:
 
-* full qualified name of object (see :ref:`references_to_examples`)
+* full qualified name of object (see :ref:`references_to_examples`) - this
+  adds all examples where the object was used in the code or referenced in
+  the example text
 * pathlike strings to example Python files, including glob-style
   (see :ref:`file_based_minigalleries`)
+
+To use object names, you must enable backreference generation, see
+:ref:`references_to_examples` for details.
+If backreference generation is not enabled, object entries to the
+:class:`~sphinx_gallery.directives.MiniGallery` directive will be ignored
+and all entries will be treated as pathlike strings.
 
 .. _references_to_examples:
 
