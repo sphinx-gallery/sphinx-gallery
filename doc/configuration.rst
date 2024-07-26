@@ -676,7 +676,7 @@ and all entries will be treated as pathlike strings.
 Add mini-galleries for API documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sphinx-Gallery can generate minigalleries for objects for specified modules,
+Sphinx-Gallery can generate minigalleries for objects from specified modules,
 consisting of all examples that either:
 
 1. Use the function/method/attribute/object or instantiate the class in the
@@ -727,9 +727,14 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
 
 The path you specify in ``backreferences_dir`` (here we choose
 ``gen_modules/backreferences``) will be populated with
-ReStructuredText files. Each .rst file will contain a reduced version of the
+ReStructuredText files, with names ending with '.examples'.
+Each .rst file will contain a reduced version of the
 gallery specific to every function/class that is used across all the examples
 and belonging to the modules listed in ``doc_module``.
+Note that backreference files will be generated for all objects. Objects that
+are not used in any example will have an empty file to prevent inclusion
+errors during autodoc parsing.
+
 ``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 
