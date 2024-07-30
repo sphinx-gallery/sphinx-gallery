@@ -155,7 +155,10 @@ class MiniGallery(Directive):
                         continue
                 # `path` inside one `examples_dirs`
                 if (n_match := len(gal_matches)) == 1:
-                    ex_parents, target_dir = gal_matches[0][0].parents, gal_matches[0][1]
+                    ex_parents, target_dir = (
+                        gal_matches[0][0].parents,
+                        gal_matches[0][1],
+                    )
                 # `path` inside several `examples_dirs`, take the longest match
                 elif n_match > 1:
                     ex_parents, target_dir = max(
@@ -165,8 +168,8 @@ class MiniGallery(Directive):
                 # `path` is not inside a `examples_dirs`
                 else:
                     raise ExtensionError(
-                        f"minigallery directive error: input: {obj} found file: "
-                        f"{path} but this does not live inside any examples_dirs: "
+                        f"minigallery directive error: path input '{obj}' found file:"
+                        f" '{path}' but this does not live inside any examples_dirs: "
                         f"{examples_dirs}"
                     )
 
