@@ -669,7 +669,8 @@ To use object names, you must enable backreference generation, see
 :ref:`references_to_examples` for details.
 If backreference generation is not enabled, object entries to the
 :class:`~sphinx_gallery.directives.MiniGallery` directive will be ignored
-and all entries will be treated as pathlike strings.
+and all entries will be treated as pathlike strings or glob-style pathlike strings.
+See :ref:`file_based_minigalleries` for details.
 
 .. _references_to_examples:
 
