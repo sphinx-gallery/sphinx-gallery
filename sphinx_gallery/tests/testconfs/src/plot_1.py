@@ -9,3 +9,7 @@ B test
 print("foo")
 print("bar")
 print("again")
+
+# %%
+#
+# .. minigallery:: src/plot_2.py

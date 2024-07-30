@@ -50,7 +50,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
-  and ``inspect_global_variables`` (:ref:`references_to_examples`)
+  and ``inspect_global_variables`` (:ref:`minigalleries_to_examples`)
 - ``minigallery_sort_order`` (:ref:`minigallery_order`)
 
 **Images and thumbnails**
@@ -656,36 +656,50 @@ Add mini-galleries
 
 Sphinx-Gallery provides the :class:`sphinx_gallery.directives.MiniGallery`
 directive so that you can easily add a reduced version of the Gallery to
-your Sphinx documentation ``.rst`` files. The mini-gallery directive therefore
+your Sphinx documentation ``.rst`` files. The minigallery directive therefore
 supports passing a list (space separated) of any of the following:
 
-* full qualified name of object (see :ref:`references_to_examples`)
+* fully qualified name of object (see :ref:`references_to_examples`) - this
+  adds all examples where the object was used in the code or referenced in
+  the example text
 * pathlike strings to example Python files, including glob-style
   (see :ref:`file_based_minigalleries`)
+
+To use object names, you must enable backreference generation, see
+:ref:`references_to_examples` for details.
+If backreference generation is not enabled, object entries to the
+:class:`~sphinx_gallery.directives.MiniGallery` directive will be ignored
+and all entries will be treated as pathlike strings.
 
 .. _references_to_examples:
 
 Add mini-galleries for API documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When documenting a given function/method/attribute/object/class, Sphinx-Gallery
-enables you to link to any examples that either:
+Sphinx-Gallery can generate minigalleries for objects from specified modules,
+consisting of all examples that either:
 
 1. Use the function/method/attribute/object or instantiate the class in the
-   code (generates *implicit backreferences*).
+   code (called *implicit backreferences*) or
 2. Refer to that function/method/attribute/object/class using sphinx markup
    ``:func:`` / ``:meth:`` / ``:attr:`` / ``:obj:`` / ``:class:`` in a text
    block. You can omit this role markup if you have set the `default_role
    <https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role>`_
-   in your ``conf.py`` to any of these roles (generates *explicit
+   in your ``conf.py`` to any of these roles (called *explicit
    backreferences*).
 
-The former is useful for auto-documenting functions/methods/attributes/objects
-that are used and classes that are explicitly instantiated. The generated links
-are called implicit backreferences. The latter is useful for classes that are
-typically implicitly returned rather than explicitly instantiated (e.g.,
+This allows you to pass a fully qualified name of an object (e.g., function, method,
+attribute, class) to the minigallery directive to add a minigallery of all examples
+relevant to that object. This can be useful in API documentation.
+
+**Implicit backreferences** are useful for auto-documenting objects
+that are used and classes that are explicitly instantiated, in the code. Any examples
+where an object is used in the code are added *implicitly* as backreferences.
+**Explicit backreferences** are for objects that are *explicitly* referred to
+in an example's text. They are useful for classes that are
+typically implicitly returned in the code rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
-within function calls). Such links are called explicit backreferences.
+within function calls)..
 
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
@@ -713,9 +727,14 @@ your Sphinx-Gallery configuration ``conf.py`` file with::
 
 The path you specify in ``backreferences_dir`` (here we choose
 ``gen_modules/backreferences``) will be populated with
-ReStructuredText files. Each .rst file will contain a reduced version of the
+ReStructuredText files, with names ending with '.examples'.
+Each .rst file will contain a reduced version of the
 gallery specific to every function/class that is used across all the examples
 and belonging to the modules listed in ``doc_module``.
+Note that backreference files will be generated for all objects. Objects that
+are not used in any example will have an empty file to prevent inclusion
+errors during autodoc parsing.
+
 ``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
 **relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
 

@@ -539,6 +539,7 @@ from sphinx_gallery.gen_rst import _sg_call_memory_noop
 
 sphinx_gallery_conf = {
     'show_memory': _sg_call_memory_noop,
+    'examples_dirs': 'src',
     'gallery_dirs': 'ex',
 }"""
 )
@@ -583,6 +584,20 @@ def test_backreferences_dir_config(sphinx_app_wrapper):
     with pytest.raises(ConfigError, match="'backreferences_dir' config allowed types"):
         app = sphinx_app_wrapper.create_sphinx_app()
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
+
+
+@pytest.mark.conf_file(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}"""
+)
+def test_minigallery_no_backreferences_dir(sphinx_app_wrapper):
+    """Check warning when no backreferences_dir set but minigallery directive used."""
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+    build_warn = sphinx_app._warning.getvalue()
+    assert "'backreferences_dir' config is None, minigallery" in build_warn
 
 
 @pytest.mark.conf_file(

@@ -8,6 +8,7 @@ from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.directives import images
 from sphinx.errors import ExtensionError
+from sphinx.util.logging import getLogger
 
 from .backreferences import (
     THUMBNAIL_PARENT_DIV,
@@ -16,6 +17,8 @@ from .backreferences import (
 )
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
+
+logger = getLogger("sphinx-gallery")
 
 
 class MiniGallery(Directive):
@@ -67,12 +70,16 @@ class MiniGallery(Directive):
         # Retrieve the backreferences directory
         config = self.state.document.settings.env.config
         backreferences_dir = config.sphinx_gallery_conf["backreferences_dir"]
+        if backreferences_dir is None:
+            logger.warning(
+                "'backreferences_dir' config is None, minigallery "
+                "directive will only add example file paths."
+            )
 
         # Retrieve source directory
         src_dir = config.sphinx_gallery_conf["src_dir"]
 
         # Parse the argument into the individual objects
-
         obj_list = []
 
         if self.arguments:
@@ -100,7 +107,7 @@ class MiniGallery(Directive):
 
         file_paths = []
         for obj in obj_list:
-            if path := has_backrefs(obj):
+            if backreferences_dir and (path := has_backrefs(obj)):
                 file_paths.append((obj, path))
             elif paths := Path(src_dir).glob(obj):
                 file_paths.extend([(obj, p) for p in paths])
@@ -131,18 +138,21 @@ class MiniGallery(Directive):
     :end-before: thumbnail-parent-div-close"""
                 )
             else:
+                examples_dirs = config.sphinx_gallery_conf["examples_dirs"]
+                if not isinstance(examples_dirs, list):
+                    examples_dirs = [examples_dirs]
+                gallery_dirs = config.sphinx_gallery_conf["gallery_dirs"]
+                if not isinstance(gallery_dirs, list):
+                    gallery_dirs = [gallery_dirs]
                 dirs = [
                     (e, g)
-                    for e, g in zip(
-                        config.sphinx_gallery_conf["examples_dirs"],
-                        config.sphinx_gallery_conf["gallery_dirs"],
-                    )
+                    for e, g in zip(examples_dirs, gallery_dirs)
                     if (obj.find(e) != -1)
                 ]
                 if len(dirs) != 1:
                     raise ExtensionError(
-                        f"Error in gallery lookup: input={obj}, matches={dirs}, "
-                        f"examples={config.sphinx_gallery_conf['examples_dirs']}"
+                        f"Error in minigallery file lookup: input={obj}, "
+                        f"matches={dirs}, examples_dirs={examples_dirs}"
                     )
 
                 example_dir, target_dir = [Path(src_dir, d) for d in dirs[0]]
