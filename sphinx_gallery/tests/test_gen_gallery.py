@@ -614,6 +614,28 @@ def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
+@pytest.mark.conf_file(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}"""
+)
+@pytest.mark.add_rst(
+    file="""
+Header
+======
+
+.. minigallery:: index.rst
+"""
+)
+def test_minigallery_not_in_examples_dirs(sphinx_app_wrapper):
+    """Check error raised when minigallery path input not in `examples_dirs`."""
+    msg = "minigallery directive error: path input 'index.rst'"
+    with pytest.raises(ExtensionError, match=msg):
+        sphinx_app_wrapper.build_sphinx_app()
+
+
 def test_write_computation_times_noop(sphinx_app_wrapper):
     app = sphinx_app_wrapper.create_sphinx_app()
     write_computation_times(app.config.sphinx_gallery_conf, None, [])

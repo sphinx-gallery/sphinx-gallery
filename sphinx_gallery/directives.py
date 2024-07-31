@@ -148,11 +148,14 @@ class MiniGallery(Directive):
                 gal_matches = []
                 for e, g in zip(examples_dirs, gallery_dirs):
                     e = Path(src_dir, e).resolve(strict=True)
+                    print(f'XXXX {e=}')
                     g = Path(src_dir, g).resolve(strict=True)
                     try:
                         gal_matches.append((path.relative_to(e), g))
                     except ValueError:
                         continue
+                print(f'XXXX {obj=}, {path=}')
+                print(f'XXXX gal matches: {gal_matches}')
                 # `path` inside one `examples_dirs`
                 if (n_match := len(gal_matches)) == 1:
                     ex_parents, target_dir = (

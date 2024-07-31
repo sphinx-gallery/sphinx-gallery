@@ -133,6 +133,16 @@ def conf_file(request):
     return result
 
 
+@pytest.fixture
+def add_rst(request):
+    try:
+        env = request.node.get_closest_marker("add_rst")
+    except AttributeError:  # old pytest
+        env = request.node.get_marker("add_rst")
+    file = env.kwargs["file"] if env else ""
+    return file
+
+
 class SphinxAppWrapper:
     """Wrapper for sphinx.application.Application.
 
@@ -181,13 +191,21 @@ class SphinxAppWrapper:
 
 
 @pytest.fixture
-def sphinx_app_wrapper(tmpdir, conf_file, req_mpl, req_pil):
+def sphinx_app_wrapper(tmpdir, conf_file, add_rst, req_mpl, req_pil):
     _fixturedir = os.path.join(os.path.dirname(__file__), "testconfs")
     srcdir = os.path.join(str(tmpdir), "config_test")
     shutil.copytree(_fixturedir, srcdir)
+    # Copy files to 'examples/' as well because default `examples_dirs` is
+    # '../examples' - for tests where we don't update config
     shutil.copytree(
         os.path.join(_fixturedir, "src"), os.path.join(str(tmpdir), "examples")
     )
+    if add_rst:
+        with open(os.path.join(srcdir, "minigallery_test.rst"), "w") as rstfile:
+            rstfile.write(add_rst)
+    from pathlib import Path
+    for p in Path(tmpdir).rglob("*"):
+        print(p)
 
     base_config = f"""
 import os
