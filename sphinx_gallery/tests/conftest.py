@@ -203,9 +203,6 @@ def sphinx_app_wrapper(tmpdir, conf_file, add_rst, req_mpl, req_pil):
     if add_rst:
         with open(os.path.join(srcdir, "minigallery_test.rst"), "w") as rstfile:
             rstfile.write(add_rst)
-    from pathlib import Path
-    for p in Path(tmpdir).rglob("*"):
-        print(p)
 
     base_config = f"""
 import os
