@@ -100,6 +100,20 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     assert build_warn == ""
 
 
+@pytest.mark.conf_file(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': ['src', 'excess'],
+    'gallery_dirs': 'ex',
+}"""
+)
+def test_unequal_examples_gallery_dirs(sphinx_app_wrapper):
+    """Check warning when 'examples_dirs' and 'gallery_dirs' unequal lengths."""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    build_warn = sphinx_app._warning.getvalue()
+    assert "'examples_dirs' and 'gallery_dirs' are of different lengths" in build_warn
+
+
 # This changed from passing the ValueError directly to
 # raising "sphinx.errors.ConfigError" with "threw an exception"
 @pytest.mark.parametrize(

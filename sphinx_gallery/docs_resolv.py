@@ -199,14 +199,12 @@ class SphinxDocLinkResolver:
 
     def _get_link_type(self, cobj, use_full_module=False):
         """Get a valid link and type_, False if not found."""
-        module_type = "module_short"
-        if use_full_module:
-            module_type = "module"
+        module_type = "module" if use_full_module else "module_short"
         first, second = cobj[module_type], cobj["name"]
         match = self._get_index_match(first, second)
         if match is None and "." in second:  # possible class attribute
             first, second = second.split(".", 1)
-            first = ".".join([cobj["module_short"], first])
+            first = ".".join([cobj[module_type], first])
             match = self._get_index_match(first, second)
         if match is None:
             link = type_ = None
