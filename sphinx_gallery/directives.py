@@ -55,7 +55,6 @@ class MiniGallery(Directive):
 
     def _get_target_dir(self, config, src_dir, path, obj):
         """Get thumbnail target directory, errors when ambiguous/not in example dir."""
-        print(f'XXX {obj=}, {path=}')
         examples_dirs = config.sphinx_gallery_conf["examples_dirs"]
         if not isinstance(examples_dirs, list):
             examples_dirs = [examples_dirs]

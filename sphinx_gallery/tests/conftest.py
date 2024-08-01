@@ -1,9 +1,9 @@
 """Pytest fixtures."""
 
-import os
 import shutil
 from contextlib import contextmanager
 from io import StringIO
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -210,29 +210,23 @@ class SphinxAppWrapper:
 
 @pytest.fixture
 def sphinx_app_wrapper(tmpdir, conf_file, add_rst, req_mpl, req_pil):
-    _fixturedir = os.path.join(os.path.dirname(__file__), "testconfs")
-    srcdir = os.path.join(str(tmpdir), "config_test")
+    _fixturedir = Path(__file__).parent / "testconfs"
+    srcdir = Path(tmpdir) / "config_test"
     shutil.copytree(_fixturedir, srcdir)
     # Copy files to 'examples/' as well because default `examples_dirs` is
     # '../examples' - for tests where we don't update config
-    shutil.copytree(
-        os.path.join(_fixturedir, "src"), os.path.join(str(tmpdir), "examples")
-    )
+    shutil.copytree((_fixturedir / "src"), (Path(tmpdir) / "examples"))
     if add_rst:
-        with open(os.path.join(srcdir, "minigallery_test.rst"), "w") as rstfile:
+        with open((srcdir / "minigallery_test.rst"), "w") as rstfile:
             rstfile.write(add_rst)
         # Add nested gallery
         if "sub_folder/sub_sub_folder" in add_rst:
-            dir_path = os.path.join(srcdir, "src", "sub_folder", "sub_sub_folder")
-            os.makedirs(dir_path)
-            with open(os.path.join(dir_path, "plot_nested.py"), "w") as pyfile:
+            dir_path = srcdir / "src" / "sub_folder" / "sub_sub_folder"
+            dir_path.mkdir(parents=True)
+            with open((dir_path / "plot_nested.py"), "w") as pyfile:
                 pyfile.write(NESTED_PY)
-            with open(os.path.join(dir_path, "GALLERY_HEADER.rst"), "w") as rstfile:
+            with open((dir_path / "GALLERY_HEADER.rst"), "w") as rstfile:
                 rstfile.write(GALLERY_HEADER)
-
-    from pathlib import Path
-    for p in Path(srcdir).rglob('*.py'):
-        print(f'XX {p} XXX')
 
     base_config = f"""
 import os
@@ -244,14 +238,14 @@ master_doc = 'index'
 # General information about the project.
 project = 'Sphinx-Gallery <Tests>'\n\n
 """
-    with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
+    with open((srcdir / "conf.py"), "w") as conffile:
         conffile.write(base_config + conf_file["content"])
 
     return SphinxAppWrapper(
         srcdir,
         srcdir,
-        os.path.join(srcdir, "_build"),
-        os.path.join(srcdir, "_build", "toctree"),
+        (srcdir / "_build"),
+        (srcdir / "_build" / "toctree"),
         "html",
         warning=StringIO(),
         status=StringIO(),

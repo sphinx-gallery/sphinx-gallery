@@ -658,7 +658,6 @@ def test_minigallery_multi_match(sphinx_app_wrapper):
     from the nested gallery should resolve to the nested gallery.
     """
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
-    from pathlib import Path
     minigallery_html = Path(sphinx_app.outdir) / "minigallery_test.html"
     with open(minigallery_html, "r") as fid:
         mg_html = fid.read()
