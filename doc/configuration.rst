@@ -2160,8 +2160,8 @@ about a `worker restarting <https://github.com/joblib/joblib/issues/883>`_),
 will be captured by Sphinx-Gallery in a similar way to warnings during example
 execution. This can be filtered out with ``warnings.filterwarnings``
 (see :ref:`removing_warnings`). Note that this
-differs from the ``- W`` / ``--fail-on-warning`` ``sphinx-build`` flag, which
-converts warnings during documentation building into errors.
+differs from warnings affected by the ``- W`` / ``--fail-on-warning`` ``sphinx-build``
+flag, which converts warnings during documentation building into errors.
 
 .. warning::
     Some packages might not play nicely with parallel processing, so this feature
