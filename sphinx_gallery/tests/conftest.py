@@ -1,9 +1,9 @@
 """Pytest fixtures."""
 
-import os
 import shutil
 from contextlib import contextmanager
 from io import StringIO
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -15,6 +15,23 @@ from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery import docs_resolv, gen_gallery, gen_rst, py_source_parser
 from sphinx_gallery.scrapers import _import_matplotlib
 from sphinx_gallery.utils import _get_image
+
+NESTED_PY = """\"\"\"
+Header
+======
+
+Text.
+\"\"\"
+
+a = 1
+"""
+
+GALLERY_HEADER = """
+Gallery header
+==============
+
+Some text.
+"""
 
 
 def pytest_report_header(config, startdir=None):
@@ -133,6 +150,16 @@ def conf_file(request):
     return result
 
 
+@pytest.fixture
+def add_rst(request):
+    try:
+        env = request.node.get_closest_marker("add_rst")
+    except AttributeError:  # old pytest
+        env = request.node.get_marker("add_rst")
+    file = env.kwargs["file"] if env else ""
+    return file
+
+
 class SphinxAppWrapper:
     """Wrapper for sphinx.application.Application.
 
@@ -181,13 +208,24 @@ class SphinxAppWrapper:
 
 
 @pytest.fixture
-def sphinx_app_wrapper(tmpdir, conf_file, req_mpl, req_pil):
-    _fixturedir = os.path.join(os.path.dirname(__file__), "testconfs")
-    srcdir = os.path.join(str(tmpdir), "config_test")
+def sphinx_app_wrapper(tmpdir, conf_file, add_rst, req_mpl, req_pil):
+    _fixturedir = Path(__file__).parent / "testconfs"
+    srcdir = Path(tmpdir) / "config_test"
     shutil.copytree(_fixturedir, srcdir)
-    shutil.copytree(
-        os.path.join(_fixturedir, "src"), os.path.join(str(tmpdir), "examples")
-    )
+    # Copy files to 'examples/' as well because default `examples_dirs` is
+    # '../examples' - for tests where we don't update config
+    shutil.copytree((_fixturedir / "src"), (Path(tmpdir) / "examples"))
+    if add_rst:
+        with open((srcdir / "minigallery_test.rst"), "w") as rstfile:
+            rstfile.write(add_rst)
+        # Add nested gallery
+        if "sub_folder/sub_sub_folder" in add_rst:
+            dir_path = srcdir / "src" / "sub_folder" / "sub_sub_folder"
+            dir_path.mkdir(parents=True)
+            with open((dir_path / "plot_nested.py"), "w") as pyfile:
+                pyfile.write(NESTED_PY)
+            with open((dir_path / "GALLERY_HEADER.rst"), "w") as rstfile:
+                rstfile.write(GALLERY_HEADER)
 
     base_config = f"""
 import os
@@ -199,14 +237,14 @@ master_doc = 'index'
 # General information about the project.
 project = 'Sphinx-Gallery <Tests>'\n\n
 """
-    with open(os.path.join(srcdir, "conf.py"), "w") as conffile:
+    with open((srcdir / "conf.py"), "w") as conffile:
         conffile.write(base_config + conf_file["content"])
 
     return SphinxAppWrapper(
         srcdir,
         srcdir,
-        os.path.join(srcdir, "_build"),
-        os.path.join(srcdir, "_build", "toctree"),
+        (srcdir / "_build"),
+        (srcdir / "_build" / "toctree"),
         "html",
         warning=StringIO(),
         status=StringIO(),

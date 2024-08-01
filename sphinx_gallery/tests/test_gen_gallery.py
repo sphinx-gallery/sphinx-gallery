@@ -273,7 +273,7 @@ def _check_order(sphinx_app, key):
 
     Used to test that these keys (in index.rst) appear in a specific order.
     """
-    index_fname = os.path.join(sphinx_app.outdir, "..", "ex", "index.rst")
+    index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
     order = list()
     regex = f".*:{key}=(.):.*"
     with open(index_fname, "r", encoding="utf-8") as fid:
@@ -401,7 +401,7 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
     expected_files = {
         ap.strpath
         for ap in abs_paths
-        if re.search(r"one", os.path.basename(ap.strpath)) is None
+        if re.search(r"one", Path(ap.strpath).name) is None
     }
 
     assert collected_files == expected_files
@@ -426,19 +426,17 @@ def test_binder_copy_files(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
     # Create requirements file
-    with open(os.path.join(sphinx_app.srcdir, "requirements.txt"), "w"):
+    with open(Path(sphinx_app.srcdir, "requirements.txt"), "w"):
         pass
     copy_binder_files(sphinx_app, None)
 
     for i_file in ["plot_1", "plot_2", "plot_3"]:
-        assert os.path.exists(
-            os.path.join(
-                sphinx_app.outdir,
-                "ntbk_folder",
-                gallery_conf["gallery_dirs"][0],
-                i_file + ".ipynb",
-            )
-        )
+        assert Path(
+            sphinx_app.outdir,
+            "ntbk_folder",
+            gallery_conf["gallery_dirs"][0],
+            i_file + ".ipynb",
+        ).exists()
 
 
 @pytest.mark.conf_file(
@@ -449,7 +447,7 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_failing_examples_raise_exception(sphinx_app_wrapper):
-    example_dir = os.path.join(sphinx_app_wrapper.srcdir, "src")
+    example_dir = Path(sphinx_app_wrapper.srcdir, "src")
     bad_line = "print(f'{a[}')"  # never closed bracket inside print -> SyntaxError
     bad_code = f"""\
 '''
@@ -465,7 +463,7 @@ Should emit a syntax error in the second code block.
 {bad_line}
 """
     bad_line_no = bad_code.split("\n").index(bad_line) + 1
-    with open(os.path.join(example_dir, "plot_3.py"), "w", encoding="utf-8") as fid:
+    with open(Path(example_dir, "plot_3.py"), "w", encoding="utf-8") as fid:
         fid.write(bad_code)
     with pytest.raises(ExtensionError) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
@@ -628,6 +626,59 @@ def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
+@pytest.mark.conf_file(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}"""
+)
+@pytest.mark.add_rst(
+    file="""
+Header
+======
+
+.. minigallery:: index.rst
+"""
+)
+def test_minigallery_not_in_examples_dirs(sphinx_app_wrapper):
+    """Check error when minigallery directive's path input not in `examples_dirs`."""
+    msg = "minigallery directive error: path input 'index.rst'"
+    with pytest.raises(ExtensionError, match=msg):
+        sphinx_app_wrapper.build_sphinx_app()
+
+
+@pytest.mark.conf_file(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': ['src', 'src/sub_folder/sub_sub_folder'],
+    'gallery_dirs': ['ex', 'ex/sub_folder/sub_sub_folder'],
+}"""
+)
+@pytest.mark.add_rst(
+    file="""
+Header
+======
+
+.. minigallery:: src/sub_folder/sub_sub_folder/plot_nested.py
+"""
+)
+def test_minigallery_multi_match(sphinx_app_wrapper):
+    """Check minigallery directive's path input resolution in nested `examples_dirs`.
+
+    When a examples gallery is nested inside another examples gallery, path inputs
+    from the nested gallery should resolve to the nested gallery.
+    """
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+    minigallery_html = Path(sphinx_app.outdir) / "minigallery_test.html"
+    with open(minigallery_html, "r") as fid:
+        mg_html = fid.read()
+    # Check thumbnail correct
+    assert "_images/sphx_glr_plot_nested_thumb.png" in mg_html
+    # Check href correct
+    assert "sphx-glr-ex-sub-folder-sub-sub-folder-plot-nested-py" in mg_html
+
+
 def test_write_computation_times_noop(sphinx_app_wrapper):
     app = sphinx_app_wrapper.create_sphinx_app()
     write_computation_times(app.config.sphinx_gallery_conf, None, [])
@@ -687,14 +738,12 @@ def test_create_jupyterlite_contents(sphinx_app_wrapper):
     create_jupyterlite_contents(sphinx_app, exception=None)
 
     for i_file in ["plot_1", "plot_2", "plot_3"]:
-        assert os.path.exists(
-            os.path.join(
-                sphinx_app.srcdir,
-                "jupyterlite_contents",
-                gallery_conf["gallery_dirs"][0],
-                i_file + ".ipynb",
-            )
-        )
+        assert Path(
+            sphinx_app.srcdir,
+            "jupyterlite_contents",
+            gallery_conf["gallery_dirs"][0],
+            i_file + ".ipynb",
+        ).exists()
 
 
 @pytest.mark.conf_file(
@@ -717,14 +766,12 @@ def test_create_jupyterlite_contents_non_default_contents(sphinx_app_wrapper):
     create_jupyterlite_contents(sphinx_app, exception=None)
 
     for i_file in ["plot_1", "plot_2", "plot_3"]:
-        assert os.path.exists(
-            os.path.join(
-                sphinx_app.srcdir,
-                "this_is_the_contents_dir",
-                gallery_conf["gallery_dirs"][0],
-                i_file + ".ipynb",
-            )
-        )
+        assert Path(
+            sphinx_app.srcdir,
+            "this_is_the_contents_dir",
+            gallery_conf["gallery_dirs"][0],
+            i_file + ".ipynb",
+        ).exists()
 
 
 @pytest.mark.conf_file(
@@ -743,7 +790,7 @@ def test_create_jupyterlite_contents_without_jupyterlite_sphinx_loaded(
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
     create_jupyterlite_contents(sphinx_app, exception=None)
-    assert not os.path.exists(os.path.join(sphinx_app.srcdir, "jupyterlite_contents"))
+    assert not Path(sphinx_app.srcdir, "jupyterlite_contents").exists()
 
 
 @pytest.mark.conf_file(
@@ -768,7 +815,7 @@ def test_create_jupyterlite_contents_with_jupyterlite_disabled_via_config(
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
 
     create_jupyterlite_contents(sphinx_app, exception=None)
-    assert not os.path.exists(os.path.join(sphinx_app.outdir, "jupyterlite_contents"))
+    assert not Path(sphinx_app.outdir, "jupyterlite_contents").exists()
 
 
 @pytest.mark.conf_file(
@@ -802,13 +849,13 @@ def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
     create_jupyterlite_contents(sphinx_app, exception=None)
 
     for i_file in ["plot_1", "plot_2", "plot_3"]:
-        notebook_filename = os.path.join(
+        notebook_filename = Path(
             sphinx_app.srcdir,
             "jupyterlite_contents",
             gallery_conf["gallery_dirs"][0],
             i_file + ".ipynb",
         )
-        assert os.path.exists(notebook_filename)
+        assert notebook_filename.exists()
 
         with open(notebook_filename) as f:
             notebook_content = json.load(f)
