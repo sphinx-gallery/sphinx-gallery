@@ -567,6 +567,12 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     if not isinstance(gallery_dirs, list):
         gallery_dirs = [gallery_dirs]
 
+    if len(examples_dirs) != len(gallery_dirs):
+        logger.warning(
+            "'examples_dirs' and 'gallery_dirs' are of different lengths. "
+            "Surplus entries will be ignored."
+        )
+
     if bool(gallery_conf["backreferences_dir"]):
         backreferences_dir = os.path.join(srcdir, gallery_conf["backreferences_dir"])
         os.makedirs(backreferences_dir, exist_ok=True)
