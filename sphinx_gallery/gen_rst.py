@@ -1234,8 +1234,16 @@ def _get_backreferences(gallery_conf, script_vars, script_blocks, node, target_f
     if example_code_obj:
         _write_code_obj(target_file, example_code_obj)
     exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
+
+    def _normalize_name(cobj):
+        full_name = "{module}.{name}".format(**cobj)
+        for pattern in gallery_conf["prefer_full_module"]:
+            if re.search(pattern, full_name):
+                return full_name
+        return "{module_short}.{name}".format(**cobj)
+
     backrefs = {
-        "{module_short}.{name}".format(**cobj)
+        _normalize_name(cobj)
         for cobjs in example_code_obj.values()
         for cobj in cobjs
         if cobj["module"].startswith(gallery_conf["doc_module"])
