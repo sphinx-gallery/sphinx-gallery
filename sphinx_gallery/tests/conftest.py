@@ -17,6 +17,24 @@ from sphinx_gallery.scrapers import _import_matplotlib
 from sphinx_gallery.utils import _get_image
 
 
+NESTED_PY = """\"\"\"
+Header
+======
+
+Text.
+\"\"\"
+
+a = 1
+"""
+
+GALLERY_HEADER = """
+Gallery header
+==============
+
+Some text.
+"""
+
+
 def pytest_report_header(config, startdir=None):
     """Add information to the pytest run header."""
     return f"Sphinx:  {sphinx.__version__} ({sphinx.__file__})"
@@ -203,6 +221,18 @@ def sphinx_app_wrapper(tmpdir, conf_file, add_rst, req_mpl, req_pil):
     if add_rst:
         with open(os.path.join(srcdir, "minigallery_test.rst"), "w") as rstfile:
             rstfile.write(add_rst)
+        # Add nested gallery
+        if "sub_folder/sub_sub_folder" in add_rst:
+            dir_path = os.path.join(srcdir, "src", "sub_folder", "sub_sub_folder")
+            os.makedirs(dir_path)
+            with open(os.path.join(dir_path, "plot_nested.py"), "w") as pyfile:
+                pyfile.write(NESTED_PY)
+            with open(os.path.join(dir_path, "GALLERY_HEADER.rst"), "w") as rstfile:
+                rstfile.write(GALLERY_HEADER)
+
+    from pathlib import Path
+    for p in Path(srcdir).rglob('*.py'):
+        print(f'XX {p} XXX')
 
     base_config = f"""
 import os

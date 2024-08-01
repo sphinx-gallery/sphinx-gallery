@@ -630,10 +630,42 @@ Header
 """
 )
 def test_minigallery_not_in_examples_dirs(sphinx_app_wrapper):
-    """Check error raised when minigallery path input not in `examples_dirs`."""
+    """Check error when minigallery directive's path input not in `examples_dirs`."""
     msg = "minigallery directive error: path input 'index.rst'"
     with pytest.raises(ExtensionError, match=msg):
         sphinx_app_wrapper.build_sphinx_app()
+
+
+@pytest.mark.conf_file(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': ['src', 'src/sub_folder/sub_sub_folder'],
+    'gallery_dirs': ['ex', 'ex/sub_folder/sub_sub_folder'],
+}"""
+)
+@pytest.mark.add_rst(
+    file="""
+Header
+======
+
+.. minigallery:: src/sub_folder/sub_sub_folder/plot_nested.py
+"""
+)
+def test_minigallery_multi_match(sphinx_app_wrapper):
+    """Check minigallery directive's path input resolution in nested `examples_dirs`.
+
+    When a examples gallery is nested inside another examples gallery, path inputs
+    from the nested gallery should resolve to the nested gallery.
+    """
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+    from pathlib import Path
+    minigallery_html = Path(sphinx_app.outdir) / "minigallery_test.html"
+    with open(minigallery_html, "r") as fid:
+        mg_html = fid.read()
+    # Check thumbnail correct
+    assert "_images/sphx_glr_plot_nested_thumb.png" in mg_html
+    # Check href correct
+    assert "sphx-glr-ex-sub-folder-sub-sub-folder-plot-nested-py" in mg_html
 
 
 def test_write_computation_times_noop(sphinx_app_wrapper):
