@@ -2159,7 +2159,10 @@ Warnings emitted by :mod:`joblib` during gallery generation (e.g., the ``UserWar
 about a `worker restarting <https://github.com/joblib/joblib/issues/883>`_),
 will be captured by Sphinx-Gallery in a similar way to warnings during example
 execution. This can be filtered out with ``warnings.filterwarnings``
-(see :ref:`removing_warnings`). Note that this
+(see :ref:`removing_warnings`). This can be particularly important
+to do if you have tweaked warning handling in your doc build
+to treat warnings as errors, e.g., with a line like
+``warnings.filterwarnings("error")``. Note that this
 differs from warnings affected by the ``- W`` / ``--fail-on-warning`` ``sphinx-build``
 flag, which converts warnings during documentation building into errors.
 
