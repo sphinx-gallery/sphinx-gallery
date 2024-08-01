@@ -44,6 +44,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 - ``abort_on_example_error`` (:ref:`abort_on_first`)
 - ``expected_failing_examples`` (:ref:`dont_fail_exit`)
 - ``only_warn_on_example_error`` (:ref:`warning_on_error`)
+- ``reset_modules`` and ``reset_modules_order`` (:ref:`reset_modules`)
 - ``parallel`` (:ref:`parallel`)
 
 **Cross-referencing**
@@ -86,7 +87,6 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 
 **Miscellaneous**
 
-- ``reset_modules`` and ``reset_modules_order`` (:ref:`reset_modules`)
 - ``recommender`` (:ref:`recommend_examples`)
 - ``log_level`` (:ref:`log_level`)
 - ``show_api_usage`` and ``api_usage_ignore`` (:ref:`show_api_usage`)
@@ -2154,6 +2154,17 @@ Sphinx-Gallery can be configured to run examples simultaneously using
 If an ``int``, then that number of jobs will be passed to :class:`joblib.Parallel`.
 If ``True``, then the same number of jobs will be used as the ``-j`` flag for
 Sphinx.
+
+Warnings emitted by :mod:`joblib` during gallery generation (e.g., the ``UserWarning``
+about a `worker restarting <https://github.com/joblib/joblib/issues/883>`_),
+will be captured by Sphinx-Gallery in a similar way to warnings during example
+execution. This can be filtered out with ``warnings.filterwarnings``
+(see :ref:`removing_warnings`). This can be particularly important
+to do if you have tweaked warning handling in your doc build
+to treat warnings as errors, e.g., with a line like
+``warnings.filterwarnings("error")``. Note that this
+differs from warnings affected by the ``- W`` / ``--fail-on-warning`` ``sphinx-build``
+flag, which converts warnings during documentation building into errors.
 
 .. warning::
     Some packages might not play nicely with parallel processing, so this feature
