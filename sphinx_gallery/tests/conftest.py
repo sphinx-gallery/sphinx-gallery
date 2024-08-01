@@ -16,7 +16,6 @@ from sphinx_gallery import docs_resolv, gen_gallery, gen_rst, py_source_parser
 from sphinx_gallery.scrapers import _import_matplotlib
 from sphinx_gallery.utils import _get_image
 
-
 NESTED_PY = """\"\"\"
 Header
 ======
