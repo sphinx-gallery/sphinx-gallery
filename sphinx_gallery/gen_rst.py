@@ -284,8 +284,12 @@ def _sanitize_rst(string):
     # ``whatever thing`` --> whatever thing
     p = r"(\s|^)`"
     string = re.sub(p + r"`([^`]+)`" + e, r"\1\2\3", string)
+    # `~mymodule.MyClass` --> MyClass
+    string = re.sub(p + r"~([^`]+)" + e, _regroup, string)
+
     # `whatever thing` --> whatever thing
-    string = re.sub(p + r"([^`]+)" + e, r"\1\2\3", string)
+    # `.MyClass` --> MyClass
+    string = re.sub(p + r"\.?([^`]+)" + e, r"\1\2\3", string)
 
     # **string** --> string
     string = re.sub(r"\*\*([^\*]*)\*\*", r"\1", string)
