@@ -175,9 +175,7 @@ def test_bad_reset_modules_order(sphinx_app_wrapper, err_class, err_match):
             ConfigError,
             "Unknown css",
             id="CSS str error",
-            marks=pytest.mark.add_conf(
-                content="sphinx_gallery_conf={'css': ('foo',)}"
-            ),
+            marks=pytest.mark.add_conf(content="sphinx_gallery_conf={'css': ('foo',)}"),
         ),
         pytest.param(
             ConfigError,
