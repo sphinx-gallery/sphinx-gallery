@@ -5,7 +5,7 @@ import os
 import pytest
 
 
-@pytest.mark.conf_file(extensions=["sphinx_gallery.load_style"])
+@pytest.mark.add_conf(extensions=["sphinx_gallery.load_style"])
 def test_load_style(sphinx_app_wrapper):
     """Testing that style loads properly."""
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
