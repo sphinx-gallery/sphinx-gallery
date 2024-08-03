@@ -17,6 +17,8 @@ every module. Examples `here <auto_examples/index.html>`_.
    :template: module.rst
 
    backreferences
+   _dummy
+   _dummy.nested
    docs_resolv
    downloads
    gen_gallery

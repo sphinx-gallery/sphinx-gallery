@@ -20,6 +20,7 @@ from matplotlib.colors import is_color_like
 from matplotlib.figure import Figure
 
 import sphinx_gallery.backreferences
+import sphinx_gallery._dummy.nested
 from sphinx_gallery.py_source_parser import Block
 
 t = np.arange(N) / float(N)
@@ -47,6 +48,10 @@ sphinx_gallery.backreferences.identify_names(
     sphinx_gallery.backreferences._make_ref_regex(),
 )
 # 583: methods don't link properly
-dc = sphinx_gallery.backreferences.DummyClass()
+dc = sphinx_gallery._dummy.DummyClass()
 dc.run()
 print(dc.prop)
+# 1364: nested methods don't link properly
+ndc = sphinx_gallery._dummy.nested.NestedDummyClass()
+ndc.run()
+print(ndc.prop)
