@@ -2160,9 +2160,9 @@ Python warnings emitted by :mod:`joblib` during gallery generation (e.g., the
 `worker restarting <https://github.com/joblib/joblib/issues/883>`_),
 will be captured by Sphinx-Gallery. These can be filtered out with
 ``warnings.filterwarnings`` (see :ref:`removing_warnings`). This is particularly
-important to do if you have tweaked warning handling in your documentation build
+important to do if you have tweaked python warning handling in your documentation build
 to treat warnings as errors, e.g., with a line like
-``warnings.filterwarnings("error)`` which converts all warnings into errors.
+``warnings.filterwarnings("error)`` which converts python all warnings into errors.
 Examples where joblib emits a warning will fail unexpectedly unless they are filtered
 out. Note that this differs from the warnings affected by the
 ``- W`` / ``--fail-on-warning`` ``sphinx-build`` flag, which converts Sphinx warnings
