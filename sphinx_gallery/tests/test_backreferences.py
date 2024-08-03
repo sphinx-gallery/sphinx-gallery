@@ -51,6 +51,11 @@ REFERENCE = r"""
             "this and that; and these things and those things",
             False,
         ),
+        (
+            "See `.MyClass` and `~.MyClass.close`",
+            "See MyClass and close",
+            False,
+        ),
     ],
 )
 def test_thumbnail_div(content, tooltip, is_backref):
