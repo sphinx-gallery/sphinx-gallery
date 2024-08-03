@@ -166,6 +166,6 @@ filterwarnings = [
 ]
 junit_family = "xunit2"
 markers = [
-  "conf_file: Configuration file.",
+  "add_conf: Configuration file.",
   "add_rst: Add rst file to src.",
 ]

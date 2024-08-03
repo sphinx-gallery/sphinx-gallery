@@ -80,7 +80,7 @@ def test_serializable(sphinx_app_wrapper):
     assert not bad, f"Non-serializable values found:\n{bad}"
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -100,7 +100,7 @@ def test_no_warning_simple_config(sphinx_app_wrapper):
     assert build_warn == ""
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': ['src', 'excess'],
@@ -123,7 +123,7 @@ def test_unequal_examples_gallery_dirs(sphinx_app_wrapper):
             ConfigError,
             "Unknown string option for reset_modules",
             id="Resetter unknown",
-            marks=pytest.mark.conf_file(
+            marks=pytest.mark.add_conf(
                 content="sphinx_gallery_conf={'reset_modules': ('f',)}"
             ),
         ),
@@ -131,7 +131,7 @@ def test_unequal_examples_gallery_dirs(sphinx_app_wrapper):
             ConfigError,
             "reset_modules.* must be callable",
             id="Resetter not callable",
-            marks=pytest.mark.conf_file(
+            marks=pytest.mark.add_conf(
                 content="sphinx_gallery_conf={'reset_modules': (1.,),}"
             ),
         ),
@@ -149,7 +149,7 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
             ConfigError,
             "'reset_modules_order' config allowed types",
             id="Resetter unknown",
-            marks=pytest.mark.conf_file(
+            marks=pytest.mark.add_conf(
                 content=("sphinx_gallery_conf=" "{'reset_modules_order': 1,}")
             ),
         ),
@@ -157,7 +157,7 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
             ConfigError,
             "reset_modules_order must be in",
             id="reset_modules_order not valid",
-            marks=pytest.mark.conf_file(
+            marks=pytest.mark.add_conf(
                 content=("sphinx_gallery_conf=" "{'reset_modules_order': 'invalid',}")
             ),
         ),
@@ -175,15 +175,13 @@ def test_bad_reset_modules_order(sphinx_app_wrapper, err_class, err_match):
             ConfigError,
             "Unknown css",
             id="CSS str error",
-            marks=pytest.mark.conf_file(
-                content="sphinx_gallery_conf={'css': ('foo',)}"
-            ),
+            marks=pytest.mark.add_conf(content="sphinx_gallery_conf={'css': ('foo',)}"),
         ),
         pytest.param(
             ConfigError,
             "config allowed types:",
             id="CSS type error",
-            marks=pytest.mark.conf_file(content="sphinx_gallery_conf={'css': 1.}"),
+            marks=pytest.mark.add_conf(content="sphinx_gallery_conf={'css': 1.}"),
         ),
     ],
 )
@@ -203,7 +201,7 @@ def test_bad_api():
         _fill_gallery_conf_defaults(sphinx_gallery_conf)
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('gen_modules', 'backreferences'),
@@ -284,7 +282,7 @@ def _check_order(sphinx_app, key):
     assert order == [1, 2, 3]
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -297,7 +295,7 @@ def test_example_sorting_default(sphinx_app_wrapper):
     _check_order(sphinx_app, "lines")
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -311,7 +309,7 @@ def test_example_sorting_filesize(sphinx_app_wrapper):
     _check_order(sphinx_app, "filesize")
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -325,7 +323,7 @@ def test_example_sorting_filename(sphinx_app_wrapper):
     _check_order(sphinx_app, "filename")
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -407,7 +405,7 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
     assert collected_files == expected_files
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'backreferences_dir' : os.path.join('modules', 'gen'),
@@ -439,7 +437,7 @@ def test_binder_copy_files(sphinx_app_wrapper):
         ).exists()
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -474,7 +472,7 @@ Should emit a syntax error in the second code block.
     assert bad_line in tb
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -490,7 +488,7 @@ def test_expected_failing_examples_were_executed(sphinx_app_wrapper):
     sphinx_app_wrapper.build_sphinx_app()
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -510,7 +508,7 @@ def test_only_warn_on_example_error(sphinx_app_wrapper):
     assert "WARNING: Here is a summary of the problems" in build_warn
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -530,7 +528,7 @@ def test_only_warn_on_example_error_sphinx_warning(sphinx_app_wrapper):
     assert "plot_3.py unexpectedly failed to execute" in exc
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -545,7 +543,7 @@ def test_examples_not_expected_to_pass(sphinx_app_wrapper):
     assert "expected to fail, but not failing" in exc
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 from sphinx_gallery.gen_rst import _sg_call_memory_noop
 
@@ -566,13 +564,13 @@ def test_show_memory_callable(sphinx_app_wrapper):
     [
         pytest.param(
             id="first notebook cell",
-            marks=pytest.mark.conf_file(
+            marks=pytest.mark.add_conf(
                 content="""sphinx_gallery_conf = {'first_notebook_cell': 2,}"""
             ),
         ),
         pytest.param(
             id="last notebook cell",
-            marks=pytest.mark.conf_file(
+            marks=pytest.mark.add_conf(
                 content="""sphinx_gallery_conf = {'last_notebook_cell': 2,}"""
             ),
         ),
@@ -585,7 +583,7 @@ def test_notebook_cell_config(sphinx_app_wrapper):
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'backreferences_dir': False,
@@ -598,7 +596,7 @@ def test_backreferences_dir_config(sphinx_app_wrapper):
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -612,7 +610,7 @@ def test_minigallery_no_backreferences_dir(sphinx_app_wrapper):
     assert "'backreferences_dir' config is None, minigallery" in build_warn
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 import pathlib
 
@@ -626,7 +624,7 @@ def test_backreferences_dir_pathlib_config(sphinx_app_wrapper):
     fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -648,7 +646,7 @@ def test_minigallery_not_in_examples_dirs(sphinx_app_wrapper):
         sphinx_app_wrapper.build_sphinx_app()
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': ['src', 'src/sub_folder/sub_sub_folder'],
@@ -688,7 +686,7 @@ def test_write_api_usage_noop(sphinx_app_wrapper):
     write_api_entry_usage(sphinx_app_wrapper.create_sphinx_app(), list(), None)
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'pypandoc': ['list',],
@@ -704,7 +702,7 @@ def test_pypandoc_config_list(sphinx_app_wrapper):
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'pypandoc': {'bad key': 1},
@@ -719,7 +717,7 @@ def test_pypandoc_config_keys(sphinx_app_wrapper):
         fill_gallery_conf_defaults(app, app.config, check_keys=False)
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 extensions += ['jupyterlite_sphinx']
 
@@ -746,7 +744,7 @@ def test_create_jupyterlite_contents(sphinx_app_wrapper):
         ).exists()
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 extensions += ['jupyterlite_sphinx']
 
@@ -774,7 +772,7 @@ def test_create_jupyterlite_contents_non_default_contents(sphinx_app_wrapper):
         ).exists()
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'backreferences_dir' : os.path.join('modules', 'gen'),
@@ -793,7 +791,7 @@ def test_create_jupyterlite_contents_without_jupyterlite_sphinx_loaded(
     assert not Path(sphinx_app.srcdir, "jupyterlite_contents").exists()
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 extensions += ['jupyterlite_sphinx']
 
@@ -818,7 +816,7 @@ def test_create_jupyterlite_contents_with_jupyterlite_disabled_via_config(
     assert not Path(sphinx_app.outdir, "jupyterlite_contents").exists()
 
 
-@pytest.mark.conf_file(
+@pytest.mark.add_conf(
     content="""
 extensions += ['jupyterlite_sphinx']
 

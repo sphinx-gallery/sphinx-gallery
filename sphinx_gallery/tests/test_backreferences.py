@@ -128,8 +128,17 @@ def test_identify_names(unicode_sample, gallery_conf):
         "DummyClass": [
             {
                 "name": "DummyClass",
-                "module": "sphinx_gallery.back_references",
-                "module_short": "sphinx_gallery.back_references",
+                "module": "sphinx_gallery._dummy",
+                "module_short": "sphinx_gallery._dummy",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        "NestedDummyClass": [
+            {
+                "name": "NestedDummyClass",
+                "module": "sphinx_gallery._dummy.nested",
+                "module_short": "sphinx_gallery._dummy",
                 "is_class": False,
                 "is_explicit": False,
             }

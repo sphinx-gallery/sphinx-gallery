@@ -38,6 +38,7 @@ html_sidebars = {
 
 sphinx_gallery_conf = {
     "doc_module": ("sphinx_gallery",),
+    "prefer_full_module": {r"sphinx_gallery\._dummy"},
     "reference_url": {
         "sphinx_gallery": None,
         "scipy": "http://docs.scipy.org/doc/scipy/wrong_url",  # bad one
