@@ -137,9 +137,9 @@ def req_pil():
 @pytest.fixture
 def conf_file(request):
     try:
-        env = request.node.get_closest_marker("conf_file")
+        env = request.node.get_closest_marker("add_conf")
     except AttributeError:  # old pytest
-        env = request.node.get_marker("conf_file")
+        env = request.node.get_marker("add_conf")
     kwargs = env.kwargs if env else {}
     result = {
         "content": "",
@@ -151,7 +151,7 @@ def conf_file(request):
 
 
 @pytest.fixture
-def add_rst(request):
+def rst_file(request):
     try:
         env = request.node.get_closest_marker("add_rst")
     except AttributeError:  # old pytest
@@ -208,18 +208,18 @@ class SphinxAppWrapper:
 
 
 @pytest.fixture
-def sphinx_app_wrapper(tmpdir, conf_file, add_rst, req_mpl, req_pil):
+def sphinx_app_wrapper(tmpdir, conf_file, rst_file, req_mpl, req_pil):
     _fixturedir = Path(__file__).parent / "testconfs"
     srcdir = Path(tmpdir) / "config_test"
     shutil.copytree(_fixturedir, srcdir)
     # Copy files to 'examples/' as well because default `examples_dirs` is
     # '../examples' - for tests where we don't update config
     shutil.copytree((_fixturedir / "src"), (Path(tmpdir) / "examples"))
-    if add_rst:
+    if rst_file:
         with open((srcdir / "minigallery_test.rst"), "w") as rstfile:
-            rstfile.write(add_rst)
+            rstfile.write(rst_file)
         # Add nested gallery
-        if "sub_folder/sub_sub_folder" in add_rst:
+        if "sub_folder/sub_sub_folder" in rst_file:
             dir_path = srcdir / "src" / "sub_folder" / "sub_sub_folder"
             dir_path.mkdir(parents=True)
             with open((dir_path / "plot_nested.py"), "w") as pyfile:
