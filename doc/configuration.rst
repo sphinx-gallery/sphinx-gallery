@@ -2155,18 +2155,19 @@ If an ``int``, then that number of jobs will be passed to :class:`joblib.Paralle
 If ``True``, then the same number of jobs will be used as the ``-j`` flag for
 Sphinx.
 
-Python warnings emitted by :mod:`joblib` during gallery generation (e.g., the
+Warnings emitted by :mod:`joblib` during documentation building (e.g., the
 ``UserWarning`` about a
-`worker restarting <https://github.com/joblib/joblib/issues/883>`_),
-will be captured by Sphinx-Gallery. These can be filtered out with
+`worker restarting <https://github.com/joblib/joblib/issues/883>`_) are emitted
+during gallery generation at the same time as warnings from example
+code execution. These can be filtered out with
 ``warnings.filterwarnings`` (see :ref:`removing_warnings`). This is particularly
-important to do if you have tweaked python warning handling in your documentation build
+important to do if you have tweaked warning handling in your documentation build
 to treat warnings as errors, e.g., with a line like
-``warnings.filterwarnings("error)`` which converts python all warnings into errors.
-Examples where joblib emits a warning will fail unexpectedly unless they are filtered
-out. Note that this differs from the warnings affected by the
-``- W`` / ``--fail-on-warning`` ``sphinx-build`` flag, which converts Sphinx warnings
-during documentation building into errors.
+``warnings.filterwarnings("error)`` which converts all warnings into errors.In
+this case, if joblib emits a warning during build of an example, this example will fail
+unexpectedly unless they are filtered out. Note that this differs from the warnings
+affected by the ``- W`` / ``--fail-on-warning`` ``sphinx-build`` flag, which converts
+Sphinx warnings during documentation building into errors.
 
 .. warning::
     Some packages might not play nicely with parallel processing, so this feature
