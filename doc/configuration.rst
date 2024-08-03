@@ -2163,7 +2163,7 @@ code execution. These can be filtered out with
 ``warnings.filterwarnings`` (see :ref:`removing_warnings`). This is particularly
 important to do if you have tweaked warning handling in your documentation build
 to treat warnings as errors, e.g., with a line like
-``warnings.filterwarnings("error)`` which converts all warnings into errors.In
+``warnings.filterwarnings("error)`` which converts all warnings into errors. In
 this case, if joblib emits a warning during build of an example, this example will fail
 unexpectedly unless they are filtered out. Note that this differs from the warnings
 affected by the ``- W`` / ``--fail-on-warning`` ``sphinx-build`` flag, which converts
