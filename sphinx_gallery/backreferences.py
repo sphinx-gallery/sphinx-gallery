@@ -16,6 +16,7 @@ from pathlib import Path
 import sphinx.util
 from sphinx.errors import ExtensionError
 
+from ._dummy import DummyClass  # noqa: F401
 from .scrapers import _find_image_ext
 from .utils import _W_KW, _replace_md5
 
@@ -35,19 +36,6 @@ THUMBNAIL_PARENT_DIV_CLOSE = """
     </div>
 
 """
-
-
-class DummyClass:
-    """Dummy class for testing method resolution."""
-
-    def run(self):
-        """Do nothing."""
-        pass
-
-    @property
-    def prop(self):
-        """Property."""
-        return "Property"
 
 
 class NameFinder(ast.NodeVisitor):

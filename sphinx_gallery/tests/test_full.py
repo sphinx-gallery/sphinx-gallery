@@ -54,7 +54,7 @@ N_INDEX = 2 + 1 + 3 + 1
 # (examples + examples_rst_index + examples_with_rst + examples_README_header + root-level)
 N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
-N_OTHER = 9 + 1 + 1 + 1 + 1
+N_OTHER = 11 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
 N_RST = f"({N_RST}|{N_RST - 1}|{N_RST - 2})"  # AppVeyor weirdness
 
@@ -548,25 +548,49 @@ def test_embed_links_and_styles(sphinx_app):
     # issue 617 (regex '-'s)
     # instance
     dummy_class_inst = re.search(
-        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>',  # noqa: E501
+        r'sphinx_gallery._dummy.html#sphinx[_-]gallery[.-]_dummy[.-][Dd]ummy[Cc]lass" title="sphinx_gallery._dummy.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>',  # noqa: E501
         lines,
     )
     assert dummy_class_inst is not None
     # class
     dummy_class_class = re.search(
-        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass" title="sphinx_gallery.backreferences.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">DummyClass</span>',  # noqa: E501
+        r'sphinx_gallery._dummy.html#sphinx[_-]gallery[.-]_dummy[.-][Dd]ummy[Cc]lass" title="sphinx_gallery._dummy.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">_dummy</span><span class="o">.</span><span class="n">DummyClass</span>',  # noqa: E501
         lines,
     )
     assert dummy_class_class is not None
     # method
     dummy_class_meth = re.search(
-        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]run" title="sphinx_gallery.backreferences.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>',  # noqa: E501
+        r'sphinx_gallery._dummy.html#sphinx[_-]gallery[.-]_dummy[.-][Dd]ummy[Cc]lass[.-]run" title="sphinx_gallery._dummy.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>',  # noqa: E501
         lines,
     )
     assert dummy_class_meth is not None
     # property (Sphinx 2+ calls it a method rather than attribute, so regex)
     dummy_class_prop = re.compile(
-        r'sphinx_gallery.backreferences.html#sphinx[_,-]gallery[.,-]backreferences[.,-][D,d]ummy[C,c]lass[.,-]prop" title="sphinx_gallery.backreferences.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-(attribute|method|property)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>'
+        r'sphinx_gallery._dummy.html#sphinx[_-]gallery[.-]_dummy[.-][Dd]ummy[Cc]lass[.-]prop" title="sphinx_gallery._dummy.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-(attribute|method|property)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>'
+    )  # noqa: E501
+    assert dummy_class_prop.search(lines) is not None
+    # gh-1364: methods of nested classes in the module currently being documented
+    # instance
+    dummy_class_inst = re.search(
+        r'sphinx_gallery._dummy.nested.html#sphinx[_-]gallery[.-]_dummy[.-]nested[.-][Nn]ested[Dd]ummy[Cc]lass" title="sphinx_gallery._dummy.NestedDummyClass" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ndc</span>',  # noqa: E501
+        lines,
+    )
+    assert dummy_class_inst is not None
+    # class
+    dummy_class_class = re.search(
+        r'sphinx_gallery._dummy.nested.html#sphinx[_-]gallery[.-]_dummy[.-]nested[.-][Nn]ested[Dd]ummy[Cc]lass" title="sphinx_gallery._dummy.NestedDummyClass" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">_dummy</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">NestedDummyClass</span>',  # noqa: E501
+        lines,
+    )
+    assert dummy_class_class is not None
+    # method
+    dummy_class_meth = re.search(
+        r'sphinx_gallery._dummy.nested.html#sphinx[_-]gallery[.-]_dummy[.-]nested[.-][Nn]ested[Dd]ummy[Cc]lass[.-]run" title="sphinx_gallery._dummy.NestedDummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-method"><span class="n">ndc</span><span class="o">.</span><span class="n">run</span>',  # noqa: E501
+        lines,
+    )
+    assert dummy_class_meth is not None
+    # property (Sphinx 2+ calls it a method rather than attribute, so regex)
+    dummy_class_prop = re.compile(
+        r'sphinx_gallery._dummy.nested.html#sphinx[_-]gallery[.-]_dummy[.-]nested[.-][Nn]ested[Dd]ummy[Cc]lass[.-]prop" title="sphinx_gallery._dummy.NestedDummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-(attribute|method|property)"><span class="n">ndc</span><span class="o">.</span><span class="n">prop</span>'
     )  # noqa: E501
     assert dummy_class_prop.search(lines) is not None
 
@@ -666,19 +690,70 @@ def test_backreferences_examples_html(sphinx_app):
     regex = re.compile(r'<dt[ \S]*id="sphinx_gallery.backreferences.[ \S]*>')
     n_documented = len(regex.findall(lines))
     possible = "\n".join(line for line in lines.split("\n") if "<dt " in line)
-    # identify_names, DummyClass, DummyClass.prop, DummyClass.run, NameFinder
-    # NameFinder.get_mapping, NameFinder.visit_Attribute, NameFinder.visit_Import
-    # NameFinder.visit_ImportFrom, NameFinder.visit_Name
-    assert n_documented == 10, possible
-    # identify_names, DummyClass, NameFinder (3); once doc, once left bar (x2)
+    # identify_names, NameFinder NameFinder.get_mapping, NameFinder.visit_Attribute,
+    # NameFinder.visit_Import NameFinder.visit_ImportFrom, NameFinder.visit_Name
+    assert n_documented == 7, possible
+    # identify_names, NameFinder (2); once doc, once left bar (x2)
     n_mini = lines.count("Examples using ")
-    assert n_mini == 6
-    # only 3 actual mini-gallery divs
+    assert n_mini == 4
+    # only 2 actual mini-gallery divs
     n_div = lines.count('<div class="sphx-glr-thumbnails')
-    assert n_div == 3
+    assert n_div == 2
+    # 2 documented uses
+    n_thumb = lines.count('<div class="sphx-glr-thumbcontainer')
+    assert n_thumb == 2
+    # matched opening/closing divs
+    n_open = lines.count("<div")
+    n_close = lines.count("</div")
+    assert n_open == n_close  # should always be equal
+
+    backref_file = op.join(
+        sphinx_app.outdir, "gen_modules", "sphinx_gallery._dummy.html"
+    )
+    with codecs.open(backref_file, "r", "utf-8") as fid:
+        lines = fid.read()
+    # Class properties not properly checked on older Sphinx (e.g. 3)
+    # so let's use the "id" instead
+    regex = re.compile(r'<dt[ \S]*id="sphinx_gallery._dummy.[ \S]*>')
+    n_documented = len(regex.findall(lines))
+    possible = "\n".join(line for line in lines.split("\n") if "<dt " in line)
+    # DummyClass, DummyClass.prop, DummyClass.run
+    assert n_documented == 3, possible
+    # DummyClass (1); once doc, once left bar (x2)
+    n_mini = lines.count("Examples using ")
+    assert n_mini == 2
+    # only 1 actual mini-gallery divs
+    n_div = lines.count('<div class="sphx-glr-thumbnails')
+    assert n_div == 1
     # 3 documented uses
     n_thumb = lines.count('<div class="sphx-glr-thumbcontainer')
-    assert n_thumb == 3
+    assert n_thumb == 1
+    # matched opening/closing divs
+    n_open = lines.count("<div")
+    n_close = lines.count("</div")
+    assert n_open == n_close  # should always be equal
+
+    backref_file = op.join(
+        sphinx_app.outdir, "gen_modules", "sphinx_gallery._dummy.nested.html"
+    )
+    with codecs.open(backref_file, "r", "utf-8") as fid:
+        lines = fid.read()
+    # Class properties not properly checked on older Sphinx (e.g. 3)
+    # so let's use the "id" instead
+    regex = re.compile(r'<dt[ \S]*id="sphinx_gallery._dummy.nested.[ \S]*>')
+    n_documented = len(regex.findall(lines))
+    possible = "\n".join(line for line in lines.split("\n") if "<dt " in line)
+    # NestedDummyClass, NestedDummyClass.prop, NestedDummyClass.run
+    assert n_documented == 3, possible
+    # DummyClass (1); once doc, once left bar (x2)
+    n_mini = lines.count("Examples using ")
+    assert n_mini == 2
+    # only 1 actual mini-gallery divs
+    n_div = lines.count('<div class="sphx-glr-thumbnails')
+    assert n_div == 1
+    # 3 documented uses
+    n_thumb = lines.count('<div class="sphx-glr-thumbcontainer')
+    assert n_thumb == 1
     # matched opening/closing divs
     n_open = lines.count("<div")
     n_close = lines.count("</div")

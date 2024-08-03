@@ -88,8 +88,11 @@ br.identify_names
 from sphinx_gallery.back_references import identify_names
 identify_names
 
-from sphinx_gallery.back_references import DummyClass
+from sphinx_gallery._dummy import DummyClass
 DummyClass().prop
+
+from sphinx_gallery._dummy.nested import NestedDummyClass
+NestedDummyClass().prop
 
 import matplotlib.pyplot as plt
 _ = plt.figure()
