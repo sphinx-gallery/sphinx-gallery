@@ -1347,7 +1347,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         script_blocks, script_vars, gallery_conf, file_conf
     )
 
-    logger.debug("%s ran in : %.2g seconds\n", src_file, time_elapsed)
+    logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
 
     # Create dummy images
     _make_dummy_images(executable, file_conf, script_vars)

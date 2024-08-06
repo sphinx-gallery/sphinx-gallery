@@ -159,9 +159,11 @@ def _update_gallery_conf_exclude_implicit_doc(gallery_conf):
 
     This is separate function for better testability.
     """
-    # prepare regex for exclusions from implicit documentation
+    # prepare regex for exclusions from implicit documentation, ensuring that what
+    # gets complied has a stable __repr__ (i.e., by sorting the exclude_implicit_doc
+    # set before joining)
     exclude_regex = (
-        re.compile("|".join(gallery_conf["exclude_implicit_doc"]))
+        re.compile("|".join(sorted(gallery_conf["exclude_implicit_doc"])))
         if gallery_conf["exclude_implicit_doc"]
         else False
     )
