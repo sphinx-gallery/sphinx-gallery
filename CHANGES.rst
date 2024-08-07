@@ -1,6 +1,35 @@
 Changelog
 =========
 
+v0.17.1
+-------
+
+**Fixed bugs:**
+
+-  FIX: Fix stability of stored compiled regex `#1369 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1369>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Improve \_sanitize_rst `#1366 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1366>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Obey prefer_full_module setting when finding backreferences `#1364 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1364>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  Fix linking to class attributes with prefer_full_module `#1363 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1363>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  Improve minigallery directive path input resolution `#1360 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1360>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  FIX Allow str path minigallery entries when backreferences off `#1355 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1355>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  FIX generate zipfiles when index passed by user `#1353 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1353>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Documentation**
+
+-  DOC Improve doc about joblib warnings `#1367 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1367>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC add note on filtering joblib warnings `#1362 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1362>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Minor update to minigallery directive doc `#1358 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1358>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Project maintenance**
+
+-  [pre-commit.ci] pre-commit autoupdate `#1368 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1368>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT Change mark and fixture names for adding files `#1365 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1365>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MNT Add warning when ‘examples_dirs’ and ‘gallery_dirs’ unequal lengths `#1361 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1361>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1357 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1357>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Update pyvista in doc CI `#1352 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1352>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1351 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1351>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT Bump version `#1350 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1350>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.17.0
 -------
 
