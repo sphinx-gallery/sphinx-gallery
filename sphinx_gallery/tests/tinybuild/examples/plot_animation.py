@@ -30,7 +30,7 @@ ani = animation.FuncAnimation(fig_1, _update_line, 25, interval=100, blit=True)
 fig_2, ax_2 = plt.subplots(figsize=(5, 5))
 
 
-plt.style.use('_mpl-gallery')
+plt.style.use("_mpl-gallery")
 
 # Make data
 n = 100
