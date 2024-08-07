@@ -37,7 +37,7 @@ html_sidebars = {
 }
 
 sphinx_gallery_conf = {
-    "doc_module": ("sphinx_gallery", "matplotlib"),
+    "doc_module": ("sphinx_gallery",),
     "prefer_full_module": {r"sphinx_gallery\._dummy"},
     "reference_url": {
         "sphinx_gallery": None,

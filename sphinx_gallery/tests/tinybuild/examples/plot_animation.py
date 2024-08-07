@@ -28,18 +28,3 @@ ax_1.set(xlim=(0, 1), ylim=(0, 1))
 ani = animation.FuncAnimation(fig_1, _update_line, 25, interval=100, blit=True)
 
 fig_2, ax_2 = plt.subplots(figsize=(5, 5))
-
-
-plt.style.use("_mpl-gallery")
-
-# Make data
-n = 100
-xs = np.linspace(0, 1, n)
-ys = np.sin(xs * 6 * np.pi)
-zs = np.cos(xs * 6 * np.pi)
-
-# Plot
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-ax.plot(xs, ys, zs)
-
-plt.show()
