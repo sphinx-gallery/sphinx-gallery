@@ -2,12 +2,14 @@
 # License: 3-clause BSD
 r"""Test Sphinx-Gallery gallery generation."""
 
+import inspect
 import json
 import os
 import re
 from pathlib import Path
 
 import pytest
+from sphinx.application import Sphinx
 from sphinx.config import is_serializable
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 
@@ -518,7 +520,10 @@ sphinx_gallery_conf = {
 )
 def test_only_warn_on_example_error_sphinx_warning(sphinx_app_wrapper):
     """Test behaviour of only_warn_on_example_error flag."""
-    sphinx_app_wrapper.kwargs["warningiserror"] = True
+    # https://github.com/sphinx-doc/sphinx/pull/12743/files
+    for key in ("warningiserror", "exception_on_warning"):
+        if key in inspect.getfullargspec(Sphinx).args:
+            sphinx_app_wrapper.kwargs[key] = True
     example_dir = Path(sphinx_app_wrapper.srcdir) / "src"
     with open(example_dir / "plot_3.py", "w", encoding="utf-8") as fid:
         fid.write(f"{MINIMAL_HEADER}raise ValueError")
