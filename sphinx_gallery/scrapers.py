@@ -104,7 +104,7 @@ _ANIMATION_VIDEO_RST = """
 """
 
 
-def matplotlib_scraper(block, block_vars, gallery_conf, file_conf, **kwargs):
+def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     """Scrape Matplotlib images.
 
     Parameters
@@ -115,9 +115,6 @@ def matplotlib_scraper(block, block_vars, gallery_conf, file_conf, **kwargs):
         Dict of block variables.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
-    file_conf : dict
-        File-specific settings given in source file comments as:
-        ``# sphinx_gallery_<name> = <value>``.
     **kwargs : dict
         Additional keyword arguments to pass to
         :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``. The
@@ -212,7 +209,8 @@ def matplotlib_scraper(block, block_vars, gallery_conf, file_conf, **kwargs):
     if len(image_rsts) == 1:
         rst = image_rsts[0]
     elif len(image_rsts) > 1:
-        if file_conf.get("multi_image") != "single":  # convert to multi-image
+        # convert single-img to multi-img if needed
+        if block_vars["file_conf"].get("multi_image") != "single":
             image_rsts = [
                 re.sub(
                     r":class: sphx-glr-single-img", ":class: sphx-glr-multi-img", image
@@ -357,7 +355,7 @@ def _find_image_ext(path):
     return (f"{path}.{ext}", ext)
 
 
-def save_figures(block, block_vars, gallery_conf, file_conf):
+def save_figures(block, block_vars, gallery_conf):
     """Save all open figures of the example code-block.
 
     Parameters
@@ -368,9 +366,6 @@ def save_figures(block, block_vars, gallery_conf, file_conf):
         Dict of block variables.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
-    file_conf : dict
-        File-specific settings given in source file comments as:
-        ``# sphinx_gallery_<name> = <value>``.
 
     Returns
     -------
@@ -383,7 +378,7 @@ def save_figures(block, block_vars, gallery_conf, file_conf):
     all_rst = ""
     prev_count = len(image_path_iterator)
     for scraper in _get_callables(gallery_conf, "image_scrapers"):
-        rst = scraper(block, block_vars, gallery_conf, file_conf)
+        rst = scraper(block, block_vars, gallery_conf)
         if not isinstance(rst, str):
             raise ExtensionError(
                 f"rst from scraper {scraper!r} was not a "

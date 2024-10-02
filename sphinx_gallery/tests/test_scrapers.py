@@ -52,7 +52,6 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
     gallery_conf = make_gallery_conf(
         {"image_scrapers": (matplotlib_svg_scraper(),)} if ext == "svg" else {}
     )
-    file_conf = dict()
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
 
     plt.plot(1, 1)
@@ -60,7 +59,7 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
     image_path_iterator = ImagePathIterator(fname_template)
     block = ("",) * 3
     block_vars = dict(image_path_iterator=image_path_iterator)
-    image_rst = save_figures(block, block_vars, gallery_conf, file_conf)
+    image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 1
     fname = f"/image1.{ext}"
     assert fname in image_rst
@@ -73,7 +72,7 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
     plt.plot(1, 1)
     plt.figure()
     plt.plot(1, 1)
-    image_rst = save_figures(block, block_vars, gallery_conf, file_conf)
+    image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 5
     for ii in range(4, 6):
         fname = f"/image{ii}.{ext}"
@@ -99,7 +98,6 @@ def test_image_srcset_config(make_gallery_conf):
 def test_save_matplotlib_figures_hidpi(make_gallery_conf):
     """Test matplotlib hidpi figure save."""
     gallery_conf = make_gallery_conf({"image_srcset": ["2x"]})
-    file_conf = dict()
     ext = "png"
 
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
@@ -109,7 +107,7 @@ def test_save_matplotlib_figures_hidpi(make_gallery_conf):
     image_path_iterator = ImagePathIterator(fname_template)
     block = ("",) * 3
     block_vars = dict(image_path_iterator=image_path_iterator)
-    image_rst = save_figures(block, block_vars, gallery_conf, file_conf)
+    image_rst = save_figures(block, block_vars, gallery_conf)
 
     fname = f"/image1.{ext}"
     assert fname in image_rst
@@ -128,7 +126,7 @@ def test_save_matplotlib_figures_hidpi(make_gallery_conf):
     plt.plot(1, 1)
     plt.figure()
     plt.plot(1, 1)
-    image_rst = save_figures(block, block_vars, gallery_conf, file_conf)
+    image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 5
     for ii in range(4, 6):
         fname = f"/image{ii}.{ext}"
@@ -170,13 +168,12 @@ def test_custom_scraper(make_gallery_conf, monkeypatch):
         (lambda x, y, z: 1.0, "was not a string"),
     ]:
         gallery_conf = make_gallery_conf({"image_scrapers": [cust]})
-        file_conf = dict()
         fname_template = os.path.join(gallery_conf["gallery_dir"], "image{0}.png")
         image_path_iterator = ImagePathIterator(fname_template)
         block = ("",) * 3
         block_vars = dict(image_path_iterator=image_path_iterator)
         with pytest.raises(ExtensionError, match=msg):
-            save_figures(block, block_vars, gallery_conf, file_conf)
+            save_figures(block, block_vars, gallery_conf)
     # degenerate string interface
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, "_get_sg_image_scraper", "foo", raising=False)

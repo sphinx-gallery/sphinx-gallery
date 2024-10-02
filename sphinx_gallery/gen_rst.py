@@ -1007,6 +1007,9 @@ def execute_code_block(
     )
     need_save_figures = match is None
 
+    # Add file_conf to script_vars to be read by image scrapers
+    script_vars["file_conf"] = file_conf
+
     try:
         # The "compile" step itself can fail on a SyntaxError, so just prepend
         # newlines to get the correct failing line to show up in the traceback
@@ -1028,7 +1031,7 @@ def execute_code_block(
         logging_tee.restore_std()
         if need_save_figures:
             need_save_figures = False
-            images_rst = save_figures(block, script_vars, gallery_conf, file_conf)
+            images_rst = save_figures(block, script_vars, gallery_conf)
         else:
             images_rst = ""
     except Exception:
@@ -1040,7 +1043,7 @@ def execute_code_block(
         # still call this even though we won't use the images so that
         # figures are closed
         if need_save_figures:
-            save_figures(block, script_vars, gallery_conf, file_conf)
+            save_figures(block, script_vars, gallery_conf)
     else:
         _reset_cwd_syspath(cwd, sys_path)
 
