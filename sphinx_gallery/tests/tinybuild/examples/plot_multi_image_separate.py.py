@@ -16,6 +16,5 @@ import numpy as np
 fig, ax = plt.subplots(1, 1, figsize=(8, 4))
 ax.pcolormesh(np.random.randn(100, 100))
 
-
 fig, ax = plt.subplots(1, 1, figsize=(8, 4))
 ax.pcolormesh(np.random.randn(100, 100))

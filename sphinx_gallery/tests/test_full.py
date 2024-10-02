@@ -41,7 +41,7 @@ from sphinx_gallery.utils import (
 #
 # total number of plot_*.py files in
 # (examples + examples_rst_index + examples_with_rst + examples_README_header)
-N_EXAMPLES = 18 + 3 + 2 + 1
+N_EXAMPLES = 19 + 3 + 2 + 1
 N_FAILING = 4
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs and non-executed examples in

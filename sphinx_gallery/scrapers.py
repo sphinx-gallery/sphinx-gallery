@@ -204,13 +204,19 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             )
         )
 
+    # Determine whether single-img should be converted to multi-img
+    convert_to_multi_image = True  # default is to convert
+    if block_vars.get("multi_image") is not None:  # block setting takes precedence
+        convert_to_multi_image = block_vars["multi_image"] != "single"
+    elif block_vars["file_conf"].get("multi_image") is not None:  # then file setting
+        convert_to_multi_image = block_vars["file_conf"]["multi_image"] != "single"
+
     plt.close("all")
     rst = ""
     if len(image_rsts) == 1:
         rst = image_rsts[0]
     elif len(image_rsts) > 1:
-        # convert single-img to multi-img if needed
-        if block_vars["file_conf"].get("multi_image") != "single":
+        if convert_to_multi_image:
             image_rsts = [
                 re.sub(
                     r":class: sphx-glr-single-img", ":class: sphx-glr-multi-img", image

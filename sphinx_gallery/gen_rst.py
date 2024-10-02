@@ -1000,12 +1000,23 @@ def execute_code_block(
     sys.path.append(os.getcwd())
 
     # Save figures unless there is a `sphinx_gallery_defer_figures` flag
-    match = re.search(
+    defer_figs_match = re.search(
         r"^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?",
         block.content,
         re.MULTILINE,
     )
-    need_save_figures = match is None
+    need_save_figures = defer_figs_match is None
+
+    # Check for `sphinx_gallery_multi_image_block` in this block
+    multi_image_match = re.search(
+        r"^[\ \t]*#\s*sphinx_gallery_multi_image_block[\ \t]*\n?",
+        block.content,
+        re.MULTILINE,
+    )
+    if multi_image_match is not None:
+        script_vars["multi_image"] = py_source_parser.extract_file_config(
+            block.content
+        )["multi_image_block"]
 
     # Add file_conf to script_vars to be read by image scrapers
     script_vars["file_conf"] = file_conf
