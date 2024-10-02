@@ -753,6 +753,8 @@ def generate_gallery_rst(app):
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
+        # `indexst` variable must exist, as passed to `_finish_index_rst`
+        indexst = ""
         # Create root gallery index.rst
         if sg_root_index:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings

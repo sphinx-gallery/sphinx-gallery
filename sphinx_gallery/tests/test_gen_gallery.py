@@ -410,6 +410,21 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
 @pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'copyfile_regex': r'.*\.rst',
+}"""
+)
+@pytest.mark.add_rst(file="own index.rst")
+def test_own_index_first(sphinx_app_wrapper):
+    """Test `generate_gallery_rst` works when own index gallery is first (and only)."""
+    # Issue #1382
+    sphinx_app_wrapper.build_sphinx_app()
+
+
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
     'backreferences_dir' : os.path.join('modules', 'gen'),
     'examples_dirs': 'src',
     'gallery_dirs': ['ex'],
