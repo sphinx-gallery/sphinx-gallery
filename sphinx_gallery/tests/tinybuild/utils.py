@@ -18,7 +18,7 @@ class MatplotlibFormatScraper:
     def __repr__(self):
         return self.__class__.__name__
 
-    def __call__(self, block, block_vars, gallery_conf):
+    def __call__(self, block, block_vars, gallery_conf, file_conf):
         """Call Matplotlib scraper with required `format` kwarg for testing."""
         kwargs = dict()
         if (
@@ -31,7 +31,7 @@ class MatplotlibFormatScraper:
             and gallery_conf["builder_name"] != "latex"
         ):
             kwargs["format"] = "webp"
-        return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
+        return matplotlib_scraper(block, block_vars, gallery_conf, file_conf, **kwargs)
 
 
 class ResetArgv:
