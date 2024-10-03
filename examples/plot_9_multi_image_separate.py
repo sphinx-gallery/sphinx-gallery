@@ -7,8 +7,9 @@ however this can be overridden to display each plot created by the code block on
 separate line, preserving their size.
 
 There are two config options to control this behaviour:
- - a file-wide ``sphinx_gallery_multi_image`` variable
- - a code block-specific ``sphinx_gallery_multi_image_block`` variable
+
+- a file-wide ``sphinx_gallery_multi_image`` variable
+- a code block-specific ``sphinx_gallery_multi_image_block`` variable
 
 Setting these variables to ``"single"`` will force plots to be displayed on separate
 lines. Default behaviour is to treat these variables as being set to ``"multi"``.
