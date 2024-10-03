@@ -541,7 +541,7 @@ def generate_dir_rst(
         List of example file names we generated ReST for.
     """
     index_content = ""
-    # `_get_gallery_header` returns `False` if user supplied `index.rst`
+    # `_get_gallery_header` returns `None` if user supplied `index.rst`
     header_fname = _get_gallery_header(src_dir, gallery_conf)
     user_index_rst = True
     if header_fname:

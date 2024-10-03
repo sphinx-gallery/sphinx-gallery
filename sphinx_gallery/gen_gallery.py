@@ -541,11 +541,14 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
             is not None
         ]
     else:
-        # just make sure its a directory
+        # just make sure its a directory, that is not `__pycache__`
         subfolders = [
             subfolder
             for subfolder in subfolders
-            if os.path.isdir(os.path.join(examples_dir, subfolder))
+            if (
+                subfolder != "__pycache__"
+                and os.path.isdir(os.path.join(examples_dir, subfolder))
+            )
         ]
 
     base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
