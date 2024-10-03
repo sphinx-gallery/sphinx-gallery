@@ -2541,10 +2541,12 @@ You can bypass Sphinx-Gallery automatically creating an  ``index.rst`` from a
 ``copyfile_regex`` includes ``index.rst``, and you have an ``index.rst`` in the
 gallery-source (i.e., a :ref:`examples_dirs <multiple_galleries_config>` directory),
 Sphinx-Gallery will use that instead and not make an index file for that gallery
-or any of its sub-galleries. If you do this, you are responsible for
+or any of its sub-galleries.
+If you pass your own ``index.rst`` file, you are responsible for
 adding your own Sphinx ``toctree`` in that index (or elsewhere in your Sphinx
 documentation) that includes any gallery items or other files in that
-directory.
+directory. You are also responsible for adding any necessary ``index.rst``
+files for that gallery's sub-galleries.
 
 .. _show_api_usage:
 
