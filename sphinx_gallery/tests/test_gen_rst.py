@@ -651,6 +651,7 @@ def test_gen_dir_rst(gallery_conf, gallery_header):
     ],
 )
 def test_gen_dir_rst_invalid_header(gallery_conf, gallery_header):
+    """Check `_get_gallery_header` raises error for invalid header extension."""
     with open(os.path.join(gallery_conf["src_dir"], gallery_header), "wb") as fid:
         fid.write("Testing\n=======\n\nÓscar here.".encode())
     with pytest.raises(ExtensionError, match="does not have a GALLERY_HEADER"):

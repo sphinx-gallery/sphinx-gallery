@@ -534,11 +534,18 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
         subfolders = [
             subfolder
             for subfolder in subfolders
-            # Returns `None` if no `index.rst` file and no gallery header found
+            # Returns `None` if `index.rst` or gallery header found
             if _get_gallery_header(
                 os.path.join(examples_dir, subfolder), gallery_conf, raise_error=False
             )
             is not None
+        ]
+    else:
+        # just make sure its a directory
+        subfolders = [
+            subfolder
+            for subfolder in subfolders
+            if os.path.isdir(os.path.join(examples_dir, subfolder))
         ]
 
     base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
@@ -743,7 +750,7 @@ def generate_gallery_rst(app):
             is_subsection=False,
         )
 
-        # `this_context` is None when user provides own index.rst
+        # `this_content` is None when user provides own index.rst
         sg_root_index = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
