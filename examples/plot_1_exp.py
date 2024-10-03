@@ -2,11 +2,12 @@
 Plotting the exponential function
 =================================
 
-This example demonstrates how to import a local module and how images are
-stacked when two plots are created in one code block. The variable ``N`` from
-the example 'Local module' (file ``local_module.py``) is imported in the code
-below. Further, note that when there is only one code block in an example, the
-output appears before the code block.
+This example demonstrates how to import a local module and how images are stacked when
+two plots are created in one code block (see the :doc:`plot_9_multi_image_separate`
+example for information on controlling this behaviour). The variable ``N`` from the
+example 'Local module' (file ``local_module.py``) is imported in the code below.
+Further, note that when there is only one code block in an example, the output appears
+before the code block.
 """
 
 # Code source: Óscar Nájera

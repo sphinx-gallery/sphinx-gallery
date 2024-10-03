@@ -167,13 +167,13 @@ def test_custom_scraper(make_gallery_conf, monkeypatch):
         (_custom_func, "did not produce expected image"),
         (lambda x, y, z: 1.0, "was not a string"),
     ]:
-        gallery_conf = make_gallery_conf({"image_scrapers": [cust]})
-        fname_template = os.path.join(gallery_conf["gallery_dir"], "image{0}.png")
+        conf = make_gallery_conf({"image_scrapers": [cust]})
+        fname_template = os.path.join(conf["gallery_dir"], "image{0}.png")
         image_path_iterator = ImagePathIterator(fname_template)
         block = ("",) * 3
         block_vars = dict(image_path_iterator=image_path_iterator)
         with pytest.raises(ExtensionError, match=msg):
-            save_figures(block, block_vars, gallery_conf)
+            save_figures(block, block_vars, conf)
     # degenerate string interface
     with monkeypatch.context() as m:
         m.setattr(sphinx_gallery, "_get_sg_image_scraper", "foo", raising=False)

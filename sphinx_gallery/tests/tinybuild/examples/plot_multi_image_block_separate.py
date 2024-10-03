@@ -1,9 +1,9 @@
 """
 Force images to be displayed on separate lines per block
 ========================================================
-This example demonstrates how the `sphinx_gallery_multi_image_block` option can be used
-to force images to be displayed on separate lines for a specific block, rather than the
-default behaviour of displaying them side-by-side.
+This example demonstrates how the ``sphinx_gallery_multi_image_block`` option can be
+used to force images to be displayed on separate lines for a specific block, rather than
+the default behaviour of displaying them side-by-side.
 """
 
 import matplotlib.pyplot as plt

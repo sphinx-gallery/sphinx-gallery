@@ -1,7 +1,7 @@
 """
 Force images to be displayed on separate lines
 ==============================================
-This example demonstrates how the `sphinx_gallery_multi_image` option can be used to
+This example demonstrates how the ``sphinx_gallery_multi_image`` option can be used to
 force images to be displayed on separate lines, rather than the default behaviour of
 displaying them side-by-side.
 """

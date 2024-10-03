@@ -1007,16 +1007,11 @@ def execute_code_block(
     )
     need_save_figures = defer_figs_match is None
 
-    # Check for `sphinx_gallery_multi_image_block` in this block
-    multi_image_match = re.search(
-        r"^[\ \t]*#\s*sphinx_gallery_multi_image_block[\ \t]*\n?",
-        block.content,
-        re.MULTILINE,
-    )
-    if multi_image_match is not None:
-        script_vars["multi_image"] = py_source_parser.extract_file_config(
-            block.content
-        )["multi_image_block"]
+    # Add `sphinx_gallery_multi_image_block` setting to block variables
+    # (extract config rather than just regex search since the option's value is needed)
+    script_vars["multi_image"] = py_source_parser.extract_file_config(
+        block.content
+    ).get("multi_image_block")
 
     # Add file_conf to script_vars to be read by image scrapers
     script_vars["file_conf"] = file_conf
