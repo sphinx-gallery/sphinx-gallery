@@ -2537,10 +2537,11 @@ Manually passing ``index.rst``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can bypass Sphinx-Gallery automatically creating an  ``index.rst`` from a
-``GALLERY_HEADER.rst`` in a gallery directory or subdirectory. If your
+``GALLERY_HEADER.rst`` in a gallery directory or nested sub-gallery directory. If your
 ``copyfile_regex`` includes ``index.rst``, and you have an ``index.rst`` in the
-gallery-source instead of the 'GALLERY_HEADER' file, Sphinx-Gallery will use that instead of
-the index it automatically makes.  If you do this, you are responsible for
+gallery-source (i.e., a :ref:`examples_dirs <multiple_galleries_config>` directory),
+Sphinx-Gallery will use that instead and not make any index files for that gallery
+or any of its sub-galleries. If you do this, you are responsible for
 adding your own Sphinx ``toctree`` in that index (or elsewhere in your Sphinx
 documentation) that includes any gallery items or other files in that
 directory.
