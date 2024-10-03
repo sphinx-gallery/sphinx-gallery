@@ -1542,9 +1542,9 @@ def test_recommend_n_examples(sphinx_app):
     assert '<p class="rubric">Related examples</p>' in html
     assert count == n_examples
     # Check the same 3 related examples are shown (can change when new examples added)
-    assert "sphx-glr-auto-examples-plot-repr-py" in html
-    assert "sphx-glr-auto-examples-plot-matplotlib-backend-py" in html
-    assert "sphx-glr-auto-examples-plot-second-future-imports-py" in html
+    assert "sphx-glr-auto-examples-plot-defer-figures-py" in html
+    assert "sphx-glr-auto-examples-plot-webp-py" in html
+    assert "sphx-glr-auto-examples-plot-command-line-args-py" in html
 
 
 def test_sidebar_components_download_links(sphinx_app):
