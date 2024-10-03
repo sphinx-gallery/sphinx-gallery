@@ -438,6 +438,7 @@ def _get_gallery_header(dir_, gallery_conf, raise_error=True):
     """
     # First check if user supplies an index.rst and that index.rst is in the
     # copyfile regexp:
+    print(f'XXX DIR {os.listdir(dir_)}')
     if re.match(gallery_conf["copyfile_regex"], "index.rst"):
         fpth = os.path.join(dir_, "index.rst")
         if os.path.isfile(fpth):

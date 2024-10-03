@@ -408,7 +408,7 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
 
 
 @pytest.mark.add_conf(
-    content="""
+    content=r"""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
