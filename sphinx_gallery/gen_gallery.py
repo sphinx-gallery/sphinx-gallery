@@ -534,7 +534,7 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
         subfolders = [
             subfolder
             for subfolder in subfolders
-            # Returns `None` if `index.rst` or gallery header found
+            # Return is not `None` only when a gallery head file is found
             if _get_gallery_header(
                 os.path.join(examples_dir, subfolder), gallery_conf, raise_error=False
             )
