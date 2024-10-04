@@ -65,6 +65,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 **Compute costs**
 
 - ``min_reported_time`` (:ref:`min_reported_time`)
+- ``write_computation_times`` (:ref:`write_computation_times`)
 - ``show_memory`` (:ref:`show_memory`)
 - ``junit`` (:ref:`junit_xml`)
 
@@ -2293,6 +2294,15 @@ The ``min_reported_time`` parameter can be set to a number of seconds. The
 duration of scripts that ran faster than that amount will not be logged nor
 embedded in the html output.
 
+.. _write_computation_times:
+
+Write computation times
+=======================
+
+Set to ``false`` if you want to omit computation times from the output.
+This helps with reproducible builds.
+If the ``SOURCE_DATE_EPOCH`` environment variable is set, it defaults to false.
+True otherwise.
 
 .. _show_memory:
 
