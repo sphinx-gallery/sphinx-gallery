@@ -67,7 +67,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
         if: matrix.distrib != 'mamba'
       # Python (if conda)
-      - uses: mamba-org/setup-micromamba@v1
+      - uses: mamba-org/setup-micromamba@v2
         with:
           environment-name: test
           init-shell: bash
