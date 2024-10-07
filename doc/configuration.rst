@@ -2299,10 +2299,9 @@ embedded in the html output.
 Write computation times
 =======================
 
-Set to ``false`` if you want to omit computation times from the output.
+Set to ``False`` if you want to omit computation times from all gallery outputs.
 This helps with reproducible builds.
-If the ``SOURCE_DATE_EPOCH`` environment variable is set, it defaults to false.
-True otherwise.
+Default is ``True`` unless the ``SOURCE_DATE_EPOCH`` environment variable is set.
 
 .. _show_memory:
 
