@@ -111,6 +111,7 @@ DEFAULT_GALLERY_CONF = {
     "expected_failing_examples": set(),
     "thumbnail_size": (400, 280),  # Default CSS does 0.4 scaling (160, 112)
     "min_reported_time": 0,
+    "write_computation_times": os.getenv("SOURCE_DATE_EPOCH") is None,
     "binder": {},
     "jupyterlite": {},
     "promote_jupyter_magic": False,
@@ -934,6 +935,8 @@ def write_computation_times(gallery_conf, target_dir, costs):
     costs: List[Dict]
         List of dicts of computation costs and paths, see gen_rst.py for details.
     """
+    if not gallery_conf["write_computation_times"]:
+        return
     total_time = sum(cost["t"] for cost in costs)
     if target_dir is None:  # all galleries together
         out_dir = gallery_conf["src_dir"]
