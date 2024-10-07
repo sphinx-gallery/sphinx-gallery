@@ -505,7 +505,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     return gallery_conf
 
 
-def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
+def get_subsections(srcdir, examples_dir, gallery_conf, check_for_header=True):
     """Return the list of subsections of a gallery.
 
     Parameters
@@ -516,8 +516,8 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
         path to the examples directory relative to conf.py
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
-    check_for_index : bool
-        only return subfolders contain a GALLERY_HEADER file, default True
+    check_for_header : bool
+        only return subfolders that contain a GALLERY_HEADER file, default True
 
     Returns
     -------
@@ -531,22 +531,27 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_index=True):
         if isinstance(sortkey, list):
             sortkey = ExplicitOrder(sortkey)
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
-    if check_for_index:
+    if check_for_header:
         subfolders = [
             subfolder
             for subfolder in subfolders
+            # Return is not `None` only when a gallery head file is found
             if _get_gallery_header(
                 os.path.join(examples_dir, subfolder), gallery_conf, raise_error=False
             )
             is not None
         ]
     else:
-        # just make sure its a directory
+        # just make sure its a directory, that is not `__pycache__`
         subfolders = [
             subfolder
             for subfolder in subfolders
-            if os.path.isdir(os.path.join(examples_dir, subfolder))
+            if (
+                subfolder != "__pycache__"
+                and os.path.isdir(os.path.join(examples_dir, subfolder))
+            )
         ]
+
     base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
     subfolders_with_path = [
         os.path.join(base_examples_dir_path, item) for item in subfolders
@@ -749,11 +754,13 @@ def generate_gallery_rst(app):
             is_subsection=False,
         )
 
-        # `this_context` is None when user provides own index.rst
+        # `this_content` is None when user provides own index.rst
         sg_root_index = this_content is not None
         costs += this_costs
         write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
+        # `indexst` variable must exist, as passed to `_finish_index_rst`
+        indexst = ""
         # Create root gallery index.rst
         if sg_root_index:
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
@@ -769,7 +776,7 @@ def generate_gallery_rst(app):
             app.builder.srcdir,
             examples_dir_abs_path,
             gallery_conf,
-            check_for_index=sg_root_index,
+            check_for_header=sg_root_index,
         )
         for subsection in subsecs:
             src_dir = os.path.join(examples_dir_abs_path, subsection)
