@@ -409,6 +409,36 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
     assert corr < 0.7  # i.e. thumbnail and "BROKEN" stamp are not identical
 
 
+def test_multi_image(sphinx_app):
+    """Test `sphinx_gallery_multi_image(_block)` variables."""
+    generated_examples_dir = op.join(sphinx_app.outdir, "auto_examples")
+
+    # Check file-wide `sphinx_gallery_multi_image="single"` produces no multi-img
+    html_fname = op.join(generated_examples_dir, "plot_multi_image_separate.html")
+    with codecs.open(html_fname, "r", "utf-8") as fid:
+        html = fid.read()
+    assert "sphx-glr-single-img" in html
+    assert "sphx-glr-multi-img" not in html
+
+    # Check block-specific `sphinx_gallery_multi_image_block` produces mixed img classes
+    html_fname = op.join(generated_examples_dir, "plot_multi_image_block_separate.html")
+    with codecs.open(html_fname, "r", "utf-8") as fid:
+        html = fid.read()
+    # find start of each code block
+    matches = re.finditer('<div class="highlight-Python notranslate">', html)
+    starts = [match.start() for match in matches] + [-1]
+    assert len(starts) == 4  # 3 code block plus an extra for end index
+    for block_idx, (start, end) in enumerate(zip(starts[:-1], starts[1:])):
+        # ignore first code block (just imports)
+        block_html = html[start:end]
+        if block_idx == 1:  # multi-img classes for this code block
+            assert "sphx-glr-multi-img" in block_html
+            assert "sphx-glr-single-img" not in block_html
+        elif block_idx == 2:  # single-img classes for this code block
+            assert "sphx-glr-single-img" in block_html
+            assert "sphx-glr-multi-img" not in block_html
+
+
 def test_command_line_args_img(sphinx_app):
     generated_examples_dir = op.join(sphinx_app.outdir, "auto_examples")
     thumb_fname = "../_images/sphx_glr_plot_command_line_args_thumb.png"
