@@ -103,10 +103,12 @@ Some options can also be set or overridden on a file-by-file basis:
 - ``# sphinx_gallery_failing_thumbnail`` (:ref:`failing_thumbnail`)
 - ``# sphinx_gallery_dummy_images`` (:ref:`dummy_images`)
 - ``# sphinx_gallery_capture_repr`` (:ref:`capture_repr`)
+- ``# sphinx_gallery_multi_image`` (:ref:`multi_image`)
 
 Some options can be set on a per-code-block basis in a file:
 
 - ``# sphinx_gallery_defer_figures`` (:ref:`defer_figures`)
+- ``# sphinx_gallery_multi_image_block`` (:ref:`multi_image`)
 
 Some options can be set on a per-line basis in a file:
 - ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
@@ -1913,6 +1915,44 @@ further deferred, if desired). The following produces only one plot::
 
   plt.plot([2, 2])
   plt.show()
+
+.. _multi_image:
+
+Controlling the layout of multiple figures from the same code block
+===================================================================
+
+By default, multiple figures generated from the same code block are stacked
+side-by-side. Particularly for wide figures, this can lead to cases where images are
+highly shrunk, losing their legibility. This behaviour can be controlled using two
+optional variables:
+
+- a file-wide ``sphinx_gallery_multi_image`` variable
+- a code block-specific ``sphinx_gallery_multi_image_block`` variable
+
+The default behaviour is to treat these variables as being set to ``"multi"``, which
+causes figures to be stacked side-by-side. Setting these variables to ``"single"`` will
+allow figures produced from a code block to be displayed as a single column.
+
+For instance, adding::
+
+    # sphinx_gallery_multi_image = "single"
+
+somewhere in an example file will cause images from all code blocks where multiple
+figures are produced to be displayed in a single column.
+
+Alternatively, adding::
+
+    # sphinx_gallery_multi_image_block = "single"
+
+to a code block will cause multiple figures from only that code block to be displayed in
+a single column.
+
+Conversely, if ``sphinx_gallery_multi_image = "single"`` is set for the whole file,
+adding ``sphinx_gallery_multi_image_block = "multi"`` can restore the default behaviour
+for a single code block.
+
+See the example :ref:`sphx_glr_auto_examples_plot_9_multi_image_separate.py` for a
+demonstration of this functionality.
 
 .. _hiding_code_blocks:
 

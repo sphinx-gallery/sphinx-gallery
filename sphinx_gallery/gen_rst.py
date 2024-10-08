@@ -1000,12 +1000,21 @@ def execute_code_block(
     sys.path.append(os.getcwd())
 
     # Save figures unless there is a `sphinx_gallery_defer_figures` flag
-    match = re.search(
+    defer_figs_match = re.search(
         r"^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?",
         block.content,
         re.MULTILINE,
     )
-    need_save_figures = match is None
+    need_save_figures = defer_figs_match is None
+
+    # Add `sphinx_gallery_multi_image_block` setting to block variables
+    # (extract config rather than just regex search since the option's value is needed)
+    script_vars["multi_image"] = py_source_parser.extract_file_config(
+        block.content
+    ).get("multi_image_block")
+
+    # Add file_conf to script_vars to be read by image scrapers
+    script_vars["file_conf"] = file_conf
 
     try:
         # The "compile" step itself can fail on a SyntaxError, so just prepend

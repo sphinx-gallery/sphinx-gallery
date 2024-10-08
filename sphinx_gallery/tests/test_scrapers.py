@@ -66,12 +66,15 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
     fname = gallery_conf["gallery_dir"] + fname
     assert os.path.isfile(fname)
 
+    def _create_two_images():
+        image_path_iterator.next()
+        image_path_iterator.next()
+        plt.plot(1, 1)
+        plt.figure()
+        plt.plot(1, 1)
+
     # Test capturing 2 images with shifted start number
-    image_path_iterator.next()
-    image_path_iterator.next()
-    plt.plot(1, 1)
-    plt.figure()
-    plt.plot(1, 1)
+    _create_two_images()
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 5
     for ii in range(4, 6):
@@ -79,6 +82,33 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
         assert fname in image_rst
         fname = gallery_conf["gallery_dir"] + fname
         assert os.path.isfile(fname)
+
+    # Test `sphinx_gallery_multi_image(_block)` variables work; these variables prevent
+    # images with `sphx-glr-single-img` classes from being converted to
+    # `sphx-glr-multi-img` classes; requires > 1 image
+
+    # Test file-wide `sphinx_gallery_multi_image` variable
+    _create_two_images()
+    block_vars["file_conf"] = {"multi_image": "single"}
+    image_rst = save_figures(block, block_vars, gallery_conf)
+    assert "sphx-glr-single-img" in image_rst
+    assert "sphx-glr-multi-img" not in image_rst
+
+    # Test block-specific `sphinx_gallery_multi_image_block` variable
+    # (test with default `sphinx_gallery_multi_image`, i.e. != "single")
+    _create_two_images()
+    block_vars["file_conf"] = {}
+    block_vars["multi_image"] = "single"
+    image_rst = save_figures(block, block_vars, gallery_conf)
+    assert "sphx-glr-single-img" in image_rst
+    assert "sphx-glr-multi-img" not in image_rst
+    # (test block-specific setting overrides file-wide setting)
+    _create_two_images()
+    block_vars["file_conf"] = {"multi_image": "single"}
+    block_vars["multi_image"] = "multi"
+    image_rst = save_figures(block, block_vars, gallery_conf)
+    assert "sphx-glr-single-img" not in image_rst
+    assert "sphx-glr-multi-img" in image_rst
 
 
 def test_image_srcset_config(make_gallery_conf):

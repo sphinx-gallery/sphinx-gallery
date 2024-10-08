@@ -41,7 +41,7 @@ from sphinx_gallery.utils import (
 #
 # total number of plot_*.py files in
 # (examples + examples_rst_index + examples_with_rst + examples_README_header)
-N_EXAMPLES = 17 + 3 + 2 + 1
+N_EXAMPLES = 19 + 3 + 2 + 1
 N_FAILING = 4
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs and non-executed examples in
@@ -407,6 +407,36 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
     assert broken_stamp.shape[:2] == thumbnail.shape[:2]
     corr = np.corrcoef(broken_stamp[..., :3].ravel(), thumbnail[..., :3].ravel())[0, 1]
     assert corr < 0.7  # i.e. thumbnail and "BROKEN" stamp are not identical
+
+
+def test_multi_image(sphinx_app):
+    """Test `sphinx_gallery_multi_image(_block)` variables."""
+    generated_examples_dir = op.join(sphinx_app.outdir, "auto_examples")
+
+    # Check file-wide `sphinx_gallery_multi_image="single"` produces no multi-img
+    html_fname = op.join(generated_examples_dir, "plot_multi_image_separate.html")
+    with codecs.open(html_fname, "r", "utf-8") as fid:
+        html = fid.read()
+    assert "sphx-glr-single-img" in html
+    assert "sphx-glr-multi-img" not in html
+
+    # Check block-specific `sphinx_gallery_multi_image_block` produces mixed img classes
+    html_fname = op.join(generated_examples_dir, "plot_multi_image_block_separate.html")
+    with codecs.open(html_fname, "r", "utf-8") as fid:
+        html = fid.read()
+    # find start of each code block
+    matches = re.finditer('<div class="highlight-Python notranslate">', html)
+    starts = [match.start() for match in matches] + [-1]
+    assert len(starts) == 4  # 3 code block plus an extra for end index
+    for block_idx, (start, end) in enumerate(zip(starts[:-1], starts[1:])):
+        # ignore first code block (just imports)
+        block_html = html[start:end]
+        if block_idx == 1:  # multi-img classes for this code block
+            assert "sphx-glr-multi-img" in block_html
+            assert "sphx-glr-single-img" not in block_html
+        elif block_idx == 2:  # single-img classes for this code block
+            assert "sphx-glr-single-img" in block_html
+            assert "sphx-glr-multi-img" not in block_html
 
 
 def test_command_line_args_img(sphinx_app):
@@ -889,7 +919,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     else:
         assert (
             re.match(
-                ".*[0|1] added, ([1-9]|10) changed, 0 removed$.*",
+                ".*[0|1] added, ([1-9]|1[0-1]) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
@@ -1542,9 +1572,9 @@ def test_recommend_n_examples(sphinx_app):
     assert '<p class="rubric">Related examples</p>' in html
     assert count == n_examples
     # Check the same 3 related examples are shown (can change when new examples added)
-    assert "sphx-glr-auto-examples-plot-repr-py" in html
-    assert "sphx-glr-auto-examples-plot-matplotlib-backend-py" in html
-    assert "sphx-glr-auto-examples-plot-second-future-imports-py" in html
+    assert "sphx-glr-auto-examples-plot-defer-figures-py" in html
+    assert "sphx-glr-auto-examples-plot-webp-py" in html
+    assert "sphx-glr-auto-examples-plot-command-line-args-py" in html
 
 
 def test_sidebar_components_download_links(sphinx_app):
