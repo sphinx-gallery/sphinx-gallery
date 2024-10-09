@@ -1,6 +1,31 @@
 Changelog
 =========
 
+v0.18.0
+-------
+
+**Implemented enhancements:**
+
+-  Allow to disable writing computation times `#1385 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1385>`__ (`bmwiedemann <https://github.com/bmwiedemann>`__)
+-  [ENH] Add option to render multiple images from same cell as single-img `#1384 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1384>`__ (`tsbinns <https://github.com/tsbinns>`__)
+
+**Fixed bugs:**
+
+-  Fix ``indexst`` variable does not exist when own index gallery is first `#1383 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1383>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Project maintenance**
+
+-  [pre-commit.ci] pre-commit autoupdate `#1387 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1387>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump mamba-org/setup-micromamba from 1 to 2 in the actions group `#1386 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1386>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1380 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1380>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1379 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1379>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1378 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1378>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1377 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1377>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1376 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1376>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1375 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1375>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1373 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1373>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1372 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1372>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+
 v0.17.1
 -------
 
