@@ -1622,13 +1622,13 @@ def _get_class(gallery_conf, key):
     what = f"sphinx_gallery_conf[{repr(key)}]"
     val = gallery_conf[key]
     if key == "within_subsection_order":
-        alias = (  # convenience aliases
+        is_builtin_alias = val in (  # convenience aliases
             "ExampleTitleSortKey",
             "FileNameSortKey",
             "FileSizeSortKey",
             "NumberOfCodeLinesSortKey",
         )
-        if val in alias:
+        if is_builtin_alias:
             val = f"sphinx_gallery.sorting.{val}"
     if isinstance(val, str):
         if "." not in val:
@@ -1643,7 +1643,8 @@ def _get_class(gallery_conf, key):
                 f"{what} must be a fully qualified name string, could not import "
                 f"{attr} from {mod}"
             )
-        val = FunctionSortKey(val)
+        if not is_builtin_alias:
+            val = FunctionSortKey(val)
     if not inspect.isclass(val):
         raise ConfigError(
             f"{what} must be 1) a fully qualified name (string) that resolves "
