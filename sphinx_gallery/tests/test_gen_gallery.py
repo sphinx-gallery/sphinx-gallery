@@ -268,20 +268,26 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
     assert msg.format(m) in build_warn
 
 
-def _check_order(sphinx_app, key):
+def _check_order(sphinx_app, key, custom_order=None):
     """Iterates through sphx-glr-thumbcontainer divs and reads key from the tooltip.
 
     Used to test that these keys (in index.rst) appear in a specific order.
     """
     index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
     order = list()
-    regex = f".*:{key}=(.):.*"
+    regex = (
+        rf".*:{key}=(\d):.*"
+        if custom_order is None
+        else r".*:ref:`sphx_glr_ex_(plot_\d\.py)`"
+    )
+    locator = "sphx-glr-thumbcontainer" if custom_order is None else ":ref:"
     with open(index_fname, "r", encoding="utf-8") as fid:
         for line in fid:
-            if "sphx-glr-thumbcontainer" in line:
-                order.append(int(re.match(regex, line).group(1)))
+            if locator in line:
+                order.append(re.match(regex, line).group(1))
     assert len(order) == 3
-    assert order == [1, 2, 3]
+    expected_order = custom_order or ["1", "2", "3"]
+    assert order == expected_order
 
 
 @pytest.mark.add_conf(
@@ -337,6 +343,45 @@ def test_example_sorting_title(sphinx_app_wrapper):
     """Test sorting of examples by title."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     _check_order(sphinx_app, "title")
+
+
+@pytest.mark.add_conf(
+    content="""
+from sphinx_gallery.sorting import FunctionSortKey
+
+ORDER = [
+    "plot_3.py",
+    "plot_2.py",
+    "plot_1.py",
+]
+
+def custom_sorter(filename):
+    return ORDER.index(filename)
+
+sphinx_gallery_conf = {
+    "examples_dirs": "src",
+    "gallery_dirs": "ex",
+    "within_subsection_order": FunctionSortKey(custom_sorter),
+}"""
+)
+def test_example_sorting_with_custom_function(sphinx_app_wrapper):
+    """Test sorting of examples by title."""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    _check_order(sphinx_app, None, custom_order=["plot_3.py", "plot_2.py", "plot_1.py"])
+
+
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    "examples_dirs": "src",
+    "gallery_dirs": "ex",
+    "within_subsection_order": "sphinx_gallery.utils._custom_example_sorter",
+}"""
+)
+def test_example_sorting_with_fqn(sphinx_app_wrapper):
+    """Test sorting of examples by title."""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    _check_order(sphinx_app, None, custom_order=["plot_1.py", "plot_3.py", "plot_2.py"])
 
 
 def test_collect_gallery_files(tmpdir, gallery_conf):
