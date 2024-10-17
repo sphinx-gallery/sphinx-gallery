@@ -34,7 +34,6 @@ from .gen_rst import (
     _get_call_memory_and_base,
     _get_callables,
     _get_gallery_header,
-    _handle_callable_class,
     generate_dir_rst,
 )
 from .interactive_example import (
@@ -498,7 +497,9 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         )
 
     # callable classes (not pickleable so need to resolve using fully qualified name)
-    _get_callables(gallery_conf, "within_subsection_order")  # make sure it works
+    _get_callables(
+        gallery_conf, "within_subsection_order", src_dir=""
+    )  # make sure it works
 
     _update_gallery_conf_exclude_implicit_doc(gallery_conf)
 
@@ -660,8 +661,7 @@ def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
         for current_dir in gallery_directories:
             src_dir = os.path.join(gallery_dir_abs_path, current_dir)
             # sort python files to have a deterministic input across call
-            key = _get_callables(gallery_conf, "within_subsection_order")
-            key = _handle_callable_class(key, src_dir)
+            (key,) = _get_callables(gallery_conf, "within_subsection_order", src_dir)
             py_files = sorted(
                 # NOTE we don't take account of `ignore_pattern` and ignore
                 # ext in `example_extensions`

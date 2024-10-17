@@ -565,8 +565,7 @@ def generate_dir_rst(
     # Get example filenames from `src_dir`
     listdir = _collect_gallery_files([src_dir], gallery_conf)
     # sort them
-    key = _get_callables(gallery_conf, "within_subsection_order")
-    key = _handle_callable_class(key, src_dir)
+    (key,) = _get_callables(gallery_conf, "within_subsection_order", src_dir)
     sorted_listdir = sorted(listdir, key=key)
 
     # Add div containing all thumbnails;
@@ -1615,7 +1614,8 @@ def save_rst_example(
     _replace_md5(write_file_new, mode="t")
 
 
-def _handle_callable_class(singleton_tuple_of_callables, src_dir):
+def _get_callables(gallery_conf, key, src_dir=None):
+    """Get callables for the given conf key, returning tuple of callable(s)."""
     from .sorting import (
         ExampleTitleSortKey,
         FileNameSortKey,
@@ -1623,36 +1623,18 @@ def _handle_callable_class(singleton_tuple_of_callables, src_dir):
         NumberOfCodeLinesSortKey,
     )
 
-    BUILTIN_SORT_CLASSES = (
+    BUILTIN_SORTERS = (
         ExampleTitleSortKey,
         FileNameSortKey,
         FileSizeSortKey,
         NumberOfCodeLinesSortKey,
     )
-    assert len(singleton_tuple_of_callables) == 1, singleton_tuple_of_callables
-    key = singleton_tuple_of_callables[0]
-    needs_instantiating = (
-        key in BUILTIN_SORT_CLASSES
-        or getattr(key, "__name__", "") == "SphinxGalleryCustomSorter"
-    )
-    if needs_instantiating:
-        key = key(src_dir)
-    return key
-
-
-def _get_callables(gallery_conf, key):
-    """Get callables for the given conf key, returning tuple of callable(s)."""
+    builtin_aliases = [cls.__name__ for cls in BUILTIN_SORTERS]
     singletons = (
         "reset_argv",
         "minigallery_sort_order",
         "subsection_order",
         "within_subsection_order",
-    )
-    builtin_aliases = (
-        "ExampleTitleSortKey",
-        "FileNameSortKey",
-        "FileSizeSortKey",
-        "NumberOfCodeLinesSortKey",
     )
     # the following should be the case (internal use only):
     assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key
@@ -1700,7 +1682,10 @@ def _get_callables(gallery_conf, key):
                     raise ConfigError(f"Unknown string option for {readable}: {what}")
                 what = _reset_dict[what]
             which[wi] = what
-        if inspect.isclass(what) and not is_builtin_alias and not is_custom_sorter:
+        if src_dir is not None and (is_custom_sorter or what in BUILTIN_SORTERS):
+            what = what(src_dir)
+            which[wi] = what
+        if inspect.isclass(what):
             raise ConfigError(
                 f"Got class rather than callable instance for {readable}: {what}"
             )
