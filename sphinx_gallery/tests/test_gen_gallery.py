@@ -50,10 +50,10 @@ def test_bad_config():
     ):
         _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(within_subsection_order="sphinx_gallery.a.b.Key")
-    with pytest.raises(ConfigError, match="must be a fully qualified"):
+    with pytest.raises(ConfigError, match=r"Unknown string option.*when importing"):
         _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(within_subsection_order=1.0)
-    with pytest.raises(ConfigError, match="a fully qualified.*got float"):
+    with pytest.raises(ConfigError, match="must be callable"):
         _fill_gallery_conf_defaults(sphinx_gallery_conf)
     sphinx_gallery_conf = dict(minigallery_sort_order=int)
     with pytest.raises(ConfigError, match="Got class rather than callable instance"):
@@ -365,7 +365,7 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_example_sorting_with_custom_function(sphinx_app_wrapper):
-    """Test sorting of examples by title."""
+    """Test sorting of examples via `FunctionSortKey`."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     _check_order(sphinx_app, None, custom_order=["plot_3.py", "plot_2.py", "plot_1.py"])
 
@@ -379,7 +379,7 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_example_sorting_with_fqn(sphinx_app_wrapper):
-    """Test sorting of examples by title."""
+    """Test sorting of examples with fully qualified name of a custom sort function."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     _check_order(sphinx_app, None, custom_order=["plot_1.py", "plot_3.py", "plot_2.py"])
 

@@ -565,9 +565,9 @@ def generate_dir_rst(
     # Get example filenames from `src_dir`
     listdir = _collect_gallery_files([src_dir], gallery_conf)
     # sort them
-    sorted_listdir = sorted(
-        listdir, key=_get_class(gallery_conf, "within_subsection_order")(src_dir)
-    )
+    key = _get_callables(gallery_conf, "within_subsection_order")
+    key = _handle_callable_class(key, src_dir)
+    sorted_listdir = sorted(listdir, key=key)
 
     # Add div containing all thumbnails;
     # this is helpful for controlling grid or flexbox behaviours
@@ -1615,48 +1615,44 @@ def save_rst_example(
     _replace_md5(write_file_new, mode="t")
 
 
-def _get_class(gallery_conf, key):
-    """Get a class for the given conf key."""
-    from .sorting import FunctionSortKey
+def _handle_callable_class(singleton_tuple_of_callables, src_dir):
+    from .sorting import (
+        ExampleTitleSortKey,
+        FileNameSortKey,
+        FileSizeSortKey,
+        NumberOfCodeLinesSortKey,
+    )
 
-    what = f"sphinx_gallery_conf[{repr(key)}]"
-    val = gallery_conf[key]
-    if key == "within_subsection_order":
-        is_builtin_alias = val in (  # convenience aliases
-            "ExampleTitleSortKey",
-            "FileNameSortKey",
-            "FileSizeSortKey",
-            "NumberOfCodeLinesSortKey",
-        )
-        if is_builtin_alias:
-            val = f"sphinx_gallery.sorting.{val}"
-    if isinstance(val, str):
-        if "." not in val:
-            raise ConfigError(
-                f"{what} must be a fully qualified name string, got {val}"
-            )
-        mod, attr = val.rsplit(".", 1)
-        try:
-            val = getattr(importlib.import_module(mod), attr)
-        except Exception:
-            raise ConfigError(
-                f"{what} must be a fully qualified name string, could not import "
-                f"{attr} from {mod}"
-            )
-        if not is_builtin_alias:
-            val = FunctionSortKey(val)
-    if not inspect.isclass(val):
-        raise ConfigError(
-            f"{what} must be 1) a fully qualified name (string) that resolves "
-            f"to a class or 2) or a class itself, got {val.__class__.__name__} "
-            f"({repr(val)})"
-        )
-    return val
+    BUILTIN_SORT_CLASSES = (
+        ExampleTitleSortKey,
+        FileNameSortKey,
+        FileSizeSortKey,
+        NumberOfCodeLinesSortKey,
+    )
+    assert len(singleton_tuple_of_callables) == 1, singleton_tuple_of_callables
+    key = singleton_tuple_of_callables[0]
+    needs_instantiating = (
+        key in BUILTIN_SORT_CLASSES or getattr(key, "__name__", "") == "CustomSortKey"
+    )
+    if needs_instantiating:
+        key = key(src_dir)
+    return key
 
 
 def _get_callables(gallery_conf, key):
     """Get callables for the given conf key, returning tuple of callable(s)."""
-    singletons = ("reset_argv", "minigallery_sort_order", "subsection_order")
+    singletons = (
+        "reset_argv",
+        "minigallery_sort_order",
+        "subsection_order",
+        "within_subsection_order",
+    )
+    builtin_aliases = (
+        "ExampleTitleSortKey",
+        "FileNameSortKey",
+        "FileSizeSortKey",
+        "NumberOfCodeLinesSortKey",
+    )
     # the following should be the case (internal use only):
     assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key
     which = gallery_conf[key]
@@ -1668,6 +1664,8 @@ def _get_callables(gallery_conf, key):
         which = [which]
     which = list(which)
     for wi, what in enumerate(which):
+        is_builtin_alias = what in builtin_aliases
+        is_custom_sorter = getattr(what, "__name__", "") == "CustomSortKey"
         if key == "jupyterlite":
             readable = f"{key}['notebook_modification_function']"
         elif key in singletons:
@@ -1675,6 +1673,8 @@ def _get_callables(gallery_conf, key):
         else:
             readable = f"{key}[{wi}]={repr(what)}"
         if isinstance(what, str):
+            if is_builtin_alias:
+                what = f"sphinx_gallery.sorting.{what}"
             if "." in what:
                 mod, attr = what.rsplit(".", 1)
                 try:
@@ -1699,7 +1699,7 @@ def _get_callables(gallery_conf, key):
                     raise ConfigError(f"Unknown string option for {readable}: {what}")
                 what = _reset_dict[what]
             which[wi] = what
-        if inspect.isclass(what):
+        if inspect.isclass(what) and not is_builtin_alias and not is_custom_sorter:
             raise ConfigError(
                 f"Got class rather than callable instance for {readable}: {what}"
             )
