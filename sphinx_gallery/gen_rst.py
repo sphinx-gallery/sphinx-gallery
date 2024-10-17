@@ -565,8 +565,9 @@ def generate_dir_rst(
     # Get example filenames from `src_dir`
     listdir = _collect_gallery_files([src_dir], gallery_conf)
     # sort them
-    (key,) = _get_callables(gallery_conf, "within_subsection_order", src_dir)
-    sorted_listdir = sorted(listdir, key=key)
+    sorted_listdir = sorted(
+        listdir, key=_get_callables(gallery_conf, "within_subsection_order", src_dir)[0]
+    )
 
     # Add div containing all thumbnails;
     # this is helpful for controlling grid or flexbox behaviours
