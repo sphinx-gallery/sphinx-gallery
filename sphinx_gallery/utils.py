@@ -316,3 +316,13 @@ def _format_toctree(items, includehidden=False):
     st += "\n"
 
     return st
+
+
+def _custom_example_sorter(filename):
+    """Importable custom sorter func, used in our test suite."""
+    ORDER = [
+        "plot_1.py",
+        "plot_3.py",
+        "plot_2.py",
+    ]
+    return ORDER.index(filename)
