@@ -174,7 +174,7 @@ def FunctionSortKey(func, r=None):
         printable representation of object
     """
 
-    class CustomSortKey:
+    class SphinxGalleryCustomSorter:
         def __init__(self, src_dir):
             self.f = func
             self.r = r
@@ -186,4 +186,4 @@ def FunctionSortKey(func, r=None):
             """Return func(arg)."""
             return self.f(arg)
 
-    return CustomSortKey
+    return SphinxGalleryCustomSorter

@@ -1632,7 +1632,8 @@ def _handle_callable_class(singleton_tuple_of_callables, src_dir):
     assert len(singleton_tuple_of_callables) == 1, singleton_tuple_of_callables
     key = singleton_tuple_of_callables[0]
     needs_instantiating = (
-        key in BUILTIN_SORT_CLASSES or getattr(key, "__name__", "") == "CustomSortKey"
+        key in BUILTIN_SORT_CLASSES
+        or getattr(key, "__name__", "") == "SphinxGalleryCustomSorter"
     )
     if needs_instantiating:
         key = key(src_dir)
@@ -1665,7 +1666,7 @@ def _get_callables(gallery_conf, key):
     which = list(which)
     for wi, what in enumerate(which):
         is_builtin_alias = what in builtin_aliases
-        is_custom_sorter = getattr(what, "__name__", "") == "CustomSortKey"
+        is_custom_sorter = getattr(what, "__name__", "") == "SphinxGalleryCustomSorter"
         if key == "jupyterlite":
             readable = f"{key}['notebook_modification_function']"
         elif key in singletons:
