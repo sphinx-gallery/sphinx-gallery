@@ -1648,7 +1648,6 @@ def _get_callables(gallery_conf, key, src_dir=None):
         which = [which]
     which = list(which)
     for wi, what in enumerate(which):
-        is_builtin_alias = what in builtin_aliases
         is_custom_sorter = getattr(what, "__name__", "") == "SphinxGalleryCustomSorter"
         if key == "jupyterlite":
             readable = f"{key}['notebook_modification_function']"
@@ -1657,7 +1656,7 @@ def _get_callables(gallery_conf, key, src_dir=None):
         else:
             readable = f"{key}[{wi}]={repr(what)}"
         if isinstance(what, str):
-            if is_builtin_alias:
+            if what in builtin_aliases:
                 what = f"sphinx_gallery.sorting.{what}"
             if "." in what:
                 mod, attr = what.rsplit(".", 1)
@@ -1683,7 +1682,8 @@ def _get_callables(gallery_conf, key, src_dir=None):
                     raise ConfigError(f"Unknown string option for {readable}: {what}")
                 what = _reset_dict[what]
             which[wi] = what
-        if src_dir is not None and (is_custom_sorter or what in BUILTIN_SORTERS):
+        # make sure built-in sorter classes get instantiated (so they become callable)
+        if is_custom_sorter or what in BUILTIN_SORTERS:
             what = what(src_dir)
             which[wi] = what
         if inspect.isclass(what):
