@@ -162,7 +162,7 @@ class ExampleTitleSortKey(_SortKey):
         return title
 
 
-def FunctionSortKey(func, r=None):
+class FunctionSortKey:
     """Sort examples using a function passed through to :py:func:`sorted`.
 
     Parameters
@@ -174,16 +174,13 @@ def FunctionSortKey(func, r=None):
         printable representation of object
     """
 
-    class SphinxGalleryCustomSorter:
-        def __init__(self, src_dir):
-            self.f = func
-            self.r = r
+    def __init__(self, func, r=None):
+        self.f = func
+        self.r = r
 
-        def __repr__(self):
-            return self.r or "FunctionSortKey"
+    def __repr__(self):
+        return self.r if self.r else "FunctionSortKey"
 
-        def __call__(self, arg):
-            """Return func(arg)."""
-            return self.f(arg)
-
-    return SphinxGalleryCustomSorter
+    def __call__(self, arg):
+        """Return func(arg)."""
+        return self.f(arg)

@@ -71,10 +71,10 @@ def test_Function_sorting_key():
     def f(x):
         return x[0] * x[1]
 
-    sorter = FunctionSortKey(f)("")  # init it with vacuous `src_dir`
+    sorter = FunctionSortKey(f)
     assert str(sorter).startswith("FunctionSortKey")
     assert sorted(data, key=f) == sorted(data, key=sorter)
 
-    sorter_repr = FunctionSortKey(f, "f(x,y) = x*y")("")
+    sorter_repr = FunctionSortKey(f, "f(x,y) = x*y")
     assert str(sorter_repr).startswith("f(x,y) = x*y")
     assert sorted(data, key=sorter_repr) == sorted(data, key=sorter)

@@ -1648,7 +1648,6 @@ def _get_callables(gallery_conf, key, src_dir=None):
         which = [which]
     which = list(which)
     for wi, what in enumerate(which):
-        is_custom_sorter = getattr(what, "__name__", "") == "SphinxGalleryCustomSorter"
         if key == "jupyterlite":
             readable = f"{key}['notebook_modification_function']"
         elif key in singletons:
@@ -1682,8 +1681,8 @@ def _get_callables(gallery_conf, key, src_dir=None):
                     raise ConfigError(f"Unknown string option for {readable}: {what}")
                 what = _reset_dict[what]
             which[wi] = what
-        # make sure built-in sorter classes get instantiated (so they become callable)
-        if is_custom_sorter or what in BUILTIN_SORTERS:
+        # make sure classes get instantiated (so they become callable)
+        if key == "within_subsection_order" and inspect.isclass(what):
             what = what(src_dir)
             which[wi] = what
         if inspect.isclass(what):
