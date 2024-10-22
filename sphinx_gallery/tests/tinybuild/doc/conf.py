@@ -4,6 +4,18 @@ import os.path as op
 
 import sphinx
 
+
+class CustomSortKey:
+    """Basically a clone of FilenameSortKey, for testing custom class sorters."""
+
+    def __init__(self, src_dir):
+        self.src_dir = src_dir
+
+    def __call__(self, item):
+        """Provide the custom sort key."""
+        return item
+
+
 # Where our helpers live
 util_root = "sphinx_gallery.tests.tinybuild.utils"
 
@@ -73,7 +85,7 @@ sphinx_gallery_conf = {
     ],
     "backreferences_dir": "gen_modules/backreferences",
     "subsection_order": f"{util_root}.noop_key",
-    "within_subsection_order": "FileNameSortKey",
+    "within_subsection_order": CustomSortKey,
     "minigallery_sort_order": f"{util_root}.mock_sort",
     "image_scrapers": (f"{util_root}.matplotlib_format_scraper",),
     "expected_failing_examples": [
