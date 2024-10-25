@@ -318,11 +318,16 @@ def _format_toctree(items, includehidden=False):
     return st
 
 
+_CUSTOM_EXAMPLE_ORDER = [
+    "plot_1.py",
+    "plot_3.py",
+    "plot_2.py",
+    "plot_5.py",
+    "plot_6.py",
+    "plot_4.py",
+]
+
+
 def _custom_example_sorter(filename):
     """Importable custom sorter func, used in our test suite."""
-    ORDER = [
-        "plot_1.py",
-        "plot_3.py",
-        "plot_2.py",
-    ]
-    return ORDER.index(filename)
+    return _CUSTOM_EXAMPLE_ORDER.index(filename)
