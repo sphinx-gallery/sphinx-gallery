@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.0
+    rev: v0.7.1
     hooks:
       - id: ruff-format
         exclude: plot_syntaxerror
@@ -35,11 +35,11 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: 2.4.3
+    rev: v2.4.3
     hooks:
       - id: pyproject-fmt
         additional_dependencies: [tox]
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.21
+    rev: v0.22
     hooks:
       - id: validate-pyproject
