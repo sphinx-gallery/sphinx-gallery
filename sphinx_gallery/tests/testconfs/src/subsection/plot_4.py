@@ -1,14 +1,13 @@
 """
 ======
-B test
+E test
 ======
 
-:filename=1:title=2:lines=3:filesize=2:
+:filename=4:title=5:lines=4:filesize=5:
 """
 
-print("foo")
-print("bar")
-print("again")
+print("foofoofoofoofoofoofoofoo")
+print("barbarbarbarbarbarbarbar")
 
 # %%
 #

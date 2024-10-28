@@ -285,7 +285,7 @@ def _check_order(sphinx_app, key, expected_order=None):
         for line in fid:
             if locator in line:
                 order.append(re.match(regex, line).group(1))
-    assert order == (expected_order or ["1", "2", "3"])
+    assert order == (expected_order or ["1", "2", "3", "4", "5", "6"])
 
 
 @pytest.mark.add_conf(

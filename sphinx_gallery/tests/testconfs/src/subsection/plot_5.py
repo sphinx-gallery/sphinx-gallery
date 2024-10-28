@@ -1,9 +1,29 @@
 """
 ======
-C test
+F test
 ======
 
-:filename=2:title=3:lines=1:filesize=1:
+:filename=5:title=6:lines=6:filesize=4:
 """
 
-print("foo")
+# let's
+
+# add
+
+# some
+
+# lines
+
+# to
+
+# test
+
+# sorting
+
+# by
+
+# number
+
+# of
+
+# lines

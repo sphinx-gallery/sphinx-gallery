@@ -2,12 +2,21 @@
 """
 .. _extra_ref:
 
-===========================================================
-A test with a really long title to make the filesize larger
-===========================================================
+=======================================================================================
+D is a file with a title even longer than `plot_1.py`, to make the filesize even larger
+=======================================================================================
 
-:filename=3:title=1:lines=2:filesize=3:
+:filename=6:title=4:lines=5:filesize=6:
 """
 
-print("foo")
-print("bar")
+# let's
+# add
+# some
+# lines
+# to
+# test
+# sorting
+# by
+# number
+# of
+# lines
