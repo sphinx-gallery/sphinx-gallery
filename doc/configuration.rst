@@ -2496,10 +2496,12 @@ method which would thus be captured. You can prevent this by:
    :class: note
 
    The suggestions above also apply to Plotly users. Plotly figures have
-   several update methods that implicitly return the updated figure object.
-   You can set a block-level ``# sphinx_gallery_capture_repr_block = ()``
-   comment to prevent these from being captured, or assign the return values
-   to a variable (e.g., ``fig = fig.update_layout(...)``).
+   several `update methods
+   <https://plotly.com/python/creating-and-updating-figures/>`_ that
+   implicitly return the updated figure object. You can set a block-level
+   ``# sphinx_gallery_capture_repr_block = ()`` comment to prevent these
+   from being captured, or assign the return values to a variable (*e.g.,*
+   ``fig = fig.update_layout(...)``).
 
 
 .. _regular expressions: https://docs.python.org/3/library/re.html
