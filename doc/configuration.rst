@@ -2492,6 +2492,16 @@ method which would thus be captured. You can prevent this by:
 
     plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
 
+.. admonition:: Note for Plotly users
+   :class: note
+
+   The suggestions above also apply to Plotly users. Plotly figures have
+   several update methods that implicitly return the updated figure object.
+   You can set a block-level ``# sphinx_gallery_capture_repr_block = ()``
+   comment to prevent these from being captured, or assign the return values
+   to a variable (e.g., ``fig = fig.update_layout(...)``).
+
+
 .. _regular expressions: https://docs.python.org/3/library/re.html
 
 Prevent capture of certain classes
