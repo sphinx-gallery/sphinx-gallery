@@ -1043,16 +1043,20 @@ def test_capture_repr(
 
 
 @pytest.mark.parametrize(
-    "caprepr_gallery, caprepr_file, expected_out",
+    "caprepr_gallery, caprepr_file, caprepr_block, expected_out",
     [
-        pytest.param(tuple(), ("__repr__",), "2", id="() --> repr"),
-        pytest.param(("__repr__",), "()", "", id="repr --> ()"),
+        pytest.param(tuple(), "()", '("__repr__",)', "2", id="() --> () --> repr"),
+        pytest.param(tuple(), ("__repr__",), None, "2", id="() --> repr --> None"),
+        pytest.param(("__repr__",), "()", None, "", id="repr --> () --> None"),
+        pytest.param(tuple(), ("__repr__",), "()", "", id="() --> repr --> ()"),
+        pytest.param(("__repr__",), "()", "()", "", id="repr --> () --> ()"),
     ],
 )
-def test_per_file_capture_repr(
+def test_capture_repr_per_file_and_per_block(
     gallery_conf,
     caprepr_gallery,
     caprepr_file,
+    caprepr_block,
     expected_out,
     req_mpl,
     req_pil,
@@ -1060,7 +1064,12 @@ def test_per_file_capture_repr(
 ):
     """Tests that per file capture_repr overrides gallery_conf."""
     compiler = codeop.Compile()
-    code_block = Block("code", "a=2\n2", 1)
+    caprepr_block = (
+        f"# sphinx_gallery_capture_repr_block={caprepr_block}\n"
+        if caprepr_block
+        else ""
+    )
+    code_block = Block("code", f"{caprepr_block}a=2\n2", 1)
     gallery_conf["capture_repr"] = caprepr_gallery
     file_conf = {"capture_repr": caprepr_file}
     output = sg.execute_code_block(
@@ -1070,7 +1079,7 @@ def test_per_file_capture_repr(
 
 
 def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
-    """Tests output capturing with various capture_repr settings."""
+    """Tests that `ignore_repr_types` correctly ignores the output of a specific type."""
     compiler = codeop.Compile()
     code_block = Block("code", "a=2\na", 1)
     gallery_conf["ignore_repr_types"] = r"int"
