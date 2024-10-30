@@ -15,7 +15,6 @@ jobs:
   pytest:
     name: '${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.distrib }} / ${{ matrix.sphinx_version }}'
     timeout-minutes: 30
-    continue-on-error: true
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -25,6 +24,7 @@ jobs:
       SPHINX_VERSION: '${{ matrix.sphinx_version }}'
       DISTRIB: '${{ matrix.distrib }}'
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest  # newest possible
