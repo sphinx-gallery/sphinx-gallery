@@ -47,6 +47,13 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 - ``reset_modules`` and ``reset_modules_order`` (:ref:`reset_modules`)
 - ``parallel`` (:ref:`parallel`)
 
+.. admonition:: Diverging from Jupyter
+    :class: danger
+
+    Sphinx-gallery attempts to render examples to HTML in a manner largely consistent with what a user will experience when they download the corresponding ``.ipynb`` notebook file and run it locally.
+    Some options, such as ``'capture_repr': (),``, will make these behaviors less consistent.
+    Consider using these options sparingly as it could lead to confusion or sub-optimal experiences for users!
+
 **Cross-referencing**
 
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
@@ -2439,8 +2446,7 @@ captured. For several examples, see :ref:`capture_repr_examples`.
 
 To capture only data directed to standard output, configure ``'capture_repr'``
 to be an empty tuple: ``'capture_repr': ()``. This will imitate the behaviour
-of Sphinx-Gallery prior to v0.5.0. Note however that this behaviour is not
-consistent with how Jupyter notebooks capture output by default!
+of Sphinx-Gallery prior to v0.5.0.
 
 From another perspective, take for example the following code block::
 

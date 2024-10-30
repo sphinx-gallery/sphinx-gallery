@@ -1138,7 +1138,7 @@ def _make_graph(fname, entries, gallery_conf):
                 dg.node(node_to, **node_kwargs)
                 dg.edge(node_from, node_to, color=API_COLORS["edge"])
         # add modules with all API entries
-        for module in gallery_conf["_sg_api_entries"]["module"]:
+        for module in gallery_conf["_sg_api_entries"].get("module", []):
             struct = module.split(".")
             for i in range(len(struct) - 1):
                 if struct[i + 1] not in lut:
