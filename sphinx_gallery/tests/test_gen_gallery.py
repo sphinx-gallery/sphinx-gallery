@@ -271,7 +271,14 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
 def _check_order(sphinx_app, key, expected_order=None):
     """Iterates through sphx-glr-thumbcontainer divs and reads key from the tooltip.
 
-    Used to test that these keys (in index.rst) appear in a specific order.
+    Used to test that these keys (in index.rst) appear in a specific order. The `.py`
+    files include a source-of-truth line indicating the position in the sort order that
+    the thumbnail for that file should occur, for the various built-in sorters.
+
+    The regex below extracts info from that source-of-truth line to check that the
+    thumbnail ordering was correct --- unless `expected_order` is provided, in which
+    case an alternative regex extracts the digit-part of the filename from the crossref,
+    and compares the order of crossrefs to `expected_order`.
     """
     index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
     order = list()
