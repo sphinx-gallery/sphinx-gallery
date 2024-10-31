@@ -47,6 +47,13 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 - ``reset_modules`` and ``reset_modules_order`` (:ref:`reset_modules`)
 - ``parallel`` (:ref:`parallel`)
 
+.. admonition:: Diverging from Jupyter
+    :class: danger
+
+    Sphinx-gallery attempts to render examples to HTML in a manner largely consistent with what a user will experience when they download the corresponding ``.ipynb`` notebook file and run it locally.
+    Some options, such as ``'capture_repr': (),``, will make these behaviors less consistent.
+    Consider using these options sparingly as it could lead to confusion or sub-optimal experiences for users!
+
 **Cross-referencing**
 
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
@@ -107,6 +114,7 @@ Some options can also be set or overridden on a file-by-file basis:
 
 Some options can be set on a per-code-block basis in a file:
 
+- ``# sphinx_gallery_capture_repr_block`` (:ref:`capture_repr`)
 - ``# sphinx_gallery_defer_figures`` (:ref:`defer_figures`)
 - ``# sphinx_gallery_multi_image_block`` (:ref:`multi_image`)
 
@@ -2411,11 +2419,15 @@ are:
   present in some objects, for example, pandas dataframes.
 
 Output capture can be controlled globally by the ``capture_repr`` configuration
-setting or file-by-file by adding a comment to the example file, which overrides
+setting, file-by-file by adding a comment to the example file, which overrides
 any global setting::
 
     # sphinx_gallery_capture_repr = ()
 
+, or block-by-block by adding a comment to the code block, which overrides any
+global or file setting::
+
+    # sphinx_gallery_capture_repr_block = ()
 
 The default setting is::
 
@@ -2445,8 +2457,7 @@ From another perspective, take for example the following code block::
 ``'Hello world'`` would be captured for every ``capture_repr`` setting as this
 is directed to standard output. Further,
 
-* if ``capture_repr`` is an empty tuple, nothing else would be
-  captured.
+* if ``capture_repr`` is an empty tuple, nothing else would be captured.
 * if ``capture_repr`` is ``('__repr__')``, ``2`` would also be captured.
 * if ``capture_repr`` is ``('_repr_html_', '__repr__')`` (the default)
   Sphinx-Gallery would first attempt to capture ``_repr_html_``. Since this
@@ -2477,8 +2488,27 @@ method which would thus be captured. You can prevent this by:
     plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
     plt.show()
 
-The unwanted string output will not occur if ``'capture_repr'`` is an empty
-tuple or does not contain ``__repr__`` or ``__str__``.
+* add a ``# sphinx_gallery_capture_repr_block = ()`` comment to the code block.
+  The unwanted string output will not occur if ``'capture_repr'`` is an empty
+  tuple or, at least, does not contain ``__repr__`` or ``__str__``.
+  For example::
+
+    # sphinx_gallery_capture_repr_block = ()
+    import matplotlib.pyplot as plt
+
+    plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+
+.. admonition:: Note for Plotly users
+   :class: note
+
+   The suggestions above also apply to Plotly users. Plotly figures have
+   several `update methods
+   <https://plotly.com/python/creating-and-updating-figures/>`_ that
+   implicitly return the updated figure object. You can set a block-level
+   ``# sphinx_gallery_capture_repr_block = ()`` comment to prevent these
+   from being captured, or assign the return values to a variable (*e.g.,*
+   ``fig = fig.update_layout(...)``).
+
 
 .. _regular expressions: https://docs.python.org/3/library/re.html
 

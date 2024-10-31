@@ -888,7 +888,7 @@ def _get_last_repr(capture_repr, ___):
 
 
 def _get_code_output(
-    is_last_expr, example_globals, gallery_conf, logging_tee, images_rst, file_conf
+    is_last_expr, example_globals, gallery_conf, logging_tee, images_rst, capture_repr
 ):
     """Obtain standard output and html output in reST.
 
@@ -921,7 +921,6 @@ def _get_code_output(
         ignore_repr = False
         if gallery_conf["ignore_repr_types"]:
             ignore_repr = re.search(gallery_conf["ignore_repr_types"], str(type(___)))
-        capture_repr = file_conf.get("capture_repr", gallery_conf["capture_repr"])
         if capture_repr != () and not ignore_repr:
             last_repr, repr_meth = _get_last_repr(capture_repr, ___)
 
@@ -1007,11 +1006,20 @@ def execute_code_block(
     )
     need_save_figures = defer_figs_match is None
 
+    block_conf = py_source_parser.extract_file_config(block.content)
+
     # Add `sphinx_gallery_multi_image_block` setting to block variables
     # (extract config rather than just regex search since the option's value is needed)
-    script_vars["multi_image"] = py_source_parser.extract_file_config(
-        block.content
-    ).get("multi_image_block")
+    script_vars["multi_image"] = block_conf.get("multi_image_block")
+
+    # Determine the block's `capture_repr` value by prioritising the block-level
+    # `sphinx_gallery_capture_repr_block` setting, then the file-level
+    # `sphinx_gallery_capture_repr` setting, and finally the
+    # global `capture_repr` gallery setting.
+    capture_repr = block_conf.get(
+        "capture_repr_block",
+        file_conf.get("capture_repr", gallery_conf["capture_repr"]),
+    )
 
     # Add file_conf to script_vars to be read by image scrapers
     script_vars["file_conf"] = file_conf
@@ -1059,7 +1067,7 @@ def execute_code_block(
             gallery_conf,
             logging_tee,
             images_rst,
-            file_conf,
+            capture_repr,
         )
     finally:
         _reset_cwd_syspath(cwd, sys_path)
