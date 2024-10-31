@@ -325,6 +325,9 @@ _CUSTOM_EXAMPLE_ORDER = [
     "plot_5.py",
     "plot_6.py",
     "plot_4.py",
+    "plot_8.py",
+    "plot_7.py",
+    "plot_9.py",
 ]
 
 

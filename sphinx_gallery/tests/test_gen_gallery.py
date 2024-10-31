@@ -278,14 +278,14 @@ def _check_order(sphinx_app, key, expected_order=None):
     regex = (
         rf".*:{key}=(\d):.*"
         if expected_order is None
-        else r".*:ref:`sphx_glr_ex_(?:subsection_)?(plot_\d\.py)`"
+        else r".*:ref:`sphx_glr_ex_(?:(?:first|second)-subsection_)?(plot_\d\.py)`"
     )
     locator = "sphx-glr-thumbcontainer" if expected_order is None else ":ref:"
     with open(index_fname, "r", encoding="utf-8") as fid:
         for line in fid:
             if locator in line:
                 order.append(re.match(regex, line).group(1))
-    assert order == (expected_order or ["1", "2", "3", "4", "5", "6"])
+    assert order == (expected_order or [str(n) for n in range(1, 10)])
 
 
 @pytest.mark.add_conf(
@@ -355,6 +355,9 @@ def custom_sorter(filename):
         "plot_6.py",
         "plot_5.py",
         "plot_4.py",
+        "plot_9.py",
+        "plot_7.py",
+        "plot_8.py",
     ]
     return ORDER.index(filename)
 
@@ -367,7 +370,7 @@ sphinx_gallery_conf = {
 def test_example_sorting_with_custom_function(sphinx_app_wrapper):
     """Test sorting of examples via `FunctionSortKey`."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    expected_order = [f"plot_{n}.py" for n in (3, 2, 1, 6, 5, 4)]
+    expected_order = [f"plot_{n}.py" for n in (3, 2, 1, 6, 5, 4, 9, 7, 8)]
     _check_order(sphinx_app, None, expected_order=expected_order)
 
 
