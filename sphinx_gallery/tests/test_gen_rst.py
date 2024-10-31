@@ -1062,7 +1062,7 @@ def test_capture_repr_per_file_and_per_block(
     req_pil,
     script_vars,
 ):
-    """Tests that per file capture_repr overrides gallery_conf."""
+    """Tests that per file/block capture_repr overrides gallery_conf."""
     compiler = codeop.Compile()
     caprepr_block = (
         f"# sphinx_gallery_capture_repr_block={caprepr_block}\n"
