@@ -496,7 +496,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             f'got {gallery_conf["show_api_usage"]}'
         )
 
-    # callable classes (not pickleable so need to resolve using fully qualified name)
+    # check `within_subsection_order`
     _get_callables(
         gallery_conf, "within_subsection_order", src_dir=""
     )  # make sure it works

@@ -1655,6 +1655,8 @@ def _get_callables(gallery_conf, key, src_dir=None):
         else:
             readable = f"{key}[{wi}]={repr(what)}"
         if isinstance(what, str):
+            # use fully qualified name to resolve builtin callable classes
+            # (otherwise not serializable)
             if what in builtin_aliases:
                 what = f"sphinx_gallery.sorting.{what}"
             if "." in what:
