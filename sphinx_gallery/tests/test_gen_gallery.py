@@ -21,6 +21,7 @@ from sphinx_gallery.gen_gallery import (
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 from sphinx_gallery.utils import (
+    _CUSTOM_EXAMPLE_ORDER,
     _collect_gallery_files,
     _escape_ansi,
     check_duplicate_filenames,
@@ -282,12 +283,12 @@ def _check_order(sphinx_app, key, expected_order=None):
     """
     index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
     order = list()
-    regex = (
-        rf".*:{key}=(\d):.*"
-        if expected_order is None
-        else r".*:ref:`sphx_glr_ex_(?:(?:first|second)-subsection_)?(plot_\d\.py)`"
-    )
-    locator = "sphx-glr-thumbcontainer" if expected_order is None else ":ref:"
+    if key is None:
+        regex = r".*:ref:`sphx_glr_ex_(?:(?:first|second)-subsection_)?(plot_\d\.py)`"
+        locator = ":ref:"
+    else:
+        regex = rf".*:{key}=(\d):.*"
+        locator = "sphx-glr-thumbcontainer"
     with open(index_fname, "r", encoding="utf-8") as fid:
         for line in fid:
             if locator in line:
@@ -295,63 +296,62 @@ def _check_order(sphinx_app, key, expected_order=None):
     assert order == (expected_order or [str(n) for n in range(1, 10)])
 
 
-@pytest.mark.add_conf(
-    content="""
-sphinx_gallery_conf = {
-    'examples_dirs': 'src',
-    'gallery_dirs': 'ex',
-}"""
+# ======================================================================================
+# SUBSECTION AND WITHIN-SUBSECTION SORTING TESTS
+# ======================================================================================
+# pre-construct the pytest params for the builtin sorters, as they're all very similar
+_template_conf_for_builtin_sorters = """
+sphinx_gallery_conf = {{
+    "examples_dirs": "src",
+    "gallery_dirs": "ex",
+    "within_subsection_order": "{}",
+}}"""
+_builtin_sorters = dict(
+    lines="NumberOfCodeLinesSortKey",  # the default
+    filesize="FileSizeSortKey",
+    filename="FileNameSortKey",
+    title="ExampleTitleSortKey",
 )
-def test_example_sorting_default(sphinx_app_wrapper):
-    """Test sorting of examples by default key (number of code lines)."""
-    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    _check_order(sphinx_app, "lines")
-
-
-@pytest.mark.add_conf(
-    content="""
-sphinx_gallery_conf = {
-    'examples_dirs': 'src',
-    'gallery_dirs': 'ex',
-    'within_subsection_order': "FileSizeSortKey",
-}"""
+_params_for_testing_builtin_sorters = (
+    pytest.param(
+        kind,  # `sort_key` param
+        None,  # `expected_order` param
+        id=f"within_subsection_sort_by_{kind}",
+        marks=pytest.mark.add_conf.with_args(
+            content=_template_conf_for_builtin_sorters.format(sorter)
+        ),
+    )
+    for kind, sorter in _builtin_sorters.items()
 )
-def test_example_sorting_filesize(sphinx_app_wrapper):
-    """Test sorting of examples by filesize."""
-    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    _check_order(sphinx_app, "filesize")
-
-
-@pytest.mark.add_conf(
-    content="""
-sphinx_gallery_conf = {
-    'examples_dirs': 'src',
-    'gallery_dirs': 'ex',
-    'within_subsection_order': "FileNameSortKey",
-}"""
+# now a more flexible config template, for changing both subsection and
+# within-subsection order at the same time:
+_template_conf = """
+{imports}
+sphinx_gallery_conf = {{
+    "examples_dirs": "src",
+    "gallery_dirs": "ex",
+    "subsection_order": {subsection_order},
+    "within_subsection_order": {within_subsection_order},
+}}"""
+# fill in the template config with different test cases and
+# wrap each config as an `add_conf` mark
+_subsection_explicit_order = pytest.mark.add_conf.with_args(
+    content=_template_conf.format(
+        imports="from sphinx_gallery.sorting import ExplicitOrder",
+        subsection_order='ExplicitOrder(["src/second-subsection", "src/first-subsection"])',
+        within_subsection_order='"NumberOfCodeLinesSortKey"',  # this is the default
+    )
 )
-def test_example_sorting_filename(sphinx_app_wrapper):
-    """Test sorting of examples by filename."""
-    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    _check_order(sphinx_app, "filename")
-
-
-@pytest.mark.add_conf(
-    content="""
-sphinx_gallery_conf = {
-    'examples_dirs': 'src',
-    'gallery_dirs': 'ex',
-    'within_subsection_order': "ExampleTitleSortKey",
-}"""
+_within_subsection_custom_fqn = pytest.mark.add_conf.with_args(
+    content=_template_conf.format(
+        imports="",
+        subsection_order="None",  # the default, AKA, sort by foldername
+        within_subsection_order='"sphinx_gallery.utils._custom_example_sorter"',
+    )
 )
-def test_example_sorting_title(sphinx_app_wrapper):
-    """Test sorting of examples by title."""
-    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    _check_order(sphinx_app, "title")
-
-
-@pytest.mark.add_conf(
-    content="""
+_within_subsection_custom_func = pytest.mark.add_conf.with_args(
+    content=_template_conf.format(
+        imports="""
 from sphinx_gallery.sorting import FunctionSortKey
 
 def custom_sorter(filename):
@@ -367,34 +367,41 @@ def custom_sorter(filename):
         "plot_8.py",
     ]
     return ORDER.index(filename)
-
-sphinx_gallery_conf = {
-    "examples_dirs": "src",
-    "gallery_dirs": "ex",
-    "within_subsection_order": FunctionSortKey(custom_sorter),
-}"""
+""",
+        subsection_order="None",  # the default, AKA, sort by foldername
+        within_subsection_order="FunctionSortKey(custom_sorter)",
+    )
 )
-def test_example_sorting_with_custom_function(sphinx_app_wrapper):
-    """Test sorting of examples via `FunctionSortKey`."""
-    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    expected_order = [f"plot_{n}.py" for n in (3, 2, 1, 6, 5, 4, 9, 7, 8)]
-    _check_order(sphinx_app, None, expected_order=expected_order)
 
 
-@pytest.mark.add_conf(
-    content="""
-sphinx_gallery_conf = {
-    "examples_dirs": "src",
-    "gallery_dirs": "ex",
-    "within_subsection_order": "sphinx_gallery.utils._custom_example_sorter",
-}"""
+@pytest.mark.parametrize(
+    "sort_key,expected_order",
+    (
+        pytest.param(
+            "lines",
+            list("123789456"),
+            id="subsection_explicit_order",
+            marks=_subsection_explicit_order,
+        ),
+        pytest.param(
+            None,
+            _CUSTOM_EXAMPLE_ORDER,
+            id="within_subsection_sort_by_custom_FQN",
+            marks=_within_subsection_custom_fqn,
+        ),
+        pytest.param(
+            None,
+            [f"plot_{n}.py" for n in list("321654978")],
+            id="within_subsection_sort_by_custom_func",
+            marks=_within_subsection_custom_func,
+        ),
+        *_params_for_testing_builtin_sorters,
+    ),
 )
-def test_example_sorting_with_fqn(sphinx_app_wrapper):
+def test_example_sorting(sphinx_app_wrapper, sort_key, expected_order):
     """Test sorting of examples with fully qualified name of a custom sort function."""
-    from sphinx_gallery.utils import _CUSTOM_EXAMPLE_ORDER
-
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    _check_order(sphinx_app, None, expected_order=_CUSTOM_EXAMPLE_ORDER)
+    _check_order(sphinx_app, sort_key, expected_order=expected_order)
 
 
 def test_collect_gallery_files(tmpdir, gallery_conf):
