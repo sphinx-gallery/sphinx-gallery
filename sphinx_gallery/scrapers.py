@@ -273,7 +273,9 @@ def _anim_rst(anim, image_path, gallery_conf):
     dpi = rcParams["savefig.dpi"]
     if dpi == "figure":
         dpi = fig.dpi
-    video_uri = video.relative_to(gallery_conf["src_dir"]).as_posix()
+    # relative_to doesn't work on windows
+    # video_uri = video.relative_to(gallery_conf["src_dir"]).as_posix()
+    video_uri = PurePosixPath(os.path.relpath(video, gallery_conf["src_dir"]))
     html = _ANIMATION_VIDEO_RST.format(
         video=f"/{video_uri}",
         width=int(fig_size[0] * dpi),
