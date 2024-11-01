@@ -292,7 +292,8 @@ def _check_order(sphinx_app, key, expected_order=None):
         for line in fid:
             if locator in line:
                 order.append(re.match(regex, line).group(1))
-    assert order == (expected_order or [str(n) for n in range(1, 10)])
+    expected_order = expected_order or list("123456789")
+    assert order == expected_order
 
 
 # ======================================================================================
@@ -314,7 +315,7 @@ _builtin_sorters = dict(
 _params_for_testing_builtin_sorters = (
     pytest.param(
         kind,  # `sort_key` param
-        None,  # `expected_order` (order extracted from comments in test site pages)
+        None,  # `expected_order` (order is extracted from comments in test site pages)
         id=f"within_subsection_sort_by_{kind}",
         marks=pytest.mark.add_conf.with_args(
             content=_template_conf_for_builtin_sorters.format(sorter)
