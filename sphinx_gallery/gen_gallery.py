@@ -528,9 +528,10 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_header=True):
     if gallery_conf["subsection_order"] is None:
         sortkey = None
     else:
+        subsec_order = gallery_conf.get("subsection_order")
+        if isinstance(subsec_order, list):
+            gallery_conf["subsection_order"] = ExplicitOrder(subsec_order)
         (sortkey,) = _get_callables(gallery_conf, "subsection_order")
-        if isinstance(sortkey, list):
-            sortkey = ExplicitOrder(sortkey)
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
     if check_for_header:
         subfolders = [
