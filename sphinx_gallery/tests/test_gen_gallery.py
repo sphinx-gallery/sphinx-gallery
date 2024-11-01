@@ -340,6 +340,13 @@ _subsection_explicit_order = pytest.mark.add_conf.with_args(
         within_subsection_order='"NumberOfCodeLinesSortKey"',  # this is the default
     )
 )
+_subsection_explicit_order_list = pytest.mark.add_conf.with_args(
+    content=_template_conf.format(
+        imports="",
+        subsection_order='["src/second-subsection", "src/first-subsection"]',
+        within_subsection_order='"NumberOfCodeLinesSortKey"',  # this is the default
+    )
+)
 _both_custom_fqn = pytest.mark.add_conf.with_args(
     content=_template_conf.format(
         imports="",
@@ -395,6 +402,12 @@ _subsection_fqn_within_subsection_custom_func = pytest.mark.add_conf.with_args(
             list("123789456"),
             id="subsection_sort_by_ExplicitOrder",
             marks=_subsection_explicit_order,
+        ),
+        pytest.param(
+            "lines",
+            list("123789456"),
+            id="subsection_sort_by_list",
+            marks=_subsection_explicit_order_list,
         ),
         pytest.param(
             None,
