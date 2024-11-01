@@ -21,7 +21,6 @@ from sphinx_gallery.gen_gallery import (
 )
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 from sphinx_gallery.utils import (
-    _CUSTOM_EXAMPLE_ORDER,
     _collect_gallery_files,
     _escape_ansi,
     check_duplicate_filenames,
@@ -284,7 +283,7 @@ def _check_order(sphinx_app, key, expected_order=None):
     index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
     order = list()
     if key is None:
-        regex = r".*:ref:`sphx_glr_ex_(?:(?:first|second)-subsection_)?(plot_\d\.py)`"
+        regex = r".*:ref:`sphx_glr_ex_(?:(?:first|second)-subsection_)?plot_(\d)\.py`"
         locator = ":ref:"
     else:
         regex = rf".*:{key}=(\d):.*"
@@ -315,7 +314,7 @@ _builtin_sorters = dict(
 _params_for_testing_builtin_sorters = (
     pytest.param(
         kind,  # `sort_key` param
-        None,  # `expected_order` param
+        None,  # `expected_order` (order extracted from comments in test site pages)
         id=f"within_subsection_sort_by_{kind}",
         marks=pytest.mark.add_conf.with_args(
             content=_template_conf_for_builtin_sorters.format(sorter)
@@ -323,8 +322,8 @@ _params_for_testing_builtin_sorters = (
     )
     for kind, sorter in _builtin_sorters.items()
 )
-# now a more flexible config template, for changing both subsection and
-# within-subsection order at the same time:
+# now a more flexible config template, for changing subsection and/or within-subsection
+# order (possibly at the same time):
 _template_conf = """
 {imports}
 sphinx_gallery_conf = {{
@@ -333,13 +332,19 @@ sphinx_gallery_conf = {{
     "subsection_order": {subsection_order},
     "within_subsection_order": {within_subsection_order},
 }}"""
-# fill in the template config with different test cases and
-# wrap each config as an `add_conf` mark
+# fill in the template config with different test cases and wrap in an `add_conf` mark
 _subsection_explicit_order = pytest.mark.add_conf.with_args(
     content=_template_conf.format(
         imports="from sphinx_gallery.sorting import ExplicitOrder",
         subsection_order='ExplicitOrder(["src/second-subsection", "src/first-subsection"])',
         within_subsection_order='"NumberOfCodeLinesSortKey"',  # this is the default
+    )
+)
+_both_custom_fqn = pytest.mark.add_conf.with_args(
+    content=_template_conf.format(
+        imports="",
+        subsection_order='"sphinx_gallery.utils._custom_subsection_sorter"',
+        within_subsection_order='"sphinx_gallery.utils._custom_example_sorter"',
     )
 )
 _within_subsection_custom_fqn = pytest.mark.add_conf.with_args(
@@ -349,9 +354,7 @@ _within_subsection_custom_fqn = pytest.mark.add_conf.with_args(
         within_subsection_order='"sphinx_gallery.utils._custom_example_sorter"',
     )
 )
-_within_subsection_custom_func = pytest.mark.add_conf.with_args(
-    content=_template_conf.format(
-        imports="""
+_custom_func = """
 from sphinx_gallery.sorting import FunctionSortKey
 
 def custom_sorter(filename):
@@ -367,8 +370,18 @@ def custom_sorter(filename):
         "plot_8.py",
     ]
     return ORDER.index(filename)
-""",
+"""
+_within_subsection_custom_func = pytest.mark.add_conf.with_args(
+    content=_template_conf.format(
+        imports=_custom_func,
         subsection_order="None",  # the default, AKA, sort by foldername
+        within_subsection_order="FunctionSortKey(custom_sorter)",
+    )
+)
+_subsection_fqn_within_subsection_custom_func = pytest.mark.add_conf.with_args(
+    content=_template_conf.format(
+        imports=_custom_func,
+        subsection_order='"sphinx_gallery.utils._custom_subsection_sorter"',
         within_subsection_order="FunctionSortKey(custom_sorter)",
     )
 )
@@ -380,20 +393,32 @@ def custom_sorter(filename):
         pytest.param(
             "lines",
             list("123789456"),
-            id="subsection_explicit_order",
+            id="subsection_sort_by_ExplicitOrder",
             marks=_subsection_explicit_order,
         ),
         pytest.param(
             None,
-            _CUSTOM_EXAMPLE_ORDER,
+            list("132879564"),
+            id="subsection_and_within_subsection_both_sort_by_custom_FQN",
+            marks=_both_custom_fqn,
+        ),
+        pytest.param(
+            None,
+            list("132564879"),
             id="within_subsection_sort_by_custom_FQN",
             marks=_within_subsection_custom_fqn,
         ),
         pytest.param(
             None,
-            [f"plot_{n}.py" for n in list("321654978")],
+            list("321654978"),
             id="within_subsection_sort_by_custom_func",
             marks=_within_subsection_custom_func,
+        ),
+        pytest.param(
+            None,
+            list("321978654"),
+            id="subsection_sort_by_FQN_and_within_subsection_sort_by_custom_func",
+            marks=_subsection_fqn_within_subsection_custom_func,
         ),
         *_params_for_testing_builtin_sorters,
     ),

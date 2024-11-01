@@ -334,3 +334,8 @@ _CUSTOM_EXAMPLE_ORDER = [
 def _custom_example_sorter(filename):
     """Importable custom sorter func, used in our test suite."""
     return _CUSTOM_EXAMPLE_ORDER.index(filename)
+
+
+def _custom_subsection_sorter(foldername):
+    """Importable custom sorter func for subsection folders, used in our test suite."""
+    return foldername[::-1]
