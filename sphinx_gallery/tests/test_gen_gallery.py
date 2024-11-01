@@ -400,36 +400,44 @@ _subsection_fqn_within_subsection_custom_func = pytest.mark.add_conf.with_args(
     (
         pytest.param(
             "lines",
+            # ↓ natural order except subsection 2 (789) precedes subsection 1 (456)
             list("123789456"),
             id="subsection_sort_by_ExplicitOrder",
             marks=_subsection_explicit_order,
         ),
         pytest.param(
             "lines",
+            # ↓ natural order except subsection 2 (789) precedes subsection 1 (456)
             list("123789456"),
             id="subsection_sort_by_list",
             marks=_subsection_explicit_order_list,
         ),
         pytest.param(
             None,
-            list("132879564"),
-            id="subsection_and_within_subsection_both_sort_by_custom_FQN",
-            marks=_both_custom_fqn,
-        ),
-        pytest.param(
-            None,
+            # ↓ order determined by `utils._CUSTOM_EXAMPLE_ORDER`
             list("132564879"),
             id="within_subsection_sort_by_custom_FQN",
             marks=_within_subsection_custom_fqn,
         ),
         pytest.param(
             None,
+            # ↓ order set by `utils._CUSTOM_EXAMPLE_ORDER`, with middle (564) and
+            # ↓ last (879) thirds swapped due to subsection reordering
+            list("132879564"),
+            id="subsection_and_within_subsection_both_sort_by_custom_FQN",
+            marks=_both_custom_fqn,
+        ),
+        pytest.param(
+            None,
+            # ↓ order set by local `_custom_func` variable within this test file
             list("321654978"),
             id="within_subsection_sort_by_custom_func",
             marks=_within_subsection_custom_func,
         ),
         pytest.param(
             None,
+            # ↓ order set by `_custom_func` in this test file, with middle (654) and
+            # ↓ last (978) thirds swapped due to subsection reordering
             list("321978654"),
             id="subsection_sort_by_FQN_and_within_subsection_sort_by_custom_func",
             marks=_subsection_fqn_within_subsection_custom_func,
