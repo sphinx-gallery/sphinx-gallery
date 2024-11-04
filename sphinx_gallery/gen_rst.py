@@ -1617,20 +1617,12 @@ def save_rst_example(
 
 def _get_callables(gallery_conf, key, src_dir=None):
     """Get callables for the given conf key, returning tuple of callable(s)."""
-    from .sorting import (
-        ExampleTitleSortKey,
-        FileNameSortKey,
-        FileSizeSortKey,
-        NumberOfCodeLinesSortKey,
+    builtin_aliases = (
+        "ExampleTitleSortKey",
+        "FileNameSortKey",
+        "FileSizeSortKey",
+        "NumberOfCodeLinesSortKey",
     )
-
-    BUILTIN_SORTERS = (
-        ExampleTitleSortKey,
-        FileNameSortKey,
-        FileSizeSortKey,
-        NumberOfCodeLinesSortKey,
-    )
-    builtin_aliases = [cls.__name__ for cls in BUILTIN_SORTERS]
     singletons = (
         "reset_argv",
         "minigallery_sort_order",
