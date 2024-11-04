@@ -317,7 +317,7 @@ _params_for_testing_builtin_sorters = (
         kind,  # `sort_key` param
         None,  # `expected_order` (order is extracted from comments in test site pages)
         id=f"within_subsection_sort_by_{kind}",
-        marks=pytest.mark.add_conf.with_args(
+        marks=pytest.mark.add_conf(
             content=_template_conf_for_builtin_sorters.format(sorter)
         ),
     )
@@ -334,28 +334,28 @@ sphinx_gallery_conf = {{
     "within_subsection_order": {within_subsection_order},
 }}"""
 # fill in the template config with different test cases and wrap in an `add_conf` mark
-_subsection_explicit_order = pytest.mark.add_conf.with_args(
+_subsection_explicit_order = pytest.mark.add_conf(
     content=_template_conf.format(
         imports="from sphinx_gallery.sorting import ExplicitOrder",
         subsection_order='ExplicitOrder(["src/second-subsection", "src/first-subsection"])',
         within_subsection_order='"NumberOfCodeLinesSortKey"',  # this is the default
     )
 )
-_subsection_explicit_order_list = pytest.mark.add_conf.with_args(
+_subsection_explicit_order_list = pytest.mark.add_conf(
     content=_template_conf.format(
         imports="",
         subsection_order='["src/second-subsection", "src/first-subsection"]',
         within_subsection_order='"NumberOfCodeLinesSortKey"',  # this is the default
     )
 )
-_both_custom_fqn = pytest.mark.add_conf.with_args(
+_both_custom_fqn = pytest.mark.add_conf(
     content=_template_conf.format(
         imports="",
         subsection_order='"sphinx_gallery.utils._custom_subsection_sorter"',
         within_subsection_order='"sphinx_gallery.utils._custom_example_sorter"',
     )
 )
-_within_subsection_custom_fqn = pytest.mark.add_conf.with_args(
+_within_subsection_custom_fqn = pytest.mark.add_conf(
     content=_template_conf.format(
         imports="",
         subsection_order="None",  # the default, AKA, sort by foldername
@@ -379,14 +379,14 @@ def custom_sorter(filename):
     ]
     return ORDER.index(filename)
 """
-_within_subsection_custom_func = pytest.mark.add_conf.with_args(
+_within_subsection_custom_func = pytest.mark.add_conf(
     content=_template_conf.format(
         imports=_custom_func,
         subsection_order="None",  # the default, AKA, sort by foldername
         within_subsection_order="FunctionSortKey(custom_sorter)",
     )
 )
-_subsection_fqn_within_subsection_custom_func = pytest.mark.add_conf.with_args(
+_subsection_fqn_within_subsection_custom_func = pytest.mark.add_conf(
     content=_template_conf.format(
         imports=_custom_func,
         subsection_order='"sphinx_gallery.utils._custom_subsection_sorter"',
