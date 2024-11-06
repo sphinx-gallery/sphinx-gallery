@@ -33,7 +33,6 @@ from .gen_rst import (
     SPHX_GLR_SIG,
     _get_call_memory_and_base,
     _get_callables,
-    _get_class,
     _get_gallery_header,
     generate_dir_rst,
 )
@@ -497,8 +496,10 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
             f'got {gallery_conf["show_api_usage"]}'
         )
 
-    # classes (not pickleable so need to resolve using fully qualified name)
-    _get_class(gallery_conf, "within_subsection_order")  # make sure it works
+    # check `within_subsection_order`
+    _get_callables(
+        gallery_conf, "within_subsection_order", src_dir=""
+    )  # make sure it works
 
     _update_gallery_conf_exclude_implicit_doc(gallery_conf)
 
@@ -527,9 +528,10 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_header=True):
     if gallery_conf["subsection_order"] is None:
         sortkey = None
     else:
+        subsec_order = gallery_conf.get("subsection_order")
+        if isinstance(subsec_order, list):
+            gallery_conf["subsection_order"] = ExplicitOrder(subsec_order)
         (sortkey,) = _get_callables(gallery_conf, "subsection_order")
-        if isinstance(sortkey, list):
-            sortkey = ExplicitOrder(sortkey)
     subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
     if check_for_header:
         subfolders = [
@@ -664,7 +666,7 @@ def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
                 # NOTE we don't take account of `ignore_pattern` and ignore
                 # ext in `example_extensions`
                 [fname for fname in Path(src_dir).iterdir() if fname.suffix == ".py"],
-                key=_get_class(gallery_conf, "within_subsection_order")(src_dir),
+                key=_get_callables(gallery_conf, "within_subsection_order", src_dir)[0],
             )
             gallery_py_files.append(
                 [os.path.join(src_dir, fname) for fname in py_files]

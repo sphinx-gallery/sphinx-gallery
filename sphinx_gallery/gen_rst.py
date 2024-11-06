@@ -566,7 +566,7 @@ def generate_dir_rst(
     listdir = _collect_gallery_files([src_dir], gallery_conf)
     # sort them
     sorted_listdir = sorted(
-        listdir, key=_get_class(gallery_conf, "within_subsection_order")(src_dir)
+        listdir, key=_get_callables(gallery_conf, "within_subsection_order", src_dir)[0]
     )
 
     # Add div containing all thumbnails;
@@ -1623,44 +1623,20 @@ def save_rst_example(
     _replace_md5(write_file_new, mode="t")
 
 
-def _get_class(gallery_conf, key):
-    """Get a class for the given conf key."""
-    what = f"sphinx_gallery_conf[{repr(key)}]"
-    val = gallery_conf[key]
-    if key == "within_subsection_order":
-        alias = (  # convenience aliases
-            "ExampleTitleSortKey",
-            "FileNameSortKey",
-            "FileSizeSortKey",
-            "NumberOfCodeLinesSortKey",
-        )
-        if val in alias:
-            val = f"sphinx_gallery.sorting.{val}"
-    if isinstance(val, str):
-        if "." not in val:
-            raise ConfigError(
-                f"{what} must be a fully qualified name string, got {val}"
-            )
-        mod, attr = val.rsplit(".", 1)
-        try:
-            val = getattr(importlib.import_module(mod), attr)
-        except Exception:
-            raise ConfigError(
-                f"{what} must be a fully qualified name string, could not import "
-                f"{attr} from {mod}"
-            )
-    if not inspect.isclass(val):
-        raise ConfigError(
-            f"{what} must be 1) a fully qualified name (string) that resolves "
-            f"to a class or 2) or a class itself, got {val.__class__.__name__} "
-            f"({repr(val)})"
-        )
-    return val
-
-
-def _get_callables(gallery_conf, key):
+def _get_callables(gallery_conf, key, src_dir=None):
     """Get callables for the given conf key, returning tuple of callable(s)."""
-    singletons = ("reset_argv", "minigallery_sort_order", "subsection_order")
+    builtin_aliases = (
+        "ExampleTitleSortKey",
+        "FileNameSortKey",
+        "FileSizeSortKey",
+        "NumberOfCodeLinesSortKey",
+    )
+    singletons = (
+        "reset_argv",
+        "minigallery_sort_order",
+        "subsection_order",
+        "within_subsection_order",
+    )
     # the following should be the case (internal use only):
     assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key
     which = gallery_conf[key]
@@ -1679,6 +1655,10 @@ def _get_callables(gallery_conf, key):
         else:
             readable = f"{key}[{wi}]={repr(what)}"
         if isinstance(what, str):
+            # use fully qualified name to resolve builtin callable classes
+            # (otherwise not serializable)
+            if what in builtin_aliases:
+                what = f"sphinx_gallery.sorting.{what}"
             if "." in what:
                 mod, attr = what.rsplit(".", 1)
                 try:
@@ -1702,6 +1682,10 @@ def _get_callables(gallery_conf, key):
                 if what not in _reset_dict:
                     raise ConfigError(f"Unknown string option for {readable}: {what}")
                 what = _reset_dict[what]
+            which[wi] = what
+        # make sure classes get instantiated (so they become callable)
+        if key == "within_subsection_order" and inspect.isclass(what):
+            what = what(src_dir)
             which[wi] = what
         if inspect.isclass(what):
             raise ConfigError(
