@@ -1624,7 +1624,16 @@ def save_rst_example(
 
 
 def _get_callables(gallery_conf, key, src_dir=None):
-    """Get callables for the given conf key, returning tuple of callable(s)."""
+    """Get callables for the given conf key, returning tuple of callable(s).
+
+    If value is a string, import, with the following exceptions:
+
+    * `within_subsection_order` - add full path if value is a built-in aliases,
+      instantiate if value is a class
+    * `image_scrapers` - get value from `_scraper_dict` or import module and
+      get `_get_sg_image_scraper` attribute
+    * `reset_modules` - get value from `_reset_dict`
+    """
     builtin_aliases = (
         "ExampleTitleSortKey",
         "FileNameSortKey",
@@ -1639,6 +1648,7 @@ def _get_callables(gallery_conf, key, src_dir=None):
     )
     # the following should be the case (internal use only):
     assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key
+    # Get correct config value and ensure it's a list
     which = gallery_conf[key]
     if key == "jupyterlite":
         which = [which["notebook_modification_function"]]
@@ -1647,13 +1657,16 @@ def _get_callables(gallery_conf, key, src_dir=None):
     if not isinstance(which, (tuple, list)):
         which = [which]
     which = list(which)
+
     for wi, what in enumerate(which):
+        # Get readable string, for error message
         if key == "jupyterlite":
             readable = f"{key}['notebook_modification_function']"
         elif key in singletons:
             readable = f"{key}={repr(what)}"
         else:
             readable = f"{key}[{wi}]={repr(what)}"
+        # Import string FQNs or get value from dict
         if isinstance(what, str):
             # use fully qualified name to resolve builtin callable classes
             # (otherwise not serializable)
