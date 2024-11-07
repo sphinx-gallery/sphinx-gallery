@@ -339,3 +339,14 @@ def _custom_example_sorter(filename):
 def _custom_subsection_sorter(foldername):
     """Importable custom sorter func for subsection folders, used in our test suite."""
     return foldername[::-1]
+
+
+def custom_minigallery_sort_order_sorter(file):
+    """Importable custom sorter for minigallery_sort_order, used in our test suite."""
+    ORDER = [
+        "plot_3.py",
+        "plot_2.py",
+        "plot_1.py",
+    ]
+    return ORDER.index(Path(file).name)
+    return file
