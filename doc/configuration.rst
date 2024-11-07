@@ -299,8 +299,8 @@ is changed.
 Manage multiple galleries
 =========================
 
-To specify the location of your gallery folder(s), use the Sphinx-Gallery
-configuration dictionary keys:
+To specify the location of your input and output gallery folder(s), use the
+Sphinx-Gallery configuration dictionary keys:
 
 * ``examples_dirs`` (path to folder containing source example files)
 * ``gallery_dirs`` (path to where output files should be placed)

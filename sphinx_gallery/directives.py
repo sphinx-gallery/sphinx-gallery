@@ -170,7 +170,6 @@ class MiniGallery(Directive):
             (sortkey,) = _get_callables(
                 config.sphinx_gallery_conf, "minigallery_sort_order"
             )
-        print(f"XXXXXX mini gallery file paths {file_paths}")
         for obj, path in sorted(
             set(file_paths),
             key=((lambda x: sortkey(str(x[-1]))) if sortkey else None),
