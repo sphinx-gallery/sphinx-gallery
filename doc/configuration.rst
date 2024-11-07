@@ -299,13 +299,14 @@ is changed.
 Manage multiple galleries
 =========================
 
-To specify the location of your input and output gallery folder(s), use the
+To specify the locations of your input and output gallery folder(s), use the following
 Sphinx-Gallery configuration dictionary keys:
 
-* ``examples_dirs`` (path to folder containing source example files)
-* ``gallery_dirs`` (path to where output files should be placed)
+* ``examples_dirs`` (folder where source example files are)
+* ``gallery_dirs`` (folder where output files should be placed)
 
-in your Sphinx ``conf.py`` file to be a list of directories::
+Both configurations take list of directory paths, relative to the ``conf.py`` file.
+They can be set in your Sphinx ``conf.py`` file::
 
     sphinx_gallery_conf = {
         ...
