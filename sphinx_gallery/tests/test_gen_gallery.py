@@ -809,6 +809,40 @@ def test_minigallery_multi_match(sphinx_app_wrapper):
     assert "sphx-glr-ex-sub-folder-sub-sub-folder-plot-nested-py" in mg_html
 
 
+@pytest.mark.add_conf(
+    content="""
+from sphinx_gallery.sorting import FunctionSortKey
+from sphinx_gallery.utils import custom_minigallery_sort_order_sorter
+
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'minigallery_sort_order': FunctionSortKey(custom_minigallery_sort_order_sorter),
+}"""
+)
+@pytest.mark.add_rst(
+    file="""
+Header
+======
+
+.. minigallery:: src/plot_1.py src/plot_2.py src/plot_3.py
+"""
+)
+def test_minigallery_sort_order_callable(sphinx_app_wrapper):
+    """Check `minigallery_sort_order` works when a callable."""
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+
+    rst_fname = Path(sphinx_app.outdir, "minigallery_test.html")
+    locator = "sphx-glr-thumbcontainer"
+    regex = r".+sphx-glr-thumbcontainer.+sphx_glr_plot_(\d)_thumb.+"
+    order = list()
+    with open(rst_fname, "r", encoding="utf-8") as fid:
+        for line in fid:
+            if locator in line:
+                order.append(re.match(regex, line).group(1))
+    assert order == ["3", "2", "1"]
+
+
 def test_write_computation_times_noop(sphinx_app_wrapper):
     app = sphinx_app_wrapper.create_sphinx_app()
     write_computation_times(app.config.sphinx_gallery_conf, None, [])
