@@ -218,6 +218,60 @@ be used with shorter direct alias strings like ``"FileNameSortKey"`` (see
     configuration values via name strings. When using name strings, the configuration
     object can just be a function.
 
+.. _own_sort_keys:
+
+Custom sort keys
+================
+
+You can create a custom sort key callable for the following configurations:
+
+* :ref:`subsection_order <sub_gallery_order>` - to reorder subsections
+  (sub-galleries) (passed subsection folder paths relative to the ``conf.py`` file)
+* :ref:`within_subsection_order <within_gallery_order>` - to reorder gallery items
+  within (sub)sections (passed filenames)
+* :ref:`minigallery_sort_order <minigallery_order>` - to reorder minigallery items
+  (passed full paths to example files and
+  :ref:`backreference files <minigalleries_to_examples>`)
+
+The best way to do this is to define a sort function, that takes the passed path
+string. For example, this function puts all filenames starting with ``plot_`` before
+all other filenames::
+
+    def plotted_sorter(fname):
+        return (not fname.startswith("plot_"), fname)
+
+Then make sure it is importable (see :ref:`importing_callables`) and set your
+configuration::
+
+    sphinx_gallery_conf = {
+    #...,
+    "minigallery_sort_order": "sphinxext.plotted_sorter",
+    #...
+    }
+
+For backwards compatibility you can also set your configuration to be a callable
+object but you will have to ensure that the ``__repr__`` is stable across runs.
+See :ref:`stable_repr` for details.
+
+If you do this, we recommend that you use the
+:class:`sphinx_gallery.sorting.FunctionSortKey`
+because it will ensure that the ``__repr__`` is stable across runs.
+
+:class:`sphinx_gallery.sorting.FunctionSortKey` takes a function on init.
+You can create your sort key callable by instantiating a
+:class:`~sphinx_gallery.sorting.FunctionSortKey` instance with your sort key
+function. For example, the following ``minigallery_sort_order`` configuration
+(which sorts on paths) will sort using the first 10 letters of each filename:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+    #...,
+    "minigallery_sort_order": FunctionSortKey(
+        lambda filename: filename[:10]),
+    #...
+    }
+
 .. _stable_repr:
 
 Ensuring a stable ``__repr__``
@@ -249,13 +303,14 @@ is changed.
 Manage multiple galleries
 =========================
 
-Sphinx-Gallery only supports one level of subfolder nesting in its gallery directories.
-For example our :ref:`examples-index`, has the parent gallery in `examples/` and
-the subsection (aka sub-gallery) in `examples/no_output/`. Further sub-folders are
-not supported. This might be a limitation for you. Or you might want to have separate
-galleries for different purposes; an examples gallery and a tutorials gallery.
-To do this set the Sphinx-Gallery configuration dictionary keys `examples_dirs` and
-`gallery_dirs` in your Sphinx ``conf.py`` file to be a list of directories::
+To specify the locations of your input and output gallery folder(s), use the following
+Sphinx-Gallery configuration dictionary keys:
+
+* ``examples_dirs`` (folder where source example files are)
+* ``gallery_dirs`` (folder where output files should be placed)
+
+Both configurations take list of directory paths, relative to the ``conf.py`` file.
+They can be set in your Sphinx ``conf.py`` file::
 
     sphinx_gallery_conf = {
         ...
@@ -263,7 +318,17 @@ To do this set the Sphinx-Gallery configuration dictionary keys `examples_dirs` 
         'gallery_dirs': ['auto_examples', 'tutorials'],
     }
 
-Keep in mind that both lists have to be of the same length.
+Keep in mind that both lists should be of the same length.
+
+Each folder in ``examples_dirs`` will be built into an examples gallery. Subfolders
+within each ``examples_dirs`` will be built into gallery subsections (sub-galleries)
+of the parent gallery.
+
+Sphinx-Gallery only supports one level of subfolder nesting in its gallery directories.
+For example our :ref:`examples-index`, has the parent gallery in `examples/` and
+the subsection (aka sub-gallery) in `examples/no_output/`. Further sub-folders are
+not supported. This might be a limitation for you, or you might want to have separate
+galleries for different purposes, e.g., an examples gallery and a tutorials gallery.
 
 .. note:: If your examples take a long time to run, consider looking at the
           :ref:`execution times <sphx_glr_auto_examples_sg_execution_times>`
@@ -467,7 +532,7 @@ Sorting gallery subsections
 Gallery subsections (aka sub-galleries) are sorted by default alphabetically by
 their folder name, and as such you can always organize them by changing your folder
 names. Alternatively, you can specify the order via the config value
-'subsection_order' by providing a list of the subsections as paths
+``subsection_order`` by providing a list of the subsections as paths
 relative to :file:`conf.py` in the desired order::
 
     sphinx_gallery_conf = {
@@ -483,9 +548,9 @@ with subsections. You must list all subsections. If that's too cumbersome,
 one entry can be "*", which will collect all not-listed subsections, e.g.
 ``["first_subsection", "*", "last_subsection"]``.
 
-Even more generally, you can set 'subsection_order' to any callable, which
-will be used as sorting key function on the subsection paths. See
-:ref:`own_sort_keys` for more information.
+Even more generally, you can set ``subsection_order`` to any callable, which
+will be used as the sorting key function on the subsection folder paths (relative
+to the ``conf.py`` file). See :ref:`own_sort_keys` for more information.
 
 In fact, the
 above list is a convenience shortcut and it is internally wrapped in
@@ -535,58 +600,19 @@ Built in convenience classes supported by ``within_subsection_order``:
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
 
+These built in Sphinx-Gallery classes can be specified using just the classname as
+a string, e.g., ``"FileSizeSortKey"``. It is functionally equivalent to providing the
+fully qualified name string ``"sphinx_gallery.sorting.NumberOfCodeLinesSortKey"``
+or importing and passing the class. See :ref:`importing_callables` for details.
+
+You can also pass your own custom sort key callable, which will be used to sort
+the full paths to example files in the (sub)section. See :ref:`own_sort_keys` for
+more information.
+
 .. note::
-    These built in Sphinx-Gallery classes can be
-    specified using just the stem, e.g., ``"NumberOfLinesSortKey"``. It is
-    functionally equivalent to providing the fully qualified name
-    ``"sphinx_gallery.sorting.NumberOfCodeLinesSortKey"``. See
-    :ref:`importing_callables` for details.
-
-.. _own_sort_keys:
-
-Custom sort keys
-================
-
-You can create a custom sort key callable for the following configurations:
-
-* :ref:`subsection_order <sub_gallery_order>`
-* :ref:`minigallery_sort_order <minigallery_order>`
-
-The best way to do this is to define a sort function, that takes the passed path
-string::
-
-    def plotted_sorter(fname):
-        return not fname.startswith("plot_"), fname
-
-ensure it is importable (see :ref:`importing_callables`) and set your configuration::
-
-    sphinx_gallery_conf = {
-    #...,
-    "minigallery_sort_order": "sphinxext.plotted_sorter",
-    #...
-    }
-
-For backwards compatibility you can also set your configuration to be a callable
-object but you will have to ensure that the ``__repr__`` is stable across runs.
-See :ref:`stable_repr` for details.
-
-We recommend that you use the :class:`sphinx_gallery.sorting.FunctionSortKey`
-because it will ensure that the ``__repr__`` is stable across runs.
-
-:class:`sphinx_gallery.sorting.FunctionSortKey` takes a function on init.
-You can create your sort key callable by instantiating a
-:class:`~sphinx_gallery.sorting.FunctionSortKey` instance with your sort key
-function. For example, the following ``minigallery_sort_order`` configuration
-(which sorts on paths) will sort using the first 10 letters of each filename:
-
-.. code-block:: python
-
-    sphinx_gallery_conf = {
-    #...,
-    "minigallery_sort_order": FunctionSortKey(
-        lambda filename: filename[:10]),
-    #...
-    }
+    For backwards compatibility, ``within_subsection_order`` can also be a
+    class, which will be instantiated with the full path to the output directory;
+    :ref:`gallery_dir <multiple_galleries_config>`.
 
 .. _link_to_documentation:
 
@@ -845,9 +871,9 @@ thumbnails corresponding to the input file strings or object names.
 You can specify minigallery thumbnails order via the ``minigallery_sort_order``
 configuration, which gets passed to the :py:func:`sorted` ``key`` parameter when
 sorting all minigalleries.
-Sorting uses the paths to the gallery examples (e.g., ``path/to/plot_example.py``)
-and backreferences (e.g., ``path/to/numpy.exp.examples``) corresponding to the
-inputs.
+Sorting is done on the full paths to the gallery examples (e.g.,
+``path/to/plot_example.py``) and backreference files (e.g.,
+``path/to/numpy.exp.examples``), corresponding to the inputs.
 
 See :ref:`own_sort_keys` for details on writing a custom sort key.
 
