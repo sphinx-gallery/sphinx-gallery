@@ -345,7 +345,7 @@ _subsection_explicit_order_list = pytest.mark.add_conf(
     content=_template_conf.format(
         imports="",
         subsection_order='["src/second-subsection", "src/first-subsection"]',
-        within_subsection_order="sphinx_gallery.sorting.NumberOfCodeLinesSortKey",  # this is the default
+        within_subsection_order="sphinx_gallery.sorting.NumberOfCodeLinesSortKey",
     )
 )
 _both_custom_fqn = pytest.mark.add_conf(

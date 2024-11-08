@@ -225,20 +225,23 @@ Custom sort keys
 
 You can create a custom sort key callable for the following configurations:
 
-* :ref:`subsection_order <sub_gallery_order>` - to sort on paths to subsection folders
-  relative to the ``conf.py`` file
-* :ref:`within_subsection_order <within_gallery_order>` - to sort on full paths to
-  example files
-* :ref:`minigallery_sort_order <minigallery_order>` - to sort on full paths
-  to example files and :ref:`backreference files <minigalleries_to_examples>`
+* :ref:`subsection_order <sub_gallery_order>` - to reorder subsections
+  (sub-galleries) (passed subsection folder paths relative to the ``conf.py`` file)
+* :ref:`within_subsection_order <within_gallery_order>` - to reorder gallery items
+  within (sub)sections (passed filenames)
+* :ref:`minigallery_sort_order <minigallery_order>` - to reorder minigallery items
+  (passed full paths to example files and
+  :ref:`backreference files <minigalleries_to_examples>`)
 
 The best way to do this is to define a sort function, that takes the passed path
-string::
+string. For example, this function puts all filenames starting with ``plot_`` before
+all other filenames::
 
     def plotted_sorter(fname):
-        return not fname.startswith("plot_"), fname
+        return (not fname.startswith("plot_"), fname)
 
-ensure it is importable (see :ref:`importing_callables`) and set your configuration::
+Then make sure it is importable (see :ref:`importing_callables`) and set your
+configuration::
 
     sphinx_gallery_conf = {
     #...,
@@ -250,7 +253,8 @@ For backwards compatibility you can also set your configuration to be a callable
 object but you will have to ensure that the ``__repr__`` is stable across runs.
 See :ref:`stable_repr` for details.
 
-We recommend that you use the :class:`sphinx_gallery.sorting.FunctionSortKey`
+If you do this, we recommend that you use the
+:class:`sphinx_gallery.sorting.FunctionSortKey`
 because it will ensure that the ``__repr__`` is stable across runs.
 
 :class:`sphinx_gallery.sorting.FunctionSortKey` takes a function on init.
@@ -542,7 +546,7 @@ with subsections. You must list all subsections. If that's too cumbersome,
 one entry can be "*", which will collect all not-listed subsections, e.g.
 ``["first_subsection", "*", "last_subsection"]``.
 
-Even more generally, you can set 'subsection_order' to any callable, which
+Even more generally, you can set ``subsection_order`` to any callable, which
 will be used as the sorting key function on the subsection folder paths (relative
 to the ``conf.py`` file). See :ref:`own_sort_keys` for more information.
 
@@ -594,7 +598,7 @@ Built in convenience classes supported by ``within_subsection_order``:
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
 
-These built in Sphinx-Gallery classes can be specified using just the stem as
+These built in Sphinx-Gallery classes can be specified using just the classname as
 a string, e.g., ``"FileSizeSortKey"``. It is functionally equivalent to providing the
 fully qualified name string ``"sphinx_gallery.sorting.NumberOfCodeLinesSortKey"``
 or importing and passing the class. See :ref:`importing_callables` for details.
