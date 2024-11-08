@@ -323,10 +323,12 @@ Keep in mind that both lists should be of the same length.
 Each folder in ``examples_dirs`` will be built into an examples gallery. Subfolders
 within each ``examples_dirs`` will be built into gallery subsections (sub-galleries)
 of the parent gallery.
+
 Sphinx-Gallery only supports one level of subfolder nesting in its gallery directories.
 For example our :ref:`examples-index`, has the parent gallery in `examples/` and
 the subsection (aka sub-gallery) in `examples/no_output/`. Further sub-folders are
-not supported.
+not supported. This might be a limitation for you, or you might want to have separate
+galleries for different purposes, e.g., an examples gallery and a tutorials gallery.
 
 .. note:: If your examples take a long time to run, consider looking at the
           :ref:`execution times <sphx_glr_auto_examples_sg_execution_times>`
