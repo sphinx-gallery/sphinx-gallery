@@ -349,4 +349,3 @@ def custom_minigallery_sort_order_sorter(file):
         "plot_1.py",
     ]
     return ORDER.index(Path(file).name)
-    return file
