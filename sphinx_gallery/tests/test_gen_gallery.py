@@ -223,6 +223,29 @@ def test_config_backreferences(sphinx_app_wrapper):
     assert build_warn == ""
 
 
+@pytest.mark.add_conf(
+    content=r"""
+import sys
+
+intersphinx_mapping = {
+    "python": (f"https://docs.python.org/{sys.version_info.major}", None),
+}
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'embed_code_links': True,
+}"""
+)
+def test_embed_code_links(sphinx_app_wrapper):
+    """Check `embed_code_links` works."""
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+    built_example = Path(sphinx_app.outdir, "ex", "plot_1.html")
+
+    with open(built_example, "r", encoding="utf-8") as fid:
+        html = fid.read()
+    print(html)  # Check link has/has not been added in html
+
+
 def test_duplicate_files_warn(sphinx_app_wrapper):
     """Test for a warning when two files with the same filename exist."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()

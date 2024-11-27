@@ -499,6 +499,8 @@ def embed_code_links(app, exception):
         return
 
     gallery_conf = app.config.sphinx_gallery_conf
+    if not gallery_conf["embed_code_links"]:
+        return
 
     # XXX: Allowlist of builders for which it makes sense to embed
     # hyperlinks inside the example html. Note that the link embedding
