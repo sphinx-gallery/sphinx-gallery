@@ -1,4 +1,4 @@
-name: PR Labeler
+name: Bot PR labeler
 on: pull_request  # yamllint disable-line rule:truthy
 
 permissions:
