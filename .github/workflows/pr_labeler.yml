@@ -5,6 +5,13 @@ permissions:
   contents: read
 
 jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
   pr-labeler:
     if: (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'pre-commit-ci') && github.repository == 'sphinx-gallery/sphinx-gallery'
     permissions:
