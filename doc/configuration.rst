@@ -1045,6 +1045,7 @@ following css prevents any module except for matplotlib from being decorated:
 
     a[class^="sphx-glr-backref-module-"] {
         text-decoration: none;
+        color: inherit;
     }
     a[class^="sphx-glr-backref-module-matplotlib"] {
         text-decoration: underline;
