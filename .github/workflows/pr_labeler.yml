@@ -1,0 +1,17 @@
+name: Bot PR labeler
+on: pull_request  # yamllint disable-line rule:truthy
+
+permissions:
+  contents: read
+
+jobs:
+  pr-labeler:
+    if: (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]') && github.repository == 'sphinx-gallery/sphinx-gallery'
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: TimonVS/pr-labeler-action@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
