@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 .coverage*
 .vscode
+.DS_Store
 
 # C extensions
 *.so
