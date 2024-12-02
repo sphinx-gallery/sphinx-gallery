@@ -4,7 +4,7 @@ on: pull_request  # yamllint disable-line rule:truthy
 permissions:
   contents: read
 
-  jobs:
+jobs:
   pr-labeler:
     if: (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'pre-commit-ci') && github.repository == 'sphinx-gallery/sphinx-gallery'
     permissions:
