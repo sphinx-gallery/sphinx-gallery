@@ -243,7 +243,7 @@ def test_embed_code_links(sphinx_app_wrapper):
 
     with open(built_example, "r", encoding="utf-8") as fid:
         html = fid.read()
-    print(html) # Check link has/has not been added in html
+    print(html)  # Check link has/has not been added in html
 
 
 def test_duplicate_files_warn(sphinx_app_wrapper):
