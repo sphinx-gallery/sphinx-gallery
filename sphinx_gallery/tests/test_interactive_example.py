@@ -216,7 +216,7 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     if use_jupyter_lab:
         jupyter_part = "lab"
     else:
-        jupyter_part = "retro/notebooks"
+        jupyter_part = "notebooks"
 
     target_rst = target_rst_template.format(
         root_url=root_url, jupyter_part=jupyter_part, notebook_path=notebook_path

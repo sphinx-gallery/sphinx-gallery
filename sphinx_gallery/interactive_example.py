@@ -417,7 +417,7 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     if gallery_conf["jupyterlite"]["use_jupyter_lab"]:
         lite_root_url += "/lab"
     else:
-        lite_root_url += "/retro/notebooks"
+        lite_root_url += "/notebooks"
 
     lite_url = f"{lite_root_url}/index.html?path={notebook_location}"
 
