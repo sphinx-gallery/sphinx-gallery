@@ -3,9 +3,9 @@ Testing backreferences
 ----------------------
 
 This example runs after plot_future_statements.py (alphabetical ordering within
-subsection) and should be unaffected by the __future__ import in
+subsection) and should be unaffected by the ``__future__`` import in
 plot_future_statements.py. We should eventually update this script to actually
-test this... we require Python 3 nowadays so the __future__ statements there
+test this... we require Python 3 nowadays so the ``__future__`` statements there
 don't do anything. So for now let's repurpose this to look at some
 backreferences. We should probably also change the filename in another PR!
 """
