@@ -297,7 +297,7 @@ def pre_configure_jupyterlite_sphinx(app, config):
         return
 
     # Do not use notebooks as sources for the documentation. See
-    # https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html#disable-the-ipynb-docs-source-binding
+    # https://jupyterlite-sphinx.readthedocs.io/en/stable/configuration.html#disable-the-ipynb-docs-source-binding
     # for more details
     config.jupyterlite_bind_ipynb_suffix = False
 

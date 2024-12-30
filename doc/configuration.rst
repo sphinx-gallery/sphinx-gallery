@@ -1605,8 +1605,8 @@ jupyterlite_contents (type: string, default: ``jupyterlite_contents``)
   contents.
 
 You can set variables in ``conf.py`` to configure ``jupyterlite-sphinx``, see
-the `jupyterlite-sphinx doc
-<https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html>`__ for
+the `jupyterlite-sphinx documentation
+<https://jupyterlite-sphinx.readthedocs.io/en/stable/configuration.html>`__ for
 more details.
 
 If a Sphinx-Gallery configuration for JupyterLite is discovered, the following
