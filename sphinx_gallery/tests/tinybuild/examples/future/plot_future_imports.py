@@ -1,8 +1,8 @@
 """
-Test __future__ imports across cells
-------------------------------------
+Test ``__future__`` imports across cells
+----------------------------------------
 
-This example tests that __future__ imports works across cells.
+This example tests that ``__future__`` imports works across cells.
 """
 
 from __future__ import division, print_function
