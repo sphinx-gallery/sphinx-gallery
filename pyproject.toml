@@ -43,7 +43,7 @@ optional-dependencies.dev = [
   "intersphinx-registry",
   "ipython",
   "joblib",
-  "jupyterlite-sphinx",
+  "jupyterlite-sphinx>=0.17.1",
   "lxml",
   "matplotlib",
   "numpy",
