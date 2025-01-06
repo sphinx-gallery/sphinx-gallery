@@ -1521,21 +1521,21 @@ Sphinx-Gallery automatically generates Jupyter notebooks for any examples built
 with the gallery. `JupyterLite <https://jupyterlite.readthedocs.io>`__ makes it
 possible to run an example in your browser. The functionality is quite similar
 to Binder in the sense that you will get a Jupyter environment where you can
-run the example interactively as a notebook. The main difference with Binder
+run the example interactively as a notebook. The main differences from Binder
 are:
 
 - with JupyterLite, the example actually runs in your browser, there is no need
   for a separate machine in the cloud to run your Python code. That means that
   starting a Jupyter server is generally quicker, no need to wait for the
   Binder image to be built
-- with JupyterLite the first imports take time. At the time of writing
-  (February 2023) ``import scipy`` can take ~15-30s. Some innocuously looking
+- with JupyterLite, the first imports take time. At the time of writing
+  (December 2024) ``import scipy`` can take ~15-30s. Some innocuously looking
   Python code may just not work and break in an unexpected fashion. The Jupyter
   kernel is based on Pyodide, see `here
   <https://pyodide.org/en/latest/usage/wasm-constraints.html>`__ for some
   Pyodide limitations.
-- with JupyterLite environments are not as flexible as Binder, for example you
-  can not use a docker image but only the default `Pyodide
+- JupyterLite environments are not as flexible as Binder. For example, you
+  can not use a Docker image, but only the default `Pyodide
   <https://pyodide.org/en/stable/index.html>`__ environment. That means that
   some non pure-Python packages may not be available, see list of `available
   packages in Pyodide
@@ -1549,8 +1549,12 @@ are:
 
 In order to enable JupyterLite links with Sphinx-Gallery, you need to install
 the `jupyterlite-sphinx <https://jupyterlite-sphinx.readthedocs.io>`_ package.
-For `jupyterlite-sphinx>=0.8` (released 15 March 2023) you also need to install
-`jupyterlite-pyodide-kernel`.
+Recent versions of ``jupyterlite-sphinx`` and Sphinx-Gallery should be compatible,
+with each other, but we recommend ``jupyterlite-sphinx>=0.17.1``.
+For ``jupyterlite-sphinx>=0.8`` you also need to install
+``jupyterlite-pyodide-kernel``. The latest released version is recommended, but
+recent versions should work as well, this depends on the version of Pyodide
+that you are using or planning to use.
 
 You then need to add `jupyterlite_sphinx` to your Sphinx extensions in
 ``conf.py``::
@@ -1566,7 +1570,7 @@ You can configure JupyterLite integration by setting
     sphinx_gallery_conf = {
       ...
       'jupyterlite': {
-         'use_jupyter_lab': <bool>, # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
+         'use_jupyter_lab': <bool>, # Whether JupyterLite links should start Jupyter Lab instead of the Notebook interface.
          'notebook_modification_function': <str>, # fully qualified name of a function that implements JupyterLite-specific modifications of notebooks
          'jupyterlite_contents': <str>, # where to copy the example notebooks (relative to Sphinx source directory)
          }
@@ -1601,8 +1605,8 @@ jupyterlite_contents (type: string, default: ``jupyterlite_contents``)
   contents.
 
 You can set variables in ``conf.py`` to configure ``jupyterlite-sphinx``, see
-the `jupyterlite-sphinx doc
-<https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html>`__ for
+the `jupyterlite-sphinx documentation
+<https://jupyterlite-sphinx.readthedocs.io/en/stable/configuration.html>`__ for
 more details.
 
 If a Sphinx-Gallery configuration for JupyterLite is discovered, the following

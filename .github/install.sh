@@ -13,7 +13,7 @@ if [ "$DISTRIB" == "mamba" ]; then
     if [ "$PLATFORM" != "Linux" ]; then
         conda remove -y memory_profiler
     fi
-    PIP_DEPENDENCIES="jupyterlite-sphinx>=0.8.0,<0.9.0 jupyterlite-pyodide-kernel<0.1.0 libarchive-c numpy"
+    PIP_DEPENDENCIES="jupyterlite-sphinx>=0.17.1 jupyterlite-pyodide-kernel libarchive-c numpy"
 elif [ "$DISTRIB" == "minimal" ]; then
     PIP_DEPENDENCIES=""
 elif [ "$DISTRIB" == "pip" ]; then
