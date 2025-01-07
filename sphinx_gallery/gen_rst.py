@@ -509,7 +509,7 @@ def generate_dir_rst(
     seen_backrefs,
     is_subsection=True,
 ):
-    """Generate the gallery reStructuredText for an example directory.
+    """Generate output example reST files for one gallery (sub)directory.
 
     Parameters
     ----------

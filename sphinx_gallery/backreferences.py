@@ -292,7 +292,7 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
 THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="{snippet}">
+    <div class="sphx-glr-thumbcontainer" tooltip="{intro}">
 
 .. only:: html
 
@@ -319,9 +319,33 @@ BACKREF_THUMBNAIL_TEMPLATE = (
 
 
 def _thumbnail_div(
-    target_dir, src_dir, fname, snippet, title, is_backref=False, check=True
+    target_dir, src_dir, fname, intro, title, is_backref=False, check=True
 ):
-    """Generate reST to place a thumbnail in a gallery."""
+    """Generate reST to place a thumbnail in a gallery.
+
+    Parameters
+    ----------
+    target_dir : str
+        Absolute path to output directory, where thumbnails are saved.
+    src_dir : str
+        Absolute path to build source directory.
+    fname : str
+        Filename of example file.
+    intro : str
+        Introductory docstring of example, to show in tooltip
+    title: str
+        Title of example.
+    is_backref : bool
+        Whether the thumbnail is for a backreference/recommendation file (in which
+        case reST added to prevent thumbnails showing in latex docs)
+    check : bool
+        Whether to check if the thumbnail image file exists.
+
+    Returns
+    -------
+    thumbnail : str
+        reST for a thumbnail.
+    """
     fname = Path(fname)
     thumb, _ = _find_image_ext(
         os.path.join(target_dir, "images", "thumb", f"sphx_glr_{fname.stem}_thumb.png")
@@ -341,12 +365,12 @@ def _thumbnail_div(
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
     return template.format(
-        snippet=escape(snippet), thumbnail=thumb, title=title, ref_name=ref_name
+        intro=escape(intro), thumbnail=thumb, title=title, ref_name=ref_name
     )
 
 
 def _write_backreferences(
-    backrefs, seen_backrefs, gallery_conf, target_dir, fname, snippet, title
+    backrefs, seen_backrefs, gallery_conf, target_dir, fname, intro, title
 ):
     """Write backreference file for one example including a thumbnail list of examples.
 
@@ -362,7 +386,7 @@ def _write_backreferences(
         Absolute path to directory where examples are saved.
     fname : str
         Filename of current example python file.
-    snippet : str
+    intro : str
         Introductory docstring of example.
     title: str
         Title of example.
@@ -394,7 +418,7 @@ def _write_backreferences(
                     target_dir,
                     gallery_conf["src_dir"],
                     fname,
-                    snippet,
+                    intro,
                     title,
                     is_backref=True,
                 )

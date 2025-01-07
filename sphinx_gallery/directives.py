@@ -186,6 +186,7 @@ class MiniGallery(Directive):
             else:
                 target_dir = self._get_target_dir(config, src_dir, path, obj)
                 # Get thumbnail
+                # TODO: ideally we would not need to parse file (again) here
                 _, script_blocks = split_code_and_text_blocks(
                     str(path), return_node=False
                 )
