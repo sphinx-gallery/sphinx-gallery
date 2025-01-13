@@ -53,7 +53,7 @@ def _raise(*args, **kwargs):
 
     plt.close("all")
     raise ValueError(
-        "zero-size array to reduction operation minimum which " "has no identity"
+        "zero-size array to reduction operation minimum which has no identity"
     )
 
 

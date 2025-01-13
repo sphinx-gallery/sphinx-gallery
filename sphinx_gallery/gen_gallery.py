@@ -493,7 +493,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     ):
         raise ConfigError(
             'gallery_conf["show_api_usage"] must be True, False or "unused", '
-            f'got {gallery_conf["show_api_usage"]}'
+            f"got {gallery_conf['show_api_usage']}"
         )
 
     # check `within_subsection_order`
@@ -918,8 +918,8 @@ def _format_for_writing(costs, *, src_dir, kind="rst"):
         else:  # like in generate_gallery
             assert kind == "console"
             name = rel_path
-            t = f'{cost["t"]:0.2f} sec'
-        m = f'{cost["mem"]:.1f} MB'
+            t = f"{cost['t']:0.2f} sec"
+        m = f"{cost['mem']:.1f} MB"
         lines.append([name, t, m])
     lens = [max(x) for x in zip(*[[len(item) for item in cost] for cost in lines])]
     return lines, lens
@@ -949,7 +949,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
         out_dir = target_dir
         where = os.path.relpath(target_dir, gallery_conf["src_dir"])
         kind = "rst"
-        ref_extra = f'{where.replace(os.sep, "_")}_'
+        ref_extra = f"{where.replace(os.sep, '_')}_"
     new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
     out_file = Path(out_dir) / "sg_execution_times.rst"
     if out_file.is_file() and total_time == 0:  # a re-run
@@ -1361,8 +1361,7 @@ def write_junit_xml(gallery_conf, target_dir, costs):
             continue  # not subselected by our regex
         title = gallery_conf["titles"][fname]
         output += (
-            '<testcase classname={!s} file={!s} line="1" '
-            'name={!s} time="{!r}">'.format(
+            '<testcase classname={!s} file={!s} line="1" name={!s} time="{!r}">'.format(
                 quoteattr(os.path.splitext(os.path.basename(fname))[0]),
                 quoteattr(os.path.relpath(fname, src_dir)),
                 quoteattr(title),

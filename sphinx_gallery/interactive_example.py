@@ -251,7 +251,7 @@ def check_binder_conf(binder_conf):
         binder_conf["binderhub_url"].startswith(ii) for ii in ["http://", "https://"]
     ):
         raise ConfigError(
-            "did not supply a valid url, " "gave binderhub_url: {}".format(
+            "did not supply a valid url, gave binderhub_url: {}".format(
                 binder_conf["binderhub_url"]
             )
         )
@@ -265,7 +265,7 @@ def check_binder_conf(binder_conf):
         binder_conf["dependencies"] = path_reqs
     elif not isinstance(path_reqs, (list, tuple)):
         raise ConfigError(
-            "`dependencies` value should be a list of strings. " "Got type {}.".format(
+            "`dependencies` value should be a list of strings. Got type {}.".format(
                 type(path_reqs)
             )
         )

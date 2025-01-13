@@ -250,7 +250,7 @@ def sphinx_app_wrapper(tmpdir, conf_file, rst_file, req_mpl, req_pil):
     base_config = f"""
 import os
 import sphinx_gallery
-extensions = {conf_file['extensions']!r}
+extensions = {conf_file["extensions"]!r}
 exclude_patterns = ['_build', 'src']
 source_suffix = '.rst'
 master_doc = 'index'

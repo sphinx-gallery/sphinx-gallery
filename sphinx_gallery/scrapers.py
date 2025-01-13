@@ -399,8 +399,7 @@ def save_figures(block, block_vars, gallery_conf):
             )
             if not os.path.isfile(current_path):
                 raise ExtensionError(
-                    f"Scraper {scraper} did not produce expected image:"
-                    f"\n{current_path}"
+                    f"Scraper {scraper} did not produce expected image:\n{current_path}"
                 )
         all_rst += rst
     return all_rst
