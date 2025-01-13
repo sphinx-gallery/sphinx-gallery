@@ -329,7 +329,7 @@ def _thumbnail_div(
     if check and not os.path.isfile(thumb):
         # This means we have done something wrong in creating our thumbnail!
         raise ExtensionError(
-            "Could not find internal Sphinx-Gallery thumbnail" f" file:\n{thumb}"
+            f"Could not find internal Sphinx-Gallery thumbnail file:\n{thumb}"
         )
     thumb = os.path.relpath(thumb, src_dir)
     full_dir = os.path.relpath(target_dir, src_dir)
