@@ -619,9 +619,11 @@ more information.
 Add intersphinx links to your examples
 ======================================
 
-Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
-you can link used functions/methods/attributes/objects/classes to their matching
-online documentation. Such code snippets within the gallery appear like this:
+Sphinx-Gallery enables you to add hyperlinks to the **code blocks** in your example
+files. This links functions/methods/attributes/objects/classes used, to their matching
+online documentation.
+
+Such code snippets within the gallery appear like this:
 
 .. raw:: html
 
@@ -630,11 +632,22 @@ online documentation. Such code snippets within the gallery appear like this:
     </pre></div>
     </div>
 
-Have a look at this in full action
-in our example :ref:`sphx_glr_auto_examples_plot_0_sin.py`.
+.. note::
 
-To make this work in your documentation you need to include to the configuration
-dictionary within your Sphinx ``conf.py`` file::
+    Sphinx-Gallery does not manage hyperlinks in reST **text blocks**. These
+    depend on your Sphinx setup. If your project uses :mod:`sphinx.ext.intersphinx`,
+    hyperlinks to external modules will be added to text blocks, similar to a normal
+    Sphinx reST documentation file.
+
+If you use the Sphinx extension :mod:`sphinx.ext.intersphinx`, entries in
+the ``intersphinx`` inventory will automatically be used for linking inside
+code blocks. If you wish to add or over-ride any ``intersphinx`` module, you can
+use the Sphinx-Gallery ``reference_url`` configuration.
+``reference_url`` accepts a dictionary where the key is the module name string and
+value is the URL to the module's documentation directory page, containing
+``searchindex.js``, such as ``'matplotlib': 'https://matplotlib.org'``.
+
+To link the local module, use ``None`` as the value, as shown below::
 
     sphinx_gallery_conf = {
         ...
@@ -644,15 +657,11 @@ dictionary within your Sphinx ``conf.py`` file::
         }
     }
 
-To link to external modules, if you use the Sphinx extension
-:mod:`sphinx.ext.intersphinx`, no additional changes are necessary,
-as the ``intersphinx`` inventory will automatically be used.
-If you do not use ``intersphinx``, then you should add entries that
-point to the directory containing ``searchindex.js``, such as
-``'matplotlib': 'https://matplotlib.org'``.
-
-If you wish to do the same for ordinary reST documentation,
+To add links to code blocks in plain reST example files inside galleries,
 see :ref:`plain_rst`.
+
+Have a look at this functionality in full action
+in our example :ref:`sphx_glr_auto_examples_plot_0_sin.py`.
 
 Resolving module paths
 ^^^^^^^^^^^^^^^^^^^^^^

@@ -125,11 +125,7 @@ def test_cxx_titles(comment, expected_docstring):
         pytest.param(
             "*.cpp",
             """// Title""",
-            (
-                "     // %%\n"
-                "     // First comment line\n"
-                "     // Second comment line\n"
-            ),
+            ("     // %%\n     // First comment line\n     // Second comment line\n"),
             "First comment line\nSecond comment line\n",
             id="indented-separate-sentinel",
         ),
@@ -172,13 +168,7 @@ def test_cxx_titles(comment, expected_docstring):
         pytest.param(
             "*.jl",
             "# Title",
-            (
-                "    #=%%\n"
-                "    * list item 1\n"
-                "    * list item 2\n"
-                "      * subitem\n"
-                "    =#"
-            ),
+            ("    #=%%\n    * list item 1\n    * list item 2\n      * subitem\n    =#"),
             "* list item 1\n* list item 2\n  * subitem\n",
             id="julia-multiline",
         ),

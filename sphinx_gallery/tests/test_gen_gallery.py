@@ -152,7 +152,7 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
             "'reset_modules_order' config allowed types",
             id="Resetter unknown",
             marks=pytest.mark.add_conf(
-                content=("sphinx_gallery_conf=" "{'reset_modules_order': 1,}")
+                content=("sphinx_gallery_conf={'reset_modules_order': 1,}")
             ),
         ),
         pytest.param(
@@ -160,7 +160,7 @@ def test_bad_reset(sphinx_app_wrapper, err_class, err_match):
             "reset_modules_order must be in",
             id="reset_modules_order not valid",
             marks=pytest.mark.add_conf(
-                content=("sphinx_gallery_conf=" "{'reset_modules_order': 'invalid',}")
+                content=("sphinx_gallery_conf={'reset_modules_order': 'invalid',}")
             ),
         ),
     ],
@@ -877,7 +877,7 @@ sphinx_gallery_conf = {
 def test_pypandoc_config_keys(sphinx_app_wrapper):
     """Tests 'pypandoc' dictionary key checking."""
     with pytest.raises(
-        ConfigError, match="'pypandoc' only accepts the following key " "values:"
+        ConfigError, match="'pypandoc' only accepts the following key values:"
     ):
         app = sphinx_app_wrapper.create_sphinx_app()
         fill_gallery_conf_defaults(app, app.config, check_keys=False)

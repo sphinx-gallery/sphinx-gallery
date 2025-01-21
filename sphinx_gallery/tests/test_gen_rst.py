@@ -228,7 +228,7 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
                     "####################",
                     "# Paragraph 1",
                     "",
-                    "# just a comment" "",
+                    "# just a comment",
                 ]
             )
         )
@@ -1145,7 +1145,7 @@ def test_reset_module_order_3_param_invalid_when(gallery_conf):
     gallery_conf["reset_modules_order"] = "before"
     with pytest.raises(
         ValueError,
-        match=("3rd parameter in cleanup_3_param " "function signature must be 'when'"),
+        match=("3rd parameter in cleanup_3_param function signature must be 'when'"),
     ):
         _generate_rst(gallery_conf, "plot_test.py", CONTENT)
     assert mock_reset_module.call_count == 0

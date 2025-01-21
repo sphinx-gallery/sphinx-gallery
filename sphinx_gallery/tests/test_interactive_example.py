@@ -36,8 +36,7 @@ def test_binder():
 
     url = gen_binder_url(file_path, conf_base, gallery_conf_base)
     expected = (
-        "http://test1.com/v2/gh/org/repo/"
-        "branch?filepath=notebooks/mydir/myfile.ipynb"
+        "http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb"
     )
     assert url == expected
 
@@ -96,7 +95,7 @@ def test_binder():
     conf6 = deepcopy(conf1)
     conf6["dependencies"] = {"test": "test"}
     with pytest.raises(
-        ConfigError, match="`dependencies` value should be a " "list of strings"
+        ConfigError, match="`dependencies` value should be a list of strings"
     ):
         url = check_binder_conf(conf6)
 
@@ -110,9 +109,7 @@ def test_binder():
         pass
 
     apptmp.srcdir = "/"
-    with pytest.raises(
-        ConfigError, match="Couldn't find the Binder " "requirements file"
-    ):
+    with pytest.raises(ConfigError, match="Couldn't find the Binder requirements file"):
         url = _copy_binder_reqs(apptmp, conf7)
 
     # Check returns the correct object
