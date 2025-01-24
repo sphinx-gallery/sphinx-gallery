@@ -10,7 +10,7 @@ on:  # yamllint disable-line rule:truthy
       - synchronize
 
 env:
-  LABELS: $(gh api --jq '.labels.[].name' /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }})
+  LABELS: $(gh api --jq '.labels.[].name' /repos/{owner}/{repo}/pulls/${{ github.event.number }})
 
 jobs:
   check-type-label:
