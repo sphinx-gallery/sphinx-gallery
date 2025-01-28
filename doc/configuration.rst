@@ -56,7 +56,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 
 **Cross-referencing**
 
-- ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
+- ``reference_url``, ``prefer_full_module``, ``embed_code_links`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
   and ``inspect_global_variables`` (:ref:`minigalleries_to_examples`)
 - ``minigallery_sort_order`` (:ref:`minigallery_order`)
@@ -619,11 +619,18 @@ more information.
 Add intersphinx links to your examples
 ======================================
 
-Sphinx-Gallery enables you to add hyperlinks to the **code blocks** in your example
-files. This links functions/methods/attributes/objects/classes used, to their matching
-online documentation.
+By default Sphinx-Gallery adds hyperlinks in your example scripts so that
+you can link used functions/methods/attributes/objects/classes to their matching
+online documentation. To disable this for code blocks, but keep them for text
+blocks, set the configuration ``embed_code_links`` to ``False``::
 
-Such code snippets within the gallery appear like this:
+    sphinx_gallery_conf = {
+        ...
+        'embed_code_links': False
+    }
+
+``embed_code_links`` is ``True`` by default, which causes code snippets within
+the gallery will appear like this:
 
 .. raw:: html
 

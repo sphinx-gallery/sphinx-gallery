@@ -91,6 +91,7 @@ DEFAULT_GALLERY_CONF = {
     "doc_module": (),
     "exclude_implicit_doc": set(),
     "reference_url": {},
+    "embed_code_links": True,
     "capture_repr": ("_repr_html_", "__repr__"),
     "ignore_repr_types": r"",
     # Build options
@@ -364,6 +365,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     for key in (
         "promote_jupyter_magic",
         "run_stale_examples",
+        "embed_code_links",
     ):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
 
