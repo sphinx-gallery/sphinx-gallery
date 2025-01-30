@@ -10,6 +10,7 @@ import inspect
 import os
 import re
 import sys
+from collections import defaultdict
 from html import escape
 from pathlib import Path
 
@@ -336,8 +337,8 @@ def _thumbnail_div(
     title: str
         Title of example.
     is_backref : bool
-        Whether the thumbnail is for a backreference/recommendation file (in which
-        case reST added to prevent thumbnails showing in latex docs)
+        Whether the thumbnail is for a html backreference/recommendation file. If not
+        a bullet list of the example is added for non-html documentation builds.
     check : bool
         Whether to check if the thumbnail image file exists.
 
@@ -390,10 +391,18 @@ def _write_backreferences(
         Introductory docstring of example.
     title: str
         Title of example.
+
+    Returns
+    -------
+    backrefs_example : dict[str, tuple]
+        Dictionary where value is the backreference object and value
+        is a NamedTuple containing all the information required for a reST
+        thumbnail div.
     """
     if gallery_conf["backreferences_dir"] is None:
         return
 
+    backrefs_example = defaultdict(list)
     for backref in backrefs:
         include_path = os.path.join(
             gallery_conf["src_dir"],
@@ -424,6 +433,8 @@ def _write_backreferences(
                 )
             )
             seen_backrefs.add(backref)
+            backrefs_example[backref].append((Path(target_dir, fname), intro, title))
+    return backrefs_example
 
 
 def _finalize_backreferences(seen_backrefs, gallery_conf):

@@ -18,7 +18,7 @@ import sphinx.util
 from sphinx.errors import ExtensionError
 from sphinx.search import js_index
 
-from .utils import _W_KW, _replace_md5, status_iterator
+from .utils import _W_KW, _read_json, status_iterator
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -330,22 +330,6 @@ def _get_intersphinx_inventory(app):
     return intersphinx_inv
 
 
-# Whatever mechanism is used for writing here should be paired with reading in
-# _embed_code_links
-def _write_code_obj(target_file, example_code_obj):
-    codeobj_fname = target_file.with_name(target_file.stem + ".codeobj.json.new")
-    with open(codeobj_fname, "w", **_W_KW) as fid:
-        json.dump(
-            example_code_obj,
-            fid,
-            sort_keys=True,
-            ensure_ascii=False,
-            indent=1,
-            check_circular=False,
-        )
-    _replace_md5(codeobj_fname, check="json")
-
-
 def _embed_code_links(app, gallery_conf, gallery_dir):
     """Add resolvers for the packages for which we want to show links."""
     doc_resolvers = {}
@@ -400,8 +384,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             continue
 
         # we have a json file with the objects to embed links for
-        with open(json_fname, "r", encoding="utf-8") as fid:
-            example_code_obj = json.load(fid)
+        example_code_obj = _read_json(json_fname)
+
         # generate replacement strings with the links
         str_repl = {}
         for name in sorted(example_code_obj):
