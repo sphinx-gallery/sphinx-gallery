@@ -195,7 +195,6 @@ class MiniGallery(Directive):
             file_paths.items(),
             key=((lambda x: sortkey(str(x[-1]))) if sortkey else None),
         ):
-            print(path)
             if path_info.intro is not None:
                 thumbnail = _thumbnail_div(
                     path.parent, src_dir, path.name, path_info.intro, path_info.title

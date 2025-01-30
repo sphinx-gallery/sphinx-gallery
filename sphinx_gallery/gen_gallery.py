@@ -54,6 +54,7 @@ from .utils import (
     _has_graphviz,
     _has_optipng,
     _has_pypandoc,
+    _read_json,
     _replace_md5,
     _write_json,
 )
@@ -1243,24 +1244,17 @@ def write_api_entry_usage(app, docname, source):
     # find used and unused API entries
     unused_api_entries = list()
     used_api_entries = dict()
+    backreferences_all = _read_json(Path(backreferences_dir, "backreferences_all.json"))
     for entry in example_files:
         # don't include built-in methods etc.
         if re.match(gallery_conf["api_usage_ignore"], entry) is not None:
             continue
         # check if backreferences empty
-        example_fname = os.path.join(backreferences_dir, f"{entry}.examples.new")
-        if not os.path.isfile(example_fname):  # use without new
-            example_fname = os.path.splitext(example_fname)[0]
-        assert os.path.isfile(example_fname)
-        if os.path.getsize(example_fname) == 0:
+        backref_entry = backreferences_all.get(entry, None)
+        if backref_entry is None:
             unused_api_entries.append(entry)
         else:
-            used_api_entries[entry] = list()
-            with open(example_fname, encoding="utf-8") as fid2:
-                for line in fid2:
-                    if line.startswith("  :ref:"):
-                        example_name = line.split("`")[1]
-                        used_api_entries[entry].append(example_name)
+            used_api_entries[entry] = [br[0] for br in backref_entry]
 
     for entry in sorted(unused_api_entries):
         source[0] += f"- :{get_entry_type(entry)}:`{entry}`\n"
