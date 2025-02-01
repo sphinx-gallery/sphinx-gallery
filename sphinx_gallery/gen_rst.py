@@ -62,11 +62,11 @@ from .utils import (
     _combine_backreferences,
     _format_toctree,
     _replace_md5,
+    _write_json,
     get_md5sum,
     optipng,
     scale_image,
     status_iterator,
-    _write_json,
     zip_files,
 )
 
