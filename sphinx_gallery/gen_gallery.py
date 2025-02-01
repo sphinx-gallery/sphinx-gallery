@@ -849,8 +849,12 @@ def generate_gallery_rst(app):
     # Write backreferences_all to file
     if gallery_conf["backreferences_dir"]:
         _write_json(
-            Path(gallery_conf["src_dir"], gallery_conf["backreferences_dir"], "backreferences_all"),
-            backrefs_all
+            Path(
+                gallery_conf["src_dir"],
+                gallery_conf["backreferences_dir"],
+                "backreferences_all",
+            ),
+            backrefs_all,
         )
 
     if gallery_conf["show_api_usage"] is not False:

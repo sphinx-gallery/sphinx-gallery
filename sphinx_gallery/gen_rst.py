@@ -542,7 +542,7 @@ def generate_dir_rst(
         List of example file names we generated ReST for.
     backrefs_dir : dict[str, tuple]
         Dictionary where value is the backreference object and value
-        is a tuple containing: full path to example file, 
+        is a tuple containing: full path to example file,
         thumbnail div.
     """
     index_content = ""
