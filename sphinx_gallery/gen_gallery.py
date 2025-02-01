@@ -1245,6 +1245,7 @@ def write_api_entry_usage(app, docname, source):
     unused_api_entries = list()
     used_api_entries = dict()
     backreferences_all = _read_json(Path(backreferences_dir, "backreferences_all.json"))
+    src_dir = gallery_conf["src_dir"]
     for entry in example_files:
         # don't include built-in methods etc.
         if re.match(gallery_conf["api_usage_ignore"], entry) is not None:
@@ -1254,7 +1255,11 @@ def write_api_entry_usage(app, docname, source):
         if backref_entry is None:
             unused_api_entries.append(entry)
         else:
-            used_api_entries[entry] = [br[0] for br in backref_entry]
+            used_api_entries[entry] = list()
+            for br in backref_entry:
+                example_path = Path(br[0]).relative_to(src_dir)
+                ref_name = str(example_path).replace(os.sep, "_")
+                used_api_entries[entry].append(f"sphx_glr_{ref_name}")
 
     for entry in sorted(unused_api_entries):
         source[0] += f"- :{get_entry_type(entry)}:`{entry}`\n"

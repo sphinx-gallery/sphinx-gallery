@@ -166,12 +166,15 @@ class MiniGallery(Directive):
 
         file_paths = {}
         for arg in arg_list:
+            # Backreference arg input
             if paths := has_backrefs(arg):
                 # `PathInfo.arg` is not required for backreference paths
-                file_paths[Path(paths[0])] = PathInfo(paths[1], paths[2], None)
+                for path in paths:
+                    file_paths[Path(path[0])] = PathInfo(path[1], path[2], None)
+            # Glob path arg input
             elif paths := Path(src_dir).glob(arg):
                 # Glob paths require extra parsing to get the intro and title
-                # so we don't want to override a backreference path
+                # so we don't want to override a backreference arg input
                 for path in paths:
                     path_resolved = path.resolve()
                     if path_resolved in file_paths:

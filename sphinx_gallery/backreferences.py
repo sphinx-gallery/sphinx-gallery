@@ -414,7 +414,7 @@ def _write_backreferences(
         with open(include_path, mode, **_W_KW) as ex_file:
             if not seen:
                 # Be aware that if the number of lines of this heading changes,
-                #   the minigallery directive should be modified accordingly
+                # the minigallery directive should be modified accordingly
                 heading = f"Examples using ``{backref}``"
                 ex_file.write("\n\n" + heading + "\n")
                 ex_file.write("^" * len(heading) + "\n")
@@ -433,7 +433,9 @@ def _write_backreferences(
                 )
             )
             seen_backrefs.add(backref)
-            backrefs_example[backref].append((Path(target_dir, fname), intro, title))
+            backrefs_example[backref].append(
+                (str(Path(target_dir, fname)), intro, title)
+            )
     return backrefs_example
 
 
