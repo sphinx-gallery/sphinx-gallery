@@ -168,13 +168,13 @@ class MiniGallery(Directive):
         for arg in arg_list:
             # Backreference arg input
             if paths := has_backrefs(arg):
-                # `PathInfo.arg` is not required for backreference paths
+                # Note `PathInfo.arg` not required for backreference paths
                 for path in paths:
                     file_paths[Path(path[0])] = PathInfo(path[1], path[2], None)
             # Glob path arg input
             elif paths := Path(src_dir).glob(arg):
                 # Glob paths require extra parsing to get the intro and title
-                # so we don't want to override a backreference arg input
+                # so we don't want to override a duplicate backreference arg input
                 for path in paths:
                     path_resolved = path.resolve()
                     if path_resolved in file_paths:
@@ -196,7 +196,8 @@ class MiniGallery(Directive):
             )
         for path, path_info in sorted(
             file_paths.items(),
-            key=((lambda x: sortkey(str(x[-1]))) if sortkey else None),
+            # `x[0]` to sort on key only
+            key=((lambda x: sortkey(str(x[0]))) if sortkey else None),
         ):
             if path_info.intro is not None:
                 thumbnail = _thumbnail_div(
