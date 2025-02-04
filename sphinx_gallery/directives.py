@@ -149,7 +149,7 @@ class MiniGallery(Directive):
             heading_level = self.options.get("heading-level", "^")
             lines.append(heading_level * len(heading))
 
-        PathInfo = namedtuple("PathInfo", ["intro", "title", "arg"])
+        ExampleInfo = namedtuple("ExampleInfo", ["intro", "title", "arg"])
         backreferences_all = None
         if backreferences_dir:
             backreferences_all = _read_json(
@@ -168,9 +168,11 @@ class MiniGallery(Directive):
         for arg in arg_list:
             # Backreference arg input
             if paths := has_backrefs(arg):
-                # Note `PathInfo.arg` not required for backreference paths
+                # Note `ExampleInfo.arg` not required for backreference paths
                 for path in paths:
-                    file_paths[Path(path[0])] = PathInfo(path[1], path[2], None)
+                    file_paths[Path(path[0])] = ExampleInfo(
+                        intro=path[1], title=path[2], arg=None
+                    )
             # Glob path arg input
             elif paths := Path(src_dir).glob(arg):
                 # Glob paths require extra parsing to get the intro and title
@@ -180,7 +182,7 @@ class MiniGallery(Directive):
                     if path_resolved in file_paths:
                         continue
                     else:
-                        file_paths[path_resolved] = PathInfo(None, None, arg)
+                        file_paths[path_resolved] = ExampleInfo(None, None, arg)
 
         if len(file_paths) == 0:
             return []

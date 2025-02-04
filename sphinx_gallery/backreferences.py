@@ -396,8 +396,7 @@ def _write_backreferences(
     -------
     backrefs_example : dict[str, tuple]
         Dictionary where value is the backreference object and value
-        is a NamedTuple containing all the information required for a reST
-        thumbnail div.
+        is a tuple containing: full path to example file, intro, title.
     """
     if gallery_conf["backreferences_dir"] is None:
         return

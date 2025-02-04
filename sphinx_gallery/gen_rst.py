@@ -542,8 +542,8 @@ def generate_dir_rst(
         List of example file names we generated ReST for.
     backrefs_dir : dict[str, tuple]
         Dictionary where value is the backreference object and value
-        is a tuple containing: full path to example file,
-        thumbnail div.
+        is a tuple containing: full path to example file, intro, title.
+
     """
     index_content = ""
     # `_get_gallery_header` returns `None` if user supplied `index.rst`
