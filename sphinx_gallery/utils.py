@@ -355,7 +355,6 @@ def custom_minigallery_sort_order_sorter(file):
 # Should be matched with `_read_json`
 def _write_json(target_file, to_save, name=""):
     """Write dictionary to JSON file."""
-    # this part is awkward but ??
     codeobj_fname = target_file.with_name(target_file.stem + f"{name}.json.new")
     with open(codeobj_fname, "w", **_W_KW) as fid:
         json.dump(
