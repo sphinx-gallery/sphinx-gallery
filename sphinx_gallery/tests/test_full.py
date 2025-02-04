@@ -852,6 +852,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     generated_backrefs_0 = sorted(
         op.join(old_src_dir, "gen_modules", "backreferences", f)
         for f in os.listdir(op.join(old_src_dir, "gen_modules", "backreferences"))
+        # Exclude backreferences_all.json` which is changed when any example is run
+        if "backreferences_all.json" not in f
     )
     generated_rst_0 = sorted(
         op.join(old_src_dir, "auto_examples", f)
@@ -944,6 +946,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     generated_backrefs_1 = sorted(
         op.join(new_app.srcdir, "gen_modules", "backreferences", f)
         for f in os.listdir(op.join(new_app.srcdir, "gen_modules", "backreferences"))
+        # Exclude backreferences_all.json` which is changed when any example is run
+        if "backreferences_all.json" not in f
     )
     generated_rst_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
@@ -1117,6 +1121,8 @@ def _rerun(
     generated_backrefs_1 = sorted(
         op.join(new_app.srcdir, "gen_modules", "backreferences", f)
         for f in os.listdir(op.join(new_app.srcdir, "gen_modules", "backreferences"))
+        # Exclude backreferences_all.json` which is changed when any example is run
+        if "backreferences_all.json" not in f
     )
     generated_rst_1 = sorted(
         op.join(new_app.srcdir, "auto_examples", f)
