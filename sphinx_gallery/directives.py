@@ -164,6 +164,7 @@ class MiniGallery(Directive):
                 return examples
             return False
 
+        # Full paths to example files are dict keys, preventing duplicates
         file_paths = {}
         for arg in arg_list:
             # Backreference arg input
