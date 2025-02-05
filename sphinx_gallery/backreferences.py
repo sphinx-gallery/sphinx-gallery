@@ -373,7 +373,10 @@ def _thumbnail_div(
 def _write_backreferences(
     backrefs, seen_backrefs, gallery_conf, target_dir, fname, intro, title
 ):
-    """Write backreference file for one example including a thumbnail list of examples.
+    """Write and return backreferences for one example.
+
+    Backreferences '.examples' file written includes reST of the list of examples
+    as thumbnails.
 
     Parameters
     ----------
