@@ -438,7 +438,7 @@ def _write_backreferences(
             backrefs_example[backref].append(
                 (str(Path(target_dir, fname)), intro, title)
             )
-    return backrefs_example
+    return dict(backrefs_example)
 
 
 def _finalize_backreferences(seen_backrefs, gallery_conf):
