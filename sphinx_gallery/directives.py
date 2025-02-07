@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from collections import namedtuple
 from pathlib import Path, PurePosixPath
 
 from docutils import nodes, statemachine
@@ -17,6 +18,7 @@ from .backreferences import (
 )
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
+from .utils import _read_json
 
 logger = getLogger("sphinx-gallery")
 
@@ -125,13 +127,13 @@ class MiniGallery(Directive):
         # Retrieve source directory
         src_dir = config.sphinx_gallery_conf["src_dir"]
 
-        # Parse the argument into the individual objects
-        obj_list = []
+        # Parse the argument into the individual args
+        arg_list = []
 
         if self.arguments:
-            obj_list.extend([c.strip() for c in self.arguments[0].split()])
+            arg_list.extend([c.strip() for c in self.arguments[0].split()])
         if self.content:
-            obj_list.extend([c.strip() for c in self.content])
+            arg_list.extend([c.strip() for c in self.content])
 
         lines = []
 
@@ -139,53 +141,75 @@ class MiniGallery(Directive):
         if "add-heading" in self.options:
             heading = self.options["add-heading"]
             if heading == "":
-                if len(obj_list) == 1:
-                    heading = f"Examples using ``{obj_list[0]}``"
+                if len(arg_list) == 1:
+                    heading = f"Examples using ``{arg_list[0]}``"
                 else:
                     heading = "Examples using one of multiple objects"
             lines.append(heading)
             heading_level = self.options.get("heading-level", "^")
             lines.append(heading_level * len(heading))
 
-        def has_backrefs(obj):
-            path = Path(src_dir, backreferences_dir, f"{obj}.examples")
-            return path if (path.is_file() and (path.stat().st_size > 0)) else False
+        ExampleInfo = namedtuple("ExampleInfo", ["intro", "title", "arg"])
+        backreferences_all = None
+        if backreferences_dir:
+            backreferences_all = _read_json(
+                Path(src_dir, backreferences_dir, "backreferences_all.json")
+            )
 
-        file_paths = []
-        for obj in obj_list:
-            if backreferences_dir and (path := has_backrefs(obj)):
-                file_paths.append((obj, path.resolve()))
-            elif paths := Path(src_dir).glob(obj):
-                file_paths.extend([(obj, p.resolve()) for p in paths])
+        def has_backrefs(arg):
+            if backreferences_all is None:
+                return False
+            examples = backreferences_all.get(arg, None)
+            if examples:
+                return examples
+            return False
+
+        # Full paths to example files are dict keys, preventing duplicates
+        file_paths = {}
+        for arg in arg_list:
+            # Backreference arg input
+            if paths := has_backrefs(arg):
+                # Note `ExampleInfo.arg` not required for backreference paths
+                for path in paths:
+                    file_paths[Path(path[0])] = ExampleInfo(
+                        intro=path[1], title=path[2], arg=None
+                    )
+            # Glob path arg input
+            elif paths := Path(src_dir).glob(arg):
+                # Glob paths require extra parsing to get the intro and title
+                # so we don't want to override a duplicate backreference arg input
+                for path in paths:
+                    path_resolved = path.resolve()
+                    if path_resolved in file_paths:
+                        continue
+                    else:
+                        file_paths[path_resolved] = ExampleInfo(None, None, arg)
 
         if len(file_paths) == 0:
             return []
 
         lines.append(THUMBNAIL_PARENT_DIV)
 
-        # sort on the str(file_path) but keep (obj, path) pair
+        # sort on the file path
         if config.sphinx_gallery_conf["minigallery_sort_order"] is None:
             sortkey = None
         else:
             (sortkey,) = _get_callables(
                 config.sphinx_gallery_conf, "minigallery_sort_order"
             )
-        for obj, path in sorted(
-            set(file_paths),
-            key=((lambda x: sortkey(str(x[-1]))) if sortkey else None),
+        for path, path_info in sorted(
+            file_paths.items(),
+            # `x[0]` to sort on key only
+            key=((lambda x: sortkey(str(x[0]))) if sortkey else None),
         ):
-            if path.suffix == ".examples":
-                # Insert the backreferences file(s) using the `include` directive.
-                # / is the src_dir for include
-                lines.append(
-                    f"""\
-.. include:: /{path.relative_to(src_dir).as_posix()}
-    :start-after: thumbnail-parent-div-open
-    :end-before: thumbnail-parent-div-close"""
+            if path_info.intro is not None:
+                thumbnail = _thumbnail_div(
+                    path.parent, src_dir, path.name, path_info.intro, path_info.title
                 )
             else:
-                target_dir = self._get_target_dir(config, src_dir, path, obj)
+                target_dir = self._get_target_dir(config, src_dir, path, path_info.arg)
                 # Get thumbnail
+                # TODO: ideally we would not need to parse file (again) here
                 _, script_blocks = split_code_and_text_blocks(
                     str(path), return_node=False
                 )
@@ -194,7 +218,7 @@ class MiniGallery(Directive):
                 )
 
                 thumbnail = _thumbnail_div(target_dir, src_dir, path.name, intro, title)
-                lines.append(thumbnail)
+            lines.append(thumbnail)
 
         lines.append(THUMBNAIL_PARENT_DIV_CLOSE)
         text = "\n".join(lines)

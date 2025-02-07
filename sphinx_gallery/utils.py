@@ -12,6 +12,7 @@ import os
 import re
 import subprocess
 import zipfile
+from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
@@ -349,3 +350,35 @@ def custom_minigallery_sort_order_sorter(file):
         "plot_1.py",
     ]
     return ORDER.index(Path(file).name)
+
+
+# Should be matched with `_read_json`
+def _write_json(target_file, to_save, name=""):
+    """Write dictionary to JSON file."""
+    codeobj_fname = target_file.with_name(target_file.stem + f"{name}.json.new")
+    with open(codeobj_fname, "w", **_W_KW) as fid:
+        json.dump(
+            to_save,
+            fid,
+            sort_keys=True,
+            ensure_ascii=False,
+            indent=1,
+            check_circular=False,
+        )
+    _replace_md5(codeobj_fname, check="json")
+
+
+def _read_json(json_fname):
+    """Read JSON dictionary from file."""
+    with open(json_fname, "r", encoding="utf-8") as fid:
+        json_dict = json.load(fid)
+    return json_dict
+
+
+def _combine_backreferences(dict_a, dict_b):
+    """Combine backreferences dictionaries, joining lists when keys are the same."""
+    # `dict_b` is None when `backreferences_dir` config not set
+    if isinstance(dict_b, dict):
+        for key, value in dict_b.items():
+            dict_a.setdefault(key, []).extend(value)
+    return dict_a

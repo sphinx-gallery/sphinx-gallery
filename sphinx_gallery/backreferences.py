@@ -10,6 +10,7 @@ import inspect
 import os
 import re
 import sys
+from collections import defaultdict
 from html import escape
 from pathlib import Path
 
@@ -292,7 +293,7 @@ def identify_names(script_blocks, ref_regex, global_variables=None, node=""):
 THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="{snippet}">
+    <div class="sphx-glr-thumbcontainer" tooltip="{intro}">
 
 .. only:: html
 
@@ -319,9 +320,33 @@ BACKREF_THUMBNAIL_TEMPLATE = (
 
 
 def _thumbnail_div(
-    target_dir, src_dir, fname, snippet, title, is_backref=False, check=True
+    target_dir, src_dir, fname, intro, title, is_backref=False, check=True
 ):
-    """Generate reST to place a thumbnail in a gallery."""
+    """Generate reST to place a thumbnail in a gallery.
+
+    Parameters
+    ----------
+    target_dir : str
+        Absolute path to output directory, where thumbnails are saved.
+    src_dir : str
+        Absolute path to build source directory.
+    fname : str
+        Filename of example file.
+    intro : str
+        Introductory docstring of example, to show in tooltip
+    title: str
+        Title of example.
+    is_backref : bool
+        Whether the thumbnail is for a html backreference/recommendation file. If not
+        a bullet list of the example is added for non-html documentation builds.
+    check : bool
+        Whether to check if the thumbnail image file exists.
+
+    Returns
+    -------
+    thumbnail : str
+        reST for a thumbnail.
+    """
     fname = Path(fname)
     thumb, _ = _find_image_ext(
         os.path.join(target_dir, "images", "thumb", f"sphx_glr_{fname.stem}_thumb.png")
@@ -341,14 +366,17 @@ def _thumbnail_div(
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
     return template.format(
-        snippet=escape(snippet), thumbnail=thumb, title=title, ref_name=ref_name
+        intro=escape(intro), thumbnail=thumb, title=title, ref_name=ref_name
     )
 
 
 def _write_backreferences(
-    backrefs, seen_backrefs, gallery_conf, target_dir, fname, snippet, title
+    backrefs, seen_backrefs, gallery_conf, target_dir, fname, intro, title
 ):
-    """Write backreference file for one example including a thumbnail list of examples.
+    """Write and return backreferences for one example.
+
+    Backreferences '.examples' file written includes reST of the list of examples
+    as thumbnails.
 
     Parameters
     ----------
@@ -362,14 +390,21 @@ def _write_backreferences(
         Absolute path to directory where examples are saved.
     fname : str
         Filename of current example python file.
-    snippet : str
+    intro : str
         Introductory docstring of example.
     title: str
         Title of example.
+
+    Returns
+    -------
+    backrefs_example : dict[str, tuple]
+        Dictionary where value is the backreference object and value
+        is a tuple containing: full path to example file, intro, title.
     """
     if gallery_conf["backreferences_dir"] is None:
         return
 
+    backrefs_example = defaultdict(list)
     for backref in backrefs:
         include_path = os.path.join(
             gallery_conf["src_dir"],
@@ -381,7 +416,7 @@ def _write_backreferences(
         with open(include_path, mode, **_W_KW) as ex_file:
             if not seen:
                 # Be aware that if the number of lines of this heading changes,
-                #   the minigallery directive should be modified accordingly
+                # the minigallery directive should be modified accordingly
                 heading = f"Examples using ``{backref}``"
                 ex_file.write("\n\n" + heading + "\n")
                 ex_file.write("^" * len(heading) + "\n")
@@ -394,12 +429,16 @@ def _write_backreferences(
                     target_dir,
                     gallery_conf["src_dir"],
                     fname,
-                    snippet,
+                    intro,
                     title,
                     is_backref=True,
                 )
             )
             seen_backrefs.add(backref)
+            backrefs_example[backref].append(
+                (str(Path(target_dir, fname)), intro, title)
+            )
+    return dict(backrefs_example)
 
 
 def _finalize_backreferences(seen_backrefs, gallery_conf):

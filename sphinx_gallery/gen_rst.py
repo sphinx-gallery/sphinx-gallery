@@ -42,7 +42,6 @@ from .backreferences import (
     identify_names,
 )
 from .block_parser import BlockParser
-from .docs_resolv import _write_code_obj
 from .interactive_example import (
     _add_jupyterlite_badge_logo,
     gen_binder_rst,
@@ -60,8 +59,10 @@ from .scrapers import (
 from .utils import (
     _W_KW,
     _collect_gallery_files,
+    _combine_backreferences,
     _format_toctree,
     _replace_md5,
+    _write_json,
     get_md5sum,
     optipng,
     scale_image,
@@ -509,7 +510,7 @@ def generate_dir_rst(
     seen_backrefs,
     is_subsection=True,
 ):
-    """Generate the gallery reStructuredText for an example directory.
+    """Generate output example reST files for one gallery (sub)directory.
 
     Parameters
     ----------
@@ -539,6 +540,10 @@ def generate_dir_rst(
          with keys "t", "mem", "src_file", and "target_dir".
     toctree_items: list,
         List of example file names we generated ReST for.
+    backrefs_dir : dict[str, tuple]
+        Dictionary where value is the backreference object and value
+        is a tuple containing: full path to example file, intro, title.
+
     """
     index_content = ""
     # `_get_gallery_header` returns `None` if user supplied `index.rst`
@@ -581,6 +586,8 @@ def generate_dir_rst(
         f"generating gallery for {build_target_dir}... ",
         length=len(sorted_listdir),
     )
+
+    backrefs_dir = {}
 
     parallel = list
     p_fun = generate_file_rst
@@ -625,7 +632,7 @@ def generate_dir_rst(
 
         # Write backreferences
         if "backrefs" in out_vars:
-            _write_backreferences(
+            backrefs_example = _write_backreferences(
                 out_vars["backrefs"],
                 seen_backrefs,
                 gallery_conf,
@@ -634,6 +641,7 @@ def generate_dir_rst(
                 intro,
                 title,
             )
+            _combine_backreferences(backrefs_dir, backrefs_example)
 
     # Close thumbnail parent div
     index_content += THUMBNAIL_PARENT_DIV_CLOSE
@@ -660,6 +668,7 @@ def generate_dir_rst(
         index_content,
         costs,
         toctree_filenames,
+        backrefs_dir,
     )
 
 
@@ -1253,7 +1262,7 @@ def _get_backreferences(gallery_conf, script_vars, script_blocks, node, target_f
     ref_regex = _make_ref_regex(gallery_conf["default_role"])
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
-        _write_code_obj(target_file, example_code_obj)
+        _write_json(target_file, example_code_obj, ".codeobj")
     exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
 
     def _normalize_name(cobj):

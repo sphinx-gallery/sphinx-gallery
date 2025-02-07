@@ -49,11 +49,14 @@ from .scrapers import _import_matplotlib
 from .sorting import ExplicitOrder
 from .utils import (
     _collect_gallery_files,
+    _combine_backreferences,
     _format_toctree,
     _has_graphviz,
     _has_optipng,
     _has_pypandoc,
+    _read_json,
     _replace_md5,
+    _write_json,
 )
 
 _KNOWN_CSS = (
@@ -737,6 +740,8 @@ def generate_gallery_rst(app):
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
     _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
 
+    backrefs_all = {}
+
     for examples_dir, gallery_dir in workdirs:
         examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
         gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
@@ -748,6 +753,7 @@ def generate_gallery_rst(app):
             this_content,
             this_costs,
             this_toctree_items,
+            backrefs_root,
         ) = generate_dir_rst(
             examples_dir_abs_path,
             gallery_dir_abs_path,
@@ -755,6 +761,8 @@ def generate_gallery_rst(app):
             seen_backrefs,
             is_subsection=False,
         )
+
+        _combine_backreferences(backrefs_all, backrefs_root)
 
         # `this_content` is None when user provides own index.rst
         sg_root_index = this_content is not None
@@ -794,7 +802,10 @@ def generate_gallery_rst(app):
                 subsection_index_content,
                 subsection_costs,
                 subsection_toctree_filenames,
+                backrefs_subsec,
             ) = generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs)
+
+            _combine_backreferences(backrefs_all, backrefs_subsec)
 
             has_subsection_header = False
             if subsection_index_content:
@@ -834,6 +845,17 @@ def generate_gallery_rst(app):
     # Per project - items below run once only (for all galleries)
     # Write a single global sg_execution_times
     write_computation_times(gallery_conf, None, costs)
+
+    # Write backreferences_all to file
+    if gallery_conf["backreferences_dir"]:
+        _write_json(
+            Path(
+                gallery_conf["src_dir"],
+                gallery_conf["backreferences_dir"],
+                "backreferences_all",
+            ),
+            backrefs_all,
+        )
 
     if gallery_conf["show_api_usage"] is not False:
         _init_api_usage(app.builder.srcdir)
@@ -1226,24 +1248,22 @@ def write_api_entry_usage(app, docname, source):
     # find used and unused API entries
     unused_api_entries = list()
     used_api_entries = dict()
+    backreferences_all = _read_json(Path(backreferences_dir, "backreferences_all.json"))
+    src_dir = gallery_conf["src_dir"]
     for entry in example_files:
         # don't include built-in methods etc.
         if re.match(gallery_conf["api_usage_ignore"], entry) is not None:
             continue
         # check if backreferences empty
-        example_fname = os.path.join(backreferences_dir, f"{entry}.examples.new")
-        if not os.path.isfile(example_fname):  # use without new
-            example_fname = os.path.splitext(example_fname)[0]
-        assert os.path.isfile(example_fname)
-        if os.path.getsize(example_fname) == 0:
+        backref_entry = backreferences_all.get(entry, None)
+        if backref_entry is None:
             unused_api_entries.append(entry)
         else:
             used_api_entries[entry] = list()
-            with open(example_fname, encoding="utf-8") as fid2:
-                for line in fid2:
-                    if line.startswith("  :ref:"):
-                        example_name = line.split("`")[1]
-                        used_api_entries[entry].append(example_name)
+            for br in backref_entry:
+                example_path = Path(br[0]).relative_to(src_dir)
+                ref_name = str(example_path).replace(os.sep, "_")
+                used_api_entries[entry].append(f"sphx_glr_{ref_name}")
 
     for entry in sorted(unused_api_entries):
         source[0] += f"- :{get_entry_type(entry)}:`{entry}`\n"
