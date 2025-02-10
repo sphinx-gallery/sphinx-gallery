@@ -742,11 +742,12 @@ relevant to that object. This can be useful in API documentation.
 **Implicit backreferences** are useful for auto-documenting objects
 that are used and classes that are explicitly instantiated, in the code. Any examples
 where an object is used in the code are added *implicitly* as backreferences.
+
 **Explicit backreferences** are for objects that are *explicitly* referred to
 in an example's text. They are useful for classes that are
 typically implicitly returned in the code rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
-within function calls)..
+within function calls).
 
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
@@ -811,7 +812,7 @@ mini-gallery directive therefore also supports passing in:
 * pathlike strings to sphinx gallery example files (relative to ``conf.py``)
 * glob-style pathlike strings to Sphinx-Gallery example files (relative to ``conf.py``)
 
-For example, the rst below adds the reduced version of the Gallery for all
+For example, the rst below will add a mini-gallery that includes all
 examples that use the specific function ``numpy.exp``, the example
 ``examples/plot_sin_.py``, and all files matching the string
 ``/examples/plot_4*``:
@@ -827,9 +828,9 @@ examples that use the specific function ``numpy.exp``, the example
 
 Listing multiple items merges all the examples into a single mini-gallery. The
 mini-gallery will only be shown if the files exist or the items are actually
-used or referred to in an example. Thumbnails may also be duplicated
-if they correspond to multiple object names or an object name and file/glob
-input.
+used or referred to in an example. Sphinx-Gallery will ensure that examples
+that are 'passed' more than once (e.g., uses a passed object and matches a passed file
+string) will only appear once in the mini-gallery.
 
 .. minigallery::
     :add-heading:

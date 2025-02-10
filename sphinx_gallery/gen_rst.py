@@ -632,6 +632,7 @@ def generate_dir_rst(
 
         # Write backreferences
         if "backrefs" in out_vars:
+            print('XXXXX backrefs!')
             backrefs_example = _write_backreferences(
                 out_vars["backrefs"],
                 seen_backrefs,

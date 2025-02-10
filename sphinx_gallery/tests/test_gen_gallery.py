@@ -809,6 +809,22 @@ def test_minigallery_multi_match(sphinx_app_wrapper):
     assert "sphx-glr-ex-sub-folder-sub-sub-folder-plot-nested-py" in mg_html
 
 
+def _get_minigallery_thumbnails(rst_fname):
+    """Check the minigallery example file number present in a rst file.
+
+    Note this should only be used for examples in the root
+    `sphinx_gallery/tests/testconfs` directory.
+    """
+    locator = "sphx-glr-thumbcontainer"
+    regex = r".+sphx-glr-thumbcontainer.+sphx_glr_plot_(\d)_thumb.+"
+    example_numbers = list()
+    with open(rst_fname, "r", encoding="utf-8") as fid:
+        for line in fid:
+            if locator in line:
+                example_numbers.append(re.match(regex, line).group(1))
+    return example_numbers
+
+
 @pytest.mark.add_conf(
     content="""
 from sphinx_gallery.sorting import FunctionSortKey
@@ -833,15 +849,61 @@ def test_minigallery_sort_order_callable(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
 
     rst_fname = Path(sphinx_app.outdir, "minigallery_test.html")
-    locator = "sphx-glr-thumbcontainer"
-    regex = r".+sphx-glr-thumbcontainer.+sphx_glr_plot_(\d)_thumb.+"
-    order = list()
-    with open(rst_fname, "r", encoding="utf-8") as fid:
-        for line in fid:
-            if locator in line:
-                order.append(re.match(regex, line).group(1))
-    assert order == ["3", "2", "1"]
+    file_numbers = _get_minigallery_thumbnails(rst_fname)
+    assert file_numbers == ["3", "2", "1"]
 
+
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}"""
+)
+@pytest.mark.add_rst(
+    file="""
+Header
+======
+
+.. minigallery:: src/plot_1.py src/plot_1.py
+"""
+)
+def test_minigallery_duplicate_path_input(sphinx_app_wrapper):
+    """Check minigallery duplicate input paths are de-deuplicated."""
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+
+    rst_fname = Path(sphinx_app.outdir, "minigallery_test.html")
+    file_numbers = _get_minigallery_thumbnails(rst_fname)
+    assert file_numbers == ["1"]
+
+
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'backreferences_dir': 'gen_modules/backreferences',
+    'doc_module': ('numpy',),
+}"""
+)
+@pytest.mark.add_rst(
+    file="""
+Header
+======
+
+.. minigallery:: numpy.max, src/plot_1.py
+"""
+)
+def test_minigallery_duplicate_object_path_input(sphinx_app_wrapper):
+    """Check object and path input de-deplication works in minigallery directive.
+
+    `numpy.max` is used in `src/plot_1.py`.
+    """
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+
+    rst_fname = Path(sphinx_app.outdir, "minigallery_test.html")
+    file_numbers = _get_minigallery_thumbnails(rst_fname)
+    assert file_numbers == ["1"]
 
 def test_write_computation_times_noop(sphinx_app_wrapper):
     app = sphinx_app_wrapper.create_sphinx_app()
