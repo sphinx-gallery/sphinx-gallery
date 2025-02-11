@@ -905,6 +905,7 @@ def test_minigallery_duplicate_object_path_input(sphinx_app_wrapper):
     file_numbers = _get_minigallery_thumbnails(rst_fname)
     assert file_numbers == ["1"]
 
+
 def test_write_computation_times_noop(sphinx_app_wrapper):
     app = sphinx_app_wrapper.create_sphinx_app()
     write_computation_times(app.config.sphinx_gallery_conf, None, [])

@@ -438,9 +438,7 @@ def _write_backreferences(
                 )
             )
             seen_backrefs.add(backref)
-            backrefs_example[backref].append(
-                (fname, src_dir, target_dir, intro, title)
-            )
+            backrefs_example[backref].append((fname, src_dir, target_dir, intro, title))
     return dict(backrefs_example)
 
 

@@ -204,7 +204,11 @@ class MiniGallery(Directive):
         ):
             if path_info.intro is not None:
                 thumbnail = _thumbnail_div(
-                    path_info.target_dir, src_dir, path.name, path_info.intro, path_info.title
+                    path_info.target_dir,
+                    src_dir,
+                    path.name,
+                    path_info.intro,
+                    path_info.title,
                 )
             else:
                 target_dir = self._get_target_dir(config, src_dir, path, path_info.arg)
