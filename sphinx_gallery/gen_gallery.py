@@ -1691,7 +1691,6 @@ def setup(app):
     app.connect("config-inited", post_configure_jupyterlite_sphinx, priority=900)
 
     if "sphinx.ext.autodoc" in app.extensions:
-        app.connect("autodoc-process-docstring", touch_empty_backreferences)
         app.connect("autodoc-process-docstring", write_api_entries)
         app.connect("source-read", write_api_entry_usage)
 
