@@ -6,9 +6,9 @@ B test
 :filename=1:title=2:lines=3:filesize=2:
 """
 
-import numpy as np
+from sphinx_gallery.py_source_parser import Block
 
-np.max([1, 2, 3])
+Block("text", "Text block", 1)
 
 # %%
 #

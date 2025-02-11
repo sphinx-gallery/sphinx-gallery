@@ -891,13 +891,13 @@ sphinx_gallery_conf = {
 Header
 ======
 
-.. minigallery:: numpy.max src/plot_1.py
+.. minigallery:: sphinx_gallery.py_source_parser.Block src/plot_1.py
 """
 )
 def test_minigallery_duplicate_object_path_input(sphinx_app_wrapper):
     """Check object and path input de-deplication works in minigallery directive.
 
-    `numpy.max` is used in `src/plot_1.py`.
+    `Block` is used in `src/plot_1.py`.
     """
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
 
