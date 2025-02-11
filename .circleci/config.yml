@@ -77,7 +77,7 @@ jobs:
           name: Check sphinx log for warnings (which are treated as errors)
           when: always
           command: |
-            ! grep "^.* WARNING: .*$" sphinx_log.txt
+            ! grep "^.*\(WARNING\|ERROR\): " sphinx_log.txt
       - store_artifacts:
           path: doc/_build/html/
           destination: html
