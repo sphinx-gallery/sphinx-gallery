@@ -1420,26 +1420,6 @@ def write_junit_xml(gallery_conf, target_dir, costs):
         fid.write(output)
 
 
-def touch_empty_backreferences(app, what, name, obj, options, lines):
-    """Generate empty back-reference example files.
-
-    This avoids inclusion errors/warnings if there are no gallery
-    examples for a class / module that is being parsed by autodoc.
-    """
-    if not bool(app.config.sphinx_gallery_conf["backreferences_dir"]):
-        return
-
-    examples_path = os.path.join(
-        app.srcdir,
-        app.config.sphinx_gallery_conf["backreferences_dir"],
-        f"{name}.examples",
-    )
-
-    if not os.path.exists(examples_path):
-        # touch file
-        open(examples_path, "w").close()
-
-
 def _expected_failing_examples(gallery_conf):
     return {
         os.path.normpath(os.path.join(gallery_conf["src_dir"], path))
