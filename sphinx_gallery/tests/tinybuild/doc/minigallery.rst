@@ -68,3 +68,13 @@ Test 3-N
    ../examples/*matplotlib*.py
    sphinx_gallery.sorting.ExplicitOrder
    sphinx_gallery.sorting.FileNameSortKey
+
+Test duplicates
+
+.. minigallery::
+
+    sphinx_gallery.sorting.ExplicitOrder
+    ../examples/plot_second_future_imports.py
+    ../examples/plot_second_future_import*
+    sphinx_gallery.py_source_parser.Block
+    ../examples/plot_numpy_matplotib.py

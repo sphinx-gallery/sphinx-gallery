@@ -56,7 +56,7 @@ class MiniGallery(Directive):
     }
 
     def _get_target_dir(self, config, src_dir, path, obj):
-        """Get thumbnail target directory, errors when ambiguous/not in example dir."""
+        """Get thumbnail target directory, errors when not in example dir."""
         examples_dirs = config.sphinx_gallery_conf["examples_dirs"]
         if not isinstance(examples_dirs, list):
             examples_dirs = [examples_dirs]
@@ -149,7 +149,7 @@ class MiniGallery(Directive):
             heading_level = self.options.get("heading-level", "^")
             lines.append(heading_level * len(heading))
 
-        ExampleInfo = namedtuple("ExampleInfo", ["intro", "title", "arg"])
+        ExampleInfo = namedtuple("ExampleInfo", ["target_dir", "intro", "title", "arg"])
         backreferences_all = None
         if backreferences_dir:
             backreferences_all = _read_json(
@@ -168,11 +168,11 @@ class MiniGallery(Directive):
         file_paths = {}
         for arg in arg_list:
             # Backreference arg input
-            if paths := has_backrefs(arg):
+            if examples := has_backrefs(arg):
                 # Note `ExampleInfo.arg` not required for backreference paths
-                for path in paths:
-                    file_paths[Path(path[0])] = ExampleInfo(
-                        intro=path[1], title=path[2], arg=None
+                for path in examples:
+                    file_paths[Path(path[1], path[0]).resolve()] = ExampleInfo(
+                        target_dir=path[2], intro=path[3], title=path[4], arg=None
                     )
             # Glob path arg input
             elif paths := Path(src_dir).glob(arg):
@@ -183,7 +183,7 @@ class MiniGallery(Directive):
                     if path_resolved in file_paths:
                         continue
                     else:
-                        file_paths[path_resolved] = ExampleInfo(None, None, arg)
+                        file_paths[path_resolved] = ExampleInfo(None, None, None, arg)
 
         if len(file_paths) == 0:
             return []
@@ -204,7 +204,11 @@ class MiniGallery(Directive):
         ):
             if path_info.intro is not None:
                 thumbnail = _thumbnail_div(
-                    path.parent, src_dir, path.name, path_info.intro, path_info.title
+                    path_info.target_dir,
+                    src_dir,
+                    path.name,
+                    path_info.intro,
+                    path_info.title,
                 )
             else:
                 target_dir = self._get_target_dir(config, src_dir, path, path_info.arg)

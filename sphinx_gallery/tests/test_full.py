@@ -1354,7 +1354,10 @@ def minigallery_tree(sphinx_app):
     ],
 )
 def test_minigallery_directive(minigallery_tree, test, heading, sortkey):
-    """Tests the functionality of the minigallery directive."""
+    """Tests the functionality of the minigallery directive.
+
+    Use `print(f"{test}: {lxml.html.tostring(text)}")` for checking.
+    """
     assert test in minigallery_tree
 
     text = minigallery_tree[test]
@@ -1373,6 +1376,8 @@ def test_minigallery_directive(minigallery_tree, test, heading, sortkey):
 
     if test in ["Test 1-F-R", "Test 1-S"]:
         img = text.xpath('descendant::img[starts-with(@src, "_images/sphx_glr")]')
+        # These examples are from subdir: examples_with_rst, examples_rst_index
+        # thus we look for "rst"
         href = text.xpath('descendant::a[contains(@href, "rst")]')
 
         assert img and href
@@ -1400,7 +1405,24 @@ def test_minigallery_directive(minigallery_tree, test, heading, sortkey):
             else:
                 assert not (img or href)
 
-    print(f"{test}: {lxml.html.tostring(text)}")
+
+def test_minigallery_duplicates(minigallery_tree):
+    """Ensure minigallery removes duplicate examples.
+
+    "Test duplicates" in `minigallery.rst` should result in only 2 examples:
+    - plot_second_future_imports - object (`ExplicitOrder`) AND 2 file inputs
+    - plot_numpy_matplotlib - object (`Block`) and 1 file input
+    """
+    assert "Test duplicates" in minigallery_tree
+
+    text = minigallery_tree["Test duplicates"]
+
+    imgs = text.xpath('descendant::img[starts-with(@src, "_images/sphx_glr")]')
+    expected_examples = {
+        "_images/sphx_glr_plot_second_future_imports_thumb.png",
+        "_images/sphx_glr_plot_numpy_matplotlib_thumb.png",
+    }
+    assert {img.values()[-1] for img in imgs} == expected_examples
 
 
 def test_matplotlib_warning_filter(sphinx_app):

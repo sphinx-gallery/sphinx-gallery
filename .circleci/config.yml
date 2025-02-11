@@ -35,6 +35,8 @@ jobs:
       - run:
           name: Pip
           # for VTK: https://gitlab.kitware.com/vtk/vtk/-/packages/102
+          # TODO: skipping jupyterlite-sphinx 0.18.0 because of jupytext
+          # https://github.com/sphinx-gallery/sphinx-gallery/issues/1436
           command: |
             pip install --upgrade --only-binary ":all:" pip setuptools
             pip install --upgrade --only-binary ":all:" \
@@ -42,7 +44,7 @@ jobs:
                 "sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6" pytest \
                 traits memory_profiler "ipython!=8.7.0" plotly graphviz \
                 "pyvista>=0.44.0" "docutils>=0.18" imageio pydata-sphinx-theme \
-                "jupyterlite-sphinx>=0.17.1" "jupyterlite-pyodide-kernel" \
+                "jupyterlite-sphinx>=0.17.1,!=0.18.0" "jupyterlite-pyodide-kernel" \
                 libarchive-c "sphinxcontrib-video>=0.2.1rc0" intersphinx_registry
             pip uninstall -yq vtk  # pyvista installs vtk above
             pip install --upgrade --only-binary ":all" --extra-index-url https://wheels.vtk.org vtk-osmesa
@@ -75,7 +77,7 @@ jobs:
           name: Check sphinx log for warnings (which are treated as errors)
           when: always
           command: |
-            ! grep "^.* WARNING: .*$" sphinx_log.txt
+            ! grep "^.*\(WARNING\|ERROR\): " sphinx_log.txt
       - store_artifacts:
           path: doc/_build/html/
           destination: html

@@ -701,14 +701,18 @@ Add mini-galleries
 ==================
 
 Sphinx-Gallery provides the :class:`sphinx_gallery.directives.MiniGallery`
-directive so that you can easily add a reduced version of the Gallery to
-your Sphinx documentation ``.rst`` files. The minigallery directive therefore
-supports passing a list (space separated) of any of the following:
+directive so that you can easily add a gallery of specific examples,
+a 'mini-gallery', to your reST. This directive works in both reST text blocks in
+examples and ``.rst`` files.
 
-* fully qualified name of object (see :ref:`references_to_examples`) - this
+The minigallery directive supports passing a list, as a space separated directive
+argument or in the body of the directive. There are two ways to specify examples
+to include in the mini-gallery:
+
+* via fully qualified names of object (see :ref:`references_to_examples`) - this
   adds all examples where the object was used in the code or referenced in
   the example text
-* pathlike strings to example Python files, including glob-style
+* via pathlike strings to example Python files, including glob-style
   (see :ref:`file_based_minigalleries`)
 
 To use object names, you must enable backreference generation, see
@@ -717,6 +721,48 @@ If backreference generation is not enabled, object entries to the
 :class:`~sphinx_gallery.directives.MiniGallery` directive will be ignored
 and all entries will be treated as pathlike strings or glob-style pathlike strings.
 See :ref:`file_based_minigalleries` for details.
+
+For example, the reST below will add a mini-gallery that includes all
+examples that use or reference the specific function ``numpy.exp``, the example
+``examples/plot_sin_.py``, and all example files matching the string
+``/examples/plot_4*``:
+
+.. code-block:: rst
+
+    .. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
+
+All relevant examples will be merged into a single mini-gallery. The
+mini-gallery will only be shown if the files exist or the items are actually
+used or referred to in an example. Sphinx-Gallery will prevent duplication, ensuring
+that examples 'passed' more than once (e.g., one example uses a passed object **and**
+matches a passed file string) will only appear once in the mini-gallery.
+
+You can also sort the examples in your mini-galleries. See :ref:`minigallery_order`
+for details.
+
+The mini-gallery directive also supports the following options:
+
+* ``add-heading`` - adds a heading to the mini-gallery.
+    * The default heading for a mini-gallery with a single passed argument is:
+      "Examples using *{full qualified object name}*".
+    * The default heading for a mini-gallery with multiple passed arguments is:
+      "Examples of one of multiple objects".
+* ``heading-level`` - specify the heading level. Accepts a single character
+  (e.g., ``-``).
+
+For example, the following reST adds the heading "My examples", with heading
+level ``-``. It also shows how to pass inputs in the body of the directive (instead of
+as directive arguments).
+
+.. code-block:: rst
+
+    .. minigallery::
+        :add-heading: My examples
+        :heading-level: -
+
+        numpy.exp
+        ../examples/plot_0_sin.py
+        ../examples/plot_4*
 
 .. _references_to_examples:
 
@@ -742,11 +788,12 @@ relevant to that object. This can be useful in API documentation.
 **Implicit backreferences** are useful for auto-documenting objects
 that are used and classes that are explicitly instantiated, in the code. Any examples
 where an object is used in the code are added *implicitly* as backreferences.
+
 **Explicit backreferences** are for objects that are *explicitly* referred to
 in an example's text. They are useful for classes that are
 typically implicitly returned in the code rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
-within function calls)..
+within function calls).
 
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
@@ -754,36 +801,50 @@ refer to :obj:`numpy.exp`, which looks like this:
 .. minigallery:: numpy.exp
     :add-heading:
 
-For such behavior to be available, you have to activate it in
-your Sphinx-Gallery configuration ``conf.py`` file with::
+For such behavior to be available, set the following Sphinx-Gallery configurations
+in your ``conf.py`` file:
+
+**Required**
+
+* ``backreferences_dir`` - directory where object granular galleries are stored.
+  This should be a string or ``pathlib.Path`` object that is **relative** to the
+  ``conf.py`` file, or ``None``. It is ``None`` by default, which means that
+  backrefererences are not generated.
+* ``doc_module`` - the modules for which you want object level galleries
+  to be created, as a tuple of string module names.
+
+**Optional**
+
+* ``exclude_implicit_doc`` - Regexes to match objects to exclude from implicit
+  backreferences, as set of string regexes. The default option is an empty set,
+  which will exclude nothing.
+
+For example::
 
     sphinx_gallery_conf = {
         ...
         # directory where function/class granular galleries are stored
         'backreferences_dir'  : 'gen_modules/backreferences',
 
-        # Modules for which function/class level galleries are created. In
-        # this case sphinx_gallery and numpy in a tuple of strings.
+        # here we want to create backreferences for sphinx_gallery and numpy
         'doc_module'          : ('sphinx_gallery', 'numpy'),
 
         # Regexes to match objects to exclude from implicit backreferences.
-        # The default option is an empty set, i.e. exclude nothing.
-        # To exclude everything, use: '.*'
         'exclude_implicit_doc': {r'pyplot\.show'},
     }
 
 The path you specify in ``backreferences_dir`` (here we choose
-``gen_modules/backreferences``) will be populated with
-ReStructuredText files, with names ending with '.examples'.
-Each .rst file will contain a reduced version of the
-gallery specific to every function/class that is used across all the examples
-and belonging to the modules listed in ``doc_module``.
-Note that backreference files will be generated for all objects. Objects that
-are not used in any example will have an empty file to prevent inclusion
-errors during autodoc parsing.
+``gen_modules/backreferences``) will be populated with a file called
+"backreferences_all.json". This contains a mapping of all of all objects
+belonging to the modules listed in ``doc_module`` and not excluded in
+``exclude_implicit_doc``, to the examples where it was used or referenced.
+Objects not used or referenced in any example are not included.
 
-``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
-**relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
+For backwards compatibility ``backreferences_dir`` will also be populated with
+reST files for each object, named '<object>.examples'.
+Each .rst file will contain a reduced version of the
+gallery, containing examples where that "object" that is used.
+No file will be generated for objects not used or referenced in any example.
 
 Sometimes, there are functions that are being used in practically every example
 for the given module, for instance the ``pyplot.show`` or ``pyplot.subplots``
@@ -809,66 +870,9 @@ do not have functions in common, for example a set of tutorials. The
 mini-gallery directive therefore also supports passing in:
 
 * pathlike strings to sphinx gallery example files (relative to ``conf.py``)
-* glob-style pathlike strings to Sphinx-Gallery example files (relative to ``conf.py``)
-
-For example, the rst below adds the reduced version of the Gallery for all
-examples that use the specific function ``numpy.exp``, the example
-``examples/plot_sin_.py``, and all files matching the string
-``/examples/plot_4*``:
-
-.. code-block:: rst
-
-    .. minigallery::
-        :add-heading:
-
-        numpy.exp
-        ../examples/plot_0_sin.py
-        ../examples/plot_4*
-
-Listing multiple items merges all the examples into a single mini-gallery. The
-mini-gallery will only be shown if the files exist or the items are actually
-used or referred to in an example. Thumbnails may also be duplicated
-if they correspond to multiple object names or an object name and file/glob
-input.
-
-.. minigallery::
-    :add-heading:
-
-    numpy.exp
-    ../examples/plot_0_sin.py
-    ../examples/plot_4*
-
-You can also provide the list of items in the body of the directive:
-
-.. code-block:: rst
-
-    .. minigallery::
-        :add-heading:
-
-        numpy.exp
-        ../examples/plot_0_sin.py
-        ../examples/plot_4*
-
-The ``add-heading`` option adds a heading for the mini-gallery. If no string
-argument is provided, when only a single item is listed the default heading is:
-
-    "Examples using *{full qualified object name}*"
-
-Specifying a custom heading message is recommended for a gallery with multiple
-items because otherwise the default message is:
-
-    "Examples of one of multiple objects".
-
-The example mini-gallery shown above uses the default heading level ``^``. This
-can be changed using the ``heading-level`` option, which accepts a single
-character (e.g., ``-``).
-
-You can also pass inputs to the minigallery directive as a space separated
-list of arguments:
-
-.. code-block:: rst
-
-    .. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
+* glob-style pathlike strings to Sphinx-Gallery example files (relative to ``conf.py``).
+  For example, passing ``/examples/plot_4*`` will include all example files
+  matching the above pattern.
 
 .. _minigallery_order:
 
@@ -880,38 +884,32 @@ thumbnails corresponding to the input file strings or object names.
 You can specify minigallery thumbnails order via the ``minigallery_sort_order``
 configuration, which gets passed to the :py:func:`sorted` ``key`` parameter when
 sorting all minigalleries.
-Sorting is done on the full paths to the gallery examples (e.g.,
-``path/to/plot_example.py``) and backreference files (e.g.,
-``path/to/numpy.exp.examples``), corresponding to the inputs.
+
+Sorting is done on the full paths to all the gallery examples (e.g.,
+``path/to/plot_example.py``) that correspond to the inputs.
 
 See :ref:`own_sort_keys` for details on writing a custom sort key.
 
-As an example, to put backreference thumbnails at the end, we could define the function
-below in ``doc/sphinxext.py`` (note that backreference filenames do not start with
-"plot\_" and ``False`` gets sorted ahead of ``True`` as 0 is less than 1)::
+For example, to put all example thumbnails starting with ``"plot_numpy_"`` at the start,
+we could define the function below in ``doc/sphinxext.py`` (note ``False`` gets sorted
+ahead of ``True`` as 0 is less than 1)::
 
     def function_sorter(x)
-        return (not os.path.basename(x).startswith("plot_"), x)::
+        return (not Path(x).name.starts_with("plot_numpy_"), x)::
 
 We can then set the configuration to be (ensuring the function is
 :ref:`importable <importing_callables>`)::
 
     sphinx_gallery_conf = {
-    #...,
-    "minigallery_sort_order": "sphinxext.function_sorter",
-    #...
+        #...,
+        "minigallery_sort_order": "sphinxext.function_sorter",
+        #...
     }
 
 Sphinx-Gallery would resolve ``"sphinxext.function_sorter"`` to the
 ``function_sorter`` object.
 
-Sorting the set of thumbnails generated from
-:ref:`API backreferences <references_to_examples>` (i.e. the thumbnails linked
-to a qualified object name input) is not supported, but the sorting function can
-be used to position the entire set of backreference thumbnails since minigallery sort
-gets passed the ``{input}.example`` backreference filename. Thumbnails may be duplicated
-if they correspond to multiple object names or an object name and file/glob
-input.
+Note that you can only define one sorting key for all minigalleries.
 
 Auto-documenting your API with links to examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2630,24 +2628,24 @@ Manually passing files
 ======================
 
 By default, Sphinx-Gallery creates all the files that are written in the
-sphinx-build directory, either by generating rst and images from a ``*.py``
+sphinx-build directory, either by generating reST and images from a ``*.py``
 in the gallery-source, or from  creating ``index.rst`` from
 ``GALLERY_HEADER.rst`` (or ``README.[rst/txt]`` for backward-compatibility)
 in the gallery-source.  However, sometimes it is desirable to pass files
 from the gallery-source to the sphinx-build.  For example, you may want
 to pass an image that a gallery refers to, but does not generate itself.
-You may also want to pass raw rst from the gallery-source to the
+You may also want to pass raw reST from the gallery-source to the
 sphinx-build, because that material fits in thematically with your gallery,
-but is easier to write as rst.  To accommodate this, you may set
+but is easier to write as reST.  To accommodate this, you may set
 ``copyfile_regex`` in ``sphinx_gallery_conf``.  The following copies
-across rst files. ::
+across reST files. ::
 
     sphinx_gallery_conf = {
         ...
        'copyfile_regex': r'.*\.rst',
     }
 
-Note that if you copy across rst files, for instance, it is your
+Note that if you copy across reST files, for instance, it is your
 responsibility to ensure that they are in a sphinx ``toctree`` somewhere
 in your document.  You can, of course, add a ``toctree`` to your
 ``GALLERY_HEADER.rst``.

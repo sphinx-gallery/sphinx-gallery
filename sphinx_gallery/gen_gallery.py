@@ -1261,7 +1261,8 @@ def write_api_entry_usage(app, docname, source):
         else:
             used_api_entries[entry] = list()
             for br in backref_entry:
-                example_path = Path(br[0]).relative_to(src_dir)
+                # br[2] = abs path to target directory
+                example_path = Path(br[2], br[0]).relative_to(src_dir)
                 ref_name = str(example_path).replace(os.sep, "_")
                 used_api_entries[entry].append(f"sphx_glr_{ref_name}")
 
