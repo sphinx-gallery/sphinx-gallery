@@ -890,7 +890,7 @@ Sorting is done on the full paths to all the gallery examples (e.g.,
 
 See :ref:`own_sort_keys` for details on writing a custom sort key.
 
-For example, to put all example thumbnails starting with "plot_numpy_" at the start,
+For example, to put all example thumbnails starting with ``"plot_numpy_"`` at the start,
 we could define the function below in ``doc/sphinxext.py`` (note ``False`` gets sorted
 ahead of ``True`` as 0 is less than 1)::
 
