@@ -891,7 +891,7 @@ sphinx_gallery_conf = {
 Header
 ======
 
-.. minigallery:: numpy.max, src/plot_1.py
+.. minigallery:: numpy.max src/plot_1.py
 """
 )
 def test_minigallery_duplicate_object_path_input(sphinx_app_wrapper):

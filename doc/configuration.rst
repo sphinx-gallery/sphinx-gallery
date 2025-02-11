@@ -901,9 +901,9 @@ We can then set the configuration to be (ensuring the function is
 :ref:`importable <importing_callables>`)::
 
     sphinx_gallery_conf = {
-    #...,
-    "minigallery_sort_order": "sphinxext.function_sorter",
-    #...
+        #...,
+        "minigallery_sort_order": "sphinxext.function_sorter",
+        #...
     }
 
 Sphinx-Gallery would resolve ``"sphinxext.function_sorter"`` to the

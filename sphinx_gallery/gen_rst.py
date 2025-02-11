@@ -542,7 +542,8 @@ def generate_dir_rst(
         List of example file names we generated ReST for.
     backrefs_dir : dict[str, tuple]
         Dictionary where value is the backreference object and value
-        is a tuple containing: full path to example file, intro, title.
+        is a tuple containing: example filename, full path to example source directory,
+        full path to example target directory, intro, title.
 
     """
     index_content = ""
@@ -632,11 +633,11 @@ def generate_dir_rst(
 
         # Write backreferences
         if "backrefs" in out_vars:
-            print('XXXXX backrefs!')
             backrefs_example = _write_backreferences(
                 out_vars["backrefs"],
                 seen_backrefs,
                 gallery_conf,
+                src_dir,
                 target_dir,
                 fname,
                 intro,

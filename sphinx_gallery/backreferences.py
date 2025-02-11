@@ -371,7 +371,7 @@ def _thumbnail_div(
 
 
 def _write_backreferences(
-    backrefs, seen_backrefs, gallery_conf, target_dir, fname, intro, title
+    backrefs, seen_backrefs, gallery_conf, src_dir, target_dir, fname, intro, title
 ):
     """Write and return backreferences for one example.
 
@@ -386,6 +386,8 @@ def _write_backreferences(
         Back references already encountered when parsing this example.
     gallery_conf : Dict[str, Any]
         Gallery configurations.
+    src_dir : str
+        Stuff.
     target_dir : str
         Absolute path to directory where examples are saved.
     fname : str
@@ -399,7 +401,8 @@ def _write_backreferences(
     -------
     backrefs_example : dict[str, tuple]
         Dictionary where value is the backreference object and value
-        is a tuple containing: full path to example file, intro, title.
+        is a tuple containing: example filename, full path to example source directory,
+        full path to example target directory, intro, title.
     """
     if gallery_conf["backreferences_dir"] is None:
         return
@@ -436,7 +439,7 @@ def _write_backreferences(
             )
             seen_backrefs.add(backref)
             backrefs_example[backref].append(
-                (str(Path(target_dir, fname)), intro, title)
+                (fname, src_dir, target_dir, intro, title)
             )
     return dict(backrefs_example)
 
