@@ -1,6 +1,50 @@
 Changelog
 =========
 
+v0.19.0
+-------
+
+**Implemented enhancements:**
+
+-  Add block-level ``sphinx_gallery_capture_repr_block`` setting `#1398 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1398>`__ (`tpvasconcelos <https://github.com/tpvasconcelos>`__)
+
+**Fixed bugs:**
+
+-  Fix minigallery duplicates and add tests and update documenation `#1435 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1435>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Fix: Fix minigallery duplicates `#1430 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1430>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Fix incorrect paths for JupyterLite Notebook interface URLs, unpin ``jupyterlite-sphinx``, and update JupyterLite integration docs `#1417 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1417>`__ (`agriyakhetarpal <https://github.com/agriyakhetarpal>`__)
+-  BUG: make \_anim_rst windows compatible `#1399 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1399>`__ (`story645 <https://github.com/story645>`__)
+-  Fix custom sort `#1391 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1391>`__ (`drammock <https://github.com/drammock>`__)
+
+**Documentation**
+
+-  DOC Fixes to minigallery doc in ``configuration\.rst`` `#1437 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1437>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Improve doc on linking code blocks `#1419 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1419>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Doc: mention color css property to hide links `#1412 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1412>`__ (`jschueller <https://github.com/jschueller>`__)
+-  DOC Improve custom sort key docs `#1401 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1401>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Project maintenance**
+
+-  [pre-commit.ci] pre-commit autoupdate `#1434 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1434>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1431 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1431>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1428 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1428>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Fix label checker workflow `#1426 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1426>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1423 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1423>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1422 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1422>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1418 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1418>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1416 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1416>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1415 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1415>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1413 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1413>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1408 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1408>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1407 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1407>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump codecov/codecov-action from 4 to 5 in the actions group `#1406 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1406>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1405 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1405>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT Add test for ``minigallery_sort_order`` `#1402 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1402>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1400 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1400>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1395 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1395>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1393 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1393>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1390 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1390>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+
 v0.18.0
 -------
 
