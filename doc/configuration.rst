@@ -743,10 +743,12 @@ for details.
 The mini-gallery directive also supports the following options:
 
 * ``add-heading`` - adds a heading to the mini-gallery.
-    * The default heading for a mini-gallery with a single passed argument is:
-      "Examples using *{full qualified object name}*".
-    * The default heading for a mini-gallery with multiple passed arguments is:
-      "Examples of one of multiple objects".
+
+  * The default heading for a mini-gallery with a single passed argument is:
+    "Examples using *{full qualified object name}*".
+  * The default heading for a mini-gallery with multiple passed arguments is:
+    "Examples of one of multiple objects".
+
 * ``heading-level`` - specify the heading level. Accepts a single character
   (e.g., ``-``).
 
@@ -807,17 +809,24 @@ in your ``conf.py`` file:
 **Required**
 
 * ``backreferences_dir`` - directory where object granular galleries are stored.
-  This should be a string or ``pathlib.Path`` object that is **relative** to the
-  ``conf.py`` file, or ``None``. It is ``None`` by default, which means that
-  backrefererences are not generated.
+
+  * This should be a string or ``pathlib.Path`` object that is **relative** to the
+    ``conf.py`` file, or ``None``.
+  * It is ``None`` by default, which means that
+    backrefererences are not generated.
+
 * ``doc_module`` - the modules for which you want object level galleries
-  to be created, as a tuple of string module names.
+  to be created.
+
+  * It should be a tuple of string module names.
 
 **Optional**
 
 * ``exclude_implicit_doc`` - Regexes to match objects to exclude from implicit
-  backreferences, as set of string regexes. The default option is an empty set,
-  which will exclude nothing.
+  backreferences, as set of string regexes.
+
+  * The default option is an empty set, which will exclude nothing.
+  * See :ref:`exclude_implicit_doc` for details.
 
 For example::
 
@@ -844,7 +853,14 @@ For backwards compatibility ``backreferences_dir`` will also be populated with
 reST files for each object, named '<object>.examples'.
 Each .rst file will contain a reduced version of the
 gallery, containing examples where that "object" that is used.
-No file will be generated for objects not used or referenced in any example.
+'<object>.examples' files will be generated for all objects to prevent inclusion
+errors. Empty '<object>.examples' files are created for objects not used in any
+example.
+
+.. _exclude_implicit_doc:
+
+``exclude_implicit_doc``
+""""""""""""""""""""""""
 
 Sometimes, there are functions that are being used in practically every example
 for the given module, for instance the ``pyplot.show`` or ``pyplot.subplots``
