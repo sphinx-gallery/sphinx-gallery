@@ -365,8 +365,15 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     # XXX anything that can only be a bool (rather than str) should probably be
     # evaluated this way as it allows setting via -D on the command line
     for key in (
+        "download_all_examples",
+        "inspect_global_variables",
+        "line_numbers",
+        "nested_sections",
+        "only_warn_on_example_error",
         "promote_jupyter_magic",
+        "remove_config_comments",
         "run_stale_examples",
+        "show_signature",
     ):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
 
