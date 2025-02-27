@@ -130,8 +130,8 @@ Build options
 Configuration options can be set at build time via the
 `Sphinx build -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_
 command line option. This overrides the value set in your ``conf.py`` file for that
-configuration. The value seting in your ``conf.py`` is effectively the 'default',
-as it takes lower precedence than the value passed via the ``-D`` build option.
+configuration. Values set in your ``conf.py`` are effectively the 'default',
+as it takes lower precedence than values passed via the ``-D`` build option.
 
 You can also use the ``-D`` option in your Makefile to create useful targets,
 for example:
