@@ -96,11 +96,8 @@ DEFAULT_GALLERY_CONF = {
     "reference_url": {},
     "capture_repr": ("_repr_html_", "__repr__"),
     "ignore_repr_types": r"",
-    # Build options
-    # -------------
-    # 'plot_gallery' also accepts strings that evaluate to a bool, e.g. "True",
-    # "False", "1", "0" so that they can be easily set via command line
-    # switches of sphinx-build
+    # 'plot_gallery' should accept strings that evaluate to a bool, to allow
+    # setting via `sphinx-build -D` on command line
     "plot_gallery": "True",
     "download_all_examples": True,
     "abort_on_example_error": False,
@@ -148,7 +145,11 @@ logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
 def _bool_eval(x):
-    """Evaluate bool only configs, to allow setting via -D on the command line."""
+    """Evaluate bool only configs, allows setting via `sphinx-build -D` on command line.
+
+    Ensures that strings that evaluate to a bool, e.g. "True", "False", "1", "0",
+    work as expected.
+    """
     if isinstance(x, str):
         try:
             x = eval(x)
@@ -362,11 +363,18 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys)
 
     gallery_conf.update(sphinx_gallery_conf)
-    # XXX anything that can only be a bool (rather than str) should probably be
-    # evaluated this way as it allows setting via -D on the command line
+    # Bool only (i.e. not string) configs are evaluated with
+    # `_bool_eval` to allow setting via `sphinx-build -D`
     for key in (
+        "download_all_examples",
+        "inspect_global_variables",
+        "line_numbers",
+        "nested_sections",
+        "only_warn_on_example_error",
         "promote_jupyter_magic",
+        "remove_config_comments",
         "run_stale_examples",
+        "show_signature",
     ):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
 

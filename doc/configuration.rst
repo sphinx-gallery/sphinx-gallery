@@ -127,10 +127,22 @@ the rendered examples.
 Build options
 ^^^^^^^^^^^^^
 
-Some options can be set during the build execution step, e.g. using a Makefile:
+Configuration options can be set at build time via the
+`Sphinx build -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_
+command line option. This overrides the value set in your ``conf.py`` file for that
+configuration. Values set in your ``conf.py`` are effectively the 'default',
+as it takes lower precedence than values passed via the ``-D`` build option.
+
+You can also use the ``-D`` option in your Makefile to create useful targets,
+for example:
 
 - ``make html-noplot`` (:ref:`without_execution`)
 - ``make html_abort_on_example_error`` (:ref:`abort_on_first`)
+
+.. note::
+    If you wish to use the ``-D`` build option to pass an instantiated class, class or
+    function as a configuration value, you can do so by passing a fully qualified name
+    string to the object. See :ref:`importing_callables` for details.
 
 CSS changes
 ^^^^^^^^^^^
@@ -1233,7 +1245,7 @@ included in the prefix if it's required.
 .. tip::
 
     If building multiple versions of your documentation on a hosted service and
-    using prefix, consider using `sphinx build -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_
+    using prefix, consider using `Sphinx build -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_
     command line option to ensure links point to the correct version. For
     example:
 
@@ -1746,9 +1758,19 @@ Building without executing examples
 Sphinx-Gallery can parse all your examples and build the gallery
 without executing any of the scripts. This is just for speed
 visualization processes of the gallery and the size it takes your
-website to display, or any use you can imagine for it. To achieve this you
-need to pass the no plot option in the build process by modifying
-your ``Makefile`` with:
+website to display, or any use you can imagine for it.
+
+This can be done by setting the ``plot_gallery`` configuration in the
+``sphinx_gallery_conf`` dictionary inside your ``conf.py``::
+
+    sphinx_gallery_conf = {
+        ...
+        'plot_gallery': 'False',
+    }
+
+You can also change this via the
+`Sphinx build option -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_,
+which can be used to add a 'no-plot' target to your ``Makefile``:
 
 .. code-block:: Makefile
 
@@ -1760,17 +1782,9 @@ your ``Makefile`` with:
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
 and not spaces.
 
-Alternatively, you can add the ``plot_gallery`` option to the
-``sphinx_gallery_conf`` dictionary inside your ``conf.py`` to have it as
-a default::
-
-    sphinx_gallery_conf = {
-        ...
-        'plot_gallery': 'False',
-    }
-
 The highest precedence is always given to the `-D` flag of the
-``sphinx-build`` command.
+``sphinx-build`` command, which effectively makes the value set in your ``conf.py``
+file the 'default'.
 
 .. note::
 
@@ -2176,9 +2190,18 @@ Abort build on first fail
 
 Sphinx-Gallery provides the early fail option. In
 this mode the gallery build process breaks as soon as an exception
-occurs in the execution of the examples scripts. To activate this
-behavior you need to pass a flag at the build process. It can be done
-by including in your ``Makefile``:
+occurs in the execution of the examples scripts. This can by activated via the
+``abort_on_example_error`` configuration, which can be set ``sphinx_gallery_conf``
+dictionary inside your ``conf.py`` configuration file::
+
+    sphinx_gallery_conf = {
+        ...
+        'abort_on_example_error': True,
+    }
+
+You can also change this via the
+`Sphinx build option -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_,
+which can be used to add a 'abort_on_example_error' target to your ``Makefile``:
 
 .. code-block:: makefile
 
@@ -2190,18 +2213,9 @@ by including in your ``Makefile``:
 Remember that for ``Makefile`` white space is significant and the indentation
 are tabs and not spaces.
 
-Alternatively, you can add the ``abort_on_example_error`` option to
-the ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
-configuration file to have it as a default::
-
-    sphinx_gallery_conf = {
-        ...
-        'abort_on_example_error': True,
-    }
-
-
-The highest precedence is always given to the `-D` flag of
-the ``sphinx-build`` command.
+The highest precedence is always given to the `-D` flag of the
+``sphinx-build`` command, which effectively makes the value set in your ``conf.py``
+file the 'default'.
 
 .. _dont_fail_exit:
 

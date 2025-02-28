@@ -14,6 +14,7 @@ from sphinx.config import is_serializable
 from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 
 from sphinx_gallery.gen_gallery import (
+    _bool_eval,
     _fill_gallery_conf_defaults,
     fill_gallery_conf_defaults,
     write_api_entry_usage,
@@ -35,6 +36,15 @@ Description.
 '''
 
 """
+
+
+def test_bool_eval():
+    """Ensure `_bool_eval` evaluates strings correctly to bool."""
+    assert _bool_eval("True") == True
+    assert _bool_eval("False") == False
+    assert _bool_eval("True") == True
+    assert _bool_eval("True") == True
+    assert _bool_eval("0") == False
 
 
 def test_bad_config():
