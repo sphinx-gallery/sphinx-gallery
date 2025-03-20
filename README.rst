@@ -135,6 +135,7 @@ An incomplete list:
 * `OpenTURNS <https://openturns.github.io/openturns/latest/examples/examples.html>`_
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 * `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
+* `POT <https://pythonot.github.io/auto_examples/index.html>`_
 * `PyGMT <https://www.pygmt.org/latest/gallery/index.html>`_
 * `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
@@ -146,9 +147,11 @@ An incomplete list:
 * `scikit-image <https://scikit-image.org/docs/dev/auto_examples/>`_
 * `scikit-learn <https://scikit-learn.org/stable/auto_examples/index.html>`_
 * `SimPEG <https://docs.simpeg.xyz/content/examples/>`_
+* `SKADA Scikit-adaptation <https://scikit-adaptation.github.io/auto_examples/index.html>`_
 * `Sphinx-Gallery <https://sphinx-gallery.github.io/stable/auto_examples/index.html>`_
 * `SunPy <https://docs.sunpy.org/en/stable/generated/gallery/index.html>`_
 * `Tonic <https://tonic.readthedocs.io/en/latest/auto_examples/index.html>`_
+* `TorchDR <https://torchdr.github.io/auto_examples/index.html>`_
 * `TorchIO <https://torchio.readthedocs.io/auto_examples/index.html>`_
 
 .. projects_list_end
