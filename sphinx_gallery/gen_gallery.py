@@ -8,6 +8,7 @@ when building the documentation.
 
 import codecs
 import copy
+import json
 import os
 import pathlib
 import re
@@ -954,9 +955,8 @@ def _format_for_writing(costs, *, src_dir, kind="rst"):
     lens = [max(x) for x in zip(*[[len(item) for item in cost] for cost in lines])]
     return lines, lens
 
-
 def write_computation_times(gallery_conf, target_dir, costs):
-    """Write computation times to `sg_execution_times.rst`.
+    """Write computation times to `sg_execution_times.rst` and `sg_execution_times.json`.
 
     Parameters
     ----------
@@ -967,23 +967,49 @@ def write_computation_times(gallery_conf, target_dir, costs):
     costs: List[Dict]
         List of dicts of computation costs and paths, see gen_rst.py for details.
     """
+    _write_computation_times(gallery_conf, target_dir, costs, 'rst')
+    _write_computation_times(gallery_conf, target_dir, costs, 'json')
+
+def _write_computation_times(gallery_conf, target_dir, costs, ext='rst'):
+    """Write computation times to `sg_execution_times.rst` or `sg_execution_times.json`.
+
+    Parameters
+    ----------
+    gallery_conf : Dict[str, Any]
+        Sphinx-Gallery configuration dictionary.
+    target_dir : str | None
+        Path to directory where example python source file are.
+    costs: List[Dict]
+        List of dicts of computation costs and paths, see gen_rst.py for details.
+    ext: 'rst' | 'json'
+        Write to rst or JSON.
+    """
     if not gallery_conf["write_computation_times"]:
         return
+    all_galleries = target_dir is None  # all galleries together
+    out_dir = gallery_conf["src_dir"] if all_galleries else target_dir
+    out_file = Path(out_dir) / f'sg_execution_times.{ext}'
     total_time = sum(cost["t"] for cost in costs)
-    if target_dir is None:  # all galleries together
-        out_dir = gallery_conf["src_dir"]
+    if out_file.is_file() and total_time == 0:  # a re-run
+        return
+
+    # Write to json
+    if ext == 'json':
+        with out_file.open("w", encoding="utf-8") as fid:
+            print(costs)
+            json.dump(costs, fid, indent=4)
+        return
+
+    # Write to rst
+    if all_galleries:
         where = "all galleries"
         kind = "rst-full"
         ref_extra = ""
     else:  # a single gallery
-        out_dir = target_dir
         where = os.path.relpath(target_dir, gallery_conf["src_dir"])
         kind = "rst"
         ref_extra = f"{where.replace(os.sep, '_')}_"
     new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
-    out_file = Path(out_dir) / "sg_execution_times.rst"
-    if out_file.is_file() and total_time == 0:  # a re-run
-        return
     with out_file.open("w", encoding="utf-8") as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
         fid.write(
