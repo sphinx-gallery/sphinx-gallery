@@ -955,6 +955,7 @@ def _format_for_writing(costs, *, src_dir, kind="rst"):
     lens = [max(x) for x in zip(*[[len(item) for item in cost] for cost in lines])]
     return lines, lens
 
+
 def write_computation_times(gallery_conf, target_dir, costs):
     """Write computation times to `sg_execution_times.rst` and `sg_execution_times.json`.
 
@@ -967,10 +968,11 @@ def write_computation_times(gallery_conf, target_dir, costs):
     costs: List[Dict]
         List of dicts of computation costs and paths, see gen_rst.py for details.
     """
-    _write_computation_times(gallery_conf, target_dir, costs, 'rst')
-    _write_computation_times(gallery_conf, target_dir, costs, 'json')
+    _write_computation_times(gallery_conf, target_dir, costs, "rst")
+    _write_computation_times(gallery_conf, target_dir, costs, "json")
 
-def _write_computation_times(gallery_conf, target_dir, costs, ext='rst'):
+
+def _write_computation_times(gallery_conf, target_dir, costs, ext="rst"):
     """Write computation times to `sg_execution_times.rst` or `sg_execution_times.json`.
 
     Parameters
@@ -988,13 +990,13 @@ def _write_computation_times(gallery_conf, target_dir, costs, ext='rst'):
         return
     all_galleries = target_dir is None  # all galleries together
     out_dir = gallery_conf["src_dir"] if all_galleries else target_dir
-    out_file = Path(out_dir) / f'sg_execution_times.{ext}'
+    out_file = Path(out_dir) / f"sg_execution_times.{ext}"
     total_time = sum(cost["t"] for cost in costs)
     if out_file.is_file() and total_time == 0:  # a re-run
         return
 
     # Write to json
-    if ext == 'json':
+    if ext == "json":
         with out_file.open("w", encoding="utf-8") as fid:
             print(costs)
             json.dump(costs, fid, indent=4)
