@@ -18,7 +18,7 @@ SPHINX_GALLERY_CONF_JUNIT = os.path.join("sphinx-gallery", "junit-results.xml")
 
 
 def load_test_cases_from_xml(path) -> list[dict[str, str | int | float | bool | None]]:
-    """Parse test cases from `junit-results.xml`."""
+    """Parse test cases from the generated JUnit XML file."""
     tree = ET.parse(path)
     root = tree.getroot()
     cases = []
