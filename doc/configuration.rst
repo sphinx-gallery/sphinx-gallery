@@ -1300,16 +1300,18 @@ Using JUnit XML files
 =====================
 
 Sphinx-Gallery can create a JUnit XML file of your example run times,
-successes, and failures. To create a file named e.g. ``junit-result.xml``
-in the ``/build`` output directory, set the configuration key (path is relative
-to the HTML output directory)::
+successes, and failures. Set ``junit`` configuration to the value of your
+desired JUnit file path, relative to the HTML output directory (which is by
+default ``/_build/html`` relative to your ``conf.py`` file).
+For example, assuming output directory is the default, the configuration below creates
+a file ``junit.xml`` in ``doc/_build/test-results/sphinx-gallery/``::
 
      sphinx_gallery_conf = {
          ...
          'junit': '../test-results/sphinx-gallery/junit.xml',
      }
 
-By default, JUnit XML file generation is disabled (by setting ``'junit': ''``).
+By default, JUnit XML file generation is disabled (default value is: ``'junit': ''``).
 JUnit XML files are useful for example on CircleCI builds, where you can add
 a line like this to get a summary of your example run times in the CircleCI GUI
 (which will parse the file path
@@ -2418,6 +2420,9 @@ Write computation times
 Set to ``False`` if you want to omit computation times from all gallery outputs.
 This helps with reproducible builds.
 Default is ``True`` unless the ``SOURCE_DATE_EPOCH`` environment variable is set.
+
+If you are interested in using execution time and execution success and failure data,
+see :ref:`junit_xml`.
 
 .. _show_memory:
 
