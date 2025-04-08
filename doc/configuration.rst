@@ -1331,8 +1331,8 @@ For more information on CircleCI integration, peruse the related
 `CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
 and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
 
-Generating parametrized ``pytest`` cases
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Parametrized ``pytest`` cases
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The JUnit XML file can also be parsed manually and used to generate parametrized
 test cases with ``pytest``. For example, to test computation times for the
