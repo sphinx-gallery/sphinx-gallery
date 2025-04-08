@@ -1310,6 +1310,10 @@ to the HTML output directory)::
      }
 
 By default, JUnit XML file generation is disabled (by setting ``'junit': ''``).
+
+Integration with ``CircleCI``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 JUnit XML files are useful for example on CircleCI builds, where you can add
 a line like this to get a summary of your example run times in the CircleCI GUI
 (which will parse the file path
@@ -1410,6 +1414,9 @@ Execute the tests with the command
 .. code-block:: shell
 
      pytest sphinx_gallery/tests/test_execution_times.py
+
+For more information, see
+`parametrizing test functions <https://docs.pytest.org/en/7.1.x/how-to/parametrize.html#pytest-mark-parametrize-parametrizing-test-functions>`__.
 
 .. _log_level:
 
