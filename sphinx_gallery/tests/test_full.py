@@ -13,7 +13,6 @@ import sys
 import time
 from io import StringIO
 from pathlib import Path
-from xml.etree.ElementTree import parse
 
 import lxml.etree
 import lxml.html
