@@ -1378,8 +1378,9 @@ After building the documentation, execute the tests with the command
      pytest <your_project>/tests/test_execution_times.py
 
 A separate test should execute successfully for each gallery example.
-For more information, see
+For more information on using ``pytest``, see
 `parametrizing test functions <https://docs.pytest.org/en/7.1.x/how-to/parametrize.html#pytest-mark-parametrize-parametrizing-test-functions>`__.
+For a similar example of this test used by a real project, see the source code for `PyVista <https://github.com/pyvista/pyvista>`__.
 
 .. _log_level:
 
