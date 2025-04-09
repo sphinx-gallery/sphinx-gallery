@@ -1335,16 +1335,15 @@ Parametrized ``pytest`` cases
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The JUnit XML file can also be parsed manually and used to generate parametrized
-test cases with ``pytest``. For example, to test computation times for the
-``sphinx-gallery`` documentation, define a new test module
+test cases with ``pytest``. For example, to test computation times for your
+project's documentation, define a new test module
 
 .. code-block:: shell
 
-    sphinx_gallery/tests/test_execution_times.py
+    <your_project>/tests/test_execution_times.py
 
-with the following code. Be sure to configure the options
-``MAX_TIME``, ``PROJECT_DIR``, ``HTML_DIR``, and ``SPHINX_GALLERY_CONF_JUNIT``
-to suit your project.
+and include the following code block. Be sure to configure the options
+``MAX_EXECUTION_TIME``, ``OUT_DIR``, and ``XML_FILE`` to suit your project.
 
 .. code-block:: python
 
@@ -1353,33 +1352,32 @@ to suit your project.
 
     import pytest
 
-    # Configure test parameters and file path of the JUnit xml file
-    MAX_EXECUTION_TIME = 5.0  # Tests fail if greater than this value
-    # Same value as `sphinx_gallery_conf['junit']` in `conf.py`
-    CONF_JUNIT = Path("sphinx-gallery") / "junit-results.xml"
-    # Full xml path relative to this test module
-    XML_PATH = Path(__file__).parents[2] / "doc" / "_build" / "html" / CONF_JUNIT
+    MAX_EXECUTION_TIME = 5.0  # Seconds
 
-    xml_root = parse(XML_PATH).getroot()
+    # Full xml path relative to this test module
+    OUT_DIR = Path(__file__).parents[2] / "doc" / "_build" / "html"
+    XML_FILE =  OUT_DIR / "sphinx-gallery" / "junit-results.xml"
+    assert XML_FILE.is_file()
+
+    xml_root = parse(XML_FILE).getroot()
     test_cases = [dict(case.attrib) for case in xml_root.iterfind("testcase")]
     test_ids = [case["classname"] for case in test_cases]
 
-
     @pytest.mark.parametrize("testcase", test_cases, ids=test_ids)
-    def test_gallery_example(testcase):
+    def test_execution_times(testcase):
         if float(testcase["time"]) > MAX_EXECUTION_TIME:
             pytest.fail(
                 f"Gallery example {testcase['name']!r} from {testcase['file']!r}\n"
                 f"Took too long to run: Duration {testcase['time']}s > {MAX_EXECUTION_TIME}s",
             )
 
-
-Execute the tests with the command
+After building the documentation, execute the tests with the command
 
 .. code-block:: shell
 
-     pytest sphinx_gallery/tests/test_execution_times.py
+     pytest <your_project>/tests/test_execution_times.py
 
+A separate test should execute successfully for each gallery example.
 For more information, see
 `parametrizing test functions <https://docs.pytest.org/en/7.1.x/how-to/parametrize.html#pytest-mark-parametrize-parametrizing-test-functions>`__.
 
