@@ -1343,11 +1343,11 @@ the execution time(s).
 
     from xml.etree.ElementTree import parse
 
-    xml_path =  'doc/_build/html/sphinx-gallery/junit-results.xml'
+    xml_path =  "doc/_build/html/sphinx-gallery/junit-results.xml"
     test_cases = [dict(case.attrib) for case in parse(xml_path).getroot().iterfind("testcase")]
 
-    print(test_cases[0]['time'])
-    '0.10358190536499023'
+    print(test_cases[0]["time"])
+    0.10358190536499023
 
 .. _log_level:
 
