@@ -1331,56 +1331,23 @@ For more information on CircleCI integration, peruse the related
 `CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
 and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
 
-Parametrized ``pytest`` cases
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Parsing the XML file
+^^^^^^^^^^^^^^^^^^^^
 
-The JUnit XML file can also be parsed manually and used to generate parametrized
-test cases with ``pytest``. For example, to test computation times for your
-project's documentation, define a new test module
-
-.. code-block:: shell
-
-    <your_project>/tests/test_execution_times.py
-
-and include the following code block. Be sure to configure the options
-``MAX_EXECUTION_TIME``, ``OUT_DIR``, and ``XML_FILE`` to suit your project.
+The JUnit XML file can also be parsed manually, e.g. to generate parametrized
+test cases with ``pytest`` to limit the maximum execution time. The following
+code block parses the XML file to create a list of test case dictionaries with
+the execution time(s).
 
 .. code-block:: python
 
-    from pathlib import Path
     from xml.etree.ElementTree import parse
 
-    import pytest
+    xml_path =  'doc/_build/html/sphinx-gallery/junit-results.xml'
+    test_cases = [dict(case.attrib) for case in parse(xml_path).getroot().iterfind("testcase")]
 
-    MAX_EXECUTION_TIME = 5.0  # Seconds
-
-    # Full xml path relative to this test module
-    OUT_DIR = Path(__file__).parents[2] / "doc" / "_build" / "html"
-    XML_FILE =  OUT_DIR / "sphinx-gallery" / "junit-results.xml"
-    assert XML_FILE.is_file()
-
-    xml_root = parse(XML_FILE).getroot()
-    test_cases = [dict(case.attrib) for case in xml_root.iterfind("testcase")]
-    test_ids = [case["classname"] for case in test_cases]
-
-    @pytest.mark.parametrize("testcase", test_cases, ids=test_ids)
-    def test_execution_times(testcase):
-        if float(testcase["time"]) > MAX_EXECUTION_TIME:
-            pytest.fail(
-                f"Gallery example {testcase['name']!r} from {testcase['file']!r}\n"
-                f"Took too long to run: Duration {testcase['time']}s > {MAX_EXECUTION_TIME}s",
-            )
-
-After building the documentation, execute the tests with the command
-
-.. code-block:: shell
-
-     pytest <your_project>/tests/test_execution_times.py
-
-A separate test should execute successfully for each gallery example.
-For more information on using ``pytest``, see
-`parametrizing test functions <https://docs.pytest.org/en/7.1.x/how-to/parametrize.html#pytest-mark-parametrize-parametrizing-test-functions>`__.
-For a similar example of this test used by a real project, see the source code for `PyVista <https://github.com/pyvista/pyvista>`__.
+    print(test_cases[0]['time'])
+    '0.10358190536499023'
 
 .. _log_level:
 
