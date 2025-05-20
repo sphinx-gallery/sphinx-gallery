@@ -1310,6 +1310,10 @@ to the HTML output directory)::
      }
 
 By default, JUnit XML file generation is disabled (by setting ``'junit': ''``).
+
+Integration with ``CircleCI``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 JUnit XML files are useful for example on CircleCI builds, where you can add
 a line like this to get a summary of your example run times in the CircleCI GUI
 (which will parse the file path
@@ -1327,6 +1331,23 @@ For more information on CircleCI integration, peruse the related
 `CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
 and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
 
+Parsing the XML file
+^^^^^^^^^^^^^^^^^^^^
+
+The JUnit XML file can also be parsed manually, e.g. to generate parametrized
+test cases with ``pytest`` to limit the maximum execution time. The following
+code block parses the XML file to create a list of test case dictionaries with
+the execution time(s).
+
+.. code-block:: python
+
+    from xml.etree.ElementTree import parse
+
+    xml_path =  "doc/_build/html/sphinx-gallery/junit-results.xml"
+    test_cases = [dict(case.attrib) for case in parse(xml_path).getroot().iterfind("testcase")]
+
+    print(test_cases[0]["time"])
+    0.10358190536499023
 
 .. _log_level:
 
