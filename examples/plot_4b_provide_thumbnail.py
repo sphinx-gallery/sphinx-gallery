@@ -7,6 +7,7 @@ thumbnail. This is done by specifying the keyword-value pair
 ``sphinx_gallery_thumbnail_path = 'fig path'`` as a comment somewhere below the
 docstring in the example file. In this example, we specify that we wish the
 figure ``demo.png`` in the folder ``_static`` to be used for the thumbnail.
+Note, the path to the image should be relative to the ``conf.py``.
 """
 
 import matplotlib.pyplot as plt
