@@ -2729,7 +2729,7 @@ directory. You are also responsible for adding any necessary ``index.rst``
 files for that gallery's sub-galleries.
 
 The following is an example of ``index.rst`` that handles a gallery with
-sub-galleries and can insert example form one sub-gallery into another one 
+sub-galleries and can insert example form one sub-gallery into another one
 while preserving the nested structure:
 
 .. code-block:: rst
@@ -2748,8 +2748,6 @@ while preserving the nested structure:
 
     .. minigallery:: ../../examples/plot_*.py
 
-
-
     Subgallery 2
     ------------
 
@@ -2760,7 +2758,7 @@ while preserving the nested structure:
 
         subgallery2/plot_*.py
 
-    .. minigallery:: 
+    .. minigallery::
         ../../examples/subgallery2/plot_*.py
         ../../examples/subgallery1/plot_example_in_both.py
 
