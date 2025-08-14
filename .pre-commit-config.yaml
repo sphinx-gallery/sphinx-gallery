@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.12.8
     hooks:
       - id: ruff-format
         exclude: plot_syntaxerror
@@ -24,7 +24,7 @@ repos:
         additional_dependencies: [setuptools-scm]
 
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.37.0
+    rev: v1.37.1
     hooks:
       - id: yamllint
         args: [--strict, -c, .yamllint.yml]
@@ -35,7 +35,7 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.5.1
+    rev: v2.6.0
     hooks:
       - id: pyproject-fmt
         additional_dependencies: [tox]
