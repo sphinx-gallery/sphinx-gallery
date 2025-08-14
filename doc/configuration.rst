@@ -2733,6 +2733,7 @@ sub-galleries and can insert example from one sub-gallery into another one
 while preserving the nested structure in the TOC tree.:
 
 .. code-block:: rst
+
     Examples gallery
     ================
 
