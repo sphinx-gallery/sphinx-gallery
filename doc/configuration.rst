@@ -2730,7 +2730,7 @@ files for that gallery's sub-galleries.
 
 The following is an example of ``index.rst`` that handles a gallery with
 sub-galleries and can insert example from one sub-gallery into another one
-while preserving the nested structure in th TOC tree.:
+while preserving the nested structure in the TOC tree.:
 
 .. code-block:: rst
     Examples gallery
