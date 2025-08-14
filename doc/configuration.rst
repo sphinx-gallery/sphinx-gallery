@@ -2729,8 +2729,8 @@ directory. You are also responsible for adding any necessary ``index.rst``
 files for that gallery's sub-galleries.
 
 The following is an example of ``index.rst`` that handles a gallery with
-sub-galleries and can insert example form one sub-gallery into another one
-while preserving the nested structure:
+sub-galleries and can insert example from one sub-gallery into another one
+while preserving the nested structure in th TOC tree.:
 
 .. code-block:: rst
     Examples gallery
