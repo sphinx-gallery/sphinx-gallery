@@ -2728,6 +2728,42 @@ documentation) that includes any gallery items or other files in that
 directory. You are also responsible for adding any necessary ``index.rst``
 files for that gallery's sub-galleries.
 
+The following is an example of ``index.rst`` that handles a gallery with
+sub-galleries and can insert example form one sub-gallery into another one 
+while preserving the nested structure:
+
+.. code-block:: rst
+    Examples gallery
+    ================
+
+    Subgallery 1
+    ------------
+
+    .. toctree::
+        :maxdepth: 2
+        :glob:
+        :hidden:
+
+        subgallery1/plot_*.py
+
+    .. minigallery:: ../../examples/plot_*.py
+
+
+
+    Subgallery 2
+    ------------
+
+    .. toctree::
+        :maxdepth: 2
+        :glob:
+        :hidden:
+
+        subgallery2/plot_*.py
+
+    .. minigallery:: 
+        ../../examples/subgallery2/plot_*.py
+        ../../examples/subgallery1/plot_example_in_both.py
+
 .. _show_api_usage:
 
 Showing API Usage
