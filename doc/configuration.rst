@@ -2744,7 +2744,7 @@ while preserving the nested structure in the TOC tree.:
         :glob:
         :hidden:
 
-        subgallery1/plot_*.py
+        subgallery1/plot_*
 
     .. minigallery:: ../../examples/plot_*.py
 
@@ -2756,7 +2756,7 @@ while preserving the nested structure in the TOC tree.:
         :glob:
         :hidden:
 
-        subgallery2/plot_*.py
+        subgallery2/plot_*
 
     .. minigallery::
         ../../examples/subgallery2/plot_*.py
