@@ -2747,7 +2747,7 @@ while preserving the nested structure in the TOC tree.:
 
         subgallery1/plot_*
 
-    .. minigallery:: ../../examples/plot_*.py
+    .. minigallery:: ../../examples/subgallery1/plot_*.py
 
     Subgallery 2
     ------------
