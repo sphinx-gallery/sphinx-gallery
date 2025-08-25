@@ -378,9 +378,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1 :]
         if app.builder.name == "dirhtml":
-            json_fname = os.path.join(
-                src_gallery_dir, f'{subpath}.codeobj.json'
-            )
+            json_fname = os.path.join(src_gallery_dir, f"{subpath}.codeobj.json")
         else:
             json_fname = os.path.join(
                 src_gallery_dir, subpath, fname[:-5] + ".codeobj.json"
@@ -414,7 +412,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                                 e, msg=f"resolving {modname}.{cname}"
                             )
                         if link is not None and app.builder.name == "dirhtml":
-                            link = link.replace('.html', '/')
+                            link = link.replace(".html", "/")
 
                     # next try intersphinx
                     if this_module == modname == "builtins":
