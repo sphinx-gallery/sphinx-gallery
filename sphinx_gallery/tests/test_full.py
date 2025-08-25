@@ -680,6 +680,33 @@ def test_backreferences(sphinx_app):
     assert "figure_rst.html" not in html  # excluded
 
 
+def test_backreferences_dirhtml(sphinx_dirhtml_app):
+    """Test backreferences in dirhtml doc."""
+    out_dir = sphinx_dirhtml_app.outdir
+    mod_file = op.join(out_dir, "gen_modules", "sphinx_gallery.sorting", "index.html")
+    with codecs.open(mod_file, "r", "utf-8") as fid:
+        lines = fid.read()
+    assert "ExplicitOrder" in lines  # in API doc
+    assert "plot_second_future_imports/" in lines  # backref via code use
+    assert "FileNameSortKey" in lines  # in API doc
+    assert "plot_numpy_matplotlib/" in lines  # backref via :class: in str
+    mod_file = op.join(
+        out_dir, "gen_modules", "sphinx_gallery.backreferences", "index.html"
+    )
+    with codecs.open(mod_file, "r", "utf-8") as fid:
+        lines = fid.read()
+    assert "NameFinder" in lines  # in API doc
+    assert "plot_future_imports/" in lines  # backref via doc block
+    # rendered file
+    html = op.join(out_dir, "auto_examples", "plot_second_future_imports", "index.html")
+    assert op.isfile(html)
+    with codecs.open(html, "r", "utf-8") as fid:
+        html = fid.read()
+    assert "sphinx_gallery.sorting/#sphinx_gallery.sorting.ExplicitOrder" in html  # noqa: E501
+    assert "sphinx_gallery.scrapers/#sphinx_gallery.scrapers.clean_modules" in html  # noqa: E501
+    assert "figure_rst.html" not in html  # excluded
+
+
 @pytest.mark.parametrize(
     "rst_file, example_used_in",
     [
