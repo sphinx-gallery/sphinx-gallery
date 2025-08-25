@@ -377,9 +377,14 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
         subpath = dirpath[len(html_gallery_dir) + 1 :]
-        json_fname = os.path.join(
-            src_gallery_dir, subpath, fname[:-5] + ".codeobj.json"
-        )
+        if app.builder.name == "dirhtml":
+            json_fname = os.path.join(
+                src_gallery_dir, f'{subpath}.codeobj.json'
+            )
+        else:
+            json_fname = os.path.join(
+                src_gallery_dir, subpath, fname[:-5] + ".codeobj.json"
+            )
         if not os.path.exists(json_fname):
             continue
 
@@ -408,6 +413,8 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                             _handle_http_url_error(
                                 e, msg=f"resolving {modname}.{cname}"
                             )
+                        if link is not None and app.builder.name == "dirhtml":
+                            link = link.replace('.html', '/')
 
                     # next try intersphinx
                     if this_module == modname == "builtins":
@@ -489,7 +496,7 @@ def embed_code_links(app, exception):
     # require searchindex.js to exist for the links to the local doc
     # and there does not seem to be a good way of knowing which
     # builders creates a searchindex.js.
-    if app.builder.name not in ["html", "readthedocs"]:
+    if app.builder.name not in ["html", "dirhtml", "readthedocs"]:
         return
 
     logger.info("embedding documentation hyperlinks...", color="white")
