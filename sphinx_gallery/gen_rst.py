@@ -1574,11 +1574,11 @@ def save_rst_example(
         interactive_example_text += " or to run this example in your browser via "
 
     if is_binder_enabled and is_jupyterlite_enabled:
-        interactive_example_text += "JupyterLite or Binder"
+        interactive_example_text += "JupyterLite or Binder."
     elif is_binder_enabled:
-        interactive_example_text += "Binder"
+        interactive_example_text += "Binder."
     elif is_jupyterlite_enabled:
-        interactive_example_text += "JupyterLite"
+        interactive_example_text += "JupyterLite."
 
     example_rst = (
         EXAMPLE_HEADER.format(example_fname, ref_fname, interactive_example_text)
