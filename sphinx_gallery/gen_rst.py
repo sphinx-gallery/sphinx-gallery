@@ -1452,7 +1452,7 @@ EXAMPLE_HEADER = """
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_{1}>`
-        to download the full example code.{2}
+        to download the full example code{2}
 
 .. rst-class:: sphx-glr-example-title
 
@@ -1569,16 +1569,17 @@ def save_rst_example(
     jupyterlite_conf = gallery_conf["jupyterlite"]
     is_jupyterlite_enabled = jupyterlite_conf is not None
 
-    interactive_example_text = ""
     if is_binder_enabled or is_jupyterlite_enabled:
-        interactive_example_text += " or to run this example in your browser via "
+        interactive_example_text = " or to run this example in your browser via "
+    else:
+        interactive_example_text = "."
 
     if is_binder_enabled and is_jupyterlite_enabled:
-        interactive_example_text += "JupyterLite or Binder"
+        interactive_example_text += "JupyterLite or Binder."
     elif is_binder_enabled:
-        interactive_example_text += "Binder"
+        interactive_example_text += "Binder."
     elif is_jupyterlite_enabled:
-        interactive_example_text += "JupyterLite"
+        interactive_example_text += "JupyterLite."
 
     example_rst = (
         EXAMPLE_HEADER.format(example_fname, ref_fname, interactive_example_text)
