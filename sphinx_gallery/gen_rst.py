@@ -1528,7 +1528,14 @@ def rst_blocks(
             block_separator = (
                 "\n\n" if not script_block.content.endswith("\n") else "\n"
             )
-            example_rst += script_block.content + block_separator
+            # Remove "# noqa: E501" at the end of any lines (issue #1403)
+            text_content = re.sub(
+                r"^(.*)( +# noqa: ?E501 *)$",
+                r"\1",  # replace with first capturing group
+                script_block.content,
+                flags=re.MULTILINE,
+            )
+            example_rst += text_content + block_separator
 
     return example_rst
 
