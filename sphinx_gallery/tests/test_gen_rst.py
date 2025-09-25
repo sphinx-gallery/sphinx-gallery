@@ -216,6 +216,53 @@ Paragraph 3
     assert example_rst == want_rst
 
 
+def test_rst_block_noqa_removal(gallery_conf, tmpdir):
+    """Check "# noqa: E501" removed from end of text blocks (issue #1403)."""
+    filename = str(tmpdir.join("temp.py"))
+    with open(filename, "w") as f:
+        f.write(
+            "\n".join(
+                [
+                    '"Docstring"',
+                    "####################",
+                    "# Paragraph 1",
+                    "# has a noqa at the end. # noqa: E501",
+                    "",
+                    "#%%",
+                    "# Paragraph 2 also has a noqa # noqa:E501",
+                    "",
+                    "# %%",
+                    "# Paragraph 3",
+                    "",
+                ]
+            )
+        )
+    file_conf, blocks = split_code_and_text_blocks(filename)
+
+    script_vars = {"execute_script": ""}
+    output_blocks, _ = sg.execute_script(blocks, script_vars, gallery_conf, file_conf)
+
+    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
+    want_rst = """\
+Docstring
+
+.. GENERATED FROM PYTHON SOURCE LINES 3-5
+
+Paragraph 1
+has a noqa at the end.
+
+.. GENERATED FROM PYTHON SOURCE LINES 7-8
+
+Paragraph 2 also has a noqa
+
+.. GENERATED FROM PYTHON SOURCE LINES 10-11
+
+Paragraph 3
+
+"""
+    assert example_rst == want_rst
+
+
 def test_rst_empty_code_block(gallery_conf, tmpdir):
     """Test that we can "execute" a code block containing only comments."""
     gallery_conf.update(image_scrapers=())

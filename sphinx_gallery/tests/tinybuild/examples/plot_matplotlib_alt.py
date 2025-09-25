@@ -1,10 +1,11 @@
 """
-======================
+===================
 Matplotlib alt text
-======================
+===================
 
 This example tests that the alt text is generated correctly for matplotlib
 figures.
+It also checks that "noqa: E501" is removed from the end of text blocks. # noqa: E501
 """
 
 import matplotlib.pyplot as plt

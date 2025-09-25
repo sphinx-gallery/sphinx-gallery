@@ -1301,6 +1301,16 @@ def test_alt_text_thumbnail(sphinx_app):
     assert ":alt:" in rst
 
 
+def test_noqa_removal(sphinx_app):
+    """Test that "noqa: E501" is removed from end of text blocks."""
+    src_dir = sphinx_app.srcdir
+
+    example_rst = op.join(src_dir, "auto_examples", "plot_matplotlib_alt.rst")
+    with codecs.open(example_rst, "r", "utf-8") as fid:
+        rst = fid.read()
+    assert "# noqa: E501" not in rst
+
+
 def test_backreference_labels(sphinx_app):
     """Tests that backreference labels work."""
     src_dir = sphinx_app.srcdir
