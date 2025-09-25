@@ -240,9 +240,7 @@ def test_rst_block_noqa_removal(gallery_conf, tmpdir):
     file_conf, blocks = split_code_and_text_blocks(filename)
 
     script_vars = {"execute_script": ""}
-    output_blocks, _ = sg.execute_script(
-        blocks, script_vars, gallery_conf, file_conf
-    )
+    output_blocks, _ = sg.execute_script(blocks, script_vars, gallery_conf, file_conf)
 
     example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
     want_rst = """\
