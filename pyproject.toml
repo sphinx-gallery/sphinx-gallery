@@ -2,7 +2,7 @@
 build-backend = "setuptools.build_meta"
 requires = [
   "setuptools",
-  "setuptools-scm",
+  "setuptools-scm>=7",
 ]
 
 [project]
