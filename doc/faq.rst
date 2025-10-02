@@ -83,7 +83,7 @@ Example structure:
         ├── example_content.rst
         └── GALLERY_HEADER.rst
 
-you can create a minimal placeholder :file:``example.py``
+you can create a minimal placeholder :file:`example.py`
 
 .. code-block:: python
 
