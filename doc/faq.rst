@@ -63,7 +63,7 @@ for pointers on how to update your css.
 Can I add a notebook to a gallery?
 ----------------------------------
 Gallery examples can currently only be generated from ``.py`` files.
-sphinx-gallery needs the text blocks formatted as reStructuredText, but the text
+Sphinx-Gallery needs the text blocks formatted as reStructuredText, but the text
 blocks in notebooks are Markdown.
 
 Can I add a plain reStructuredText file to a gallery?
