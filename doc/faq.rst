@@ -70,7 +70,7 @@ Can I add a plain reStructuredText file to a gallery?
 -----------------------------------------------------
 Gallery examples can currently only be generated from ``.py`` files. However, as
 a workaround you can create a minimal placeholder ``.py`` file that includes the
-content from a ``.rst`` file. This may be usefull if an example is mainly text
+content from a ``.rst`` file. This may be useful if an example is mainly text
 and you want to take advantage of editor syntax highlighting.
 
 Example structure:
