@@ -54,6 +54,7 @@ optional-dependencies.dev = [
   "pytest-coverage",
   "seaborn",
   "sphinxcontrib-video",
+  "sphinx-design",
   "statsmodels",
 ]
 optional-dependencies.jupyterlite = [

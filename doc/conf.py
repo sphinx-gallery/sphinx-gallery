@@ -47,6 +47,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.graphviz",
     "jupyterlite_sphinx",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
