@@ -59,3 +59,39 @@ for pointers on how to update your css.
 
 .. seealso::
     `Github PR #906 <https://github.com/sphinx-gallery/sphinx-gallery/pull/906>`_
+
+Can I add a notebook to a gallery?
+----------------------------------
+Gallery examples can currently only be generated from ``.py`` files.
+Sphinx-Gallery needs the text blocks formatted as reStructuredText, but the text
+blocks in notebooks are Markdown.
+
+Can I add a plain reStructuredText file to a gallery?
+-----------------------------------------------------
+Gallery examples can currently only be generated from ``.py`` files. However, as
+a workaround you can create a minimal placeholder ``.py`` file that includes the
+content from a ``.rst`` file. This may be useful if an example is mainly text
+and you want to take advantage of editor syntax highlighting.
+
+Example structure:
+
+.. code-block:: none
+
+    .
+    └── examples
+        ├── example.py
+        ├── example_content.rst
+        └── GALLERY_HEADER.rst
+
+you can create a minimal placeholder :file:`example.py`
+
+.. code-block:: python
+
+   """
+   Example with content from .rst file
+   ===================================
+
+   .. include:: /examples/content.rst
+   """
+
+Note that sphinx-gallery still expects a heading in the docstring of the ``.py`` file.
