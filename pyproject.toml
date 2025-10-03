@@ -53,6 +53,7 @@ optional-dependencies.dev = [
   "pytest",
   "pytest-coverage",
   "seaborn",
+  "sphinx-design",
   "sphinxcontrib-video",
   "statsmodels",
 ]
