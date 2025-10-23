@@ -426,7 +426,10 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                         for key, value in inv.items():
                             # only python domain
                             if key.startswith("py") and want in value:
-                                link = value[want][2]
+                                try:
+                                    link = value[want].uri
+                                except AttributeError:  # sphinx < 8.2
+                                    link = value[want][2]
                                 type_ = key
                                 break
 
