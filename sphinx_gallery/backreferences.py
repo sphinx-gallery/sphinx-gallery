@@ -300,7 +300,7 @@ THUMBNAIL_TEMPLATE = """
   .. image:: /{thumbnail}
     :alt:
 
-  :ref:`sphx_glr_{ref_name}`
+  :doc:`{doc_name}`
 
 .. raw:: html
 
@@ -314,7 +314,7 @@ BACKREF_THUMBNAIL_TEMPLATE = (
     + """
 .. only:: not html
 
- * :ref:`sphx_glr_{ref_name}`
+ * :doc:`{doc_name}`
 """
 )
 
@@ -362,11 +362,11 @@ def _thumbnail_div(
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
 
-    ref_name = os.path.join(full_dir, fname).replace(os.sep, "_")
+    doc_name = "/" + (Path(full_dir) / fname).with_suffix("").as_posix()
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
     return template.format(
-        intro=escape(intro), thumbnail=thumb, title=title, ref_name=ref_name
+        intro=escape(intro), thumbnail=thumb, title=title, doc_name=doc_name
     )
 
 

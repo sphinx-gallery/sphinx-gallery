@@ -293,8 +293,8 @@ def _check_order(sphinx_app, key, expected_order=None):
     index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
     order = list()
     if key is None:
-        regex = r".*:ref:`sphx_glr_ex_(?:(?:first|second)-subsection_)?plot_(\d)\.py`"
-        locator = ":ref:"
+        regex = r".*:doc:`/ex/(?:(?:first|second)-subsection/)?plot_(\d)`"
+        locator = ":doc:"
     else:
         regex = rf".*:{key}=(\d):.*"
         locator = "sphx-glr-thumbcontainer"
@@ -816,7 +816,7 @@ def test_minigallery_multi_match(sphinx_app_wrapper):
     # Check thumbnail correct
     assert "_images/sphx_glr_plot_nested_thumb.png" in mg_html
     # Check href correct
-    assert "sphx-glr-ex-sub-folder-sub-sub-folder-plot-nested-py" in mg_html
+    assert 'href="ex/sub_folder/sub_sub_folder/plot_nested.html"' in mg_html
 
 
 def _get_minigallery_thumbnails(rst_fname):
