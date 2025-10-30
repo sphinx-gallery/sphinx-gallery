@@ -32,7 +32,7 @@ import sphinx.util
 from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import blue, bold, red
 
-from . import glr_path_static, py_source_parser
+from . import glr_path_static, py_source_parser, rst_source_parser
 from .backreferences import (
     THUMBNAIL_PARENT_DIV,
     THUMBNAIL_PARENT_DIV_CLOSE,
@@ -817,6 +817,9 @@ def _get_parser(fname, gallery_conf):
     if fname.endswith(".py"):
         parser = py_source_parser
         language = "Python"
+    elif fname.endswith(".rst"):
+        parser = rst_source_parser
+        language = "RST"
     else:
         parser = BlockParser(fname, gallery_conf)
         language = parser.language
