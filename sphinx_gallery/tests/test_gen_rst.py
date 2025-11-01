@@ -75,8 +75,8 @@ def test_split_code_and_text_blocks():
     )
 
     assert file_conf == {}
-    assert blocks[0][0] == "text"
-    assert blocks[1][0] == "code"
+    assert blocks[0].type == "text"
+    assert blocks[1].type == "code"
 
 
 def test_bug_cases_of_notebook_syntax():
@@ -183,10 +183,10 @@ def test_rst_block_after_docstring(gallery_conf, tmpdir):
 
     assert file_conf == {}
     assert len(blocks) == 4
-    assert blocks[0][0] == "text"
-    assert blocks[1][0] == "text"
-    assert blocks[2][0] == "text"
-    assert blocks[3][0] == "text"
+    assert blocks[0].type == "text"
+    assert blocks[1].type == "text"
+    assert blocks[2].type == "text"
+    assert blocks[3].type == "text"
 
     script_vars = {"execute_script": ""}
     file_conf = {}
@@ -283,9 +283,9 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
 
     assert file_conf == {}
     assert len(blocks) == 3
-    assert blocks[0][0] == "text"
-    assert blocks[1][0] == "text"
-    assert blocks[2][0] == "code"
+    assert blocks[0].type == "text"
+    assert blocks[1].type == "text"
+    assert blocks[2].type == "code"
 
     gallery_conf["abort_on_example_error"] = True
     script_vars = dict(
@@ -335,8 +335,8 @@ b = 'foo'
         )
     file_conf, blocks = split_code_and_text_blocks(filename)
     assert len(blocks) == 2
-    assert blocks[0][0] == "text"
-    assert blocks[1][0] == "code"
+    assert blocks[0].type == "text"
+    assert blocks[1].type == "code"
     assert file_conf == {}
     script_vars = {
         "execute_script": True,

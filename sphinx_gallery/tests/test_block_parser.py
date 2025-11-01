@@ -101,8 +101,8 @@ def test_cxx_titles(comment, expected_docstring):
     file_conf, blocks, _ = parser._split_content(doc)
 
     assert len(blocks) == 2
-    assert blocks[0][0] == "text"
-    assert blocks[0][1] == expected_docstring
+    assert blocks[0].type == "text"
+    assert blocks[0].content == expected_docstring
 
 
 @pytest.mark.parametrize(
@@ -189,8 +189,8 @@ def test_rst_blocks(filetype, title, special, expected):
     file_conf, blocks, _ = parser._split_content(doc)
 
     assert len(blocks) == 4
-    assert blocks[2][0] == "text"
-    assert blocks[2][1] == expected
+    assert blocks[2].type == "text"
+    assert blocks[2].content == expected
 
 
 def test_cpp_file_to_rst():
@@ -226,14 +226,16 @@ int main(int argc, char** argv) {
     assert parser.language == "C++"
     assert file_conf == {"foobar": 14}
 
-    assert "First heading\n-------------\n\nThis is the start" in blocks[2][1]
+    assert "First heading\n-------------\n\nThis is the start" in blocks[2].content
 
-    assert "// This is just a comment" in blocks[3][1]
-    assert "secret" in blocks[3][1]
+    assert "// This is just a comment" in blocks[3].content
+    assert "secret" in blocks[3].content
 
-    assert "sphinx_gallery_foobar" in blocks[3][1]
-    assert "sphinx_gallery_foobar" not in parser.remove_config_comments(blocks[3][1])
+    assert "sphinx_gallery_foobar" in blocks[3].content
+    assert "sphinx_gallery_foobar" not in parser.remove_config_comments(
+        blocks[3].content
+    )
 
-    cleaned = parser.remove_ignore_blocks(blocks[3][1])
+    cleaned = parser.remove_ignore_blocks(blocks[3].content)
     assert "secret" not in cleaned
     assert "y == 4" in cleaned
