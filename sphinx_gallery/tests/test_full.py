@@ -1631,15 +1631,24 @@ def test_recommend_n_examples(sphinx_app):
     with codecs.open(fname, "r", "utf-8") as fid:
         html = fid.read()
 
-    count = html.count('<div class="sphx-glr-thumbnail-title">')
-    n_examples = sphinx_app.config.sphinx_gallery_conf["recommender"]["n_examples"]
+    (related_html,) = re.findall(
+        '<p class="rubric">Related examples</p>(.*)</section>', html, re.DOTALL
+    )
 
-    assert '<p class="rubric">Related examples</p>' in html
-    assert count == n_examples
+    n_thumbnails = related_html.count('<div class="sphx-glr-thumbnail-title">')
+    n_examples = sphinx_app.config.sphinx_gallery_conf["recommender"]["n_examples"]
+    assert n_thumbnails == n_examples
+
     # Check the same 3 related examples are shown (can change when new examples added)
-    assert "sphx-glr-auto-examples-plot-defer-figures-py" in html
-    assert "sphx-glr-auto-examples-plot-webp-py" in html
-    assert "sphx-glr-auto-examples-plot-command-line-args-py" in html
+    assert 'href="plot_webp.html#sphx-glr-auto-examples-plot-webp-py"' in related_html
+    assert (
+        'href="plot_command_line_args.html'
+        '#sphx-glr-auto-examples-plot-command-line-args-py"' in related_html
+    )
+    assert (
+        'href="plot_numpy_matplotlib.html'
+        '#sphx-glr-auto-examples-plot-numpy-matplotlib-py"' in related_html
+    )
 
 
 def test_sidebar_components_download_links(sphinx_app):
