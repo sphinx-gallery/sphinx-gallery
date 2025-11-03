@@ -1,7 +1,8 @@
-#!/bin/bash -eo pipefail
+#!/bin/bash -e
 
 # Build near-minimal version of MNE-Python docs
 
+set -o pipefail
 set -x
 git clone git@github.com:/mne-tools/mne-python.git
 pip install -ve mne-python[docs] mne-qt-browser "PySide6!=6.10.0" pyvistaqt
