@@ -22,7 +22,7 @@ REFERENCE = r"""
   .. image:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
     :alt:
 
-  :ref:`sphx_glr_fake_dir_test_file.py`
+  :doc:`/fake_dir/test_file`
 
 .. raw:: html
 
@@ -79,7 +79,7 @@ def test_thumbnail_div(content, tooltip, is_backref):
         extra = """
 .. only:: not html
 
- * :ref:`sphx_glr_fake_dir_test_file.py`
+ * :doc:`/fake_dir/test_file`
 """
     else:
         extra = ""

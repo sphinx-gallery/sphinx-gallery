@@ -1640,15 +1640,9 @@ def test_recommend_n_examples(sphinx_app):
     assert n_thumbnails == n_examples
 
     # Check the same 3 related examples are shown (can change when new examples added)
-    assert 'href="plot_webp.html#sphx-glr-auto-examples-plot-webp-py"' in related_html
-    assert (
-        'href="plot_command_line_args.html'
-        '#sphx-glr-auto-examples-plot-command-line-args-py"' in related_html
-    )
-    assert (
-        'href="plot_numpy_matplotlib.html'
-        '#sphx-glr-auto-examples-plot-numpy-matplotlib-py"' in related_html
-    )
+    assert 'href="plot_webp.html"' in related_html
+    assert 'href="plot_command_line_args.html"' in related_html
+    assert 'href="plot_numpy_matplotlib.html"' in related_html
 
 
 def test_sidebar_components_download_links(sphinx_app):
