@@ -9,6 +9,8 @@ git checkout -b credit origin/credit  # TODO: REMOVE BEFORE MERGE, NEEDS https:/
 pip install -ve . --group doc mne-qt-browser "PySide6!=6.10.0"
 popd
 
+mne sys_info -d
+
 ./.circleci/sg_dev_check.sh
 
 export MNE_BROWSER_BACKEND=qt
