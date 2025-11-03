@@ -34,9 +34,6 @@ jobs:
             - cache-pip-1
       - run:
           name: Pip
-          # for VTK: https://gitlab.kitware.com/vtk/vtk/-/packages/102
-          # TODO: skipping jupyterlite-sphinx 0.18.0 because of jupytext
-          # https://github.com/sphinx-gallery/sphinx-gallery/issues/1436
           command: |
             pip install --upgrade --only-binary ":all:" pip setuptools
             pip install --upgrade --only-binary ":all:" \
@@ -47,8 +44,6 @@ jobs:
                 "jupyterlite-sphinx>=0.17.1,!=0.18.0" "jupyterlite-pyodide-kernel" \
                 libarchive-c "sphinxcontrib-video>=0.2.1rc0" intersphinx_registry \
                 sphinx-design
-            pip uninstall -yq vtk  # pyvista installs vtk above
-            pip install --upgrade --only-binary ":all" --extra-index-url https://wheels.vtk.org vtk-osmesa
       - save_cache:
           key: cache-pip-1
           paths:
