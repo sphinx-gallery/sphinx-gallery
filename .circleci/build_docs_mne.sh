@@ -7,7 +7,7 @@ git clone git@github.com:/mne-tools/mne-python.git
 pip install -ve mne-python[docs] mne-qt-browser "PySide6!=6.10.0" pyvistaqt
 
 SG_LOC=$(python -c "import sphinx_gallery, pathlib; print(pathlib.Path(sphinx_gallery.__file__).parent)")
-test SG_LOC == $(pwd)/sphinx_gallery
+test "$SG_LOC" == "$(pwd)/sphinx_gallery"
 
 cd mne-python/doc
 export MNE_BROWSER_BACKEND=qt
