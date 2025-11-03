@@ -2,8 +2,8 @@ version: 2.1
 
 # Aliases to reuse
 _imageconfig: &imageconfig
-  docker:
-    - image: cimg/base:2022.10-22.04
+  machine:
+    image: ubuntu-2404:current
 
 commands:
   bash_env:

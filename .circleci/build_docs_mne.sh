@@ -5,7 +5,7 @@
 set -exo pipefail
 git clone git@github.com:/mne-tools/mne-python.git
 pushd mne-python
-pip install -ve . --group doc mne-qt-browser "PySide6!=6.10.0" pyvistaqt
+pip install -ve . --group doc mne-qt-browser "PySide6!=6.10.0" pyvistaqt scikit-learn
 popd
 
 ./.circleci/sg_dev_check.sh
