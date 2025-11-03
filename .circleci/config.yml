@@ -117,6 +117,18 @@ jobs:
           path: sphinx_gallery/tests/tinybuild/doc/_build/latex/
           destination: latex
 
+  build_docs_mne:
+    <<: *imageconfig
+    steps:
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run:
+          command: ./.circleci/build_docs_mne.sh
+      - store_artifacts:
+          path: mne-python/doc/_build/html/
+          destination: docs_mne
+
   deploy_dev:
     docker:
       - image: cimg/base:current
@@ -161,6 +173,11 @@ workflows:
             - setup_env
           <<: *filter_tags
       - build_latexpdf:
+          requires:
+            - setup_env
+          <<: *filter_tags
+      # integration tests
+      - build_docs_mne:
           requires:
             - setup_env
           <<: *filter_tags
