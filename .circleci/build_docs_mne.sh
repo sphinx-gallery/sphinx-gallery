@@ -2,7 +2,7 @@
 
 # Build near-minimal version of MNE-Python docs
 
-if [[ "$COLUMNS" == "" ]] COLUMNS=80; fi
+if [[ "$COLUMNS" == "" ]]; then COLUMNS=80; fi
 
 function __sep__ () {
     printf %"$COLUMNS"s | tr " " "-"
