@@ -5,7 +5,8 @@
 set -exo pipefail
 git clone git@github.com:/mne-tools/mne-python.git
 pushd mne-python
-pip install -ve . --group doc mne-qt-browser "PySide6!=6.10.0" pyvistaqt scikit-learn
+git checkout -b credit origin/credit  # TODO: REMOVE BEFORE MERGE, NEEDS https://github.com/mne-tools/mne-python/pull/13477!
+pip install -ve . --group doc mne-qt-browser "PySide6!=6.10.0"
 popd
 
 ./.circleci/sg_dev_check.sh
