@@ -120,6 +120,7 @@ jobs:
   build_docs_mne:
     <<: *imageconfig
     steps:
+      - checkout  # just to get SSH keys set up
       - attach_workspace:
           at: ~/
       - bash_env
