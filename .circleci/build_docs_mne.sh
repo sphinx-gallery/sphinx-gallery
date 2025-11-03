@@ -5,7 +5,9 @@
 if [[ "$COLUMNS" == "" ]]; then COLUMNS=80; fi
 
 function __sep__ () {
+    echo
     printf %"$COLUMNS"s | tr " " "-"
+    echo -e "\n"
 }
 
 set -exo pipefail
