@@ -3,15 +3,28 @@
 # Build near-minimal version of MNE-Python docs
 
 set -exo pipefail
+
+function __sep__ () {
+    printf %"$COLUMNS"s | tr " " "-"
+}
+
+__sep__
+
 git clone git@github.com:/mne-tools/mne-python.git
 pushd mne-python
 git checkout -b credit origin/credit  # TODO: REMOVE BEFORE MERGE, NEEDS https://github.com/mne-tools/mne-python/pull/13477!
 pip install -ve . --group doc mne-qt-browser "PySide6!=6.10.0"
 popd
 
+__sep__
+
 mne sys_info -d
 
+__sep__
+
 ./.circleci/sg_dev_check.sh
+
+__sep__
 
 export MNE_BROWSER_BACKEND=qt
 export MNE_BROWSER_PRECOMPUTE=false
