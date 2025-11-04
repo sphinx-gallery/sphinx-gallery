@@ -235,3 +235,10 @@ files. Place .rst files in your example folder and include '.rst' in the
 
 Because Sphinx-Gallery copies the .rst files as-is, no code is executed,
 and no .py and notebook downloads are available.
+
+.. tip::
+
+    If you want classes and functions in reST code blocks to become hyperlinks
+    to their documentation, you might find
+    `sphinx-codeautolink <https://sphinx-codeautolink.readthedocs.io/en/latest/>`_
+    helpful.
