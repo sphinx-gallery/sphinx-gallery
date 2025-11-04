@@ -3,13 +3,9 @@
 The parser simply converts the whole reST file into a single text block.
 """
 
-from collections import namedtuple
 from pathlib import Path
 
-Block = namedtuple("Block", ["type", "content", "lineno"])
-# type: "text" or "code"
-# content (str): the block lines as str
-# lineno (int): the line number where the block starts
+from .py_source_parser import Block
 
 
 def split_code_and_text_blocks(source_file, return_node=False):
