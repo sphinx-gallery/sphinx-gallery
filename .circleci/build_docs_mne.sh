@@ -12,21 +12,21 @@ function __sep__ () {
 
 set -exo pipefail
 
-__sep__
+(set +x; __sep__)
 
 git clone git@github.com:/mne-tools/mne-python.git
 cd mne-python
 pip install -e . --group doc mne-qt-browser "PySide6!=6.10.0"
 
-__sep__
+(set +x; __sep__)
 
 mne sys_info -d
 
-__sep__
+(set +x; __sep__)
 
 ../.circleci/sg_dev_check.sh
 
-__sep__
+(set +x; __sep__)
 
 export MNE_BROWSER_BACKEND=qt
 export MNE_BROWSER_PRECOMPUTE=false
