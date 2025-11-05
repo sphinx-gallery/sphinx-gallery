@@ -46,7 +46,7 @@ N_FAILING = 4
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs and non-executed examples in
 # (examples + examples_rst_index + examples_with_rst + examples_README_header)
-N_PASS = 3 + 0 + 2 + 0
+N_PASS = 4 + 0 + 2 + 0
 # indices SG generates  (extra non-plot*.py file) in
 # (examples + examples_rst_index + examples_with_rst + examples_README_header)
 N_INDEX = 2 + 1 + 3 + 1
@@ -948,7 +948,7 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     else:
         assert (
             re.match(
-                ".*[0|1] added, ([1-9]|1[0-1]) changed, 0 removed$.*",
+                ".*[0|1] added, ([1-9]|1[0-2]) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
@@ -1014,6 +1014,10 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         "plot_scraper_broken",
         "plot_failing_example",
         "plot_failing_example_thumbnail",
+        # the rst of rst-input gallery entries is updated, because
+        # inputs are currently always copied over and "execution"
+        # is no-op.
+        "rst_gallery_entry",
     )
     _assert_mtimes(generated_rst_0, generated_rst_1, ignore=ignore)
 
@@ -1110,6 +1114,7 @@ def _rerun(
     # - auto_examples/plot_failing_example
     # - auto_examples/plot_failing_example_thumbnail
     # - auto_examples/plot_scraper_broken
+    # - auto_examples/rst_gallery_entry
     # - auto_examples/sg_execution_times
     # - auto_examples_rst_index/sg_execution_times
     # - auto_examples_with_rst/sg_execution_times
@@ -1125,7 +1130,7 @@ def _rerun(
     if how == "modify":
         n_ch = "([3-9]|1[0-3])"  # 3-13
     else:
-        n_ch = "([1-9]|1[01])"  # 1-11
+        n_ch = "([1-9]|1[0-2])"  # 1-12
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
     want = f".*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
@@ -1191,6 +1196,10 @@ def _rerun(
         "plot_scraper_broken",
         "plot_failing_example",
         "plot_failing_example_thumbnail",
+        # the rst of rst-input gallery entries is updated, because
+        # inputs are currently always copied over and "execution"
+        # is no-op.
+        "rst_gallery_entry",
     )
     # not reliable on Windows and one Ubuntu run
     bad = sys.platform.startswith("win") or os.getenv("BAD_MTIME", "0") == "1"
