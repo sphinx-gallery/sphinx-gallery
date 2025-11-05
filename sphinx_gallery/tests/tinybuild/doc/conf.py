@@ -73,7 +73,11 @@ sphinx_gallery_conf = {
         "../examples_rst_index",
         "../examples_README_header",
     ],
-    "example_extensions": {".py", ".cpp", ".m", ".jl"},
+    "example_extensions": {".py", ".cpp", ".m", ".jl", ".rst"},
+    # we have .rst in the example_extensions but want the index.rst files in
+    # examples_rst_index/ and the direct-to-copy .rst files in examples_with_rst
+    # to be ignored. Therefore, we extend the ignore_pattern by this.
+    "ignore_pattern": r"(__init__\.py|index\.rst|rst_example[1-9]\.rst)",
     "filetype_parsers": {".m": "Matlab"},
     "reset_argv": f"{util_root}.reset_argv",
     "reset_modules": (f"{util_root}.mock_scrape_problem", "matplotlib"),
@@ -102,7 +106,7 @@ sphinx_gallery_conf = {
     "image_srcset": ["2x"],
     "exclude_implicit_doc": ["figure_rst"],
     "show_api_usage": True,
-    "copyfile_regex": r".*\.rst",
+    "copyfile_regex": r"(index\.rst|rst_example[1-9]\.rst)",
     "recommender": {"enable": True, "n_examples": 3},
     "parallel": 2,
 }

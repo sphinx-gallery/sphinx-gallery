@@ -32,7 +32,7 @@ import sphinx.util
 from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import blue, bold, red
 
-from . import glr_path_static, py_source_parser
+from . import glr_path_static, py_source_parser, rst_source_parser
 from .backreferences import (
     THUMBNAIL_PARENT_DIV,
     THUMBNAIL_PARENT_DIV_CLOSE,
@@ -64,6 +64,7 @@ from .utils import (
     _replace_md5,
     _write_json,
     get_md5sum,
+    iter_gallery_header_filenames,
     optipng,
     scale_image,
     status_iterator,
@@ -444,13 +445,19 @@ def _get_gallery_header(dir_, gallery_conf, raise_error=True):
         if os.path.isfile(fpth):
             return None
     # Next look for GALLERY_HEADER.[ext] (and for backward-compatibility README.[ext]
-    extensions = [".txt"] + sorted(gallery_conf["source_suffix"])
-    for ext in extensions:
-        for fname in ("GALLERY_HEADER", "README", "readme"):
-            fpth = os.path.join(dir_, fname + ext)
-            if os.path.isfile(fpth):
-                return fpth
+    for fname in iter_gallery_header_filenames(gallery_conf):
+        fpth = os.path.join(dir_, fname)
+        if os.path.isfile(fpth):
+            return fpth
     if raise_error:
+        extensions = list(
+            sorted(
+                set(
+                    os.path.splitext(fname)[1]
+                    for fname in iter_gallery_header_filenames(gallery_conf)
+                )
+            )
+        )
         raise ExtensionError(
             "Example directory {} does not have a GALLERY_HEADER file with "
             "one of the expected file extensions {}. Please write one to "
@@ -810,6 +817,9 @@ def _get_parser(fname, gallery_conf):
     if fname.endswith(".py"):
         parser = py_source_parser
         language = "Python"
+    elif fname.endswith(".rst"):
+        parser = rst_source_parser
+        language = "RST"
     else:
         parser = BlockParser(fname, gallery_conf)
         language = parser.language

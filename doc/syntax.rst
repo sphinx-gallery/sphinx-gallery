@@ -224,9 +224,21 @@ the multi-language syntax described above:
 Plain reST examples
 ===================
 
-Sphinx-Gallery generates examples from Python scripts,
-so examples written in plain reST files are not supported.
-If you're looking to generate hyperlinks for functions (linking to their
-corresponding online documentation) in code blocks of ordinary reST
-documentation, you might find
-`sphinx-codeautolink <https://sphinx-codeautolink.readthedocs.io/en/latest/>`_ helpful.
+Sphinx-Gallery can also generate gallery pages from plain reStructuredText
+files. Place .rst files in your example folder and include '.rst' in the
+:ref:`example_extensions config <build_pattern>`, e.g. ::
+
+    sphinx_gallery_conf = {
+        ...
+        'example_extensions': {'.py', '.rst'}
+    }
+
+Because Sphinx-Gallery copies the .rst files as-is, no code is executed,
+and no .py and notebook downloads are available.
+
+.. tip::
+
+    If you want classes and functions in reST code blocks to become hyperlinks
+    to their documentation, you might find
+    `sphinx-codeautolink <https://sphinx-codeautolink.readthedocs.io/en/latest/>`_
+    helpful.

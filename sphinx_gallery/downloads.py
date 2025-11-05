@@ -96,7 +96,8 @@ def generate_zipfiles(gallery_dir, src_dir, gallery_conf):
     download_rst: str
         RestructuredText to include download buttons to the generated files
     """
-    src_ext = tuple(gallery_conf["example_extensions"])
+    # .rst are plain sources which should not be available as zip.
+    src_ext = tuple(ext for ext in gallery_conf["example_extensions"] if ext != ".rst")
     notebook_ext = tuple(gallery_conf["notebook_extensions"])
     source_files = list_downloadable_sources(gallery_dir, src_ext)
     notebook_files = list_downloadable_sources(gallery_dir, notebook_ext)

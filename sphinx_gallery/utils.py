@@ -189,6 +189,18 @@ def _replace_md5(fname_new, fname_old=None, *, method="move", mode="b", check="m
     assert os.path.isfile(fname_old)
 
 
+def iter_gallery_header_filenames(gallery_conf):
+    """
+    A generator of all possible gallery header filenames.
+
+    We support GALLERY_HEADER.[ext], and for backward-compatibility README.[ext]
+    """
+    extensions = [".txt"] + sorted(gallery_conf["source_suffix"])
+    for ext in extensions:
+        for fname in ("GALLERY_HEADER", "README", "readme"):
+            yield fname + ext
+
+
 def check_duplicate_filenames(files):
     """Check for duplicate filenames across gallery directories."""
     # Check whether we'll have duplicates
@@ -234,6 +246,7 @@ def _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=False):
     exts = gallery_conf["example_extensions"]
     max_depth = 1 if check_filenames else 0
     files = []
+    gallery_header_filenames = list(iter_gallery_header_filenames(gallery_conf))
     for example_dir in examples_dirs:
         example_depth = os.path.abspath(example_dir).count(os.sep)
         for root, _, filenames in os.walk(example_dir):
@@ -241,6 +254,8 @@ def _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=False):
             if (root.count(os.sep) - example_depth) > max_depth:
                 break
             for filename in filenames:
+                if filename in gallery_header_filenames:
+                    continue
                 if (s := Path(filename).suffix) and s in exts:
                     if re.search(gallery_conf["ignore_pattern"], filename) is None:
                         file = filename
