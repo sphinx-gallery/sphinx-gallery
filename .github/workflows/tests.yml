@@ -53,7 +53,7 @@ jobs:
             sphinx_version: 'default'
             distrib: pip
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       # Xvfb/OpenGL
