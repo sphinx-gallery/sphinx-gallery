@@ -10,9 +10,9 @@ set -exo pipefail
 (set +x; __sep__)
 git clone git@github.com:scikit-learn/scikit-learn.git
 cd scikit-learn
-conda create -n sklearn-dev -c conda-forge ^
-  python numpy scipy cython meson-python ninja ^
-  pytest pytest-cov ruff==0.11.2 mypy numpydoc ^
+conda create -n sklearn-dev -c conda-forge \
+  python numpy scipy cython meson-python ninja \
+  pytest pytest-cov ruff==0.11.2 mypy numpydoc \
   joblib threadpoolctl
 pip install -e .
 (set +x; __sep__)
