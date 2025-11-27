@@ -125,6 +125,19 @@ jobs:
           path: mne-python/doc/_build/html/
           destination: docs_mne
 
+  build_docs_skl:
+    <<: *imageconfig
+    steps:
+      - checkout  # just to get SSH keys set up
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run:
+          command: ./.circleci/build_docs_skl.sh
+      - store_artifacts:
+          path: scikit-learn/doc/_build/html/
+          destination: docs_skl
+
   deploy_dev:
     docker:
       - image: cimg/base:current
