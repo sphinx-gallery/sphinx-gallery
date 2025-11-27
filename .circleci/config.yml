@@ -190,6 +190,10 @@ workflows:
           requires:
             - setup_env
           <<: *filter_tags
+      - build_docs_skl:
+          requires:
+            - setup_env
+          <<: *filter_tags
       # Run for master branch
       - deploy_dev:
           requires:
