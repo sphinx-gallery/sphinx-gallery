@@ -32,6 +32,8 @@ conda create -n sklearn-dev -c conda-forge \
   python numpy scipy cython meson-python ninja \
   pytest pytest-cov ruff==0.11.2 mypy numpydoc \
   joblib threadpoolctl
+conda activate sklearn-dev
+
 pip install -e .
 
 (set +x; __sep__)
@@ -41,5 +43,5 @@ pip install -e .
 (set +x; __sep__)
 
 cd doc
-export EXAMPLES_PATTERN_OPTS="plot_grid_search_text_feature_extraction"
+export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_display_object_visualizations"
 make html
