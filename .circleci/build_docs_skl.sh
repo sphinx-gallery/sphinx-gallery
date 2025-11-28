@@ -15,6 +15,7 @@ set -exo pipefail
 
 git clone git@github.com:scikit-learn/scikit-learn.git
 cd scikit-learn
+pwd
 
 # Deactivate python venv activated in `setup_bash.sh`
 deactivate
@@ -29,12 +30,18 @@ source $MINIFORGE_PATH/etc/profile.d/conda.sh
 conda activate
 
 conda create -n sklearn-dev -c conda-forge \
-  python numpy scipy cython meson-python ninja \
-  pytest pytest-cov ruff==0.11.2 mypy numpydoc \
-  joblib threadpoolctl
+  python numpy scipy joblib threadpoolctl
 conda activate sklearn-dev
 
 pip install .
+# Install the dev version of SG
+pip install ../sphinx-gallery
+# Install skl doc dependencies
+pip install sphinx numpydoc matplotlib Pillow pandas \
+            polars scikit-image packaging seaborn sphinx-prompt \
+            sphinxext-opengraph sphinx-copybutton plotly pooch \
+            pydata-sphinx-theme sphinxcontrib-sass sphinx-design \
+            sphinx-remove-toctrees
 
 (set +x; __sep__)
 
