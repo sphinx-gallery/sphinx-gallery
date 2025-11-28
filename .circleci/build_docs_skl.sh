@@ -1,5 +1,7 @@
 #!/bin/bash
+
 # Build near-minimal version of scikit-learn docs
+
 if [[ "$COLUMNS" == "" ]]; then COLUMNS=80; fi
 function __sep__ () {
     echo
