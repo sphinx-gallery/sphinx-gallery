@@ -41,5 +41,5 @@ pip install -e .
 (set +x; __sep__)
 
 cd doc
-export EXAMPLES_PATTERN_OPTS="plot_grid_search_text_feature_extraction|plot_display_object_visualization"
+export EXAMPLES_PATTERN_OPTS="plot_grid_search_text_feature_extraction"
 make html
