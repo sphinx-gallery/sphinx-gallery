@@ -35,7 +35,7 @@ conda activate sklearn-dev
 
 pip install .
 # Install the dev version of SG
-pip install ../sphinx-gallery
+pip install ../sphinx_gallery
 # Install skl doc dependencies
 pip install sphinx numpydoc matplotlib Pillow pandas \
             polars scikit-image packaging seaborn sphinx-prompt \
