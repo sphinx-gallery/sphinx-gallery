@@ -34,7 +34,7 @@ conda create -n sklearn-dev -c conda-forge \
   joblib threadpoolctl
 conda activate sklearn-dev
 
-pip install -e .
+pip install .
 
 (set +x; __sep__)
 
