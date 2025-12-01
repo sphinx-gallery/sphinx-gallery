@@ -16,13 +16,6 @@ repos:
         files: ^sphinx_gallery/|^doc/|^.*_examples/|^tutorials/
         types_or: [python, bib, rst, inc]
 
-  - repo: https://github.com/mgedmin/check-manifest
-    rev: "0.51"
-    hooks:
-      - id: check-manifest
-        args: [--no-build-isolation]
-        additional_dependencies: [setuptools-scm]
-
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.37.1
     hooks:
