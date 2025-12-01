@@ -13,10 +13,7 @@ set -exo pipefail
 
 (set +x; __sep__)
 
-
-pwd
-ls ../
-git clone git@github.com:scikit-learn/scikit-learn.git ../
+git clone git@github.com:scikit-learn/scikit-learn.git
 cd scikit-learn
 
 # Deactivate python venv activated in `setup_bash.sh`
@@ -38,7 +35,7 @@ conda activate sklearn-dev
 pip install .
 # Install the dev version of SG
 ls ../
-pip install ../sphinx_gallery
+pip install ../
 # Install skl doc dependencies
 pip install sphinx numpydoc matplotlib Pillow pandas \
             polars scikit-image packaging seaborn sphinx-prompt \
