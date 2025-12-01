@@ -13,9 +13,11 @@ set -exo pipefail
 
 (set +x; __sep__)
 
-git clone git@github.com:scikit-learn/scikit-learn.git
-cd scikit-learn
+
 pwd
+ls ../
+git clone git@github.com:scikit-learn/scikit-learn.git ../
+cd scikit-learn
 
 # Deactivate python venv activated in `setup_bash.sh`
 deactivate
