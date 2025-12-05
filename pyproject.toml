@@ -13,15 +13,13 @@ license = { "text" = '3-clause BSD' }
 authors = [
   { name = "Óscar Nájera", email = 'najera.oscar@gmail.com' },
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Framework :: Sphinx :: Extension",
   "Intended Audience :: Developers",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",

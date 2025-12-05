@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.6
+    rev: v0.14.7
     hooks:
       - id: ruff-format
         exclude: plot_syntaxerror
@@ -15,13 +15,6 @@ repos:
           - tomli
         files: ^sphinx_gallery/|^doc/|^.*_examples/|^tutorials/
         types_or: [python, bib, rst, inc]
-
-  - repo: https://github.com/mgedmin/check-manifest
-    rev: "0.51"
-    hooks:
-      - id: check-manifest
-        args: [--no-build-isolation]
-        additional_dependencies: [setuptools-scm]
 
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.37.1

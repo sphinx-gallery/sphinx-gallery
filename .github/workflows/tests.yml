@@ -12,6 +12,16 @@ permissions:
   contents: read
 
 jobs:
+  style:
+    name: 'Quick checks'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - run: pip install check-manifest
+      - run: check-manifest
   pytest:
     name: '${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.distrib }} / ${{ matrix.sphinx_version }}'
     timeout-minutes: 30
@@ -28,7 +38,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest  # newest possible
-            python: '3.12'
+            python: '3.13'
             sphinx_version: dev
             distrib: pip
             locale: C
@@ -41,11 +51,15 @@ jobs:
             sphinx_version: '6'
             distrib: mamba
           - os: ubuntu-latest
-            python: '3.8'
+            python: '3.10'
             sphinx_version: '7'
             distrib: minimal
+          - os: ubuntu-latest
+            python: '3.13'
+            sphinx_version: '8'
+            distrib: pip
           - os: macos-latest
-            python: '3.11'
+            python: '3.12'
             sphinx_version: 'default'
             distrib: mamba  # only use mamba on macOS to avoid Python shell issues
           - os: windows-latest
