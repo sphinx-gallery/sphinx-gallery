@@ -13,30 +13,12 @@ set -exo pipefail
 
 (set +x; __sep__)
 
-git clone git@github.com:scikit-learn/scikit-learn.git
-cd scikit-learn
+# Install scikit-learn from Scientific Python nightly wheels
+python -m pip install $STD_ARGS --only-binary ":all:" --default-timeout=60 \
+	--index-url "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" \
+	"scikit-learn>=1.6.dev0"
 
-# Deactivate python venv activated in `setup_bash.sh`
-deactivate
-
-# Install miniforge
-# Copied from: https://github.com/scikit-learn/scikit-learn/blob/94f18cefbdc145a9ae439112d7fc89d84467c647/build_tools/circle/build_doc.sh#L171-L176
-MINIFORGE_URL="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh"
-curl -L --retry 10 $MINIFORGE_URL -o miniconda.sh
-MINIFORGE_PATH=$HOME/miniforge3
-bash ./miniconda.sh -b -p $MINIFORGE_PATH
-source $MINIFORGE_PATH/etc/profile.d/conda.sh
-conda activate
-
-conda create -n sklearn-dev -c conda-forge \
-  python numpy scipy joblib threadpoolctl
-conda activate sklearn-dev
-
-pip install .
-
-# Install the dev version of SG
-pip install -e ../
-# Install skl doc dependencies
+# Install scikit-learn doc dependencies
 pip install sphinx numpydoc matplotlib Pillow pandas \
             polars scikit-image packaging seaborn sphinx-prompt \
             sphinxext-opengraph sphinx-copybutton plotly pooch \
@@ -49,6 +31,8 @@ pip install sphinx numpydoc matplotlib Pillow pandas \
 
 (set +x; __sep__)
 
-cd doc
+# Checkout scikit-learn main branch, to build docs from repo
+git clone git@github.com:scikit-learn/scikit-learn.git
+cd scikit-learn/doc
 export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_display_object_visualizations"
 make html
