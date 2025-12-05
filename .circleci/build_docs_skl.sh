@@ -14,6 +14,7 @@ set -exo pipefail
 (set +x; __sep__)
 
 # Install scikit-learn from Scientific Python nightly wheels
+python -m pip install --upgrade --pre threadpoolctl
 python -m pip install --pre --only-binary ":all:" --default-timeout=60 \
 	--index-url "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" \
 	"scikit-learn>=1.7.dev0"
