@@ -33,9 +33,9 @@ conda create -n sklearn-dev -c conda-forge \
 conda activate sklearn-dev
 
 pip install .
+
 # Install the dev version of SG
-ls ../
-pip install ../
+pip install -e ../
 # Install skl doc dependencies
 pip install sphinx numpydoc matplotlib Pillow pandas \
             polars scikit-image packaging seaborn sphinx-prompt \
