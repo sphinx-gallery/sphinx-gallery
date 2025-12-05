@@ -14,9 +14,9 @@ set -exo pipefail
 (set +x; __sep__)
 
 # Install scikit-learn from Scientific Python nightly wheels
-python -m pip install $STD_ARGS --only-binary ":all:" --default-timeout=60 \
+python -m pip install --pre --only-binary ":all:" --default-timeout=60 \
 	--index-url "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" \
-	"scikit-learn>=1.6.dev0"
+	"scikit-learn>=1.7.dev0"
 
 # Install scikit-learn doc dependencies
 pip install sphinx numpydoc matplotlib Pillow pandas \
