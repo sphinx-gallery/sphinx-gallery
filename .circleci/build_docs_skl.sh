@@ -28,7 +28,7 @@ pip install sphinx numpydoc matplotlib Pillow pandas \
 
 (set +x; __sep__)
 
-../.circleci/sg_dev_check.sh
+.circleci/sg_dev_check.sh
 
 (set +x; __sep__)
 
