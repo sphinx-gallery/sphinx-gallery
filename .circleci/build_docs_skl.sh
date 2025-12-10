@@ -35,5 +35,5 @@ pip install sphinx numpydoc matplotlib Pillow pandas \
 # Checkout scikit-learn main branch, to build docs from repo
 git clone git@github.com:scikit-learn/scikit-learn.git
 cd scikit-learn/doc
-export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_display_object_visualizations"
+export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_display_object_visualization"
 make html

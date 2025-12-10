@@ -135,7 +135,7 @@ jobs:
       - run:
           command: ./.circleci/build_docs_skl.sh
       - store_artifacts:
-          path: scikit-learn/doc/_build/html/
+          path: scikit-learn/doc/_build/html/stable
           destination: docs_skl
 
   deploy_dev:
