@@ -149,9 +149,10 @@ def extract_file_config(content):
 
 
 Block = namedtuple("Block", ["type", "content", "lineno"])
-# type: "text" or "code"
-# content (str): the block lines as str
-# lineno (int): the line number where the block starts
+# Double comments to make mypy not error out on this notation
+## type: "text" or "code"
+## content (str): the block lines as str
+## lineno (int): the line number where the block starts
 
 
 def split_code_and_text_blocks(source_file, return_node=False):

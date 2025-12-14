@@ -23,7 +23,7 @@ from sphinx.errors import ExtensionError
 try:
     from sphinx.util.display import status_iterator  # noqa: F401
 except Exception:  # Sphinx < 6
-    from sphinx.util import status_iterator  # noqa: F401
+    from sphinx.util import status_iterator  # type: ignore[no-redef]  # noqa: F401
 
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -38,7 +38,7 @@ def _get_image():
         from PIL import Image
     except ImportError as exc:  # capture the error for the modern way
         try:
-            import Image
+            import Image  # type: ignore[import-not-found]
         except ImportError:
             raise ExtensionError(
                 "Could not import pillow, which is required "
