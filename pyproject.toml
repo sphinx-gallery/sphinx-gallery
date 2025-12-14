@@ -57,8 +57,8 @@ optional-dependencies.dev = [
   "sphinxcontrib-video",
   "statsmodels",
   "types-docutils",
-  "types-Pillow",
-  "types-Pygments",
+  "types-pillow",
+  "types-pygments",
 ]
 optional-dependencies.jupyterlite = [
   "jupyterlite-sphinx",
@@ -202,6 +202,7 @@ module = "sphinx_gallery.tests.*"
 ignore_errors = true
 
 # Third-party packages without type stubs
+
 [[tool.mypy.overrides]]
 module = [
   "joblib.*",
