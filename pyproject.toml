@@ -45,6 +45,7 @@ optional-dependencies.dev = [
   "jupyterlite-sphinx>=0.17.1",
   "lxml",
   "matplotlib",
+  "mypy",
   "numpy",
   "packaging",
   "plotly",
@@ -55,6 +56,9 @@ optional-dependencies.dev = [
   "sphinx-design",
   "sphinxcontrib-video",
   "statsmodels",
+  "types-docutils",
+  "types-pillow",
+  "types-pygments",
 ]
 optional-dependencies.jupyterlite = [
   "jupyterlite-sphinx",
@@ -170,3 +174,43 @@ markers = [
   "add_conf: Configuration file.",
   "add_rst: Add rst file to src.",
 ]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+#check_untyped_defs = true
+no_implicit_optional = true
+local_partial_types = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_equality = true
+show_error_codes = true
+exclude = [
+  "^build/",
+  "^doc/_build/",
+  "^sphinx_gallery/tests/tinybuild/",
+  "^sphinx_gallery\\.egg-info/",
+]
+
+# Ignore test files for now
+[[tool.mypy.overrides]]
+module = "sphinx_gallery.tests.*"
+ignore_errors = true
+
+# Third-party packages without type stubs
+
+[[tool.mypy.overrides]]
+module = [
+  "joblib.*",
+  "memory_profiler.*",
+  "matplotlib.*",
+  "seaborn.*",
+  "plotly.*",
+  "pypandoc",
+  "graphviz",
+]
+ignore_missing_imports = true
