@@ -84,6 +84,9 @@ target/
 # VisualStudioCode
 .history
 
+# PyCharm
+.idea/
+
 # Jupyter notebooks
 .ipynb_checkpoints
 
