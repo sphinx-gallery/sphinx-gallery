@@ -116,15 +116,14 @@ An incomplete list:
 .. projects_list_start
 
 * `Apache TVM <https://tvm.apache.org/docs/tutorial/index.html>`_
-* `Astropy <https://docs.astropy.org/en/stable/generated/examples/index.html>`_
 * `auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
-* `Biotite <https://www.biotite-python.org/examples/gallery/index.html>`_
-* `Cartopy <https://scitools.org.uk/cartopy/docs/latest/gallery/>`_
+* `Biotite <https://www.biotite-python.org/latest/examples/index.html>`_
+* `Cartopy <https://cartopy.readthedocs.io/stable/gallery/index.html>`_
 * `FURY <https://fury.gl/latest/auto_examples/index.html>`_
 * `pyGIMLi <https://www.pygimli.org/_examples_auto/index.html>`_
-* `HyperSpy <https://hyperspy.org/hyperspy-doc/current/>`_
-* `kikuchipy <https://kikuchipy.org>`_
-* `Matplotlib <https://matplotlib.org/stable/index.html>`_
+* `HyperSpy <https://hyperspy.org/hyperspy-doc/current/auto_examples/index.html>`_
+* `kikuchipy <https://kikuchipy.org/en/stable/examples/index.html>`_
+* `Matplotlib <https://matplotlib.org/stable/gallery/index>`_
 * `MNE-Python <https://mne.tools/stable/auto_examples/index.html>`_
 * `napari <https://napari.org/stable/gallery.html>`_
 * `Nestle <http://kylebarbary.com/nestle/examples/index.html>`_
@@ -137,12 +136,12 @@ An incomplete list:
 * `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
 * `POT <https://pythonot.github.io/auto_examples/index.html>`_
 * `PyGMT <https://www.pygmt.org/latest/gallery/index.html>`_
-* `pyRiemann <https://pyriemann.readthedocs.io/en/latest/index.html>`_
+* `pyRiemann <https://pyriemann.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
-* `PySurfer <https://pysurfer.github.io/>`_
+* `PySurfer <https://pysurfer.github.io/auto_examples/index.html>`_
 * `PyTorch tutorials <https://pytorch.org/tutorials>`_
 * `PyVista <https://docs.pyvista.org/examples/>`_
-* `pyxem <https://pyxem.readthedocs.io>`_
+* `pyxem <https://www.pyxem.org/en/stable/examples/index.html>`_
 * `RADIS <https://radis.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `scikit-image <https://scikit-image.org/docs/dev/auto_examples/>`_
 * `scikit-learn <https://scikit-learn.org/stable/auto_examples/index.html>`_
