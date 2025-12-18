@@ -471,7 +471,7 @@ themselves. To do this, you'd either need to make some change (e.g., add/delete
 a newline) to your example or delete the ``.md5`` file to force Sphinx-Gallery
 to rebuild the example. Instead, you can use the configuration value::
 
-    sphinx_gallery_conf = = {
+    sphinx_gallery_conf = {
         ...
         'run_stale_examples': True,
     }
