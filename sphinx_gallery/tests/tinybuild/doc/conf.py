@@ -102,9 +102,9 @@ sphinx_gallery_conf = {
     "compress_images": ("images", "thumbnails"),
     "junit": op.join("sphinx-gallery", "junit-results.xml"),
     "matplotlib_animations": {
-        "enabled": True, 
-        "format": "mp4", 
-        "options": {"set_rst_size": False}
+        "enabled": True,
+        "format": "mp4",
+        "options": {"set_rst_size": False},
     },
     "pypandoc": True,
     "image_srcset": ["2x"],

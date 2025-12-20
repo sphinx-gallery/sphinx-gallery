@@ -321,11 +321,9 @@ def _check_matplotlib_animations(gallery_conf, app):
                         ) from e
 
     gallery_conf["matplotlib_animations"] = {
-        "enabled": enabled, 
-        "format": fmt, 
-        "options": {
-            "set_rst_size":set_rst_size
-        }
+        "enabled": enabled,
+        "format": fmt,
+        "options": {"set_rst_size": set_rst_size},
     }
 
 
