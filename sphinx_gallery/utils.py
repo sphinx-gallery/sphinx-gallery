@@ -16,6 +16,7 @@ from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Tuple
 
 import sphinx.util
 from sphinx.errors import ExtensionError
@@ -38,7 +39,7 @@ def _get_image():
         from PIL import Image
     except ImportError as exc:  # capture the error for the modern way
         try:
-            import Image  # type: ignore[import-not-found]
+            import Image  # type: ignore[import-not-found, no-redef]
         except ImportError:
             raise ExtensionError(
                 "Could not import pillow, which is required "
@@ -47,7 +48,7 @@ def _get_image():
     return Image
 
 
-def scale_image(in_fname, out_fname, max_width, max_height):
+def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) -> None:
     """Scales image centered in image box using `max_width` and `max_height`.
 
     The same aspect ratio is retained. If `in_fname` == `out_fname` the image can only
@@ -95,7 +96,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
         thumb.convert("RGB").save(out_fname)
 
 
-def optipng(fname, args=()):
+def optipng(fname: str, args: Tuple = ()) -> None:
     """Optimize a PNG in place.
 
     Parameters
@@ -121,7 +122,7 @@ def optipng(fname, args=()):
             pass
 
 
-def _has_optipng():
+def _has_optipng() -> bool:
     try:
         subprocess.check_call(
             ["optipng", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -132,7 +133,7 @@ def _has_optipng():
         return True
 
 
-def get_md5sum(src_file, mode="b"):
+def get_md5sum(src_file: str, mode: Literal["t", "b"] = "b") -> str:
     """Returns md5sum of file.
 
     Parameters
@@ -143,19 +144,30 @@ def get_md5sum(src_file, mode="b"):
         File mode to open file with. When in text mode, universal line endings
         are used to ensure consistency in hashes between platforms.
     """
+    # Universal newline mode is intentional here for text mode
+    assert mode in ("t", "b")
     if mode == "t":
-        kwargs = {"errors": "surrogateescape", "encoding": "utf-8"}
+        with open(
+            src_file, "rt", errors="surrogateescape", encoding="utf-8"
+        ) as src_data:
+            src_content = src_data.read().encode(
+                errors="surrogateescape", encoding="utf-8"
+            )
+            return hashlib.md5(src_content).hexdigest()
     else:
-        kwargs = {}
-    # Universal newline mode is intentional here
-    with open(src_file, f"r{mode}", **kwargs) as src_data:
-        src_content = src_data.read()
-        if mode == "t":
-            src_content = src_content.encode(**kwargs)
-        return hashlib.md5(src_content).hexdigest()
+        with open(src_file, "rb") as src_data:
+            src_content = src_data.read()
+            return hashlib.md5(src_content).hexdigest()
 
 
-def _replace_md5(fname_new, fname_old=None, *, method="move", mode="b", check="md5"):
+def _replace_md5(
+    fname_new: str | os.PathLike,
+    fname_old: str | None = None,
+    *,
+    method: Literal["move", "copy"] = "move",
+    mode: Literal["t", "b"] = "b",
+    check: Literal["md5", "json"] = "md5",
+) -> None:
     fname_new = str(fname_new)  # convert possible Path
     assert method in ("move", "copy")
     if fname_old is None:
@@ -163,6 +175,7 @@ def _replace_md5(fname_new, fname_old=None, *, method="move", mode="b", check="m
         fname_old = os.path.splitext(fname_new)[0]
     replace = True
     if os.path.isfile(fname_old):
+        func: Callable[[str], str]
         if check == "md5":  # default
             func = partial(get_md5sum, mode=mode)
         else:
@@ -189,7 +202,7 @@ def _replace_md5(fname_new, fname_old=None, *, method="move", mode="b", check="m
     assert os.path.isfile(fname_old)
 
 
-def iter_gallery_header_filenames(gallery_conf):
+def iter_gallery_header_filenames(gallery_conf: dict[str, Any]) -> Iterator[str]:
     """
     A generator of all possible gallery header filenames.
 
@@ -201,7 +214,7 @@ def iter_gallery_header_filenames(gallery_conf):
             yield fname + ext
 
 
-def check_duplicate_filenames(files):
+def check_duplicate_filenames(files: list[str]) -> None:
     """Check for duplicate filenames across gallery directories."""
     # Check whether we'll have duplicates
     used_names = set()
@@ -223,7 +236,7 @@ def check_duplicate_filenames(files):
         )
 
 
-def check_spaces_in_filenames(files):
+def check_spaces_in_filenames(files: list[str]) -> None:
     """Check for spaces in filenames across example directories."""
     regex = re.compile(r"[\s]")
     files_with_space = list(filter(regex.search, files))
@@ -236,7 +249,11 @@ def check_spaces_in_filenames(files):
         )
 
 
-def _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=False):
+def _collect_gallery_files(
+    examples_dirs: list[str],
+    gallery_conf: dict[str, Any],
+    check_filenames: bool = False,
+) -> list[str]:
     """Collect files with `example_extensions`, accounting for `ignore_pattern`.
 
     If `check_filenames` we check one level of sub-folders as well as root
@@ -268,7 +285,9 @@ def _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=False):
     return files
 
 
-def zip_files(file_list, zipname, relative_to, extension=None):
+def zip_files(
+    file_list: list[str], zipname: str, relative_to: str, extension: str | None = None
+) -> str:
     """
     Creates a zip file with the given files.
 
@@ -286,7 +305,7 @@ def zip_files(file_list, zipname, relative_to, extension=None):
     return zipname
 
 
-def _has_pypandoc():
+def _has_pypandoc() -> Tuple[bool | None, str | None]:
     """Check if pypandoc package available."""
     try:
         import pypandoc  # noqa
@@ -299,7 +318,7 @@ def _has_pypandoc():
         return True, version
 
 
-def _has_graphviz():
+def _has_graphviz() -> bool:
     try:
         import graphviz  # noqa F401
     except ImportError as exc:
@@ -311,12 +330,12 @@ def _has_graphviz():
     return True
 
 
-def _escape_ansi(s):
+def _escape_ansi(s: str) -> str:
     """Remove ANSI terminal formatting characters from a string."""
     return re.sub(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]", "", s)
 
 
-def _format_toctree(items, includehidden=False):
+def _format_toctree(items: list[str], includehidden: bool = False) -> str:
     """Format a toc tree."""
     st = """
 .. toctree::
@@ -347,17 +366,17 @@ _CUSTOM_EXAMPLE_ORDER = [
 ]
 
 
-def _custom_example_sorter(filename):
+def _custom_example_sorter(filename: str) -> int:
     """Importable custom sorter func, used in our test suite."""
     return _CUSTOM_EXAMPLE_ORDER.index(filename)
 
 
-def _custom_subsection_sorter(foldername):
+def _custom_subsection_sorter(foldername: str) -> str:
     """Importable custom sorter func for subsection folders, used in our test suite."""
     return foldername[::-1]
 
 
-def custom_minigallery_sort_order_sorter(file):
+def custom_minigallery_sort_order_sorter(file: str) -> int:
     """Importable custom sorter for minigallery_sort_order, used in our test suite."""
     ORDER = [
         "plot_3.py",
@@ -368,10 +387,10 @@ def custom_minigallery_sort_order_sorter(file):
 
 
 # Should be matched with `_read_json`
-def _write_json(target_file, to_save, name=""):
+def _write_json(target_file: Path, to_save: str, name: str = "") -> None:
     """Write dictionary to JSON file."""
     codeobj_fname = Path(target_file).with_name(target_file.stem + f"{name}.json.new")
-    with open(codeobj_fname, "w", **_W_KW) as fid:
+    with open(codeobj_fname, "w", **_W_KW) as fid:  # type: ignore[call-overload]
         json.dump(
             to_save,
             fid,
@@ -383,14 +402,14 @@ def _write_json(target_file, to_save, name=""):
     _replace_md5(codeobj_fname, check="json")
 
 
-def _read_json(json_fname):
+def _read_json(json_fname: str) -> Any:
     """Read JSON dictionary from file."""
     with open(json_fname, "r", encoding="utf-8") as fid:
         json_dict = json.load(fid)
     return json_dict
 
 
-def _combine_backreferences(dict_a, dict_b):
+def _combine_backreferences(dict_a: dict, dict_b: dict | None) -> dict:
     """Combine backreferences dictionaries, joining lists when keys are the same."""
     # `dict_b` is None when `backreferences_dir` config not set
     if isinstance(dict_b, dict):

@@ -191,7 +191,11 @@ strict_equality = true
 show_error_codes = true
 exclude = [
   "^build/",
-  "^doc/_build/",
+  "^doc/",
+  "^examples/",
+  "^examples/plotly_examples/",
+  "^pyvista_examples/",
+  "^tutorials/",
   "^sphinx_gallery/tests/tinybuild/",
   "^sphinx_gallery\\.egg-info/",
 ]
@@ -214,3 +218,10 @@ module = [
   "graphviz",
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "sphinx_gallery.py_source_parser",
+  "sphinx_gallery.utils",
+]
+check_untyped_defs = true
