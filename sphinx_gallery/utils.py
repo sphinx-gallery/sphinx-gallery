@@ -387,7 +387,7 @@ def custom_minigallery_sort_order_sorter(file: str) -> int:
 
 
 # Should be matched with `_read_json`
-def _write_json(target_file: Path, to_save: str, name: str = "") -> None:
+def _write_json(target_file: Path | str, to_save: str, name: str = "") -> None:
     """Write dictionary to JSON file."""
     codeobj_fname = Path(target_file).with_name(target_file.stem + f"{name}.json.new")
     with open(codeobj_fname, "w", **_W_KW) as fid:  # type: ignore[call-overload]
