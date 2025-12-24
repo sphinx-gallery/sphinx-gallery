@@ -110,7 +110,7 @@ def _get_docstring_and_rest(filename):
     docstring = ast.get_docstring(node)
     assert docstring is not None  # should be guaranteed above
     # This is just for backward compat
-    if node.body[0].value.value[:1] == "\n":
+    if node.body[0].value.value[:1] == "\n":  # type: ignore[index]
         # just for strict backward compat here
         docstring = "\n" + docstring
     ts = tokenize.tokenize(BytesIO(content.encode()).readline)
@@ -208,13 +208,13 @@ def split_code_and_text_blocks(source_file, return_node=False):
     if remaining_content.strip():
         blocks.append(Block("code", remaining_content, lineno))
 
-    out = (file_conf, blocks)
     if return_node:
-        out += (node,)
-    return out
+        return file_conf, blocks, node
+    else:
+        return file_conf, blocks
 
 
-def remove_ignore_blocks(code_block):
+def remove_ignore_blocks(code_block: str) -> str:
     """
     Return the content of *code_block* with ignored areas removed.
 
@@ -238,7 +238,7 @@ def remove_ignore_blocks(code_block):
     return re.subn(IGNORE_BLOCK_PATTERN, "", code_block)[0]
 
 
-def remove_config_comments(code_block):
+def remove_config_comments(code_block: str) -> str:
     """
     Return the content of *code_block* with in-file config comments removed.
 
