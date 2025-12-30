@@ -402,7 +402,7 @@ def _write_json(target_file: Path, to_save: str, name: str = "") -> None:
     _replace_md5(codeobj_fname, check="json")
 
 
-def _read_json(json_fname: str) -> Any:
+def _read_json(json_fname: str | Path) -> Any:
     """Read JSON dictionary from file."""
     with open(json_fname, "r", encoding="utf-8") as fid:
         json_dict = json.load(fid)
