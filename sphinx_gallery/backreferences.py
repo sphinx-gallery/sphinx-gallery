@@ -247,15 +247,16 @@ def identify_names(
 
     Returns
     -------
-    example_code_obj : Dict[str, Any]
+    example_code_obj : dict[str, list[dict[str, Any]]]
         Dict with information about all code object references found in an
-        example. Dict contains the following keys:
+        example. Keys are the names as used in the example, values are lists of
+        possible resolved objects with the following keys:
 
-            - example_code_obj['name'] : function or class name (str)
-            - example_code_obj['module'] : module name (str)
-            - example_code_obj['module_short'] : shortened module name (str)
-            - example_code_obj['is_class'] : whether object is class (bool)
-            - example_code_obj['is_explicit'] : whether object is an explicit
+            - code_obj['name'] : function or class name (str)
+            - code_obj['module'] : module name (str)
+            - code_obj['module_short'] : shortened module name (str)
+            - code_obj['is_class'] : whether object is class (bool)
+            - code_obj['is_explicit'] : whether object is an explicit
                 backreference (referred to by sphinx markup) (bool)
     """
     if node == "":  # mostly convenience for testing functions
