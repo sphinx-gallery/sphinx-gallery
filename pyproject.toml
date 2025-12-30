@@ -221,6 +221,7 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
+  "sphinx_gallery.backreferences",
   "sphinx_gallery.py_source_parser",
   "sphinx_gallery.utils",
 ]
