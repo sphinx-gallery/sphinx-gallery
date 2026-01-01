@@ -348,6 +348,12 @@ intersphinx_mapping = get_intersphinx_mapping(
     },
 )
 
+nitpick_ignore = [
+    # autodoc creates this reference, but docutils does not use sphinx, so that
+    # an intersphinx link cannot be created
+    ("py:class", "docutils.nodes.Node"),
+]
+
 examples_dirs = ["../examples", "../tutorials"]
 gallery_dirs = ["auto_examples", "tutorials"]
 
