@@ -349,8 +349,8 @@ intersphinx_mapping = get_intersphinx_mapping(
 )
 
 nitpick_ignore = [
-    # autodoc creates this reference, but docutils does not use sphinx, so that
-    # an intersphinx link cannot be created
+    # autodoc creates this reference (for `ImageSg.run`), but docutils does not use
+    #  sphinx, so that an intersphinx link cannot be created
     ("py:class", "docutils.nodes.Node"),
 ]
 
