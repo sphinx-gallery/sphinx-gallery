@@ -1,9 +1,12 @@
 """Custom Sphinx directives."""
 
+from __future__ import annotations
+
 import os
 import shutil
 from collections import namedtuple
 from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING, Any, List
 
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
@@ -19,6 +22,10 @@ from .backreferences import (
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
 from .utils import _read_json
+
+if TYPE_CHECKING:
+    import sphinx.application
+    import sphinx.config
 
 logger = getLogger("sphinx-gallery")
 
@@ -55,7 +62,13 @@ class MiniGallery(Directive):
         "heading-level": directives.single_char_or_unicode,
     }
 
-    def _get_target_dir(self, config, src_dir, path, obj):
+    def _get_target_dir(
+        self,
+        config: sphinx.config.Config,
+        src_dir: str,
+        path: Path,
+        obj: str,
+    ) -> Path:
         """Get thumbnail target directory, errors when not in example dir."""
         examples_dirs = config.sphinx_gallery_conf["examples_dirs"]
         if not isinstance(examples_dirs, list):
@@ -95,13 +108,13 @@ class MiniGallery(Directive):
             )
 
         # Add subgallery path, if present
-        subdir = ""
+        subdir: str | Path = ""
         if (ex_p := ex_parents[0]) != Path("."):
             subdir = ex_p
         target_dir = target_dir / subdir
         return target_dir
 
-    def run(self):
+    def run(self) -> list[Any]:
         """Generate mini-gallery from backreference and example files."""
         from .gen_rst import _get_callables
 
@@ -128,7 +141,7 @@ class MiniGallery(Directive):
         src_dir = config.sphinx_gallery_conf["src_dir"]
 
         # Parse the argument into the individual args
-        arg_list = []
+        arg_list: list[str] = []
 
         if self.arguments:
             arg_list.extend([c.strip() for c in self.arguments[0].split()])
@@ -156,7 +169,7 @@ class MiniGallery(Directive):
                 Path(src_dir, backreferences_dir, "backreferences_all.json")
             )
 
-        def has_backrefs(arg):
+        def has_backrefs(arg: str) -> Any:
             if backreferences_all is None:
                 return False
             examples = backreferences_all.get(arg, None)
@@ -275,7 +288,7 @@ class ImageSg(images.Image):
         "alt": directives.unchanged,
     }
 
-    def run(self):
+    def run(self) -> List[nodes.Node]:
         """Update node contents."""
         image_node = imgsgnode()
 
@@ -293,10 +306,10 @@ class ImageSg(images.Image):
         return [image_node]
 
 
-def _parse_srcset(st):
+def _parse_srcset(st: str) -> dict[float, str]:
     """Parse st."""
     entries = st.split(",")
-    srcset = {}
+    srcset: dict[float, str] = {}
     for entry in entries:
         spl = entry.strip().split(" ")
         if len(spl) == 1:
@@ -309,7 +322,7 @@ def _parse_srcset(st):
     return srcset
 
 
-def visit_imgsg_html(self, node):
+def visit_imgsg_html(self, node: imgsgnode) -> None:
     """Handle HTML image tag depending on 'srcset' configuration.
 
     If 'srcset' is not `None`, copy images, generate image html tag with 'srcset'
@@ -371,11 +384,11 @@ def visit_imgsg_html(self, node):
     self.body.append(html_block)
 
 
-def visit_imgsg_latex(self, node):
+def visit_imgsg_latex(self, node: imgsgnode) -> None:
     """Copy images, set node[uri] to highest resolution image and call `visit_image`."""
     if node["srcset"] is not None:
         imagedir, srcset = _copy_images(self, node)
-        maxmult = -1
+        maxmult: float = -1
         # choose the highest res version for latex:
         for key in srcset.keys():
             maxmult = max(maxmult, key)
@@ -384,7 +397,7 @@ def visit_imgsg_latex(self, node):
     self.visit_image(node)
 
 
-def _copy_images(self, node):
+def _copy_images(self, node: imgsgnode) -> tuple[PurePosixPath, dict[float, str]]:
     srcset = _parse_srcset(node["srcset"])
 
     # where the sources are.  i.e. myproj/source
@@ -393,8 +406,7 @@ def _copy_images(self, node):
     # copy image from source to imagedir.  This is
     # *probably* supposed to be done by a builder but...
     # ie myproj/build/html/_images
-    imagedir = os.path.join(self.builder.imagedir, "")
-    imagedir = PurePosixPath(self.builder.outdir, imagedir)
+    imagedir = PurePosixPath(self.builder.outdir, self.builder.imagedir)
 
     os.makedirs(imagedir, exist_ok=True)
 
@@ -406,17 +418,17 @@ def _copy_images(self, node):
     return imagedir, srcset
 
 
-def depart_imgsg_html(self, node):
+def depart_imgsg_html(self, node: imgsgnode) -> None:
     """HTML depart node visitor function."""
     pass
 
 
-def depart_imgsg_latex(self, node):
+def depart_imgsg_latex(self, node: imgsgnode) -> None:
     """LaTeX depart node visitor function."""
     self.depart_image(node)
 
 
-def imagesg_addnode(app):
+def imagesg_addnode(app: sphinx.application.Sphinx) -> None:
     """Add `imgsgnode` to Sphinx app with visitor functions for HTML and LaTeX."""
     app.add_node(
         imgsgnode,
