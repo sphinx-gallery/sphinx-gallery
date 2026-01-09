@@ -12,18 +12,23 @@ import urllib.parse as urllib_parse
 import urllib.request as urllib_request
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from urllib.error import HTTPError, URLError
 
 import sphinx.util
 from sphinx.errors import ExtensionError
 from sphinx.search import js_index
 
+if TYPE_CHECKING:
+    import sphinx.application
+
+from .typing import DocumentationOptions, GalleryConfig, IntersphinxInventory, LinkType
 from .utils import _W_KW, _read_json, status_iterator
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-def _get_data(url):
+def _get_data(url: str) -> str:
     """Get data over http(s) or from a local file."""
     if urllib_parse.urlparse(url).scheme in ("http", "https"):
         user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"  # noqa: E501
@@ -31,12 +36,12 @@ def _get_data(url):
         req = urllib_request.Request(url, None, headers)
         resp = urllib_request.urlopen(req)
         encoding = resp.headers.get("content-encoding", "plain")
-        data = resp.read()
+        data_bytes = resp.read()
         if encoding == "gzip":
-            data = gzip.GzipFile(fileobj=BytesIO(data)).read()
+            data_bytes = gzip.GzipFile(fileobj=BytesIO(data_bytes)).read()
         elif encoding != "plain":
             raise ExtensionError(f"unknown encoding {encoding!r}")
-        data = data.decode("utf-8")
+        data: str = data_bytes.decode("utf-8")
     else:
         with open(url, mode="r", encoding="utf-8") as fid:
             data = fid.read()
@@ -44,12 +49,12 @@ def _get_data(url):
     return data
 
 
-def get_data(url, gallery_dir):
+def get_data(url: str, gallery_dir: str) -> str:
     """Persistent dictionary usage to retrieve the search indexes."""
     cached_file = os.path.join(gallery_dir, "searchindex")
     search_index = shelve.open(cached_file)
     if url in search_index:
-        data = search_index[url]
+        data: str = search_index[url]
     else:
         data = _get_data(url)
         search_index[url] = data
@@ -58,7 +63,7 @@ def get_data(url, gallery_dir):
     return data
 
 
-def parse_sphinx_docopts(index):
+def parse_sphinx_docopts(index: str) -> DocumentationOptions:
     """Parse the Sphinx index for documentation options.
 
     Parameters
@@ -91,15 +96,17 @@ def parse_sphinx_docopts(index):
         value = value.strip()
         if value[-1] == ",":
             value = value[:-1].rstrip()
+
+        parsed_value: str | int | bool
         if value[0] in "\"'":
-            value = value[1:-1]
+            parsed_value = value[1:-1]
         elif value == "false":
-            value = False
+            parsed_value = False
         elif value == "true":
-            value = True
+            parsed_value = True
         else:
             try:
-                value = int(value)
+                parsed_value = int(value)
             except ValueError:
                 # In Sphinx 1.7.5, URL_ROOT is a JavaScript fragment.
                 # Ignoring this entry since URL_ROOT is not used
@@ -107,7 +114,7 @@ def parse_sphinx_docopts(index):
                 # https://github.com/sphinx-gallery/sphinx-gallery/issues/382
                 continue
 
-        docopts[key] = value
+        docopts[key] = parsed_value
 
     return docopts
 
@@ -117,19 +124,25 @@ class SphinxDocLinkResolver:
 
     Parameters
     ----------
-    doc_url : str
+    doc_url : str | Path
         The base URL of the project website.
     relative : bool
         Return relative links (only useful for links to documentation of this
         package).
     """
 
-    def __init__(self, config, doc_url, gallery_dir, relative=False):
+    def __init__(
+        self,
+        config: GalleryConfig,
+        doc_url: str | Path,
+        gallery_dir: str,
+        relative: bool = False,
+    ):
         self.config = config
         self.doc_url = doc_url
         self.gallery_dir = gallery_dir
         self.relative = relative
-        self._link_cache = {}
+        self._link_cache: dict[str, LinkType] = {}
 
         if isinstance(doc_url, Path):
             index_url = os.path.join(doc_url, "index.html")
@@ -152,7 +165,7 @@ class SphinxDocLinkResolver:
                     "You have to use relative=True for the local"
                     " package on a Windows system."
                 )
-            self._is_windows = True
+            self._is_windows: bool = True
         else:
             self._is_windows = False
 
@@ -197,7 +210,7 @@ class SphinxDocLinkResolver:
                     return None
         return match
 
-    def _get_link_type(self, cobj, use_full_module=False):
+    def _get_link_type(self, cobj, use_full_module=False) -> LinkType:
         """Get a valid link and type_, False if not found."""
         module_type = "module" if use_full_module else "module_short"
         first, second = cobj[module_type], cobj["name"]
@@ -235,7 +248,12 @@ class SphinxDocLinkResolver:
 
         return link, type_
 
-    def resolve(self, cobj, this_url, return_type=False):
+    def resolve(
+        self,
+        cobj: dict[str, Any],
+        this_url: str,
+        return_type: bool = False,
+    ):
         """Resolve the link to the documentation, returns None if not found.
 
         Parameters
@@ -286,7 +304,7 @@ class SphinxDocLinkResolver:
         return (link, type_) if return_type else link
 
 
-def _handle_http_url_error(e, msg="fetching"):
+def _handle_http_url_error(e: Exception, msg: str = "fetching") -> None:
     if isinstance(e, HTTPError):
         error_msg = f"{msg} {e.url}: {e.code} ({e.msg})"
     elif isinstance(e, URLError):
@@ -296,13 +314,13 @@ def _handle_http_url_error(e, msg="fetching"):
     )
 
 
-def _sanitize_css_class(s):
+def _sanitize_css_class(s: str) -> str:
     for x in "~!@$%^&*()+=,./';:\"?><[]\\{}|`#":
         s = s.replace(x, "-")
     return s
 
 
-def _get_intersphinx_inventory(app):
+def _get_intersphinx_inventory(app: sphinx.application.Sphinx) -> IntersphinxInventory:
     """
     Get the mapping between module names and intersphinx inventories.
 
@@ -312,8 +330,9 @@ def _get_intersphinx_inventory(app):
     several `mpl_toolkits`` modules), so this checks py:module for all inventories and
     adds that additional module mapping.
     """
-    if inventory := getattr(app.env, "sg_intersphinx_inventory", None):
-        return inventory
+    inventory: IntersphinxInventory
+    if inventory := getattr(app.env, "sg_intersphinx_inventory", None):  # type: ignore[assignment]
+        return inventory  # type: ignore[no-any-return]
 
     # Make a copy of the inventories, because this dict is created by intersphinx and we
     # don't want to break whatever assumptions it has made about it.
@@ -326,11 +345,15 @@ def _get_intersphinx_inventory(app):
         for other_module_name in documented_modules - {module_name}:
             intersphinx_inv[other_module_name] = inventory
 
-    app.env.sg_intersphinx_inventory = intersphinx_inv
+    app.env.sg_intersphinx_inventory = intersphinx_inv  # type: ignore[attr-defined]
     return intersphinx_inv
 
 
-def _embed_code_links(app, gallery_conf, gallery_dir):
+def _embed_code_links(
+    app: sphinx.application.Sphinx,
+    gallery_conf: GalleryConfig,
+    gallery_dir: str,
+):
     """Add resolvers for the packages for which we want to show links."""
     doc_resolvers = {}
 
@@ -479,13 +502,15 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         if len(str_repl) > 0:
             with open(full_fname, "r", encoding="utf-8") as fid:
                 lines_in = fid.readlines()
-            with open(full_fname, "w", **_W_KW) as fid:
+            with open(full_fname, "w", **_W_KW) as fid:  # type: ignore[call-overload]
                 for line in lines_in:
                     line_out = regex.sub(substitute_link, line)
                     fid.write(line_out)
 
 
-def embed_code_links(app, exception):
+def embed_code_links(
+    app: sphinx.application.Sphinx, exception: Exception | None
+) -> None:
     """Embed hyperlinks to documentation into example code."""
     if exception is not None:
         return
