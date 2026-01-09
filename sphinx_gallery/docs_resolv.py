@@ -2,6 +2,8 @@
 # License: 3-clause BSD
 """Link resolver objects."""
 
+from __future__ import annotations
+
 import gzip
 import json
 import os
@@ -124,7 +126,7 @@ class SphinxDocLinkResolver:
 
     Parameters
     ----------
-    doc_url : str | Path
+    doc_url : str | pathlib.Path
         The base URL of the project website.
     relative : bool
         Return relative links (only useful for links to documentation of this
@@ -252,8 +254,7 @@ class SphinxDocLinkResolver:
         self,
         cobj: dict[str, Any],
         this_url: str,
-        return_type: bool = False,
-    ):
+    ) -> LinkType:
         """Resolve the link to the documentation, returns None if not found.
 
         Parameters
@@ -271,8 +272,6 @@ class SphinxDocLinkResolver:
         this_url: str
             URL of the current page. Needed to construct relative URLs
             (only used if relative=True in constructor).
-        return_type : bool
-            If True, return the type as well.
 
         Returns
         -------
@@ -301,7 +300,7 @@ class SphinxDocLinkResolver:
             # for some reason, the relative link goes one directory too high up
             link = link[3:]
 
-        return (link, type_) if return_type else link
+        return link, type_
 
 
 def _handle_http_url_error(e: Exception, msg: str = "fetching") -> None:
@@ -428,7 +427,7 @@ def _embed_code_links(
                     if this_module in doc_resolvers:
                         try:
                             link, type_ = doc_resolvers[this_module].resolve(
-                                cobj, full_fname, return_type=True
+                                cobj, full_fname
                             )
                         except (HTTPError, URLError) as e:
                             _handle_http_url_error(
