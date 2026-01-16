@@ -1103,3 +1103,17 @@ def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
             f"JupyterLite-specific change for {notebook_filename}"
             in first_cell["source"]
         )
+
+
+@pytest.mark.add_conf(
+    content=r"""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'nested_sections': False,
+}"""
+)
+@pytest.mark.add_rst(file="own index.rst")
+def test_subsection_with_header(sphinx_app_wrapper):
+    """Test user provided index.rst works with `nested_sections=False`."""
+    sphinx_app_wrapper.build_sphinx_app()

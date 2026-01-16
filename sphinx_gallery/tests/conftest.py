@@ -169,6 +169,7 @@ def conf_file(request):
 
 @pytest.fixture
 def rst_file(request):
+    """Adds rst file to environment, see `sphinx_app_wrapper` for details."""
     try:
         env = request.node.get_closest_marker("add_rst")
     except AttributeError:  # old pytest
