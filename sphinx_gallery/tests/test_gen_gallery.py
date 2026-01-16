@@ -1114,6 +1114,6 @@ sphinx_gallery_conf = {
 }"""
 )
 @pytest.mark.add_rst(file="own index.rst")
-def test_subsection_with_header(sphinx_app_wrapper):
+def test_nested_sections_false_with_own_index(sphinx_app_wrapper):
     """Test user provided index.rst works with `nested_sections=False`."""
     sphinx_app_wrapper.build_sphinx_app()
