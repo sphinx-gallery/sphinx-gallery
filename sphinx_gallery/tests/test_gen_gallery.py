@@ -1103,3 +1103,27 @@ def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
             f"JupyterLite-specific change for {notebook_filename}"
             in first_cell["source"]
         )
+
+
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'nested_sections': False,
+}"""
+)
+def test_nested_sections_false_sanitize(sphinx_app_wrapper):
+    """Check subsection headers not sanitized when `nested_sections=False`.
+
+    When `nested_sections=True`, we remove tags from subsection header in the
+    root index.rst file (but not in the subsection index.rst files), to prevent
+    tag duplication.
+    When `nested_sections=False`, we should not remove tags.
+    """
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+    index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
+    with open(index_fname, "r", encoding="utf-8") as fid:
+        rst = fid.read()
+
+    assert "my_added_first_sub_label" in rst

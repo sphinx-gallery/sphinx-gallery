@@ -817,8 +817,12 @@ def generate_gallery_rst(app):
 
             has_subsection_header = False
             if subsection_index_content:
-                # Filter tags to prevent tag duplication across the documentation
-                indexst += _filter_tags(subsection_index_content)
+                if gallery_conf["nested_sections"]:
+                    # Filter tags to prevent tag duplication as subsection headers
+                    # are included in both root index and subsection index files
+                    indexst += _filter_tags(subsection_index_content)
+                else:
+                    indexst += subsection_index_content
                 has_subsection_header = True
 
             # Write subsection toctree containing all filenames, if req.
