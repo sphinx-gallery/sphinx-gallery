@@ -728,7 +728,7 @@ def generate_gallery_rst(app):
     * a second final toctree, at the end of the file, linking to all sub-section
       index files.
 
-    If `nested_sections=True` we generate a single `index.rst` file per
+    If `nested_sections=False` we generate a single `index.rst` file per
     example directory. It will contain headers for the root gallery and
     each sub-section, with each header followed by a toctree linking to
     every example in the root gallery/sub-section.
