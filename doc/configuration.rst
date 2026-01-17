@@ -2658,7 +2658,7 @@ With default ``nested_sections=True``, Sphinx-Gallery will use the
 ``GALLERY_HEADER.[ext]`` (or ``README.[ext]`` for backward-compatibility) files
 for the parent gallery and each subsection to build separate index files for the
 parent gallery and each subsection.
-subsection index files will contain the subsection's header (from the
+Subsection index files will contain the subsection's header (from the
 ``GALLERY_HEADER.[ext]`` file) and a toctree
 linking to each gallery example in the subsection.
 The parent gallery's main ``index.rst`` file will contain, in sequence:
