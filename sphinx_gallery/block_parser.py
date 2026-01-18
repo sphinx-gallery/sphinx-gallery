@@ -13,6 +13,7 @@ from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
 
 from .py_source_parser import FLAG_BODY, Block
+from .typing import GalleryConfig
 
 logger = getLogger("sphinx-gallery")
 
@@ -39,7 +40,7 @@ class BlockParser:
         Contains the configuration of Sphinx-Gallery.
     """
 
-    def __init__(self, source_file: str, gallery_conf: dict[str, Any]) -> None:
+    def __init__(self, source_file: str, gallery_conf: GalleryConfig) -> None:
         source_path = Path(source_file)
         if name := gallery_conf["filetype_parsers"].get(source_path.suffix):
             self.lexer = pygments.lexers.find_lexer_class_by_name(name)()

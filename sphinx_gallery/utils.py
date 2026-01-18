@@ -16,7 +16,7 @@ from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Tuple
+from typing import Any, Callable, Iterator, Literal, Tuple
 
 import sphinx.util
 from sphinx.errors import ExtensionError
@@ -26,6 +26,7 @@ try:
 except Exception:  # Sphinx < 6
     from sphinx.util import status_iterator  # type: ignore[no-redef]  # noqa: F401
 
+from .typing import GalleryConfig
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -202,7 +203,7 @@ def _replace_md5(
     assert os.path.isfile(fname_old)
 
 
-def iter_gallery_header_filenames(gallery_conf: dict[str, Any]) -> Iterator[str]:
+def iter_gallery_header_filenames(gallery_conf: GalleryConfig) -> Iterator[str]:
     """
     A generator of all possible gallery header filenames.
 
@@ -251,7 +252,7 @@ def check_spaces_in_filenames(files: list[str]) -> None:
 
 def _collect_gallery_files(
     examples_dirs: list[str],
-    gallery_conf: dict[str, Any],
+    gallery_conf: GalleryConfig,
     check_filenames: bool = False,
 ) -> list[str]:
     """Collect files with `example_extensions`, accounting for `ignore_pattern`.
