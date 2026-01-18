@@ -833,9 +833,9 @@ def generate_gallery_rst(app):
             ):
                 subsection_index_toctree = _format_toctree(subsection_toctree_filenames)
                 indexst += subsection_index_toctree
-            # Otherwise, a new subsection index.rst.new file should
-            # have been created and it needs to be parsed
-            elif has_subsection_header:
+            # Otherwise, for the conditions below, a new subsection index.rst.new
+            # file should have been created and it needs to be parsed
+            elif gallery_conf["nested_sections"] and has_subsection_header:
                 _replace_md5(subsection_index_path, mode="t")
 
             costs += subsection_costs

@@ -1106,6 +1106,20 @@ def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
 
 
 @pytest.mark.add_conf(
+    content=r"""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'nested_sections': False,
+}"""
+)
+@pytest.mark.add_rst(file="own index.rst")
+def test_nested_sections_false_with_own_index(sphinx_app_wrapper):
+    """Check no error with user provided index.rst and `nested_sections=False`."""
+    sphinx_app_wrapper.build_sphinx_app()
+
+
+@pytest.mark.add_conf(
     content="""
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
@@ -1119,11 +1133,10 @@ def test_nested_sections_false_sanitize(sphinx_app_wrapper):
     When `nested_sections=True`, we remove tags from subsection header in the
     root index.rst file (but not in the subsection index.rst files), to prevent
     tag duplication.
-    When `nested_sections=False`, we should not remove tags.
+    When `nested_sections=False`, only one index.rst file is generated, thus we
+    should not remove tags.
     """
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
     index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
-    with open(index_fname, "r", encoding="utf-8") as fid:
-        rst = fid.read()
 
-    assert "my_added_first_sub_label" in rst
+    assert "my_added_first_sub_label" in index_fname.read_text("utf-8")
