@@ -298,10 +298,9 @@ def _check_order(sphinx_app, key, expected_order=None):
     else:
         regex = rf".*:{key}=(\d):.*"
         locator = "sphx-glr-thumbcontainer"
-    with open(index_fname, "r", encoding="utf-8") as fid:
-        for line in fid:
-            if locator in line:
-                order.append(re.match(regex, line).group(1))
+    for line in index_fname.read_text(encoding="utf-8").splitlines():
+        if locator in line:
+            order.append(re.match(regex, line).group(1))
     expected_order = expected_order or list("123456789")
     assert order == expected_order
 
@@ -563,8 +562,7 @@ def test_binder_copy_files(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
     # Create requirements file
-    with open(Path(sphinx_app.srcdir, "requirements.txt"), "w"):
-        pass
+    Path(sphinx_app.srcdir, "requirements.txt").open("w")
     copy_binder_files(sphinx_app, None)
 
     for i_file in ["plot_1", "plot_2", "plot_3"]:
@@ -600,8 +598,7 @@ Should emit a syntax error in the second code block.
 {bad_line}
 """
     bad_line_no = bad_code.split("\n").index(bad_line) + 1
-    with open(Path(example_dir, "plot_3.py"), "w", encoding="utf-8") as fid:
-        fid.write(bad_code)
+    Path(example_dir, "plot_3.py").write_text(bad_code, encoding="utf-8")
     with pytest.raises(ExtensionError) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
     tb = str(excinfo.value)
@@ -638,8 +635,9 @@ sphinx_gallery_conf = {
 def test_only_warn_on_example_error(sphinx_app_wrapper):
     """Test behaviour of only_warn_on_example_error flag."""
     example_dir = Path(sphinx_app_wrapper.srcdir) / "src"
-    with open(example_dir / "plot_3.py", "w", encoding="utf-8") as fid:
-        fid.write(f"{MINIMAL_HEADER}raise ValueError")
+    Path(example_dir, "plot_3.py").write_text(
+        f"{MINIMAL_HEADER}raise ValueError", encoding="utf-8"
+    )
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
 
     build_warn = _escape_ansi(sphinx_app._warning.getvalue())
@@ -662,8 +660,9 @@ def test_only_warn_on_example_error_sphinx_warning(sphinx_app_wrapper):
         if key in inspect.getfullargspec(Sphinx).args:
             sphinx_app_wrapper.kwargs[key] = True
     example_dir = Path(sphinx_app_wrapper.srcdir) / "src"
-    with open(example_dir / "plot_3.py", "w", encoding="utf-8") as fid:
-        fid.write(f"{MINIMAL_HEADER}raise ValueError")
+    Path(example_dir, "plot_3.py").write_text(
+        f"{MINIMAL_HEADER}raise ValueError", encoding="utf-8"
+    )
     with pytest.raises(SphinxWarning) as excinfo:
         sphinx_app_wrapper.build_sphinx_app()
     exc = _escape_ansi(str(excinfo.value))
@@ -811,8 +810,7 @@ def test_minigallery_multi_match(sphinx_app_wrapper):
     """
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
     minigallery_html = Path(sphinx_app.outdir) / "minigallery_test.html"
-    with open(minigallery_html, "r") as fid:
-        mg_html = fid.read()
+    mg_html = minigallery_html.read_text("utf-8")
     # Check thumbnail correct
     assert "_images/sphx_glr_plot_nested_thumb.png" in mg_html
     # Check href correct
@@ -828,10 +826,9 @@ def _get_minigallery_thumbnails(rst_fname):
     locator = "sphx-glr-thumbcontainer"
     regex = r".+sphx-glr-thumbcontainer.+sphx_glr_plot_(\d)_thumb.+"
     example_numbers = list()
-    with open(rst_fname, "r", encoding="utf-8") as fid:
-        for line in fid:
-            if locator in line:
-                example_numbers.append(re.match(regex, line).group(1))
+    for line in rst_fname.read_text(encoding="utf-8").splitlines():
+        if locator in line:
+            example_numbers.append(re.match(regex, line).group(1))
     return example_numbers
 
 
@@ -1094,8 +1091,7 @@ def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
         )
         assert notebook_filename.exists()
 
-        with open(notebook_filename) as f:
-            notebook_content = json.load(f)
+        notebook_content = json.loads(notebook_filename.read_text())
 
         first_cell = notebook_content["cells"][0]
         assert first_cell["cell_type"] == "markdown"
@@ -1103,6 +1099,20 @@ def test_create_jupyterlite_contents_with_modification(sphinx_app_wrapper):
             f"JupyterLite-specific change for {notebook_filename}"
             in first_cell["source"]
         )
+
+
+@pytest.mark.add_conf(
+    content=r"""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'nested_sections': False,
+}"""
+)
+@pytest.mark.add_rst(file="own index.rst")
+def test_nested_sections_false_with_own_index(sphinx_app_wrapper):
+    """Check no error with user provided index.rst and `nested_sections=False`."""
+    sphinx_app_wrapper.build_sphinx_app()
 
 
 @pytest.mark.add_conf(
@@ -1119,11 +1129,10 @@ def test_nested_sections_false_sanitize(sphinx_app_wrapper):
     When `nested_sections=True`, we remove tags from subsection header in the
     root index.rst file (but not in the subsection index.rst files), to prevent
     tag duplication.
-    When `nested_sections=False`, we should not remove tags.
+    When `nested_sections=False`, only one index.rst file is generated, thus we
+    should not remove tags.
     """
     sphinx_app = sphinx_app_wrapper.build_sphinx_app()
     index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
-    with open(index_fname, "r", encoding="utf-8") as fid:
-        rst = fid.read()
 
-    assert "my_added_first_sub_label" in rst
+    assert "my_added_first_sub_label" in index_fname.read_text("utf-8")
