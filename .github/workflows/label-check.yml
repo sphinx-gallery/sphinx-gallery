@@ -22,7 +22,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          LABELS=$(gh api --jq '.labels.[].name' /repos/{owner}/{repo}/pulls/${{ github.event.number }})
+          LABELS=$(gh api --jq '.labels.[].name' /repos/${{ github.repository }}/pulls/${{ github.event.number }})
           echo "Labels: $LABELS"
           if [[ "$LABELS" != *"bug"* ]] && [[ "$LABELS" != *"enhancement"* ]] && [[ "$LABELS" != *"api"* ]] && [[ "$LABELS" != *"maintenance"* ]] && [[ "$LABELS" != *"documentation"* ]]; then
             echo "A maintainer needs to add an appropriate label before merge."
