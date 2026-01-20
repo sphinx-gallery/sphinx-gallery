@@ -9,6 +9,9 @@ on:  # yamllint disable-line rule:truthy
       - unlabeled
       - synchronize
 
+env:
+  LABELS: $(gh api --jq '.labels.[].name' /repos/{owner}/{repo}/pulls/${{ github.event.number }})
+
 jobs:
   check-type-label:
     name: Please wait for a maintainer to add a label
@@ -17,7 +20,6 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - run: |
-          LABELS="${{ join(github.event.pull_request.labels.*.name, ' ') }}"
           echo "Labels: $LABELS"
           if [[ "$LABELS" != *"bug"* ]] && [[ "$LABELS" != *"enhancement"* ]] && [[ "$LABELS" != *"api"* ]] && [[ "$LABELS" != *"maintenance"* ]] && [[ "$LABELS" != *"documentation"* ]]; then
             echo "A maintainer needs to add an appropriate label before merge."
