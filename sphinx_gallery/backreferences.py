@@ -309,7 +309,7 @@ def identify_names(
 THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" {tags} tooltip="{intro}">
+    <div class="sphx-glr-thumbcontainer" {tags}tooltip="{intro}">
 
 .. only:: html
 
@@ -383,8 +383,7 @@ def _thumbnail_div(
     tag_html_attr = ""
     if tags:
         tag_json = json.dumps(tags)
-        tag_html_attr = f"data-sgtags='{tag_json}'"
-        print(f"{fname} has {tag_json}")
+        tag_html_attr = f"data-sgtags='{tag_json}' "
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
     return template.format(
