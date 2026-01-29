@@ -5,6 +5,7 @@ include sphinx_gallery/_static/no_image.png
 include sphinx_gallery/_static/broken_example.png
 include sphinx_gallery/_static/binder_badge_logo.svg
 include sphinx_gallery/_static/jupyterlite_badge_logo.svg
+include sphinx_gallery/_static/sg-tags.js
 include sphinx_gallery/components/sg_download_links.html
 include sphinx_gallery/components/sg_launcher_links.html
 recursive-include examples *.py
