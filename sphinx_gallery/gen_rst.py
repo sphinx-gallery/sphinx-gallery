@@ -563,6 +563,11 @@ def generate_dir_rst(
             header_content = fid.read()
             index_content += header_content
 
+    if not is_subsection:
+        # Add an empty div for js
+        # TODO: We might actually want to generate all the tags here rather than in js?
+        index_content = ".. raw:: html\n\n  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>"
+
     # Add empty lines to avoid bug in issue #165
     index_content += "\n\n"
 
@@ -633,7 +638,12 @@ def generate_dir_rst(
             (Path(build_target_dir) / fname).with_suffix("").as_posix()
         )
         this_entry = _thumbnail_div(
-            target_dir, gallery_conf["src_dir"], fname, intro, title
+            target_dir,
+            gallery_conf["src_dir"],
+            fname,
+            intro,
+            title,
+            tags=out_vars.get("tags", None),
         )
         index_content += this_entry
         toctree_filenames.append("/" + gallery_item_filename)
@@ -1349,6 +1359,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     file_conf, script_blocks, node = parser.split_code_and_text_blocks(
         src_file, return_node=True
     )
+    if "tags" in file_conf:
+        out_vars["tags"] = file_conf["tags"]
 
     intro, title = extract_intro_and_title(fname, script_blocks[0].content)
 

@@ -25,6 +25,7 @@ This functionality is used to add documentation hyperlinks to your code
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
+# sphinx_gallery_tags = ["matplotlib","demo"]
 
 import os.path as op  # noqa, analysis:ignore
 

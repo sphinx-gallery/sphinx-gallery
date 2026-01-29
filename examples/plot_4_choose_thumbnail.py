@@ -12,6 +12,7 @@ specify that we wish for the second figure to be the thumbnail.
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
+# sphinx_gallery_tags = ["matplotlib","line-plot","thumbnails"]
 
 import matplotlib.pyplot as plt
 import numpy as np
