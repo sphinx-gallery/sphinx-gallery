@@ -8,6 +8,7 @@ In order to enable support for animations ``'matplotlib_animations'``
 must be set to ``True`` in the sphinx gallery
 :ref:`configuration <image_scrapers>`.
 """
+# sphinx_gallery_tags = ["matplotlib","line-plot","animation"]
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt

@@ -12,6 +12,7 @@ before the code block.
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
+# sphinx_gallery_tags = ["matplotlib","line-plot"]
 
 import matplotlib.pyplot as plt
 import numpy as np

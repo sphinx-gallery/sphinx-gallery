@@ -20,6 +20,7 @@ used to display plots on separate lines.
 
 # Code source: Thomas S. Binns
 # License: BSD 3 clause
+# sphinx_gallery_tags = ["matplotlib","image","split-plots"]
 
 # sphinx_gallery_multi_image = "single"
 
