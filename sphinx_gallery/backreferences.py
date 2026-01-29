@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import ast
 import inspect
+import json
 import os
 import re
 import sys
-import json
 from collections import defaultdict
 from html import escape
 from pathlib import Path
