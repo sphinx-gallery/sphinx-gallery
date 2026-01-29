@@ -566,7 +566,9 @@ def generate_dir_rst(
     if not is_subsection:
         # Add an empty div for js
         # TODO: We might actually want to generate all the tags here rather than in js?
-        index_content = ".. raw:: html\n\n  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>"
+        index_content = (
+            ".. raw:: html\n\n  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>"
+        )
 
     # Add empty lines to avoid bug in issue #165
     index_content += "\n\n"
