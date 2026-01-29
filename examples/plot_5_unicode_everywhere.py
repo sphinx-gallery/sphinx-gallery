@@ -9,6 +9,7 @@ to stress test the build and test environments that parse the example files.
 # 🎉 👍
 # Code source: Óscar Nájera
 # License: BSD 3 clause
+# sphinx_gallery_tags = ["matplotlib","line-plot","unicode"]
 
 import matplotlib.pyplot as plt
 import numpy as np
