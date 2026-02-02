@@ -69,10 +69,10 @@ optional-dependencies.parallel = [
 optional-dependencies.recommender = [
   "numpy",
 ]
-optional-dependencies.show_api_usage = [
+optional-dependencies.show-api-usage = [
   "graphviz",
 ]
-optional-dependencies.show_memory = [
+optional-dependencies.show-memory = [
   "memory-profiler",
 ]
 urls.Documentation = "https://sphinx-gallery.github.io"
