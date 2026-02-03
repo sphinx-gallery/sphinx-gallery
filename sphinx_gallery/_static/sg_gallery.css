@@ -370,7 +370,7 @@ a.sphx-glr-backref-instance {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    padding: 10px;
+    padding-bottom: 2em;
 }
 
 .sphx-glr-tag {
@@ -394,7 +394,7 @@ a.sphx-glr-backref-instance {
 }
 
 .sphx-glr-tag-label {
-    padding: 5px 10px;
+    padding: 5px 10px 5px 0px;
     border-color: transparent;
     border-style: solid;
     border-width: 2px;
