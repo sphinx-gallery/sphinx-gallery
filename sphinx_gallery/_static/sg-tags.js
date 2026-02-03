@@ -2,8 +2,87 @@
 // License: 3-clause BSD
 // This script extracts and filters tags
 
+// Create a subclass of Set where modifications trigger updates to the page.
+class TagSet extends Set {
+    // Update the URL to include currently selected tags
+    updateURLTags() {
+        const searchParams = new URLSearchParams(window.location.search);
+        if (this.size > 0) {
+            const tagStr = Array.from(this).join(",")
+            searchParams.set("sg-tags", tagStr);
+        } else {
+            searchParams.delete("sg-tags");
+        }
+
+        // Update the URL
+        const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+        window.history.replaceState({}, "", newUrl);
+    }
+
+    // Set all the elements of the list of tags to reflect the currently active tags
+    updateTagButtons() {
+        const tags = document.querySelectorAll('.sphx-glr-tag');
+        tags.forEach(tagElement => {
+            tagElement.classList.toggle(
+                'active',
+                this.has(tagElement.textContent)
+            );
+        });
+    }
+
+    // Set state of clear button
+    updateClearButton() {
+        const clearElement = document.getElementById('sphx-glr-tag-clear')
+        if (this.size > 0) {
+            clearElement.style.display = 'block';
+        } else {
+            clearElement.style.display = 'none';
+        }
+    }
+
+    // Filter grid items based on selected tags
+    filterGrid() {
+        const gridItems = document.querySelectorAll('.sphx-glr-thumbcontainer');
+
+        gridItems.forEach(item => {
+            let itemTags = new Set();
+            if (item.dataset.sgtags) {
+                itemTags = new Set(JSON.parse(item.dataset.sgtags));
+            }
+            const matchesAllSelected = [...this].every(tag => itemTags.has(tag));
+            item.style.display = matchesAllSelected || this.size === 0 ? 'block' : 'none';
+        });
+    }
+
+    updateUI() {
+        // Update UI and filter grid
+        this.updateTagButtons();
+        this.updateClearButton()
+        this.updateURLTags();
+        this.filterGrid();
+    }
+
+    add(value) {
+        const result = super.add(value);
+        this.updateUI();
+        return result;
+    }
+
+    delete(value) {
+        const result = super.delete(value);
+        this.updateUI();
+        return result;
+    }
+
+    clear() {
+        const result = super.clear();
+        this.updateUI();
+        return result;
+    }
+}
+
 // Track currently selected tags
-let selectedTags = new Set();
+let selectedTags = new TagSet();
 
 // Extract all unique tags and populate the tag list
 function extractTags() {
@@ -36,10 +115,11 @@ function extractTags() {
         clearElement.className = 'sphx-glr-tag-label';
         clearElement.textContent = "Clear";
         clearElement.style.display = 'none';  // Hide the element until there is a selected tag
-        clearElement.addEventListener('click', () => clearAllTags());
+        clearElement.addEventListener('click', () => selectedTags.clear());
         tagList.appendChild(clearElement);
     }
 
+    // Load any tags from the URL
     const searchParams = new URLSearchParams(window.location.search);
     sgTagsParam = searchParams.get("sg-tags");
     if (sgTagsParam !== null && sgTagsParam !== "") {
@@ -58,65 +138,6 @@ function toggleTag(tag) {
     } else {
         selectedTags.add(tag);
     }
-
-    // Update UI and filter grid
-    updateTagUI();
-    filterGrid();
-    const clearElement = document.getElementById('sphx-glr-tag-clear')
-    if (selectedTags.size > 0) {
-        clearElement.style.display = 'block';
-    } else {
-        clearElement.style.display = 'none';
-    }
-
-    // Add tags to URL query params
-    const searchParams = new URLSearchParams(window.location.search);
-    if (selectedTags.size > 0) {
-        const tagStr = Array.from(selectedTags).join(",")
-        searchParams.set("sg-tags", tagStr);
-    } else {
-        searchParams.delete("sg-tags");
-    }
-    // Update the URL
-    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
-    window.history.replaceState({}, "", newUrl);
-}
-
-// clear all tags
-function clearAllTags () {
-    selectedTags.clear();
-
-    const searchParams = new URLSearchParams(window.location.search);
-    searchParams.delete("sg-tags");
-    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
-    window.history.replaceState({}, "", newUrl);
-    updateTagUI();
-    filterGrid();
-}
-
-// Update the UI to reflect selected tags
-function updateTagUI() {
-    const tags = document.querySelectorAll('.sphx-glr-tag');
-    tags.forEach(tagElement => {
-        tagElement.classList.toggle(
-            'active',
-            selectedTags.has(tagElement.textContent)
-        );
-    });
-}
-
-// Filter grid items based on selected tags
-function filterGrid() {
-    const gridItems = document.querySelectorAll('.sphx-glr-thumbcontainer');
-
-    gridItems.forEach(item => {
-        let itemTags = new Set();
-        if (item.dataset.sgtags) {
-            itemTags = new Set(JSON.parse(item.dataset.sgtags));
-        }
-        const matchesAllSelected = [...selectedTags].every(tag => itemTags.has(tag));
-        item.style.display = matchesAllSelected || selectedTags.size === 0 ? 'block' : 'none';
-    });
 }
 
 // Initialize
