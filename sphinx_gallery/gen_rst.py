@@ -201,6 +201,13 @@ TIMING_CONTENT = """
 
 """
 
+TAGS_CONTENT = """
+.. rst-class:: sphx-glr-example-tags
+
+   🏷 Tags: {tags}
+
+"""
+
 SPHX_GLR_SIG = """\n
 .. only:: html
 
@@ -1427,6 +1434,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         memory_used,
         gallery_conf,
         language=language,
+        file_conf=file_conf,
     )
 
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
@@ -1570,6 +1578,7 @@ def save_rst_example(
     gallery_conf,
     *,
     language="python",
+    file_conf=None,
 ):
     """Saves the rst notebook to example_file including header & footer.
 
@@ -1587,6 +1596,8 @@ def save_rst_example(
         Additional memory used during the run.
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
+    file_conf : dict
+        The file conf options
     """
     example_file = Path(example_file)
     example_fname = str(example_file.relative_to(gallery_conf["src_dir"]))
@@ -1621,6 +1632,9 @@ def save_rst_example(
 
     if gallery_conf["show_memory"]:
         example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
+
+    if file_conf and file_conf.get("tags"):
+        example_rst += TAGS_CONTENT.format(tags=", ".join(file_conf["tags"]))
 
     example_rst += DOWNLOAD_LINKS_HEADER.format(ref_fname)
 
