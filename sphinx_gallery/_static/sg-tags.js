@@ -39,6 +39,16 @@ function extractTags() {
         clearElement.addEventListener('click', () => clearAllTags());
         tagList.appendChild(clearElement);
     }
+
+    const searchParams = new URLSearchParams(window.location.search);
+    sgTagsParam = searchParams.get("sg-tags");
+    if (sgTagsParam !== null && sgTagsParam !== "") {
+        const urlTags = searchParams.get("sg-tags").split(",");
+        console.log(urlTags);
+        urlTags.forEach(tag => {
+            toggleTag(tag);
+        });
+    }
 }
 
 // Toggle a tag's selected state and update the grid
@@ -58,11 +68,28 @@ function toggleTag(tag) {
     } else {
         clearElement.style.display = 'none';
     }
+
+    // Add tags to URL query params
+    const searchParams = new URLSearchParams(window.location.search);
+    if (selectedTags.size > 0) {
+        const tagStr = Array.from(selectedTags).join(",")
+        searchParams.set("sg-tags", tagStr);
+    } else {
+        searchParams.delete("sg-tags");
+    }
+    // Update the URL
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.replaceState({}, "", newUrl);
 }
 
 // clear all tags
 function clearAllTags () {
     selectedTags.clear();
+
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.delete("sg-tags");
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.replaceState({}, "", newUrl);
     updateTagUI();
     filterGrid();
 }
