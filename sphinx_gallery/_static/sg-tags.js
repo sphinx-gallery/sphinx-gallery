@@ -54,17 +54,15 @@ function updateTagUI() {
 
 // Filter grid items based on selected tags
 function filterGrid() {
-    console.log("Filtering Grid");
     const gridItems = document.querySelectorAll('.sphx-glr-thumbcontainer');
-    console.log(gridItems);
 
     gridItems.forEach(item => {
+        let itemTags = new Set();
         if (item.dataset.sgtags) {
             const itemTags = new Set(JSON.parse(item.dataset.sgtags));
-            console.log(itemTags);
-            const matchesAllSelected = [...selectedTags].every(tag => itemTags.has(tag));
-            item.style.display = matchesAllSelected || selectedTags.size === 0 ? 'block' : 'none';
         }
+        const matchesAllSelected = [...selectedTags].every(tag => itemTags.has(tag));
+        item.style.display = matchesAllSelected || selectedTags.size === 0 ? 'block' : 'none';
     });
 }
 
