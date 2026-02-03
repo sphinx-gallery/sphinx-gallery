@@ -1,6 +1,8 @@
 // Author: Stuart Mumford
 // License: 3-clause BSD
-// This script extracts and filters tags
+// This code is used on gallery index pages to extract and display a
+// list of tags for all examples on that page, and allow the user to
+// filter by one or more tags.
 
 // Create a subclass of Set where modifications trigger updates to the page.
 class TagSet extends Set {
