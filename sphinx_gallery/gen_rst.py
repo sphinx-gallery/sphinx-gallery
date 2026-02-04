@@ -571,7 +571,9 @@ def generate_dir_rst(
             index_content += header_content
 
     # Add an empty div for js
-    index_content += "\n\n.. raw:: html\n\n  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>"
+    index_content += (
+        "\n\n.. raw:: html\n\n  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>"
+    )
 
     # Add empty lines to avoid bug in issue #165
     index_content += "\n\n"
