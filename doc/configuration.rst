@@ -2795,3 +2795,20 @@ within the example gallery. This regular expression can be modified to
 ignore any kind of file that should not be considered. The default regular
 expression ignores functions like ``__len__()`` for which it may not be
 desirable to document if they are used in examples.
+
+Tagging Examples and Filtering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can tag examples with the::
+
+  # sphinx_gallery_tags = ["tag1", "tag2"]
+
+syntax.
+
+This adds the tags to the end of each example, and also adds dynamic
+filtering of the examples on index pages.
+See :ref:`examples-index` for a demonstration.
+
+Tags support a wide character set, although some with special meaning
+in HTML documents might not render correctly, specifically ``|`` and
+``@`` are known not to work well.
