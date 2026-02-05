@@ -1138,19 +1138,27 @@ def test_nested_sections_false_sanitize(sphinx_app_wrapper):
     assert "my_added_first_sub_label" in index_fname.read_text("utf-8")
 
 
-@pytest.mark.parametrize("tags", (
-    pytest.param(["plot2-tag"], id="simple"),
-    pytest.param(["Hello, World! How are you? 😊"], id="emoji"),
-    pytest.param(["Test & Query? Param=Value#Fragment"], id="url unsafe"),
-    pytest.param(["Café, naïve, façade, hôtel"], id="extended char"),
-    pytest.param(["Привет, мир! Как дела? 🚀"], id="more unicode"),
-    pytest.param(["你好，世界！你好吗？"], id="other symbols"),
-    pytest.param(["こんにちは、世界！元気ですか？"], id="other symbols2"),
-    pytest.param(["مرحبا بالعالم! كيف حالك؟"], id="other symbols3"),
-    pytest.param(["123!#$%^&*()_+{}:<>?[;',./"], id="ascii symbols"),
-    pytest.param(["A long test with spaces, numbers 123, and Unicode: 你好, こんにちは, Привет 🌈"], id="long with everything"),
-    pytest.param(["plot2-tag", "test tag"], id="list"),
-))
+@pytest.mark.parametrize(
+    "tags",
+    (
+        pytest.param(["plot2-tag"], id="simple"),
+        pytest.param(["Hello, World! How are you? 😊"], id="emoji"),
+        pytest.param(["Test & Query? Param=Value#Fragment"], id="url unsafe"),
+        pytest.param(["Café, naïve, façade, hôtel"], id="extended char"),
+        pytest.param(["Привет, мир! Как дела? 🚀"], id="more unicode"),
+        pytest.param(["你好，世界！你好吗？"], id="other symbols"),
+        pytest.param(["こんにちは、世界！元気ですか？"], id="other symbols2"),
+        pytest.param(["مرحبا بالعالم! كيف حالك؟"], id="other symbols3"),
+        pytest.param(["123!#$%^&*()_+{}:<>?[;',./"], id="ascii symbols"),
+        pytest.param(
+            [
+                "A long test with spaces, numbers 123, and Unicode: 你好, こんにちは, Привет 🌈"
+            ],
+            id="long with everything",
+        ),
+        pytest.param(["plot2-tag", "test tag"], id="list"),
+    ),
+)
 @pytest.mark.add_conf(
     content=r"""
 sphinx_gallery_conf = {
@@ -1160,9 +1168,11 @@ sphinx_gallery_conf = {
 )
 def test_tags_in_index_html(sphinx_app_wrapper, tags):
     """Check no error with user provided index.rst and `nested_sections=False`."""
-    tags_str =", ".join([f'"{tag}"' for tag in tags])
-    with open(sphinx_app_wrapper.srcdir / "src" / "plot_2.py", "a", encoding="utf-8") as plot2:
-        plot2.write(f'\n# sphinx_gallery_tags = [{tags_str}]')
+    tags_str = ", ".join([f'"{tag}"' for tag in tags])
+    with open(
+        sphinx_app_wrapper.srcdir / "src" / "plot_2.py", "a", encoding="utf-8"
+    ) as plot2:
+        plot2.write(f"\n# sphinx_gallery_tags = [{tags_str}]")
     sphinx_app_wrapper.build_sphinx_app()
     gallery_output_path = sphinx_app_wrapper.outdir / "ex"
     index_html = gallery_output_path / "index.html"
@@ -1186,6 +1196,6 @@ def test_tags_in_index_html(sphinx_app_wrapper, tags):
         tag = tag.replace("<", "&lt;")
         tag = tag.replace(">", "&gt;")
         tag = tag.replace("'", "’")
-        tag = tag.replace('"', '')
+        tag = tag.replace('"', "")
         # Also | is wrapped in it's own span, and @ is just silently dropped
         assert f"🏷 Tags: {tag}" in content
