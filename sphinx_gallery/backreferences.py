@@ -382,7 +382,7 @@ def _thumbnail_div(
 
     tag_html_attr = ""
     if tags:
-        tag_json = json.dumps(tags)
+        tag_json = json.dumps(tags, ensure_ascii=False)
         tag_html_attr = f"data-sgtags='{tag_json}' "
 
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
