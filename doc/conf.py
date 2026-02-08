@@ -435,3 +435,8 @@ warnings.filterwarnings(
     message="Matplotlib is currently using agg, which is a"
     " non-GUI backend, so cannot show the figure.",
 )
+
+# Workaround to suppress missing link warnings to custom types, e.g. GalleryConfig,
+# created through autodoc.
+# TODO: There may be better ways to cope with this by adding the types to the docs.
+suppress_warnings = ["ref.class"]

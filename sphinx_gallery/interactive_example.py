@@ -12,11 +12,14 @@ this API may change in the future.
 
 """
 
+from __future__ import annotations
+
 import glob
 import json
 import os
 import shutil
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import sphinx.util
@@ -25,17 +28,27 @@ from sphinx.errors import ConfigError
 from . import glr_path_static
 from .utils import status_iterator
 
+if TYPE_CHECKING:
+    import sphinx.application
+    import sphinx.config
+
+    from .typing import GalleryConfig
+
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-def gen_binder_url(fpath, binder_conf, gallery_conf):
+def gen_binder_url(
+    fpath: str,
+    binder_conf: dict[str, Any],
+    gallery_conf: GalleryConfig,
+) -> str:
     """Generate a Binder URL according to the configuration in conf.py.
 
     Parameters
     ----------
     fpath: str
         The path to the `.py` file for which a Binder badge will be generated.
-    binder_conf: dict or None
+    binder_conf: dict
         The Binder configuration dictionary. See `gen_binder_rst` for details.
 
     Returns
@@ -45,8 +58,8 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
         environment.
     """
     # Build the URL
-    fpath_prefix = binder_conf["filepath_prefix"]
-    link_base = binder_conf["notebooks_dir"]
+    fpath_prefix: str | None = binder_conf["filepath_prefix"]
+    link_base: str = binder_conf["notebooks_dir"]
 
     # We want to keep the relative path to sub-folders
     relative_link = os.path.relpath(fpath, gallery_conf["src_dir"])
@@ -78,7 +91,11 @@ def gen_binder_url(fpath, binder_conf, gallery_conf):
     return binder_url
 
 
-def gen_binder_rst(fpath, binder_conf, gallery_conf):
+def gen_binder_rst(
+    fpath: str,
+    binder_conf: dict[str, Any],
+    gallery_conf: GalleryConfig,
+) -> str:
     """Generate the reST + link for the Binder badge.
 
     Parameters
@@ -86,8 +103,8 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     fpath: str
         The path to the `.py` file for which a Binder badge will be generated.
 
-    binder_conf: dict or None
-        If a dictionary it must have the following keys:
+    binder_conf: dict
+        A dictionary with the following keys:
 
         'binderhub_url'
             The URL of the BinderHub instance that's running a Binder service.
@@ -108,7 +125,7 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     rst : str
         The reStructuredText for the Binder badge that links to this file.
     """
-    binder_url = gen_binder_url(fpath, binder_conf, gallery_conf)
+    binder_url: str = gen_binder_url(fpath, binder_conf, gallery_conf)
     # In theory we should be able to use glr_path_static for this, but Sphinx
     # only allows paths to be relative to the build root. On Linux, absolute
     # paths can be used and they work, but this does not seem to be
@@ -137,7 +154,10 @@ def gen_binder_rst(fpath, binder_conf, gallery_conf):
     return rst
 
 
-def copy_binder_files(app, exception):
+def copy_binder_files(
+    app: sphinx.application.Sphinx,
+    exception: Exception | None,
+) -> None:
     """Copy all Binder requirements and notebooks files."""
     if exception is not None:
         return
@@ -156,9 +176,12 @@ def copy_binder_files(app, exception):
     _copy_binder_notebooks(app)
 
 
-def _copy_binder_reqs(app, binder_conf):
+def _copy_binder_reqs(
+    app: sphinx.application.Sphinx,
+    binder_conf: dict[str, Any],
+) -> None:
     """Copy Binder requirements files to a "binder" folder in the docs."""
-    path_reqs = binder_conf["dependencies"]
+    path_reqs: list[str] = binder_conf["dependencies"]
     for path in path_reqs:
         if not os.path.exists(os.path.join(app.srcdir, path)):
             raise ConfigError(
@@ -174,13 +197,13 @@ def _copy_binder_reqs(app, binder_conf):
         shutil.copy(os.path.join(app.srcdir, path), binder_folder)
 
 
-def _remove_ipynb_files(path, contents):
+def _remove_ipynb_files(path: str, contents: list[str]) -> list[str]:
     """Remove files with `.ipynb` and directories named `images` from list of files.
 
     `contents` should be a list of files, which is returned after file removal.
     Used with the `shutil` "ignore" keyword to filter out non-ipynb files.
     """
-    contents_return = []
+    contents_return: list[str] = []
     for entry in contents:
         if entry.endswith(".ipynb"):
             # Don't include ipynb files
@@ -194,16 +217,16 @@ def _remove_ipynb_files(path, contents):
     return contents_return
 
 
-def _copy_binder_notebooks(app):
+def _copy_binder_notebooks(app: sphinx.application.Sphinx) -> None:
     """Copy Jupyter notebooks to the binder notebooks directory.
 
     Copy each output gallery directory structure but only including the
     Jupyter notebook files.
     """
-    gallery_conf = app.config.sphinx_gallery_conf
-    gallery_dirs = gallery_conf["gallery_dirs"]
-    binder_conf = gallery_conf["binder"]
-    notebooks_dir = os.path.join(app.outdir, binder_conf["notebooks_dir"])
+    gallery_conf: GalleryConfig = app.config.sphinx_gallery_conf
+    gallery_dirs: str | list[str] = gallery_conf["gallery_dirs"]
+    binder_conf: dict[str, Any] = gallery_conf["binder"]
+    notebooks_dir: str = os.path.join(app.outdir, binder_conf["notebooks_dir"])
     shutil.rmtree(notebooks_dir, ignore_errors=True)
     os.makedirs(notebooks_dir, exist_ok=True)
 
@@ -222,9 +245,9 @@ def _copy_binder_notebooks(app):
         )
 
 
-def check_binder_conf(binder_conf):
+def check_binder_conf(binder_conf: dict[str, Any] | None) -> dict[str, Any]:
     """Check to make sure that the Binder configuration is correct."""
-    # Grab the configuration and return None if it's not configured
+    # Return an empty configuration in case of None
     binder_conf = {} if binder_conf is None else binder_conf.copy()
     if not isinstance(binder_conf, dict):
         raise ConfigError("`binder_conf` must be a dictionary or None.")
@@ -259,7 +282,7 @@ def check_binder_conf(binder_conf):
     # Ensure we have at least one dependency file
     # Need at least one of these three files
     required_reqs_files = ["requirements.txt", "environment.yml", "Dockerfile"]
-    path_reqs = binder_conf["dependencies"]
+    path_reqs: str | list[str] = binder_conf["dependencies"]
     if isinstance(path_reqs, str):
         path_reqs = [path_reqs]
         binder_conf["dependencies"] = path_reqs
@@ -284,7 +307,10 @@ def check_binder_conf(binder_conf):
     return binder_conf
 
 
-def pre_configure_jupyterlite_sphinx(app, config):
+def pre_configure_jupyterlite_sphinx(
+    app: sphinx.application.Sphinx,
+    config: sphinx.config.Config,
+) -> None:
     """Configure 'jupyterlite_bind_ipynb_suffix' if jupyterlite enabled.
 
     Connected to "config-inited" event.
@@ -302,7 +328,10 @@ def pre_configure_jupyterlite_sphinx(app, config):
     config.jupyterlite_bind_ipynb_suffix = False
 
 
-def post_configure_jupyterlite_sphinx(app, config):
+def post_configure_jupyterlite_sphinx(
+    app: sphinx.application.Sphinx,
+    config: sphinx.config.Config,
+) -> None:
     """Check SG "jupyterlite" and update Jupyterlite config "jupyterlite_contents".
 
     Connected to "config-inited" event but lower priority so called after
@@ -324,7 +353,10 @@ def post_configure_jupyterlite_sphinx(app, config):
     )
 
 
-def create_jupyterlite_contents(app, exception):
+def create_jupyterlite_contents(
+    app: sphinx.application.Sphinx,
+    exception: Exception | None,
+) -> None:
     """Create Jupyterlite contents according to "jupyterlite" configuration."""
     from .gen_rst import _get_callables
 
@@ -334,7 +366,7 @@ def create_jupyterlite_contents(app, exception):
     if app.builder.name not in ["html", "readthedocs"]:
         return
 
-    gallery_conf = app.config.sphinx_gallery_conf
+    gallery_conf: GalleryConfig = app.config.sphinx_gallery_conf
     is_jupyterlite_enabled = (
         "jupyterlite_sphinx" in app.extensions
         and gallery_conf["jupyterlite"] is not None
@@ -344,8 +376,8 @@ def create_jupyterlite_contents(app, exception):
         return
 
     logger.info("copying Jupyterlite contents ...", color="white")
-    gallery_dirs = gallery_conf["gallery_dirs"]
-    contents_dir = gallery_conf["jupyterlite"]["jupyterlite_contents"]
+    gallery_dirs: list[str] = gallery_conf["gallery_dirs"]
+    contents_dir: str = gallery_conf["jupyterlite"]["jupyterlite_contents"]
 
     shutil.rmtree(contents_dir, ignore_errors=True)
     os.makedirs(contents_dir)
@@ -386,7 +418,7 @@ def create_jupyterlite_contents(app, exception):
             json.dump(notebook_content, f, indent=2)
 
 
-def gen_jupyterlite_rst(fpath, gallery_conf):
+def gen_jupyterlite_rst(fpath: str, gallery_conf: GalleryConfig) -> str:
     """Generate the reST + link for the Binder badge.
 
     Parameters
@@ -436,7 +468,7 @@ def gen_jupyterlite_rst(fpath, gallery_conf):
     return rst
 
 
-def _add_jupyterlite_badge_logo(image_dir):
+def _add_jupyterlite_badge_logo(image_dir: str) -> None:
     os.makedirs(image_dir, exist_ok=True)
     physical_path = os.path.join(image_dir, "jupyterlite_badge_logo.svg")
     if not os.path.isfile(physical_path):
@@ -445,17 +477,17 @@ def _add_jupyterlite_badge_logo(image_dir):
         )
 
 
-def check_jupyterlite_conf(jupyterlite_conf, app):
+def check_jupyterlite_conf(
+    jupyterlite_conf: dict[str, Any] | None,
+    app: sphinx.application.Sphinx | None,
+) -> dict[str, Any] | None:
     """Return full JupyterLite configuration with defaults."""
-    # app=None can happen for testing
-    if app is None:
-        is_jupyterlite_disabled = True
-    else:
-        is_jupyterlite_disabled = (
-            "jupyterlite_sphinx" not in app.extensions or jupyterlite_conf is None
-        )
 
-    if is_jupyterlite_disabled:
+    if jupyterlite_conf is None:  # nothing to do
+        return None
+    if app is None:  # can happen for testing
+        return None
+    if "jupyterlite_sphinx" not in app.extensions:  # extension not installed or enabled
         return None
 
     if not isinstance(jupyterlite_conf, dict):

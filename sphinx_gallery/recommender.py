@@ -6,10 +6,13 @@ Generate recommendations based on TF-IDF representation and a KNN model.
 # Author: Arturo Amor
 # License: 3-clause BSD
 
+from __future__ import annotations
+
 import numbers
 import re
 from collections import defaultdict
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .backreferences import (
     THUMBNAIL_PARENT_DIV,
@@ -19,6 +22,13 @@ from .backreferences import (
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
 from .utils import _replace_md5
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    import numpy as np
+
+    from .typing import GalleryConfig
 
 
 class ExampleRecommender:
@@ -49,25 +59,32 @@ class ExampleRecommender:
         Fitted matrix of pairwise cosine similarities.
     """
 
-    def __init__(self, *, n_examples=5, min_df=3, max_df=0.9):
+    def __init__(
+        self,
+        *,
+        n_examples: int = 5,
+        min_df: int | float = 3,
+        max_df: int | float = 0.9,
+    ) -> None:
         self.n_examples = n_examples
         self.min_df = min_df
         self.max_df = max_df
+        self.file_names_: list[str] = []
 
-    def token_freqs(self, doc):
+    def token_freqs(self, doc: str) -> dict[str, int]:
         """Extract a dict mapping raw tokens from doc to their occurrences."""
         token_generator = (tok.lower() for tok in re.findall(r"\w+", doc))
         return self.dict_freqs(token_generator)
 
     @staticmethod
-    def dict_freqs(doc):
+    def dict_freqs(doc: Generator[str, None, None] | list[str]) -> dict[str, int]:
         """Extract a dict mapping list of tokens to their occurrences."""
-        freq = defaultdict(int)
+        freq: dict[str, int] = defaultdict(int)
         for tok in doc:
             freq[tok] += 1
         return freq
 
-    def dict_vectorizer(self, data):
+    def dict_vectorizer(self, data: list[dict[str, int]]) -> "np.ndarray":
         """Convert a dictionary of feature occurrence frequencies into a matrix.
 
         Parameters
@@ -101,7 +118,7 @@ class ExampleRecommender:
                 X[dict_of_freqs_idx, token_dict[token]] = freq
         return X
 
-    def compute_tf_idf(self, X):
+    def compute_tf_idf(self, X: "np.ndarray") -> "np.ndarray":
         """Transform a term frequency matrix into a TF-IDF matrix.
 
         Parameters
@@ -120,12 +137,14 @@ class ExampleRecommender:
 
         df = np.count_nonzero(X, axis=0) + 1
         idf = np.log(n_samples / df) + 1
-        X_tfidf = X * idf
+        X_tfidf: np.ndarray = X * idf
         X_tfidf = (X_tfidf.T / np.linalg.norm(X_tfidf, axis=1)).T
 
         return X_tfidf
 
-    def cosine_similarity(self, X, Y=None):
+    def cosine_similarity(
+        self, X: "np.ndarray", Y: "np.ndarray | None" = None
+    ) -> "np.ndarray":
         """Compute the cosine similarity between two vectors X and Y.
 
         Parameters
@@ -152,11 +171,13 @@ class ExampleRecommender:
             Y_normalized = X_normalized
         else:
             Y_normalized = Y / np.linalg.norm(Y)
-        similarity = X_normalized @ Y_normalized.T
+        similarity: np.ndarray = X_normalized @ Y_normalized.T
 
         return similarity
 
-    def fit(self, file_names):
+    def fit(
+        self, file_names: list[str] | Generator[str, None, None]
+    ) -> ExampleRecommender:
         """Compute the similarity matrix of a group of documents.
 
         Parameters
@@ -198,13 +219,13 @@ class ExampleRecommender:
             max_df = int(np.floor(max_df * counts_matrix.shape[0]))
         doc_appearances = np.sum(counts_matrix, axis=0)
         mask = (doc_appearances >= min_df) & (doc_appearances <= max_df)
-        self.similarity_matrix_ = self.cosine_similarity(
+        self.similarity_matrix_: np.ndarray = self.cosine_similarity(
             self.compute_tf_idf(counts_matrix[:, mask])
         )
         self.file_names_ = file_names
         return self
 
-    def predict(self, file_name):
+    def predict(self, file_name: str) -> list[str]:
         """Compute the `n_examples` most similar documents to the query.
 
         Parameters
@@ -229,7 +250,11 @@ class ExampleRecommender:
         return recommendations
 
 
-def _write_recommendations(recommender, fname, gallery_conf):
+def _write_recommendations(
+    recommender: ExampleRecommender,
+    fname: str,
+    gallery_conf: GalleryConfig,
+) -> None:
     """Generate `.recommendations` reST file for a given example.
 
     Parameters
