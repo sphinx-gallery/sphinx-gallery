@@ -44,10 +44,6 @@ jobs:
             locale: C
           - os: ubuntu-latest
             python: '3.11'
-            sphinx_version: '5'
-            distrib: pip
-          - os: ubuntu-latest
-            python: '3.11'
             sphinx_version: '6'
             distrib: mamba
           - os: ubuntu-latest
@@ -57,6 +53,10 @@ jobs:
           - os: ubuntu-latest
             python: '3.13'
             sphinx_version: '8'
+            distrib: pip
+          - os: ubuntu-latest
+            python: '3.14'
+            sphinx_version: '9'
             distrib: pip
           - os: macos-latest
             python: '3.12'
