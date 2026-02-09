@@ -35,17 +35,6 @@ logger = sphinx.util.logging.getLogger("sphinx-gallery")
 _W_KW = dict(encoding="utf-8", newline="\n")
 
 
-def _get_image():
-    try:
-        from PIL import Image
-    except ImportError as exc:  # capture the error for the modern way
-        raise ExtensionError(
-            "Could not import pillow, which is required "
-            f"to rescale images (e.g., for thumbnails): {exc}"
-        )
-    return Image
-
-
 def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) -> None:
     """Scales image centered in image box using `max_width` and `max_height`.
 
@@ -53,7 +42,8 @@ def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) 
     be scaled down.
     """
     # local import to avoid testing dependency on PIL:
-    Image = _get_image()
+    from PIL import Image
+
     img = Image.open(in_fname)
     # XXX someday we should just try img.thumbnail((max_width, max_height)) ...
     width_in, height_in = img.size
@@ -74,10 +64,7 @@ def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) 
     # resize the image using resize; if using .thumbnail and the image is
     # already smaller than max_width, max_height, then this won't scale up
     # at all (maybe could be an option someday...)
-    try:  # Pillow 9+
-        bicubic = Image.Resampling.BICUBIC
-    except Exception:
-        bicubic = Image.BICUBIC
+    bicubic = Image.Resampling.BICUBIC
     img = img.resize((width_sc, height_sc), bicubic)
     # img.thumbnail((width_sc, height_sc), Image.BICUBIC)
     # width_sc, height_sc = img.size  # necessary if using thumbnail
