@@ -175,17 +175,17 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             if dpi0 == "figure":
                 dpi0 = fig.dpi
             dpi0 = these_kwargs.get("dpi", dpi0)
-            srcsetpaths = {0: image_path}
+            srcsetpaths_dict = {0: image_path}
 
             # save other srcset paths, keyed by multiplication factor:
             for mult in srcset:
                 multst = f"{mult:.2f}".replace(".", "_")
                 name = f"{image_path.stem}_{multst}x{image_path.suffix}"
-                hipath = image_path.parent / PurePosixPath(name)
+                this_hipath = image_path.parent / PurePosixPath(name)
                 hikwargs = {**these_kwargs, "dpi": mult * dpi0}
-                fig.savefig(hipath, **hikwargs)
-                srcsetpaths[mult] = hipath
-            srcsetpaths = [srcsetpaths]
+                fig.savefig(this_hipath, **hikwargs)
+                srcsetpaths_dict[mult] = this_hipath
+            srcsetpaths = [srcsetpaths_dict]
         except Exception:
             plt.close("all")
             raise

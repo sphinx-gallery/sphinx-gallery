@@ -47,7 +47,7 @@ class ExplicitOrder:
             "*" if path == "*" else os.path.normpath(path) for path in ordered_list
         ]
         try:
-            i = ordered_list.index("*")
+            i = self.ordered_list.index("*")
             self.has_wildcard = True
             self.ordered_list_start = self.ordered_list[:i]
             self.ordered_list_end = self.ordered_list[i + 1 :]

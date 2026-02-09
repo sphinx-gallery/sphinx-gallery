@@ -24,7 +24,6 @@ from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 
 from sphinx_gallery.utils import (
-    _get_image,
     _has_graphviz,
     _has_optipng,
     _has_pypandoc,
@@ -325,6 +324,7 @@ def test_user_index_download(sphinx_app):
 def test_thumbnail_path(sphinx_app, tmpdir):
     """Test sphinx_gallery_thumbnail_path."""
     import numpy as np
+    from PIL import Image
 
     # Make sure our thumbnail matches what it should be
     fname_orig = op.join(sphinx_app.srcdir, "_static_nonstandard", "demo.png")
@@ -335,7 +335,6 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     scale_image(
         fname_orig, fname_new, *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"]
     )
-    Image = _get_image()
     orig = np.asarray(Image.open(fname_thumb))
     new = np.asarray(Image.open(fname_new))
     assert new.shape[:2] == orig.shape[:2]
@@ -347,6 +346,7 @@ def test_thumbnail_path(sphinx_app, tmpdir):
 def test_negative_thumbnail_config(sphinx_app, tmpdir):
     """Test 'sphinx_gallery_thumbnail_number' config correct for negative numbers."""
     import numpy as np
+    from PIL import Image
 
     # Make sure our thumbnail is the 2nd (last) image
     fname_orig = op.join(
@@ -359,7 +359,6 @@ def test_negative_thumbnail_config(sphinx_app, tmpdir):
     scale_image(
         fname_orig, fname_new, *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"]
     )
-    Image = _get_image()
     orig = np.asarray(Image.open(fname_thumb))
     new = np.asarray(Image.open(fname_new))
     assert new.shape[:2] == orig.shape[:2]
@@ -371,6 +370,7 @@ def test_negative_thumbnail_config(sphinx_app, tmpdir):
 def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
     """Test thumbnail behaviour for expected failing examples."""
     import numpy as np
+    from PIL import Image
 
     # Get the "BROKEN" stamp for the default failing example thumbnail
     stamp_fname = op.join(
@@ -382,7 +382,6 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
         stamp_fname_scaled,
         *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"],
     )
-    Image = _get_image()
     broken_stamp = np.asarray(Image.open(stamp_fname_scaled))
     assert broken_stamp.shape[2] in (3, 4)  # optipng can strip the alpha channel
 

@@ -32,7 +32,18 @@ repos:
     hooks:
       - id: pyproject-fmt
         additional_dependencies: [tox]
+
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.25
     hooks:
       - id: validate-pyproject
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.1
+    hooks:
+      - id: mypy
+        exclude: "^(examples|doc)/"
+        additional_dependencies:
+          - types-docutils
+          - sphinx <9.1
+          - types-Pygments

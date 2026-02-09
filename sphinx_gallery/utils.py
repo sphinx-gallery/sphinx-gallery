@@ -12,7 +12,6 @@ import os
 import re
 import subprocess
 import zipfile
-from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
@@ -20,11 +19,7 @@ from typing import Any, Callable, Iterator, Literal, Tuple
 
 import sphinx.util
 from sphinx.errors import ExtensionError
-
-try:
-    from sphinx.util.display import status_iterator  # noqa: F401
-except Exception:  # Sphinx < 6
-    from sphinx.util import status_iterator  # type: ignore[no-redef]  # noqa: F401
+from sphinx.util.display import status_iterator  # noqa: F401
 
 from .typing import GalleryConfig
 
@@ -35,20 +30,6 @@ logger = sphinx.util.logging.getLogger("sphinx-gallery")
 _W_KW = dict(encoding="utf-8", newline="\n")
 
 
-def _get_image():
-    try:
-        from PIL import Image
-    except ImportError as exc:  # capture the error for the modern way
-        try:
-            import Image  # type: ignore[import-not-found, no-redef]
-        except ImportError:
-            raise ExtensionError(
-                "Could not import pillow, which is required "
-                f"to rescale images (e.g., for thumbnails): {exc}"
-            )
-    return Image
-
-
 def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) -> None:
     """Scales image centered in image box using `max_width` and `max_height`.
 
@@ -56,7 +37,8 @@ def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) 
     be scaled down.
     """
     # local import to avoid testing dependency on PIL:
-    Image = _get_image()
+    from PIL import Image
+
     img = Image.open(in_fname)
     # XXX someday we should just try img.thumbnail((max_width, max_height)) ...
     width_in, height_in = img.size
