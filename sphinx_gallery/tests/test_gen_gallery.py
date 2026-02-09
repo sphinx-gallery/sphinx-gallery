@@ -1176,26 +1176,23 @@ def test_tags_in_index_html(sphinx_app_wrapper, tags):
     sphinx_app_wrapper.build_sphinx_app()
     gallery_output_path = sphinx_app_wrapper.outdir / "ex"
     index_html = gallery_output_path / "index.html"
-    with open(index_html) as ihtml:
-        content = ihtml.read()
-        assert "data-sgtags=" in content
-        # Extract the lines in the file for more helpful errors
-        lines = content.split("\n")
-        tag_lines = [line for line in lines if "data-sgtags=" in line]
-        assert "data-sgtags='[\"plot1-tag\"]'" in content, tag_lines
-        assert f"data-sgtags='[{tags_str}]'" in content, tag_lines
+    content = index_html.read_text("utf-8")
+    assert "data-sgtags=" in content
+    # Extract the lines in the file for more helpful errors
+    lines = content.split("\n")
+    tag_lines = [line for line in lines if "data-sgtags=" in line]
+    assert "data-sgtags='[\"plot1-tag\"]'" in content, tag_lines
+    assert f"data-sgtags='[{tags_str}]'" in content, tag_lines
 
-    with open(gallery_output_path / "plot_1.html") as phtml:
-        content = phtml.read()
-        assert "🏷 Tags: plot1-tag" in content
+    content = (gallery_output_path / "plot_1.html").read_text("utf-8")
+    assert "🏷 Tags: plot1-tag" in content
 
-    with open(gallery_output_path / "plot_2.html") as phtml:
-        content = phtml.read()
-        # It seems that some substitutions are made:
-        tag = tags_str.replace("&", "&amp;")
-        tag = tag.replace("<", "&lt;")
-        tag = tag.replace(">", "&gt;")
-        tag = tag.replace("'", "’")
-        tag = tag.replace('"', "")
-        # Also | is wrapped in it's own span, and @ is just silently dropped
-        assert f"🏷 Tags: {tag}" in content
+    content = (gallery_output_path / "plot_2.html").read_text("utf-8")
+    # It seems that some substitutions are made:
+    tag = tags_str.replace("&", "&amp;")
+    tag = tag.replace("<", "&lt;")
+    tag = tag.replace(">", "&gt;")
+    tag = tag.replace("'", "’")
+    tag = tag.replace('"', "")
+    # Also | is wrapped in it's own span, and @ is just silently dropped
+    assert f"🏷 Tags: {tag}" in content
