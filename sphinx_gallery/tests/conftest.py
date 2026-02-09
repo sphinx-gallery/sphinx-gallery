@@ -142,7 +142,7 @@ def req_mpl():
         pytest.skip("Test requires matplotlib")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def req_pil():
     pytest.importorskip("PIL.Image")
 
