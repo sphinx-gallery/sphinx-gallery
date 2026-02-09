@@ -61,7 +61,7 @@ jobs:
           - os: macos-latest
             python: '3.12'
             sphinx_version: 'default'
-            distrib: mamba  # only use mamba on macOS to avoid Python shell issues
+            distrib: pip
           - os: windows-latest
             python: '3.11'
             sphinx_version: 'default'
@@ -88,7 +88,7 @@ jobs:
           create-args: >-
             python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow
             pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv
-            pygraphviz memory_profiler ipython pypandoc lxml conda-libmamba-solver mamba
+            pygraphviz memory_profiler ipython pypandoc lxml conda-libmamba-solver
             ffmpeg intersphinx-registry
         if: matrix.distrib == 'mamba'
       # Make sure that things work even if the locale is set to C (which
