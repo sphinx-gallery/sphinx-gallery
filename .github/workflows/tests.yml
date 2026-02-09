@@ -22,18 +22,6 @@ jobs:
           python-version: '3.13'
       - run: pip install check-manifest
       - run: check-manifest
-  mypy:
-    name: 'Type checking with mypy'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.10'  # keep in sync with pyproject.toml requires-python / mypy.python_version
-      - name: Install dependencies
-        run: pip install mypy pillow sphinx numpy types-Pygments types-docutils types-Pillow
-      - name: Run mypy
-        run: mypy sphinx_gallery
   pytest:
     name: '${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.distrib }} / ${{ matrix.sphinx_version }}'
     timeout-minutes: 30

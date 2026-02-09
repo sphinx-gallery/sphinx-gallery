@@ -44,6 +44,8 @@ repos:
       - id: mypy
         exclude: "^(examples|doc)/"
         additional_dependencies:
+          - numpy
           - types-docutils
-          - sphinx <9.1
+          - types-Pillow
           - types-Pygments
+          - sphinx <9.1  # last to support 3.10
