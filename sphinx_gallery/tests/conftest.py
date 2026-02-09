@@ -14,7 +14,6 @@ from sphinx.util.docutils import docutils_namespace
 
 from sphinx_gallery import docs_resolv, gen_gallery, gen_rst, py_source_parser
 from sphinx_gallery.scrapers import _import_matplotlib
-from sphinx_gallery.utils import _get_image
 
 INDEX_RST = """
 =============
@@ -145,10 +144,7 @@ def req_mpl():
 
 @pytest.fixture(scope="session")
 def req_pil():
-    try:
-        _get_image()
-    except ExtensionError:
-        pytest.skip("Test requires pillow")
+    pytest.importorskip("PIL.Image")
 
 
 @pytest.fixture

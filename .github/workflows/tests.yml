@@ -22,18 +22,6 @@ jobs:
           python-version: '3.13'
       - run: pip install check-manifest
       - run: check-manifest
-  mypy:
-    name: 'Type checking with mypy'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.10'  # keep in sync with pyproject.toml requires-python / mypy.python_version
-      - name: Install dependencies
-        run: pip install mypy pillow sphinx numpy types-Pygments types-docutils types-Pillow
-      - name: Run mypy
-        run: mypy sphinx_gallery
   pytest:
     name: '${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.distrib }} / ${{ matrix.sphinx_version }}'
     timeout-minutes: 30
@@ -56,10 +44,6 @@ jobs:
             locale: C
           - os: ubuntu-latest
             python: '3.11'
-            sphinx_version: '5'
-            distrib: pip
-          - os: ubuntu-latest
-            python: '3.11'
             sphinx_version: '6'
             distrib: mamba
           - os: ubuntu-latest
@@ -70,10 +54,14 @@ jobs:
             python: '3.13'
             sphinx_version: '8'
             distrib: pip
+          - os: ubuntu-latest
+            python: '3.14'
+            sphinx_version: '9'
+            distrib: pip
           - os: macos-latest
             python: '3.12'
             sphinx_version: 'default'
-            distrib: mamba  # only use mamba on macOS to avoid Python shell issues
+            distrib: pip
           - os: windows-latest
             python: '3.11'
             sphinx_version: 'default'
@@ -100,7 +88,7 @@ jobs:
           create-args: >-
             python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow
             pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv
-            pygraphviz memory_profiler ipython pypandoc lxml conda-libmamba-solver mamba
+            pygraphviz memory_profiler ipython pypandoc lxml conda-libmamba-solver
             ffmpeg intersphinx-registry
         if: matrix.distrib == 'mamba'
       # Make sure that things work even if the locale is set to C (which

@@ -110,7 +110,8 @@ def _get_docstring_and_rest(filename):
     docstring = ast.get_docstring(node)
     assert docstring is not None  # should be guaranteed above
     # This is just for backward compat
-    if node.body[0].value.value[:1] == "\n":  # type: ignore[index]
+    assert isinstance(node.body[0].value.value, str)
+    if node.body[0].value.value[:1] == "\n":
         # just for strict backward compat here
         docstring = "\n" + docstring
     ts = tokenize.tokenize(BytesIO(content.encode()).readline)
