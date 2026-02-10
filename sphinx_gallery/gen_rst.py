@@ -1633,6 +1633,8 @@ def save_rst_example(
     if gallery_conf["show_memory"]:
         example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
 
+    # TODO: Figure out a way to link this to the corresponding index
+    # page with query parameters i.e. /index.html?sg-tags=<tags>
     if file_conf and file_conf.get("tags"):
         example_rst += TAGS_CONTENT.format(tags=", ".join(file_conf["tags"]))
 
