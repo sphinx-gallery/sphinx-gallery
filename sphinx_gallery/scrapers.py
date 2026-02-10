@@ -10,18 +10,38 @@ images are injected as rst ``image-sg`` directives into the ``.rst``
 file generated for each example script.
 """
 
+from __future__ import annotations
+
 import importlib
 import inspect
 import os
 import re
 import sys
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from textwrap import indent
+from typing import TYPE_CHECKING, Any, Callable, Iterator, TypeAlias
 from warnings import filterwarnings
 
 from sphinx.errors import ExtensionError
 
+from .typing import GalleryConfig
 from .utils import optipng
+
+if TYPE_CHECKING:
+    import matplotlib.figure
+
+    from .py_source_parser import Block
+
+SrcsetMap: TypeAlias = dict[float | int, str | PurePosixPath]
+"""
+Mapping of image srcset multiplication factor to image path.
+The key 0 is reserved for the original image. Other keys are
+multiplication factors, e.g. 2 for 2x.
+
+Example:
+
+{0: "/images/image.png", 2.0: "/images/image_2_00x.png"}
+"""
 
 __all__ = [
     "save_figures",
@@ -36,7 +56,7 @@ __all__ = [
 # Scrapers
 
 
-def _import_matplotlib():
+def _import_matplotlib() -> tuple[Any, Any]:
     """Import matplotlib safely."""
     # make sure that the Agg backend is set before importing any
     # matplotlib
@@ -71,7 +91,7 @@ def _import_matplotlib():
     return matplotlib, plt
 
 
-def _matplotlib_fig_titles(fig):
+def _matplotlib_fig_titles(fig: matplotlib.figure.Figure) -> str:
     titles = []
     # get supertitle if exists
     suptitle = getattr(fig, "_suptitle", None)
@@ -104,7 +124,9 @@ _ANIMATION_VIDEO_RST = """
 """
 
 
-def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
+def matplotlib_scraper(
+    block: Block, block_vars: dict[str, Any], gallery_conf: GalleryConfig, **kwargs: Any
+) -> str:
     """Scrape Matplotlib images.
 
     Parameters
@@ -175,7 +197,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             if dpi0 == "figure":
                 dpi0 = fig.dpi
             dpi0 = these_kwargs.get("dpi", dpi0)
-            srcsetpaths_dict = {0: image_path}
+            srcsetpaths_dict: SrcsetMap = {0: image_path}
 
             # save other srcset paths, keyed by multiplication factor:
             for mult in srcset:
@@ -185,7 +207,7 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
                 hikwargs = {**these_kwargs, "dpi": mult * dpi0}
                 fig.savefig(this_hipath, **hikwargs)
                 srcsetpaths_dict[mult] = this_hipath
-            srcsetpaths = [srcsetpaths_dict]
+            srcsetpaths: list[SrcsetMap] = [srcsetpaths_dict]
         except Exception:
             plt.close("all")
             raise
@@ -230,14 +252,18 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     return rst
 
 
-def _anim_rst(anim, image_path, gallery_conf):
+def _anim_rst(
+    anim: matplotlib.animation.Animation,
+    image_path: PurePosixPath,
+    gallery_conf: GalleryConfig,
+) -> str:
     from matplotlib import rcParams
     from matplotlib.animation import FFMpegWriter, ImageMagickWriter
 
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
     fig = anim._fig
-    image_path = image_path.with_suffix(".gif")
+    gif_image_path = Path(image_path).with_suffix(".gif")
     fig_size = fig.get_size_inches()
     thumb_size = gallery_conf["thumbnail_size"]
     use_dpi = round(min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
@@ -247,7 +273,7 @@ def _anim_rst(anim, image_path, gallery_conf):
         writer = "imagemagick"
     else:
         writer = None
-    anim.save(str(image_path), writer=writer, dpi=use_dpi)
+    anim.save(gif_image_path, writer=writer, dpi=use_dpi)
 
     _, fmt = gallery_conf["matplotlib_animations"]
     # Formats that are embedded in rst
@@ -265,7 +291,7 @@ def _anim_rst(anim, image_path, gallery_conf):
         return _ANIMATION_RST.format(html)
 
     # Formats that are saved and use `video` directive
-    video = image_path.with_suffix(f".{fmt}")
+    video = Path(image_path).with_suffix(f".{fmt}")
     anim.save(video)
     options = ["autoplay"]
     if getattr(anim, "_repeat", False):
@@ -285,7 +311,7 @@ def _anim_rst(anim, image_path, gallery_conf):
     return html
 
 
-_scraper_dict = dict(
+_scraper_dict: dict[str, Callable[..., str]] = dict(
     matplotlib=matplotlib_scraper,
 )
 
@@ -299,12 +325,12 @@ class ImagePathIterator:
         The template image path.
     """
 
-    def __init__(self, image_path):
+    def __init__(self, image_path: str) -> None:
         self.image_path = image_path
-        self.paths = list()
+        self.paths: list[str] = list()
         self._stop = 1000000
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return the number of image paths used.
 
         Returns
@@ -314,7 +340,7 @@ class ImagePathIterator:
         """
         return len(self.paths)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         """Iterate over paths.
 
         Returns
@@ -335,11 +361,11 @@ class ImagePathIterator:
         else:
             raise ExtensionError(f"Generated over {self._stop} images")
 
-    def next(self):
+    def next(self) -> str:
         """Return the next image path, with numbering starting at 1."""
         return self.__next__()
 
-    def __next__(self):
+    def __next__(self) -> str:
         # The +1 here is because we start image numbering at 1 in filenames
         path = self.image_path.format(len(self) + 1)
         self.paths.append(path)
@@ -351,7 +377,7 @@ class ImagePathIterator:
 _KNOWN_IMG_EXTS = ("png", "svg", "jpg", "gif", "webp")
 
 
-def _find_image_ext(path):
+def _find_image_ext(path: str) -> tuple[str, str]:
     """Find an image, tolerant of different file extensions."""
     path = os.path.splitext(path)[0]
     for ext in _KNOWN_IMG_EXTS:
@@ -363,7 +389,9 @@ def _find_image_ext(path):
     return (f"{path}.{ext}", ext)
 
 
-def save_figures(block, block_vars, gallery_conf):
+def save_figures(
+    block: Block, block_vars: dict[str, Any], gallery_conf: GalleryConfig
+) -> str:
     """Save all open figures of the example code-block.
 
     Parameters
@@ -405,7 +433,12 @@ def save_figures(block, block_vars, gallery_conf):
     return all_rst
 
 
-def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
+def figure_rst(
+    figure_list: list[str | PurePosixPath],
+    sources_dir: str,
+    fig_titles: str = "",
+    srcsetpaths: list[SrcsetMap] | None = None,
+) -> str:
     """Generate reST for a list of image filenames.
 
     Depending on whether we have one or more figures, we use a
@@ -481,7 +514,7 @@ def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
     return images_rst
 
 
-def _get_srcset_st(sources_dir, hinames):
+def _get_srcset_st(sources_dir: str, hinames: SrcsetMap) -> str:
     """Create the srcset string for including on the rst line.
 
     For example; `sources_dir` might be `/home/sample-proj/source`,
@@ -508,7 +541,7 @@ def _get_srcset_st(sources_dir, hinames):
     return srcst
 
 
-def _single_line_sanitize(s):
+def _single_line_sanitize(s: str) -> str:
     """Remove problematic newlines."""
     # For example, when setting a :alt: for an image, it shouldn't have \n
     # This is a function in case we end up finding other things to replace
@@ -554,7 +587,7 @@ SINGLE_IMAGE = """
 # Module resetting
 
 
-def _reset_matplotlib(gallery_conf, fname):
+def _reset_matplotlib(gallery_conf: GalleryConfig, fname: str | None) -> None:
     """Reset matplotlib."""
     mpl, plt = _import_matplotlib()
     plt.rcdefaults()
@@ -563,7 +596,7 @@ def _reset_matplotlib(gallery_conf, fname):
     importlib.reload(mpl.category)
 
 
-def _reset_seaborn(gallery_conf, fname):
+def _reset_seaborn(gallery_conf: GalleryConfig, fname: str | None) -> None:
     """Reset seaborn."""
     seaborn_module = sys.modules.get("seaborn")
     if seaborn_module is not None:
@@ -576,7 +609,7 @@ _reset_dict = {
 }
 
 
-def clean_modules(gallery_conf, fname, when):
+def clean_modules(gallery_conf: GalleryConfig, fname: str | None, when: str) -> None:
     """Remove, unload, or reset modules.
 
     After a script is executed it can load a variety of settings that one
