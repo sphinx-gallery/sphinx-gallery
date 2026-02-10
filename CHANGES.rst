@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.20.0
+-------
+
+Support for Sphinx 5 dropped in this release. Requirement is now Sphinx >= 6.
+
 v0.19.0
 -------
 
