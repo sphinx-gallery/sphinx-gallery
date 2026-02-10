@@ -4,11 +4,15 @@ The parser simply converts the whole reST file into a single text block.
 """
 
 from pathlib import Path
+from typing import Any, Literal
 
 from .py_source_parser import Block
 
 
-def split_code_and_text_blocks(source_file, return_node=False):
+def split_code_and_text_blocks(
+    source_file: str,
+    return_node: Literal[False] = False,
+) -> tuple[dict[str, Any], list, None]:
     """Return list with source file separated into code and text blocks.
 
     Parameters
@@ -29,7 +33,7 @@ def split_code_and_text_blocks(source_file, return_node=False):
     node : None
         Always None.
     """
-    file_conf = {}  # not defined in .rst example files
+    file_conf: dict[str, Any] = {}  # not defined in .rst example files
     content = Path(source_file).read_text()
     blocks = [Block("text", content, 1)]
     node = None
@@ -37,7 +41,7 @@ def split_code_and_text_blocks(source_file, return_node=False):
     return file_conf, blocks, node
 
 
-def remove_ignore_blocks(code_block):
+def remove_ignore_blocks(code_block: str) -> str:
     """
     Return the content of *code_block* with ignored areas removed.
 
