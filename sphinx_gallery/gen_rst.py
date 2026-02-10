@@ -316,7 +316,7 @@ def _sanitize_rst(string):
     return string
 
 
-def extract_intro_and_title(filename, docstring):
+def extract_intro_and_title(filename: str, docstring: str) -> tuple[str, str]:
     """Extract and clean the first paragraph of module-level docstring."""
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split("\n\n")

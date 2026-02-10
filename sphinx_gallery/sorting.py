@@ -9,6 +9,7 @@ Sorting key functions for gallery subsection folders and section files.
 
 import os
 import types
+from typing import Any, Callable, Iterable
 
 from sphinx.errors import ConfigError
 
@@ -35,7 +36,7 @@ class ExplicitOrder:
         Wrong input type or Subgallery path missing.
     """
 
-    def __init__(self, ordered_list):
+    def __init__(self, ordered_list: Iterable[str]) -> None:
         if not isinstance(ordered_list, (list, tuple, types.GeneratorType)):
             raise ConfigError(
                 "ExplicitOrder sorting key takes a list, "
@@ -56,7 +57,7 @@ class ExplicitOrder:
             self.ordered_list_start = []
             self.ordered_list_end = self.ordered_list
 
-    def __call__(self, item):
+    def __call__(self, item: str) -> int:
         """
         Return an integer suited for ordering the items.
 
@@ -83,17 +84,17 @@ class ExplicitOrder:
                     "folders.".format(item)
                 )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} : {self.ordered_list}>"
 
 
 class _SortKey:
     """Base class for section order key classes."""
 
-    def __init__(self, src_dir):
+    def __init__(self, src_dir: str) -> None:
         self.src_dir = src_dir
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}>"
 
 
@@ -106,7 +107,7 @@ class NumberOfCodeLinesSortKey(_SortKey):
         The source directory.
     """
 
-    def __call__(self, filename):
+    def __call__(self, filename: str) -> int:
         """Return number of code lines in `filename`."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
@@ -125,7 +126,7 @@ class FileSizeSortKey(_SortKey):
         The source directory.
     """
 
-    def __call__(self, filename):
+    def __call__(self, filename: str) -> int:
         """Return file size."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         return int(os.stat(src_file).st_size)
@@ -140,7 +141,7 @@ class FileNameSortKey(_SortKey):
         The source directory.
     """
 
-    def __call__(self, filename):
+    def __call__(self, filename: str) -> str:
         """Return `filename`."""
         return filename
 
@@ -154,7 +155,7 @@ class ExampleTitleSortKey(_SortKey):
         The source directory.
     """
 
-    def __call__(self, filename):
+    def __call__(self, filename: str) -> str:
         """Return title of example."""
         src_file = os.path.normpath(os.path.join(self.src_dir, filename))
         _, script_blocks = split_code_and_text_blocks(src_file)
@@ -174,13 +175,13 @@ class FunctionSortKey:
         printable representation of object
     """
 
-    def __init__(self, func, r=None):
+    def __init__(self, func: Callable[[Any], Any], r: str | None = None) -> None:
         self.f = func
         self.r = r
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.r if self.r else "FunctionSortKey"
 
-    def __call__(self, arg):
+    def __call__(self, arg: Any) -> Any:
         """Return func(arg)."""
         return self.f(arg)
