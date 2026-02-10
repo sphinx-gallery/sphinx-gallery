@@ -1623,8 +1623,10 @@ def setup_template_link_getters(app, pagename, templatename, context, doctree):
             return iter([])
 
         return doctree.findall(
-            lambda x: isinstance(x, nodes.container)
-            and class_name in x.attributes.get("classes", [])
+            lambda x: (
+                isinstance(x, nodes.container)
+                and class_name in x.attributes.get("classes", [])
+            )
         )
 
     def get_download_links():
