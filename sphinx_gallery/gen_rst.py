@@ -201,6 +201,13 @@ TIMING_CONTENT = """
 
 """
 
+TAGS_CONTENT = """
+.. rst-class:: sphx-glr-example-tags
+
+   🏷 Tags: {tags}
+
+"""
+
 SPHX_GLR_SIG = """\n
 .. only:: html
 
@@ -563,6 +570,11 @@ def generate_dir_rst(
             header_content = fid.read()
             index_content += header_content
 
+    # Add an empty div for js
+    index_content += (
+        "\n\n.. raw:: html\n\n  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>"
+    )
+
     # Add empty lines to avoid bug in issue #165
     index_content += "\n\n"
 
@@ -633,7 +645,12 @@ def generate_dir_rst(
             (Path(build_target_dir) / fname).with_suffix("").as_posix()
         )
         this_entry = _thumbnail_div(
-            target_dir, gallery_conf["src_dir"], fname, intro, title
+            target_dir,
+            gallery_conf["src_dir"],
+            fname,
+            intro,
+            title,
+            tags=out_vars.get("tags", None),
         )
         index_content += this_entry
         toctree_filenames.append("/" + gallery_item_filename)
@@ -1349,6 +1366,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     file_conf, script_blocks, node = parser.split_code_and_text_blocks(
         src_file, return_node=True
     )
+    if "tags" in file_conf:
+        out_vars["tags"] = file_conf["tags"]
 
     intro, title = extract_intro_and_title(fname, script_blocks[0].content)
 
@@ -1415,6 +1434,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         memory_used,
         gallery_conf,
         language=language,
+        file_conf=file_conf,
     )
 
     save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
@@ -1558,6 +1578,7 @@ def save_rst_example(
     gallery_conf,
     *,
     language="python",
+    file_conf=None,
 ):
     """Saves the rst notebook to example_file including header & footer.
 
@@ -1575,6 +1596,8 @@ def save_rst_example(
         Additional memory used during the run.
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
+    file_conf : dict
+        The file conf options
     """
     example_file = Path(example_file)
     example_fname = str(example_file.relative_to(gallery_conf["src_dir"]))
@@ -1609,6 +1632,11 @@ def save_rst_example(
 
     if gallery_conf["show_memory"]:
         example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
+
+    # TODO: Figure out a way to link this to the corresponding index
+    # page with query parameters i.e. /index.html?sg-tags=<tags>
+    if file_conf and file_conf.get("tags"):
+        example_rst += TAGS_CONTENT.format(tags=", ".join(file_conf["tags"]))
 
     example_rst += DOWNLOAD_LINKS_HEADER.format(ref_fname)
 

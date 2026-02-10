@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import json
 import os
 import re
 import sys
@@ -308,7 +309,7 @@ def identify_names(
 THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="{intro}">
+    <div class="sphx-glr-thumbcontainer" {tags}tooltip="{intro}">
 
 .. only:: html
 
@@ -335,7 +336,7 @@ BACKREF_THUMBNAIL_TEMPLATE = (
 
 
 def _thumbnail_div(
-    target_dir, src_dir, fname, intro, title, is_backref=False, check=True
+    target_dir, src_dir, fname, intro, title, is_backref=False, check=True, *, tags=None
 ):
     """Generate reST to place a thumbnail in a gallery.
 
@@ -379,9 +380,18 @@ def _thumbnail_div(
 
     doc_name = "/" + (Path(full_dir) / fname).with_suffix("").as_posix()
 
+    tag_html_attr = ""
+    if tags:
+        tag_json = json.dumps(tags, ensure_ascii=False)
+        tag_html_attr = f"data-sgtags='{tag_json}' "
+
     template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
     return template.format(
-        intro=escape(intro), thumbnail=thumb, title=title, doc_name=doc_name
+        intro=escape(intro),
+        thumbnail=thumb,
+        title=title,
+        doc_name=doc_name,
+        tags=tag_html_attr,
     )
 
 

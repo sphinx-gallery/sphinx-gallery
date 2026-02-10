@@ -1728,6 +1728,8 @@ def setup(app):
 
     app.connect("html-page-context", setup_template_link_getters)
 
+    app.add_js_file("sg-tags.js")
+
     metadata = {
         "parallel_read_safe": True,
         "parallel_write_safe": True,

@@ -9,6 +9,7 @@ captured by default. See :ref:`image_scrapers` for details.
 
 # Author: Michael Waskom & Lucy Liu
 # License: BSD 3 clause
+# sphinx_gallery_tags = ["matplotlib","line-plot","seaborn"]
 
 import matplotlib.pyplot as plt
 import numpy as np

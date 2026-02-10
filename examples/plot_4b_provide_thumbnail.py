@@ -9,6 +9,7 @@ docstring in the example file. In this example, we specify that we wish the
 figure ``demo.png`` in the folder ``_static`` to be used for the thumbnail.
 Note, the path to the image should be relative to the ``conf.py``.
 """
+# sphinx_gallery_tags = ["matplotlib","line-plot","multiple-figures"]
 
 import matplotlib.pyplot as plt
 import numpy as np

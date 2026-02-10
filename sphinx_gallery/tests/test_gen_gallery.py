@@ -1136,3 +1136,63 @@ def test_nested_sections_false_sanitize(sphinx_app_wrapper):
     index_fname = Path(sphinx_app.outdir, "..", "ex", "index.rst")
 
     assert "my_added_first_sub_label" in index_fname.read_text("utf-8")
+
+
+@pytest.mark.parametrize(
+    "tags",
+    (
+        pytest.param(["plot2-tag"], id="simple"),
+        pytest.param(["Hello, World! How are you? 😊"], id="emoji"),
+        pytest.param(["Test & Query? Param=Value#Fragment"], id="url unsafe"),
+        pytest.param(["Café, naïve, façade, hôtel"], id="extended char"),
+        pytest.param(["Привет, мир! Как дела? 🚀"], id="more unicode"),
+        pytest.param(["你好，世界！你好吗？"], id="other symbols"),
+        pytest.param(["こんにちは、世界！元気ですか？"], id="other symbols2"),
+        pytest.param(["مرحبا بالعالم! كيف حالك؟"], id="other symbols3"),
+        pytest.param(["123!#$%^&*()_+{}:<>?[;',./"], id="ascii symbols"),
+        pytest.param(
+            [
+                "A long test with spaces, numbers 123, and Unicode: 你好, こんにちは, Привет 🌈"
+            ],
+            id="long with everything",
+        ),
+        pytest.param(["plot2-tag", "test tag"], id="list"),
+    ),
+)
+@pytest.mark.add_conf(
+    content=r"""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}"""
+)
+def test_tags_in_index_html(sphinx_app_wrapper, tags):
+    """Check no error with user provided index.rst and `nested_sections=False`."""
+    tags_str = ", ".join([f'"{tag}"' for tag in tags])
+    with open(
+        sphinx_app_wrapper.srcdir / "src" / "plot_2.py", "a", encoding="utf-8"
+    ) as plot2:
+        plot2.write(f"\n# sphinx_gallery_tags = [{tags_str}]")
+    sphinx_app_wrapper.build_sphinx_app()
+    gallery_output_path = sphinx_app_wrapper.outdir / "ex"
+    index_html = gallery_output_path / "index.html"
+    content = index_html.read_text("utf-8")
+    assert "data-sgtags=" in content
+    # Extract the lines in the file for more helpful errors
+    lines = content.split("\n")
+    tag_lines = [line for line in lines if "data-sgtags=" in line]
+    assert "data-sgtags='[\"plot1-tag\"]'" in content, tag_lines
+    assert f"data-sgtags='[{tags_str}]'" in content, tag_lines
+
+    content = (gallery_output_path / "plot_1.html").read_text("utf-8")
+    assert "🏷 Tags: plot1-tag" in content
+
+    content = (gallery_output_path / "plot_2.html").read_text("utf-8")
+    # It seems that some substitutions are made:
+    tag = tags_str.replace("&", "&amp;")
+    tag = tag.replace("<", "&lt;")
+    tag = tag.replace(">", "&gt;")
+    tag = tag.replace("'", "’")
+    tag = tag.replace('"', "")
+    # Also | is wrapped in it's own span, and @ is just silently dropped
+    assert f"🏷 Tags: {tag}" in content

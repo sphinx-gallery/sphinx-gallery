@@ -74,7 +74,7 @@ def test_split_code_and_text_blocks():
         root / "examples" / "no_output" / "just_code.py",
     )
 
-    assert file_conf == {}
+    assert file_conf == {"tags": ["just-code"]}
     assert blocks[0].type == "text"
     assert blocks[1].type == "code"
 
