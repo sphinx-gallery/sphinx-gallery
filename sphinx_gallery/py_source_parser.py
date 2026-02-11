@@ -9,6 +9,7 @@ import tokenize
 from collections import namedtuple
 from io import BytesIO
 from textwrap import dedent
+from typing import Any, Literal, overload
 
 from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
@@ -43,7 +44,7 @@ IGNORE_BLOCK_PATTERN = re.compile(
 )
 
 
-def parse_source_file(filename):
+def parse_source_file(filename: str) -> tuple[ast.Module | None, str]:
     """Parse source file into AST node.
 
     Parameters
@@ -67,7 +68,7 @@ def parse_source_file(filename):
         return None, content
 
 
-def _get_docstring_and_rest(filename):
+def _get_docstring_and_rest(filename: str) -> tuple[str, str, int, ast.Module | None]:
     """Separate ``filename`` content between docstring and the rest.
 
     Strongly inspired from ast.get_docstring.
@@ -130,7 +131,7 @@ def _get_docstring_and_rest(filename):
     return docstring, rest, lineno, node
 
 
-def extract_file_config(content):
+def extract_file_config(content: str) -> dict[str, Any]:
     """Pull out the file-specific config specified in the docstring."""
     file_conf = {}
     for match in re.finditer(INFILE_CONFIG_PATTERN, content):
@@ -154,6 +155,20 @@ Block = namedtuple("Block", ["type", "content", "lineno"])
 ## type: "text" or "code"
 ## content (str): the block lines as str
 ## lineno (int): the line number where the block starts
+
+
+@overload
+def split_code_and_text_blocks(
+    source_file: str,
+    return_node: Literal[True],
+) -> tuple[dict[str, Any], list, ast.Module | None]: ...
+
+
+@overload
+def split_code_and_text_blocks(
+    source_file: str,
+    return_node: Literal[False] = False,
+) -> tuple[dict[str, Any], list]: ...
 
 
 def split_code_and_text_blocks(source_file, return_node=False):

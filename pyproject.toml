@@ -219,6 +219,5 @@ module = [
   "sphinx_gallery.gen_gallery",
   "sphinx_gallery.gen_rst",
   "sphinx_gallery.notebook",
-  "sphinx_gallery.rst_source_parser",
 ]
 check_untyped_defs = false

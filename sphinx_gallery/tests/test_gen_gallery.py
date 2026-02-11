@@ -1167,20 +1167,25 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_tags_in_index_html(sphinx_app_wrapper, tags):
-    """Check no error with user provided index.rst and `nested_sections=False`."""
+    """Check tags added correctly to thumbnail div in index.html and example htmls."""
     tags_str = ", ".join([f'"{tag}"' for tag in tags])
     with open(
         sphinx_app_wrapper.srcdir / "src" / "plot_2.py", "a", encoding="utf-8"
     ) as plot2:
+        # Add tags to end of "plot_2.py" example
         plot2.write(f"\n# sphinx_gallery_tags = [{tags_str}]")
     sphinx_app_wrapper.build_sphinx_app()
     gallery_output_path = sphinx_app_wrapper.outdir / "ex"
     index_html = gallery_output_path / "index.html"
     content = index_html.read_text("utf-8")
+    # Check that some examples have tags
     assert "data-sgtags=" in content
     # Extract the lines in the file for more helpful errors
     lines = content.split("\n")
+    # Check that there is a div with the ID where the js will populate the tag list
+    assert "<div id='sg-tag-list' class='sphx-glr-tag-list'></div>" in content
     tag_lines = [line for line in lines if "data-sgtags=" in line]
+    # Example file `sphinx_gallery/tests/testconfs/src/plot_1.py` already has tag
     assert "data-sgtags='[\"plot1-tag\"]'" in content, tag_lines
     assert f"data-sgtags='[{tags_str}]'" in content, tag_lines
 
