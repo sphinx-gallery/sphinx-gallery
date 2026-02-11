@@ -1,10 +1,84 @@
 Changelog
 =========
 
-v0.20.0
+v0.21.0
 -------
 
 Support for Sphinx 5 dropped in this release. Requirement is now Sphinx >= 6.
+
+v0.20.0
+-------
+
+**Implemented enhancements:**
+
+-  Support plain .rst files as example inputs `#1516 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1516>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Remove “# noqa: E501” from end of text blocks `#1496 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1496>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Embed code links with dirhtml builder `#1486 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1486>`__ (`cgohlke <https://github.com/cgohlke>`__)
+
+**Fixed bugs:**
+
+-  FIX: Fix test_recommend_n_examples `#1508 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1508>`__ (`timhoffm <https://github.com/timhoffm>`__)
+
+**Documentation**
+
+-  DOC: Add cards for the subsections on the main topic pages `#1500 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1500>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Update FAQ with notebook and RST file guidance `#1499 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1499>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Fix typo in note about Binder/JupyterLite `#1490 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1490>`__ (`niksirbi <https://github.com/niksirbi>`__)
+-  [DOC] Add an example or index.rst file that allow example in multiple sections `#1483 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1483>`__ (`rflamary <https://github.com/rflamary>`__)
+-  DOC Add plotly to supported scrapers `#1481 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1481>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Add comment on path for sphinx_gallery_thumbnail_path `#1463 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1463>`__ (`AdamRJensen <https://github.com/AdamRJensen>`__)
+-  Update instructions for converting script to notebook `#1458 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1458>`__ (`ixjlyons <https://github.com/ixjlyons>`__)
+-  DOC Update junit doc `#1450 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1450>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC: Add JUnit XML parsing example `#1451 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1451>`__ (`user27182 <https://github.com/user27182>`__)
+
+**Project maintenance**
+
+-  [pre-commit.ci] pre-commit autoupdate `#1528 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1528>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT Update jupyterlite-sphinx version in circle CI `#1525 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1525>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1524 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1524>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump actions/checkout from 5 to 6 in the actions group `#1523 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1523>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1522 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1522>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1520 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1520>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1515 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1515>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MAINT: Add MNE-Python doc build integration test `#1514 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1514>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Use :doc: instead of :ref: to link to examples `#1510 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1510>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MNT: Use names instead of indices for Block namedtuple `#1509 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1509>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1506 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1506>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump the actions group with 2 updates `#1505 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1505>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  Fix sphinx warning `#1504 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1504>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1503 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1503>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1502 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1502>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1501 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1501>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1498 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1498>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  allow git archives to have dynamic versioning `#1497 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1497>`__ (`drammock <https://github.com/drammock>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1495 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1495>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1494 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1494>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1492 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1492>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump actions/setup-python from 5 to 6 in the actions group `#1491 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1491>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1488 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1488>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1487 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1487>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1485 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1485>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump actions/checkout from 4 to 5 in the actions group `#1484 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1484>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1480 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1480>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump actions/download-artifact from 4 to 5 in the actions group `#1479 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1479>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1476 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1476>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1475 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1475>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1474 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1474>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1473 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1473>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1472 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1472>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1469 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1469>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1468 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1468>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1465 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1465>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1464 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1464>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1461 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1461>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1460 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1460>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1459 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1459>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1457 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1457>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1456 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1456>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1454 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1454>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1452 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1452>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1449 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1449>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1447 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1447>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
 
 v0.19.0
 -------
