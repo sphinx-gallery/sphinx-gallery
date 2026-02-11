@@ -5,6 +5,7 @@ r"""Utilities for downloadable items."""
 
 import os
 
+from .typing import GalleryConfig
 from .utils import zip_files
 
 CODE_ZIP_DOWNLOAD = """
@@ -24,7 +25,11 @@ NOTEBOOK_ZIP_DOWNLOAD = """
 """
 
 
-def python_zip(file_list, gallery_path, extension=".py"):
+def python_zip(
+    file_list: list[str],
+    gallery_path: str,
+    extension: str | None = ".py",
+) -> str:
     """Store all files in file_list into an zip file.
 
     Parameters
@@ -54,7 +59,10 @@ def python_zip(file_list, gallery_path, extension=".py"):
     return zip_files(file_list, zipname, gallery_path, extension)
 
 
-def list_downloadable_sources(target_dir, extensions=(".py",)):
+def list_downloadable_sources(
+    target_dir: str,
+    extensions: tuple[str, ...] = (".py",),
+) -> list[str]:
     """Return a list of source files in target_dir.
 
     Parameters
@@ -77,7 +85,11 @@ def list_downloadable_sources(target_dir, extensions=(".py",)):
     ]
 
 
-def generate_zipfiles(gallery_dir, src_dir, gallery_conf):
+def generate_zipfiles(
+    gallery_dir: str,
+    src_dir: str,
+    gallery_conf: GalleryConfig,
+) -> str:
     """Collects downloadable sources and makes zipfiles of them.
 
     Collects all source files and Jupyter notebooks in gallery_dir.
