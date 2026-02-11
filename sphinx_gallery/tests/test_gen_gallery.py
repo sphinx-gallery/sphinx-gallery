@@ -1178,9 +1178,12 @@ def test_tags_in_index_html(sphinx_app_wrapper, tags):
     gallery_output_path = sphinx_app_wrapper.outdir / "ex"
     index_html = gallery_output_path / "index.html"
     content = index_html.read_text("utf-8")
+    # Check that some examples have tags
     assert "data-sgtags=" in content
     # Extract the lines in the file for more helpful errors
     lines = content.split("\n")
+    # Check that there is a div with the ID where the js will populate the tag list
+    assert "<div id='sg-tag-list' class='sphx-glr-tag-list'></div>" in content
     tag_lines = [line for line in lines if "data-sgtags=" in line]
     # Example file `sphinx_gallery/tests/testconfs/src/plot_1.py` already has tag
     assert "data-sgtags='[\"plot1-tag\"]'" in content, tag_lines
