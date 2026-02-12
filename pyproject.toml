@@ -218,6 +218,5 @@ ignore_missing_imports = true
 module = [
   "sphinx_gallery.gen_gallery",
   "sphinx_gallery.gen_rst",
-  "sphinx_gallery.notebook",
 ]
 check_untyped_defs = false
