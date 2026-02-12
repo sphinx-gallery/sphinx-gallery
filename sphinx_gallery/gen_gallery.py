@@ -320,7 +320,11 @@ def _check_matplotlib_animations(gallery_conf, app):
                             f"this requires the sphinxcontrib.video package."
                         ) from e
 
-    gallery_conf["matplotlib_animations"] = (enabled, fmt)
+    gallery_conf["matplotlib_animations"] = {
+        "enabled": enabled,
+        "format": fmt,
+        "options": {"set_rst_size": set_rst_size},
+    }
 
 
 def _check_pypandoc_config(gallery_conf):
