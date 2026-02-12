@@ -19,16 +19,23 @@ from collections import defaultdict
 from functools import partial
 from itertools import count
 from pathlib import Path
+from typing import Any, TypeAlias
 
 import sphinx.util
 from sphinx.errors import ExtensionError
 
-from .py_source_parser import split_code_and_text_blocks
+from .py_source_parser import Block, split_code_and_text_blocks
+from .typing import GalleryConfig
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
+NotebookContent: TypeAlias = dict[str, Any]
+"""
+A hierarchical mapping mirroring the JSON structure of a Jupyter notebook.
+"""
 
-def jupyter_notebook_skeleton():
+
+def jupyter_notebook_skeleton() -> NotebookContent:
     """Returns a dictionary with the elements of a Jupyter notebook."""
     py_version = sys.version_info
     notebook_skeleton = {
@@ -55,7 +62,7 @@ def jupyter_notebook_skeleton():
     return notebook_skeleton
 
 
-def directive_fun(match, directive):
+def directive_fun(match: re.Match, directive: str) -> str:
     """Helper to fill in directives."""
     directive_to_alert = dict(note="info", warning="danger")
     return '<div class="alert alert-{}"><h4>{}</h4><p>{}</p></div>'.format(
@@ -63,7 +70,7 @@ def directive_fun(match, directive):
     )
 
 
-def convert_code_to_md(text):
+def convert_code_to_md(text: str) -> str:
     """Rewrite code blocks to use Markdown's preferred backtick notation.
 
     Backtick notation preserves syntax highlighting.
@@ -93,7 +100,12 @@ def convert_code_to_md(text):
     return text
 
 
-def rst2md(text, gallery_conf, target_dir, heading_levels):
+def rst2md(
+    text: str,
+    gallery_conf: GalleryConfig,
+    target_dir: str,
+    heading_levels: dict[tuple[str | None, str], int],
+) -> str:
     """Converts reST from docstrings and text blocks to markdown for Jupyter notebooks.
 
     Parameters
@@ -128,7 +140,7 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
     text = re.sub(
         headings,
         lambda match: "{1}{0} {2}".format(
-            "#" * heading_levels[match.group("over", "under")],
+            "#" * heading_levels[match.group("over", "under")],  # type: ignore[index]
             *match.group("pre", "heading"),
         ),
         text,
@@ -178,7 +190,9 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
     return text
 
 
-def generate_image_src(image_path, gallery_conf, target_dir):
+def generate_image_src(
+    image_path: str, gallery_conf: GalleryConfig, target_dir: str
+) -> str:
     """Modify image path for notebook, according to "notebook_images" config.
 
     URLs are unchanged.
@@ -217,7 +231,9 @@ def generate_image_src(image_path, gallery_conf, target_dir):
         return f"data:{mime_type[0]};base64,{data.decode('ascii')}"
 
 
-def jupyter_notebook(script_blocks, gallery_conf, target_dir):
+def jupyter_notebook(
+    script_blocks: list[Block], gallery_conf: GalleryConfig, target_dir: str
+) -> NotebookContent:
     """Generate a Jupyter notebook file cell-by-cell.
 
     Parameters
@@ -242,7 +258,7 @@ def jupyter_notebook(script_blocks, gallery_conf, target_dir):
     return work_notebook
 
 
-def add_code_cell(work_notebook, code):
+def add_code_cell(work_notebook: NotebookContent, code: str) -> None:
     """Add a code cell to the notebook.
 
     Parameters
@@ -260,7 +276,7 @@ def add_code_cell(work_notebook, code):
     work_notebook["cells"].append(code_cell)
 
 
-def add_markdown_cell(work_notebook, markdown):
+def add_markdown_cell(work_notebook: NotebookContent, markdown: str) -> None:
     """Add a markdown cell to the notebook.
 
     Parameters
@@ -272,7 +288,7 @@ def add_markdown_cell(work_notebook, markdown):
     work_notebook["cells"].append(markdown_cell)
 
 
-def promote_jupyter_cell_magic(work_notebook, markdown):
+def promote_jupyter_cell_magic(work_notebook: NotebookContent, markdown: str) -> str:
     """Promote Jupyter cell magic in text blocks to code block in notebooks.
 
     Parses a block of markdown text looking for code blocks starting with a
@@ -303,7 +319,12 @@ def promote_jupyter_cell_magic(work_notebook, markdown):
     return markdown[text_cell_start:]
 
 
-def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
+def fill_notebook(
+    work_notebook: NotebookContent,
+    script_blocks: list[Block],
+    gallery_conf: GalleryConfig,
+    target_dir: str,
+) -> None:
     """Writes the Jupyter notebook cells.
 
     If available, uses pypandoc to convert rst to markdown.
@@ -314,7 +335,9 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
         Each list element should be a tuple of (label, content, lineno).
     """
     heading_level_counter = count(start=1)
-    heading_levels = defaultdict(lambda: next(heading_level_counter))
+    heading_levels: dict[tuple[str | None, str], int] = defaultdict(
+        lambda: next(heading_level_counter)
+    )
     for blabel, bcontent, lineno in script_blocks:
         if blabel == "code":
             add_code_cell(work_notebook, bcontent)
@@ -339,7 +362,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
                 add_markdown_cell(work_notebook, markdown)
 
 
-def save_notebook(work_notebook, write_file):
+def save_notebook(work_notebook: NotebookContent, write_file: str | Path) -> None:
     """Saves the Jupyter work_notebook to write_file."""
     with open(write_file, "w") as out_nb:
         json.dump(work_notebook, out_nb, indent=2)
