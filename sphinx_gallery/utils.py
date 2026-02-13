@@ -118,12 +118,12 @@ def _has_optipng() -> bool:
         return True
 
 
-def get_md5sum(src_file: str, mode: Literal["t", "b"] = "b") -> str:
+def get_md5sum(src_file: str | os.PathLike, mode: Literal["t", "b"] = "b") -> str:
     """Returns md5sum of file.
 
     Parameters
     ----------
-    src_file : str
+    src_file : str | os.PathLike
         Filename to get md5sum for.
     mode : 't' or 'b'
         File mode to open file with. When in text mode, universal line endings
@@ -147,7 +147,7 @@ def get_md5sum(src_file: str, mode: Literal["t", "b"] = "b") -> str:
 
 def _replace_md5(
     fname_new: str | os.PathLike,
-    fname_old: str | None = None,
+    fname_old: str | os.PathLike | None = None,
     *,
     method: Literal["move", "copy"] = "move",
     mode: Literal["t", "b"] = "b",
