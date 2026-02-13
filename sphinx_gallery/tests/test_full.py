@@ -747,8 +747,10 @@ def test_backreferences_examples_html(sphinx_app):
     n_documented = len(regex.findall(lines))
     possible = "\n".join(line for line in lines.split("\n") if "<dt " in line)
     # identify_names, NameFinder NameFinder.get_mapping, NameFinder.visit_Attribute,
-    # NameFinder.visit_Import NameFinder.visit_ImportFrom, NameFinder.visit_Name
-    assert n_documented == 7, possible
+    # NameFinder.visit_Import NameFinder.visit_ImportFrom, NameFinder.visit_Name,
+    # Backreference, Backreference.fname, Backreference.src_dir,
+    # Backreference.target_dir, Backreference.intro, Backreference.title
+    assert n_documented == 13, possible
     # identify_names, NameFinder (2); once doc, once left bar (x2)
     n_mini = lines.count("Examples using ")
     assert n_mini == 4
