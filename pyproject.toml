@@ -217,6 +217,5 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = [
   "sphinx_gallery.gen_gallery",
-  "sphinx_gallery.gen_rst",
 ]
 check_untyped_defs = false

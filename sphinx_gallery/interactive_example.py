@@ -38,7 +38,7 @@ logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
 def gen_binder_url(
-    fpath: str,
+    fpath: str | os.PathLike,
     binder_conf: dict[str, Any],
     gallery_conf: GalleryConfig,
 ) -> str:
@@ -92,7 +92,7 @@ def gen_binder_url(
 
 
 def gen_binder_rst(
-    fpath: str,
+    fpath: str | os.PathLike,
     binder_conf: dict[str, Any],
     gallery_conf: GalleryConfig,
 ) -> str:
@@ -418,12 +418,12 @@ def create_jupyterlite_contents(
             json.dump(notebook_content, f, indent=2)
 
 
-def gen_jupyterlite_rst(fpath: str, gallery_conf: GalleryConfig) -> str:
+def gen_jupyterlite_rst(fpath: str | os.PathLike, gallery_conf: GalleryConfig) -> str:
     """Generate the reST + link for the Binder badge.
 
     Parameters
     ----------
-    fpath: str
+    fpath: str | os.PathLike
         The path to the `.py` file for which a JupyterLite badge will be
         generated.
 

@@ -13,7 +13,7 @@ import json
 import os
 import re
 import sys
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from html import escape
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -395,9 +395,14 @@ def _thumbnail_div(
     )
 
 
+Backreference = namedtuple(
+    "Backreference", ["fname", "src_dir", "target_dir", "intro", "title"]
+)
+
+
 def _write_backreferences(
     backrefs, seen_backrefs, gallery_conf, src_dir, target_dir, fname, intro, title
-):
+) -> dict[str, Backreference] | None:
     """Write and return backreferences for one example.
 
     Backreferences '.examples' file written includes reST of the list of examples
@@ -424,13 +429,13 @@ def _write_backreferences(
 
     Returns
     -------
-    backrefs_example : dict[str, tuple]
+    backrefs_example : dict[str, Backreference]
         Dictionary where value is the backreference object and value
         is a tuple containing: example filename, full path to example source directory,
         full path to example target directory, intro, title.
     """
     if gallery_conf["backreferences_dir"] is None:
-        return
+        return None
 
     backrefs_example = defaultdict(list)
     for backref in backrefs:
@@ -463,7 +468,9 @@ def _write_backreferences(
                 )
             )
             seen_backrefs.add(backref)
-            backrefs_example[backref].append((fname, src_dir, target_dir, intro, title))
+            backrefs_example[backref].append(
+                Backreference(fname, src_dir, target_dir, intro, title)
+            )
     return dict(backrefs_example)
 
 
