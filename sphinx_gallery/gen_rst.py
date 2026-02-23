@@ -1375,7 +1375,7 @@ def _get_backreferences(
     ref_regex = _make_ref_regex(gallery_conf["default_role"])
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
-        _write_json(target_file, example_code_obj, ".codeobj")  # type: ignore[arg-type]
+        _write_json(target_file, example_code_obj, ".codeobj")
     exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
 
     def _normalize_name(cobj: dict[str, Any]) -> str:

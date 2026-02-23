@@ -213,9 +213,3 @@ module = [
   "graphviz",
 ]
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = [
-  "sphinx_gallery.gen_gallery",
-]
-check_untyped_defs = false

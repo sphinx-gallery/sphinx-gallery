@@ -13,19 +13,20 @@ import pathlib
 import re
 from datetime import datetime, timedelta
 from difflib import get_close_matches
-from itertools import chain
 from pathlib import Path
 from textwrap import indent
+from typing import Any, Literal
 from xml.sax.saxutils import escape, quoteattr
 
 import sphinx.util
 from docutils import nodes
+from sphinx.application import Sphinx
 from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import blue, bold, purple, red
 
 from . import __version__ as _sg_version
 from . import glr_path_static
-from .backreferences import _finalize_backreferences
+from .backreferences import Backreference, _finalize_backreferences
 from .directives import ImageSg, MiniGallery, imagesg_addnode
 from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
@@ -47,6 +48,7 @@ from .interactive_example import (
 from .recommender import ExampleRecommender, _write_recommendations
 from .scrapers import _import_matplotlib
 from .sorting import ExplicitOrder
+from .typing import GalleryConfig
 from .utils import (
     _collect_gallery_files,
     _combine_backreferences,
@@ -70,10 +72,12 @@ _KNOWN_CSS = (
 class DefaultResetArgv:
     """Provides default 'reset_argv' callable that returns empty list."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "DefaultResetArgv"
 
-    def __call__(self, gallery_conf, script_vars):
+    def __call__(
+        self, gallery_conf: GalleryConfig, script_vars: dict[str, Any]
+    ) -> list:
         """Return empty list."""
         return []
 
@@ -144,7 +148,7 @@ DEFAULT_GALLERY_CONF = {
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-def _bool_eval(x):
+def _bool_eval(x: Any) -> bool:
     """Evaluate bool only configs, allows setting via `sphinx-build -D` on command line.
 
     Ensures that strings that evaluate to a bool, e.g. "True", "False", "1", "0",
@@ -158,7 +162,7 @@ def _bool_eval(x):
     return bool(x)
 
 
-def _update_gallery_conf_exclude_implicit_doc(gallery_conf):
+def _update_gallery_conf_exclude_implicit_doc(gallery_conf: GalleryConfig) -> None:
     """Update gallery config exclude_implicit_doc.
 
     This is separate function for better testability.
@@ -175,12 +179,12 @@ def _update_gallery_conf_exclude_implicit_doc(gallery_conf):
 
 
 def _update_gallery_conf_builder_inited(
-    sphinx_gallery_conf,
-    src_dir,
-    plot_gallery=True,
-    abort_on_example_error=False,
-    builder_name="html",
-):
+    sphinx_gallery_conf: GalleryConfig,
+    src_dir: str,
+    plot_gallery: bool = True,
+    abort_on_example_error: bool = False,
+    builder_name: str = "html",
+) -> None:
     sphinx_gallery_conf.update(plot_gallery=plot_gallery)
     sphinx_gallery_conf.update(abort_on_example_error=abort_on_example_error)
     sphinx_gallery_conf["src_dir"] = src_dir
@@ -188,7 +192,9 @@ def _update_gallery_conf_builder_inited(
     sphinx_gallery_conf["builder_name"] = builder_name
 
 
-def _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
+def _check_extra_config_keys(
+    gallery_conf: GalleryConfig, sphinx_gallery_conf: GalleryConfig, check_keys: bool
+) -> None:
     """Check SG config keys, optionally raising if any extra keys present."""
     options = sorted(gallery_conf)
     extra_keys = sorted(set(sphinx_gallery_conf) - set(options))
@@ -206,12 +212,12 @@ def _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys):
 
 
 def _check_config_type(
-    gallery_conf,
-    conf_key,
-    types,
-    str_to_list=False,
-    allow_none=False,
-):
+    gallery_conf: GalleryConfig,
+    conf_key: str,
+    types: type | tuple[type, ...],
+    str_to_list: bool = False,
+    allow_none: bool = False,
+) -> None:
     """Check config type, optionally converting str to list or allowing None."""
     conf_value = gallery_conf[conf_key]
     # Early exit if type correct
@@ -237,7 +243,7 @@ def _check_config_type(
     raise ConfigError(msg)
 
 
-def _check_image_srcset(gallery_conf):
+def _check_image_srcset(gallery_conf: GalleryConfig) -> None:
     """Check `_check_image_srcset`, convert to float and removing '1'."""
     _check_config_type(gallery_conf, "image_srcset", (list, tuple), str_to_list=True)
     srcset_mult_facs = set()
@@ -254,7 +260,7 @@ def _check_image_srcset(gallery_conf):
     gallery_conf["image_srcset"] = [*sorted(srcset_mult_facs)]
 
 
-def _check_compress_images(gallery_conf):
+def _check_compress_images(gallery_conf: GalleryConfig) -> None:
     """Check `compress_images`, getting any command line args."""
     _check_config_type(
         gallery_conf,
@@ -288,7 +294,9 @@ def _check_compress_images(gallery_conf):
     gallery_conf["compress_images_args"] = compress_images_args
 
 
-def _check_matplotlib_animations(gallery_conf, app):
+def _check_matplotlib_animations(
+    gallery_conf: GalleryConfig, app: Sphinx | None
+) -> None:
     """Check `matplotlib_animations` config."""
     animations = gallery_conf["matplotlib_animations"]
     if isinstance(animations, bool):
@@ -323,7 +331,7 @@ def _check_matplotlib_animations(gallery_conf, app):
     gallery_conf["matplotlib_animations"] = (enabled, fmt)
 
 
-def _check_pypandoc_config(gallery_conf):
+def _check_pypandoc_config(gallery_conf: GalleryConfig) -> None:
     """Check `pypandoc` config."""
     pypandoc = gallery_conf["pypandoc"]
     _check_config_type(gallery_conf, "pypandoc", (dict, bool))
@@ -357,7 +365,11 @@ def _check_pypandoc_config(gallery_conf):
                 )
 
 
-def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
+def _fill_gallery_conf_defaults(
+    sphinx_gallery_conf: GalleryConfig,
+    app: Sphinx | None = None,
+    check_keys: bool = True,
+) -> GalleryConfig:
     """Handle user configs, update default gallery configs and check values."""
     gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
     _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys)
@@ -390,7 +402,7 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     # Check capture_repr
     _check_config_type(gallery_conf, "capture_repr", (tuple, list), str_to_list=True)
     supported_reprs = ["__repr__", "__str__", "_repr_html_"]
-    for rep in gallery_conf["capture_repr"]:
+    for rep in gallery_conf["capture_repr"]:  # type: ignore[attr-defined]
         if rep not in supported_reprs:
             raise ConfigError(
                 "All entries in 'capture_repr' must be one "
@@ -402,7 +414,9 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     # Check parallel
     _check_config_type(gallery_conf, "parallel", (bool, int))
     if gallery_conf["parallel"] is True:
-        gallery_conf["parallel"] = app.parallel
+        # Use Sphinx's parallel value (from -j flag);
+        # if app is None (e.g., during testing), default to False (no parallelization)
+        gallery_conf["parallel"] = app.parallel if app is not None else False
     if gallery_conf["parallel"] == 1:
         gallery_conf["parallel"] = False
     if gallery_conf["parallel"]:
@@ -480,17 +494,17 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
         gallery_conf["backreferences_dir"] = str(backref)
 
     # binder
-    gallery_conf["binder"] = check_binder_conf(gallery_conf["binder"])
+    gallery_conf["binder"] = check_binder_conf(gallery_conf["binder"])  # type: ignore[arg-type]
 
     # jupyterlite
     gallery_conf["jupyterlite"] = check_jupyterlite_conf(
-        gallery_conf["jupyterlite"],
+        gallery_conf["jupyterlite"],  # type: ignore[arg-type]
         app,
     )
 
     # css
     _check_config_type(gallery_conf, "css", (list, tuple), str_to_list=True)
-    for css in gallery_conf["css"]:
+    for css in gallery_conf["css"]:  # type: ignore[attr-defined]
         if css not in _KNOWN_CSS:
             raise ConfigError(f"Unknown css {css!r}, must be one of {_KNOWN_CSS!r}")
         if app is not None:  # can be None in testing
@@ -517,7 +531,12 @@ def _fill_gallery_conf_defaults(sphinx_gallery_conf, app=None, check_keys=True):
     return gallery_conf
 
 
-def get_subsections(srcdir, examples_dir, gallery_conf, check_for_header=True):
+def get_subsections(
+    srcdir: str,
+    examples_dir: str,
+    gallery_conf: GalleryConfig,
+    check_for_header: bool = True,
+) -> list[str]:
     """Return the list of subsections of a gallery.
 
     Parameters
@@ -577,7 +596,9 @@ def get_subsections(srcdir, examples_dir, gallery_conf, check_for_header=True):
     ]
 
 
-def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
+def _prepare_sphx_glr_dirs(
+    gallery_conf: GalleryConfig, srcdir: str
+) -> list[tuple[Any, Any]]:
     """Creates necessary folders for sphinx_gallery files."""
     examples_dirs = gallery_conf["examples_dirs"]
     gallery_dirs = gallery_conf["gallery_dirs"]
@@ -601,7 +622,7 @@ def _prepare_sphx_glr_dirs(gallery_conf, srcdir):
     return list(zip(examples_dirs, gallery_dirs))
 
 
-def _filter_tags(subsection_index_content):
+def _filter_tags(subsection_index_content: str) -> str:
     """Filter out tags from `subsection_index_content`."""
     tag_regex = r"^\.\.(\s+)\_(.+)\:(\s*)$"
     subsection_index_content = "\n".join(
@@ -616,13 +637,13 @@ def _filter_tags(subsection_index_content):
 
 
 def _finish_index_rst(
-    app,
-    gallery_conf,
-    indexst,
-    sg_root_index,
-    subsection_index_files,
-    gallery_dir_abs_path,
-):
+    app: Sphinx,
+    gallery_conf: GalleryConfig,
+    indexst: str,
+    sg_root_index: bool,
+    subsection_index_files: list[str],
+    gallery_dir_abs_path: str,
+) -> None:
     """Add toctree, download and signature, if req, to index and write file."""
     # Generate toctree containing subsection index files
     if (
@@ -638,7 +659,7 @@ def _finish_index_rst(
     # Always generate download zipfiles, only add to index.rst if required
     if gallery_conf["download_all_examples"]:
         download_fhindex = generate_zipfiles(
-            gallery_dir_abs_path, app.builder.srcdir, gallery_conf
+            gallery_dir_abs_path, str(app.builder.srcdir), gallery_conf
         )
         if sg_root_index:
             indexst += download_fhindex
@@ -654,7 +675,9 @@ def _finish_index_rst(
         _replace_md5(index_rst_new, mode="t")
 
 
-def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
+def _build_recommender(
+    gallery_conf: GalleryConfig, gallery_dir_abs_path: str, subsecs: list[str]
+) -> None:
     """Build recommender and write recommendations."""
     if gallery_conf["recommender"]["enable"]:
         try:
@@ -667,7 +690,7 @@ def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
         recommender_params.pop("rubric_header", None)
         recommender = ExampleRecommender(**recommender_params)
 
-        gallery_py_files = []
+        gallery_py_files: list[str] = []
         # root and subsection directories containing python examples
         gallery_directories = [gallery_dir_abs_path] + subsecs
         for current_dir in gallery_directories:
@@ -676,21 +699,21 @@ def _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs):
             py_files = sorted(
                 # NOTE we don't take account of `ignore_pattern` and ignore
                 # ext in `example_extensions`
-                [fname for fname in Path(src_dir).iterdir() if fname.suffix == ".py"],
+                [
+                    os.path.join(src_dir, fname)
+                    for fname in Path(src_dir).iterdir()
+                    if fname.suffix == ".py"
+                ],
                 key=_get_callables(gallery_conf, "within_subsection_order", src_dir)[0],
             )
-            gallery_py_files.append(
-                [os.path.join(src_dir, fname) for fname in py_files]
-            )
-        # flatten the list of list
-        gallery_py_files = list(chain.from_iterable(gallery_py_files))
+            gallery_py_files.extend(py_files)
 
         recommender.fit(gallery_py_files)
         for fname in gallery_py_files:
             _write_recommendations(recommender, fname, gallery_conf)
 
 
-def _log_costs(costs, gallery_conf):
+def _log_costs(costs: list[dict[str, Any]], gallery_conf: GalleryConfig) -> None:
     """Log computation time."""
     logger.info("computation time summary:", color="white")
     lines, lens = _format_for_writing(
@@ -708,7 +731,7 @@ def _log_costs(costs, gallery_conf):
                 logger.info(text)
 
 
-def generate_gallery_rst(app):
+def generate_gallery_rst(app: Sphinx) -> None:
     """Generate the Main examples gallery reStructuredText.
 
     Fill Sphinx-Gallery configuration and scan example directories
@@ -739,20 +762,20 @@ def generate_gallery_rst(app):
         extra = f" (with parallel={gallery_conf['parallel']})"
     logger.info(f"generating gallery{extra}...", color="white")
 
-    seen_backrefs = set()
+    seen_backrefs: set[str] = set()
 
-    costs = []
-    workdirs = _prepare_sphx_glr_dirs(gallery_conf, app.builder.srcdir)
+    costs: list[dict[str, Any]] = []
+    workdirs = _prepare_sphx_glr_dirs(gallery_conf, str(app.builder.srcdir))
 
     # Check for duplicate filenames to make sure linking works as expected
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
     _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
 
-    backrefs_all = {}
+    backrefs_all: dict[str, Backreference] = {}
 
     for examples_dir, gallery_dir in workdirs:
-        examples_dir_abs_path = os.path.join(app.builder.srcdir, examples_dir)
-        gallery_dir_abs_path = os.path.join(app.builder.srcdir, gallery_dir)
+        examples_dir_abs_path = os.path.join(str(app.builder.srcdir), examples_dir)
+        gallery_dir_abs_path = os.path.join(str(app.builder.srcdir), gallery_dir)
 
         # Create example rst files for root gallery directory examples
         # (excl. sub-dir examples) and fetch gallery header for root index.rst
@@ -781,6 +804,7 @@ def generate_gallery_rst(app):
         indexst = ""
         # Create root gallery index.rst
         if sg_root_index:
+            assert this_content is not None  # for type narrowing
             # :orphan: to suppress "not included in TOCTREE" sphinx warnings
             indexst = ":orphan:\n\n" + this_content
             # Write toctree with gallery items from gallery root folder
@@ -791,7 +815,7 @@ def generate_gallery_rst(app):
         # list all paths to subsection index files in this array
         subsection_index_files = []
         subsecs = get_subsections(
-            app.builder.srcdir,
+            str(app.builder.srcdir),
             examples_dir_abs_path,
             gallery_conf,
             check_for_header=sg_root_index,
@@ -836,6 +860,7 @@ def generate_gallery_rst(app):
             # Otherwise, for the conditions below, a new subsection index.rst.new
             # file should have been created and it needs to be parsed
             elif gallery_conf["nested_sections"] and has_subsection_header:
+                assert subsection_index_path is not None  # for type narrowing
                 _replace_md5(subsection_index_path, mode="t")
 
             costs += subsection_costs
@@ -870,7 +895,7 @@ def generate_gallery_rst(app):
         )
 
     if gallery_conf["show_api_usage"] is not False:
-        _init_api_usage(app.builder.srcdir)
+        _init_api_usage(str(app.builder.srcdir))
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf["plot_gallery"]:
@@ -895,26 +920,30 @@ Computation times
 )
 
 
-def _sec_to_readable(t):
+def _sec_to_readable(t: float) -> str:
     """Convert a number of seconds to a more readable representation."""
     # This will only work for < 1 day execution time
     # And we reserve 2 digits for minutes because presumably
     # there aren't many > 99 minute scripts, but occasionally some
     # > 9 minute ones
-    t = datetime(1, 1, 1) + timedelta(seconds=t)
-    t = "{:02d}:{:02d}.{:03d}".format(
-        t.hour * 60 + t.minute, t.second, int(round(t.microsecond / 1000.0))
+    dt = datetime(1, 1, 1) + timedelta(seconds=t)
+    return "{:02d}:{:02d}.{:03d}".format(
+        dt.hour * 60 + dt.minute, dt.second, int(round(dt.microsecond / 1000.0))
     )
-    return t
 
 
-def _cost_key(cost):
+def _cost_key(cost: dict[str, Any]) -> tuple[float, float, Any]:
     """Cost sorting function."""
     # sort by descending computation time, descending memory, alphabetical name
     return (-cost["t"], -cost["mem"], cost["src_file"])
 
 
-def _format_for_writing(costs, *, src_dir, kind="rst"):
+def _format_for_writing(
+    costs: list[dict[str, Any]],
+    *,
+    src_dir: str,
+    kind: Literal["rst", "rst-full", "console"] = "rst",
+) -> tuple[list[list[str]], list[int]]:
     """Provide formatted computation summary text.
 
     Parameters
@@ -959,7 +988,9 @@ def _format_for_writing(costs, *, src_dir, kind="rst"):
     return lines, lens
 
 
-def write_computation_times(gallery_conf, target_dir, costs):
+def write_computation_times(
+    gallery_conf: GalleryConfig, target_dir: str | None, costs: list[dict[str, Any]]
+) -> None:
     """Write computation times to `sg_execution_times.rst`.
 
     Parameters
@@ -974,6 +1005,7 @@ def write_computation_times(gallery_conf, target_dir, costs):
     if not gallery_conf["write_computation_times"]:
         return
     total_time = sum(cost["t"] for cost in costs)
+    kind: Literal["rst", "rst-full", "console"]
     if target_dir is None:  # all galleries together
         out_dir = gallery_conf["src_dir"]
         where = "all galleries"
@@ -1040,7 +1072,9 @@ def write_computation_times(gallery_conf, target_dir, costs):
             )  # remove the "MB" from the right
 
 
-def write_api_entries(app, what, name, obj, options, lines):
+def write_api_entries(
+    app: Sphinx, what: str, name: str, obj: Any, options: Any, lines: list[str]
+) -> None:
     """Write api entries to `_sg_api_entries` configuration.
 
     To connect to `autodoc-process-docstring` event.
@@ -1072,7 +1106,7 @@ def write_api_entries(app, what, name, obj, options, lines):
     app.config.sphinx_gallery_conf["_sg_api_entries"][what].add(name)
 
 
-def _init_api_usage(gallery_dir):
+def _init_api_usage(gallery_dir: str) -> None:
     with codecs.open(
         os.path.join(gallery_dir, "sg_api_usage.rst"), "w", encoding="utf-8"
     ):
@@ -1090,7 +1124,9 @@ API_COLORS = dict(
 )
 
 
-def _make_graph(fname, entries, gallery_conf):
+def _make_graph(
+    fname: str, entries: dict[str, list[str]] | list[str], gallery_conf: GalleryConfig
+) -> None:
     """Make a graph of unused and used API entries.
 
     The used API entries themselves are documented in the list, so
@@ -1133,7 +1169,8 @@ def _make_graph(fname, entries, gallery_conf):
 
     if isinstance(entries, list):
         connections = set()
-        lut = dict()  # look up table for connections so they don't repeat
+        # look up table for connections so they don't repeat
+        lut: dict[str, str] = dict()
         structs = [entry.split(".") for entry in entries]
         for struct in sorted(structs, key=len):
             for level in range(len(struct) - 2):
@@ -1189,7 +1226,7 @@ def _make_graph(fname, entries, gallery_conf):
     dg.save()
 
 
-def write_api_entry_usage(app, docname, source):
+def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
     """Write an html page describing which API entries are used and unused.
 
     To document and graph only those API entries that are used by
@@ -1248,7 +1285,7 @@ def write_api_entry_usage(app, docname, source):
         source[0] += "No examples run, not computed.\n\n"
         return
 
-    def get_entry_type(entry):
+    def get_entry_type(entry: str) -> str:
         if entry in gallery_conf["_sg_api_entries"].get("class", []):
             return "class"
         elif entry in gallery_conf["_sg_api_entries"].get("method", []):
@@ -1258,8 +1295,8 @@ def write_api_entry_usage(app, docname, source):
             return "func"
 
     # find used and unused API entries
-    unused_api_entries = list()
-    used_api_entries = dict()
+    unused_api_entries: list[str] = list()
+    used_api_entries: dict[str, list[str]] = dict()
     backreferences_all = _read_json(Path(backreferences_dir, "backreferences_all.json"))
     src_dir = gallery_conf["src_dir"]
     for entry in example_files:
@@ -1328,8 +1365,8 @@ def write_api_entry_usage(app, docname, source):
             for module in used_modules:
                 logger.info("Making API usage graph for %s", module)
                 # select and format entries for this module
-                entries = dict()
-                for entry, ref in used_api_entries.items():
+                entries: dict = dict()
+                for entry, _ref in used_api_entries.items():
                     if entry.split(".")[0] == module:
                         entry = entry.replace("sphx_glr_", "")
                         # remove prefix
@@ -1343,7 +1380,7 @@ def write_api_entry_usage(app, docname, source):
                 )
 
 
-def clean_api_usage_files(app, exception):
+def clean_api_usage_files(app: Sphinx, exception: Exception | None) -> None:
     """Remove api usage .dot files.
 
     To connect to 'build-finished' event.
@@ -1357,7 +1394,9 @@ def clean_api_usage_files(app, exception):
             os.remove(os.path.join(app.builder.srcdir, file))
 
 
-def write_junit_xml(gallery_conf, target_dir, costs):
+def write_junit_xml(
+    gallery_conf: GalleryConfig, target_dir: str | Path, costs: list[dict[str, Any]]
+) -> None:
     """Write JUnit XML file of example run times, successes, and failures.
 
     Parameters
@@ -1432,7 +1471,9 @@ def write_junit_xml(gallery_conf, target_dir, costs):
         fid.write(output)
 
 
-def touch_empty_backreferences(app, what, name, obj, options, lines):
+def touch_empty_backreferences(
+    app: Sphinx, what: str, name: str, obj: Any, options: Any, lines: list[str]
+) -> None:
     """Generate empty back-reference example files.
 
     This avoids inclusion errors/warnings if there are no gallery
@@ -1452,14 +1493,14 @@ def touch_empty_backreferences(app, what, name, obj, options, lines):
         open(examples_path, "w").close()
 
 
-def _expected_failing_examples(gallery_conf):
+def _expected_failing_examples(gallery_conf: GalleryConfig) -> set[str]:
     return {
         os.path.normpath(os.path.join(gallery_conf["src_dir"], path))
         for path in gallery_conf["expected_failing_examples"]
     }
 
 
-def _parse_failures(gallery_conf):
+def _parse_failures(gallery_conf: GalleryConfig) -> tuple[set[str], set[str], set[str]]:
     """Split the failures."""
     failing_examples = set(gallery_conf["failing_examples"])
     expected_failing_examples = _expected_failing_examples(gallery_conf)
@@ -1475,7 +1516,7 @@ def _parse_failures(gallery_conf):
     return failing_as_expected, failing_unexpectedly, passing_unexpectedly
 
 
-def summarize_failing_examples(app, exception):
+def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None:
     """Collects the list of falling examples and prints them with a traceback.
 
     Raises ValueError if there where failing examples.
@@ -1570,16 +1611,18 @@ def summarize_failing_examples(app, exception):
             raise ExtensionError(fail_message)
 
 
-def get_default_config_value(key):
+def get_default_config_value(key: str) -> Any:
     """Get default configuration function."""
 
-    def default_getter(conf):
+    def default_getter(conf: dict[str, Any]) -> Any:
         return conf["sphinx_gallery_conf"].get(key, DEFAULT_GALLERY_CONF[key])
 
     return default_getter
 
 
-def fill_gallery_conf_defaults(app, config, check_keys=True):
+def fill_gallery_conf_defaults(
+    app: Sphinx, config: Any, check_keys: bool = True
+) -> None:
     """Check the sphinx-gallery config and set its defaults.
 
     This is called early at config-inited, so that all the rest of the code can
@@ -1598,10 +1641,10 @@ def fill_gallery_conf_defaults(app, config, check_keys=True):
     config.templates_path.append(str(Path(__file__).parent / "components"))
 
 
-def update_gallery_conf_builder_inited(app):
+def update_gallery_conf_builder_inited(app: Sphinx) -> None:
     """Update the the sphinx-gallery config at builder-inited."""
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
-    src_dir = app.builder.srcdir
+    src_dir = str(app.builder.srcdir)
     abort_on_example_error = _bool_eval(app.builder.config.abort_on_example_error)
     _update_gallery_conf_builder_inited(
         app.config.sphinx_gallery_conf,
@@ -1612,13 +1655,15 @@ def update_gallery_conf_builder_inited(app):
     )
 
 
-def setup_template_link_getters(app, pagename, templatename, context, doctree):
+def setup_template_link_getters(
+    app: Sphinx, pagename: str, templatename: str, context: dict[str, Any], doctree: Any
+) -> None:
     """Set up the getters for download and launcher links.
 
     The getters are added to the sphinx context so as to be used in templates.
     """
 
-    def _find_containers_with_class(class_name):
+    def _find_containers_with_class(class_name: str) -> Any:
         if doctree is None:
             return iter([])
 
@@ -1629,7 +1674,7 @@ def setup_template_link_getters(app, pagename, templatename, context, doctree):
             )
         )
 
-    def get_download_links():
+    def get_download_links() -> dict[str, dict[str, Any]]:
         """Get the download links for the example.
 
         This function relies on `_find_containers_with_class` which in turn relies on
@@ -1659,7 +1704,7 @@ def setup_template_link_getters(app, pagename, templatename, context, doctree):
                     }
         return links
 
-    def get_launcher_links():
+    def get_launcher_links() -> dict[str, dict[str, Any]]:
         """Get the launcher links for the example.
 
         This function relies on `_find_containers_with_class` which in turn relies on
@@ -1690,7 +1735,7 @@ def setup_template_link_getters(app, pagename, templatename, context, doctree):
     context["get_launcher_links"] = get_launcher_links
 
 
-def setup(app):
+def setup(app: Sphinx) -> dict[str, Any]:
     """Setup Sphinx-Gallery sphinx extension."""
     app.add_config_value("sphinx_gallery_conf", DEFAULT_GALLERY_CONF, "html")
     for key in ["plot_gallery", "abort_on_example_error"]:
@@ -1738,6 +1783,6 @@ def setup(app):
     return metadata
 
 
-def setup_module():
+def setup_module() -> None:
     """Hack to stop nosetests running setup() above."""
     pass
