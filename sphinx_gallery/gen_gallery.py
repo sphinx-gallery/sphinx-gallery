@@ -716,9 +716,9 @@ def _build_recommender(
 def _log_costs(costs: list[dict[str, Any]], gallery_conf: GalleryConfig) -> None:
     """Log computation time."""
     logger.info("computation time summary:", color="white")
-    lines, lens = _format_for_writing(
-        costs, src_dir=gallery_conf["src_dir"], kind="console"
-    )
+    lines = _format_for_writing(costs, src_dir=gallery_conf["src_dir"], kind="console")
+    lens = [max(x) for x in zip(*[[len(item) for item in cost] for cost in lines])]
+
     for name, t, m in lines:
         text = (f"    - {name}:   ").ljust(lens[0] + 10)
         if t is None:
@@ -943,7 +943,7 @@ def _format_for_writing(
     *,
     src_dir: str,
     kind: Literal["rst", "rst-full", "console"] = "rst",
-) -> tuple[list[list[str]], list[int]]:
+) -> list[list[str]]:
     """Provide formatted computation summary text.
 
     Parameters
@@ -961,9 +961,6 @@ def _format_for_writing(
     lines: List[List[str]]
         Formatted computation text for each example, of format:
         [example_file, time_elapsed, memory_used]
-
-    lens: List[int]
-        Character length of each string in `lines`.
     """
     lines = list()
     for cost in sorted(costs, key=_cost_key):
@@ -984,8 +981,7 @@ def _format_for_writing(
             t = f"{cost['t']:0.2f} sec"
         m = f"{cost['mem']:.1f} MB"
         lines.append([name, t, m])
-    lens = [max(x) for x in zip(*[[len(item) for item in cost] for cost in lines])]
-    return lines, lens
+    return lines
 
 
 def write_computation_times(
@@ -1026,12 +1022,7 @@ def write_computation_times(
             f"**{_sec_to_readable(total_time)}** total execution time for "
             f"{len(costs)} file{'s' if len(costs) != 1 else ''} **from {where}**:\n\n"
         )
-        lines, lens = _format_for_writing(
-            costs,
-            src_dir=gallery_conf["src_dir"],
-            kind=kind,
-        )
-        del costs
+        lines = _format_for_writing(costs, src_dir=gallery_conf["src_dir"], kind=kind)
         # https://datatables.net/examples/styling/bootstrap5.html
         fid.write(  # put it in a container to make the scoped style work
             """\
