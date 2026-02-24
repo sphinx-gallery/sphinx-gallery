@@ -11,6 +11,6 @@ import os
 __version__ = "0.21.0.dev0"
 
 
-def glr_path_static():
+def glr_path_static() -> str:
     """Returns path to packaged static files"""
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "_static"))
