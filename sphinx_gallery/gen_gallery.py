@@ -32,6 +32,7 @@ from .docs_resolv import embed_code_links
 from .downloads import generate_zipfiles
 from .gen_rst import (
     SPHX_GLR_SIG,
+    ExampleCost,
     _get_call_memory_and_base,
     _get_callables,
     _get_gallery_header,
@@ -713,7 +714,7 @@ def _build_recommender(
             _write_recommendations(recommender, fname, gallery_conf)
 
 
-def _log_costs(costs: list[dict[str, Any]], gallery_conf: GalleryConfig) -> None:
+def _log_costs(costs: list[ExampleCost], gallery_conf: GalleryConfig) -> None:
     """Log computation time."""
     logger.info("computation time summary:", color="white")
     lines, lens = _format_for_writing(
@@ -764,7 +765,7 @@ def generate_gallery_rst(app: Sphinx) -> None:
 
     seen_backrefs: set[str] = set()
 
-    costs: list[dict[str, Any]] = []
+    costs: list[ExampleCost] = []
     workdirs = _prepare_sphx_glr_dirs(gallery_conf, str(app.builder.srcdir))
 
     # Check for duplicate filenames to make sure linking works as expected
@@ -932,14 +933,8 @@ def _sec_to_readable(t: float) -> str:
     )
 
 
-def _cost_key(cost: dict[str, Any]) -> tuple[float, float, Any]:
-    """Cost sorting function."""
-    # sort by descending computation time, descending memory, alphabetical name
-    return (-cost["t"], -cost["mem"], cost["src_file"])
-
-
 def _format_for_writing(
-    costs: list[dict[str, Any]],
+    costs: list[ExampleCost],
     *,
     src_dir: str,
     kind: Literal["rst", "rst-full", "console"] = "rst",
@@ -948,8 +943,8 @@ def _format_for_writing(
 
     Parameters
     ----------
-    costs: List[Dict]
-        List of dicts of computation costs and paths, see gen_rst.py for details.
+    costs: List[ExampleCost]
+        List of example run costs.
     src_dir : pathlib.Path
         The Sphinx source directory.
     kind: 'rst', 'rst-full' or 'console', default='rst'
@@ -966,30 +961,29 @@ def _format_for_writing(
         Character length of each string in `lines`.
     """
     lines = list()
-    for cost in sorted(costs, key=_cost_key):
-        src_file = cost["src_file"]
-        rel_path = os.path.relpath(src_file, src_dir)
+    for cost in sorted(costs, key=lambda c: c.sort_key()):
+        rel_path = os.path.relpath(cost.src_file, src_dir)
         if kind in ("rst", "rst-full"):  # like in sg_execution_times
-            target_dir_clean = os.path.relpath(cost["target_dir"], src_dir).replace(
+            target_dir_clean = os.path.relpath(cost.target_dir, src_dir).replace(
                 os.sep, "_"
             )
-            paren = rel_path if kind == "rst-full" else os.path.basename(src_file)
+            paren = rel_path if kind == "rst-full" else os.path.basename(cost.src_file)
             name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
-                target_dir_clean, os.path.basename(src_file), paren
+                target_dir_clean, os.path.basename(cost.src_file), paren
             )
-            t = _sec_to_readable(cost["t"])
+            t = _sec_to_readable(cost.execution_time)
         else:  # like in generate_gallery
             assert kind == "console"
             name = rel_path
-            t = f"{cost['t']:0.2f} sec"
-        m = f"{cost['mem']:.1f} MB"
+            t = f"{cost.execution_time:0.2f} sec"
+        m = f"{cost.memory:.1f} MB"
         lines.append([name, t, m])
     lens = [max(x) for x in zip(*[[len(item) for item in cost] for cost in lines])]
     return lines, lens
 
 
 def write_computation_times(
-    gallery_conf: GalleryConfig, target_dir: str | None, costs: list[dict[str, Any]]
+    gallery_conf: GalleryConfig, target_dir: str | None, costs: list[ExampleCost]
 ) -> None:
     """Write computation times to `sg_execution_times.rst`.
 
@@ -999,12 +993,12 @@ def write_computation_times(
         Sphinx-Gallery configuration dictionary.
     target_dir : str | None
         Path to directory where example python source file are.
-    costs: List[Dict]
-        List of dicts of computation costs and paths, see gen_rst.py for details.
+    costs: List[ExampleCost]
+        List of example run costs.
     """
     if not gallery_conf["write_computation_times"]:
         return
-    total_time = sum(cost["t"] for cost in costs)
+    total_time = sum(cost.execution_time for cost in costs)
     kind: Literal["rst", "rst-full", "console"]
     if target_dir is None:  # all galleries together
         out_dir = gallery_conf["src_dir"]
@@ -1395,7 +1389,7 @@ def clean_api_usage_files(app: Sphinx, exception: Exception | None) -> None:
 
 
 def write_junit_xml(
-    gallery_conf: GalleryConfig, target_dir: str | Path, costs: list[dict[str, Any]]
+    gallery_conf: GalleryConfig, target_dir: str | Path, costs: list[ExampleCost]
 ) -> None:
     """Write JUnit XML file of example run times, successes, and failures.
 
@@ -1405,8 +1399,8 @@ def write_junit_xml(
         Sphinx-Gallery configuration dictionary.
     target_dir : Union[str, pathlib.Path]
         Build directory.
-    costs: List[Tuple[Tuple[float], str]]
-        List of dicts of computation costs and paths, see gen_rst.py for details.
+    costs: List[ExampleCost]
+        List of example run costs.
     """
     if not gallery_conf["junit"] or not gallery_conf["plot_gallery"]:
         return
@@ -1420,7 +1414,7 @@ def write_junit_xml(
     src_dir = gallery_conf["src_dir"]
     output = ""
     for cost in costs:
-        t, fname = cost["t"], cost["src_file"]
+        fname = cost.src_file
         if not any(
             fname in x
             for x in (
@@ -1437,7 +1431,7 @@ def write_junit_xml(
                 quoteattr(os.path.splitext(os.path.basename(fname))[0]),
                 quoteattr(os.path.relpath(fname, src_dir)),
                 quoteattr(title),
-                t,
+                cost.execution_time,
             )
         )
         if fname in failing_as_expected:
@@ -1454,7 +1448,7 @@ def write_junit_xml(
             )
         output += "</testcase>"
         n_tests += 1
-        elapsed += t
+        elapsed += cost.execution_time
     output += "</testsuite>"
     output = (
         '<?xml version="1.0" encoding="utf-8"?>'

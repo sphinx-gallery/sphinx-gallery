@@ -23,6 +23,7 @@ import stat
 import sys
 import traceback
 import warnings
+from dataclasses import dataclass
 from functools import lru_cache
 from io import StringIO
 from pathlib import Path
@@ -82,7 +83,34 @@ if TYPE_CHECKING:
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-###############################################################################
+@dataclass(frozen=True)
+class ExampleCost:
+    """Runtime cost of a single example script.
+
+    Attributes
+    ----------
+    execution_time : float
+        Execution time in seconds.
+    memory : float
+        Peak memory usage in MB.
+    src_file : str
+        Path to the source Python file.
+    target_dir : str
+        Path to the target output directory.
+    """
+
+    execution_time: float
+    memory: float
+    src_file: str
+    target_dir: str
+
+    def sort_key(self) -> tuple[float, float, str]:
+        """Return sort key for consistent ordering.
+
+        Returns tuple of: descending time, descending memory, ascending filename.
+        This orders examples to show the most expensive/problematic ones first.
+        """
+        return (-self.execution_time, -self.memory, self.src_file)
 
 
 class _LoggingTee:
@@ -547,7 +575,7 @@ def generate_dir_rst(
 ) -> tuple[
     str | None,
     str | None,
-    list[dict[str, Any]],
+    list[ExampleCost],
     list[str],
     dict[str, Backreference],
 ]:
@@ -576,9 +604,8 @@ def generate_dir_rst(
         own index.
     index_content: str or None
         Gallery header content. `None` when user provided own index.rst.
-    costs: List[Dict]
-        List of dicts of costs for building each element of the gallery
-         with keys "t", "mem", "src_file", and "target_dir".
+    costs: List[ExampleCost]
+        List of runtime costs for building each element of the gallery.
     toctree_items: list,
         List of example file names we generated ReST for.
     backrefs_dir : dict[str, tuple]
@@ -667,7 +694,11 @@ def generate_dir_rst(
             gallery_conf["passing_examples"].append(src_file)
         elif "stale" in out_vars:
             gallery_conf["stale_examples"].append(out_vars["stale"])
-        costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
+        costs.append(
+            ExampleCost(
+                execution_time=t, memory=mem, src_file=src_file, target_dir=target_dir
+            )
+        )
         gallery_item_filename = (
             (Path(build_target_dir) / fname).with_suffix("").as_posix()
         )
