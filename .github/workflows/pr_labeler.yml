@@ -16,4 +16,5 @@ jobs:
     steps:
       - uses: TimonVS/pr-labeler-action@v5
         with:
+          # We use the mne-bot for simplicity, thus token name
           repo-token: ${{ secrets.MNE_BOT_TOKEN }}
