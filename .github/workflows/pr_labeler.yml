@@ -1,5 +1,7 @@
 name: Bot PR labeler
-on: pull_request  # yamllint disable-line rule:truthy
+# pull_request_target is dangerous if we do anything with the PR contents, but here
+# we just automatically label
+on: pull_request_target  # yamllint disable-line rule:truthy
 
 permissions:
   contents: read
@@ -14,4 +16,5 @@ jobs:
     steps:
       - uses: TimonVS/pr-labeler-action@v5
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # We use the mne-bot for simplicity, thus token name
+          repo-token: ${{ secrets.MNE_BOT_TOKEN }}
