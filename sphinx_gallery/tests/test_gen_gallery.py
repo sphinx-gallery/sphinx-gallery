@@ -23,7 +23,6 @@ from sphinx_gallery.gen_gallery import (
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 from sphinx_gallery.utils import (
     _collect_gallery_files,
-    _escape_ansi,
     check_duplicate_filenames,
     check_spaces_in_filenames,
 )
@@ -36,6 +35,11 @@ Description.
 '''
 
 """
+
+
+def _escape_ansi(s: str) -> str:
+    """Remove ANSI terminal formatting characters from a string."""
+    return re.sub(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]", "", s)
 
 
 def test_bool_eval():
@@ -360,15 +364,15 @@ _subsection_explicit_order_list = pytest.mark.add_conf(
 _both_custom_fqn = pytest.mark.add_conf(
     content=_template_conf.format(
         imports="",
-        subsection_order='"sphinx_gallery.utils._custom_subsection_sorter"',
-        within_subsection_order='"sphinx_gallery.utils._custom_example_sorter"',
+        subsection_order='"sphinx_gallery._testing.custom_subsection_sorter"',
+        within_subsection_order='"sphinx_gallery._testing.custom_example_sorter"',
     )
 )
 _within_subsection_custom_fqn = pytest.mark.add_conf(
     content=_template_conf.format(
         imports="",
         subsection_order="None",  # the default, AKA, sort by foldername
-        within_subsection_order='"sphinx_gallery.utils._custom_example_sorter"',
+        within_subsection_order='"sphinx_gallery._testing.custom_example_sorter"',
     )
 )
 _custom_func = """
@@ -398,7 +402,7 @@ _within_subsection_custom_func = pytest.mark.add_conf(
 _subsection_fqn_within_subsection_custom_func = pytest.mark.add_conf(
     content=_template_conf.format(
         imports=_custom_func,
-        subsection_order='"sphinx_gallery.utils._custom_subsection_sorter"',
+        subsection_order='"sphinx_gallery._testing.custom_subsection_sorter"',
         within_subsection_order="FunctionSortKey(custom_sorter)",
     )
 )
@@ -423,14 +427,14 @@ _subsection_fqn_within_subsection_custom_func = pytest.mark.add_conf(
         ),
         pytest.param(
             None,
-            # ↓ order determined by `utils._CUSTOM_EXAMPLE_ORDER`
+            # ↓ order determined by `_testing.CUSTOM_EXAMPLE_ORDER`
             list("132564879"),
             id="within_subsection_sort_by_custom_FQN",
             marks=_within_subsection_custom_fqn,
         ),
         pytest.param(
             None,
-            # ↓ order set by `utils._CUSTOM_EXAMPLE_ORDER`, with middle (564) and
+            # ↓ order set by `_testing.CUSTOM_EXAMPLE_ORDER`, with middle (564) and
             # ↓ last (879) thirds swapped due to subsection reordering
             list("132879564"),
             id="subsection_and_within_subsection_both_sort_by_custom_FQN",
@@ -835,7 +839,7 @@ def _get_minigallery_thumbnails(rst_fname):
 @pytest.mark.add_conf(
     content="""
 from sphinx_gallery.sorting import FunctionSortKey
-from sphinx_gallery.utils import custom_minigallery_sort_order_sorter
+from sphinx_gallery._testing import custom_minigallery_sort_order_sorter
 
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
