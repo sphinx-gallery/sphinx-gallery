@@ -315,11 +315,6 @@ def _has_graphviz() -> bool:
     return True
 
 
-def _escape_ansi(s: str) -> str:
-    """Remove ANSI terminal formatting characters from a string."""
-    return re.sub(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]", "", s)
-
-
 def _format_toctree(items: list[str], includehidden: bool = False) -> str:
     """Format a toc tree."""
     st = """
@@ -336,39 +331,6 @@ def _format_toctree(items: list[str], includehidden: bool = False) -> str:
     st += "\n"
 
     return st
-
-
-_CUSTOM_EXAMPLE_ORDER = [
-    "plot_1.py",
-    "plot_3.py",
-    "plot_2.py",
-    "plot_5.py",
-    "plot_6.py",
-    "plot_4.py",
-    "plot_8.py",
-    "plot_7.py",
-    "plot_9.py",
-]
-
-
-def _custom_example_sorter(filename: str) -> int:
-    """Importable custom sorter func, used in our test suite."""
-    return _CUSTOM_EXAMPLE_ORDER.index(filename)
-
-
-def _custom_subsection_sorter(foldername: str) -> str:
-    """Importable custom sorter func for subsection folders, used in our test suite."""
-    return foldername[::-1]
-
-
-def custom_minigallery_sort_order_sorter(file: str) -> int:
-    """Importable custom sorter for minigallery_sort_order, used in our test suite."""
-    ORDER = [
-        "plot_3.py",
-        "plot_2.py",
-        "plot_1.py",
-    ]
-    return ORDER.index(Path(file).name)
 
 
 # Should be matched with `_read_json`
