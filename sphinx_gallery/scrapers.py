@@ -122,6 +122,13 @@ _ANIMATION_VIDEO_RST = """
    :width: {width}
 {options}
 """
+_ANIMATION_VIDEO_RST_NO_SIZE = """
+.. video:: {video}
+   :class: sphx-glr-single-img
+   :height: {height}
+   :width: {width}
+{options}
+"""
 
 
 def matplotlib_scraper(
@@ -163,7 +170,7 @@ def matplotlib_scraper(
 
     # Check for animations
     anims = {}
-    if gallery_conf["matplotlib_animations"][0]:
+    if gallery_conf["matplotlib_animations"]["enabled"]:
         for ani in block_vars["example_globals"].values():
             if isinstance(ani, Animation):
                 anims[ani._fig] = ani
@@ -275,7 +282,9 @@ def _anim_rst(
         writer = None
     anim.save(gif_image_path, writer=writer, dpi=use_dpi)
 
-    _, fmt = gallery_conf["matplotlib_animations"]
+    fmt = gallery_conf["matplotlib_animations"]["fmt"]
+    mpl_anim_opt = gallery_conf["matplotlib_animations"]["options"]
+
     # Formats that are embedded in rst
     html = None
     if fmt is None:
@@ -302,12 +311,18 @@ def _anim_rst(
     # relative_to doesn't work on windows
     # video_uri = video.relative_to(gallery_conf["src_dir"]).as_posix()
     video_uri = PurePosixPath(os.path.relpath(video, gallery_conf["src_dir"]))
-    html = _ANIMATION_VIDEO_RST.format(
-        video=f"/{video_uri}",
-        width=int(fig_size[0] * dpi),
-        height=int(fig_size[1] * dpi),
-        options="".join(f"   :{opt}:\n" for opt in options),
-    )
+    if mpl_anim_opt["set_rst_size"]:
+        html = _ANIMATION_VIDEO_RST.format(
+            video=f"/{video_uri}",
+            width=int(fig_size[0] * dpi),
+            height=int(fig_size[1] * dpi),
+            options="".join(f"   :{opt}:\n" for opt in options),
+        )
+    else:
+        html = _ANIMATION_VIDEO_RST_NO_SIZE.format(
+            video=f"/{video_uri}",
+            options="".join(f"   :{opt}:\n" for opt in options),
+        )
     return html
 
 
