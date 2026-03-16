@@ -9,7 +9,7 @@ requires = [
 name = "sphinx-gallery"
 description = "A Sphinx extension that builds an HTML gallery of examples from any set of Python scripts."
 readme = "README.rst"
-license = { "text" = "3-clause BSD" }
+license = { text = "3-clause BSD" }
 authors = [
   { name = "Óscar Nájera", email = "najera.oscar@gmail.com" },
 ]
@@ -144,32 +144,6 @@ builtin = "clear,rare,informal,names,usage"
 # Words are case sensitive based on how they are written in the dictionary file
 ignore-words-list = "master"
 
-[tool.pytest]
-ini_options.addopts = [
-  "--color=yes",
-  "--cov-report=",
-  "--cov=sphinx_gallery",
-  "--durations=5",
-  "-r a",
-  "--tb=short",
-  "--junit-xml=junit-results.xml",
-]
-ini_options.python_files = "tests/*.py"
-ini_options.norecursedirs = "build _build auto_examples gen_modules sphinx_gallery/tests/tinybuild"
-ini_options.filterwarnings = [
-  "ignore:.*HasTraits.trait_.*:DeprecationWarning",
-  "ignore:.*importing the ABCs.*:DeprecationWarning",
-  "ignore:np.loads is deprecated, use pickle.loads instead:DeprecationWarning",
-  "ignore:'U' mode is deprecated:DeprecationWarning",
-  "ignore:node class .* is already registered.*:",
-  "ignore:node.Node.* is obsoleted by Node.*:",
-]
-ini_options.junit_family = "xunit2"
-ini_options.markers = [
-  "add_conf: Configuration file.",
-  "add_rst: Add rst file to src.",
-]
-
 [tool.mypy]
 python_version = "3.10"  # keep in sync with requires-python
 warn_return_any = true
@@ -201,7 +175,6 @@ module = "sphinx_gallery.tests.*"
 ignore_errors = true
 
 # Third-party packages without type stubs
-
 [[tool.mypy.overrides]]
 module = [
   "joblib.*",
@@ -213,3 +186,29 @@ module = [
   "graphviz",
 ]
 ignore_missing_imports = true
+
+[tool.pytest]
+ini_options.addopts = [
+  "--color=yes",
+  "--cov-report=",
+  "--cov=sphinx_gallery",
+  "--durations=5",
+  "-r a",
+  "--tb=short",
+  "--junit-xml=junit-results.xml",
+]
+ini_options.python_files = "tests/*.py"
+ini_options.norecursedirs = "build _build auto_examples gen_modules sphinx_gallery/tests/tinybuild"
+ini_options.filterwarnings = [
+  "ignore:.*HasTraits.trait_.*:DeprecationWarning",
+  "ignore:.*importing the ABCs.*:DeprecationWarning",
+  "ignore:np.loads is deprecated, use pickle.loads instead:DeprecationWarning",
+  "ignore:'U' mode is deprecated:DeprecationWarning",
+  "ignore:node class .* is already registered.*:",
+  "ignore:node.Node.* is obsoleted by Node.*:",
+]
+ini_options.junit_family = "xunit2"
+ini_options.markers = [
+  "add_conf: Configuration file.",
+  "add_rst: Add rst file to src.",
+]
