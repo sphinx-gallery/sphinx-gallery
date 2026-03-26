@@ -779,7 +779,9 @@ def test_thumbnail_path(test_str):
 def test_thumbnail_path_not_found_warns(gallery_conf, log_collector, tmpdir):
     """Test that a missing sphinx_gallery_thumbnail_path emits a warning."""
     image_path_template = str(tmpdir.join("temp.png"))
-    src_file = str(tmpdir.join("plot_test.py"))  # need not exist; only used for basename
+    src_file = str(
+        tmpdir.join("plot_test.py")
+    )  # need not exist; only used for basename
     script_vars = {
         "image_path_iterator": ImagePathIterator(image_path_template),
     }
