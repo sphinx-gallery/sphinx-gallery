@@ -12,14 +12,12 @@ import os
 import re
 import subprocess
 import zipfile
-from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
 from typing import Any, Callable, Iterator, Literal, Tuple
 
 import sphinx.util
-from sphinx.errors import ExtensionError
 
 try:
     from sphinx.util.display import status_iterator  # noqa: F401

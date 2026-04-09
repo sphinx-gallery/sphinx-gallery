@@ -9,7 +9,7 @@ import tokenize
 from collections import namedtuple
 from io import BytesIO
 from textwrap import dedent
-from typing import Any, Literal, Protocol, overload
+from typing import Any, Literal, overload
 
 from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
