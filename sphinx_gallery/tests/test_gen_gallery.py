@@ -464,7 +464,7 @@ def test_example_sorting(sphinx_app_wrapper, sort_key, expected_order):
     _check_order(sphinx_app, sort_key, expected_order=expected_order)
 
 
-def test_collect_gallery_files(tmpdir, gallery_conf):
+def test_collect_gallery_files(tmp_path, gallery_conf):
     """Test that example files are collected properly."""
     rel_filepaths = [
         "examples/file1.py",
@@ -477,34 +477,33 @@ def test_collect_gallery_files(tmpdir, gallery_conf):
         "tutorials/folder2/file1.py",
     ]
 
-    abs_paths = [tmpdir.join(rp) for rp in rel_filepaths]
+    abs_paths = [tmp_path / rp for rp in rel_filepaths]
     for ap in abs_paths:
-        ap.ensure()
+        ap.parent.mkdir(parents=True, exist_ok=True)
+        ap.touch()
 
-    examples_path = tmpdir.join("examples")
-    dirs = [examples_path.strpath]
+    examples_path = tmp_path / "examples"
+    dirs = [str(examples_path)]
     collected_files = set(
         _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
     )
     expected_files = {
-        ap.strpath for ap in abs_paths if re.search(r"examples.*\.py$", ap.strpath)
+        str(ap) for ap in abs_paths if "examples" in ap.parts and ap.suffix == ".py"
     }
 
     assert collected_files == expected_files
 
-    tutorials_path = tmpdir.join("tutorials")
-    dirs = [examples_path.strpath, tutorials_path.strpath]
+    tutorials_path = tmp_path / "tutorials"
+    dirs = [str(examples_path), str(tutorials_path)]
     collected_files = set(
         _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
     )
-    expected_files = {
-        ap.strpath for ap in abs_paths if re.search(r".*\.py$", ap.strpath)
-    }
+    expected_files = {str(ap) for ap in abs_paths if ap.suffix == ".py"}
 
     assert collected_files == expected_files
 
 
-def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
+def test_collect_gallery_files_ignore_pattern(tmp_path, gallery_conf):
     """Test that ignore pattern example files are not collected."""
     rel_filepaths = [
         "examples/file1.py",
@@ -513,21 +512,18 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
         "examples/folder2/fileone.py",
     ]
 
-    abs_paths = [tmpdir.join(rp) for rp in rel_filepaths]
+    abs_paths = [tmp_path / rp for rp in rel_filepaths]
     for ap in abs_paths:
-        ap.ensure()
+        ap.parent.mkdir(parents=True, exist_ok=True)
+        ap.touch()
 
     gallery_conf["ignore_pattern"] = r"one"
-    examples_path = tmpdir.join("examples")
-    dirs = [examples_path.strpath]
+    examples_path = tmp_path / "examples"
+    dirs = [str(examples_path)]
     collected_files = set(
         _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
     )
-    expected_files = {
-        ap.strpath
-        for ap in abs_paths
-        if re.search(r"one", Path(ap.strpath).name) is None
-    }
+    expected_files = {str(ap) for ap in abs_paths if "one" not in ap.name}
 
     assert collected_files == expected_files
 

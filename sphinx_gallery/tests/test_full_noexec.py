@@ -11,8 +11,8 @@ from sphinx.util.docutils import docutils_namespace
 
 
 @pytest.fixture(scope="module")
-def sphinx_app(tmpdir_factory, req_mpl, req_pil):
-    temp_dir = (tmpdir_factory.getbasetemp() / "root_nonexec").strpath
+def sphinx_app(tmp_path_factory, req_mpl, req_pil):
+    temp_dir = tmp_path_factory.getbasetemp() / "root_nonexec"
     src_dir = op.join(op.dirname(__file__), "tinybuild")
 
     def ignore(src, names):
@@ -22,9 +22,9 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
     # For testing iteration, you can get similar behavior just doing `make`
     # inside the tinybuild/doc directory
     src_dir = temp_dir
-    conf_dir = op.join(temp_dir, "doc")
-    out_dir = op.join(conf_dir, "_build", "html")
-    toctrees_dir = op.join(temp_dir, "doc", "_build", "toctrees")
+    conf_dir = temp_dir / "doc"
+    out_dir = conf_dir / "_build" / "html"
+    toctrees_dir = temp_dir / "doc" / "_build" / "toctrees"
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     confoverrides = {

@@ -17,10 +17,10 @@ def test_embed_code_links_get_data():
     sg._get_data("http://scikit-learn.org/stable/")  # GZip
 
 
-def test_shelve(tmpdir):
+def test_shelve(tmp_path):
     """Test if shelve can cache and retrieve data after file is deleted."""
     test_string = "test information"
-    tmp_cache = str(tmpdir)
+    tmp_cache = str(tmp_path)
     with tempfile.NamedTemporaryFile("w", delete=False) as f:
         f.write(test_string)
     try:

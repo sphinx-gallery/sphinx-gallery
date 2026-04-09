@@ -65,20 +65,20 @@ pytest.importorskip("joblib")
 
 
 @pytest.fixture(scope="module")
-def sphinx_app(tmpdir_factory, req_mpl, req_pil):
-    return _sphinx_app(tmpdir_factory, "html")
+def sphinx_app(tmp_path_factory, req_mpl, req_pil):
+    return _sphinx_app(tmp_path_factory, "html")
 
 
 @pytest.fixture(scope="module")
-def sphinx_dirhtml_app(tmpdir_factory, req_mpl, req_pil):
-    return _sphinx_app(tmpdir_factory, "dirhtml")
+def sphinx_dirhtml_app(tmp_path_factory, req_mpl, req_pil):
+    return _sphinx_app(tmp_path_factory, "dirhtml")
 
 
-def _sphinx_app(tmpdir_factory, buildername):
+def _sphinx_app(tmp_path_factory, buildername):
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
-    temp_dir = tmpdir_factory.getbasetemp() / f"root_{buildername}"
+    temp_dir = tmp_path_factory.getbasetemp() / f"root_{buildername}"
     src_dir = Path(__file__).parent / "tinybuild"
 
     def ignore(src, names):
@@ -244,8 +244,7 @@ def test_junit(sphinx_app, tmp_path):
             app.build(False, [])
     junit_file = new_out_dir / "sphinx-gallery" / "junit-results.xml"
     assert junit_file.is_file()
-    with open(junit_file, "rb") as fid:
-        suite = lxml.etree.fromstring(fid.read())
+    suite = lxml.etree.fromstring(junit_file.read_bytes())
     # this time we only ran the stale files
     want.update(failures="2", skipped="3", tests="5")
     got = dict(suite.attrib)
@@ -321,7 +320,7 @@ def test_user_index_download(sphinx_app):
     assert (src_dir / "auto_examples_rst_index_python.zip").is_file()
 
 
-def test_thumbnail_path(sphinx_app, tmpdir):
+def test_thumbnail_path(sphinx_app, tmp_path):
     """Test sphinx_gallery_thumbnail_path."""
     import numpy as np
     from PIL import Image
@@ -331,7 +330,7 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     fname_thumb = op.join(
         sphinx_app.outdir, "_images", "sphx_glr_plot_second_future_imports_thumb.png"
     )
-    fname_new = str(tmpdir.join("new.png"))
+    fname_new = str(tmp_path / "new.png")
     scale_image(
         fname_orig, fname_new, *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"]
     )
@@ -343,7 +342,7 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     assert corr > 0.99
 
 
-def test_negative_thumbnail_config(sphinx_app, tmpdir):
+def test_negative_thumbnail_config(sphinx_app, tmp_path):
     """Test 'sphinx_gallery_thumbnail_number' config correct for negative numbers."""
     import numpy as np
     from PIL import Image
@@ -355,7 +354,7 @@ def test_negative_thumbnail_config(sphinx_app, tmpdir):
     fname_thumb = op.join(
         sphinx_app.outdir, "_images", "sphx_glr_plot_matplotlib_alt_thumb.png"
     )
-    fname_new = str(tmpdir.join("new.png"))
+    fname_new = str(tmp_path / "new.png")
     scale_image(
         fname_orig, fname_new, *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"]
     )
@@ -367,7 +366,7 @@ def test_negative_thumbnail_config(sphinx_app, tmpdir):
     assert corr > 0.99
 
 
-def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
+def test_thumbnail_expected_failing_examples(sphinx_app, tmp_path):
     """Test thumbnail behaviour for expected failing examples."""
     import numpy as np
     from PIL import Image
@@ -376,7 +375,7 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
     stamp_fname = op.join(
         sphinx_app.srcdir, "_static_nonstandard", "broken_example.png"
     )
-    stamp_fname_scaled = str(tmpdir.join("new.png"))
+    stamp_fname_scaled = str(tmp_path / "new.png")
     scale_image(
         stamp_fname,
         stamp_fname_scaled,
@@ -827,34 +826,37 @@ def test_logging_std_nested(sphinx_app):
     assert ".. code-block:: none\n\n    is not in the same cell" in lines
 
 
-def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
+def _assert_mtimes(
+    list_orig: list[Path],
+    list_new: list[Path],
+    different: tuple[str, ...] = (),
+    ignore: tuple[str, ...] = (),
+) -> None:
     """Assert that the correct set of files were changed based on mtime."""
     import numpy as np
     from numpy.testing import assert_allclose
 
-    assert [op.basename(x) for x in list_orig] == [op.basename(x) for x in list_new]
+    assert [x.name for x in list_orig] == [x.name for x in list_new]
     # This is probably not totally specific/correct, but this fails on 4.0.0
     # and not on other builds (e.g., 4.5) so hopefully good enough until we
     # drop 4.x support
     good_sphinx = Version(sphinx_version) >= Version("4.1")
     for orig, new in zip(list_orig, list_new):
-        check_name = op.splitext(op.basename(orig))[0]
-        if check_name.endswith(".codeobj"):
-            check_name = check_name[:-8]
+        check_name = orig.stem.removesuffix(".codeobj")
         if check_name in different:
             if good_sphinx:
-                assert np.abs(op.getmtime(orig) - op.getmtime(new)) > 0.1
+                assert np.abs(orig.stat().st_mtime - new.stat().st_mtime) > 0.1
         elif check_name not in ignore:
             assert_allclose(
-                op.getmtime(orig),
-                op.getmtime(new),
+                orig.stat().st_mtime,
+                new.stat().st_mtime,
                 atol=1e-3,
                 rtol=1e-20,
-                err_msg=f"{op.basename(orig)} was updated but should not have been",
+                err_msg=f"{orig.name} was updated but should not have been",
             )
 
 
-def test_rebuild(tmpdir_factory, sphinx_app):
+def test_rebuild(tmp_path_factory, sphinx_app):
     """Test examples that haven't been changed aren't run twice."""
     # First run completes in the fixture.
     status = sphinx_app._status.getvalue()
@@ -870,38 +872,28 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         N_EXAMPLES,
     )
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
-    old_src_dir = (tmpdir_factory.getbasetemp() / "root_old").strpath
+    old_src_dir = tmp_path_factory.getbasetemp() / "root_old"
     shutil.copytree(sphinx_app.srcdir, old_src_dir)
     generated_modules_0 = sorted(
-        op.join(old_src_dir, "gen_modules", f)
-        for f in os.listdir(op.join(old_src_dir, "gen_modules"))
-        if op.isfile(op.join(old_src_dir, "gen_modules", f))
+        f for f in (old_src_dir / "gen_modules").iterdir() if f.is_file()
     )
     generated_backrefs_0 = sorted(
-        op.join(old_src_dir, "gen_modules", "backreferences", f)
-        for f in os.listdir(op.join(old_src_dir, "gen_modules", "backreferences"))
+        f
+        for f in (old_src_dir / "gen_modules" / "backreferences").iterdir()
         # Exclude backreferences_all.json` which is changed when any example is run
-        if "backreferences_all.json" not in f
+        if f.name != "backreferences_all.json"
     )
     generated_rst_0 = sorted(
-        op.join(old_src_dir, "auto_examples", f)
-        for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".rst")
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".rst"
     )
     generated_json_0 = sorted(
-        op.join(old_src_dir, "auto_examples", f)
-        for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".json")
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".json"
     )
     copied_py_0 = sorted(
-        op.join(old_src_dir, "auto_examples", f)
-        for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".py")
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".py"
     )
     copied_ipy_0 = sorted(
-        op.join(old_src_dir, "auto_examples", f)
-        for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".ipynb")
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".ipynb"
     )
     assert len(generated_modules_0) > 0
     assert len(generated_backrefs_0) > 0
@@ -967,35 +959,29 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     )
 
     generated_modules_1 = sorted(
-        op.join(new_app.srcdir, "gen_modules", f)
-        for f in os.listdir(op.join(new_app.srcdir, "gen_modules"))
-        if op.isfile(op.join(new_app.srcdir, "gen_modules", f))
+        f for f in Path(new_app.srcdir, "gen_modules").iterdir() if f.is_file()
     )
     generated_backrefs_1 = sorted(
-        op.join(new_app.srcdir, "gen_modules", "backreferences", f)
-        for f in os.listdir(op.join(new_app.srcdir, "gen_modules", "backreferences"))
+        f
+        for f in Path(new_app.srcdir, "gen_modules", "backreferences").iterdir()
         # Exclude backreferences_all.json` which is changed when any example is run
-        if "backreferences_all.json" not in f
+        if f.name != "backreferences_all.json"
     )
     generated_rst_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".rst")
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".rst"
     )
     generated_json_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".json")
+        f
+        for f in Path(new_app.srcdir, "auto_examples").iterdir()
+        if f.suffix == ".json"
     )
     copied_py_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".py")
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
     )
     copied_ipy_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".ipynb")
+        f
+        for f in Path(new_app.srcdir, "auto_examples").iterdir()
+        if f.suffix == ".ipynb"
     )
 
     # mtimes for modules
@@ -1147,35 +1133,29 @@ def _rerun(
     )
 
     generated_modules_1 = sorted(
-        op.join(new_app.srcdir, "gen_modules", f)
-        for f in os.listdir(op.join(new_app.srcdir, "gen_modules"))
-        if op.isfile(op.join(new_app.srcdir, "gen_modules", f))
+        f for f in Path(new_app.srcdir, "gen_modules").iterdir() if f.is_file()
     )
     generated_backrefs_1 = sorted(
-        op.join(new_app.srcdir, "gen_modules", "backreferences", f)
-        for f in os.listdir(op.join(new_app.srcdir, "gen_modules", "backreferences"))
+        f
+        for f in Path(new_app.srcdir, "gen_modules", "backreferences").iterdir()
         # Exclude backreferences_all.json` which is changed when any example is run
-        if "backreferences_all.json" not in f
+        if f.name != "backreferences_all.json"
     )
     generated_rst_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".rst")
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".rst"
     )
     generated_json_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".json")
+        f
+        for f in Path(new_app.srcdir, "auto_examples").iterdir()
+        if f.suffix == ".json"
     )
     copied_py_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".py")
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
     )
     copied_ipy_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".ipynb")
+        f
+        for f in Path(new_app.srcdir, "auto_examples").iterdir()
+        if f.suffix == ".ipynb"
     )
 
     # mtimes for modules

@@ -132,22 +132,21 @@ def test_direct_comment_after_docstring():
     assert result == expected_result
 
 
-def test_final_rst_last_word(tmpdir):
+def test_final_rst_last_word(tmp_path):
     """Tests last word in final rst block included as text."""
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "# comment only code block",
-                    "#%%",
-                    "# Include this whole sentence.",
-                ]
-            )
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "# comment only code block",
+                "#%%",
+                "# Include this whole sentence.",
+            ]
         )
+    )
 
-    file_conf, result = split_code_and_text_blocks(f.name)
+    file_conf, result = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     expected_result = [
@@ -158,27 +157,26 @@ def test_final_rst_last_word(tmpdir):
     assert result == expected_result
 
 
-def test_rst_block_after_docstring(gallery_conf, tmpdir):
+def test_rst_block_after_docstring(gallery_conf, tmp_path):
     """Assert there is a blank line between the docstring and rst blocks."""
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "####################",
-                    "# Paragraph 1",
-                    "# is long.",
-                    "",
-                    "#%%",
-                    "# Paragraph 2",
-                    "",
-                    "# %%",
-                    "# Paragraph 3",
-                    "",
-                ]
-            )
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "####################",
+                "# Paragraph 1",
+                "# is long.",
+                "",
+                "#%%",
+                "# Paragraph 2",
+                "",
+                "# %%",
+                "# Paragraph 3",
+                "",
+            ]
         )
+    )
     file_conf, blocks = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
@@ -216,27 +214,26 @@ Paragraph 3
     assert example_rst == want_rst
 
 
-def test_rst_block_noqa_removal(gallery_conf, tmpdir):
+def test_rst_block_noqa_removal(gallery_conf, tmp_path):
     """Check "# noqa: E501" removed from end of text blocks (issue #1403)."""
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "####################",
-                    "# Paragraph 1",
-                    "# has a noqa at the end. # noqa: E501",
-                    "",
-                    "#%%",
-                    "# Paragraph 2 also has a noqa # noqa:E501",
-                    "",
-                    "# %%",
-                    "# Paragraph 3",
-                    "",
-                ]
-            )
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "####################",
+                "# Paragraph 1",
+                "# has a noqa at the end. # noqa: E501",
+                "",
+                "#%%",
+                "# Paragraph 2 also has a noqa # noqa:E501",
+                "",
+                "# %%",
+                "# Paragraph 3",
+                "",
+            ]
         )
+    )
     file_conf, blocks = split_code_and_text_blocks(filename)
 
     script_vars = {"execute_script": ""}
@@ -263,22 +260,21 @@ Paragraph 3
     assert example_rst == want_rst
 
 
-def test_rst_empty_code_block(gallery_conf, tmpdir):
+def test_rst_empty_code_block(gallery_conf, tmp_path):
     """Test that we can "execute" a code block containing only comments."""
     gallery_conf.update(image_scrapers=())
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "####################",
-                    "# Paragraph 1",
-                    "",
-                    "# just a comment",
-                ]
-            )
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "####################",
+                "# Paragraph 1",
+                "",
+                "# just a comment",
+            ]
         )
+    )
     file_conf, blocks = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
@@ -290,9 +286,9 @@ def test_rst_empty_code_block(gallery_conf, tmpdir):
     gallery_conf["abort_on_example_error"] = True
     script_vars = dict(
         execute_script=True,
-        src_file=filename,
+        src_file=str(filename),
         image_path_iterator=[],
-        target_file=filename,
+        target_file=str(filename),
     )
 
     output_blocks, time_elapsed = sg.execute_script(
@@ -316,13 +312,12 @@ Paragraph 1
     assert example_rst.rstrip("\n") == want_rst
 
 
-def test_script_vars_globals(gallery_conf, tmpdir):
+def test_script_vars_globals(gallery_conf, tmp_path):
     """Assert the global vars get stored."""
     gallery_conf.update(image_scrapers=())
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            """
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        """
 '''
 My example
 ----------
@@ -332,7 +327,7 @@ This is it.
 a = 1.
 b = 'foo'
 """
-        )
+    )
     file_conf, blocks = split_code_and_text_blocks(filename)
     assert len(blocks) == 2
     assert blocks[0].type == "text"
@@ -340,9 +335,9 @@ b = 'foo'
     assert file_conf == {}
     script_vars = {
         "execute_script": True,
-        "src_file": filename,
+        "src_file": str(filename),
         "image_path_iterator": [],
-        "target_file": filename,
+        "target_file": str(filename),
     }
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf, file_conf
@@ -433,8 +428,7 @@ def test_md5sums(mode, expected_md5, tmp_path):
     # False because is a new file
     assert not sg.md5sum_is_current(fname), mode
     # Write md5sum to file to check is current
-    with open(str(fname) + ".md5", "w") as file_checksum:
-        file_checksum.write(file_md5)
+    fname.with_name(fname.name + ".md5").write_text(file_md5)
     assert sg.md5sum_is_current(fname, mode), mode
 
 
@@ -843,14 +837,14 @@ def test_rst_example(gallery_conf):
 
 
 @pytest.fixture(scope="function")
-def script_vars(tmpdir):
+def script_vars(tmp_path):
     fake_main = importlib.util.module_from_spec(
         importlib.util.spec_from_loader("__main__", None)
     )
     fake_main.__dict__.update({"__doc__": ""})
     script_vars = {
         "execute_script": True,
-        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
+        "image_path_iterator": ImagePathIterator(str(tmp_path / "temp.png")),
         "src_file": __file__,
         "memory_delta": [],
         "fake_main": fake_main,

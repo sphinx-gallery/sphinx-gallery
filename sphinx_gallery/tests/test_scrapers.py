@@ -19,7 +19,7 @@ from sphinx_gallery.scrapers import (
 
 
 @pytest.fixture(scope="function")
-def make_gallery_conf(tmpdir):
+def make_gallery_conf(tmp_path):
     """Sets up a test sphinx-gallery configuration."""
     # Skip if numpy not installed
     pytest.importorskip("numpy")
@@ -27,7 +27,7 @@ def make_gallery_conf(tmpdir):
     def make_gallery_conf(init=None):
         gallery_conf = _fill_gallery_conf_defaults(init or {})
         gallery_conf.update(
-            src_dir=str(tmpdir), examples_dir=str(tmpdir), gallery_dir=str(tmpdir)
+            src_dir=str(tmp_path), examples_dir=str(tmp_path), gallery_dir=str(tmp_path)
         )
 
         return gallery_conf

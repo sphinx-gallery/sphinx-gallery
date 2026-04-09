@@ -5,6 +5,7 @@
 import os
 import re
 from copy import deepcopy
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -146,10 +147,10 @@ def test_binder():
     assert url == expected
 
 
-def test_gen_binder_rst(tmpdir):
+def test_gen_binder_rst(tmp_path):
     """Check binder rst generated correctly."""
-    gallery_conf_base = {"gallery_dirs": [str(tmpdir)], "src_dir": "blahblah"}
-    file_path = str(tmpdir.join("blahblah", "mydir", "myfile.py"))
+    gallery_conf_base = {"gallery_dirs": [str(tmp_path)], "src_dir": "blahblah"}
+    file_path = tmp_path / "blahblah" / "mydir" / "myfile.py"
     conf_base = {
         "binderhub_url": "http://test1.com",
         "org": "org",
@@ -159,7 +160,7 @@ def test_gen_binder_rst(tmpdir):
     }
     conf_base = check_binder_conf(conf_base)
     orig_dir = os.getcwd()
-    os.chdir(str(tmpdir))
+    os.chdir(tmp_path)
     try:
         rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
     finally:
@@ -170,30 +171,28 @@ def test_gen_binder_rst(tmpdir):
     assert image_rst in rst
     assert target_rst in rst
     assert alt_rst in rst
-    image_fname = os.path.join(
-        os.path.dirname(file_path), "images", "binder_badge_logo.svg"
-    )
-    assert os.path.isfile(image_fname)
+    image_fname = file_path.parent / "images" / "binder_badge_logo.svg"
+    assert image_fname.is_file()
 
 
 @pytest.mark.parametrize("use_jupyter_lab", [True, False])
 @pytest.mark.parametrize(
     "example_file",
     [
-        os.path.join("example_dir", "myfile.py"),
-        os.path.join("example_dir", "subdir", "myfile.py"),
+        Path("example_dir", "myfile.py"),
+        Path("example_dir", "subdir", "myfile.py"),
     ],
 )
-def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
+def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmp_path):
     """Check binder rst generated correctly."""
     gallery_conf = {
-        "gallery_dirs": [str(tmpdir)],
+        "gallery_dirs": [str(tmp_path)],
         "src_dir": "blahblah",
         "jupyterlite": {"use_jupyter_lab": use_jupyter_lab},
     }
-    file_path = str(tmpdir.join("blahblah", example_file))
+    file_path = tmp_path / "blahblah" / example_file
     orig_dir = os.getcwd()
-    os.chdir(str(tmpdir))
+    os.chdir(tmp_path)
     try:
         rst = gen_jupyterlite_rst(file_path, gallery_conf)
     finally:
@@ -203,7 +202,7 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     target_rst_template = (
         ":target: {root_url}/lite/{jupyter_part}.+index.html.+path={notebook_path}"
     )
-    if "subdir" not in file_path:
+    if "subdir" not in file_path.parts:
         root_url = r"\.\."
         notebook_path = r"example_dir/myfile\.ipynb"
     else:
@@ -222,10 +221,8 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     assert image_rst in rst
     assert re.search(target_rst, rst), rst
     assert alt_rst in rst
-    image_fname = os.path.join(
-        os.path.dirname(file_path), "images", "jupyterlite_badge_logo.svg"
-    )
-    assert os.path.isfile(image_fname)
+    image_fname = file_path.parent / "images" / "jupyterlite_badge_logo.svg"
+    assert image_fname.is_file()
 
 
 def test_check_jupyterlite_conf():

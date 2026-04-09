@@ -178,7 +178,7 @@ def test_get_short_module_name(mock, short_module):
         assert short_mod_no_attr is None
 
 
-def test_identify_names_implicit(tmpdir, gallery_conf):
+def test_identify_names_implicit(tmp_path, gallery_conf):
     """Test implicit name identification."""
     code_str = b"""
 '''
@@ -226,10 +226,10 @@ h.i.j()
         ],
     }
 
-    fname = tmpdir.join("identify_names.py")
-    fname.write(code_str, "wb")
+    fname = tmp_path / "identify_names.py"
+    fname.write_bytes(code_str)
 
-    _, script_blocks = split_code_and_text_blocks(fname.strpath)
+    _, script_blocks = split_code_and_text_blocks(str(fname))
     ref_regex = sg._make_ref_regex()
     res = sg.identify_names(script_blocks, ref_regex)
 

@@ -2,7 +2,6 @@
 # License: 3-clause BSD
 r"""Test source parser."""
 
-import os.path as op
 import textwrap
 
 import pytest
@@ -11,19 +10,17 @@ from sphinx.errors import ExtensionError
 import sphinx_gallery.py_source_parser as sg
 
 
-def test_get_docstring_and_rest(unicode_sample, tmpdir, monkeypatch):
+def test_get_docstring_and_rest(unicode_sample, tmp_path, monkeypatch):
     """Test `_get_docstring_and_rest` correctly splits docstring and rest of example."""
     docstring, rest, lineno, _ = sg._get_docstring_and_rest(unicode_sample)
     assert "Únicode" in docstring
     assert "heiß" in rest
     # degenerate
-    fname = op.join(str(tmpdir), "temp")
-    with open(fname, "w") as fid:
-        fid.write('print("hello")\n')
+    fname = tmp_path / "temp"
+    fname.write_text('print("hello")\n')
     with pytest.raises(ExtensionError, match="Could not find docstring"):
         sg._get_docstring_and_rest(fname)
-    with open(fname, "w") as fid:
-        fid.write("print hello\n")
+    fname.write_text("print hello\n")
     assert sg._get_docstring_and_rest(fname)[0] == sg.SYNTAX_ERROR_DOCSTRING
     monkeypatch.setattr(sg, "parse_source_file", lambda x: ("", None))
     with pytest.raises(ExtensionError, match="only supports modules"):

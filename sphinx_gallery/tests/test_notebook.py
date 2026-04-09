@@ -412,7 +412,7 @@ def test_missing_file():
 
 def test_file_is_generated(tmp_path):
     """Check notebook file created when user passes good python file."""
-    out = str(tmp_path / "plot_0_sin.py")
+    out = tmp_path / "plot_0_sin.py"
     shutil.copyfile(root / "examples" / "plot_0_sin.py", out)
-    python_to_jupyter_cli([out])
-    assert os.path.isfile(f"{out[:-3]}.ipynb")
+    python_to_jupyter_cli([str(out)])
+    assert out.with_suffix(".ipynb").is_file()
