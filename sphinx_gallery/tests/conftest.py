@@ -15,37 +15,6 @@ from sphinx.util.docutils import docutils_namespace
 from sphinx_gallery import docs_resolv, gen_gallery, gen_rst, py_source_parser
 from sphinx_gallery.scrapers import _import_matplotlib
 
-INDEX_RST = """
-=============
-Own index.rst
-=============
-
-Own index.rst file.
-
-.. toctree::
-
-    plot_1
-    plot_2
-    plot_3
-"""
-
-NESTED_PY = """\"\"\"
-Header
-======
-
-Text.
-\"\"\"
-
-a = 1
-"""
-
-GALLERY_HEADER = """
-Gallery header
-==============
-
-Some text.
-"""
-
 
 def pytest_report_header(config, startdir=None):
     """Add information to the pytest run header."""
@@ -165,12 +134,16 @@ def conf_file(request):
 
 @pytest.fixture
 def rst_file(request):
-    """Adds rst file to environment, see `sphinx_app_wrapper` for details."""
+    """Adds rst file(s) to environment, see `sphinx_app_wrapper` for details.
+
+    This fixture takes a single `file` kwarg, which should be a dictionary
+    of format {key: <file name to be added>, value: <content to be added to file>}.
+    """
     try:
         env = request.node.get_closest_marker("add_rst")
     except AttributeError:  # old pytest
         env = request.node.get_marker("add_rst")
-    file = env.kwargs["file"] if env else ""
+    file = env.kwargs["file"] if env else None
     return file
 
 
@@ -229,16 +202,11 @@ def sphinx_app_wrapper(tmp_path, conf_file, rst_file, req_mpl, req_pil):
     # Copy files to 'examples/' as well because default `examples_dirs` is
     # '../examples' - for tests where we don't update config
     shutil.copytree(_fixturedir / "src", tmp_path / "examples")
-    if rst_file == "own index.rst":
-        (srcdir / "src" / "index.rst").write_text(INDEX_RST)
-    elif rst_file:
-        (srcdir / "minigallery_test.rst").write_text(rst_file)
-        # Add nested gallery
-        if "sub_folder/sub_sub_folder" in rst_file:
-            dir_path = srcdir / "src" / "sub_folder" / "sub_sub_folder"
-            dir_path.mkdir(parents=True)
-            (dir_path / "plot_nested.py").write_text(NESTED_PY)
-            (dir_path / "GALLERY_HEADER.rst").write_text(GALLERY_HEADER)
+    if rst_file:
+        for file_name, content in rst_file.items():
+            full_path = srcdir / file_name
+            full_path.parent.mkdir(parents=True, exist_ok=True)
+            full_path.write_text(content)
 
     base_config = f"""
 import os

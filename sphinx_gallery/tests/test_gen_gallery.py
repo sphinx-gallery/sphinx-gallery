@@ -36,6 +36,38 @@ Description.
 
 """
 
+# Used for `add_rst`
+INDEX_RST = """
+=============
+Own index.rst
+=============
+
+Own index.rst file.
+
+.. toctree::
+
+    plot_1
+    plot_2
+    plot_3
+"""
+
+NESTED_PY = """\"\"\"
+Header
+======
+
+Text.
+\"\"\"
+
+a = 1
+"""
+
+GALLERY_HEADER = """
+Gallery header
+==============
+
+Some text.
+"""
+
 
 def _escape_ansi(s: str) -> str:
     """Remove ANSI terminal formatting characters from a string."""
@@ -536,7 +568,7 @@ sphinx_gallery_conf = {
     'copyfile_regex': r'.*\.rst',
 }"""
 )
-@pytest.mark.add_rst(file="own index.rst")
+@pytest.mark.add_rst(file={Path("src") / "index.rst": INDEX_RST })
 def test_own_index_first(sphinx_app_wrapper):
     """Test `generate_gallery_rst` works when own index gallery is first (and only)."""
     # Issue #1382
@@ -562,7 +594,7 @@ def test_binder_copy_files(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
     # Create requirements file
-    Path(sphinx_app.srcdir, "requirements.txt").open("w")
+    Path(sphinx_app.srcdir, "requirements.txt").touch()
     copy_binder_files(sphinx_app, None)
 
     for i_file in ["plot_1", "plot_2", "plot_3"]:
@@ -772,13 +804,13 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'ex',
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_rst(file={"minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: index.rst
 """
+}
 )
 def test_minigallery_not_in_examples_dirs(sphinx_app_wrapper):
     """Check error when minigallery directive's path input not in `examples_dirs`."""
@@ -794,13 +826,15 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['ex', 'ex/sub_folder/sub_sub_folder'],
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_rst(file={"minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: src/sub_folder/sub_sub_folder/plot_nested.py
-"""
+""",
+Path("src") / "sub_folder" / "sub_sub_folder" / "plot_nested.py": NESTED_PY,
+Path("src") / "sub_folder" / "sub_sub_folder" / "GALLERY_HEADER.rst": GALLERY_HEADER,
+}
 )
 def test_minigallery_multi_match(sphinx_app_wrapper):
     """Check minigallery directive's path input resolution in nested `examples_dirs`.
@@ -843,13 +877,13 @@ sphinx_gallery_conf = {
     'minigallery_sort_order': FunctionSortKey(custom_minigallery_sort_order_sorter),
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_rst(file={"minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: src/plot_1.py src/plot_2.py src/plot_3.py
 """
+}
 )
 def test_minigallery_sort_order_callable(sphinx_app_wrapper):
     """Check `minigallery_sort_order` works when a callable."""
@@ -867,13 +901,13 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'ex',
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_rst(file={"minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: src/plot_1.py src/plot_1.py
 """
+}
 )
 def test_minigallery_duplicate_path_input(sphinx_app_wrapper):
     """Check minigallery duplicate input paths are de-deuplicated."""
@@ -893,13 +927,13 @@ sphinx_gallery_conf = {
     'doc_module': ('numpy',),
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_rst(file={"minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: sphinx_gallery.py_source_parser.Block src/plot_1.py
 """
+}
 )
 def test_minigallery_duplicate_object_path_input(sphinx_app_wrapper):
     """Check object and path input de-deplication works in minigallery directive.
@@ -1109,7 +1143,7 @@ sphinx_gallery_conf = {
     'nested_sections': False,
 }"""
 )
-@pytest.mark.add_rst(file="own index.rst")
+@pytest.mark.add_rst(file={Path("src") / "index.rst": INDEX_RST })
 def test_nested_sections_false_with_own_index(sphinx_app_wrapper):
     """Check no error with user provided index.rst and `nested_sections=False`."""
     sphinx_app_wrapper.build_sphinx_app()
