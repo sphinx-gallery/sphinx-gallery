@@ -6,7 +6,6 @@ Attaches Sphinx-Gallery to Sphinx in order to generate the galleries
 when building the documentation.
 """
 
-import codecs
 import copy
 import os
 import pathlib
@@ -671,7 +670,7 @@ def _finish_index_rst(
             indexst += SPHX_GLR_SIG
         # Write index to file
         index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
-        with codecs.open(index_rst_new, "w", encoding="utf-8") as fhindex:
+        with open(index_rst_new, "w", encoding="utf-8") as fhindex:
             fhindex.write(indexst)
         _replace_md5(index_rst_new, mode="t")
 
@@ -896,7 +895,7 @@ def generate_gallery_rst(app: Sphinx) -> None:
         )
 
     if gallery_conf["show_api_usage"] is not False:
-        _init_api_usage(str(app.builder.srcdir))
+        _init_api_usage(Path(app.builder.srcdir))
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf["plot_gallery"]:
@@ -1091,11 +1090,8 @@ def write_api_entries(
     app.config.sphinx_gallery_conf["_sg_api_entries"][what].add(name)
 
 
-def _init_api_usage(gallery_dir: str) -> None:
-    with codecs.open(
-        os.path.join(gallery_dir, "sg_api_usage.rst"), "w", encoding="utf-8"
-    ):
-        pass
+def _init_api_usage(gallery_dir: Path) -> None:
+    (gallery_dir / "sg_api_usage.rst").write_text("")
 
 
 # Colors from https://personal.sron.nl/~pault/data/colourschemes.pdf
@@ -1452,7 +1448,7 @@ def write_junit_xml(
     fname = os.path.normpath(os.path.join(target_dir, gallery_conf["junit"]))
     junit_dir = os.path.dirname(fname)
     os.makedirs(junit_dir, exist_ok=True)
-    with codecs.open(fname, "w", encoding="utf-8") as fid:
+    with open(fname, "w", encoding="utf-8") as fid:
         fid.write(output)
 
 

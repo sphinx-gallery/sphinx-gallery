@@ -1,7 +1,6 @@
 """BlockParser divides non `.py` source files into blocks of code and markup text."""
 
 import ast
-import codecs
 import re
 from pathlib import Path
 from textwrap import dedent
@@ -151,7 +150,7 @@ class BlockParser:
         node : None
             Returning an ast node is not supported.
         """
-        with codecs.open(source_file, "r", "utf-8") as fid:
+        with open(source_file, "r", encoding="utf-8") as fid:
             content = fid.read()
         # change from Windows format to UNIX for uniformity
         content = content.replace("\r\n", "\n")
