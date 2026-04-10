@@ -140,9 +140,9 @@ def rst_file(request):
     of format {key: <file name to be added>, value: <content to be added to file>}.
     """
     try:
-        env = request.node.get_closest_marker("add_rst")
+        env = request.node.get_closest_marker("add_file")
     except AttributeError:  # old pytest
-        env = request.node.get_marker("add_rst")
+        env = request.node.get_marker("add_file")
     file = env.kwargs["file"] if env else None
     return file
 

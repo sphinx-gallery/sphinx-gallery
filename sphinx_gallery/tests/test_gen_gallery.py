@@ -36,7 +36,7 @@ Description.
 
 """
 
-# Used for `add_rst`
+# Used for `add_file`
 INDEX_RST = """
 =============
 Own index.rst
@@ -568,7 +568,7 @@ sphinx_gallery_conf = {
     'copyfile_regex': r'.*\.rst',
 }"""
 )
-@pytest.mark.add_rst(file={Path("src") / "index.rst": INDEX_RST})
+@pytest.mark.add_file(file={Path("src") / "index.rst": INDEX_RST})
 def test_own_index_first(sphinx_app_wrapper):
     """Test `generate_gallery_rst` works when own index gallery is first (and only)."""
     # Issue #1382
@@ -804,7 +804,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'ex',
 }"""
 )
-@pytest.mark.add_rst(
+@pytest.mark.add_file(
     file={
         "minigallery_test.rst": """
 Header
@@ -828,7 +828,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['ex', 'ex/sub_folder/sub_sub_folder'],
 }"""
 )
-@pytest.mark.add_rst(
+@pytest.mark.add_file(
     file={
         "minigallery_test.rst": """
 Header
@@ -884,7 +884,7 @@ sphinx_gallery_conf = {
     'minigallery_sort_order': FunctionSortKey(custom_minigallery_sort_order_sorter),
 }"""
 )
-@pytest.mark.add_rst(
+@pytest.mark.add_file(
     file={
         "minigallery_test.rst": """
 Header
@@ -910,7 +910,7 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'ex',
 }"""
 )
-@pytest.mark.add_rst(
+@pytest.mark.add_file(
     file={
         "minigallery_test.rst": """
 Header
@@ -938,7 +938,7 @@ sphinx_gallery_conf = {
     'doc_module': ('numpy',),
 }"""
 )
-@pytest.mark.add_rst(
+@pytest.mark.add_file(
     file={
         "minigallery_test.rst": """
 Header
@@ -1156,7 +1156,7 @@ sphinx_gallery_conf = {
     'nested_sections': False,
 }"""
 )
-@pytest.mark.add_rst(file={Path("src") / "index.rst": INDEX_RST})
+@pytest.mark.add_file(file={Path("src") / "index.rst": INDEX_RST})
 def test_nested_sections_false_with_own_index(sphinx_app_wrapper):
     """Check no error with user provided index.rst and `nested_sections=False`."""
     sphinx_app_wrapper.build_sphinx_app()
