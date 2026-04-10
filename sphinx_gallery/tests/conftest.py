@@ -134,7 +134,7 @@ def conf_file(request):
 
 @pytest.fixture
 def rst_file(request):
-    """Adds rst file(s) to environment, see `sphinx_app_wrapper` for details.
+    """Adds file(s) to environment, see `sphinx_app_wrapper` for details.
 
     This fixture takes a single `file` kwarg, which should be a dictionary
     of format {key: <file name to be added>, value: <content to be added to file>}.
