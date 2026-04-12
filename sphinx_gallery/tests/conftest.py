@@ -137,7 +137,9 @@ def rst_file(request):
     """Adds file(s) to environment, see `sphinx_app_wrapper` for details.
 
     This fixture takes a single `file` kwarg, which should be a dictionary
-    of format {key: <file name to be added>, value: <content to be added to file>}.
+    of format {key: <file path>, value: <content to be added to file>}.
+    The file path should be relative to the test documentation source path,
+    see `sphinx_app_wrapper` for details.
     """
     env = request.node.get_closest_marker("add_file")
     file = env.kwargs["file"] if env else None
