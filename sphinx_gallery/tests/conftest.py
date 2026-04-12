@@ -139,10 +139,7 @@ def rst_file(request):
     This fixture takes a single `file` kwarg, which should be a dictionary
     of format {key: <file name to be added>, value: <content to be added to file>}.
     """
-    try:
-        env = request.node.get_closest_marker("add_file")
-    except AttributeError:  # old pytest
-        env = request.node.get_marker("add_file")
+    env = request.node.get_closest_marker("add_file")
     file = env.kwargs["file"] if env else None
     return file
 
