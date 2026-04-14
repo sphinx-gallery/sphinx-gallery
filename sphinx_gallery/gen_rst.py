@@ -577,7 +577,7 @@ def generate_dir_rst(
     str | None,
     list[ExampleCost],
     list[str],
-    dict[str, Backreference],
+    dict[str, list[Backreference]],
 ]:
     """Generate output example reST files for one gallery (sub)directory.
 
@@ -608,9 +608,9 @@ def generate_dir_rst(
         List of runtime costs for building each element of the gallery.
     toctree_items: list,
         List of example file names we generated ReST for.
-    backrefs_dir : dict[str, tuple]
-        Dictionary where value is the backreference object and value
-        is a tuple containing: example filename, full path to example source directory,
+    backrefs_dir : dict[str, list[tuple]]
+        Dictionary where key is the backreference object name and value is a list of
+        tuples containing: example filename, full path to example source directory,
         full path to example target directory, intro, title.
 
     """
@@ -661,7 +661,7 @@ def generate_dir_rst(
         length=len(sorted_listdir),
     )
 
-    backrefs_dir: dict[str, Backreference] = {}
+    backrefs_dir: dict[str, list[Backreference]] = {}
 
     parallel = list
     p_fun = generate_file_rst
@@ -715,7 +715,7 @@ def generate_dir_rst(
 
         # Write backreferences
         if "backrefs" in out_vars:
-            backrefs_example: dict[str, Backreference] | None = _write_backreferences(
+            backrefs_example = _write_backreferences(
                 out_vars["backrefs"],
                 seen_backrefs,
                 gallery_conf,

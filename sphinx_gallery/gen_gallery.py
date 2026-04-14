@@ -771,7 +771,7 @@ def generate_gallery_rst(app: Sphinx) -> None:
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
     _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
 
-    backrefs_all: dict[str, Backreference] = {}
+    backrefs_all: dict[str, list[Backreference]] = {}
 
     for examples_dir, gallery_dir in workdirs:
         examples_dir_abs_path = os.path.join(str(app.builder.srcdir), examples_dir)
