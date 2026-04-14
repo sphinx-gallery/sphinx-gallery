@@ -8,6 +8,7 @@ import re
 import tokenize
 from collections import namedtuple
 from io import BytesIO
+from pathlib import Path
 from textwrap import dedent
 from typing import Any, Literal, overload
 
@@ -44,12 +45,12 @@ IGNORE_BLOCK_PATTERN = re.compile(
 )
 
 
-def parse_source_file(filename: str) -> tuple[ast.Module | None, str]:
+def parse_source_file(filename: str | Path) -> tuple[ast.Module | None, str]:
     """Parse source file into AST node.
 
     Parameters
     ----------
-    filename : str
+    filename : str or Path
         File path
 
     Returns
@@ -57,9 +58,8 @@ def parse_source_file(filename: str) -> tuple[ast.Module | None, str]:
     node : AST node
     content : utf-8 encoded string
     """
-    # builtin open automatically converts \r\n to \n
-    with open(filename, "r", encoding="utf-8") as fid:
-        content = fid.read()
+    # read_text automatically converts \r\n to \n
+    content = Path(filename).read_text(encoding="utf-8")
 
     try:
         node = ast.parse(content)
@@ -68,7 +68,7 @@ def parse_source_file(filename: str) -> tuple[ast.Module | None, str]:
         return None, content
 
 
-def _get_docstring_and_rest(filename: str) -> tuple[str, str, int, ast.Module | None]:
+def _get_docstring_and_rest(filename: Path) -> tuple[str, str, int, ast.Module | None]:
     """Separate ``filename`` content between docstring and the rest.
 
     Strongly inspired from ast.get_docstring.
@@ -159,24 +159,24 @@ Block = namedtuple("Block", ["type", "content", "lineno"])
 
 @overload
 def split_code_and_text_blocks(
-    source_file: str,
+    source_file: str | Path,
     return_node: Literal[True],
 ) -> tuple[dict[str, Any], list, ast.Module | None]: ...
 
 
 @overload
 def split_code_and_text_blocks(
-    source_file: str,
+    source_file: str | Path,
     return_node: Literal[False] = False,
 ) -> tuple[dict[str, Any], list]: ...
 
 
-def split_code_and_text_blocks(source_file, return_node=False):
+def split_code_and_text_blocks(source_file: str | Path, return_node: bool = False):
     """Return list with source file separated into code and text blocks.
 
     Parameters
     ----------
-    source_file : str
+    source_file : str or Path
         Path to the source file.
     return_node : bool
         If True, return the ast node.
@@ -193,7 +193,9 @@ def split_code_and_text_blocks(source_file, return_node=False):
     node : ast.Module
         The parsed ast node.
     """
-    docstring, rest_of_content, lineno, node = _get_docstring_and_rest(source_file)
+    docstring, rest_of_content, lineno, node = _get_docstring_and_rest(
+        Path(source_file)
+    )
     blocks = [Block("text", docstring, 1)]
 
     file_conf = extract_file_config(rest_of_content)

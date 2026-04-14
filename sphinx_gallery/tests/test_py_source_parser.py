@@ -3,6 +3,7 @@
 r"""Test source parser."""
 
 import textwrap
+from pathlib import Path
 
 import pytest
 from sphinx.errors import ExtensionError
@@ -24,7 +25,7 @@ def test_get_docstring_and_rest(unicode_sample, tmp_path, monkeypatch):
     assert sg._get_docstring_and_rest(fname)[0] == sg.SYNTAX_ERROR_DOCSTRING
     monkeypatch.setattr(sg, "parse_source_file", lambda x: ("", None))
     with pytest.raises(ExtensionError, match="only supports modules"):
-        sg._get_docstring_and_rest("")
+        sg._get_docstring_and_rest(Path(""))
 
 
 @pytest.mark.parametrize(

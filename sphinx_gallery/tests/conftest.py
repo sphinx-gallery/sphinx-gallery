@@ -83,7 +83,7 @@ _ = plt.figure()
 
     fname = tmp_path / "unicode_sample.py"
     fname.write_bytes(code_str)
-    return str(fname)
+    return fname
 
 
 @pytest.fixture

@@ -229,7 +229,7 @@ h.i.j()
     fname = tmp_path / "identify_names.py"
     fname.write_bytes(code_str)
 
-    _, script_blocks = split_code_and_text_blocks(str(fname))
+    _, script_blocks = split_code_and_text_blocks(fname)
     ref_regex = sg._make_ref_regex()
     res = sg.identify_names(script_blocks, ref_regex)
 
