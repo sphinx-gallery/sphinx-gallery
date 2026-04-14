@@ -10,7 +10,6 @@ import logging
 import os
 import re
 import shutil
-import tempfile
 import zipfile
 from pathlib import Path
 from unittest import mock
@@ -92,25 +91,22 @@ def test_bug_cases_of_notebook_syntax():
     assert blocks == ref_blocks
 
 
-def test_direct_comment_after_docstring():
+def test_direct_comment_after_docstring(tmp_path):
     # For more details see
     # https://github.com/sphinx-gallery/sphinx-gallery/pull/49
-    with tempfile.NamedTemporaryFile("w", delete=False) as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "# and now comes the module code",
-                    "# with a second line of comment",
-                    "x, y = 1, 2",
-                    "",
-                ]
-            )
+    filename = tmp_path / "example.txt"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "# and now comes the module code",
+                "# with a second line of comment",
+                "x, y = 1, 2",
+                "",
+            ]
         )
-    try:
-        file_conf, result = split_code_and_text_blocks(f.name)
-    finally:
-        os.remove(f.name)
+    )
+    file_conf, result = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     expected_result = [
@@ -717,14 +713,11 @@ def test_pattern_matching(gallery_conf, log_collector, req_pil):
         "    # sphinx_gallery_thumbnail_number=2",
     ],
 )
-def test_thumbnail_number(test_str):
+def test_thumbnail_number(test_str, tmp_path):
     """Test correct plot used as thumbnail image."""
-    with tempfile.NamedTemporaryFile("w", delete=False) as f:
-        f.write("\n".join(['"Docstring"', test_str]))
-    try:
-        file_conf, blocks = split_code_and_text_blocks(f.name)
-    finally:
-        os.remove(f.name)
+    filename = tmp_path / "example.py"
+    filename.write_text("\n".join(['"Docstring"', test_str]))
+    file_conf, blocks = split_code_and_text_blocks(filename)
     assert file_conf == {"thumbnail_number": 2}
 
 
@@ -737,14 +730,11 @@ def test_thumbnail_number(test_str):
         "    # sphinx_gallery_thumbnail_path='_static/demo.png'",
     ],
 )
-def test_thumbnail_path(test_str):
+def test_thumbnail_path(test_str, tmp_path):
     """Test correct plot used for thumbnail image."""
-    with tempfile.NamedTemporaryFile("w", delete=False) as f:
-        f.write("\n".join(['"Docstring"', test_str]))
-    try:
-        file_conf, blocks = split_code_and_text_blocks(f.name)
-    finally:
-        os.remove(f.name)
+    filename = tmp_path / "example.py"
+    filename.write_text("\n".join(['"Docstring"', test_str]))
+    file_conf, blocks = split_code_and_text_blocks(filename)
     assert file_conf == {"thumbnail_path": "_static/demo.png"}
 
 
