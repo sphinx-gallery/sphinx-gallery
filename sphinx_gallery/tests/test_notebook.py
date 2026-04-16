@@ -4,10 +4,8 @@ r"""Testing the Jupyter notebook parser."""
 
 import base64
 import json
-import os
 import re
 import shutil
-import tempfile
 import textwrap
 from collections import defaultdict
 from itertools import count
@@ -339,19 +337,16 @@ def test_notebook_images_data_uri(gallery_conf):
         rst2md(rst, gallery_conf, str(target_dir), {})
 
 
-def test_jupyter_notebook(gallery_conf):
+def test_jupyter_notebook(gallery_conf, tmp_path):
     """Test that written ipython notebook file corresponds to python object."""
     file_conf, blocks = split_code_and_text_blocks(root / "tutorials" / "plot_parse.py")
     target_dir = "tutorials"
     example_nb = jupyter_notebook(blocks, gallery_conf, target_dir)
 
-    with tempfile.NamedTemporaryFile("w", delete=False) as f:
-        save_notebook(example_nb, f.name)
-    try:
-        with open(f.name) as fname:
-            assert json.load(fname) == example_nb
-    finally:
-        os.remove(f.name)
+    filename = tmp_path / "example.ipynb"
+    save_notebook(example_nb, filename)
+    with filename.open() as fname:
+        assert json.load(fname) == example_nb
 
     # Test custom first cell text
     test_text = "# testing\n%matplotlib notebook"

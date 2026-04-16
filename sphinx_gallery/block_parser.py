@@ -33,13 +33,13 @@ class BlockParser:
 
     Parameters
     ----------
-    source_file : str
+    source_file : str or Path
         A file name that has a suffix compatible with files that are subsequently parsed
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery.
     """
 
-    def __init__(self, source_file: str, gallery_conf: GalleryConfig) -> None:
+    def __init__(self, source_file: str | Path, gallery_conf: GalleryConfig) -> None:
         source_path = Path(source_file)
         if name := gallery_conf["filetype_parsers"].get(source_path.suffix):
             self.lexer = pygments.lexers.find_lexer_class_by_name(name)()
