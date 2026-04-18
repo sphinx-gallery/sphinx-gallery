@@ -13,16 +13,17 @@ import json
 import os
 import re
 import sys
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from html import escape
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import sphinx.util
 from sphinx.errors import ExtensionError
 
 from ._dummy import DummyClass  # noqa: F401
 from .scrapers import _find_image_ext
+from .typing import GalleryConfig
 from .utils import _W_KW, _replace_md5
 
 if TYPE_CHECKING:
@@ -395,14 +396,24 @@ def _thumbnail_div(
     )
 
 
-Backreference = namedtuple(
-    "Backreference", ["fname", "src_dir", "target_dir", "intro", "title"]
-)
+class Backreference(NamedTuple):
+    fname: str
+    src_dir: str
+    target_dir: str
+    intro: str
+    title: str
 
 
 def _write_backreferences(
-    backrefs, seen_backrefs, gallery_conf, src_dir, target_dir, fname, intro, title
-) -> dict[str, Backreference] | None:
+    backrefs: set[str],
+    seen_backrefs: set[str],
+    gallery_conf: GalleryConfig,
+    src_dir: str,
+    target_dir: str,
+    fname: str,
+    intro: str,
+    title: str,
+) -> dict[str, list[Backreference]] | None:
     """Write and return backreferences for one example.
 
     Backreferences '.examples' file written includes reST of the list of examples
@@ -412,7 +423,7 @@ def _write_backreferences(
     ----------
     backrefs : set[str]
         Back references to write.
-    seen_backrefs: set
+    seen_backrefs: set[str]
         Back references already encountered when parsing this example.
     gallery_conf : Dict[str, Any]
         Gallery configurations.
@@ -429,9 +440,9 @@ def _write_backreferences(
 
     Returns
     -------
-    backrefs_example : dict[str, Backreference]
-        Dictionary where value is the backreference object and value
-        is a tuple containing: example filename, full path to example source directory,
+    backrefs_example : dict[str, list[Backreference]]
+        Dictionary where key is the backreference object name and value is a list of
+        tuples containing: example filename, full path to example source directory,
         full path to example target directory, intro, title.
     """
     if gallery_conf["backreferences_dir"] is None:
@@ -474,7 +485,9 @@ def _write_backreferences(
     return dict(backrefs_example)
 
 
-def _finalize_backreferences(seen_backrefs, gallery_conf):
+def _finalize_backreferences(
+    seen_backrefs: set[str], gallery_conf: GalleryConfig
+) -> None:
     """Replace backref files only if necessary."""
     logger = sphinx.util.logging.getLogger("sphinx-gallery")
     if gallery_conf["backreferences_dir"] is None:

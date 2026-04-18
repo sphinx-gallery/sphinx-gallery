@@ -1,7 +1,5 @@
 """test BlockParser."""
 
-import os
-import tempfile
 from textwrap import dedent
 
 import pytest
@@ -193,7 +191,7 @@ def test_rst_blocks(filetype, title, special, expected):
     assert blocks[2].content == expected
 
 
-def test_cpp_file_to_rst():
+def test_cpp_file_to_rst(tmp_path):
     CODE = """\
 // Do stuff
 // --------
@@ -214,14 +212,11 @@ int main(int argc, char** argv) {
     // sphinx_gallery_foobar = 14
 }
 """
-    with tempfile.NamedTemporaryFile("wb", suffix=".cpp", delete=False) as f:
-        f.write(CODE.encode())
+    filename = tmp_path / "example.cpp"
+    filename.write_text(CODE)
 
-    try:
-        parser = BlockParser(f.name, DEFAULT_GALLERY_CONF)
-        file_conf, blocks, _ = parser.split_code_and_text_blocks(f.name)
-    finally:
-        os.remove(f.name)
+    parser = BlockParser(filename, DEFAULT_GALLERY_CONF)
+    file_conf, blocks, _ = parser.split_code_and_text_blocks(filename)
 
     assert parser.language == "C++"
     assert file_conf == {"foobar": 14}

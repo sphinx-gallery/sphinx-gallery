@@ -81,7 +81,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
         if: matrix.distrib != 'mamba'
       # Python (if conda)
-      - uses: mamba-org/setup-micromamba@v2
+      - uses: mamba-org/setup-micromamba@v3
         with:
           environment-name: test
           init-shell: bash
@@ -118,4 +118,4 @@ jobs:
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
       - run: make -C doc SPHINXOPTS= html -j 2
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6

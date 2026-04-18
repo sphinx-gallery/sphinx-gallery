@@ -1,7 +1,5 @@
 """Test utility functions."""
 
-from pathlib import Path
-
 from sphinx_gallery.utils import _combine_backreferences, _read_json, _write_json
 
 
@@ -24,15 +22,15 @@ def test_combine_backreferences():
     }
 
 
-def test_read_write_json(tmpdir):
+def test_read_write_json(tmp_path):
     """Check `_read_json` and `_write_json` work as expected."""
-    path = Path(tmpdir, "test")
+    path = tmp_path / "test"
     data = {
         "object1": ("path/file.py", "first intro", "first title"),
         "object2": ("path2/file2.py", "second intro", "second title"),
     }
     _write_json(path, data, "test_dict")
     # Writing converts tuples to lists
-    assert _read_json(Path(path).with_name(path.stem + "test_dict.json")) == {
+    assert _read_json(path.with_name(path.stem + "test_dict.json")) == {
         key: list(value) for key, value in data.items()
     }

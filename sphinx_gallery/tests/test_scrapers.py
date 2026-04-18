@@ -1,6 +1,6 @@
 """Testing image scrapers."""
 
-import os
+from pathlib import Path
 
 import pytest
 from sphinx.errors import ConfigError, ExtensionError
@@ -19,7 +19,7 @@ from sphinx_gallery.scrapers import (
 
 
 @pytest.fixture(scope="function")
-def make_gallery_conf(tmpdir):
+def make_gallery_conf(tmp_path):
     """Sets up a test sphinx-gallery configuration."""
     # Skip if numpy not installed
     pytest.importorskip("numpy")
@@ -27,7 +27,7 @@ def make_gallery_conf(tmpdir):
     def make_gallery_conf(init=None):
         gallery_conf = _fill_gallery_conf_defaults(init or {})
         gallery_conf.update(
-            src_dir=str(tmpdir), examples_dir=str(tmpdir), gallery_dir=str(tmpdir)
+            src_dir=str(tmp_path), examples_dir=str(tmp_path), gallery_dir=str(tmp_path)
         )
 
         return gallery_conf
@@ -55,7 +55,7 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
 
     plt.plot(1, 1)
-    fname_template = os.path.join(gallery_conf["gallery_dir"], "image{0}.png")
+    fname_template = str(Path(gallery_conf["gallery_dir"], "image{0}.png"))
     image_path_iterator = ImagePathIterator(fname_template)
     block = ("",) * 3
     block_vars = dict(image_path_iterator=image_path_iterator)
@@ -64,7 +64,7 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
     fname = f"/image1.{ext}"
     assert fname in image_rst
     fname = gallery_conf["gallery_dir"] + fname
-    assert os.path.isfile(fname)
+    assert Path(fname).is_file()
 
     def _create_two_images():
         image_path_iterator.next()
@@ -81,7 +81,7 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
         fname = f"/image{ii}.{ext}"
         assert fname in image_rst
         fname = gallery_conf["gallery_dir"] + fname
-        assert os.path.isfile(fname)
+        assert Path(fname).is_file()
 
     # Test `sphinx_gallery_multi_image(_block)` variables work; these variables prevent
     # images with `sphx-glr-single-img` classes from being converted to
@@ -133,7 +133,7 @@ def test_save_matplotlib_figures_hidpi(make_gallery_conf):
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
 
     plt.plot(1, 1)
-    fname_template = os.path.join(gallery_conf["gallery_dir"], "image{0}.png")
+    fname_template = str(Path(gallery_conf["gallery_dir"], "image{0}.png"))
     image_path_iterator = ImagePathIterator(fname_template)
     block = ("",) * 3
     block_vars = dict(image_path_iterator=image_path_iterator)
@@ -147,8 +147,8 @@ def test_save_matplotlib_figures_hidpi(make_gallery_conf):
     fname = gallery_conf["gallery_dir"] + fname
     fnamehi = gallery_conf["gallery_dir"] + f"/image1_2_00x.{ext}"
 
-    assert os.path.isfile(fname)
-    assert os.path.isfile(fnamehi)
+    assert Path(fname).is_file()
+    assert Path(fnamehi).is_file()
 
     # Test capturing 2 images with shifted start number
     image_path_iterator.next()
@@ -163,11 +163,11 @@ def test_save_matplotlib_figures_hidpi(make_gallery_conf):
         assert fname in image_rst
 
         fname = gallery_conf["gallery_dir"] + fname
-        assert os.path.isfile(fname)
+        assert Path(fname).is_file()
         fname = f"/image{ii}_2_00x.{ext}"
         assert fname in image_rst
         fname = gallery_conf["gallery_dir"] + fname
-        assert os.path.isfile(fname)
+        assert Path(fname).is_file()
 
 
 def _custom_func(x, y, z):
@@ -198,7 +198,7 @@ def test_custom_scraper(make_gallery_conf, monkeypatch):
         (lambda x, y, z: 1.0, "was not a string"),
     ]:
         conf = make_gallery_conf({"image_scrapers": [cust]})
-        fname_template = os.path.join(conf["gallery_dir"], "image{0}.png")
+        fname_template = str(Path(conf["gallery_dir"], "image{0}.png"))
         image_path_iterator = ImagePathIterator(fname_template)
         block = ("",) * 3
         block_vars = dict(image_path_iterator=image_path_iterator)
@@ -254,7 +254,7 @@ def test_figure_rst(ext):
 def test_figure_rst_path():
     """Test figure path correct in figure reSt."""
     # Tests issue #229
-    local_img = [os.path.join(os.getcwd(), "third.png")]
+    local_img = [Path.cwd() / "third.png"]
     image_rst = figure_rst(local_img, ".")
 
     single_image = SG_IMAGE % ("third.png", "", "/third.png")
@@ -297,7 +297,7 @@ def test_figure_rst_srcset():
     assert image_rst == image_list_rst
 
     # test issue #229
-    local_img = [os.path.join(os.getcwd(), "third.png")]
+    local_img = [Path.cwd() / "third.png"]
     image_rst = figure_rst(local_img, ".")
 
     single_image = SG_IMAGE % ("third.png", "", "/third.png")

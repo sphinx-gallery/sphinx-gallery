@@ -2,9 +2,7 @@
 # License: 3-clause BSD
 """Test the example recommender plugin."""
 
-import codecs
-import os
-import re
+from pathlib import Path
 
 import pytest
 
@@ -41,45 +39,36 @@ def test_recommendation_files(gallery_conf):
         "fox_eats_dog_food.py": "The quick brown fox ate the lazy dog's food",
         "dog_jumps_fox.py": "The quick dog jumped over the lazy fox",
     }
+    gallery_dir = Path(gallery_conf["gallery_dir"])
 
     for file_name, content in file_dict.items():
-        file_path = os.path.join(gallery_conf["gallery_dir"], file_name)
-        with open(file_path, "w") as f:
-            f.write(content)
+        file_path = gallery_dir / file_name
+        file_path.write_text(content)
         sg.save_rst_example("example_rst", file_path, 0, 0, gallery_conf)
 
-        test_file = re.sub(r"\.py$", ".rst", file_path)
-        recommendation_file = re.sub(r"\.py$", ".recommendations", file_name)
-        with codecs.open(test_file) as f:
-            rst = f.read()
+        test_file = file_path.with_suffix(".rst")
+        rst = test_file.read_text()
 
-        assert recommendation_file in rst
+        recommendation_file = file_path.with_suffix(".recommendations")
+        assert recommendation_file.name in rst
 
-    py_files = [
-        fname
-        for fname in os.listdir(gallery_conf["gallery_dir"])
-        if os.path.splitext(fname)[1] == ".py"
-    ]
     gallery_py_files = [
-        os.path.join(gallery_conf["gallery_dir"], fname) for fname in py_files
+        str(fname) for fname in gallery_dir.iterdir() if fname.suffix == ".py"
     ]
     recommender = ExampleRecommender(n_examples=1, min_df=1)
     recommender.fit(gallery_py_files)
-    recommended_example = recommender.predict(file_path)  # dog_jumps_fox.py
+    recommended_example = recommender.predict(str(file_path))  # dog_jumps_fox.py
 
-    assert os.path.basename(recommended_example[0]) == "fox_jumps_dog.py"
+    assert Path(recommended_example[0]).name == "fox_jumps_dog.py"
 
     # _write_recommendations needs a thumbnail, for writing the
     # `_thumbnail_div` we then create a blank png
-    thumb_path = os.path.join(gallery_conf["gallery_dir"], "images/thumb")
-    os.makedirs(thumb_path, exist_ok=True)
-    png_file = "sphx_glr_fox_jumps_dog_thumb.png"
-    png_file_path = os.path.join(thumb_path, png_file)
-    with open(png_file_path, "wb") as f:
-        b"\x89PNG\r\n\x1a\n"  # generic png file signature
+    thumb_path = gallery_dir / "images/thumb"
+    thumb_path.mkdir(parents=True, exist_ok=True)
+    png_file_path = thumb_path / "sphx_glr_fox_jumps_dog_thumb.png"
+    png_file_path.write_bytes(b"\x89PNG\r\n\x1a\n")  # generic png file signature
 
-    recommendation_file = re.sub(r"\.py$", ".recommendations", file_path)
-    _write_recommendations(recommender, file_path, gallery_conf)
-    with codecs.open(recommendation_file) as f:
-        rst = f.read()
+    _write_recommendations(recommender, str(file_path), gallery_conf)
+    recommendation_file = file_path.with_suffix(".recommendations")
+    rst = recommendation_file.read_text()
     assert ".. rubric:: Custom header" in rst

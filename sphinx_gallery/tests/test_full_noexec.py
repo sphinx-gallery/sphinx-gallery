@@ -1,9 +1,9 @@
 # License: 3-clause BSD
 """Test the SG pipeline using Sphinx and tinybuild."""
 
-import os.path as op
 import shutil
 from io import StringIO
+from pathlib import Path
 
 import pytest
 from sphinx.application import Sphinx
@@ -11,9 +11,9 @@ from sphinx.util.docutils import docutils_namespace
 
 
 @pytest.fixture(scope="module")
-def sphinx_app(tmpdir_factory, req_mpl, req_pil):
-    temp_dir = (tmpdir_factory.getbasetemp() / "root_nonexec").strpath
-    src_dir = op.join(op.dirname(__file__), "tinybuild")
+def sphinx_app(tmp_path_factory, req_mpl, req_pil):
+    temp_dir = tmp_path_factory.getbasetemp() / "root_nonexec"
+    src_dir = Path(__file__).parent / "tinybuild"
 
     def ignore(src, names):
         return ("_build", "gen_modules", "auto_examples")
@@ -22,9 +22,9 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
     # For testing iteration, you can get similar behavior just doing `make`
     # inside the tinybuild/doc directory
     src_dir = temp_dir
-    conf_dir = op.join(temp_dir, "doc")
-    out_dir = op.join(conf_dir, "_build", "html")
-    toctrees_dir = op.join(temp_dir, "doc", "_build", "toctrees")
+    conf_dir = temp_dir / "doc"
+    out_dir = conf_dir / "_build" / "html"
+    toctrees_dir = temp_dir / "doc" / "_build" / "toctrees"
     # Avoid warnings about re-registration, see:
     # https://github.com/sphinx-doc/sphinx/issues/5038
     confoverrides = {
@@ -49,11 +49,11 @@ def sphinx_app(tmpdir_factory, req_mpl, req_pil):
 
 def test_dummy_image(sphinx_app):
     """Test that sphinx_gallery_dummy_images are created."""
-    img1 = op.join(
+    img1 = Path(
         sphinx_app.srcdir, "auto_examples", "images", "sphx_glr_plot_repr_001.png"
     )
-    img2 = op.join(
+    img2 = Path(
         sphinx_app.srcdir, "auto_examples", "images", "sphx_glr_plot_repr_002.png"
     )
-    assert op.isfile(img1)
-    assert op.isfile(img2)
+    assert img1.is_file()
+    assert img2.is_file()

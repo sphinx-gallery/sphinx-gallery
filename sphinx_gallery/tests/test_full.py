@@ -2,11 +2,8 @@
 # License: 3-clause BSD
 """Test the SG pipeline used with Sphinx and tinybuild."""
 
-import codecs
-import glob
 import json
 import os
-import os.path as op
 import re
 import shutil
 import sys
@@ -65,20 +62,20 @@ pytest.importorskip("joblib")
 
 
 @pytest.fixture(scope="module")
-def sphinx_app(tmpdir_factory, req_mpl, req_pil):
-    return _sphinx_app(tmpdir_factory, "html")
+def sphinx_app(tmp_path_factory, req_mpl, req_pil):
+    return _sphinx_app(tmp_path_factory, "html")
 
 
 @pytest.fixture(scope="module")
-def sphinx_dirhtml_app(tmpdir_factory, req_mpl, req_pil):
-    return _sphinx_app(tmpdir_factory, "dirhtml")
+def sphinx_dirhtml_app(tmp_path_factory, req_mpl, req_pil):
+    return _sphinx_app(tmp_path_factory, "dirhtml")
 
 
-def _sphinx_app(tmpdir_factory, buildername):
+def _sphinx_app(tmp_path_factory, buildername):
     # Skip if numpy not installed
     pytest.importorskip("numpy")
 
-    temp_dir = tmpdir_factory.getbasetemp() / f"root_{buildername}"
+    temp_dir = tmp_path_factory.getbasetemp() / f"root_{buildername}"
     src_dir = Path(__file__).parent / "tinybuild"
 
     def ignore(src, names):
@@ -121,22 +118,20 @@ def test_timings(sphinx_app):
     src_dir = sphinx_app.srcdir
 
     # local folder
-    timings_rst = op.join(src_dir, "auto_examples", "sg_execution_times.rst")
-    assert op.isfile(timings_rst)
-    with codecs.open(timings_rst, "r", "utf-8") as fid:
-        content = fid.read()
+    timings_rst = Path(src_dir, "auto_examples", "sg_execution_times.rst")
+    assert timings_rst.is_file()
+    content = timings_rst.read_text(encoding="utf-8")
     assert ":ref:`sphx_glr_auto_examples_plot_numpy_matplotlib.py`" in content
     parenthetical = "(``plot_numpy_matplotlib.py``)"
     assert parenthetical in content
     # HTML output
-    timings_html = op.join(out_dir, "auto_examples", "sg_execution_times.html")
-    assert op.isfile(timings_html)
-    with codecs.open(timings_html, "r", "utf-8") as fid:
-        content = fid.read()
+    timings_html = Path(out_dir, "auto_examples", "sg_execution_times.html")
+    assert timings_html.is_file()
+    content = timings_html.read_text(encoding="utf-8")
     assert 'href="plot_numpy_matplotlib.html' in content
     # printed
     status = sphinx_app._status.getvalue()
-    fname = op.join("..", "examples", "plot_numpy_matplotlib.py")
+    fname = Path("..", "examples", "plot_numpy_matplotlib.py")
     assert f"- {fname}: " in status
 
 
@@ -145,13 +140,12 @@ def test_api_usage(sphinx_app):
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
     # the rst file was empty but is removed in post-processing
-    api_rst = op.join(src_dir, "sg_api_usage.rst")
-    assert not op.isfile(api_rst)
+    api_rst = Path(src_dir, "sg_api_usage.rst")
+    assert not api_rst.is_file()
     # HTML output
-    api_html = op.join(out_dir, "sg_api_usage.html")
-    assert op.isfile(api_html)
-    with codecs.open(api_html, "r", "utf-8") as fid:
-        content = fid.read()
+    api_html = Path(out_dir, "sg_api_usage.html")
+    assert api_html.is_file()
+    content = api_html.read_text(encoding="utf-8")
     has_graphviz = _has_graphviz()
     # spot check references
     assert (
@@ -172,7 +166,7 @@ def test_api_usage(sphinx_app):
         assert 'alt="sphinx_gallery usage graph"' not in content
     # printed
     status = sphinx_app._status.getvalue()
-    fname = op.join("..", "examples", "plot_numpy_matplotlib.py")
+    fname = Path("..", "examples", "plot_numpy_matplotlib.py")
     assert f"- {fname}: " in status
 
 
@@ -193,8 +187,7 @@ def test_junit(sphinx_app, tmp_path):
     out_dir = sphinx_app.outdir
     junit_file = Path(out_dir) / "sphinx-gallery" / "junit-results.xml"
     assert junit_file.is_file()
-    with open(junit_file, "rb") as fid:
-        contents = fid.read()
+    contents = junit_file.read_bytes()
     suite = lxml.etree.fromstring(contents)
     want = dict(
         errors="0",
@@ -244,8 +237,7 @@ def test_junit(sphinx_app, tmp_path):
             app.build(False, [])
     junit_file = new_out_dir / "sphinx-gallery" / "junit-results.xml"
     assert junit_file.is_file()
-    with open(junit_file, "rb") as fid:
-        suite = lxml.etree.fromstring(fid.read())
+    suite = lxml.etree.fromstring(junit_file.read_bytes())
     # this time we only ran the stale files
     want.update(failures="2", skipped="3", tests="5")
     got = dict(suite.attrib)
@@ -289,12 +281,10 @@ def test_junit(sphinx_app, tmp_path):
 def test_run_sphinx(sphinx_app):
     """Test basic outputs."""
     out_dir = Path(sphinx_app.outdir)
-    out_files = os.listdir(out_dir)
-    assert "index.html" in out_files
-    assert "auto_examples" in out_files
-    assert "auto_examples_with_rst" in out_files
-    assert "auto_examples_rst_index" in out_files
-    assert "auto_examples_README_header" in out_files
+    assert (out_dir / "index.html").is_file()
+    assert (out_dir / "auto_examples_with_rst").is_dir()
+    assert (out_dir / "auto_examples_rst_index").is_dir()
+    assert (out_dir / "auto_examples_README_header").is_dir()
     generated_examples_dir = out_dir / "auto_examples"
     assert generated_examples_dir.is_dir()
     # make sure that indices are properly being passed forward...
@@ -321,17 +311,17 @@ def test_user_index_download(sphinx_app):
     assert (src_dir / "auto_examples_rst_index_python.zip").is_file()
 
 
-def test_thumbnail_path(sphinx_app, tmpdir):
+def test_thumbnail_path(sphinx_app, tmp_path):
     """Test sphinx_gallery_thumbnail_path."""
     import numpy as np
     from PIL import Image
 
     # Make sure our thumbnail matches what it should be
-    fname_orig = op.join(sphinx_app.srcdir, "_static_nonstandard", "demo.png")
-    fname_thumb = op.join(
+    fname_orig = str(Path(sphinx_app.srcdir, "_static_nonstandard", "demo.png"))
+    fname_thumb = Path(
         sphinx_app.outdir, "_images", "sphx_glr_plot_second_future_imports_thumb.png"
     )
-    fname_new = str(tmpdir.join("new.png"))
+    fname_new = str(tmp_path / "new.png")
     scale_image(
         fname_orig, fname_new, *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"]
     )
@@ -343,19 +333,19 @@ def test_thumbnail_path(sphinx_app, tmpdir):
     assert corr > 0.99
 
 
-def test_negative_thumbnail_config(sphinx_app, tmpdir):
+def test_negative_thumbnail_config(sphinx_app, tmp_path):
     """Test 'sphinx_gallery_thumbnail_number' config correct for negative numbers."""
     import numpy as np
     from PIL import Image
 
     # Make sure our thumbnail is the 2nd (last) image
-    fname_orig = op.join(
-        sphinx_app.outdir, "_images", "sphx_glr_plot_matplotlib_alt_002.png"
+    fname_orig = str(
+        Path(sphinx_app.outdir, "_images", "sphx_glr_plot_matplotlib_alt_002.png")
     )
-    fname_thumb = op.join(
+    fname_thumb = Path(
         sphinx_app.outdir, "_images", "sphx_glr_plot_matplotlib_alt_thumb.png"
     )
-    fname_new = str(tmpdir.join("new.png"))
+    fname_new = str(tmp_path / "new.png")
     scale_image(
         fname_orig, fname_new, *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"]
     )
@@ -367,16 +357,16 @@ def test_negative_thumbnail_config(sphinx_app, tmpdir):
     assert corr > 0.99
 
 
-def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
+def test_thumbnail_expected_failing_examples(sphinx_app, tmp_path):
     """Test thumbnail behaviour for expected failing examples."""
     import numpy as np
     from PIL import Image
 
     # Get the "BROKEN" stamp for the default failing example thumbnail
-    stamp_fname = op.join(
-        sphinx_app.srcdir, "_static_nonstandard", "broken_example.png"
+    stamp_fname = str(
+        Path(sphinx_app.srcdir, "_static_nonstandard", "broken_example.png")
     )
-    stamp_fname_scaled = str(tmpdir.join("new.png"))
+    stamp_fname_scaled = str(tmp_path / "new.png")
     scale_image(
         stamp_fname,
         stamp_fname_scaled,
@@ -387,7 +377,7 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
 
     # Get thumbnail from example with failing example thumbnail behaviour
     # (i.e. thumbnail should be "BROKEN" stamp)
-    thumb_fname = op.join(
+    thumb_fname = Path(
         sphinx_app.outdir, "_images", "sphx_glr_plot_failing_example_thumb.png"
     )
     thumbnail = np.asarray(Image.open(thumb_fname))
@@ -397,7 +387,7 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
 
     # Get thumbnail from example with default thumbnail behaviour
     # (i.e. thumbnail should be the plot from the example, not the "BROKEN" stamp)
-    thumb_fname = op.join(
+    thumb_fname = Path(
         sphinx_app.outdir,
         "_images",
         "sphx_glr_plot_failing_example_thumbnail_thumb.png",
@@ -410,19 +400,17 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmpdir):
 
 def test_multi_image(sphinx_app):
     """Test `sphinx_gallery_multi_image(_block)` variables."""
-    generated_examples_dir = op.join(sphinx_app.outdir, "auto_examples")
+    generated_examples_dir = Path(sphinx_app.outdir, "auto_examples")
 
     # Check file-wide `sphinx_gallery_multi_image="single"` produces no multi-img
-    html_fname = op.join(generated_examples_dir, "plot_multi_image_separate.html")
-    with codecs.open(html_fname, "r", "utf-8") as fid:
-        html = fid.read()
+    html_fname = generated_examples_dir / "plot_multi_image_separate.html"
+    html = html_fname.read_text(encoding="utf-8")
     assert "sphx-glr-single-img" in html
     assert "sphx-glr-multi-img" not in html
 
     # Check block-specific `sphinx_gallery_multi_image_block` produces mixed img classes
-    html_fname = op.join(generated_examples_dir, "plot_multi_image_block_separate.html")
-    with codecs.open(html_fname, "r", "utf-8") as fid:
-        html = fid.read()
+    html_fname = generated_examples_dir / "plot_multi_image_block_separate.html"
+    html = html_fname.read_text(encoding="utf-8")
     # find start of each code block
     matches = re.finditer('<div class="highlight-Python notranslate">', html)
     starts = [match.start() for match in matches] + [-1]
@@ -439,18 +427,17 @@ def test_multi_image(sphinx_app):
 
 
 def test_command_line_args_img(sphinx_app):
-    generated_examples_dir = op.join(sphinx_app.outdir, "auto_examples")
+    generated_examples_dir = Path(sphinx_app.outdir, "auto_examples")
     thumb_fname = "../_images/sphx_glr_plot_command_line_args_thumb.png"
-    file_fname = op.join(generated_examples_dir, thumb_fname)
-    assert op.isfile(file_fname), file_fname
+    file_fname = generated_examples_dir / thumb_fname
+    assert file_fname.is_file(), file_fname
 
 
 def test_image_formats(sphinx_app):
     """Test Image format support."""
-    generated_examples_dir = op.join(sphinx_app.outdir, "auto_examples")
-    generated_examples_index = op.join(generated_examples_dir, "index.html")
-    with codecs.open(generated_examples_index, "r", "utf-8") as fid:
-        html = fid.read()
+    generated_examples_dir = Path(sphinx_app.outdir, "auto_examples")
+    generated_examples_index = generated_examples_dir / "index.html"
+    html = generated_examples_index.read_text(encoding="utf-8")
     thumb_fnames = [
         "../_images/sphx_glr_plot_svg_thumb.svg",
         "../_images/sphx_glr_plot_numpy_matplotlib_thumb.png",
@@ -458,8 +445,8 @@ def test_image_formats(sphinx_app):
         "../_images/sphx_glr_plot_webp_thumb.webp",
     ]
     for thumb_fname in thumb_fnames:
-        file_fname = op.join(generated_examples_dir, thumb_fname)
-        assert op.isfile(file_fname), file_fname
+        file_fname = generated_examples_dir / thumb_fname
+        assert file_fname.is_file(), file_fname
         want_html = f'src="{thumb_fname}"'
         assert want_html in html
     # the original GIF does not get copied because it's not used in the
@@ -471,29 +458,27 @@ def test_image_formats(sphinx_app):
         ("plot_animation", "mp4", [2]),
         ("plot_webp", "webp", [1]),
     ):
-        html_fname = op.join(generated_examples_dir, f"{ex}.html")
-        with codecs.open(html_fname, "r", "utf-8") as fid:
-            html = fid.read()
+        html_fname = generated_examples_dir / f"{ex}.html"
+        html = html_fname.read_text(encoding="utf-8")
         for num in nums:
             img_fname0 = f"../_images/sphx_glr_{ex}_{num:03}.{ext}"
-            file_fname = op.join(generated_examples_dir, img_fname0)
-            assert op.isfile(file_fname), file_fname
+            file_fname = generated_examples_dir / img_fname0
+            assert file_fname.is_file(), file_fname
             want_html = f'src="{img_fname0}"'
             assert want_html in html
             img_fname2 = f"../_images/sphx_glr_{ex}_{num:03}_2_00x.{ext}"
-            file_fname2 = op.join(generated_examples_dir, img_fname2)
+            file_fname2 = generated_examples_dir / img_fname2
             want_html = f'srcset="{img_fname0}, {img_fname2} 2.00x"'
             if ext in ("png", "jpg", "svg", "webp"):
                 # check 2.00x (tests directive)
-                assert op.isfile(file_fname2), file_fname2
+                assert file_fname2.is_file(), file_fname2
                 assert want_html in html
 
 
 def test_repr_html_classes(sphinx_app):
     """Test appropriate _repr_html_ classes."""
-    example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
-    with codecs.open(example_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    example_file = Path(sphinx_app.outdir, "auto_examples", "plot_repr.html")
+    lines = example_file.read_text(encoding="utf-8")
     assert 'div class="output_subarea output_html rendered_html output_result"' in lines
     assert "gallery-rendered-html.css" in lines
 
@@ -502,13 +487,11 @@ def test_embed_links_and_styles(sphinx_app):
     """Test that links and styles are embedded properly in doc."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
-    examples_dir = op.join(out_dir, "auto_examples")
-    assert op.isdir(examples_dir)
-    example_files = os.listdir(examples_dir)
-    assert "plot_numpy_matplotlib.html" in example_files
-    example_file = op.join(examples_dir, "plot_numpy_matplotlib.html")
-    with codecs.open(example_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    examples_dir = Path(out_dir, "auto_examples")
+    assert examples_dir.is_dir()
+    assert (examples_dir / "plot_numpy_matplotlib.html").is_file()
+    example_file = examples_dir / "plot_numpy_matplotlib.html"
+    lines = example_file.read_text(encoding="utf-8")
     # ensure we've linked properly
     assert "#module-matplotlib.colors" in lines
     assert "matplotlib.colors.is_color_like" in lines
@@ -636,10 +619,9 @@ def test_embed_links_and_styles(sphinx_app):
         )  # noqa:E501
 
     # highlight language
-    fname = op.join(src_dir, "auto_examples", "plot_numpy_matplotlib.rst")
-    assert op.isfile(fname)
-    with codecs.open(fname, "r", "utf-8") as fid:
-        rst = fid.read()
+    fname = Path(src_dir, "auto_examples", "plot_numpy_matplotlib.rst")
+    assert fname.is_file()
+    rst = fname.read_text(encoding="utf-8")
     assert ".. code-block:: Python\n" in rst
 
     # warnings
@@ -650,30 +632,27 @@ def test_embed_links_and_styles(sphinx_app):
     assert re.match(want_warn, lines, re.DOTALL) is not None
     sys.stdout.write(lines)
 
-    lines = (Path(examples_dir) / "plot_pickle.html").read_text("utf-8")
+    lines = (examples_dir / "plot_pickle.html").read_text("utf-8")
     assert "joblib.Parallel.html" in lines
 
 
 def test_backreferences(sphinx_app):
     """Test backreferences."""
-    out_dir = sphinx_app.outdir
-    mod_file = op.join(out_dir, "gen_modules", "sphinx_gallery.sorting.html")
-    with codecs.open(mod_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    out_dir = Path(sphinx_app.outdir)
+    mod_file = out_dir / "gen_modules" / "sphinx_gallery.sorting.html"
+    lines = mod_file.read_text(encoding="utf-8")
     assert "ExplicitOrder" in lines  # in API doc
     assert "plot_second_future_imports.html" in lines  # backref via code use
     assert "FileNameSortKey" in lines  # in API doc
     assert "plot_numpy_matplotlib.html" in lines  # backref via :class: in str
-    mod_file = op.join(out_dir, "gen_modules", "sphinx_gallery.backreferences.html")
-    with codecs.open(mod_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    mod_file = out_dir / "gen_modules" / "sphinx_gallery.backreferences.html"
+    lines = mod_file.read_text(encoding="utf-8")
     assert "NameFinder" in lines  # in API doc
     assert "plot_future_imports.html" in lines  # backref via doc block
     # rendered file
-    html = op.join(out_dir, "auto_examples", "plot_second_future_imports.html")
-    assert op.isfile(html)
-    with codecs.open(html, "r", "utf-8") as fid:
-        html = fid.read()
+    html_file = out_dir / "auto_examples" / "plot_second_future_imports.html"
+    assert html_file.is_file()
+    html = html_file.read_text(encoding="utf-8")
     assert "sphinx_gallery.sorting.html#sphinx_gallery.sorting.ExplicitOrder" in html  # noqa: E501
     assert "sphinx_gallery.scrapers.html#sphinx_gallery.scrapers.clean_modules" in html  # noqa: E501
     assert "figure_rst.html" not in html  # excluded
@@ -681,26 +660,21 @@ def test_backreferences(sphinx_app):
 
 def test_backreferences_dirhtml(sphinx_dirhtml_app):
     """Test backreferences in dirhtml doc."""
-    out_dir = sphinx_dirhtml_app.outdir
-    mod_file = op.join(out_dir, "gen_modules", "sphinx_gallery.sorting", "index.html")
-    with codecs.open(mod_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    out_dir = Path(sphinx_dirhtml_app.outdir)
+    mod_file = out_dir / "gen_modules" / "sphinx_gallery.sorting" / "index.html"
+    lines = mod_file.read_text(encoding="utf-8")
     assert "ExplicitOrder" in lines  # in API doc
     assert "plot_second_future_imports/" in lines  # backref via code use
     assert "FileNameSortKey" in lines  # in API doc
     assert "plot_numpy_matplotlib/" in lines  # backref via :class: in str
-    mod_file = op.join(
-        out_dir, "gen_modules", "sphinx_gallery.backreferences", "index.html"
-    )
-    with codecs.open(mod_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    mod_file = out_dir / "gen_modules" / "sphinx_gallery.backreferences" / "index.html"
+    lines = mod_file.read_text(encoding="utf-8")
     assert "NameFinder" in lines  # in API doc
     assert "plot_future_imports/" in lines  # backref via doc block
     # rendered file
-    html = op.join(out_dir, "auto_examples", "plot_second_future_imports", "index.html")
-    assert op.isfile(html)
-    with codecs.open(html, "r", "utf-8") as fid:
-        html = fid.read()
+    html_file = out_dir / "auto_examples" / "plot_second_future_imports" / "index.html"
+    assert html_file.is_file()
+    html = html_file.read_text(encoding="utf-8")
     assert "sphinx_gallery.sorting/#sphinx_gallery.sorting.ExplicitOrder" in html  # noqa: E501
     assert "sphinx_gallery.scrapers/#sphinx_gallery.scrapers.clean_modules" in html  # noqa: E501
     assert "figure_rst.html" not in html  # excluded
@@ -724,9 +698,8 @@ def test_backreferences_dirhtml(sphinx_dirhtml_app):
 def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
     """Test linking to mini-galleries using backreferences_dir."""
     backref_dir = sphinx_app.srcdir
-    examples_rst = op.join(backref_dir, "gen_modules", "backreferences", rst_file)
-    with codecs.open(examples_rst, "r", "utf-8") as fid:
-        lines = fid.read()
+    examples_rst = Path(backref_dir, "gen_modules", "backreferences", rst_file)
+    lines = examples_rst.read_text(encoding="utf-8")
     assert example_used_in in lines
     # check the .. raw:: html div count
     n_open = lines.count("<div")
@@ -736,11 +709,10 @@ def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
 
 def test_backreferences_examples_html(sphinx_app):
     """Test linking to mini-galleries using backreferences_dir."""
-    backref_file = op.join(
+    backref_file = Path(
         sphinx_app.outdir, "gen_modules", "sphinx_gallery.backreferences.html"
     )
-    with codecs.open(backref_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    lines = backref_file.read_text(encoding="utf-8")
     # Class properties not properly checked on older Sphinx (e.g. 3)
     # so let's use the "id" instead
     regex = re.compile(r'<dt[ \S]*id="sphinx_gallery.backreferences.[ \S]*>')
@@ -765,11 +737,8 @@ def test_backreferences_examples_html(sphinx_app):
     n_close = lines.count("</div")
     assert n_open == n_close  # should always be equal
 
-    backref_file = op.join(
-        sphinx_app.outdir, "gen_modules", "sphinx_gallery._dummy.html"
-    )
-    with codecs.open(backref_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    backref_file = Path(sphinx_app.outdir, "gen_modules", "sphinx_gallery._dummy.html")
+    lines = backref_file.read_text(encoding="utf-8")
     # Class properties not properly checked on older Sphinx (e.g. 3)
     # so let's use the "id" instead
     regex = re.compile(r'<dt[ \S]*id="sphinx_gallery._dummy.[ \S]*>')
@@ -791,11 +760,10 @@ def test_backreferences_examples_html(sphinx_app):
     n_close = lines.count("</div")
     assert n_open == n_close  # should always be equal
 
-    backref_file = op.join(
+    backref_file = Path(
         sphinx_app.outdir, "gen_modules", "sphinx_gallery._dummy.nested.html"
     )
-    with codecs.open(backref_file, "r", "utf-8") as fid:
-        lines = fid.read()
+    lines = backref_file.read_text(encoding="utf-8")
     # Class properties not properly checked on older Sphinx (e.g. 3)
     # so let's use the "id" instead
     regex = re.compile(r'<dt[ \S]*id="sphinx_gallery._dummy.nested.[ \S]*>')
@@ -820,41 +788,43 @@ def test_backreferences_examples_html(sphinx_app):
 
 def test_logging_std_nested(sphinx_app):
     """Test that nested stdout/stderr uses within a given script work."""
-    log_rst = op.join(sphinx_app.srcdir, "auto_examples", "plot_log.rst")
-    with codecs.open(log_rst, "r", "utf-8") as fid:
-        lines = fid.read()
+    log_rst = Path(sphinx_app.srcdir, "auto_examples", "plot_log.rst")
+    lines = log_rst.read_text(encoding="utf-8")
     assert ".. code-block:: none\n\n    is in the same cell" in lines
     assert ".. code-block:: none\n\n    is not in the same cell" in lines
 
 
-def _assert_mtimes(list_orig, list_new, different=(), ignore=()):
+def _assert_mtimes(
+    list_orig: list[Path],
+    list_new: list[Path],
+    different: tuple[str, ...] = (),
+    ignore: tuple[str, ...] = (),
+) -> None:
     """Assert that the correct set of files were changed based on mtime."""
     import numpy as np
     from numpy.testing import assert_allclose
 
-    assert [op.basename(x) for x in list_orig] == [op.basename(x) for x in list_new]
+    assert [x.name for x in list_orig] == [x.name for x in list_new]
     # This is probably not totally specific/correct, but this fails on 4.0.0
     # and not on other builds (e.g., 4.5) so hopefully good enough until we
     # drop 4.x support
     good_sphinx = Version(sphinx_version) >= Version("4.1")
     for orig, new in zip(list_orig, list_new):
-        check_name = op.splitext(op.basename(orig))[0]
-        if check_name.endswith(".codeobj"):
-            check_name = check_name[:-8]
+        check_name = orig.stem.removesuffix(".codeobj")
         if check_name in different:
             if good_sphinx:
-                assert np.abs(op.getmtime(orig) - op.getmtime(new)) > 0.1
+                assert np.abs(orig.stat().st_mtime - new.stat().st_mtime) > 0.1
         elif check_name not in ignore:
             assert_allclose(
-                op.getmtime(orig),
-                op.getmtime(new),
+                orig.stat().st_mtime,
+                new.stat().st_mtime,
                 atol=1e-3,
                 rtol=1e-20,
-                err_msg=f"{op.basename(orig)} was updated but should not have been",
+                err_msg=f"{orig.name} was updated but should not have been",
             )
 
 
-def test_rebuild(tmpdir_factory, sphinx_app):
+def test_rebuild(tmp_path_factory, sphinx_app):
     """Test examples that haven't been changed aren't run twice."""
     # First run completes in the fixture.
     status = sphinx_app._status.getvalue()
@@ -870,38 +840,28 @@ def test_rebuild(tmpdir_factory, sphinx_app):
         N_EXAMPLES,
     )
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None, lines
-    old_src_dir = (tmpdir_factory.getbasetemp() / "root_old").strpath
+    old_src_dir = tmp_path_factory.getbasetemp() / "root_old"
     shutil.copytree(sphinx_app.srcdir, old_src_dir)
     generated_modules_0 = sorted(
-        op.join(old_src_dir, "gen_modules", f)
-        for f in os.listdir(op.join(old_src_dir, "gen_modules"))
-        if op.isfile(op.join(old_src_dir, "gen_modules", f))
+        f for f in (old_src_dir / "gen_modules").iterdir() if f.is_file()
     )
     generated_backrefs_0 = sorted(
-        op.join(old_src_dir, "gen_modules", "backreferences", f)
-        for f in os.listdir(op.join(old_src_dir, "gen_modules", "backreferences"))
+        f
+        for f in (old_src_dir / "gen_modules" / "backreferences").iterdir()
         # Exclude backreferences_all.json` which is changed when any example is run
-        if "backreferences_all.json" not in f
+        if f.name != "backreferences_all.json"
     )
     generated_rst_0 = sorted(
-        op.join(old_src_dir, "auto_examples", f)
-        for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".rst")
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".rst"
     )
     generated_json_0 = sorted(
-        op.join(old_src_dir, "auto_examples", f)
-        for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".json")
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".json"
     )
     copied_py_0 = sorted(
-        op.join(old_src_dir, "auto_examples", f)
-        for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".py")
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".py"
     )
     copied_ipy_0 = sorted(
-        op.join(old_src_dir, "auto_examples", f)
-        for f in os.listdir(op.join(old_src_dir, "auto_examples"))
-        if f.endswith(".ipynb")
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".ipynb"
     )
     assert len(generated_modules_0) > 0
     assert len(generated_backrefs_0) > 0
@@ -910,9 +870,9 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     assert len(copied_py_0) > 0
     assert len(copied_ipy_0) > 0
     assert len(sphinx_app.config.sphinx_gallery_conf["stale_examples"]) == 0
-    assert op.isfile(
-        op.join(sphinx_app.outdir, "_images", "sphx_glr_plot_numpy_matplotlib_001.png")
-    )
+    assert Path(
+        sphinx_app.outdir, "_images", "sphx_glr_plot_numpy_matplotlib_001.png"
+    ).is_file()
 
     #
     # run a second time, no files should be updated
@@ -921,8 +881,8 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     src_dir = sphinx_app.srcdir
     del sphinx_app  # don't accidentally use it below
     conf_dir = src_dir
-    out_dir = op.join(src_dir, "_build", "html")
-    toctrees_dir = op.join(src_dir, "_build", "toctrees")
+    out_dir = Path(src_dir, "_build", "html")
+    toctrees_dir = Path(src_dir, "_build", "toctrees")
     time.sleep(0.1)
     with docutils_namespace():
         new_app = Sphinx(
@@ -962,40 +922,34 @@ def test_rebuild(tmpdir_factory, sphinx_app):
     assert re.match(want, status, re.MULTILINE | re.DOTALL) is not None
     n_stale = len(new_app.config.sphinx_gallery_conf["stale_examples"])
     assert n_stale == N_GOOD
-    assert op.isfile(
-        op.join(new_app.outdir, "_images", "sphx_glr_plot_numpy_matplotlib_001.png")
-    )
+    assert Path(
+        new_app.outdir, "_images", "sphx_glr_plot_numpy_matplotlib_001.png"
+    ).is_file()
 
     generated_modules_1 = sorted(
-        op.join(new_app.srcdir, "gen_modules", f)
-        for f in os.listdir(op.join(new_app.srcdir, "gen_modules"))
-        if op.isfile(op.join(new_app.srcdir, "gen_modules", f))
+        f for f in Path(new_app.srcdir, "gen_modules").iterdir() if f.is_file()
     )
     generated_backrefs_1 = sorted(
-        op.join(new_app.srcdir, "gen_modules", "backreferences", f)
-        for f in os.listdir(op.join(new_app.srcdir, "gen_modules", "backreferences"))
+        f
+        for f in Path(new_app.srcdir, "gen_modules", "backreferences").iterdir()
         # Exclude backreferences_all.json` which is changed when any example is run
-        if "backreferences_all.json" not in f
+        if f.name != "backreferences_all.json"
     )
     generated_rst_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".rst")
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".rst"
     )
     generated_json_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".json")
+        f
+        for f in Path(new_app.srcdir, "auto_examples").iterdir()
+        if f.suffix == ".json"
     )
     copied_py_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".py")
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
     )
     copied_ipy_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".ipynb")
+        f
+        for f in Path(new_app.srcdir, "auto_examples").iterdir()
+        if f.suffix == ".ipynb"
     )
 
     # mtimes for modules
@@ -1070,10 +1024,9 @@ def _rerun(
     time.sleep(0.1)
     confoverrides = dict()
     if how == "modify":
-        fname = op.join(src_dir, "../examples", "plot_numpy_matplotlib.py")
-        with codecs.open(fname, "r", "utf-8") as fid:
-            lines = fid.readlines()
-        with codecs.open(fname, "w", "utf-8") as fid:
+        fname = Path(src_dir, "../examples", "plot_numpy_matplotlib.py")
+        lines = fname.read_text(encoding="utf-8").splitlines(keepends=True)
+        with fname.open("w", encoding="utf-8") as fid:
             for line in lines:
                 # Make a tiny change that won't affect the recommender
                 if "FYI this" in line:
@@ -1142,40 +1095,34 @@ def _rerun(
     assert re.match(want, status, flags) is not None
     got_stale = len(new_app.config.sphinx_gallery_conf["stale_examples"])
     assert got_stale == n_stale
-    assert op.isfile(
-        op.join(new_app.outdir, "_images", "sphx_glr_plot_numpy_matplotlib_001.png")
-    )
+    assert Path(
+        new_app.outdir, "_images", "sphx_glr_plot_numpy_matplotlib_001.png"
+    ).is_file()
 
     generated_modules_1 = sorted(
-        op.join(new_app.srcdir, "gen_modules", f)
-        for f in os.listdir(op.join(new_app.srcdir, "gen_modules"))
-        if op.isfile(op.join(new_app.srcdir, "gen_modules", f))
+        f for f in Path(new_app.srcdir, "gen_modules").iterdir() if f.is_file()
     )
     generated_backrefs_1 = sorted(
-        op.join(new_app.srcdir, "gen_modules", "backreferences", f)
-        for f in os.listdir(op.join(new_app.srcdir, "gen_modules", "backreferences"))
+        f
+        for f in Path(new_app.srcdir, "gen_modules", "backreferences").iterdir()
         # Exclude backreferences_all.json` which is changed when any example is run
-        if "backreferences_all.json" not in f
+        if f.name != "backreferences_all.json"
     )
     generated_rst_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".rst")
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".rst"
     )
     generated_json_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".json")
+        f
+        for f in Path(new_app.srcdir, "auto_examples").iterdir()
+        if f.suffix == ".json"
     )
     copied_py_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".py")
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
     )
     copied_ipy_1 = sorted(
-        op.join(new_app.srcdir, "auto_examples", f)
-        for f in os.listdir(op.join(new_app.srcdir, "auto_examples"))
-        if f.endswith(".ipynb")
+        f
+        for f in Path(new_app.srcdir, "auto_examples").iterdir()
+        if f.suffix == ".ipynb"
     )
 
     # mtimes for modules
@@ -1236,7 +1183,7 @@ def _rerun(
 def test_error_messages(sphinx_app, name, want):
     """Test that informative error messages are added."""
     src_dir = Path(sphinx_app.srcdir)
-    rst = (src_dir / "auto_examples" / (name + ".rst")).read_text("utf-8")
+    rst = (src_dir / "auto_examples" / f"{name}.rst").read_text("utf-8")
     assert re.match(want, rst, re.DOTALL) is not None, f"{name} should have had: {want}"
 
 
@@ -1258,9 +1205,8 @@ def test_error_messages(sphinx_app, name, want):
 def test_error_messages_dirhtml(sphinx_dirhtml_app, name, want):
     """Test that informative error messages are added."""
     src_dir = sphinx_dirhtml_app.srcdir
-    example_rst = op.join(src_dir, "auto_examples", name + ".rst")
-    with codecs.open(example_rst, "r", "utf-8") as fid:
-        rst = fid.read()
+    example_rst = Path(src_dir, "auto_examples", f"{name}.rst")
+    rst = example_rst.read_text(encoding="utf-8")
     rst = rst.replace("\n", " ")
     assert re.match(want, rst) is not None
 
@@ -1270,23 +1216,20 @@ def test_alt_text_image(sphinx_app):
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
     # alt text is fig titles, rst
-    example_rst = op.join(src_dir, "auto_examples", "plot_matplotlib_alt.rst")
-    with codecs.open(example_rst, "r", "utf-8") as fid:
-        rst = fid.read()
+    example_rst = Path(src_dir, "auto_examples", "plot_matplotlib_alt.rst")
+    rst = example_rst.read_text(encoding="utf-8")
     # suptitle and axes titles
     assert ":alt: This is a sup title, subplot 1, subplot 2" in rst
     # multiple titles
     assert ":alt: Left Title, Center Title, Right Title" in rst
 
     # no fig title - alt text is file name, rst
-    example_rst = op.join(src_dir, "auto_examples", "plot_numpy_matplotlib.rst")
-    with codecs.open(example_rst, "r", "utf-8") as fid:
-        rst = fid.read()
+    example_rst = Path(src_dir, "auto_examples", "plot_numpy_matplotlib.rst")
+    rst = example_rst.read_text(encoding="utf-8")
     assert ":alt: plot numpy matplotlib" in rst
     # html
-    example_html = op.join(out_dir, "auto_examples", "plot_numpy_matplotlib.html")
-    with codecs.open(example_html, "r", "utf-8") as fid:
-        html = fid.read()
+    example_html = Path(out_dir, "auto_examples", "plot_numpy_matplotlib.html")
+    html = example_html.read_text(encoding="utf-8")
     assert 'alt="plot numpy matplotlib"' in html
 
 
@@ -1295,19 +1238,16 @@ def test_alt_text_thumbnail(sphinx_app):
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
     # check gallery index thumbnail, html
-    generated_examples_index = op.join(out_dir, "auto_examples", "index.html")
-    with codecs.open(generated_examples_index, "r", "utf-8") as fid:
-        html = fid.read()
+    generated_examples_index = Path(out_dir, "auto_examples", "index.html")
+    html = generated_examples_index.read_text(encoding="utf-8")
     assert 'alt=""' in html
     # check backreferences thumbnail, html
-    backref_html = op.join(out_dir, "gen_modules", "sphinx_gallery.backreferences.html")
-    with codecs.open(backref_html, "r", "utf-8") as fid:
-        html = fid.read()
+    backref_html = Path(out_dir, "gen_modules", "sphinx_gallery.backreferences.html")
+    html = backref_html.read_text(encoding="utf-8")
     assert 'alt=""' in html
     # check gallery index thumbnail, rst
-    generated_examples_index = op.join(src_dir, "auto_examples", "index.rst")
-    with codecs.open(generated_examples_index, "r", "utf-8") as fid:
-        rst = fid.read()
+    generated_examples_index = Path(src_dir, "auto_examples", "index.rst")
+    rst = generated_examples_index.read_text(encoding="utf-8")
     assert ":alt:" in rst
 
 
@@ -1315,9 +1255,8 @@ def test_noqa_removal(sphinx_app):
     """Test that "noqa: E501" is removed from end of text blocks."""
     src_dir = sphinx_app.srcdir
 
-    example_rst = op.join(src_dir, "auto_examples", "plot_matplotlib_alt.rst")
-    with codecs.open(example_rst, "r", "utf-8") as fid:
-        rst = fid.read()
+    example_rst = Path(src_dir, "auto_examples", "plot_matplotlib_alt.rst")
+    rst = example_rst.read_text(encoding="utf-8")
     assert "# noqa: E501" not in rst
 
 
@@ -1326,15 +1265,13 @@ def test_backreference_labels(sphinx_app):
     src_dir = sphinx_app.srcdir
     out_dir = sphinx_app.outdir
     # Test backreference label
-    backref_rst = op.join(src_dir, "gen_modules", "sphinx_gallery.backreferences.rst")
-    with codecs.open(backref_rst, "r", "utf-8") as fid:
-        rst = fid.read()
+    backref_rst = Path(src_dir, "gen_modules", "sphinx_gallery.backreferences.rst")
+    rst = backref_rst.read_text(encoding="utf-8")
     label = ".. _sphx_glr_backref_sphinx_gallery.backreferences.identify_names:"  # noqa: E501
     assert label in rst
     # Test html link
-    index_html = op.join(out_dir, "index.html")
-    with codecs.open(index_html, "r", "utf-8") as fid:
-        html = fid.read()
+    index_html = Path(out_dir, "index.html")
+    html = index_html.read_text(encoding="utf-8")
     link = 'href="gen_modules/sphinx_gallery.backreferences.html#sphx-glr-backref-sphinx-gallery-backreferences-identify-names">'  # noqa: E501
     assert link in html
 
@@ -1342,9 +1279,8 @@ def test_backreference_labels(sphinx_app):
 @pytest.fixture(scope="module")
 def minigallery_tree(sphinx_app):
     out_dir = sphinx_app.outdir
-    minigallery_html = op.join(out_dir, "minigallery.html")
-    with codecs.open(minigallery_html, "r", "utf-8") as fid:
-        tree = lxml.html.fromstring(fid.read())
+    minigallery_html = Path(out_dir, "minigallery.html")
+    tree = lxml.html.fromstring(minigallery_html.read_text(encoding="utf-8"))
 
     names = tree.xpath('//p[starts-with(text(), "Test")]')
     divs = tree.find_class("sphx-glr-thumbnails")
@@ -1475,9 +1411,8 @@ def test_minigallery_duplicates(minigallery_tree):
 def test_matplotlib_warning_filter(sphinx_app):
     """Test Matplotlib agg warning is removed."""
     out_dir = sphinx_app.outdir
-    example_html = op.join(out_dir, "auto_examples", "plot_matplotlib_alt.html")
-    with codecs.open(example_html, "r", "utf-8") as fid:
-        html = fid.read()
+    example_html = Path(out_dir, "auto_examples", "plot_matplotlib_alt.html")
+    html = example_html.read_text(encoding="utf-8")
     warning = (
         "Matplotlib is currently using agg, which is a"
         " non-GUI backend, so cannot show the figure."
@@ -1490,9 +1425,8 @@ def test_matplotlib_warning_filter(sphinx_app):
 def test_jupyter_notebook_pandoc(sphinx_app):
     """Test using pypandoc."""
     src_dir = sphinx_app.srcdir
-    fname = op.join(src_dir, "auto_examples", "plot_numpy_matplotlib.ipynb")
-    with codecs.open(fname, "r", "utf-8") as fid:
-        md = fid.read()
+    fname = Path(src_dir, "auto_examples", "plot_numpy_matplotlib.ipynb")
+    md = fname.read_text(encoding="utf-8")
 
     md_sg = r"Use :mod:`sphinx_gallery` to link to other packages, like\n:mod:`numpy`, :mod:`matplotlib.colors`, and :mod:`matplotlib.pyplot`."  # noqa
     md_pandoc = r"Use `sphinx_gallery`{.interpreted-text role=\"mod\"} to link to other\npackages, like `numpy`{.interpreted-text role=\"mod\"},\n`matplotlib.colors`{.interpreted-text role=\"mod\"}, and\n`matplotlib.pyplot`{.interpreted-text role=\"mod\"}."  # noqa
@@ -1506,19 +1440,17 @@ def test_jupyter_notebook_pandoc(sphinx_app):
 def test_md5_hash(sphinx_app):
     """Test MD5 hashing."""
     src_dir = sphinx_app.srcdir
-    fname = op.join(src_dir, "auto_examples", "plot_log.py.md5")
+    fname = Path(src_dir, "auto_examples", "plot_log.py.md5")
     expected_md5 = "0edc2de97f96f3b55f8b4a21994931a8"
-    with open(fname) as md5_file:
-        actual_md5 = md5_file.read()
+    actual_md5 = fname.read_text()
 
     assert actual_md5 == expected_md5
 
 
 def test_interactive_example_logo_exists(sphinx_app):
     """Test that the binder logo path is correct."""
-    root = op.join(sphinx_app.outdir, "auto_examples")
-    with codecs.open(op.join(root, "plot_svg.html"), "r", "utf-8") as fid:
-        html = fid.read()
+    root = Path(sphinx_app.outdir, "auto_examples")
+    html = (root / "plot_svg.html").read_text(encoding="utf-8")
     img_strs = "\n" + "\n".join(re.findall("<img [^>]+>", html, re.DOTALL))
     path = re.match(
         r'.*<img alt="Launch binder" src="([^"]+)" (width|style)=[^/>]+\/>.*',
@@ -1527,9 +1459,9 @@ def test_interactive_example_logo_exists(sphinx_app):
     )
     assert path is not None, img_strs
     path = path.groups()[0]
-    img_fname = op.abspath(op.join(root, path))
-    assert "binder_badge_logo" in img_fname  # can have numbers appended
-    assert op.isfile(img_fname)
+    img_fname = (root / path).absolute()
+    assert "binder_badge_logo" in str(img_fname)  # can have numbers appended
+    assert img_fname.is_file()
     assert (
         "https://mybinder.org/v2/gh/sphinx-gallery/sphinx-gallery.github.io/master?urlpath=lab/tree/notebooks/auto_examples/plot_svg.ipynb"
         in html
@@ -1542,16 +1474,15 @@ def test_interactive_example_logo_exists(sphinx_app):
     )
     assert path is not None
     path = path.groups()[0]
-    img_fname = op.abspath(op.join(root, path))
-    assert "jupyterlite_badge_logo" in img_fname  # can have numbers appended
-    assert op.isfile(img_fname)
+    img_fname = (root / path).absolute()
+    assert "jupyterlite_badge_logo" in str(img_fname)  # can have numbers appended
+    assert img_fname.is_file()
 
 
 def test_download_and_interactive_note(sphinx_app):
     """Test text saying go to the end to download code or run the example."""
-    root = op.join(sphinx_app.outdir, "auto_examples")
-    with codecs.open(op.join(root, "plot_svg.html"), "r", "utf-8") as fid:
-        html = fid.read()
+    root = Path(sphinx_app.outdir, "auto_examples")
+    html = (root / "plot_svg.html").read_text(encoding="utf-8")
 
     pattern = (
         r"to download the full example.+" r"in your browser via JupyterLite or Binder"
@@ -1561,10 +1492,9 @@ def test_download_and_interactive_note(sphinx_app):
 
 def test_defer_figures(sphinx_app):
     """Test the deferring of figures."""
-    root = op.join(sphinx_app.outdir, "auto_examples")
-    fname = op.join(root, "plot_defer_figures.html")
-    with codecs.open(fname, "r", "utf-8") as fid:
-        html = fid.read()
+    root = Path(sphinx_app.outdir, "auto_examples")
+    fname = root / "plot_defer_figures.html"
+    html = fname.read_text(encoding="utf-8")
 
     # The example has two code blocks with plotting commands, but the first
     # block has the flag ``sphinx_gallery_defer_figures``.  Thus, there should
@@ -1575,27 +1505,21 @@ def test_defer_figures(sphinx_app):
 
 def test_no_dummy_image(sphinx_app):
     """Test sphinx_gallery_dummy_images NOT created when executable is True."""
-    img1 = op.join(
+    img1 = Path(
         sphinx_app.srcdir, "auto_examples", "images", "sphx_glr_plot_repr_001.png"
     )
-    img2 = op.join(
+    img2 = Path(
         sphinx_app.srcdir, "auto_examples", "images", "sphx_glr_plot_repr_002.png"
     )
-    assert not op.isfile(img1)
-    assert not op.isfile(img2)
+    assert not img1.is_file()
+    assert not img2.is_file()
 
 
 def test_jupyterlite_modifications(sphinx_app):
     src_dir = sphinx_app.srcdir
-    jupyterlite_notebook_pattern = op.join(
-        src_dir, "jupyterlite_contents", "**", "*.ipynb"
-    )
-    jupyterlite_notebook_filenames = glob.glob(
-        jupyterlite_notebook_pattern, recursive=True
-    )
 
-    for notebook_filename in jupyterlite_notebook_filenames:
-        with open(notebook_filename) as f:
+    for notebook_filename in Path(src_dir, "jupyterlite_contents").rglob("*.ipynb"):
+        with notebook_filename.open() as f:
             notebook_content = json.load(f)
 
         first_cell = notebook_content["cells"][0]
@@ -1636,10 +1560,9 @@ def test_julia_rst(sphinx_app):
 def test_recommend_n_examples(sphinx_app):
     """Test correct thumbnails are displayed for an example."""
     pytest.importorskip("numpy")
-    root = op.join(sphinx_app.outdir, "auto_examples")
-    fname = op.join(root, "plot_defer_figures.html")
-    with codecs.open(fname, "r", "utf-8") as fid:
-        html = fid.read()
+    root = Path(sphinx_app.outdir, "auto_examples")
+    fname = Path(root, "plot_defer_figures.html")
+    html = fname.read_text(encoding="utf-8")
 
     (related_html,) = re.findall(
         '<p class="rubric">Related examples</p>(.*)</section>', html, re.DOTALL
@@ -1657,9 +1580,8 @@ def test_recommend_n_examples(sphinx_app):
 
 def test_sidebar_components_download_links(sphinx_app):
     """Test that the `sg_download_links.html` component works as expected."""
-    example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
-    with codecs.open(example_file, "r", "utf-8") as fid:
-        tree = lxml.html.fromstring(fid.read())
+    example_file = Path(sphinx_app.outdir, "auto_examples", "plot_repr.html")
+    tree = lxml.html.fromstring(example_file.read_text(encoding="utf-8"))
 
     for class_name, desc in [
         ("sphx-glr-download-python", "Download source code"),
@@ -1673,16 +1595,15 @@ def test_sidebar_components_download_links(sphinx_app):
             .attrib["href"]
         )
         sidebar_div = tree.find_class(f"{class_name}-sidebar")[0]
-        assert sidebar_div.attrib["title"] == os.path.basename(orig_href)
+        assert sidebar_div.attrib["title"] == Path(orig_href).name
         assert sidebar_div.getchildren()[0].attrib["href"] == orig_href
         assert sidebar_div.getchildren()[0].text_content().strip() == desc
 
 
 def test_sidebar_components_launcher_links(sphinx_app):
     """Test that the `sg_launcher_links.html` component works as expected."""
-    example_file = op.join(sphinx_app.outdir, "auto_examples", "plot_repr.html")
-    with codecs.open(example_file, "r", "utf-8") as fid:
-        tree = lxml.html.fromstring(fid.read())
+    example_file = Path(sphinx_app.outdir, "auto_examples", "plot_repr.html")
+    tree = lxml.html.fromstring(example_file.read_text(encoding="utf-8"))
 
     for class_name in ["binder-badge", "lite-badge"]:
         orig_anchor = tree.find_class(class_name)[0].getchildren()[0]

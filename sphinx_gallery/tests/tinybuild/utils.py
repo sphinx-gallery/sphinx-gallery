@@ -1,6 +1,6 @@
 """Utility functions for doc building."""
 
-import os.path as op
+from pathlib import Path
 
 from sphinx_gallery.scrapers import matplotlib_scraper
 
@@ -22,12 +22,12 @@ class MatplotlibFormatScraper:
         """Call Matplotlib scraper with required `format` kwarg for testing."""
         kwargs = dict()
         if (
-            op.basename(block_vars["target_file"]) == "plot_svg.py"
+            Path(block_vars["target_file"]).name == "plot_svg.py"
             and gallery_conf["builder_name"] != "latex"
         ):
             kwargs["format"] = "svg"
         elif (
-            op.basename(block_vars["target_file"]) == "plot_webp.py"
+            Path(block_vars["target_file"]).name == "plot_webp.py"
             and gallery_conf["builder_name"] != "latex"
         ):
             kwargs["format"] = "webp"

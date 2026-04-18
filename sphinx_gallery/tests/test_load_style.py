@@ -1,6 +1,6 @@
 """Testing sphinx_gallery.load_style extension."""
 
-import os
+from pathlib import Path
 
 import pytest
 
@@ -13,10 +13,9 @@ def test_load_style(sphinx_app_wrapper):
     assert cfg.project == "Sphinx-Gallery <Tests>"
     build_warn = sphinx_app._warning.getvalue()
     assert build_warn == ""
-    index_html = os.path.join(sphinx_app_wrapper.outdir, "index.html")
-    assert os.path.isfile(index_html)
-    with open(index_html) as fid:
-        content = fid.read()
+    index_html = Path(sphinx_app_wrapper.outdir, "index.html")
+    assert index_html.is_file()
+    content = index_html.read_text()
     assert (
         'link rel="stylesheet" type="text/css" href="_static/sg_gallery.css' in content
     )

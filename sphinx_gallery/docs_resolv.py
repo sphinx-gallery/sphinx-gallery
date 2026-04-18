@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import gzip
-import json
 import os
 import posixpath
 import re

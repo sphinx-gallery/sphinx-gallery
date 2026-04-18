@@ -210,5 +210,5 @@ ini_options.filterwarnings = [
 ini_options.junit_family = "xunit2"
 ini_options.markers = [
   "add_conf: Configuration file.",
-  "add_rst: Add rst file to src.",
+  "add_file: Add file to src.",
 ]

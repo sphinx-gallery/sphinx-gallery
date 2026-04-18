@@ -10,7 +10,7 @@ from .py_source_parser import Block
 
 
 def split_code_and_text_blocks(
-    source_file: str,
+    source_file: str | Path,
     return_node: Literal[False] = False,
 ) -> tuple[dict[str, Any], list, None]:
     """Return list with source file separated into code and text blocks.

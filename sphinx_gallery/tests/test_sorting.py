@@ -2,7 +2,7 @@
 # License: 3-clause BSD
 r"""Tests for sorting keys on gallery (sub)sections."""
 
-import os.path as op
+from pathlib import Path
 
 import pytest
 from sphinx.errors import ConfigError
@@ -28,7 +28,7 @@ def test_ExplicitOrder_sorting_key():
     assert str(key).startswith("<ExplicitOrder : ")
     assert str(key) == str(ExplicitOrder(explicit_folders))
     assert str(key) != str(ExplicitOrder(explicit_folders[::-1]))
-    src_dir = op.dirname(__file__)
+    src_dir = str(Path(__file__).parent)
     for klass, type_ in (
         (NumberOfCodeLinesSortKey, int),
         (FileNameSortKey, str),
@@ -37,7 +37,7 @@ def test_ExplicitOrder_sorting_key():
     ):
         sorter = klass(src_dir)
         assert str(sorter) == f"<{klass.__name__}>"
-        out = sorter(op.basename(__file__))
+        out = sorter(Path(__file__).name)
         assert isinstance(out, type_), type(out)
 
 

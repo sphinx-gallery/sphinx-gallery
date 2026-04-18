@@ -36,6 +36,38 @@ Description.
 
 """
 
+# Used for `add_file`
+INDEX_RST = """
+=============
+Own index.rst
+=============
+
+Own index.rst file.
+
+.. toctree::
+
+    plot_1
+    plot_2
+    plot_3
+"""
+
+NESTED_PY = """\"\"\"
+Header
+======
+
+Text.
+\"\"\"
+
+a = 1
+"""
+
+GALLERY_HEADER = """
+Gallery header
+==============
+
+Some text.
+"""
+
 
 def _escape_ansi(s: str) -> str:
     """Remove ANSI terminal formatting characters from a string."""
@@ -230,8 +262,8 @@ def test_config_backreferences(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     cfg = sphinx_app.config
     assert cfg.project == "Sphinx-Gallery <Tests>"
-    assert cfg.sphinx_gallery_conf["backreferences_dir"] == os.path.join(
-        "gen_modules", "backreferences"
+    assert cfg.sphinx_gallery_conf["backreferences_dir"] == str(
+        Path("gen_modules", "backreferences")
     )
     build_warn = sphinx_app._warning.getvalue()
     assert build_warn == ""
@@ -464,7 +496,7 @@ def test_example_sorting(sphinx_app_wrapper, sort_key, expected_order):
     _check_order(sphinx_app, sort_key, expected_order=expected_order)
 
 
-def test_collect_gallery_files(tmpdir, gallery_conf):
+def test_collect_gallery_files(tmp_path, gallery_conf):
     """Test that example files are collected properly."""
     rel_filepaths = [
         "examples/file1.py",
@@ -477,34 +509,33 @@ def test_collect_gallery_files(tmpdir, gallery_conf):
         "tutorials/folder2/file1.py",
     ]
 
-    abs_paths = [tmpdir.join(rp) for rp in rel_filepaths]
+    abs_paths = [tmp_path / rp for rp in rel_filepaths]
     for ap in abs_paths:
-        ap.ensure()
+        ap.parent.mkdir(parents=True, exist_ok=True)
+        ap.touch()
 
-    examples_path = tmpdir.join("examples")
-    dirs = [examples_path.strpath]
+    examples_path = tmp_path / "examples"
+    dirs = [str(examples_path)]
     collected_files = set(
         _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
     )
     expected_files = {
-        ap.strpath for ap in abs_paths if re.search(r"examples.*\.py$", ap.strpath)
+        str(ap) for ap in abs_paths if "examples" in ap.parts and ap.suffix == ".py"
     }
 
     assert collected_files == expected_files
 
-    tutorials_path = tmpdir.join("tutorials")
-    dirs = [examples_path.strpath, tutorials_path.strpath]
+    tutorials_path = tmp_path / "tutorials"
+    dirs = [str(examples_path), str(tutorials_path)]
     collected_files = set(
         _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
     )
-    expected_files = {
-        ap.strpath for ap in abs_paths if re.search(r".*\.py$", ap.strpath)
-    }
+    expected_files = {str(ap) for ap in abs_paths if ap.suffix == ".py"}
 
     assert collected_files == expected_files
 
 
-def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
+def test_collect_gallery_files_ignore_pattern(tmp_path, gallery_conf):
     """Test that ignore pattern example files are not collected."""
     rel_filepaths = [
         "examples/file1.py",
@@ -513,21 +544,18 @@ def test_collect_gallery_files_ignore_pattern(tmpdir, gallery_conf):
         "examples/folder2/fileone.py",
     ]
 
-    abs_paths = [tmpdir.join(rp) for rp in rel_filepaths]
+    abs_paths = [tmp_path / rp for rp in rel_filepaths]
     for ap in abs_paths:
-        ap.ensure()
+        ap.parent.mkdir(parents=True, exist_ok=True)
+        ap.touch()
 
     gallery_conf["ignore_pattern"] = r"one"
-    examples_path = tmpdir.join("examples")
-    dirs = [examples_path.strpath]
+    examples_path = tmp_path / "examples"
+    dirs = [str(examples_path)]
     collected_files = set(
         _collect_gallery_files(dirs, gallery_conf, check_filenames=True)
     )
-    expected_files = {
-        ap.strpath
-        for ap in abs_paths
-        if re.search(r"one", Path(ap.strpath).name) is None
-    }
+    expected_files = {str(ap) for ap in abs_paths if "one" not in ap.name}
 
     assert collected_files == expected_files
 
@@ -540,7 +568,7 @@ sphinx_gallery_conf = {
     'copyfile_regex': r'.*\.rst',
 }"""
 )
-@pytest.mark.add_rst(file="own index.rst")
+@pytest.mark.add_file(file={Path("src") / "index.rst": INDEX_RST})
 def test_own_index_first(sphinx_app_wrapper):
     """Test `generate_gallery_rst` works when own index gallery is first (and only)."""
     # Issue #1382
@@ -566,7 +594,7 @@ def test_binder_copy_files(sphinx_app_wrapper):
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
     gallery_conf = sphinx_app.config.sphinx_gallery_conf
     # Create requirements file
-    Path(sphinx_app.srcdir, "requirements.txt").open("w")
+    Path(sphinx_app.srcdir, "requirements.txt").touch()
     copy_binder_files(sphinx_app, None)
 
     for i_file in ["plot_1", "plot_2", "plot_3"]:
@@ -776,13 +804,15 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'ex',
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_file(
+    file={
+        "minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: index.rst
 """
+    }
 )
 def test_minigallery_not_in_examples_dirs(sphinx_app_wrapper):
     """Check error when minigallery directive's path input not in `examples_dirs`."""
@@ -798,13 +828,20 @@ sphinx_gallery_conf = {
     'gallery_dirs': ['ex', 'ex/sub_folder/sub_sub_folder'],
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_file(
+    file={
+        "minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: src/sub_folder/sub_sub_folder/plot_nested.py
-"""
+""",
+        Path("src") / "sub_folder" / "sub_sub_folder" / "plot_nested.py": NESTED_PY,
+        Path("src")
+        / "sub_folder"
+        / "sub_sub_folder"
+        / "GALLERY_HEADER.rst": GALLERY_HEADER,
+    }
 )
 def test_minigallery_multi_match(sphinx_app_wrapper):
     """Check minigallery directive's path input resolution in nested `examples_dirs`.
@@ -847,13 +884,15 @@ sphinx_gallery_conf = {
     'minigallery_sort_order': FunctionSortKey(custom_minigallery_sort_order_sorter),
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_file(
+    file={
+        "minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: src/plot_1.py src/plot_2.py src/plot_3.py
 """
+    }
 )
 def test_minigallery_sort_order_callable(sphinx_app_wrapper):
     """Check `minigallery_sort_order` works when a callable."""
@@ -871,13 +910,15 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'ex',
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_file(
+    file={
+        "minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: src/plot_1.py src/plot_1.py
 """
+    }
 )
 def test_minigallery_duplicate_path_input(sphinx_app_wrapper):
     """Check minigallery duplicate input paths are de-deuplicated."""
@@ -897,13 +938,15 @@ sphinx_gallery_conf = {
     'doc_module': ('numpy',),
 }"""
 )
-@pytest.mark.add_rst(
-    file="""
+@pytest.mark.add_file(
+    file={
+        "minigallery_test.rst": """
 Header
 ======
 
 .. minigallery:: sphinx_gallery.py_source_parser.Block src/plot_1.py
 """
+    }
 )
 def test_minigallery_duplicate_object_path_input(sphinx_app_wrapper):
     """Check object and path input de-deplication works in minigallery directive.
@@ -1113,7 +1156,7 @@ sphinx_gallery_conf = {
     'nested_sections': False,
 }"""
 )
-@pytest.mark.add_rst(file="own index.rst")
+@pytest.mark.add_file(file={Path("src") / "index.rst": INDEX_RST})
 def test_nested_sections_false_with_own_index(sphinx_app_wrapper):
     """Check no error with user provided index.rst and `nested_sections=False`."""
     sphinx_app_wrapper.build_sphinx_app()

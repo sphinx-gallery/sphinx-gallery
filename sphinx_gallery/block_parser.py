@@ -1,7 +1,6 @@
 """BlockParser divides non `.py` source files into blocks of code and markup text."""
 
 import ast
-import codecs
 import re
 from pathlib import Path
 from textwrap import dedent
@@ -34,13 +33,13 @@ class BlockParser:
 
     Parameters
     ----------
-    source_file : str
+    source_file : str or Path
         A file name that has a suffix compatible with files that are subsequently parsed
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery.
     """
 
-    def __init__(self, source_file: str, gallery_conf: GalleryConfig) -> None:
+    def __init__(self, source_file: str | Path, gallery_conf: GalleryConfig) -> None:
         source_path = Path(source_file)
         if name := gallery_conf["filetype_parsers"].get(source_path.suffix):
             self.lexer = pygments.lexers.find_lexer_class_by_name(name)()
@@ -127,14 +126,14 @@ class BlockParser:
 
     def split_code_and_text_blocks(
         self,
-        source_file: str,
+        source_file: str | Path,
         return_node: bool = False,
     ) -> tuple[dict, list[Block], None]:
         """Return list with source file separated into code and text blocks.
 
         Parameters
         ----------
-        source_file : str
+        source_file : str or Path
             Path to the source file.
         return_node : bool
             Ignored; returning an ast node is not supported
@@ -151,8 +150,7 @@ class BlockParser:
         node : None
             Returning an ast node is not supported.
         """
-        with codecs.open(source_file, "r", "utf-8") as fid:
-            content = fid.read()
+        content = Path(source_file).read_text(encoding="utf-8")
         # change from Windows format to UNIX for uniformity
         content = content.replace("\r\n", "\n")
         return self._split_content(content)
