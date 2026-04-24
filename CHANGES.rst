@@ -6,6 +6,81 @@ v0.21.0
 
 Support for Sphinx 5 dropped in this release. Requirement is now Sphinx >= 6.
 
+**Implemented enhancements:**
+
+-  Add support for dynamic filtering by tag `#1555 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1555>`__ (`Cadair <https://github.com/Cadair>`__)
+
+**Fixed bugs:**
+
+-  Fix subsection header sanitization when ``nested_sections=False`` `#1550 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1550>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Fix ``generate_gallery_rst`` when ``nested_sections=False`` user provides own ``index.rst`` `#1549 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1549>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
+**Documentation**
+
+-  DOC Add v0.20.0 to CHANGES.rst `#1567 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1567>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Note sphinx bump in changes `#1560 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1560>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  DOC Fix typos in nested_sections docs `#1547 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1547>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Small typo on the configuration page of documentation `#1537 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1537>`__ (`floffy-f <https://github.com/floffy-f>`__)
+-  Update the list of projects `#1532 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1532>`__ (`timhoffm <https://github.com/timhoffm>`__)
+
+**Project maintenance**
+
+-  [pre-commit.ci] pre-commit autoupdate `#1602 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1602>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  TST: Use tmp_path fixture instead of tempfile `#1601 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1601>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  Re-enable Sphinx dev CI `#1599 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1599>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  ENH: Accept Paths in split_code_and_text_blocks `#1598 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1598>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  TYP: Fix typing for back references `#1597 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1597>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1596 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1596>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  TST Amend ``add_rst`` to ``add_file`` and make flexible `#1595 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1595>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Switch from codecs.open to plain open `#1594 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1594>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  TST: Prefer Path over os.path in all test code `#1593 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1593>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  TST: Switch from tmpdir to tmp_path `#1592 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1592>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  Remove unused imports `#1591 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1591>`__ (`QuLogic <https://github.com/QuLogic>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1590 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1590>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1589 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1589>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump the actions group with 2 updates `#1588 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1588>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1586 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1586>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1585 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1585>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  chore(projects): add the atomistic cookbook `#1584 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1584>`__ (`HaoZeke <https://github.com/HaoZeke>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1583 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1583>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1582 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1582>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump the actions group with 2 updates `#1581 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1581>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  MNT: Extract test-related functionality from utils into \_testing `#1580 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1580>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MAINT: Autolabel fix (maybe) `#1579 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1579>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MNT: Extract character length calculation from \_format_for_writing `#1578 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1578>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MNT: Refactor costs to an explicit data class ExampleCost `#1577 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1577>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MNT: Add type annotations to gen_gallery.py `#1575 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1575>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1574 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1574>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1573 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1573>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT: Add type annotations to gen_rst.py `#1571 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1571>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MNT: Add type annotations to notebook.py `#1570 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1570>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Add a test for the div used by the js `#1569 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1569>`__ (`Cadair <https://github.com/Cadair>`__)
+-  Fix ``test_tags_in_index_html`` docstring `#1568 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1568>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  MNT: Add type annotations to scrapers.py and sorting.py `#1566 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1566>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MNT: Add type annotations to more modules `#1562 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1562>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1559 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1559>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MAINT: Enforce types in pre-commit, bump sphinx to 6 `#1558 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1558>`__ (`larsoner <https://github.com/larsoner>`__)
+-  MNT: Add type annotations to more modules `#1557 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1557>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1556 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1556>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1553 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1553>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Fix CI label checker `#1552 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1552>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1551 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1551>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  CI Fix label checker workflow `#1548 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1548>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1545 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1545>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT: Add type annotations to sphinx_gallery.docs_resolv `#1544 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1544>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MNT: Add type annotations to sphinx_gallery.directives `#1543 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1543>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MNT: Add type annotations to sphinx_gallery.block_parser `#1542 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1542>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  MNT: Add type annotations to sphinx_gallery.backreferences `#1541 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1541>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1540 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1540>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT: Start to add incremental typing information `#1539 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1539>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Explain mypy python version `#1536 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1536>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1535 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1535>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump the actions group with 2 updates `#1534 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1534>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  Add PyCharm config dir to .gitignore `#1533 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1533>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  Add mypy type checking `#1531 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1531>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1530 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1530>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT: Add min scikit-learn doc build to CI `#1527 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1527>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+
 v0.20.0
 -------
 
