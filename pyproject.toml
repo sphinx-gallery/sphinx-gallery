@@ -80,8 +80,6 @@ urls.Source = "https://github.com/sphinx-gallery/sphinx-gallery"
 scripts.sphinx_gallery_py2jupyter = "sphinx_gallery.notebook:python_to_jupyter_cli"
 
 [tool.setuptools]
-include-package-data = true
-dynamic.version = { attr = "sphinx_gallery.__version__" }
 packages.find.where = [
   ".",
 ]  # list of folders that contain the packages (["."] by default)
@@ -89,6 +87,8 @@ packages.find.include = [
   "sphinx_gallery*",
 ]  # package names should match these glob patterns (["*"] by default)
 packages.find.namespaces = true  # allow scanning PEP 420 namespaces (true by default)
+include-package-data = true
+dynamic.version = { attr = "sphinx_gallery.__version__" }
 
 [tool.ruff]
 exclude = [
@@ -145,29 +145,29 @@ builtin = "clear,rare,informal,names,usage"
 ignore-words-list = "master"
 
 [tool.mypy]
-python_version = "3.10"  # keep in sync with requires-python
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = true
-no_implicit_optional = true
-local_partial_types = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-strict_equality = true
-show_error_codes = true
 exclude = [
   "^build/",
   "^doc/",
   "^examples/",
   "^examples/plotly_examples/",
   "^pyvista_examples/",
-  "^tutorials/",
   "^sphinx_gallery/tests/tinybuild/",
   "^sphinx_gallery\\.egg-info/",
+  "^tutorials/",
 ]
+python_version = "3.10"  # keep in sync with requires-python
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = true
+local_partial_types = true
+strict_equality = true
+warn_unused_configs = true
+no_implicit_optional = true
+show_error_codes = true
 
 # Ignore test files for now
 [[tool.mypy.overrides]]
@@ -177,17 +177,19 @@ ignore_errors = true
 # Third-party packages without type stubs
 [[tool.mypy.overrides]]
 module = [
+  "graphviz",
   "joblib.*",
-  "memory_profiler.*",
   "matplotlib.*",
-  "seaborn.*",
+  "memory_profiler.*",
   "plotly.*",
   "pypandoc",
-  "graphviz",
+  "seaborn.*",
 ]
 ignore_missing_imports = true
 
 [tool.pytest]
+ini_options.norecursedirs = "build _build auto_examples gen_modules sphinx_gallery/tests/tinybuild"
+ini_options.python_files = "tests/*.py"
 ini_options.addopts = [
   "--color=yes",
   "--cov-report=",
@@ -197,18 +199,16 @@ ini_options.addopts = [
   "--tb=short",
   "--junit-xml=junit-results.xml",
 ]
-ini_options.python_files = "tests/*.py"
-ini_options.norecursedirs = "build _build auto_examples gen_modules sphinx_gallery/tests/tinybuild"
-ini_options.filterwarnings = [
-  "ignore:.*HasTraits.trait_.*:DeprecationWarning",
-  "ignore:.*importing the ABCs.*:DeprecationWarning",
-  "ignore:np.loads is deprecated, use pickle.loads instead:DeprecationWarning",
-  "ignore:'U' mode is deprecated:DeprecationWarning",
-  "ignore:node class .* is already registered.*:",
-  "ignore:node.Node.* is obsoleted by Node.*:",
-]
-ini_options.junit_family = "xunit2"
 ini_options.markers = [
   "add_conf: Configuration file.",
   "add_file: Add file to src.",
 ]
+ini_options.filterwarnings = [
+  "ignore:'U' mode is deprecated:DeprecationWarning",
+  "ignore:.*HasTraits.trait_.*:DeprecationWarning",
+  "ignore:.*importing the ABCs.*:DeprecationWarning",
+  "ignore:node class .* is already registered.*:",
+  "ignore:node.Node.* is obsoleted by Node.*:",
+  "ignore:np.loads is deprecated, use pickle.loads instead:DeprecationWarning",
+]
+ini_options.junit_family = "xunit2"
