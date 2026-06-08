@@ -432,6 +432,7 @@ def save_thumbnail(
     if thumbnail_number is None and thumbnail_path is None:
         # If no number AND no path, set to default thumbnail_number
         thumbnail_number = 1
+    thumbnail_path_set = thumbnail_path is not None
     if thumbnail_number is None:
         image_path = os.path.join(gallery_conf["src_dir"], cast(str, thumbnail_path))
     else:
@@ -457,6 +458,13 @@ def save_thumbnail(
     elif os.path.exists(thumbnail_image_path):
         img = thumbnail_image_path
     elif not os.path.exists(thumb_file):
+        if thumbnail_path_set:
+            logger.warning(
+                "sphinx_gallery_thumbnail_path '%s' not found for '%s', "
+                "using default thumbnail.",
+                image_path,
+                src_file,
+            )
         # create something to replace the thumbnail
         default_thumb_path = gallery_conf["default_thumb_file"]
         if default_thumb_path is None:
