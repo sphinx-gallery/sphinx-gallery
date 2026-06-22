@@ -29,4 +29,4 @@ pip install --only-binary=:all: \
 git clone git@github.com:scikit-learn/scikit-learn.git --single-branch --depth 1 --branch ${VERSION}.X
 cd scikit-learn/doc
 export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_display_object_visualization"
-make -C html
+make html
