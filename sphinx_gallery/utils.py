@@ -101,7 +101,7 @@ def optipng(fname: str, args: Tuple = ()) -> None:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except (subprocess.CalledProcessError, OSError):  # FileNotFoundError
+        except (subprocess.CalledProcessError, FileNotFoundError):
             pass
 
 
@@ -110,7 +110,7 @@ def _has_optipng() -> bool:
         subprocess.check_call(
             ["optipng", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-    except OSError:  # FileNotFoundError
+    except FileNotFoundError:
         return False
     else:
         return True
@@ -306,8 +306,18 @@ def _has_graphviz() -> bool:
         import graphviz  # noqa F401
     except ImportError as exc:
         logger.info(
-            "`graphviz` required for graphical visualization "
+            "`graphviz` Python package required for graphical visualization "
             f"but could not be imported, got: {exc}"
+        )
+        return False
+    try:
+        subprocess.check_call(
+            ["neato", "-V"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+    except FileNotFoundError as exc:
+        logger.info(
+            "`neato` layout engine required for graphical visualization "
+            f"but command-line executable could not be found ({exc})"
         )
         return False
     return True

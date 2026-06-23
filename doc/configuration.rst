@@ -2782,8 +2782,9 @@ module showing all of the API entries connected to the example that they
 are used in. This could be helpful for making a map of which examples to
 look at if you want to learn about a particular module. Setting
 ``show_api_usage`` to ``False`` will not make any graphs or documentation
-about API usage. Note, ``graphviz`` is required for making the unused and
-used API entry graphs.
+about API usage. Note, the command-line binary ``neato`` from the
+``graphviz`` C utility as well as the ``graphviz`` Python package are
+required for making the unused and used API entry graphs.
 
 .. _api_usage_ignore:
 
