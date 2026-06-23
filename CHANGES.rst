@@ -1,17 +1,6 @@
 Changelog
 =========
 
-v0.22.0 (unreleased)
---------------------
-
-**Dependencies**
-
-- For :ref:`show_api_usage` graphs to be generated, the command-line utility ``neato`` must be accessible. The optional
-  ``pip`` installation group ``[show-api-usage]`` previously installed the ``graphviz`` Python package, but this does
-  not actually provide the ``neato`` command (and the Python package is not necessary to render the graphs). We have
-  thus removed the ``[show-api-usage]`` group and instead added a note to the documentation that ``neato`` must be
-  installed separately.
-
 v0.21.0
 -------
 
