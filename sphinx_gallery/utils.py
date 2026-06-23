@@ -309,7 +309,7 @@ def _has_graphviz() -> bool:
     except FileNotFoundError as exc:
         logger.info(
             "`neato` layout engine required for graphical visualization "
-            f"but could not be executed"
+            f"but command-line executable could not be found ({exc})"
         )
         return False
     return True
