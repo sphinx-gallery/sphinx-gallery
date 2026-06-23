@@ -46,6 +46,12 @@ pip install $EXTRA_ARGS $PIP_DEPENDENCIES \
     -e .${DEP_OPT}
 set +x
 
-if [[ "$DISTRIB" != "mamba" ]] && [[ "$PLATFORM" == "Linux" ]]; then
-    sudo apt install ffmpeg graphviz
+# "pip install pygraphviz" does not guarantee graphviz binaries exist
+if [[ "$DISTRIB" != "mamba" ]]; then
+    if [[ "$PLATFORM" == "Linux" ]]; then
+        sudo apt install ffmpeg graphviz
+    else  # could use brew on macOS pip but it'll take time to install
+        echo "Removing pygraphviz on $PLATFORM when DISTRIB=$DISTRIB"
+        pip uninstall -y graphviz
+    fi
 fi
