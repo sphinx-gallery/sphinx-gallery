@@ -14,7 +14,7 @@ set -exo pipefail
 (set +x; __sep__)
 
 # Install scikit-learn and doc dependencies
-VERSION=$(pip index versions scikit-learn | cut -d "(" -f2 | cut -d ")" -f1 | cut -d "." -f1 -f2 | head -n 1)
+VERSION=$(pip index versions scikit-learn | cut -d "(" -f2 | cut -d ")" -f1 | cut -d "." -f1-2 | head -n 1)
 echo "Installing scikit-learn version $VERSION"
 pip install --only-binary=:all: \
             sphinx numpydoc matplotlib Pillow pandas \
