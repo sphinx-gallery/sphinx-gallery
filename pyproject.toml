@@ -38,6 +38,7 @@ optional-dependencies.animations = [
 ]
 optional-dependencies.dev = [
   "absl-py",
+  "graphviz",
   "intersphinx-registry",
   "ipython",
   "joblib",
@@ -67,6 +68,9 @@ optional-dependencies.parallel = [
 ]
 optional-dependencies.recommender = [
   "numpy",
+]
+optional-dependencies.show-api-usage = [
+  "graphviz",
 ]
 optional-dependencies.show-memory = [
   "memory-profiler",
