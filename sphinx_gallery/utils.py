@@ -303,6 +303,14 @@ def _has_pypandoc() -> Tuple[bool | None, str | None]:
 
 def _has_graphviz() -> bool:
     try:
+        import graphviz  # noqa F401
+    except ImportError as exc:
+        logger.info(
+            "`graphviz` Python package required for graphical visualization "
+            f"but could not be imported, got: {exc}"
+        )
+        return False
+    try:
         subprocess.check_call(
             ["neato", "-V"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
