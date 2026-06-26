@@ -136,6 +136,7 @@ An incomplete list:
 * `Optuna <https://optuna.readthedocs.io/en/stable/tutorial/index.html>`_
 * `PlasmaPy <https://docs.plasmapy.org/en/latest/examples.html>`_
 * `POT <https://pythonot.github.io/auto_examples/index.html>`_
+* `pvlib <https://pvlib-python.readthedocs.io/en/stable/gallery/index.html>`_
 * `PyGMT <https://www.pygmt.org/latest/gallery/index.html>`_
 * `pyRiemann <https://pyriemann.readthedocs.io/en/latest/auto_examples/index.html>`_
 * `PyStruct <https://pystruct.github.io/auto_examples/index.html>`_
