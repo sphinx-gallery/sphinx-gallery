@@ -62,15 +62,12 @@ def gen_binder_url(
     link_base: str = binder_conf["notebooks_dir"]
 
     # We want to keep the relative path to sub-folders
-    relative_link = os.path.relpath(fpath, gallery_conf["src_dir"])
-    path_link = os.path.join(link_base, Path(relative_link).with_suffix(".ipynb"))
+    relative_link = Path(os.path.relpath(fpath, gallery_conf["src_dir"]))
+    path_link = (Path(link_base) / relative_link.with_suffix(".ipynb")).as_posix()
 
     # In case our website is hosted in a sub-folder
     if fpath_prefix is not None:
         path_link = "/".join([fpath_prefix.strip("/"), path_link])
-
-    # Make sure we have the right slashes (in case we're on Windows)
-    path_link = path_link.replace(os.sep, "/")
 
     # Create the URL
     binder_url = "/".join(
@@ -135,13 +132,12 @@ def gen_binder_rst(
     # `images` for each gallery and link to it there. This will make
     # a few copies, and there will be an extra in `_static` at the end of the
     # build, but it at least works...
-    physical_path = os.path.join(
-        os.path.dirname(fpath), "images", "binder_badge_logo.svg"
-    )
-    os.makedirs(os.path.dirname(physical_path), exist_ok=True)
-    if not os.path.isfile(physical_path):
+    fpath = Path(fpath)
+    physical_path = fpath.parent / "images" / "binder_badge_logo.svg"
+    physical_path.parent.mkdir(parents=True, exist_ok=True)
+    if not physical_path.is_file():
         shutil.copyfile(
-            os.path.join(glr_path_static(), "binder_badge_logo.svg"), physical_path
+            Path(glr_path_static()) / "binder_badge_logo.svg", physical_path
         )
     rst = (
         "\n"
@@ -182,19 +178,20 @@ def _copy_binder_reqs(
 ) -> None:
     """Copy Binder requirements files to a "binder" folder in the docs."""
     path_reqs: list[str] = binder_conf["dependencies"]
+    src_dir = Path(app.srcdir)
     for path in path_reqs:
-        if not os.path.exists(os.path.join(app.srcdir, path)):
+        if not (src_dir / path).exists():
             raise ConfigError(
                 "Couldn't find the Binder requirements file: {}, "
                 "did you specify the path correctly?".format(path)
             )
 
-    binder_folder = os.path.join(app.outdir, "binder")
-    os.makedirs(binder_folder, exist_ok=True)
+    binder_folder = Path(app.outdir) / "binder"
+    binder_folder.mkdir(parents=True, exist_ok=True)
 
     # Copy over the requirements to the output directory
     for path in path_reqs:
-        shutil.copy(os.path.join(app.srcdir, path), binder_folder)
+        shutil.copy(src_dir / path, binder_folder)
 
 
 def _remove_ipynb_files(path: str, contents: list[str]) -> list[str]:
@@ -208,7 +205,7 @@ def _remove_ipynb_files(path: str, contents: list[str]) -> list[str]:
         if entry.endswith(".ipynb"):
             # Don't include ipynb files
             pass
-        elif (entry != "images") and os.path.isdir(os.path.join(path, entry)):
+        elif (entry != "images") and (Path(path) / entry).is_dir():
             # Don't include folders not called "images"
             pass
         else:
@@ -226,9 +223,9 @@ def _copy_binder_notebooks(app: sphinx.application.Sphinx) -> None:
     gallery_conf: GalleryConfig = app.config.sphinx_gallery_conf
     gallery_dirs: str | list[str] = gallery_conf["gallery_dirs"]
     binder_conf: dict[str, Any] = gallery_conf["binder"]
-    notebooks_dir: str = os.path.join(app.outdir, binder_conf["notebooks_dir"])
+    notebooks_dir = Path(app.outdir) / binder_conf["notebooks_dir"]
     shutil.rmtree(notebooks_dir, ignore_errors=True)
-    os.makedirs(notebooks_dir, exist_ok=True)
+    notebooks_dir.mkdir(parents=True, exist_ok=True)
 
     if not isinstance(gallery_dirs, (list, tuple)):
         gallery_dirs = [gallery_dirs]
@@ -239,8 +236,8 @@ def _copy_binder_notebooks(app: sphinx.application.Sphinx) -> None:
 
     for i_folder in iterator:
         shutil.copytree(
-            os.path.join(app.srcdir, i_folder),
-            os.path.join(notebooks_dir, i_folder),
+            Path(app.srcdir) / i_folder,
+            notebooks_dir / i_folder,
             ignore=_remove_ipynb_files,
         )
 
@@ -296,7 +293,7 @@ def check_binder_conf(binder_conf: dict[str, Any] | None) -> dict[str, Any]:
     binder_conf.setdefault("filepath_prefix")
     binder_conf.setdefault("notebooks_dir", "notebooks")
     binder_conf.setdefault("use_jupyter_lab", False)
-    path_reqs_filenames = [os.path.basename(ii) for ii in path_reqs]
+    path_reqs_filenames = [Path(ii).name for ii in path_reqs]
     if not any(ii in path_reqs_filenames for ii in required_reqs_files):
         raise ConfigError(
             "Did not find one of `requirements.txt` or `environment.yml` "
@@ -377,10 +374,10 @@ def create_jupyterlite_contents(
 
     logger.info("copying Jupyterlite contents ...", color="white")
     gallery_dirs: list[str] = gallery_conf["gallery_dirs"]
-    contents_dir: str = gallery_conf["jupyterlite"]["jupyterlite_contents"]
+    contents_dir = Path(gallery_conf["jupyterlite"]["jupyterlite_contents"])
 
     shutil.rmtree(contents_dir, ignore_errors=True)
-    os.makedirs(contents_dir)
+    contents_dir.mkdir(parents=True)
 
     if not isinstance(gallery_dirs, (list, tuple)):
         gallery_dirs = [gallery_dirs]
@@ -391,8 +388,8 @@ def create_jupyterlite_contents(
 
     for i_folder in iterator:
         shutil.copytree(
-            os.path.join(app.srcdir, i_folder),
-            os.path.join(contents_dir, i_folder),
+            Path(app.srcdir) / i_folder,
+            contents_dir / i_folder,
             ignore=_remove_ipynb_files,
         )
 
@@ -404,7 +401,7 @@ def create_jupyterlite_contents(
         return
 
     (notebook_modification_function,) = _get_callables(gallery_conf, "jupyterlite")
-    notebook_pattern = os.path.join(contents_dir, "**", "*.ipynb")
+    notebook_pattern = str(contents_dir / "**" / "*.ipynb")
     notebook_filename_list = sorted(glob.glob(notebook_pattern, recursive=True))
 
     logger.info("Modifying Jupyterlite notebooks ...", color="white")
@@ -435,16 +432,13 @@ def gen_jupyterlite_rst(fpath: str | os.PathLike, gallery_conf: GalleryConfig) -
     rst : str
         The reStructuredText for the JupyterLite badge that links to this file.
     """
-    relative_link = os.path.relpath(fpath, gallery_conf["src_dir"])
-    notebook_location = relative_link.replace(".py", ".ipynb")
-    # Make sure we have the right slashes (in case we're on Windows)
-    notebook_location = notebook_location.replace(os.sep, "/")
+    fpath = Path(fpath)
+    relative_link = Path(os.path.relpath(fpath, gallery_conf["src_dir"]))
+    notebook_location = relative_link.with_suffix(".ipynb").as_posix()
 
-    lite_root_url = os.path.relpath(
-        os.path.join(gallery_conf["src_dir"], "lite"), os.path.dirname(fpath)
-    )
-    # Make sure we have the right slashes (in case we're on Windows)
-    lite_root_url = lite_root_url.replace(os.sep, "/")
+    lite_root_url = Path(
+        os.path.relpath(Path(gallery_conf["src_dir"]) / "lite", fpath.parent)
+    ).as_posix()
 
     if gallery_conf["jupyterlite"]["use_jupyter_lab"]:
         lite_root_url += "/lab"
@@ -455,7 +449,7 @@ def gen_jupyterlite_rst(fpath: str | os.PathLike, gallery_conf: GalleryConfig) -
 
     # Similar work-around for badge file as in
     # gen_binder_rst
-    image_dir = os.path.join(os.path.dirname(fpath), "images")
+    image_dir = fpath.parent / "images"
     _add_jupyterlite_badge_logo(image_dir)
     rst = (
         "\n"
@@ -468,12 +462,13 @@ def gen_jupyterlite_rst(fpath: str | os.PathLike, gallery_conf: GalleryConfig) -
     return rst
 
 
-def _add_jupyterlite_badge_logo(image_dir: str) -> None:
-    os.makedirs(image_dir, exist_ok=True)
-    physical_path = os.path.join(image_dir, "jupyterlite_badge_logo.svg")
-    if not os.path.isfile(physical_path):
+def _add_jupyterlite_badge_logo(image_dir: str | os.PathLike) -> None:
+    image_dir = Path(image_dir)
+    image_dir.mkdir(parents=True, exist_ok=True)
+    physical_path = image_dir / "jupyterlite_badge_logo.svg"
+    if not physical_path.is_file():
         shutil.copyfile(
-            os.path.join(glr_path_static(), "jupyterlite_badge_logo.svg"), physical_path
+            Path(glr_path_static()) / "jupyterlite_badge_logo.svg", physical_path
         )
 
 
@@ -510,8 +505,8 @@ def check_jupyterlite_conf(
 
     for key, default_value in conf_defaults.items():
         result.setdefault(key, default_value)
-    result["jupyterlite_contents"] = os.path.join(
-        app.srcdir, result["jupyterlite_contents"]
+    result["jupyterlite_contents"] = str(
+        Path(app.srcdir) / result["jupyterlite_contents"]
     )
 
     return result
