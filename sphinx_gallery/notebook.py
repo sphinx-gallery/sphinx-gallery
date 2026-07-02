@@ -20,6 +20,7 @@ from functools import partial
 from itertools import count
 from pathlib import Path
 from typing import Any, TypeAlias
+from textwrap import dedent
 
 import sphinx.util
 from sphinx.errors import ExtensionError
@@ -66,7 +67,7 @@ def directive_fun(match: re.Match, directive: str) -> str:
     """Helper to fill in directives."""
     directive_to_alert = dict(note="info", warning="danger")
     return '<div class="alert alert-{}"><h4>{}</h4><p>{}</p></div>'.format(
-        directive_to_alert[directive], directive.capitalize(), match.group(1).strip()
+        directive_to_alert[directive], directive.capitalize(), dedent("\n" + match.group(1)).strip()
     )
 
 
