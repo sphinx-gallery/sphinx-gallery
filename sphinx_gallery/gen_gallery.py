@@ -943,7 +943,7 @@ def _sec_to_readable(t: float) -> str:
 def _format_for_writing(
     costs: list[ExampleCost],
     *,
-    src_dir: str,
+    src_dir: PathLikeStr,
     kind: Literal["rst", "rst-full", "console"] = "rst",
 ) -> list[list[str]]:
     """Provide formatted computation summary text.
@@ -965,15 +965,15 @@ def _format_for_writing(
         [example_file, time_elapsed, memory_used]
     """
     lines = list()
+    src_dir = Path(src_dir)
     for cost in sorted(costs, key=lambda c: c.sort_key()):
-        rel_path = os.path.relpath(cost.src_file, src_dir)
+        rel_path = Path(os.path.relpath(cost.src_file, src_dir)).as_posix()
         if kind in ("rst", "rst-full"):  # like in sg_execution_times
-            target_dir_clean = os.path.relpath(cost.target_dir, src_dir).replace(
-                os.sep, "_"
-            )
-            paren = rel_path if kind == "rst-full" else os.path.basename(cost.src_file)
+            target_dir_clean = Path(os.path.relpath(cost.target_dir, src_dir)).as_posix()
+            target_dir_clean = target_dir_clean.replace("/", "_")
+            paren = rel_path if kind == "rst-full" else Path(cost.src_file).name
             name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
-                target_dir_clean, os.path.basename(cost.src_file), paren
+                target_dir_clean, Path(cost.src_file).name, paren
             )
             t = _sec_to_readable(cost.execution_time)
         else:  # like in generate_gallery
@@ -986,7 +986,7 @@ def _format_for_writing(
 
 
 def write_computation_times(
-    gallery_conf: GalleryConfig, target_dir: str | None, costs: list[ExampleCost]
+    gallery_conf: GalleryConfig, target_dir: PathLikeStr | None, costs: list[ExampleCost]
 ) -> None:
     """Write computation times to `sg_execution_times.rst`.
 
@@ -1004,15 +1004,15 @@ def write_computation_times(
     total_time = sum(cost.execution_time for cost in costs)
     kind: Literal["rst", "rst-full", "console"]
     if target_dir is None:  # all galleries together
-        out_dir = gallery_conf["src_dir"]
+        out_dir = Path(gallery_conf["src_dir"])
         where = "all galleries"
         kind = "rst-full"
         ref_extra = ""
     else:  # a single gallery
-        out_dir = target_dir
-        where = os.path.relpath(target_dir, gallery_conf["src_dir"])
+        out_dir = Path(target_dir)
+        where = Path(os.path.relpath(out_dir, gallery_conf["src_dir"])).as_posix()
         kind = "rst"
-        ref_extra = f"{where.replace(os.sep, '_')}_"
+        ref_extra = f"{where.replace('/', '_')}_"
     new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
     out_file = Path(out_dir) / "sg_execution_times.rst"
     if out_file.is_file() and total_time == 0:  # a re-run
@@ -1258,9 +1258,7 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
     ):
         source[0] += "No API entries found, not computed.\n\n"
         return
-    backreferences_dir = os.path.join(
-        gallery_conf["src_dir"], gallery_conf["backreferences_dir"]
-    )
+    backreferences_dir = Path(gallery_conf["src_dir"]) / gallery_conf["backreferences_dir"]
 
     example_files = set.union(
         *[
@@ -1287,7 +1285,7 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
     unused_api_entries: list[str] = list()
     used_api_entries: dict[str, list[str]] = dict()
     backreferences_all = _read_json(Path(backreferences_dir, "backreferences_all.json"))
-    src_dir = gallery_conf["src_dir"]
+    src_dir = Path(gallery_conf["src_dir"])
     for entry in example_files:
         # don't include built-in methods etc.
         if re.match(gallery_conf["api_usage_ignore"], entry) is not None:
@@ -1301,7 +1299,7 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
             for br in backref_entry:
                 # br[2] = abs path to target directory
                 example_path = Path(br[2], br[0]).relative_to(src_dir)
-                ref_name = str(example_path).replace(os.sep, "_")
+                ref_name = example_path.as_posix().replace("/", "_")
                 used_api_entries[entry].append(f"sphx_glr_{ref_name}")
 
     for entry in sorted(unused_api_entries):
@@ -1327,7 +1325,7 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
 
     if has_graphviz and unused_api_entries:
         _make_graph(
-            os.path.join(app.builder.srcdir, "sg_api_unused.dot"),
+            str(Path(app.builder.srcdir) / "sg_api_unused.dot"),
             unused_api_entries,
             gallery_conf,
         )
@@ -1363,7 +1361,7 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
                             if entry.startswith(target_dir):
                                 entry = entry[len(target_dir) + 1 :]
                 _make_graph(
-                    os.path.join(app.builder.srcdir, f"{module}_sg_api_used.dot"),
+                    str(Path(app.builder.srcdir) / f"{module}_sg_api_used.dot"),
                     entries,
                     gallery_conf,
                 )
@@ -1374,17 +1372,20 @@ def clean_api_usage_files(app: Sphinx, exception: Exception | None) -> None:
 
     To connect to 'build-finished' event.
     """
-    if os.path.isfile(os.path.join(app.builder.srcdir, "sg_api_usage.rst")):
-        os.remove(os.path.join(app.builder.srcdir, "sg_api_usage.rst"))
-    if os.path.isfile(os.path.join(app.builder.srcdir, "sg_api_unused.dot")):
-        os.remove(os.path.join(app.builder.srcdir, "sg_api_unused.dot"))
-    for file in os.listdir(app.builder.srcdir):
-        if "sg_api_used.dot" in file:
-            os.remove(os.path.join(app.builder.srcdir, file))
+    srcdir = Path(app.builder.srcdir)
+    api_usage = srcdir / "sg_api_usage.rst"
+    if api_usage.is_file():
+        api_usage.unlink()
+    api_unused = srcdir / "sg_api_unused.dot"
+    if api_unused.is_file():
+        api_unused.unlink()
+    for file in srcdir.iterdir():
+        if "sg_api_used.dot" in file.name:
+            file.unlink()
 
 
 def write_junit_xml(
-    gallery_conf: GalleryConfig, target_dir: str | Path, costs: list[ExampleCost]
+    gallery_conf: GalleryConfig, target_dir: PathLikeStr, costs: list[ExampleCost]
 ) -> None:
     """Write JUnit XML file of example run times, successes, and failures.
 
@@ -1408,6 +1409,7 @@ def write_junit_xml(
     elapsed = 0.0
     src_dir = gallery_conf["src_dir"]
     output = ""
+    src_dir = Path(src_dir)
     for cost in costs:
         fname = cost.src_file
         if not any(
@@ -1423,8 +1425,8 @@ def write_junit_xml(
         title = gallery_conf["titles"][fname]
         output += (
             '<testcase classname={!s} file={!s} line="1" name={!s} time="{!r}">'.format(
-                quoteattr(os.path.splitext(os.path.basename(fname))[0]),
-                quoteattr(os.path.relpath(fname, src_dir)),
+                quoteattr(Path(fname).stem),
+                quoteattr(Path(os.path.relpath(fname, src_dir)).as_posix()),
                 quoteattr(title),
                 cost.execution_time,
             )
@@ -1453,9 +1455,8 @@ def write_junit_xml(
         )
     ) + output
     # Actually write it
-    fname = os.path.normpath(os.path.join(target_dir, gallery_conf["junit"]))
-    junit_dir = os.path.dirname(fname)
-    os.makedirs(junit_dir, exist_ok=True)
+    fname = Path(target_dir) / gallery_conf["junit"]
+    fname.parent.mkdir(parents=True, exist_ok=True)
     with open(fname, "w", encoding="utf-8") as fid:
         fid.write(output)
 
@@ -1471,20 +1472,20 @@ def touch_empty_backreferences(
     if not bool(app.config.sphinx_gallery_conf["backreferences_dir"]):
         return
 
-    examples_path = os.path.join(
-        app.srcdir,
-        app.config.sphinx_gallery_conf["backreferences_dir"],
-        f"{name}.examples",
+    examples_path = (
+        Path(app.srcdir)
+        / app.config.sphinx_gallery_conf["backreferences_dir"]
+        / f"{name}.examples"
     )
 
-    if not os.path.exists(examples_path):
+    if not examples_path.exists():
         # touch file
-        open(examples_path, "w").close()
+        examples_path.touch()
 
 
 def _expected_failing_examples(gallery_conf: GalleryConfig) -> set[str]:
     return {
-        os.path.normpath(os.path.join(gallery_conf["src_dir"], path))
+        str((Path(gallery_conf["src_dir"]) / path).resolve(strict=False))
         for path in gallery_conf["expected_failing_examples"]
     }
 
@@ -1533,7 +1534,7 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
             bold(blue(f"Examples failing as expected ({len(failing_as_expected)}):"))
         )
         for fail_example in failing_as_expected:
-            path = os.path.relpath(fail_example, gallery_conf["src_dir"])
+            path = Path(os.path.relpath(fail_example, gallery_conf["src_dir"])).as_posix()
             logger.info(
                 f"{bold(blue(path))} failed leaving traceback:\n\n"
                 f"{indent(gallery_conf['failing_examples'][fail_example], idt)}"
@@ -1545,7 +1546,7 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
             bold(red(f"Unexpected failing examples ({len(failing_unexpectedly)}):\n"))
         )
         for fail_example in failing_unexpectedly:
-            path = os.path.relpath(fail_example, gallery_conf["src_dir"])
+            path = Path(os.path.relpath(fail_example, gallery_conf["src_dir"])).as_posix()
             fail_msgs.append(
                 f"    {bold(red(path))} failed leaving traceback:\n\n"
                 f"{indent(gallery_conf['failing_examples'][fail_example], idt)}"
@@ -1553,7 +1554,8 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
 
     if passing_unexpectedly:
         paths = [
-            os.path.relpath(p, gallery_conf["src_dir"]) for p in passing_unexpectedly
+            Path(os.path.relpath(p, gallery_conf["src_dir"])).as_posix()
+            for p in passing_unexpectedly
         ]
         fail_msgs.append(
             bold(red(f"Examples expected to fail, but not failing ({len(paths)}):\n\n"))
