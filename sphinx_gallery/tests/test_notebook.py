@@ -11,7 +11,6 @@ from collections import defaultdict
 from itertools import count
 from pathlib import Path
 
-
 import pytest
 from sphinx.errors import ExtensionError
 
