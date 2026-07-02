@@ -48,7 +48,7 @@ from .interactive_example import (
 from .recommender import ExampleRecommender, _write_recommendations
 from .scrapers import _import_matplotlib
 from .sorting import ExplicitOrder
-from .typing import GalleryConfig
+from .typing import GalleryConfig, PathLikeStr
 from .utils import (
     _collect_gallery_files,
     _combine_backreferences,
@@ -532,8 +532,8 @@ def _fill_gallery_conf_defaults(
 
 
 def get_subsections(
-    srcdir: str,
-    examples_dir: str,
+    srcdir: PathLikeStr,
+    examples_dir: PathLikeStr,
     gallery_conf: GalleryConfig,
     check_for_header: bool = True,
 ) -> list[str]:
@@ -562,14 +562,16 @@ def get_subsections(
         if isinstance(subsec_order, list):
             gallery_conf["subsection_order"] = ExplicitOrder(subsec_order)
         (sortkey,) = _get_callables(gallery_conf, "subsection_order")
-    subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
+    srcdir = Path(srcdir)
+    examples_dir = Path(examples_dir)
+    subfolders = [subfolder.name for subfolder in examples_dir.iterdir()]
     if check_for_header:
         subfolders = [
             subfolder
             for subfolder in subfolders
             # Return is not `None` only when a gallery head file is found
             if _get_gallery_header(
-                os.path.join(examples_dir, subfolder), gallery_conf, raise_error=False
+                str(examples_dir / subfolder), gallery_conf, raise_error=False
             )
             is not None
         ]
@@ -580,13 +582,13 @@ def get_subsections(
             for subfolder in subfolders
             if (
                 subfolder != "__pycache__"
-                and os.path.isdir(os.path.join(examples_dir, subfolder))
+                and (examples_dir / subfolder).is_dir()
             )
         ]
 
-    base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
+    base_examples_dir_path = Path(os.path.relpath(examples_dir, srcdir))
     subfolders_with_path = [
-        os.path.join(base_examples_dir_path, item) for item in subfolders
+        str(base_examples_dir_path / item) for item in subfolders
     ]
     sorted_subfolders = sorted(subfolders_with_path, key=sortkey)
 
@@ -597,7 +599,7 @@ def get_subsections(
 
 
 def _prepare_sphx_glr_dirs(
-    gallery_conf: GalleryConfig, srcdir: str
+    gallery_conf: GalleryConfig, srcdir: PathLikeStr
 ) -> list[tuple[Any, Any]]:
     """Creates necessary folders for sphinx_gallery files."""
     examples_dirs = gallery_conf["examples_dirs"]
@@ -616,8 +618,8 @@ def _prepare_sphx_glr_dirs(
         )
 
     if bool(gallery_conf["backreferences_dir"]):
-        backreferences_dir = os.path.join(srcdir, gallery_conf["backreferences_dir"])
-        os.makedirs(backreferences_dir, exist_ok=True)
+        backreferences_dir = Path(srcdir) / gallery_conf["backreferences_dir"]
+        backreferences_dir.mkdir(parents=True, exist_ok=True)
 
     return list(zip(examples_dirs, gallery_dirs))
 
@@ -642,7 +644,7 @@ def _finish_index_rst(
     indexst: str,
     sg_root_index: bool,
     subsection_index_files: list[str],
-    gallery_dir_abs_path: str,
+    gallery_dir_abs_path: PathLikeStr,
 ) -> None:
     """Add toctree, download and signature, if req, to index and write file."""
     # Generate toctree containing subsection index files
@@ -669,14 +671,14 @@ def _finish_index_rst(
         if app.config.sphinx_gallery_conf["show_signature"]:
             indexst += SPHX_GLR_SIG
         # Write index to file
-        index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
+        index_rst_new = Path(gallery_dir_abs_path) / "index.rst.new"
         with open(index_rst_new, "w", encoding="utf-8") as fhindex:
             fhindex.write(indexst)
         _replace_md5(index_rst_new, mode="t")
 
 
 def _build_recommender(
-    gallery_conf: GalleryConfig, gallery_dir_abs_path: str, subsecs: list[str]
+    gallery_conf: GalleryConfig, gallery_dir_abs_path: PathLikeStr, subsecs: list[str]
 ) -> None:
     """Build recommender and write recommendations."""
     if gallery_conf["recommender"]["enable"]:
@@ -692,19 +694,24 @@ def _build_recommender(
 
         gallery_py_files: list[str] = []
         # root and subsection directories containing python examples
-        gallery_directories = [gallery_dir_abs_path] + subsecs
+        gallery_dir_abs_path = Path(gallery_dir_abs_path)
+        gallery_directories: list[PathLikeStr] = [gallery_dir_abs_path] + subsecs
         for current_dir in gallery_directories:
-            src_dir = os.path.join(gallery_dir_abs_path, current_dir)
+            src_dir = Path(current_dir)
+            if not src_dir.is_absolute():
+                src_dir = gallery_dir_abs_path / src_dir
             # sort python files to have a deterministic input across call
             py_files = sorted(
                 # NOTE we don't take account of `ignore_pattern` and ignore
                 # ext in `example_extensions`
                 [
-                    os.path.join(src_dir, fname)
+                    str(fname)
                     for fname in Path(src_dir).iterdir()
                     if fname.suffix == ".py"
                 ],
-                key=_get_callables(gallery_conf, "within_subsection_order", src_dir)[0],
+                key=_get_callables(gallery_conf, "within_subsection_order", str(src_dir))[
+                    0
+                ],
             )
             gallery_py_files.extend(py_files)
 
@@ -765,7 +772,8 @@ def generate_gallery_rst(app: Sphinx) -> None:
     seen_backrefs: set[str] = set()
 
     costs: list[ExampleCost] = []
-    workdirs = _prepare_sphx_glr_dirs(gallery_conf, str(app.builder.srcdir))
+    src_root = Path(app.builder.srcdir)
+    workdirs = _prepare_sphx_glr_dirs(gallery_conf, src_root)
 
     # Check for duplicate filenames to make sure linking works as expected
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
@@ -774,8 +782,8 @@ def generate_gallery_rst(app: Sphinx) -> None:
     backrefs_all: dict[str, list[Backreference]] = {}
 
     for examples_dir, gallery_dir in workdirs:
-        examples_dir_abs_path = os.path.join(str(app.builder.srcdir), examples_dir)
-        gallery_dir_abs_path = os.path.join(str(app.builder.srcdir), gallery_dir)
+        examples_dir_abs_path = src_root / examples_dir
+        gallery_dir_abs_path = src_root / gallery_dir
 
         # Create example rst files for root gallery directory examples
         # (excl. sub-dir examples) and fetch gallery header for root index.rst
@@ -786,8 +794,8 @@ def generate_gallery_rst(app: Sphinx) -> None:
             this_toctree_items,
             backrefs_root,
         ) = generate_dir_rst(
-            examples_dir_abs_path,
-            gallery_dir_abs_path,
+            str(examples_dir_abs_path),
+            str(gallery_dir_abs_path),
             gallery_conf,
             seen_backrefs,
             is_subsection=False,
@@ -798,7 +806,7 @@ def generate_gallery_rst(app: Sphinx) -> None:
         # `this_content` is None when user provides own index.rst
         sg_root_index = this_content is not None
         costs += this_costs
-        write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
+        write_computation_times(gallery_conf, str(gallery_dir_abs_path), this_costs)
 
         # `indexst` variable must exist, as passed to `_finish_index_rst`
         indexst = ""
@@ -815,14 +823,14 @@ def generate_gallery_rst(app: Sphinx) -> None:
         # list all paths to subsection index files in this array
         subsection_index_files = []
         subsecs = get_subsections(
-            str(app.builder.srcdir),
+            src_root,
             examples_dir_abs_path,
             gallery_conf,
             check_for_header=sg_root_index,
         )
         for subsection in subsecs:
-            src_dir = os.path.join(examples_dir_abs_path, subsection)
-            target_dir = os.path.join(gallery_dir_abs_path, subsection)
+            src_dir = examples_dir_abs_path / subsection
+            target_dir = gallery_dir_abs_path / subsection
             subsection_index_files.append(
                 "/".join(["", gallery_dir, subsection, "index.rst"]).replace(
                     os.sep, "/"
@@ -835,7 +843,9 @@ def generate_gallery_rst(app: Sphinx) -> None:
                 subsection_costs,
                 subsection_toctree_filenames,
                 backrefs_subsec,
-            ) = generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs)
+            ) = generate_dir_rst(
+                str(src_dir), str(target_dir), gallery_conf, seen_backrefs
+            )
 
             _combine_backreferences(backrefs_all, backrefs_subsec)
 
@@ -864,7 +874,7 @@ def generate_gallery_rst(app: Sphinx) -> None:
                 _replace_md5(subsection_index_path, mode="t")
 
             costs += subsection_costs
-            write_computation_times(gallery_conf, target_dir, subsection_costs)
+            write_computation_times(gallery_conf, str(target_dir), subsection_costs)
 
         # Per gallery - items below run once per gallery
         # Finish index.rst and write to file
@@ -874,10 +884,10 @@ def generate_gallery_rst(app: Sphinx) -> None:
             indexst,
             sg_root_index,
             subsection_index_files,
-            gallery_dir_abs_path,
+            str(gallery_dir_abs_path),
         )
         # Build recommendation system
-        _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
+        _build_recommender(gallery_conf, str(gallery_dir_abs_path), subsecs)
 
     # Per project - items below run once only (for all galleries)
     # Write a single global sg_execution_times
