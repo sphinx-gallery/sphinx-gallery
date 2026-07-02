@@ -9,6 +9,7 @@ Sorting key functions for gallery subsection folders and section files.
 
 import os
 import types
+from pathlib import Path
 from typing import Any, Callable, Iterable
 
 from sphinx.errors import ConfigError
@@ -109,7 +110,7 @@ class NumberOfCodeLinesSortKey(_SortKey):
 
     def __call__(self, filename: str) -> int:
         """Return number of code lines in `filename`."""
-        src_file = os.path.normpath(os.path.join(self.src_dir, filename))
+        src_file = Path(self.src_dir) / filename
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
         amount_of_code = sum(
             len(block.content) for block in script_blocks if block.type == "code"
@@ -128,8 +129,8 @@ class FileSizeSortKey(_SortKey):
 
     def __call__(self, filename: str) -> int:
         """Return file size."""
-        src_file = os.path.normpath(os.path.join(self.src_dir, filename))
-        return int(os.stat(src_file).st_size)
+        src_file = Path(self.src_dir) / filename
+        return int(src_file.stat().st_size)
 
 
 class FileNameSortKey(_SortKey):
@@ -157,7 +158,7 @@ class ExampleTitleSortKey(_SortKey):
 
     def __call__(self, filename: str) -> str:
         """Return title of example."""
-        src_file = os.path.normpath(os.path.join(self.src_dir, filename))
+        src_file = Path(self.src_dir) / filename
         _, script_blocks = split_code_and_text_blocks(src_file)
         _, title = extract_intro_and_title(src_file, script_blocks[0].content)
         return title
