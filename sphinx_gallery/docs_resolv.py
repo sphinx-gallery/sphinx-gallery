@@ -50,9 +50,9 @@ def _get_data(url: str) -> str:
     return data
 
 
-def get_data(url: str, gallery_dir: str) -> str:
+def get_data(url: str, gallery_dir: str | os.PathLike[str]) -> str:
     """Persistent dictionary usage to retrieve the search indexes."""
-    cached_file = os.path.join(gallery_dir, "searchindex")
+    cached_file = str(Path(gallery_dir) / "searchindex")
     search_index = shelve.open(cached_file)
     if url in search_index:
         data: str = search_index[url]
@@ -136,7 +136,7 @@ class SphinxDocLinkResolver:
         self,
         config: GalleryConfig,
         doc_url: str | Path,
-        gallery_dir: str,
+        gallery_dir: str | os.PathLike[str],
         relative: bool = False,
     ):
         self.config = config
@@ -146,9 +146,9 @@ class SphinxDocLinkResolver:
         self._link_cache: dict[str, LinkType] = {}
 
         if isinstance(doc_url, Path):
-            index_url = os.path.join(doc_url, "index.html")
-            searchindex_url = os.path.join(doc_url, "searchindex.js")
-            docopts_url = os.path.join(doc_url, "_static", "documentation_options.js")
+            index_url = str(doc_url / "index.html")
+            searchindex_url = str(doc_url / "searchindex.js")
+            docopts_url = str(doc_url / "_static" / "documentation_options.js")
         else:
             if relative:
                 raise ExtensionError(
@@ -235,7 +235,7 @@ class SphinxDocLinkResolver:
             fname = os.path.splitext(fname)[0] + ext
             if self._is_windows:
                 fname = fname.replace("/", "\\")
-                link = os.path.join(self.doc_url, fname)
+                link = str(Path(self.doc_url) / fname)
             else:
                 link = posixpath.join(self.doc_url, fname)
 
@@ -355,25 +355,25 @@ def _embed_code_links(
     """Add resolvers for the packages for which we want to show links."""
     doc_resolvers = {}
 
-    src_gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
+    src_gallery_dir = Path(app.builder.srcdir) / gallery_dir
     for this_module, url in gallery_conf["reference_url"].items():
         try:
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
                     app.config.sphinx_gallery_conf,
                     Path(app.builder.outdir),
-                    src_gallery_dir,
+                    str(src_gallery_dir),
                     relative=True,
                 )
             else:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
-                    app.config.sphinx_gallery_conf, url, src_gallery_dir
+                    app.config.sphinx_gallery_conf, url, str(src_gallery_dir)
                 )
 
         except (URLError, HTTPError) as e:
             _handle_http_url_error(e)
 
-    html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir, gallery_dir))
+    html_gallery_dir = (Path(app.builder.outdir) / gallery_dir).resolve()
 
     # patterns for replacement
     link_pattern = '<a href="{link}" title="{title}" class="{css_class}">{text}</a>'
@@ -392,20 +392,21 @@ def _embed_code_links(
         f"embedding documentation hyperlinks for {gallery_dir}... ",
         color="fuchsia",
         length=len(flat),
-        stringify_func=lambda x: os.path.basename(x[1]),
+        stringify_func=lambda x: Path(x[1]).name,
     )
     intersphinx_inv = _get_intersphinx_inventory(app)
     for dirpath, fname in iterator:
         full_fname = os.path.join(html_gallery_dir, dirpath, fname)
-        subpath = dirpath[len(html_gallery_dir) + 1 :]
+        subpath = dirpath[len(str(html_gallery_dir)) + 1 :]
         if app.builder.name == "dirhtml":
-            json_fname = os.path.join(src_gallery_dir, f"{subpath}.codeobj.json")
+            json_fname = Path(src_gallery_dir) / f"{subpath}.codeobj.json"
         else:
-            json_fname = os.path.join(
+            json_fname = Path(
                 src_gallery_dir, subpath, fname[:-5] + ".codeobj.json"
             )
         if not os.path.exists(json_fname):
             continue
+            
 
         # we have a json file with the objects to embed links for
         example_code_obj = _read_json(json_fname)
