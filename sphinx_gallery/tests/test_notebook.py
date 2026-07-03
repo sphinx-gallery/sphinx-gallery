@@ -99,7 +99,12 @@ This is :math:`some` math :math:`stuff`.
 
 .. warning::
     Go away
+   Go away
 
+   .. code-block::
+      a = 1 + 2
+
+   Second paragraph.
 For more details on interpolation see the page :ref:`channel_interpolation`.
 .. _foo: bar
 
