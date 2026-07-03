@@ -567,23 +567,20 @@ def get_subsections(
     subfolders = [subfolder.name for subfolder in examples_dir.iterdir()]
     if check_for_header:
         subfolders = [
-            subfolder
-            for subfolder in subfolders
+            subfolder.name
+            for subfolder in examples_dir.iterdir()
             # Return is not `None` only when a gallery head file is found
             if _get_gallery_header(
-                str(examples_dir / subfolder), gallery_conf, raise_error=False
+                subfolder, gallery_conf, raise_error=False
             )
             is not None
         ]
     else:
         # just make sure its a directory, that is not `__pycache__`
         subfolders = [
-            subfolder
-            for subfolder in subfolders
-            if (
-                subfolder != "__pycache__"
-                and (examples_dir / subfolder).is_dir()
-            )
+            subfolder.name
+            for subfolder in examples_dir.iterdir()
+            if subfolder.is_dir() and subfolder.name != "__pycache__"
         ]
 
     base_examples_dir_path = Path(os.path.relpath(examples_dir, srcdir))
@@ -695,9 +692,10 @@ def _build_recommender(
         gallery_py_files: list[str] = []
         # root and subsection directories containing python examples
         gallery_dir_abs_path = Path(gallery_dir_abs_path)
-        gallery_directories: list[PathLikeStr] = [gallery_dir_abs_path] + subsecs
-        for current_dir in gallery_directories:
-            src_dir = Path(current_dir)
+        gallery_directories: list[PathLikeStr] = [
+            Path(s) for s in [gallery_dir_abs_path] + subsecs
+        ]
+        for src_dir in gallery_directories:
             if not src_dir.is_absolute():
                 src_dir = gallery_dir_abs_path / src_dir
             # sort python files to have a deterministic input across call
@@ -706,7 +704,7 @@ def _build_recommender(
                 # ext in `example_extensions`
                 [
                     str(fname)
-                    for fname in Path(src_dir).iterdir()
+                    for fname in src_dir.iterdir()
                     if fname.suffix == ".py"
                 ],
                 key=_get_callables(gallery_conf, "within_subsection_order", str(src_dir))[
