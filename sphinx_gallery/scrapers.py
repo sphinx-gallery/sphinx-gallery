@@ -213,9 +213,9 @@ def matplotlib_scraper(
             raise
 
         if "images" in gallery_conf["compress_images"]:
-            optipng(str(image_path), gallery_conf["compress_images_args"])
+            optipng(image_path, gallery_conf["compress_images_args"])
             for hipath in srcsetpaths[0].items():
-                optipng(str(hipath), gallery_conf["compress_images_args"])
+                optipng(hipath, gallery_conf["compress_images_args"])
 
         image_rsts.append(
             figure_rst(

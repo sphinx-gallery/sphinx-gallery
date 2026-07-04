@@ -87,20 +87,19 @@ def scale_image(
         thumb.convert("RGB").save(out_fname)
 
 
-def optipng(fname: PathLikeStr, args: Tuple = ()) -> None:
+def optipng(fname: Path, args: Tuple = ()) -> None:
     """Optimize a PNG in place.
 
     Parameters
     ----------
-    fname : str
+    fname : Path
         The filename. If it ends with '.png', ``optipng -o7 fname`` will
         be run. If it fails because the ``optipng`` executable is not found
         or optipng fails, the function returns.
     args : tuple
         Extra command-line arguments, such as ``['-o7']``.
     """
-    fname = str(fname)
-    if fname.endswith(".png"):
+    if fname.suffix == ".png":
         # -o7 because this is what CPython used
         # https://github.com/python/cpython/pull/8032
         try:
