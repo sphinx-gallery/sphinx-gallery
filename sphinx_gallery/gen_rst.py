@@ -537,9 +537,7 @@ def _write_subsection_index(
         index_path = str(target_dir / "index.rst.new")
         head_ref = Path(os.path.relpath(target_dir, gallery_conf["src_dir"])).as_posix()
         with open(index_path, "w", **_W_KW) as findex:  # type: ignore [call-overload]
-            findex.write(
-                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace("/", "_"))
-            )
+            findex.write("\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace("/", "_")))
             findex.write(index_content)
             # Create toctree with all gallery examples and add to index file
             if len(toctree_filenames) > 0:

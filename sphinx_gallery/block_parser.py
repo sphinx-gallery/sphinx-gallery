@@ -39,9 +39,7 @@ class BlockParser:
         Contains the configuration of Sphinx-Gallery.
     """
 
-    def __init__(
-        self, source_file: PathLikeStr, gallery_conf: GalleryConfig
-    ) -> None:
+    def __init__(self, source_file: PathLikeStr, gallery_conf: GalleryConfig) -> None:
         source_path = Path(source_file)
         if name := gallery_conf["filetype_parsers"].get(source_path.suffix):
             self.lexer = pygments.lexers.find_lexer_class_by_name(name)()

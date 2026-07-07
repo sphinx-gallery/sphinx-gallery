@@ -401,12 +401,9 @@ def _embed_code_links(
         if app.builder.name == "dirhtml":
             json_fname = Path(src_gallery_dir) / f"{subpath}.codeobj.json"
         else:
-            json_fname = Path(
-                src_gallery_dir, subpath, fname[:-5] + ".codeobj.json"
-            )
+            json_fname = Path(src_gallery_dir, subpath, fname[:-5] + ".codeobj.json")
         if not os.path.exists(json_fname):
             continue
-            
 
         # we have a json file with the objects to embed links for
         example_code_obj = _read_json(json_fname)

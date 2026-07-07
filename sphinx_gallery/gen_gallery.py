@@ -570,9 +570,7 @@ def get_subsections(
             subfolder.name
             for subfolder in examples_dir.iterdir()
             # Return is not `None` only when a gallery head file is found
-            if _get_gallery_header(
-                subfolder, gallery_conf, raise_error=False
-            )
+            if _get_gallery_header(subfolder, gallery_conf, raise_error=False)
             is not None
         ]
     else:
@@ -584,9 +582,7 @@ def get_subsections(
         ]
 
     base_examples_dir_path = Path(os.path.relpath(examples_dir, srcdir))
-    subfolders_with_path = [
-        str(base_examples_dir_path / item) for item in subfolders
-    ]
+    subfolders_with_path = [str(base_examples_dir_path / item) for item in subfolders]
     sorted_subfolders = sorted(subfolders_with_path, key=sortkey)
 
     return [
@@ -702,14 +698,10 @@ def _build_recommender(
             py_files = sorted(
                 # NOTE we don't take account of `ignore_pattern` and ignore
                 # ext in `example_extensions`
-                [
-                    str(fname)
-                    for fname in src_dir.iterdir()
-                    if fname.suffix == ".py"
-                ],
-                key=_get_callables(gallery_conf, "within_subsection_order", str(src_dir))[
-                    0
-                ],
+                [str(fname) for fname in src_dir.iterdir() if fname.suffix == ".py"],
+                key=_get_callables(
+                    gallery_conf, "within_subsection_order", str(src_dir)
+                )[0],
             )
             gallery_py_files.extend(py_files)
 
@@ -969,7 +961,9 @@ def _format_for_writing(
     for cost in sorted(costs, key=lambda c: c.sort_key()):
         rel_path = Path(os.path.relpath(cost.src_file, src_dir)).as_posix()
         if kind in ("rst", "rst-full"):  # like in sg_execution_times
-            target_dir_clean = Path(os.path.relpath(cost.target_dir, src_dir)).as_posix()
+            target_dir_clean = Path(
+                os.path.relpath(cost.target_dir, src_dir)
+            ).as_posix()
             target_dir_clean = target_dir_clean.replace("/", "_")
             paren = rel_path if kind == "rst-full" else Path(cost.src_file).name
             name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
@@ -986,7 +980,9 @@ def _format_for_writing(
 
 
 def write_computation_times(
-    gallery_conf: GalleryConfig, target_dir: PathLikeStr | None, costs: list[ExampleCost]
+    gallery_conf: GalleryConfig,
+    target_dir: PathLikeStr | None,
+    costs: list[ExampleCost],
 ) -> None:
     """Write computation times to `sg_execution_times.rst`.
 
@@ -1258,7 +1254,9 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
     ):
         source[0] += "No API entries found, not computed.\n\n"
         return
-    backreferences_dir = Path(gallery_conf["src_dir"]) / gallery_conf["backreferences_dir"]
+    backreferences_dir = (
+        Path(gallery_conf["src_dir"]) / gallery_conf["backreferences_dir"]
+    )
 
     example_files = set.union(
         *[
@@ -1534,7 +1532,9 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
             bold(blue(f"Examples failing as expected ({len(failing_as_expected)}):"))
         )
         for fail_example in failing_as_expected:
-            path = Path(os.path.relpath(fail_example, gallery_conf["src_dir"])).as_posix()
+            path = Path(
+                os.path.relpath(fail_example, gallery_conf["src_dir"])
+            ).as_posix()
             logger.info(
                 f"{bold(blue(path))} failed leaving traceback:\n\n"
                 f"{indent(gallery_conf['failing_examples'][fail_example], idt)}"
@@ -1546,7 +1546,9 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
             bold(red(f"Unexpected failing examples ({len(failing_unexpectedly)}):\n"))
         )
         for fail_example in failing_unexpectedly:
-            path = Path(os.path.relpath(fail_example, gallery_conf["src_dir"])).as_posix()
+            path = Path(
+                os.path.relpath(fail_example, gallery_conf["src_dir"])
+            ).as_posix()
             fail_msgs.append(
                 f"    {bold(red(path))} failed leaving traceback:\n\n"
                 f"{indent(gallery_conf['failing_examples'][fail_example], idt)}"
