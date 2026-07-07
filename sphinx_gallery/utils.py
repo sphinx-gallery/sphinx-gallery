@@ -24,7 +24,7 @@ try:
 except Exception:  # Sphinx < 6
     from sphinx.util import status_iterator  # type: ignore[no-redef]  # noqa: F401
 
-from .typing import GalleryConfig
+from .typing import GalleryConfig, PathLikeStr
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -33,7 +33,12 @@ logger = sphinx.util.logging.getLogger("sphinx-gallery")
 _W_KW = dict(encoding="utf-8", newline="\n")
 
 
-def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) -> None:
+def scale_image(
+    in_fname: PathLikeStr,
+    out_fname: PathLikeStr,
+    max_width: int,
+    max_height: int,
+) -> None:
     """Scales image centered in image box using `max_width` and `max_height`.
 
     The same aspect ratio is retained. If `in_fname` == `out_fname` the image can only
@@ -41,6 +46,9 @@ def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) 
     """
     # local import to avoid testing dependency on PIL:
     from PIL import Image
+
+    in_fname = Path(in_fname)
+    out_fname = Path(out_fname)
 
     img = Image.open(in_fname)
     # XXX someday we should just try img.thumbnail((max_width, max_height)) ...
@@ -79,20 +87,19 @@ def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) 
         thumb.convert("RGB").save(out_fname)
 
 
-def optipng(fname: str, args: Tuple = ()) -> None:
+def optipng(fname: Path, args: Tuple = ()) -> None:
     """Optimize a PNG in place.
 
     Parameters
     ----------
-    fname : str
+    fname : Path
         The filename. If it ends with '.png', ``optipng -o7 fname`` will
         be run. If it fails because the ``optipng`` executable is not found
         or optipng fails, the function returns.
     args : tuple
         Extra command-line arguments, such as ``['-o7']``.
     """
-    fname = str(fname)
-    if fname.endswith(".png"):
+    if fname.suffix == ".png":
         # -o7 because this is what CPython used
         # https://github.com/python/cpython/pull/8032
         try:
@@ -116,7 +123,7 @@ def _has_optipng() -> bool:
         return True
 
 
-def get_md5sum(src_file: str | os.PathLike, mode: Literal["t", "b"] = "b") -> str:
+def get_md5sum(src_file: PathLikeStr, mode: Literal["t", "b"] = "b") -> str:
     """Returns md5sum of file.
 
     Parameters
@@ -144,8 +151,8 @@ def get_md5sum(src_file: str | os.PathLike, mode: Literal["t", "b"] = "b") -> st
 
 
 def _replace_md5(
-    fname_new: str | os.PathLike,
-    fname_old: str | os.PathLike | None = None,
+    fname_new: PathLikeStr,
+    fname_old: PathLikeStr | None = None,
     *,
     method: Literal["move", "copy"] = "move",
     mode: Literal["t", "b"] = "b",

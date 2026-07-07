@@ -25,7 +25,7 @@ import sphinx.util
 from sphinx.errors import ExtensionError
 
 from .py_source_parser import Block, split_code_and_text_blocks
-from .typing import GalleryConfig
+from .typing import GalleryConfig, PathLikeStr
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -103,7 +103,7 @@ def convert_code_to_md(text: str) -> str:
 def rst2md(
     text: str,
     gallery_conf: GalleryConfig,
-    target_dir: str,
+    target_dir: PathLikeStr,
     heading_levels: dict[tuple[str | None, str], int],
 ) -> str:
     """Converts reST from docstrings and text blocks to markdown for Jupyter notebooks.
@@ -191,7 +191,7 @@ def rst2md(
 
 
 def generate_image_src(
-    image_path: str, gallery_conf: GalleryConfig, target_dir: str
+    image_path: str, gallery_conf: GalleryConfig, target_dir: PathLikeStr
 ) -> str:
     """Modify image path for notebook, according to "notebook_images" config.
 
@@ -211,13 +211,13 @@ def generate_image_src(
         # Path should now be relative to source dir, not target dir
         target_dir = gallery_conf["src_dir"]
         image_path = image_path.lstrip("/")
-    full_path = os.path.join(target_dir, image_path.replace("/", os.sep))
+    full_path = Path(target_dir) / image_path
 
     if isinstance(gallery_conf["notebook_images"], str):
         # Use as prefix e.g. URL
         prefix = gallery_conf["notebook_images"]
-        rel_path = os.path.relpath(full_path, gallery_conf["src_dir"])
-        return prefix + rel_path.replace(os.sep, "/")
+        rel_path = Path(os.path.relpath(full_path, gallery_conf["src_dir"]))
+        return prefix + rel_path.as_posix()
     else:
         # True, but not string. Embed as data URI.
         try:
@@ -232,7 +232,7 @@ def generate_image_src(
 
 
 def jupyter_notebook(
-    script_blocks: list[Block], gallery_conf: GalleryConfig, target_dir: str
+    script_blocks: list[Block], gallery_conf: GalleryConfig, target_dir: PathLikeStr
 ) -> NotebookContent:
     """Generate a Jupyter notebook file cell-by-cell.
 
@@ -323,7 +323,7 @@ def fill_notebook(
     work_notebook: NotebookContent,
     script_blocks: list[Block],
     gallery_conf: GalleryConfig,
-    target_dir: str,
+    target_dir: PathLikeStr,
 ) -> None:
     """Writes the Jupyter notebook cells.
 
@@ -362,7 +362,7 @@ def fill_notebook(
                 add_markdown_cell(work_notebook, markdown)
 
 
-def save_notebook(work_notebook: NotebookContent, write_file: str | Path) -> None:
+def save_notebook(work_notebook: NotebookContent, write_file: PathLikeStr) -> None:
     """Saves the Jupyter work_notebook to write_file."""
     with open(write_file, "w") as out_nb:
         json.dump(work_notebook, out_nb, indent=2)
@@ -399,6 +399,6 @@ def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
     for src_file in args.python_src_file:
         file_conf, blocks = split_code_and_text_blocks(src_file)
         print(f"Converting {src_file}")
-        target_dir = os.path.dirname(src_file)
+        target_dir = Path(src_file).parent
         example_nb = jupyter_notebook(blocks, copy.deepcopy(gallery_conf), target_dir)
         save_notebook(example_nb, Path(src_file).with_suffix(".ipynb"))

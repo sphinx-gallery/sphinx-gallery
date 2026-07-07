@@ -61,7 +61,7 @@ from .scrapers import (
     clean_modules,
     save_figures,
 )
-from .typing import GalleryConfig, Parser
+from .typing import GalleryConfig, Parser, PathLikeStr
 from .utils import (
     _W_KW,
     _collect_gallery_files,
@@ -389,8 +389,8 @@ def md5sum_is_current(src_file: str | Path, mode: Literal["t", "b"] = "b") -> bo
     """Checks whether src_file has the same md5 hash as the one on disk."""
     src_md5 = get_md5sum(src_file, mode=mode)
 
-    src_md5_file = str(src_file) + ".md5"
-    if not os.path.exists(src_md5_file):
+    src_md5_file = Path(f"{src_file}.md5")
+    if not src_md5_file.exists():
         return False
 
     with open(src_md5_file) as file_cs:
@@ -400,8 +400,8 @@ def md5sum_is_current(src_file: str | Path, mode: Literal["t", "b"] = "b") -> bo
 
 
 def save_thumbnail(
-    image_path_template: str,
-    src_file: str,
+    image_path_template: PathLikeStr,
+    src_file: PathLikeStr,
     script_vars: dict[str, Any],
     file_conf: dict[str, Any],
     gallery_conf: GalleryConfig,
@@ -422,8 +422,10 @@ def save_thumbnail(
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
-    thumb_dir = os.path.join(os.path.dirname(image_path_template), "thumb")
-    os.makedirs(thumb_dir, exist_ok=True)
+    image_path_template = Path(image_path_template)
+    src_file = Path(src_file)
+    thumb_dir = image_path_template.parent / "thumb"
+    thumb_dir.mkdir(parents=True, exist_ok=True)
 
     # read specification of the figure to display as thumbnail from main text
     thumbnail_number = file_conf.get("thumbnail_number", None)
@@ -433,7 +435,7 @@ def save_thumbnail(
         # If no number AND no path, set to default thumbnail_number
         thumbnail_number = 1
     if thumbnail_number is None:
-        image_path = os.path.join(gallery_conf["src_dir"], cast(str, thumbnail_path))
+        image_path = Path(gallery_conf["src_dir"]) / cast(str, thumbnail_path)
     else:
         if not isinstance(thumbnail_number, int):
             raise ExtensionError(
@@ -443,63 +445,62 @@ def save_thumbnail(
         # negative index means counting from the last one
         if thumbnail_number < 0:
             thumbnail_number += len(script_vars["image_path_iterator"]) + 1
-        image_path = image_path_template.format(thumbnail_number)
+        image_path = str(image_path_template).format(thumbnail_number)
     del thumbnail_number, thumbnail_path, image_path_template
     thumbnail_image_path, ext = _find_image_ext(image_path)
 
-    base_image_name = os.path.splitext(os.path.basename(src_file))[0]
-    thumb_file = os.path.join(thumb_dir, f"sphx_glr_{base_image_name}_thumb.{ext}")
+    base_image_name = src_file.stem
+    thumb_file = thumb_dir / f"sphx_glr_{base_image_name}_thumb.{ext}"
 
     if "formatted_exception" in script_vars and file_conf.get(
         "failing_thumbnail", True
     ):
-        img = os.path.join(glr_path_static(), "broken_example.png")
-    elif os.path.exists(thumbnail_image_path):
+        img = Path(glr_path_static()) / "broken_example.png"
+    elif Path(thumbnail_image_path).exists():
         img = thumbnail_image_path
-    elif not os.path.exists(thumb_file):
+    elif not thumb_file.exists():
         # create something to replace the thumbnail
         default_thumb_path = gallery_conf["default_thumb_file"]
         if default_thumb_path is None:
-            default_thumb_path = os.path.join(
-                glr_path_static(),
-                "no_image.png",
-            )
+            default_thumb_path = Path(glr_path_static()) / "no_image.png"
         img, ext = _find_image_ext(default_thumb_path)
     else:
         return
     # update extension, since gallery_conf setting can be different
     # from file_conf
     # Here we have to do .new.ext so that optipng and PIL behave well
-    thumb_file = f"{os.path.splitext(thumb_file)[0]}.new.{ext}"
+    thumb_file = Path(f"{thumb_file.with_suffix('')}.new.{ext}")
     if ext in ("svg", "gif"):
         copyfile(img, thumb_file)
     else:
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
         if "thumbnails" in gallery_conf["compress_images"]:
             optipng(thumb_file, gallery_conf["compress_images_args"])
-    fname_old = f"{os.path.splitext(thumb_file)[0][:-3]}{ext}"
+    fname_old = Path(f"{thumb_file.with_suffix('')}")
+    fname_old = fname_old.with_name(fname_old.name[:-3] + ext)
     _replace_md5(thumb_file, fname_old=fname_old)
 
 
 def _get_gallery_header(
-    dir_: str, gallery_conf: GalleryConfig, raise_error: bool = True
+    dir_: PathLikeStr, gallery_conf: GalleryConfig, raise_error: bool = True
 ) -> str | None:
     """Get gallery header from GALLERY_HEADER.[ext] or README.[ext] file.
 
     Returns `None` if user supplied an index.rst or no gallery header file
     found and `raise_error=False`.
     """
+    dir_ = Path(dir_)
     # First check if user supplies an index.rst and that index.rst is in the
     # copyfile regexp:
     if re.match(gallery_conf["copyfile_regex"], "index.rst"):
-        fpth = os.path.join(dir_, "index.rst")
-        if os.path.isfile(fpth):
+        fpth = dir_ / "index.rst"
+        if fpth.is_file():
             return None
     # Next look for GALLERY_HEADER.[ext] (and for backward-compatibility README.[ext]
     for fname in iter_gallery_header_filenames(gallery_conf):
-        fpth = os.path.join(dir_, fname)
-        if os.path.isfile(fpth):
-            return fpth
+        fpth = dir_ / fname
+        if fpth.is_file():
+            return str(fpth)
     if raise_error:
         extensions = list(
             sorted(
@@ -521,7 +522,7 @@ def _write_subsection_index(
     gallery_conf: GalleryConfig,
     user_index_rst: bool,
     is_subsection: bool,
-    target_dir: str,
+    target_dir: PathLikeStr,
     index_content: str,
     toctree_filenames: list[str],
 ) -> str | None:
@@ -532,12 +533,11 @@ def _write_subsection_index(
     """
     index_path = None
     if gallery_conf["nested_sections"] and not user_index_rst and is_subsection:
-        index_path = os.path.join(target_dir, "index.rst.new")
-        head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
+        target_dir = Path(target_dir)
+        index_path = str(target_dir / "index.rst.new")
+        head_ref = Path(os.path.relpath(target_dir, gallery_conf["src_dir"])).as_posix()
         with open(index_path, "w", **_W_KW) as findex:  # type: ignore [call-overload]
-            findex.write(
-                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.sep, "_"))
-            )
+            findex.write("\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace("/", "_")))
             findex.write(index_content)
             # Create toctree with all gallery examples and add to index file
             if len(toctree_filenames) > 0:
@@ -549,20 +549,24 @@ def _write_subsection_index(
 
 def _copy_non_example_files(
     gallery_conf: GalleryConfig,
-    src_dir: str,
+    src_dir: PathLikeStr,
     header_fname: str | None,
-    target_dir: str,
+    target_dir: PathLikeStr,
 ) -> None:
     """Copy non-example files to `target_dir`."""
+    src_dir = Path(src_dir)
+    target_dir = Path(target_dir)
     copyregex = gallery_conf["copyfile_regex"]
     if copyregex:
-        listdir = [fname for fname in os.listdir(src_dir) if re.match(copyregex, fname)]
+        listdir = [
+            fname.name for fname in src_dir.iterdir() if re.match(copyregex, fname.name)
+        ]
         if header_fname:
             # Don't copy over the gallery_header file
             listdir = [fname for fname in listdir if fname != Path(header_fname).name]
         for fname in listdir:
-            src_file = os.path.normpath(os.path.join(src_dir, fname))
-            target_file = os.path.join(target_dir, fname)
+            src_file = src_dir / fname
+            target_file = target_dir / fname
             _replace_md5(src_file, fname_old=target_file, method="copy")
 
 

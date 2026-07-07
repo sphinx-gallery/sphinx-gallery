@@ -3,9 +3,9 @@ r"""Utilities for downloadable items."""
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-import os
+from pathlib import Path
 
-from .typing import GalleryConfig
+from .typing import GalleryConfig, PathLikeStr
 from .utils import zip_files
 
 CODE_ZIP_DOWNLOAD = """
@@ -27,7 +27,7 @@ NOTEBOOK_ZIP_DOWNLOAD = """
 
 def python_zip(
     file_list: list[str],
-    gallery_path: str,
+    gallery_path: PathLikeStr,
     extension: str | None = ".py",
 ) -> str:
     """Store all files in file_list into an zip file.
@@ -50,17 +50,19 @@ def python_zip(
         zip file name, written as `target_dir_python.zip`, `target_dir_jupyter.zip`,
         or `target_dir.zip` depending on the extension
     """
-    zipname = os.path.basename(os.path.normpath(gallery_path))
+    gallery_path = Path(gallery_path)
+
+    zipname = gallery_path.name
     if extension == ".py":
         zipname += "_python"
     elif extension == ".ipynb":
         zipname += "_jupyter"
-    zipname = os.path.join(gallery_path, zipname + ".zip")
-    return zip_files(file_list, zipname, gallery_path, extension)
+    zipname = gallery_path / (zipname + ".zip")
+    return zip_files(file_list, str(zipname), str(gallery_path), extension)
 
 
 def list_downloadable_sources(
-    target_dir: str,
+    target_dir: PathLikeStr,
     extensions: tuple[str, ...] = (".py",),
 ) -> list[str]:
     """Return a list of source files in target_dir.
@@ -78,16 +80,17 @@ def list_downloadable_sources(
         list of paths to all source files in `target_dir` ending with one of the
         specified extensions
     """
+    target_dir = Path(target_dir)
     return [
-        os.path.join(target_dir, fname)
-        for fname in os.listdir(target_dir)
-        if fname.endswith(extensions)
+        str(entry)
+        for entry in target_dir.iterdir()
+        if entry.is_file() and entry.name.endswith(extensions)
     ]
 
 
 def generate_zipfiles(
-    gallery_dir: str,
-    src_dir: str,
+    gallery_dir: PathLikeStr,
+    src_dir: PathLikeStr,
     gallery_conf: GalleryConfig,
 ) -> str:
     """Collects downloadable sources and makes zipfiles of them.
@@ -111,30 +114,33 @@ def generate_zipfiles(
     # .rst are plain sources which should not be available as zip.
     src_ext = tuple(ext for ext in gallery_conf["example_extensions"] if ext != ".rst")
     notebook_ext = tuple(gallery_conf["notebook_extensions"])
+    gallery_dir = Path(gallery_dir)
+    src_dir = Path(src_dir)
+
     source_files = list_downloadable_sources(gallery_dir, src_ext)
     notebook_files = list_downloadable_sources(gallery_dir, notebook_ext)
-    for directory in sorted(os.listdir(gallery_dir)):
-        if os.path.isdir(os.path.join(gallery_dir, directory)):
-            target_dir = os.path.join(gallery_dir, directory)
+    for directory in sorted(gallery_dir.iterdir(), key=lambda p: p.name):
+        if directory.is_dir():
+            target_dir = directory
             source_files.extend(list_downloadable_sources(target_dir, src_ext))
             notebook_files.extend(list_downloadable_sources(target_dir, notebook_ext))
 
-    def rst_path(filepath):
-        filepath = os.path.relpath(filepath, os.path.normpath(src_dir))
-        return filepath.replace(os.sep, "/")
+    def rst_path(filepath: PathLikeStr) -> str:
+        filepath = Path(filepath).relative_to(src_dir)
+        return filepath.as_posix()
 
     all_python = all(f.endswith(".py") for f in source_files)
     py_zipfile = python_zip(source_files, gallery_dir, ".py" if all_python else None)
     dw_rst = CODE_ZIP_DOWNLOAD.format(
         "in Python" if all_python else "as",
-        os.path.basename(py_zipfile),
+        Path(py_zipfile).name,
         rst_path(py_zipfile),
     )
 
     if notebook_files:
         jy_zipfile = python_zip(notebook_files, gallery_dir, ".ipynb")
         dw_rst += NOTEBOOK_ZIP_DOWNLOAD.format(
-            os.path.basename(jy_zipfile),
+            Path(jy_zipfile).name,
             rst_path(jy_zipfile),
         )
 

@@ -23,7 +23,7 @@ from sphinx.errors import ExtensionError
 
 from ._dummy import DummyClass  # noqa: F401
 from .scrapers import _find_image_ext
-from .typing import GalleryConfig
+from .typing import GalleryConfig, PathLikeStr
 from .utils import _W_KW, _replace_md5
 
 if TYPE_CHECKING:
@@ -337,8 +337,16 @@ BACKREF_THUMBNAIL_TEMPLATE = (
 
 
 def _thumbnail_div(
-    target_dir, src_dir, fname, intro, title, is_backref=False, check=True, *, tags=None
-):
+    target_dir: PathLikeStr,
+    src_dir: PathLikeStr,
+    fname: PathLikeStr,
+    intro: str,
+    title: str,
+    is_backref: bool = False,
+    check: bool = True,
+    *,
+    tags=None,
+) -> str:
     """Generate reST to place a thumbnail in a gallery.
 
     Parameters
@@ -364,22 +372,21 @@ def _thumbnail_div(
     thumbnail : str
         reST for a thumbnail.
     """
+    target_dir = Path(target_dir)
+    src_dir = Path(src_dir)
     fname = Path(fname)
     thumb, _ = _find_image_ext(
-        os.path.join(target_dir, "images", "thumb", f"sphx_glr_{fname.stem}_thumb.png")
+        target_dir / "images" / "thumb" / f"sphx_glr_{fname.stem}_thumb.png"
     )
-    if check and not os.path.isfile(thumb):
+    if check and not Path(thumb).is_file():
         # This means we have done something wrong in creating our thumbnail!
         raise ExtensionError(
             f"Could not find internal Sphinx-Gallery thumbnail file:\n{thumb}"
         )
-    thumb = os.path.relpath(thumb, src_dir)
-    full_dir = os.path.relpath(target_dir, src_dir)
+    thumb = Path(os.path.relpath(thumb, src_dir)).as_posix()
+    full_dir = Path(os.path.relpath(target_dir, src_dir))
 
-    # Inside rst files forward slash defines paths
-    thumb = thumb.replace(os.sep, "/")
-
-    doc_name = "/" + (Path(full_dir) / fname).with_suffix("").as_posix()
+    doc_name = "/" + (full_dir / fname).with_suffix("").as_posix()
 
     tag_html_attr = ""
     if tags:
@@ -408,9 +415,9 @@ def _write_backreferences(
     backrefs: set[str],
     seen_backrefs: set[str],
     gallery_conf: GalleryConfig,
-    src_dir: str,
-    target_dir: str,
-    fname: str,
+    src_dir: PathLikeStr,
+    target_dir: PathLikeStr,
+    fname: PathLikeStr,
     intro: str,
     title: str,
 ) -> dict[str, list[Backreference]] | None:
@@ -448,12 +455,16 @@ def _write_backreferences(
     if gallery_conf["backreferences_dir"] is None:
         return None
 
+    src_dir = Path(src_dir)
+    target_dir = Path(target_dir)
+    fname = Path(fname)
+
     backrefs_example = defaultdict(list)
     for backref in backrefs:
-        include_path = os.path.join(
-            gallery_conf["src_dir"],
-            gallery_conf["backreferences_dir"],
-            f"{backref}.examples.new",
+        include_path = (
+            Path(gallery_conf["src_dir"])
+            / gallery_conf["backreferences_dir"]
+            / f"{backref}.examples.new"
         )
         seen = backref in seen_backrefs
         mode = "a" if seen else "w"
@@ -471,7 +482,7 @@ def _write_backreferences(
             ex_file.write(
                 _thumbnail_div(
                     target_dir,
-                    gallery_conf["src_dir"],
+                    src_dir,
                     fname,
                     intro,
                     title,
@@ -480,7 +491,7 @@ def _write_backreferences(
             )
             seen_backrefs.add(backref)
             backrefs_example[backref].append(
-                Backreference(fname, src_dir, target_dir, intro, title)
+                Backreference(str(fname), str(src_dir), str(target_dir), intro, title)
             )
     return dict(backrefs_example)
 
@@ -493,13 +504,10 @@ def _finalize_backreferences(
     if gallery_conf["backreferences_dir"] is None:
         return
 
+    backrefs_dir = Path(gallery_conf["src_dir"]) / gallery_conf["backreferences_dir"]
     for backref in seen_backrefs:
-        path = os.path.join(
-            gallery_conf["src_dir"],
-            gallery_conf["backreferences_dir"],
-            f"{backref}.examples.new",
-        )
-        if os.path.isfile(path):
+        path = backrefs_dir / f"{backref}.examples.new"
+        if path.is_file():
             # Close div containing all thumbnails
             # (it was open in _write_backreferences)
             with open(path, "a", **_W_KW) as ex_file:  # type: ignore[call-overload]
