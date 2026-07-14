@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: j178/prek-action@v2
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
       - run: pip install check-manifest
       - run: check-manifest
-      - uses: j178/prek-action@v2
   pytest:
     name: '${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.distrib }} / ${{ matrix.sphinx_version }}'
     timeout-minutes: 30
@@ -30,7 +30,6 @@ jobs:
     defaults:
       run:
         shell: bash -el {0}
-    needs: [style]
     env:
       PYTHON_VERSION: '${{ matrix.python }}'
       SPHINX_VERSION: '${{ matrix.sphinx_version }}'
