@@ -329,8 +329,8 @@ def _get_intersphinx_inventory(app: sphinx.application.Sphinx) -> IntersphinxInv
     adds that additional module mapping.
     """
     inventory: IntersphinxInventory
-    if inventory := getattr(app.env, "sg_intersphinx_inventory", None):  # type: ignore[assignment]
-        return inventory  # type: ignore[no-any-return]
+    if inventory := getattr(app.env, "sg_intersphinx_inventory", None):  # ty: ignore[invalid-assignment]
+        return inventory
 
     # Make a copy of the inventories, because this dict is created by intersphinx and we
     # don't want to break whatever assumptions it has made about it.
@@ -343,7 +343,7 @@ def _get_intersphinx_inventory(app: sphinx.application.Sphinx) -> IntersphinxInv
         for other_module_name in documented_modules - {module_name}:
             intersphinx_inv[other_module_name] = inventory
 
-    app.env.sg_intersphinx_inventory = intersphinx_inv  # type: ignore[attr-defined]
+    setattr(app.env, "sg_intersphinx_inventory", intersphinx_inv)
     return intersphinx_inv
 
 
@@ -500,7 +500,7 @@ def _embed_code_links(
         if len(str_repl) > 0:
             with open(full_fname, "r", encoding="utf-8") as fid:
                 lines_in = fid.readlines()
-            with open(full_fname, "w", **_W_KW) as fid:  # type: ignore[call-overload]
+            with open(full_fname, "w", **_W_KW) as fid:
                 for line in lines_in:
                     line_out = regex.sub(substitute_link, line)
                     fid.write(line_out)

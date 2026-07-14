@@ -140,7 +140,7 @@ def rst2md(
     text = re.sub(
         headings,
         lambda match: "{1}{0} {2}".format(
-            "#" * heading_levels[match.group("over", "under")],  # type: ignore[index]
+            "#" * heading_levels[match.group("over", "under")],
             *match.group("pre", "heading"),
         ),
         text,

@@ -38,14 +38,14 @@ repos:
     hooks:
       - id: validate-pyproject
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+  - repo: https://github.com/astral-sh/ty-pre-commit
+    rev: v0.0.59
     hooks:
-      - id: mypy
-        exclude: "^(examples|doc)/"
+      - id: ty
         additional_dependencies:
           - numpy
           - types-docutils
           - types-Pillow
           - types-Pygments
           - sphinx <9.1  # last to support 3.10
+        args: [--no-python-downloads, --no-project]

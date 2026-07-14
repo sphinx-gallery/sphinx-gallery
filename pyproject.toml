@@ -45,7 +45,6 @@ optional-dependencies.dev = [
   "jupyterlite-sphinx>=0.17.1",
   "lxml",
   "matplotlib",
-  "mypy",
   "numpy",
   "packaging",
   "plotly",
@@ -56,9 +55,7 @@ optional-dependencies.dev = [
   "sphinx-design",
   "sphinxcontrib-video",
   "statsmodels",
-  "types-docutils",
-  "types-pillow",
-  "types-pygments",
+  "ty",
 ]
 optional-dependencies.jupyterlite = [
   "jupyterlite-sphinx",
@@ -144,48 +141,37 @@ builtin = "clear,rare,informal,names,usage"
 # Words are case sensitive based on how they are written in the dictionary file
 ignore-words-list = "master"
 
-[tool.mypy]
-exclude = [
-  "^build/",
-  "^doc/",
-  "^examples/",
-  "^examples/plotly_examples/",
-  "^pyvista_examples/",
-  "^sphinx_gallery/tests/tinybuild/",
-  "^sphinx_gallery\\.egg-info/",
-  "^tutorials/",
+[tool.ty]
+src.exclude = [
+  "build/",
+  "doc/",
+  "examples/",
+  "plotly_examples/",
+  "pyvista_examples/",
+  "sphinx_gallery.egg-info/",
+  "sphinx_gallery/tests/tinybuild/",
+  "tutorials/",
 ]
-python_version = "3.10"  # keep in sync with requires-python
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_return_any = true
-local_partial_types = true
-strict_equality = true
-warn_unused_configs = true
-no_implicit_optional = true
-show_error_codes = true
-
-# Ignore test files for now
-[[tool.mypy.overrides]]
-module = "sphinx_gallery.tests.*"
-ignore_errors = true
-
+environment.python-version = "3.10"  # keep in sync with requires-python
+overrides = [
+  # Ignore test files for now
+  { include = [ "sphinx_gallery/tests/**" ], rules.all = "ignore" },
+]
 # Third-party packages without type stubs
-[[tool.mypy.overrides]]
-module = [
+analysis.allowed-unresolved-imports = [
   "graphviz",
+  "joblib",
   "joblib.*",
+  "matplotlib",
   "matplotlib.*",
+  "memory_profiler",
   "memory_profiler.*",
+  "plotly",
   "plotly.*",
   "pypandoc",
+  "seaborn",
   "seaborn.*",
 ]
-ignore_missing_imports = true
 
 [tool.pytest]
 ini_options.norecursedirs = "build _build auto_examples gen_modules sphinx_gallery/tests/tinybuild"

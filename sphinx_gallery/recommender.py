@@ -209,6 +209,7 @@ class ExampleRecommender:
         ):
             raise ValueError("max_df must be float in range [0.0, 1.0] or int")
 
+        file_names = list(file_names)
         freq_func = self.token_freqs
         counts_matrix = self.dict_vectorizer(
             [freq_func(Path(fname).read_text(encoding="utf-8")) for fname in file_names]
