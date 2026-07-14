@@ -16,6 +16,7 @@ import contextlib
 import copy
 import gc
 import importlib
+import importlib.util
 import inspect
 import os
 import re
@@ -30,7 +31,7 @@ from pathlib import Path
 from shutil import copyfile
 from textwrap import indent
 from time import time
-from typing import TYPE_CHECKING, Any, Callable, Literal, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, TextIO, cast
 
 import sphinx.util
 from sphinx.errors import ConfigError, ExtensionError
@@ -534,7 +535,7 @@ def _write_subsection_index(
     if gallery_conf["nested_sections"] and not user_index_rst and is_subsection:
         index_path = os.path.join(target_dir, "index.rst.new")
         head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
-        with open(index_path, "w", **_W_KW) as findex:  # type: ignore [call-overload]
+        with open(index_path, "w", **_W_KW) as findex:
             findex.write(
                 "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.sep, "_"))
             )
@@ -802,7 +803,7 @@ def handle_exception(
             # Our internal input() check
             elif s.name == "_check_input" and ii == len(stack):
                 stop = ii - 1
-    stack = stack[start:stop]  # type: ignore[assignment]
+    stack = stack[start:stop]
 
     formatted_exception = "Traceback (most recent call last):\n" + "".join(
         traceback.format_list(stack) + traceback.format_exception_only(etype, exc)
@@ -843,7 +844,7 @@ def _showwarning(
     category: type[Warning],
     filename: str,
     lineno: int,
-    file: Any = None,
+    file: TextIO | None = None,
     line: str | None = None,
 ) -> None:
     if file is None:
@@ -867,7 +868,7 @@ def patch_warnings() -> Any:
     # capture them, so let's patch over their patch...
     orig_showwarning = warnings.showwarning
     try:
-        warnings.showwarning = _showwarning
+        warnings.showwarning = _showwarning  # ty: ignore[invalid-assignment]
         yield
     finally:
         warnings.showwarning = orig_showwarning
@@ -961,10 +962,15 @@ def _exec_and_get_memory(
     call_memory, _ = _get_call_memory_and_base(gallery_conf)
     if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
         is_last_expr = True
-        last_val = code_ast.body.pop().value  # type: ignore[attr-defined]
+        last_stmt = code_ast.body.pop()
+        assert isinstance(last_stmt, ast.Expr)
+        last_val = last_stmt.value
         # exec body minus last expression
         mem_body, _ = call_memory(
-            _exec_once(compiler(code_ast, src_file, "exec"), script_vars["fake_main"])  # type: ignore[arg-type]
+            _exec_once(
+                compiler(code_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
+                script_vars["fake_main"],
+            )
         )
         # exec last expression, made into assignment
         body: list[ast.stmt] = [
@@ -975,14 +981,17 @@ def _exec_and_get_memory(
         ast.fix_missing_locations(last_val_ast)
         mem_last, _ = call_memory(
             _exec_once(
-                compiler(last_val_ast, src_file, "exec"),  # type: ignore[arg-type]
+                compiler(last_val_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
                 script_vars["fake_main"],
             )
         )
         mem_max = max(mem_body, mem_last)
     else:
         mem_max, _ = call_memory(
-            _exec_once(compiler(code_ast, src_file, "exec"), script_vars["fake_main"])  # type: ignore[arg-type]
+            _exec_once(
+                compiler(code_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
+                script_vars["fake_main"],
+            )
         )
     return is_last_expr, mem_max
 
@@ -1066,8 +1075,8 @@ def _get_code_output(
     captured_std = ansi_escape.sub("", captured_std)
 
     # give html output its own header
-    if repr_meth == "_repr_html_":
-        captured_html = HTML_HEADER.format(indent(last_repr, " " * 4))  # type: ignore[arg-type]
+    if repr_meth == "_repr_html_" and last_repr is not None:
+        captured_html = HTML_HEADER.format(indent(last_repr, " " * 4))
     else:
         captured_html = ""
 
@@ -1149,7 +1158,7 @@ def execute_code_block(
     # `sphinx_gallery_capture_repr_block` setting, then the file-level
     # `sphinx_gallery_capture_repr` setting, and finally the
     # global `capture_repr` gallery setting.
-    capture_repr: tuple[str, ...] = block_conf.get(  # type: ignore[assignment]
+    capture_repr: tuple[str, ...] = block_conf.get(
         "capture_repr_block",
         file_conf.get("capture_repr", gallery_conf["capture_repr"]),
     )
@@ -1274,9 +1283,9 @@ def execute_script(
     # sys.modules when running our example
     call_memory, _ = _get_call_memory_and_base(gallery_conf)
 
-    fake_main = importlib.util.module_from_spec(
-        importlib.util.spec_from_loader("__main__", None)  # type: ignore[arg-type]
-    )
+    fake_main_spec = importlib.util.spec_from_loader("__main__", None)
+    assert fake_main_spec is not None
+    fake_main = importlib.util.module_from_spec(fake_main_spec)
     example_globals = fake_main.__dict__
 
     example_globals.update(
@@ -1791,7 +1800,7 @@ def save_rst_example(
         example_rst += SPHX_GLR_SIG
 
     write_file_new = example_file.with_suffix(".rst.new")
-    with open(write_file_new, "w", **_W_KW) as f:  # type: ignore[call-overload]
+    with open(write_file_new, "w", **_W_KW) as f:
         f.write(example_rst)
     # make it read-only so that people don't try to edit it
     mode = os.stat(write_file_new).st_mode

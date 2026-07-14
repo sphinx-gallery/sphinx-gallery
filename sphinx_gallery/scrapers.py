@@ -19,7 +19,7 @@ import re
 import sys
 from pathlib import Path, PurePosixPath
 from textwrap import indent
-from typing import TYPE_CHECKING, Any, Callable, Iterator, TypeAlias
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, TypeAlias
 from warnings import filterwarnings
 
 from sphinx.errors import ExtensionError
@@ -28,6 +28,7 @@ from .typing import GalleryConfig
 from .utils import optipng
 
 if TYPE_CHECKING:
+    import matplotlib.animation
     import matplotlib.figure
 
     from .py_source_parser import Block
@@ -98,7 +99,7 @@ def _matplotlib_fig_titles(fig: matplotlib.figure.Figure) -> str:
     if suptitle is not None:
         titles.append(suptitle.get_text())
     # get titles from all axes, for all locs
-    title_locs = ["left", "center", "right"]
+    title_locs: list[Literal["left", "center", "right"]] = ["left", "center", "right"]
     for ax in fig.axes:
         for loc in title_locs:
             text = ax.get_title(loc=loc)
@@ -635,8 +636,9 @@ def clean_modules(gallery_conf: GalleryConfig, fname: str | None, when: str) -> 
         if len(sig.parameters) == 3:
             third_param = list(sig.parameters.keys())[2]
             if third_param != "when":
+                name = getattr(reset_module, "__name__", repr(reset_module))
                 raise ValueError(
-                    f"3rd parameter in {reset_module.__name__} "
+                    f"3rd parameter in {name} "
                     "function signature must be 'when', "
                     f"got {third_param}"
                 )
