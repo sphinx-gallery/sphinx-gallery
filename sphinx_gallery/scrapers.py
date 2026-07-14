@@ -263,7 +263,7 @@ def _anim_rst(
 
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
-    fig = anim._fig  # ty: ignore[unresolved-attribute]
+    fig = anim._fig
     gif_image_path = Path(image_path).with_suffix(".gif")
     fig_size = fig.get_size_inches()
     thumb_size = gallery_conf["thumbnail_size"]
