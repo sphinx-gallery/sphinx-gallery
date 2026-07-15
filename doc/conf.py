@@ -410,6 +410,7 @@ sphinx_gallery_conf = {
         "branch": "master",
         "binderhub_url": "https://mybinder.org",
         "dependencies": "./binder/requirements.txt",
+        "filepath_prefix": "dev" if "dev" in version else "stable",
         "notebooks_dir": "notebooks",
         "use_jupyter_lab": True,
     },
