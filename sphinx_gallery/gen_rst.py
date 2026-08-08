@@ -460,10 +460,8 @@ def save_thumbnail(
     elif not os.path.exists(thumb_file):
         if thumbnail_path_set:
             logger.warning(
-                "sphinx_gallery_thumbnail_path '%s' not found for '%s', "
-                "using default thumbnail.",
-                image_path,
-                src_file,
+                f"sphinx_gallery_thumbnail_path {image_path} not found for "
+                f"{src_file}, using default thumbnail.",
             )
         # create something to replace the thumbnail
         default_thumb_path = gallery_conf["default_thumb_file"]
