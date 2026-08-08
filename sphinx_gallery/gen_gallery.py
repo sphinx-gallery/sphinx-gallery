@@ -310,7 +310,7 @@ def _check_matplotlib_animations(
         )
     # Handle file format
     if len(animations) > 1:
-        fmt = animations[1]
+        fmt = animations[1]  # ty: ignore[index-out-of-bounds]
         if fmt is not None:
             if not isinstance(fmt, str):
                 raise ConfigError(
@@ -371,7 +371,7 @@ def _fill_gallery_conf_defaults(
     check_keys: bool = True,
 ) -> GalleryConfig:
     """Handle user configs, update default gallery configs and check values."""
-    gallery_conf = copy.deepcopy(DEFAULT_GALLERY_CONF)
+    gallery_conf: GalleryConfig = copy.deepcopy(DEFAULT_GALLERY_CONF)
     _check_extra_config_keys(gallery_conf, sphinx_gallery_conf, check_keys)
 
     gallery_conf.update(sphinx_gallery_conf)
@@ -402,7 +402,7 @@ def _fill_gallery_conf_defaults(
     # Check capture_repr
     _check_config_type(gallery_conf, "capture_repr", (tuple, list), str_to_list=True)
     supported_reprs = ["__repr__", "__str__", "_repr_html_"]
-    for rep in gallery_conf["capture_repr"]:  # type: ignore[attr-defined]
+    for rep in gallery_conf["capture_repr"]:
         if rep not in supported_reprs:
             raise ConfigError(
                 "All entries in 'capture_repr' must be one "
@@ -494,17 +494,17 @@ def _fill_gallery_conf_defaults(
         gallery_conf["backreferences_dir"] = str(backref)
 
     # binder
-    gallery_conf["binder"] = check_binder_conf(gallery_conf["binder"])  # type: ignore[arg-type]
+    gallery_conf["binder"] = check_binder_conf(gallery_conf["binder"])
 
     # jupyterlite
     gallery_conf["jupyterlite"] = check_jupyterlite_conf(
-        gallery_conf["jupyterlite"],  # type: ignore[arg-type]
+        gallery_conf["jupyterlite"],
         app,
     )
 
     # css
     _check_config_type(gallery_conf, "css", (list, tuple), str_to_list=True)
-    for css in gallery_conf["css"]:  # type: ignore[attr-defined]
+    for css in gallery_conf["css"]:
         if css not in _KNOWN_CSS:
             raise ConfigError(f"Unknown css {css!r}, must be one of {_KNOWN_CSS!r}")
         if app is not None:  # can be None in testing

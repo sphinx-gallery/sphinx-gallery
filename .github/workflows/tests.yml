@@ -16,8 +16,9 @@ jobs:
     name: 'Quick checks'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: j178/prek-action@v2
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - run: pip install check-manifest
@@ -67,7 +68,7 @@ jobs:
             sphinx_version: 'default'
             distrib: pip
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       # Xvfb/OpenGL
@@ -76,7 +77,7 @@ jobs:
           qt: true
           pyvista: false
       # Python (if pip)
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
         if: matrix.distrib != 'mamba'
@@ -118,4 +119,4 @@ jobs:
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
       - run: make -C doc SPHINXOPTS= html -j 2
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7

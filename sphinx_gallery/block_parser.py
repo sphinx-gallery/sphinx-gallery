@@ -243,7 +243,7 @@ class BlockParser:
         block: list[str] = []
         mode: Literal["text", "code"] | None = None
         for n, (token, text) in enumerate(self._get_content_lines(content)):
-            if mode == "text" and token in pygments.token.Whitespace:  # type: ignore[comparison-overlap]
+            if mode == "text" and token in pygments.token.Whitespace:
                 # Blank line ends current text block
                 if block:
                     yield finalize_block(mode, block)
@@ -286,7 +286,9 @@ class BlockParser:
                     else:
                         block.append(text)
                 else:
-                    block.append(self.continue_text.search(text).group(1))  # type: ignore[union-attr]
+                    m = self.continue_text.search(text)
+                    assert m is not None
+                    block.append(m.group(1))
             elif mode != "code":
                 # start of a code block
                 if block:

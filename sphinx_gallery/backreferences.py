@@ -457,7 +457,7 @@ def _write_backreferences(
         )
         seen = backref in seen_backrefs
         mode = "a" if seen else "w"
-        with open(include_path, mode, **_W_KW) as ex_file:  # type: ignore[call-overload]
+        with open(include_path, mode, **_W_KW) as ex_file:
             if not seen:
                 # Be aware that if the number of lines of this heading changes,
                 # the minigallery directive should be modified accordingly
@@ -502,7 +502,7 @@ def _finalize_backreferences(
         if os.path.isfile(path):
             # Close div containing all thumbnails
             # (it was open in _write_backreferences)
-            with open(path, "a", **_W_KW) as ex_file:  # type: ignore[call-overload]
+            with open(path, "a", **_W_KW) as ex_file:
                 ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
             _replace_md5(path, mode="t")
         else:

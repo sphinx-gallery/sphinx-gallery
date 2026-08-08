@@ -210,11 +210,16 @@ class MiniGallery(Directive):
             (sortkey,) = _get_callables(
                 config.sphinx_gallery_conf, "minigallery_sort_order"
             )
-        for path, path_info in sorted(
-            file_paths.items(),
-            # `x[0]` to sort on key only
-            key=((lambda x: sortkey(str(x[0]))) if sortkey else None),
-        ):
+        if sortkey:
+            sorted_items = sorted(
+                file_paths.items(),
+                # `x[0]` to sort on key only
+                key=lambda x: sortkey(str(x[0])),
+            )
+        else:
+            sorted_items = sorted(file_paths.items())
+
+        for path, path_info in sorted_items:
             if path_info.intro is not None:
                 thumbnail = _thumbnail_div(
                     path_info.target_dir,

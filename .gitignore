@@ -92,3 +92,6 @@ target/
 
 # Default JupyterLite content
 jupyterlite_contents
+
+# ty pre-commit
+/uv.lock

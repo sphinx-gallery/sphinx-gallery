@@ -15,22 +15,28 @@ import zipfile
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
-from typing import Any, Callable, Iterator, Literal, Tuple
+from typing import Any, Callable, Iterator, Literal, Tuple, TypedDict
 
 import sphinx.util
 
 try:
     from sphinx.util.display import status_iterator  # noqa: F401
 except Exception:  # Sphinx < 6
-    from sphinx.util import status_iterator  # type: ignore[no-redef]  # noqa: F401
+    from sphinx.util import status_iterator  # noqa: F401
 
 from .typing import GalleryConfig
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-# Text writing kwargs for builtins.open
-_W_KW = dict(encoding="utf-8", newline="\n")
+class _WriteKwargs(TypedDict):
+    """Text writing kwargs for builtins.open."""
+
+    encoding: str
+    newline: str
+
+
+_W_KW: _WriteKwargs = {"encoding": "utf-8", "newline": "\n"}
 
 
 def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) -> None:
@@ -101,7 +107,7 @@ def optipng(fname: str, args: Tuple = ()) -> None:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except (subprocess.CalledProcessError, OSError):  # FileNotFoundError
+        except (subprocess.CalledProcessError, FileNotFoundError):
             pass
 
 
@@ -110,7 +116,7 @@ def _has_optipng() -> bool:
         subprocess.check_call(
             ["optipng", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-    except OSError:  # FileNotFoundError
+    except FileNotFoundError:
         return False
     else:
         return True
@@ -306,8 +312,18 @@ def _has_graphviz() -> bool:
         import graphviz  # noqa F401
     except ImportError as exc:
         logger.info(
-            "`graphviz` required for graphical visualization "
+            "`graphviz` Python package required for graphical visualization "
             f"but could not be imported, got: {exc}"
+        )
+        return False
+    try:
+        subprocess.check_call(
+            ["neato", "-V"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+    except FileNotFoundError as exc:
+        logger.info(
+            "`neato` layout engine required for graphical visualization "
+            f"but command-line executable could not be found ({exc})"
         )
         return False
     return True
@@ -335,7 +351,7 @@ def _format_toctree(items: list[str], includehidden: bool = False) -> str:
 def _write_json(target_file: Path, to_save: dict, name: str = "") -> None:
     """Write dictionary to JSON file."""
     codeobj_fname = Path(target_file).with_name(target_file.stem + f"{name}.json.new")
-    with open(codeobj_fname, "w", **_W_KW) as fid:  # type: ignore[call-overload]
+    with open(codeobj_fname, "w", **_W_KW) as fid:
         json.dump(
             to_save,
             fid,
