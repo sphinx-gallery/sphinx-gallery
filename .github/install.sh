@@ -51,6 +51,11 @@ if [[ "$DISTRIB" != "mamba" ]]; then
     if [[ "$PLATFORM" == "Linux" ]]; then
         sudo apt install ffmpeg graphviz
     else  # could use brew on macOS pip but it'll take time to install
+        # ffmpeg gates all of test_full.py, so without it the tinybuild suite
+        # silently disappears; Chocolatey is preinstalled on the Windows runners
+        if [[ "$PLATFORM" == "Windows" ]]; then
+            choco install ffmpeg --no-progress -y
+        fi
         echo "Removing pygraphviz on $PLATFORM when DISTRIB=$DISTRIB"
         pip uninstall -y graphviz
     fi

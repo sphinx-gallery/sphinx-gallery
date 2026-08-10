@@ -3,7 +3,6 @@
 """Test the SG pipeline used with Sphinx and tinybuild."""
 
 import json
-import os
 import re
 import shutil
 import sys
@@ -1166,33 +1165,30 @@ def _rerun(
         # is no-op.
         "rst_gallery_entry",
     )
-    # not reliable on Windows and one Ubuntu run
-    bad = sys.platform.startswith("win") or os.getenv("BAD_MTIME", "0") == "1"
-    if not bad:
-        # mtimes for .md5 files, rewritten whenever an example is executed
-        _assert_mtimes(
-            generated_md5_0, generated_md5_1, different=("plot_numpy_matplotlib.py",)
-        )
+    # mtimes for .md5 files, rewritten whenever an example is executed
+    _assert_mtimes(
+        generated_md5_0, generated_md5_1, different=("plot_numpy_matplotlib.py",)
+    )
 
-        rst_different, rst_ignore = different, ignore
-        if how == "run_stale":
-            # Re-running an unmodified example changes its reST only through the
-            # reported run time, which is rounded to the ms -- when two runs land
-            # in the same bucket the reST is byte-identical and _replace_md5
-            # rightly leaves it (and its mtime) alone. The .md5 check above is the
-            # deterministic proof that the example was actually re-run.
-            rst_different, rst_ignore = (), ignore + different
-        _assert_mtimes(generated_rst_0, generated_rst_1, rst_different, rst_ignore)
+    rst_different, rst_ignore = different, ignore
+    if how == "run_stale":
+        # Re-running an unmodified example changes its reST only through the
+        # reported run time, which is rounded to the ms -- when two runs land
+        # in the same bucket the reST is byte-identical and _replace_md5
+        # rightly leaves it (and its mtime) alone. The .md5 check above is the
+        # deterministic proof that the example was actually re-run.
+        rst_different, rst_ignore = (), ignore + different
+    _assert_mtimes(generated_rst_0, generated_rst_1, rst_different, rst_ignore)
 
-        # mtimes for jsons
-        use_different = () if how == "run_stale" else different
-        _assert_mtimes(generated_json_0, generated_json_1, ignore=ignore)
+    # mtimes for jsons
+    use_different = () if how == "run_stale" else different
+    _assert_mtimes(generated_json_0, generated_json_1, ignore=ignore)
 
-        # mtimes for .py files (gh-395)
-        _assert_mtimes(copied_py_0, copied_py_1, different=use_different)
+    # mtimes for .py files (gh-395)
+    _assert_mtimes(copied_py_0, copied_py_1, different=use_different)
 
-        # mtimes for .ipynb files
-        _assert_mtimes(copied_ipy_0, copied_ipy_1, different=use_different)
+    # mtimes for .ipynb files
+    _assert_mtimes(copied_ipy_0, copied_ipy_1, different=use_different)
 
 
 @pytest.mark.parametrize(
