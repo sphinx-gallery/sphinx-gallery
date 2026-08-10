@@ -1472,6 +1472,12 @@ def _get_backreferences(
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
         _write_json(target_file, example_code_obj, ".codeobj")
+    else:
+        # a stale .codeobj.json would resurrect this example's old backrefs via
+        # _read_cached_backrefs on every md5-skipped rebuild
+        target_file.with_name(target_file.stem + ".codeobj.json").unlink(
+            missing_ok=True
+        )
 
     backrefs = _backrefs_from_codeobj(gallery_conf, example_code_obj)
 

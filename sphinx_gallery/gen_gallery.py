@@ -898,6 +898,8 @@ def generate_gallery_rst(app: Sphinx) -> None:
 
     if gallery_conf["show_api_usage"] is not False:
         _init_api_usage(Path(app.builder.srcdir))
+    else:
+        _remove_api_usage(Path(app.builder.srcdir))
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf["plot_gallery"]:
@@ -1138,6 +1140,14 @@ def _init_api_usage(gallery_dir: Path) -> None:
     fname = gallery_dir / "sg_api_usage.rst"
     if not fname.is_file():
         fname.write_text("", **_W_KW)
+
+
+def _remove_api_usage(gallery_dir: Path) -> None:
+    # the generated page and graphs persist across builds, so a build with the
+    # feature turned off has to remove them or the stale page keeps being built
+    (gallery_dir / "sg_api_usage.rst").unlink(missing_ok=True)
+    for dot_file in gallery_dir.glob("*sg_api_*.dot"):
+        dot_file.unlink()
 
 
 # Colors from https://personal.sron.nl/~pault/data/colourschemes.pdf
@@ -1809,6 +1819,9 @@ def setup(app: Sphinx) -> dict[str, Any]:
         "parallel_read_safe": True,
         "parallel_write_safe": True,
         "version": _sg_version,
+        # bump whenever the schema of data stored on env changes (sg_api_entries),
+        # so that cached environments from other schemas are discarded
+        "env_version": 1,
     }
     return metadata
 
