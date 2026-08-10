@@ -50,11 +50,22 @@ set +x
 if [[ "$DISTRIB" != "mamba" ]]; then
     if [[ "$PLATFORM" == "Linux" ]]; then
         sudo apt install ffmpeg graphviz
-    else  # could use brew on macOS pip but it'll take time to install
+    else
         # ffmpeg gates all of test_full.py, so without it the tinybuild suite
-        # silently disappears; Chocolatey is preinstalled on the Windows runners
-        if [[ "$PLATFORM" == "Windows" ]]; then
-            choco install ffmpeg --no-progress -y
+        # silently disappears. The wheel is a static build, so it beats brew
+        # (a dozen bottles, and a from-source build whenever the runner image
+        # outpaces the bottled macOS version) and choco (~35 s); it just has to
+        # land on PATH under the name matplotlib looks for.
+        pip install imageio-ffmpeg
+        FFMPEG_DIR=$(python -c "
+import os, shutil, sys, imageio_ffmpeg
+d = os.path.join(os.path.expanduser('~'), '.local', 'bin')
+os.makedirs(d, exist_ok=True)
+shutil.copy2(imageio_ffmpeg.get_ffmpeg_exe(),
+             os.path.join(d, 'ffmpeg' + ('.exe' if sys.platform == 'win32' else '')))
+print(d)")
+        if [[ -n "$GITHUB_PATH" ]]; then
+            echo "$FFMPEG_DIR" >> "$GITHUB_PATH"
         fi
         echo "Removing pygraphviz on $PLATFORM when DISTRIB=$DISTRIB"
         pip uninstall -y graphviz
