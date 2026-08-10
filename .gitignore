@@ -99,3 +99,6 @@ jupyterlite_contents
 
 # ty pre-commit
 /uv.lock
+
+# agents
+.claude/

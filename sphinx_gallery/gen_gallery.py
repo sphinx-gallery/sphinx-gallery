@@ -1201,7 +1201,9 @@ def _make_graph(
         # look up table for connections so they don't repeat
         lut: dict[str, str] = dict()
         structs = [entry.split(".") for entry in entries]
-        for struct in sorted(structs, key=len):
+        # total order: sets iterate arbitrarily across processes, and a graph
+        # that reshuffles every build churns the .dot the page depends on
+        for struct in sorted(structs, key=lambda struct: (len(struct), struct)):
             for level in range(len(struct) - 2):
                 if (struct[level], struct[level + 1]) in connections:
                     continue
@@ -1240,14 +1242,14 @@ def _make_graph(
                 dg.node(node_to, **node_kwargs)
                 dg.edge(node_from, node_to, color=API_COLORS["edge"])
         # add modules with all API entries
-        for module in api_entries.get("module", []):
+        for module in sorted(api_entries.get("module", [])):
             struct = module.split(".")
             for i in range(len(struct) - 1):
                 if struct[i + 1] not in lut:
                     dg.edge(struct[i], struct[i + 1])
     else:
         assert isinstance(entries, dict)
-        for entry, refs in entries.items():
+        for entry, refs in sorted(entries.items()):
             dg.node(entry)
             for ref in refs:
                 dg.node(ref, color=API_COLORS["bad_1"])
@@ -1304,7 +1306,7 @@ def _api_usage_rst(app: Sphinx, api_entries: dict[str, set[str]]) -> str:
     used_api_entries: dict[str, list[str]] = dict()
     backreferences_all = _read_json(Path(backreferences_dir, "backreferences_all.json"))
     src_dir = gallery_conf["src_dir"]
-    for entry in example_files:
+    for entry in sorted(example_files):
         # don't include built-in methods etc.
         if re.match(gallery_conf["api_usage_ignore"], entry) is not None:
             continue
@@ -1367,7 +1369,7 @@ def _api_usage_rst(app: Sphinx, api_entries: dict[str, set[str]]) -> str:
                     "    :layout: neato\n\n"
                 )
 
-            for module in used_modules:
+            for module in sorted(used_modules):
                 logger.info("Making API usage graph for %s", module)
                 # select and format entries for this module
                 entries: dict = dict()

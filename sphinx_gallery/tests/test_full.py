@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 from io import StringIO
@@ -21,6 +22,7 @@ from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 
 from sphinx_gallery.utils import (
+    _W_KW,
     _has_graphviz,
     _has_optipng,
     _has_pypandoc,
@@ -50,7 +52,7 @@ N_INDEX = 2 + 1 + 3 + 1
 # (examples + examples_rst_index + examples_with_rst + examples_README_header + root-level)
 N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
-N_OTHER = 11 + 1 + 1 + 1 + 1
+N_OTHER = 13 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
 N_RST = f"({N_RST}|{N_RST - 1}|{N_RST - 2})"  # AppVeyor weirdness
 
@@ -990,6 +992,18 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     for f in cost_json_1:
         assert json.loads(f.read_text(encoding="utf-8"))["time"] > 0
 
+    # ... and the rendered page must not gain zeroed rows, which is what the cache is
+    # for: without it every example skipped this build reports 00:00.000 instead of
+    # what it last measured. Only the direction matters, since a rebuild can also
+    # resolve a row the first build had no timing for.
+    def _n_zero_rows(root):
+        return sum(
+            times.read_text(encoding="utf-8").count("     - 00:00.000\n")
+            for times in sorted(root.rglob("sg_execution_times.rst"))
+        )
+
+    assert _n_zero_rows(Path(new_app.srcdir)) <= _n_zero_rows(old_src_dir)
+
     # generated reST files
     ignore = (
         # these two should almost always be different, but in case we
@@ -1194,6 +1208,134 @@ def _rerun(
 
         # mtimes for .ipynb files
         _assert_mtimes(copied_ipy_0, copied_ipy_1, different=use_different)
+
+
+# these embed a measured run time, so they legitimately differ between two builds
+_TIMED_RST = (
+    "sg_execution_times.rst",
+    "plot_failing_example.rst",
+    "plot_failing_example_thumbnail.rst",
+    "plot_scraper_broken.rst",
+    "plot_future_imports_broken.rst",
+)
+
+
+def _copy_tinybuild(sphinx_app, tmp_path):
+    """Copy the whole tinybuild tree, since examples_dirs points outside of doc/."""
+    shutil.copytree(Path(sphinx_app.srcdir).parent, tmp_path / "tinybuild")
+    return tmp_path / "tinybuild" / "doc"
+
+
+def _subprocess_build(src_dir, seed="0", *extra):
+    """Build in a fresh process, which is the only way set order can vary."""
+    proc = subprocess.run(
+        [sys.executable, "-m", "sphinx", "-b", "html", "-d", "_build/doctrees"]
+        + list(extra)
+        + [".", "_build/html"],
+        cwd=src_dir,
+        env={**os.environ, "PYTHONHASHSEED": seed},
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stdout[-4000:] + proc.stderr[-4000:]
+
+
+def _snapshot_generated(src_dir):
+    """Read every generated reST, graph, and JSON file in the source directory."""
+    return {
+        path.relative_to(src_dir): path.read_text(encoding="utf-8")
+        for path in sorted(src_dir.rglob("*"))
+        if path.is_file()
+        and "_build" not in path.parts
+        and path.suffix in (".rst", ".dot", ".json")
+    }
+
+
+def test_rebuild_deterministic(tmp_path, sphinx_app):
+    """Test generated files do not depend on set iteration order.
+
+    Sets iterate in a different order in every process, so a file generated from one
+    can change on a rebuild even though nothing did. That is not merely churn: the
+    ``.dot`` files are a ``note_dependency`` of ``sg_api_usage``, so a reshuffled
+    graph marks the page outdated on every other build. Rebuilds run in-process
+    share a hash seed and cannot catch it, hence the subprocesses here.
+    """
+    src_dir = _copy_tinybuild(sphinx_app, tmp_path)
+
+    _subprocess_build(src_dir, "0")
+    first = _snapshot_generated(src_dir)
+    _subprocess_build(src_dir, "1")
+    second = _snapshot_generated(src_dir)
+
+    assert set(first) == set(second)
+    # the artifacts most at risk are the ones built from sets, so make sure the
+    # comparison actually covered them rather than silently finding nothing
+    names = {path.name for path in first}
+    assert "sg_api_usage.rst" in names
+    assert "backreferences_all.json" in names
+    if _has_graphviz():
+        assert "sg_api_unused.dot" in names
+    differ = sorted(
+        str(path)
+        for path, text in first.items()
+        if text != second[path] and path.name not in _TIMED_RST
+    )
+    assert differ == []
+
+
+def test_api_usage_purged(tmp_path, sphinx_app):
+    """Test entries of a document that is no longer read are dropped.
+
+    API entries are collected into the environment and persist across builds, so a
+    module that stops being documented has to be purged explicitly or it lingers in
+    the page forever.
+    """
+    src_dir = _copy_tinybuild(sphinx_app, tmp_path)
+    # build here rather than reuse the fixture's, so that the entries really do come
+    # from a pickled environment that the second build has to purge
+    _subprocess_build(src_dir)
+    api_usage = src_dir / "sg_api_usage.rst"
+    assert "sphinx_gallery._dummy.unused_b" in api_usage.read_text(encoding="utf-8")
+
+    # stop documenting one of the two dummy modules
+    index = src_dir / "index.rst"
+    index.write_text(
+        index.read_text(encoding="utf-8").replace("   _dummy.unused_b\n", ""), **_W_KW
+    )
+    (src_dir / "gen_modules" / "sphinx_gallery._dummy.unused_b.rst").unlink()
+    _subprocess_build(src_dir)
+
+    text = api_usage.read_text(encoding="utf-8")
+    assert "sphinx_gallery._dummy.unused_b" not in text
+    assert "sphinx_gallery._dummy.unused_a" in text  # the other one survives
+
+
+def test_parallel_read_api_usage(tmp_path, sphinx_app):
+    """Test the API usage page is complete when documents are read in parallel.
+
+    ``write_api_entries`` runs during the read phase, so under ``-j`` it fires in
+    fork()ed workers whose entries only reach the main process via ``env-merge-info``.
+    Without that merge the page silently loses most of its entries rather than
+    failing, so compare a parallel full read against a serial one.
+    """
+    src_dir = _copy_tinybuild(sphinx_app, tmp_path)
+
+    _subprocess_build(src_dir)
+    serial = _snapshot_generated(src_dir)
+    # -E to force every document to be re-read, so autodoc actually runs in the
+    # workers; without it an incremental read has nothing to merge back
+    _subprocess_build(src_dir, "0", "-E", "-j", "4")
+    parallel = _snapshot_generated(src_dir)
+
+    api_usage = Path("sg_api_usage.rst")
+    assert api_usage in serial
+    assert "sphinx_gallery._dummy.unused_a" in serial[api_usage]
+    differ = sorted(
+        str(path)
+        for path, text in serial.items()
+        if text != parallel[path] and path.name not in _TIMED_RST
+    )
+    assert differ == []
 
 
 @pytest.mark.parametrize(
