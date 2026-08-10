@@ -50,7 +50,7 @@ N_INDEX = 2 + 1 + 3 + 1
 # (examples + examples_rst_index + examples_with_rst + examples_README_header + root-level)
 N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
-N_OTHER = 13 + 1 + 1 + 1 + 1
+N_OTHER = 12 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
 # these fail or are retried on every build, so their measured time always changes --
 # including rounding to zero on a coarse (Windows) clock
@@ -308,10 +308,6 @@ def test_run_sphinx(sphinx_app):
     status = sphinx_app._status.getvalue()
     assert f"executed {N_GOOD} out of {N_EXAMPLES}" in status
     assert "after excluding 0" in status
-    # intentionally have a bad URL in references
-    warning = sphinx_app._warning.getvalue()
-    want = ".*fetching .*wrong_url.*404.*"
-    assert re.match(want, warning, re.DOTALL) is not None, warning
 
 
 def test_user_index_download(sphinx_app):
@@ -493,6 +489,81 @@ def test_repr_html_classes(sphinx_app):
     assert "gallery-rendered-html.css" in lines
 
 
+def _backref_links(lines):
+    """Extract embedded code links as dicts of {classes, href, title, text}."""
+    links = []
+    for m in re.finditer(
+        r'<a class="([^"]*sphx-glr-backref[^"]*)" href="([^"]+)"'
+        r'(?: title="([^"]+)")?>(.*?)</a>',
+        lines,
+        re.S,
+    ):
+        cls, href, title, html = m.groups()
+        links.append(
+            dict(
+                classes=set(cls.split()),
+                href=href,
+                title=title,
+                text=re.sub(r"<[^>]+>", "", html),
+            )
+        )
+    return links
+
+
+def _assert_link(links, text, classes, href_re=None):
+    """Assert some link with this text has these sphx-glr classes (and href)."""
+    with_text = [link for link in links if link["text"] == text]
+    assert with_text, f"no link with text {text!r}"
+    for link in with_text:
+        got = {c for c in link["classes"] if c.startswith("sphx-glr")}
+        if got == set(classes) and (
+            href_re is None or re.search(href_re, link["href"]) is not None
+        ):
+            return link
+    raise AssertionError(f"no link with text {text!r} matching {classes}: {with_text}")
+
+
+def _assert_dummy_links(links, mod, page, cls_name, inst):
+    """Assert instance/class/method/property links for a tinybuild dummy class."""
+    module_css = "sphx-glr-backref-module-sphinx_gallery-_dummy"
+    anchor = "".join(rf"{part}[._-]" for part in mod.split(".") if part)
+    href = rf"sphinx_gallery\._dummy\.{page}#sphinx[_-]gallery[.-]_dummy[.-]{anchor}"
+    # instance
+    link = _assert_link(
+        links,
+        inst,
+        [module_css, "sphx-glr-backref-type-py-class", "sphx-glr-backref-instance"],
+        href_re=href,
+    )
+    assert link["title"] == f"sphinx_gallery._dummy.{cls_name}"
+    # class
+    link = _assert_link(
+        links,
+        f"sphinx_gallery._dummy.{mod}{cls_name}",
+        [module_css, "sphx-glr-backref-type-py-class"],
+        href_re=href,
+    )
+    assert link["title"] == f"sphinx_gallery._dummy.{cls_name}"
+    # method
+    link = _assert_link(
+        links,
+        f"{inst}.run",
+        [module_css, "sphx-glr-backref-type-py-method"],
+        href_re=href + f"{cls_name}" + "[.-]run",
+    )
+    assert link["title"] == f"sphinx_gallery._dummy.{cls_name}.run"
+    # property (Sphinx 2+ calls it a method rather than attribute, so any of)
+    with_text = [link for link in links if link["text"] == f"{inst}.prop"]
+    assert len(with_text) >= 1
+    link = with_text[0]
+    assert re.search(href + f"{cls_name}" + "[.-]prop", link["href"]) is not None
+    assert module_css in link["classes"]
+    assert any(
+        f"sphx-glr-backref-type-py-{kind}" in link["classes"]
+        for kind in ("attribute", "method", "property")
+    )
+
+
 def test_embed_links_and_styles(sphinx_app):
     """Test that links and styles are embedded properly in doc."""
     out_dir = sphinx_app.outdir
@@ -503,18 +574,24 @@ def test_embed_links_and_styles(sphinx_app):
     example_file = examples_dir / "plot_numpy_matplotlib.html"
     lines = example_file.read_text(encoding="utf-8")
     # ensure we've linked properly
+    links = _backref_links(lines)
     assert "#module-matplotlib.colors" in lines
     assert "matplotlib.colors.is_color_like" in lines
-    assert (
-        'class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-function">'
-        in lines
-    )  # noqa: E501
+    _assert_link(
+        links,
+        "is_color_like",
+        [
+            "sphx-glr-backref-module-matplotlib-colors",
+            "sphx-glr-backref-type-py-function",
+        ],
+    )
     assert "#module-numpy" in lines
     assert "numpy.arange.html" in lines
-    assert (
-        'class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function">'
-        in lines
-    )  # noqa: E501
+    _assert_link(
+        links,
+        "np.arange",
+        ["sphx-glr-backref-module-numpy", "sphx-glr-backref-type-py-function"],
+    )
     assert "#module-matplotlib.pyplot" in lines
     assert "pyplot.html" in lines or "pyplot_summary.html" in lines
     assert ".html#matplotlib.figure.Figure.tight_layout" in lines
@@ -535,86 +612,63 @@ def test_embed_links_and_styles(sphinx_app):
     )
     assert id_names is not None
     # instances have an extra CSS class
-    assert (
-        'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a>'
-        in lines
-    )  # noqa: E501
-    assert (
-        'class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class"><span class="n">Figure</span></a>'
-        in lines
-    )  # noqa: E501
+    _assert_link(
+        links,
+        "x",
+        [
+            "sphx-glr-backref-module-matplotlib-figure",
+            "sphx-glr-backref-type-py-class",
+            "sphx-glr-backref-instance",
+        ],
+    )
+    _assert_link(
+        links,
+        "Figure",
+        [
+            "sphx-glr-backref-module-matplotlib-figure",
+            "sphx-glr-backref-type-py-class",
+        ],
+    )
     # gh-587: no classes that are only marked as module without type
-    assert re.search(r'"sphx-glr-backref-module-\S*"', lines) is None
-    assert (
-        'class="sphx-glr-backref-module-sphinx_gallery-backreferences sphx-glr-backref-type-py-function"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">backreferences</span><span class="o">.</span><span class="n">identify_names</span></a>'
-        in lines
-    )  # noqa: E501
+    for link in links:
+        has_module = any(
+            c.startswith("sphx-glr-backref-module-") for c in link["classes"]
+        )
+        has_type = any(c.startswith("sphx-glr-backref-type-") for c in link["classes"])
+        assert has_module == has_type, link
+    _assert_link(
+        links,
+        "sphinx_gallery.backreferences.identify_names",
+        [
+            "sphx-glr-backref-module-sphinx_gallery-backreferences",
+            "sphx-glr-backref-type-py-function",
+        ],
+    )
     # gh-587: np.random.RandomState links properly
     # NumPy has had this linked as numpy.random.RandomState and
     # numpy.random.mtrand.RandomState so we need regex...
-    assert (
-        re.search(
-            r'\.html#numpy\.random\.(mtrand\.?)?RandomState" title="numpy\.random\.(mtrand\.?)?RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?)? sphx-glr-backref-type-py-class"><span class="n">np</span>',
-            lines,
-        )
-        is not None
-    )  # noqa: E501
-    assert (
-        re.search(
-            r'\.html#numpy\.random\.(mtrand\.?)?RandomState" title="numpy\.random\.(mtrand\.?)?RandomState" class="sphx-glr-backref-module-numpy-random(-mtrand?)? sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rng</span></a>',
-            lines,
-        )
-        is not None
-    )  # noqa: E501
+    randomstate_href = r"\.html#numpy\.random\.(mtrand\.)?RandomState"
+    assert [
+        link
+        for link in links
+        if link["text"] == "np.random.RandomState"
+        and "sphx-glr-backref-type-py-class" in link["classes"]
+        and "sphx-glr-backref-instance" not in link["classes"]
+        and re.search(randomstate_href, link["href"]) is not None
+    ]
+    assert [
+        link
+        for link in links
+        if link["text"] == "rng"
+        and "sphx-glr-backref-type-py-class" in link["classes"]
+        and "sphx-glr-backref-instance" in link["classes"]
+        and re.search(randomstate_href, link["href"]) is not None
+    ]
     # gh-587: methods of classes in the module currently being documented
     # issue 617 (regex '-'s)
-    # instance
-    dummy_class_inst = re.search(
-        r'sphinx_gallery._dummy.html#sphinx[_-]gallery[.-]_dummy[.-][Dd]ummy[Cc]lass" title="sphinx_gallery._dummy.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dc</span>',  # noqa: E501
-        lines,
-    )
-    assert dummy_class_inst is not None
-    # class
-    dummy_class_class = re.search(
-        r'sphinx_gallery._dummy.html#sphinx[_-]gallery[.-]_dummy[.-][Dd]ummy[Cc]lass" title="sphinx_gallery._dummy.DummyClass" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">_dummy</span><span class="o">.</span><span class="n">DummyClass</span>',  # noqa: E501
-        lines,
-    )
-    assert dummy_class_class is not None
-    # method
-    dummy_class_meth = re.search(
-        r'sphinx_gallery._dummy.html#sphinx[_-]gallery[.-]_dummy[.-][Dd]ummy[Cc]lass[.-]run" title="sphinx_gallery._dummy.DummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-method"><span class="n">dc</span><span class="o">.</span><span class="n">run</span>',  # noqa: E501
-        lines,
-    )
-    assert dummy_class_meth is not None
-    # property (Sphinx 2+ calls it a method rather than attribute, so regex)
-    dummy_class_prop = re.compile(
-        r'sphinx_gallery._dummy.html#sphinx[_-]gallery[.-]_dummy[.-][Dd]ummy[Cc]lass[.-]prop" title="sphinx_gallery._dummy.DummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-(attribute|method|property)"><span class="n">dc</span><span class="o">.</span><span class="n">prop</span>'
-    )  # noqa: E501
-    assert dummy_class_prop.search(lines) is not None
+    _assert_dummy_links(links, "", r"html", "DummyClass", "dc")
     # gh-1364: methods of nested classes in the module currently being documented
-    # instance
-    dummy_class_inst = re.search(
-        r'sphinx_gallery._dummy.nested.html#sphinx[_-]gallery[.-]_dummy[.-]nested[.-][Nn]ested[Dd]ummy[Cc]lass" title="sphinx_gallery._dummy.NestedDummyClass" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ndc</span>',  # noqa: E501
-        lines,
-    )
-    assert dummy_class_inst is not None
-    # class
-    dummy_class_class = re.search(
-        r'sphinx_gallery._dummy.nested.html#sphinx[_-]gallery[.-]_dummy[.-]nested[.-][Nn]ested[Dd]ummy[Cc]lass" title="sphinx_gallery._dummy.NestedDummyClass" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-class"><span class="n">sphinx_gallery</span><span class="o">.</span><span class="n">_dummy</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">NestedDummyClass</span>',  # noqa: E501
-        lines,
-    )
-    assert dummy_class_class is not None
-    # method
-    dummy_class_meth = re.search(
-        r'sphinx_gallery._dummy.nested.html#sphinx[_-]gallery[.-]_dummy[.-]nested[.-][Nn]ested[Dd]ummy[Cc]lass[.-]run" title="sphinx_gallery._dummy.NestedDummyClass.run" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-method"><span class="n">ndc</span><span class="o">.</span><span class="n">run</span>',  # noqa: E501
-        lines,
-    )
-    assert dummy_class_meth is not None
-    # property (Sphinx 2+ calls it a method rather than attribute, so regex)
-    dummy_class_prop = re.compile(
-        r'sphinx_gallery._dummy.nested.html#sphinx[_-]gallery[.-]_dummy[.-]nested[.-][Nn]ested[Dd]ummy[Cc]lass[.-]prop" title="sphinx_gallery._dummy.NestedDummyClass.prop" class="sphx-glr-backref-module-sphinx_gallery-_dummy sphx-glr-backref-type-py-(attribute|method|property)"><span class="n">ndc</span><span class="o">.</span><span class="n">prop</span>'
-    )  # noqa: E501
-    assert dummy_class_prop.search(lines) is not None
+    _assert_dummy_links(links, "nested.", r"nested\.html", "NestedDummyClass", "ndc")
 
     # We do a parallel build so there should not be memory usage reported
     assert "memory usage" not in lines
@@ -688,6 +742,24 @@ def test_backreferences_dirhtml(sphinx_dirhtml_app):
     assert "sphinx_gallery.sorting/#sphinx_gallery.sorting.ExplicitOrder" in html  # noqa: E501
     assert "sphinx_gallery.scrapers/#sphinx_gallery.scrapers.clean_modules" in html  # noqa: E501
     assert "figure_rst.html" not in html  # excluded
+    # embedded code links work for dirhtml too (the old HTML rewriting could not)
+    html_file = out_dir / "auto_examples" / "plot_numpy_matplotlib" / "index.html"
+    links = _backref_links(html_file.read_text(encoding="utf-8"))
+    _assert_link(
+        links,
+        "np.arange",
+        ["sphx-glr-backref-module-numpy", "sphx-glr-backref-type-py-function"],
+    )
+    link = _assert_link(
+        links,
+        "sphinx_gallery.backreferences.identify_names",
+        [
+            "sphx-glr-backref-module-sphinx_gallery-backreferences",
+            "sphx-glr-backref-type-py-function",
+        ],
+    )
+    # internal links resolve relative to the dirhtml page location
+    assert link["href"].startswith("../../gen_modules/"), link
 
 
 @pytest.mark.parametrize(

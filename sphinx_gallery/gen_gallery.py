@@ -28,7 +28,7 @@ from . import __version__ as _sg_version
 from . import glr_path_static
 from .backreferences import Backreference, _finalize_backreferences
 from .directives import ImageSg, MiniGallery, imagesg_addnode
-from .docs_resolv import embed_code_links
+from .doctree_links import setup_doctree_links
 from .downloads import generate_zipfiles
 from .gen_rst import (
     SPHX_GLR_SIG,
@@ -101,7 +101,7 @@ DEFAULT_GALLERY_CONF = {
     "backreferences_dir": None,
     "doc_module": (),
     "exclude_implicit_doc": set(),
-    "reference_url": {},
+    "reference_url": {},  # deprecated, ignored
     "capture_repr": ("_repr_html_", "__repr__"),
     "ignore_repr_types": r"",
     # 'plot_gallery' should accept strings that evaluate to a bool, to allow
@@ -501,6 +501,15 @@ def _fill_gallery_conf_defaults(
     backref = gallery_conf["backreferences_dir"]
     if isinstance(backref, pathlib.Path):
         gallery_conf["backreferences_dir"] = str(backref)
+
+    if gallery_conf["reference_url"]:
+        logger.warning(
+            "The 'reference_url' option is deprecated and ignored: code links "
+            "are now resolved from the documentation being built and from "
+            "intersphinx inventories. For external packages, add entries to "
+            "intersphinx_mapping instead.",
+            type="sphinx-gallery",
+        )
 
     # binder
     gallery_conf["binder"] = check_binder_conf(gallery_conf["binder"])
@@ -1830,9 +1839,10 @@ def setup(app: Sphinx) -> dict[str, Any]:
     app.connect("build-finished", create_jupyterlite_contents)
 
     app.connect("build-finished", summarize_failing_examples)
-    app.connect("build-finished", embed_code_links)
 
     app.connect("html-page-context", setup_template_link_getters)
+
+    setup_doctree_links(app)
 
     app.add_js_file("sg-tags.js")
 

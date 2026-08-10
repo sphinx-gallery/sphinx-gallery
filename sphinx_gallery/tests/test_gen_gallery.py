@@ -271,6 +271,21 @@ def test_config_backreferences(sphinx_app_wrapper):
     assert build_warn == ""
 
 
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    'reference_url': {'sphinx_gallery': None},
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}"""
+)
+def test_config_reference_url_deprecated(sphinx_app_wrapper):
+    """Test that setting reference_url warns about its deprecation."""
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    build_warn = sphinx_app._warning.getvalue()
+    assert "'reference_url' option is deprecated" in build_warn
+
+
 def test_duplicate_files_warn(sphinx_app_wrapper):
     """Test for a warning when two files with the same filename exist."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()

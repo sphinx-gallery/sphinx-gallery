@@ -388,9 +388,6 @@ if "SOURCE_DATE_EPOCH" in os.environ:
 sphinx_gallery_conf = {
     "backreferences_dir": "gen_modules/backreferences",
     "doc_module": ("sphinx_gallery", "numpy"),
-    "reference_url": {
-        "sphinx_gallery": None,
-    },
     "examples_dirs": examples_dirs,
     "gallery_dirs": gallery_dirs,
     "image_scrapers": image_scrapers,

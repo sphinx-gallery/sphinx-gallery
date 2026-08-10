@@ -29,7 +29,6 @@ Sphinx-Gallery API Reference
    scrapers
    py_source_parser
    block_parser
-   docs_resolv
    notebook
    downloads
    sorting
