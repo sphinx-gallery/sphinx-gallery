@@ -2453,6 +2453,11 @@ Default is ``True`` unless the ``SOURCE_DATE_EPOCH`` environment variable is set
 If you are interested in using execution time and execution success and failure data,
 see :ref:`junit_xml`.
 
+Examples that are not re-run because their source is unchanged report the time and
+memory measured the last time they did run, cached alongside their md5 checksum. This
+means a rebuild that runs nothing at all leaves ``sg_execution_times.rst`` untouched
+rather than replacing every measurement with zero.
+
 .. _show_memory:
 
 Showing memory consumption
@@ -2785,6 +2790,11 @@ look at if you want to learn about a particular module. Setting
 about API usage. Note, the command-line binary ``neato`` from the
 ``graphviz`` C utility as well as the ``graphviz`` Python package are
 required for making the unused and used API entry graphs.
+
+The page is generated into your source directory as ``sg_api_usage.rst``,
+alongside the ``*.dot`` files backing its graphs. These are only rewritten
+when the API usage actually changes, so that unchanged rebuilds skip the page
+entirely; you will likely want to add them to your ``.gitignore``.
 
 .. _api_usage_ignore:
 

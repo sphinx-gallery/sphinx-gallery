@@ -139,9 +139,12 @@ def test_api_usage(sphinx_app):
     """Test that an api usage page is created."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
-    # the rst file was empty but is removed in post-processing
+    # the rst file is kept so that unchanged rebuilds can skip the page
     api_rst = Path(src_dir, "sg_api_usage.rst")
-    assert not api_rst.is_file()
+    assert api_rst.is_file()
+    assert "Unused API Entries" in api_rst.read_text(encoding="utf-8")
+    if _has_graphviz():
+        assert Path(src_dir, "sg_api_unused.dot").is_file()
     # HTML output
     api_html = Path(out_dir, "sg_api_usage.html")
     assert api_html.is_file()
@@ -848,14 +851,18 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     generated_backrefs_0 = sorted(
         f
         for f in (old_src_dir / "gen_modules" / "backreferences").iterdir()
-        # Exclude backreferences_all.json` which is changed when any example is run
+        # `backreferences_all.json` is checked separately, below
         if f.name != "backreferences_all.json"
     )
     generated_rst_0 = sorted(
         f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".rst"
     )
+    # `.cost.json` holds run timings, so it legitimately changes whenever its
+    # example re-runs; `test_rebuild` checks those separately
     generated_json_0 = sorted(
-        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".json"
+        f
+        for f in (old_src_dir / "auto_examples").iterdir()
+        if f.suffix == ".json" and not f.name.endswith(".cost.json")
     )
     copied_py_0 = sorted(
         f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".py"
@@ -932,7 +939,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     generated_backrefs_1 = sorted(
         f
         for f in Path(new_app.srcdir, "gen_modules", "backreferences").iterdir()
-        # Exclude backreferences_all.json` which is changed when any example is run
+        # `backreferences_all.json` is checked separately, below
         if f.name != "backreferences_all.json"
     )
     generated_rst_1 = sorted(
@@ -941,7 +948,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     generated_json_1 = sorted(
         f
         for f in Path(new_app.srcdir, "auto_examples").iterdir()
-        if f.suffix == ".json"
+        if f.suffix == ".json" and not f.name.endswith(".cost.json")
     )
     copied_py_1 = sorted(
         f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
@@ -958,13 +965,37 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     # mtimes for backrefs (gh-394)
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
 
+    # The API usage page, its graphs, and backreferences_all.json are only rewritten
+    # when their contents change, so an unchanged rebuild must leave them alone
+    api_usage_0 = sorted(old_src_dir.glob("sg_api_usage.rst")) + sorted(
+        old_src_dir.glob("*.dot")
+    )
+    api_usage_0.append(
+        old_src_dir / "gen_modules" / "backreferences" / "backreferences_all.json"
+    )
+    api_usage_1 = [
+        Path(new_app.srcdir, f.relative_to(old_src_dir)) for f in api_usage_0
+    ]
+    assert len(api_usage_0) == (4 if _has_graphviz() else 2)
+    _assert_mtimes(api_usage_0, api_usage_1)
+
+    # examples that did not re-run keep their cached cost, so sg_execution_times.rst
+    # reports the last measured timings instead of zeroing them
+    cost_json_0 = sorted((old_src_dir / "auto_examples").glob("*.cost.json"))
+    cost_json_1 = [
+        Path(new_app.srcdir, f.relative_to(old_src_dir)) for f in cost_json_0
+    ]
+    assert len(cost_json_0) > 0
+    _assert_mtimes(cost_json_0, cost_json_1)
+    for f in cost_json_1:
+        assert json.loads(f.read_text(encoding="utf-8"))["time"] > 0
+
     # generated reST files
     ignore = (
         # these two should almost always be different, but in case we
         # get extremely unlucky and have identical run times
         # on the one script that gets re-run (because it's a fail)...
         "sg_execution_times",
-        "sg_api_usage",
         "plot_future_imports_broken",
         "plot_scraper_broken",
         "plot_failing_example",
@@ -1105,7 +1136,7 @@ def _rerun(
     generated_backrefs_1 = sorted(
         f
         for f in Path(new_app.srcdir, "gen_modules", "backreferences").iterdir()
-        # Exclude backreferences_all.json` which is changed when any example is run
+        # `backreferences_all.json` is checked separately, below
         if f.name != "backreferences_all.json"
     )
     generated_rst_1 = sorted(
@@ -1114,7 +1145,7 @@ def _rerun(
     generated_json_1 = sorted(
         f
         for f in Path(new_app.srcdir, "auto_examples").iterdir()
-        if f.suffix == ".json"
+        if f.suffix == ".json" and not f.name.endswith(".cost.json")
     )
     copied_py_1 = sorted(
         f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"

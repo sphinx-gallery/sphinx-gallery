@@ -156,7 +156,8 @@ def _replace_md5(
     method: Literal["move", "copy"] = "move",
     mode: Literal["t", "b"] = "b",
     check: Literal["md5", "json"] = "md5",
-) -> None:
+) -> bool:
+    """Replace ``fname_old`` with ``fname_new``, returning whether it changed."""
     fname_new = str(fname_new)  # convert possible Path
     assert method in ("move", "copy")
     if fname_old is None:
@@ -189,6 +190,7 @@ def _replace_md5(
         else:
             copyfile(fname_new, fname_old)
     assert os.path.isfile(fname_old)
+    return replace
 
 
 def iter_gallery_header_filenames(gallery_conf: GalleryConfig) -> Iterator[str]:
