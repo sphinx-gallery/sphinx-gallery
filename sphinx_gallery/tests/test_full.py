@@ -813,7 +813,9 @@ def _assert_mtimes(
         check_name = orig.stem.removesuffix(".codeobj")
         if check_name in different:
             if good_sphinx:
-                assert np.abs(orig.stat().st_mtime - new.stat().st_mtime) > 0.1
+                assert np.abs(orig.stat().st_mtime - new.stat().st_mtime) > 0.1, (
+                    f"{orig.name} should have been updated but was not"
+                )
         elif check_name not in ignore:
             assert_allclose(
                 orig.stat().st_mtime,
@@ -857,6 +859,9 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     generated_json_0 = sorted(
         f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".json"
     )
+    generated_md5_0 = sorted(
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".md5"
+    )
     copied_py_0 = sorted(
         f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".py"
     )
@@ -867,6 +872,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     assert len(generated_backrefs_0) > 0
     assert len(generated_rst_0) > 0
     assert len(generated_json_0) > 0
+    assert len(generated_md5_0) > 0
     assert len(copied_py_0) > 0
     assert len(copied_ipy_0) > 0
     assert len(sphinx_app.config.sphinx_gallery_conf["stale_examples"]) == 0
@@ -943,6 +949,9 @@ def test_rebuild(tmp_path_factory, sphinx_app):
         for f in Path(new_app.srcdir, "auto_examples").iterdir()
         if f.suffix == ".json"
     )
+    generated_md5_1 = sorted(
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".md5"
+    )
     copied_py_1 = sorted(
         f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
     )
@@ -957,6 +966,9 @@ def test_rebuild(tmp_path_factory, sphinx_app):
 
     # mtimes for backrefs (gh-394)
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
+
+    # mtimes for .md5 files, rewritten whenever an example is executed
+    _assert_mtimes(generated_md5_0, generated_md5_1)
 
     # generated reST files
     ignore = (
@@ -1002,6 +1014,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
             generated_backrefs_0,
             generated_rst_0,
             generated_json_0,
+            generated_md5_0,
             copied_py_0,
             copied_ipy_0,
         )
@@ -1017,6 +1030,7 @@ def _rerun(
     generated_backrefs_0,
     generated_rst_0,
     generated_json_0,
+    generated_md5_0,
     copied_py_0,
     copied_ipy_0,
 ):
@@ -1116,6 +1130,9 @@ def _rerun(
         for f in Path(new_app.srcdir, "auto_examples").iterdir()
         if f.suffix == ".json"
     )
+    generated_md5_1 = sorted(
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".md5"
+    )
     copied_py_1 = sorted(
         f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
     )
@@ -1152,7 +1169,20 @@ def _rerun(
     # not reliable on Windows and one Ubuntu run
     bad = sys.platform.startswith("win") or os.getenv("BAD_MTIME", "0") == "1"
     if not bad:
-        _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
+        # mtimes for .md5 files, rewritten whenever an example is executed
+        _assert_mtimes(
+            generated_md5_0, generated_md5_1, different=("plot_numpy_matplotlib.py",)
+        )
+
+        rst_different, rst_ignore = different, ignore
+        if how == "run_stale":
+            # Re-running an unmodified example changes its reST only through the
+            # reported run time, which is rounded to the ms -- when two runs land
+            # in the same bucket the reST is byte-identical and _replace_md5
+            # rightly leaves it (and its mtime) alone. The .md5 check above is the
+            # deterministic proof that the example was actually re-run.
+            rst_different, rst_ignore = (), ignore + different
+        _assert_mtimes(generated_rst_0, generated_rst_1, rst_different, rst_ignore)
 
         # mtimes for jsons
         use_different = () if how == "run_stale" else different
