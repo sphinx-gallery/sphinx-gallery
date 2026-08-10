@@ -13,8 +13,6 @@ from pathlib import Path
 import lxml.etree
 import lxml.html
 import pytest
-from packaging.version import Version
-from sphinx import __version__ as sphinx_version
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
@@ -51,7 +49,6 @@ N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 11 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
-N_RST = f"({N_RST}|{N_RST - 1}|{N_RST - 2})"  # AppVeyor weirdness
 
 pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
 manim = pytest.importorskip("matplotlib.animation")
@@ -804,17 +801,12 @@ def _assert_mtimes(
     from numpy.testing import assert_allclose
 
     assert [x.name for x in list_orig] == [x.name for x in list_new]
-    # This is probably not totally specific/correct, but this fails on 4.0.0
-    # and not on other builds (e.g., 4.5) so hopefully good enough until we
-    # drop 4.x support
-    good_sphinx = Version(sphinx_version) >= Version("4.1")
     for orig, new in zip(list_orig, list_new):
         check_name = orig.stem.removesuffix(".codeobj")
         if check_name in different:
-            if good_sphinx:
-                assert np.abs(orig.stat().st_mtime - new.stat().st_mtime) > 0.1, (
-                    f"{orig.name} should have been updated but was not"
-                )
+            assert np.abs(orig.stat().st_mtime - new.stat().st_mtime) > 0.1, (
+                f"{orig.name} should have been updated but was not"
+            )
         elif check_name not in ignore:
             assert_allclose(
                 orig.stat().st_mtime,
@@ -905,7 +897,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     if sys.platform.startswith("win"):
         assert (
             re.match(
-                ".*[0|1] added, ([1-9]|1[0-4]) changed, 0 removed$.*",
+                ".*[01] added, ([1-9]|1[0-4]) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
@@ -914,7 +906,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     else:
         assert (
             re.match(
-                ".*[0|1] added, ([1-9]|1[0-2]) changed, 0 removed$.*",
+                ".*[01] added, ([1-9]|1[0-2]) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
@@ -1099,7 +1091,7 @@ def _rerun(
     else:
         n_ch = "([1-9]|1[0-2])"  # 1-12
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
-    want = f".*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*"
+    want = f".*updating environment:.*[01] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
     want = ".*executed 1 out of %s.*after excluding %s files.*based on MD5.*" % (
         out_of,
