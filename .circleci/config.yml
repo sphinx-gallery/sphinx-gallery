@@ -5,6 +5,15 @@ _imageconfig: &imageconfig
   machine:
     image: ubuntu-2404:current
 
+# Half of the MNE job is Sphinx's parallel read phase (391 s of ~830 s to read
+# 1009 documents), and MNE's Makefile passes -j auto, so it scales with cores.
+# The default machine class only has 2. scikit-learn pins SPHINX_NUMJOBS=1, so
+# that job would not benefit and stays on the default.
+_bigimageconfig: &bigimageconfig
+  machine:
+    image: ubuntu-2404:current
+  resource_class: large
+
 commands:
   bash_env:
     steps:
@@ -113,7 +122,7 @@ jobs:
           destination: latex
 
   build_docs_mne:
-    <<: *imageconfig
+    <<: *bigimageconfig
     steps:
       - checkout  # just to get SSH keys set up
       - attach_workspace:
