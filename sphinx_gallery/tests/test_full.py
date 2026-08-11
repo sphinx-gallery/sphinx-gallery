@@ -15,8 +15,6 @@ from pathlib import Path
 import lxml.etree
 import lxml.html
 import pytest
-from packaging.version import Version
-from sphinx import __version__ as sphinx_version
 from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
@@ -54,7 +52,6 @@ N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 13 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
-N_RST = f"({N_RST}|{N_RST - 1}|{N_RST - 2})"  # AppVeyor weirdness
 
 pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
 manim = pytest.importorskip("matplotlib.animation")
@@ -810,15 +807,12 @@ def _assert_mtimes(
     from numpy.testing import assert_allclose
 
     assert [x.name for x in list_orig] == [x.name for x in list_new]
-    # This is probably not totally specific/correct, but this fails on 4.0.0
-    # and not on other builds (e.g., 4.5) so hopefully good enough until we
-    # drop 4.x support
-    good_sphinx = Version(sphinx_version) >= Version("4.1")
     for orig, new in zip(list_orig, list_new):
         check_name = orig.stem.removesuffix(".codeobj")
         if check_name in different:
-            if good_sphinx:
-                assert np.abs(orig.stat().st_mtime - new.stat().st_mtime) > 0.1
+            assert np.abs(orig.stat().st_mtime - new.stat().st_mtime) > 0.1, (
+                f"{orig.name} should have been updated but was not"
+            )
         elif check_name not in ignore:
             assert_allclose(
                 orig.stat().st_mtime,
@@ -866,6 +860,9 @@ def test_rebuild(tmp_path_factory, sphinx_app):
         for f in (old_src_dir / "auto_examples").iterdir()
         if f.suffix == ".json" and not f.name.endswith(".cost.json")
     )
+    generated_md5_0 = sorted(
+        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".md5"
+    )
     copied_py_0 = sorted(
         f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".py"
     )
@@ -876,6 +873,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     assert len(generated_backrefs_0) > 0
     assert len(generated_rst_0) > 0
     assert len(generated_json_0) > 0
+    assert len(generated_md5_0) > 0
     assert len(copied_py_0) > 0
     assert len(copied_ipy_0) > 0
     assert len(sphinx_app.config.sphinx_gallery_conf["stale_examples"]) == 0
@@ -909,7 +907,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     if sys.platform.startswith("win"):
         assert (
             re.match(
-                ".*[0|1] added, ([1-9]|1[0-4]) changed, 0 removed$.*",
+                ".*[01] added, ([1-9]|1[0-4]) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
@@ -918,7 +916,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     else:
         assert (
             re.match(
-                ".*[0|1] added, ([1-9]|1[0-2]) changed, 0 removed$.*",
+                ".*[01] added, ([1-9]|1[0-2]) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
@@ -952,6 +950,9 @@ def test_rebuild(tmp_path_factory, sphinx_app):
         for f in Path(new_app.srcdir, "auto_examples").iterdir()
         if f.suffix == ".json" and not f.name.endswith(".cost.json")
     )
+    generated_md5_1 = sorted(
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".md5"
+    )
     copied_py_1 = sorted(
         f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
     )
@@ -966,6 +967,9 @@ def test_rebuild(tmp_path_factory, sphinx_app):
 
     # mtimes for backrefs (gh-394)
     _assert_mtimes(generated_backrefs_0, generated_backrefs_1)
+
+    # mtimes for .md5 files, rewritten whenever an example is executed
+    _assert_mtimes(generated_md5_0, generated_md5_1)
 
     # The API usage page, its graphs, and backreferences_all.json are only rewritten
     # when their contents change, so an unchanged rebuild must leave them alone
@@ -1047,6 +1051,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
             generated_backrefs_0,
             generated_rst_0,
             generated_json_0,
+            generated_md5_0,
             copied_py_0,
             copied_ipy_0,
         )
@@ -1062,6 +1067,7 @@ def _rerun(
     generated_backrefs_0,
     generated_rst_0,
     generated_json_0,
+    generated_md5_0,
     copied_py_0,
     copied_ipy_0,
 ):
@@ -1131,7 +1137,7 @@ def _rerun(
     else:
         n_ch = "([1-9]|1[0-2])"  # 1-12
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
-    want = f".*updating environment:.*[0|1] added, {n_ch} changed, 0 removed.*"
+    want = f".*updating environment:.*[01] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
     want = ".*executed 1 out of %s.*after excluding %s files.*based on MD5.*" % (
         out_of,
@@ -1160,6 +1166,9 @@ def _rerun(
         f
         for f in Path(new_app.srcdir, "auto_examples").iterdir()
         if f.suffix == ".json" and not f.name.endswith(".cost.json")
+    )
+    generated_md5_1 = sorted(
+        f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".md5"
     )
     copied_py_1 = sorted(
         f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".py"
@@ -1194,20 +1203,30 @@ def _rerun(
         # is no-op.
         "rst_gallery_entry",
     )
-    # not reliable on Windows and one Ubuntu run
-    bad = sys.platform.startswith("win") or os.getenv("BAD_MTIME", "0") == "1"
-    if not bad:
-        _assert_mtimes(generated_rst_0, generated_rst_1, different, ignore)
+    # mtimes for .md5 files, rewritten whenever an example is executed
+    _assert_mtimes(
+        generated_md5_0, generated_md5_1, different=("plot_numpy_matplotlib.py",)
+    )
 
-        # mtimes for jsons
-        use_different = () if how == "run_stale" else different
-        _assert_mtimes(generated_json_0, generated_json_1, ignore=ignore)
+    rst_different, rst_ignore = different, ignore
+    if how == "run_stale":
+        # Re-running an unmodified example changes its reST only through the
+        # reported run time, which is rounded to the ms -- when two runs land
+        # in the same bucket the reST is byte-identical and _replace_md5
+        # rightly leaves it (and its mtime) alone. The .md5 check above is the
+        # deterministic proof that the example was actually re-run.
+        rst_different, rst_ignore = (), ignore + different
+    _assert_mtimes(generated_rst_0, generated_rst_1, rst_different, rst_ignore)
 
-        # mtimes for .py files (gh-395)
-        _assert_mtimes(copied_py_0, copied_py_1, different=use_different)
+    # mtimes for jsons
+    use_different = () if how == "run_stale" else different
+    _assert_mtimes(generated_json_0, generated_json_1, ignore=ignore)
 
-        # mtimes for .ipynb files
-        _assert_mtimes(copied_ipy_0, copied_ipy_1, different=use_different)
+    # mtimes for .py files (gh-395)
+    _assert_mtimes(copied_py_0, copied_py_1, different=use_different)
+
+    # mtimes for .ipynb files
+    _assert_mtimes(copied_ipy_0, copied_ipy_1, different=use_different)
 
 
 # these embed a measured run time, so they legitimately differ between two builds
