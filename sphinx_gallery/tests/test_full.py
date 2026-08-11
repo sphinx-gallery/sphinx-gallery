@@ -52,6 +52,14 @@ N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
 N_OTHER = 13 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
+# these fail or are retried on every build, so their measured time always changes --
+# including rounding to zero on a coarse (Windows) clock
+_RERUN_EXAMPLES = (
+    "plot_failing_example.py",
+    "plot_failing_example_thumbnail.py",
+    "plot_scraper_broken.py",
+    "plot_future_imports_broken.py",
+)
 
 pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
 manim = pytest.importorskip("matplotlib.animation")
@@ -796,6 +804,17 @@ def test_logging_std_nested(sphinx_app):
     assert ".. code-block:: none\n\n    is not in the same cell" in lines
 
 
+def _example_times(root: Path) -> dict[str, str]:
+    """Map every row of every ``sg_execution_times.rst`` to its rendered time."""
+    out = {}
+    for times in sorted(root.rglob("sg_execution_times.rst")):
+        text = times.read_text(encoding="utf-8")
+        for name, value in re.findall(r"^   \* - (.+)\n     - (\S+)\n", text, re.M):
+            if name != "Example":  # the header row
+                out[f"{times.relative_to(root)}::{name}"] = value
+    return out
+
+
 def _assert_mtimes(
     list_orig: list[Path],
     list_new: list[Path],
@@ -993,20 +1012,25 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     ]
     assert len(cost_json_0) > 0
     _assert_mtimes(cost_json_0, cost_json_1)
-    for f in cost_json_1:
-        assert json.loads(f.read_text(encoding="utf-8"))["time"] > 0
+    # an example faster than the clock resolution really does measure 0 (seen on
+    # Windows), so require the cache to be non-trivial rather than all-positive
+    times = [json.loads(f.read_text(encoding="utf-8"))["time"] for f in cost_json_1]
+    assert min(times) >= 0
+    assert max(times) > 0
 
-    # ... and the rendered page must not gain zeroed rows, which is what the cache is
-    # for: without it every example skipped this build reports 00:00.000 instead of
-    # what it last measured. Only the direction matters, since a rebuild can also
-    # resolve a row the first build had no timing for.
-    def _n_zero_rows(root):
-        return sum(
-            times.read_text(encoding="utf-8").count("     - 00:00.000\n")
-            for times in sorted(root.rglob("sg_execution_times.rst"))
-        )
-
-    assert _n_zero_rows(Path(new_app.srcdir)) <= _n_zero_rows(old_src_dir)
+    # ... and no row of the rendered page may lose its timing, which is what the cache
+    # is for: without it every example skipped this build reports 00:00.000 instead of
+    # what it last measured
+    old_times = _example_times(old_src_dir)
+    new_times = _example_times(Path(new_app.srcdir))
+    assert set(old_times) == set(new_times)
+    zeroed = sorted(
+        key
+        for key, value in new_times.items()
+        if value == "00:00.000" != old_times[key]
+        and not any(name in key for name in _RERUN_EXAMPLES)
+    )
+    assert zeroed == []
 
     # generated reST files
     ignore = (
@@ -1230,12 +1254,8 @@ def _rerun(
 
 
 # these embed a measured run time, so they legitimately differ between two builds
-_TIMED_RST = (
-    "sg_execution_times.rst",
-    "plot_failing_example.rst",
-    "plot_failing_example_thumbnail.rst",
-    "plot_scraper_broken.rst",
-    "plot_future_imports_broken.rst",
+_TIMED_RST = ("sg_execution_times.rst",) + tuple(
+    name.replace(".py", ".rst") for name in _RERUN_EXAMPLES
 )
 
 
