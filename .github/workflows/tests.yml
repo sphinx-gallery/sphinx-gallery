@@ -117,6 +117,9 @@ jobs:
       # pydata-sphinx-theme is not compatible with Sphinx 4
       - run: make -C doc SPHINXOPTS= html-noplot
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
-      - run: make -C doc SPHINXOPTS= html -j 2
+      # -j goes in SPHINXOPTS: bare `make -j 2` is a make flag, and with a
+      # single target it parallelizes nothing. SPHINXOPTS is overridden (rather
+      # than appended to) to keep dropping the Makefile's -nWT --keep-going.
+      - run: make -C doc SPHINXOPTS="-j 2" html
         if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
       - uses: codecov/codecov-action@v7
