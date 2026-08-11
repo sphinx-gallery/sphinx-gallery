@@ -58,6 +58,7 @@ from .utils import (
     _has_pypandoc,
     _read_json,
     _replace_md5,
+    _single_threaded,
     _write_json,
 )
 
@@ -708,7 +709,13 @@ def _build_recommender(
             )
             gallery_py_files.extend(py_files)
 
-        recommender.fit(gallery_py_files)
+        # `fit` builds the similarity matrix with BLAS. Keep that single threaded so
+        # that no OpenMP thread pool is left alive in the Sphinx process, which would
+        # deadlock the workers Sphinx later forks for its parallel read/write phases
+        # (see `_single_threaded`). The matrices here are tiny, so nothing is lost.
+        # `predict` below only indexes into that matrix, so it needs no protection.
+        with _single_threaded():
+            recommender.fit(gallery_py_files)
         for fname in gallery_py_files:
             _write_recommendations(recommender, fname, gallery_conf)
 

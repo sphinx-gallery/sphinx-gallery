@@ -6,6 +6,7 @@ Miscellaneous utilities.
 # Author: Eric Larson
 # License: 3-clause BSD
 
+import contextlib
 import hashlib
 import json
 import os
@@ -15,7 +16,7 @@ import zipfile
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
-from typing import Any, Callable, Iterator, Literal, Tuple, TypedDict
+from typing import Any, Callable, ContextManager, Iterator, Literal, Tuple, TypedDict
 
 import sphinx.util
 
@@ -37,6 +38,29 @@ class _WriteKwargs(TypedDict):
 
 
 _W_KW: _WriteKwargs = {"encoding": "utf-8", "newline": "\n"}
+
+
+def _single_threaded() -> ContextManager:
+    """Run a block of native code without leaving a thread pool behind.
+
+    Sphinx forks its parallel read and write workers -- ``get_context("fork")`` is
+    hardcoded in ``sphinx/util/parallel.py`` -- and ``fork()`` only clones the calling
+    thread. An OpenMP worker thread that is alive in the Sphinx process at that moment
+    is therefore lost in the child, while the OpenMP runtime still believes it exists;
+    the next parallel region in that child blocks forever in the OpenMP join barrier.
+    Since Sphinx Gallery declares itself ``parallel_read_safe``, any BLAS call it makes
+    in the Sphinx process on its own behalf must not leave such a thread behind.
+
+    Capping the thread pools for the duration of the call means no OpenMP team is ever
+    created, so there is nothing for a later ``fork()`` to lose. This is a no-op when
+    ``threadpoolctl`` is not installed; the deadlock only shows up with a threaded BLAS
+    (notably MKL), so a fallback that silently does nothing is acceptable.
+    """
+    try:
+        import threadpoolctl
+    except ImportError:
+        return contextlib.nullcontext()
+    return threadpoolctl.threadpool_limits(limits=1)
 
 
 def scale_image(in_fname: str, out_fname: str, max_width: int, max_height: int) -> None:
