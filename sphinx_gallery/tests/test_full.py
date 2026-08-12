@@ -34,7 +34,7 @@ from sphinx_gallery.utils import (
 #
 # total number of plot_*.py files in
 # (examples + examples_rst_index + examples_with_rst + examples_README_header)
-N_EXAMPLES = 19 + 3 + 2 + 1
+N_EXAMPLES = 20 + 3 + 2 + 1
 N_FAILING = 4
 N_GOOD = N_EXAMPLES - N_FAILING  # galleries that run w/o error
 # passthroughs and non-executed examples in
@@ -906,7 +906,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     else:
         assert (
             re.match(
-                ".*[01] added, ([1-9]|1[0-2]) changed, 0 removed$.*",
+                ".*[01] added, ([1-9]|1[0-3]) changed, 0 removed$.*",
                 status,
                 re.MULTILINE | re.DOTALL,
             )
@@ -1072,6 +1072,7 @@ def _rerun(
     # - auto_examples/future/sg_execution_times
     # - auto_examples/plot_failing_example
     # - auto_examples/plot_failing_example_thumbnail
+    # - auto_examples/plot_no_parallel
     # - auto_examples/plot_scraper_broken
     # - auto_examples/rst_gallery_entry
     # - auto_examples/sg_execution_times
@@ -1087,9 +1088,9 @@ def _rerun(
     # - auto_examples/index
     # - auto_examples/plot_numpy_matplotlib
     if how == "modify":
-        n_ch = "([3-9]|1[0-3])"  # 3-13
+        n_ch = "([3-9]|1[0-4])"  # 3-14
     else:
-        n_ch = "([1-9]|1[0-2])"  # 1-12
+        n_ch = "([1-9]|1[0-3])"  # 1-13
     lines = "\n".join([f"\n{how} != {n_ch}:"] + lines)
     want = f".*updating environment:.*[01] added, {n_ch} changed, 0 removed.*"
     assert re.match(want, status, flags) is not None, lines
