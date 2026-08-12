@@ -379,7 +379,9 @@ except ImportError:
 else:
     examples_dirs.append("../plotly_examples")
     gallery_dirs.append("auto_plotly_examples")
-    image_scrapers += ("plotly",)
+    # The scraper hook requires an unreleased plotly (plotly/plotly.py#5701)
+    if hasattr(plotly, "_get_sg_image_scraper"):
+        image_scrapers += ("plotly",)
 
 min_reported_time = 0
 if "SOURCE_DATE_EPOCH" in os.environ:
