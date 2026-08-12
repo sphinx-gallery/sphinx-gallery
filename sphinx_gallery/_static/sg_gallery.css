@@ -404,3 +404,11 @@ a.sphx-glr-backref-instance {
 #sphx-glr-tag-clear {
     cursor: pointer;
 }
+
+/* Plotly figures keep the light background baked into the figure, so in dark
+   themes give them a padded card instead of an edge-to-edge slab. */
+html[data-theme="dark"] div.output_subarea:has(.plotly-graph-div) {
+    background-color: white;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+}
