@@ -75,5 +75,3 @@ fig.add_trace(go.Bar(x=[2018, 2019, 2020], y=[3, 2, 5], showlegend=False), 1, 1)
 fig.add_trace(go.Pie(labels=["A", "B", "C"], values=[1, 3, 6]), 1, 2)
 fig.update_layout(height=400, template="presentation", yaxis_title_text="revenue")
 fig
-
-# sphinx_gallery_thumbnail_path = '_static/plotly_logo.png'

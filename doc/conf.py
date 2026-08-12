@@ -379,6 +379,7 @@ except ImportError:
 else:
     examples_dirs.append("../plotly_examples")
     gallery_dirs.append("auto_plotly_examples")
+    image_scrapers += ("plotly",)
 
 min_reported_time = 0
 if "SOURCE_DATE_EPOCH" in os.environ:
