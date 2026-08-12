@@ -27,6 +27,7 @@ import warnings
 from dataclasses import dataclass
 from functools import lru_cache
 from io import StringIO
+from itertools import islice
 from pathlib import Path
 from shutil import copyfile
 from textwrap import indent
@@ -567,6 +568,33 @@ def _copy_non_example_files(
             _replace_md5(src_file, fname_old=target_file, method="copy")
 
 
+def _split_parallel(
+    sorted_listdir: list[str], src_dir: str, gallery_conf: GalleryConfig
+) -> tuple[list[str], list[str]]:
+    """Split examples into those that opt out of parallel execution, and the rest.
+
+    Both lists keep their relative order from ``sorted_listdir``.
+    """
+    serial_listdir = []
+    parallel_listdir = []
+    for fname in sorted_listdir:
+        parser, _ = _get_parser(fname, gallery_conf)
+        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        # full parse rather than a cheaper regex over the file, so that we see exactly
+        # the same file_conf as `generate_file_rst` (e.g. docstrings are excluded)
+        file_conf = parser.split_code_and_text_blocks(src_file, return_node=True)[0]
+        run_parallel = file_conf.get("parallel", True)
+        if not isinstance(run_parallel, bool):
+            logger.warning(
+                "sphinx_gallery_parallel setting is not a boolean, got %r in file %s",
+                run_parallel,
+                fname,
+            )
+            run_parallel = True
+        (parallel_listdir if run_parallel else serial_listdir).append(fname)
+    return serial_listdir, parallel_listdir
+
+
 def generate_dir_rst(
     src_dir: str,
     target_dir: str,
@@ -656,32 +684,45 @@ def generate_dir_rst(
     costs = []
     toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf["src_dir"])
+    backrefs_dir: dict[str, list[Backreference]] = {}
+
+    # Always split, so that a bad in-file setting is reported even in serial builds
+    serial_listdir, parallel_listdir = _split_parallel(
+        sorted_listdir, src_dir, gallery_conf
+    )
+    if not gallery_conf["parallel"]:
+        # everything runs here anyway, so keep the original order
+        serial_listdir, parallel_listdir = sorted_listdir, []
+
     iterator = status_iterator(
-        sorted_listdir,
+        serial_listdir + parallel_listdir,
         f"generating gallery for {build_target_dir}... ",
         length=len(sorted_listdir),
     )
 
-    backrefs_dir: dict[str, list[Backreference]] = {}
-
-    parallel = list
-    p_fun = generate_file_rst
-    if gallery_conf["parallel"]:
+    # Examples opting out of parallelism run first, alone in this process, so that
+    # nothing else is executing while they do
+    results = [
+        generate_file_rst(fname, target_dir, src_dir, gallery_conf)
+        for fname in islice(iterator, len(serial_listdir))
+    ]
+    if parallel_listdir:
         from joblib import Parallel, delayed
 
-        p_fun = delayed(generate_file_rst)
         parallel = Parallel(
             n_jobs=gallery_conf["parallel"],
             pre_dispatch="n_jobs",
             batch_size=1,
             backend="loky",
         )
-
-    results = parallel(
-        p_fun(fname, target_dir, src_dir, gallery_conf) for fname in iterator
-    )
-    for fi, (intro, title, (t, mem), out_vars) in enumerate(results):
-        fname = sorted_listdir[fi]
+        results += parallel(
+            delayed(generate_file_rst)(fname, target_dir, src_dir, gallery_conf)
+            for fname in iterator
+        )
+    # Restore gallery (not execution) order so the index and toctree are unaffected
+    results_by_fname = dict(zip(serial_listdir + parallel_listdir, results))
+    for fname in sorted_listdir:
+        intro, title, (t, mem), out_vars = results_by_fname[fname]
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         gallery_conf["titles"][src_file] = title
         # n.b. non-executable files have none of these three variables defined,

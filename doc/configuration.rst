@@ -112,6 +112,7 @@ Some options can also be set or overridden on a file-by-file basis:
 - ``# sphinx_gallery_capture_repr`` (:ref:`capture_repr`)
 - ``# sphinx_gallery_multi_image`` (:ref:`multi_image`)
 - ``# sphinx_gallery_tags`` (:ref:`tagging_examples`)
+- ``# sphinx_gallery_parallel`` (:ref:`parallel`)
 
 Some options can be set on a per-code-block basis in a file:
 
@@ -2328,6 +2329,25 @@ Sphinx warnings during documentation building into errors.
     (e.g., pickling, oversubscription of CPU resources, etc.).
 
     Using parallel building will also disable memory measurements.
+
+Excluding individual examples from parallel execution
+"""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+Individual examples that cannot be run in a worker process -- for example because
+they use :mod:`multiprocessing` themselves, require a library that is not
+fork/spawn safe, or need exclusive access to a resource such as a GPU -- can opt out
+by adding the following comment anywhere in the example file::
+
+    # sphinx_gallery_parallel = False
+
+Such examples are executed one at a time in the main process, before anything is
+dispatched to the worker processes, so that no other example is running while they
+execute. This is exactly how they would be run with ``'parallel': False``. The
+setting has no effect when parallel building is disabled.
+
+Note that this affects execution order but not the order of the gallery itself,
+which is still determined by
+:ref:`within_subsection_order <within_gallery_order>`.
 
 .. _sphinx_parallel_read:
 
