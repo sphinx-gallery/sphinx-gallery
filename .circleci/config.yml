@@ -79,10 +79,6 @@ jobs:
       - attach_workspace:
           at: ~/
       - bash_env
-      - run:
-          name: Get Chrome for the plotly image scraper
-          command: |
-            which google-chrome || plotly_get_chrome -y
       - run: sphinx-build doc doc/_build/html -nW --keep-going -b html 2>&1 | tee sphinx_log.txt
       - run:
           name: Check sphinx log for warnings (which are treated as errors)

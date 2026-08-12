@@ -3,22 +3,23 @@
 Example with the plotly graphing library
 ========================================
 
-Sphinx-Gallery supports examples made with the `plotly library`_.
-Sphinx-Gallery is able to capture the ``_repr_html_`` of plotly figure objects
-(see :ref:`capture_repr`). To display the figure, the last line in your code
-block should therefore be the plotly figure object.
+Sphinx-Gallery supports examples made with the `plotly library`_. To use
+plotly, add its scraper to the list of :ref:`image_scrapers` in the
+``conf.py`` of the project::
 
-In order to use plotly, the ``conf.py`` of the project should include the
-following lines to select the appropriate plotly renderer::
+    sphinx_gallery_conf = {
+        ...
+        "image_scrapers": ("matplotlib", "plotly"),
+    }
 
-    import plotly.io as pio
-    pio.renderers.default = 'sphinx_gallery'
-
-**Optional**: the ``sphinx_gallery`` renderer of plotly will not generate png
-thumbnails. For png thumbnails, you can use instead the ``sphinx_gallery_png``
-renderer, and add ``plotly.io._sg_scraper.plotly_sg_scraper`` to the list of
-:ref:`image_scrapers`. The scraper requires you to
-`install the orca package <https://plotly.com/python/static-image-export/>`_.
+The scraper embeds every figure displayed with ``fig.show()`` as interactive
+HTML, and also every figure that is the last expression of a code block
+(see :ref:`capture_repr`), as in the examples below. Each figure is
+additionally exported as a static image so that it can serve as the example
+thumbnail, which requires `kaleido
+<https://plotly.com/python/static-image-export/>`_ and a Chromium-based web
+browser; without them a warning is emitted and examples get a placeholder
+thumbnail.
 
 This tutorial gives a few examples of plotly figures, starting with its
 high-level API `plotly express <https://plotly.com/python/plotly-express/>`_.
