@@ -1197,8 +1197,14 @@ def test_split_parallel(gallery_conf, log_collector, fname, content, serial, n_w
 @pytest.mark.parametrize("n_jobs", [2, False])
 def test_parallel_serial_examples(gallery_conf, n_jobs):
     """Examples opting out of parallelism run in the main process, in gallery order."""
-    pytest.importorskip("joblib")
-    gallery_conf.update(parallel=n_jobs, within_subsection_order="FileNameSortKey")
+    if n_jobs:
+        pytest.importorskip("joblib")
+    gallery_conf.update(
+        parallel=n_jobs,
+        within_subsection_order="FileNameSortKey",
+        image_scrapers=(),
+        reset_modules=(),
+    )
     Path(gallery_conf["examples_dir"], "README.txt").write_text("")
     names = ["plot_a", "plot_b", "plot_c"]
     # each example appends "<name>:<main|worker>" as it runs, so we see the real order
@@ -1234,6 +1240,7 @@ def test_parallel_serial_examples(gallery_conf, n_jobs):
 
 def test_split_parallel_serial_build(gallery_conf, log_collector):
     """A bad in-file parallel setting is reported even when parallel is disabled."""
+    gallery_conf.update(image_scrapers=(), reset_modules=())
     Path(gallery_conf["examples_dir"], "README.txt").write_text("")
     Path(gallery_conf["examples_dir"], "plot_a.py").write_text(
         DOCSTRING + "# sphinx_gallery_parallel = 2\n", encoding="utf-8"
