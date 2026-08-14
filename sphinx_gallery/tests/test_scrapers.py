@@ -170,6 +170,30 @@ def test_save_matplotlib_figures_hidpi(make_gallery_conf):
         assert Path(fname).is_file()
 
 
+def test_save_matplotlib_figures_compress(make_gallery_conf, monkeypatch):
+    """Test that every saved image, hi-dpi ones included, is passed to optipng."""
+    gallery_conf = make_gallery_conf({"image_srcset": ["2x"]})
+    # set directly, as the default is dropped when the optipng binary is missing
+    gallery_conf["compress_images"] = ["images"]
+
+    compressed = []
+    monkeypatch.setattr(
+        sphinx_gallery.scrapers, "optipng", lambda fname, args: compressed.append(fname)
+    )
+
+    import matplotlib.pyplot as plt  # nest these so that Agg can be set
+
+    plt.plot(1, 1)
+    fname_template = str(Path(gallery_conf["gallery_dir"], "image{0}.png"))
+    block_vars = dict(image_path_iterator=ImagePathIterator(fname_template))
+    save_figures(("",) * 3, block_vars, gallery_conf)
+
+    assert sorted(Path(fname).name for fname in compressed) == [
+        "image1.png",
+        "image1_2_00x.png",
+    ]
+
+
 def _custom_func(x, y, z):
     return y["image_path_iterator"].next()
 

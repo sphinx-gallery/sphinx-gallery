@@ -691,9 +691,7 @@ def _build_recommender(
         gallery_py_files: list[str] = []
         # root and subsection directories containing python examples
         gallery_dir_abs_path = Path(gallery_dir_abs_path)
-        gallery_directories: list[PathLikeStr] = [
-            Path(s) for s in [gallery_dir_abs_path] + subsecs
-        ]
+        gallery_directories = [Path(s) for s in [gallery_dir_abs_path] + subsecs]
         for src_dir in gallery_directories:
             if not src_dir.is_absolute():
                 src_dir = gallery_dir_abs_path / src_dir
