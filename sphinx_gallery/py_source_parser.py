@@ -16,6 +16,7 @@ from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
 
 from .typing import PathLikeStr
+from .utils import WARNING_TYPE
 
 logger = getLogger("sphinx-gallery")
 
@@ -145,7 +146,11 @@ def extract_file_config(content: str) -> dict[str, Any]:
             value = ast.literal_eval(value)
         except (SyntaxError, ValueError):
             logger.warning(
-                "Sphinx-gallery option %s was passed invalid value %s", name, value
+                "Sphinx-gallery option %s was passed invalid value %s",
+                name,
+                value,
+                type=WARNING_TYPE,
+                subtype="file_conf",
             )
         else:
             file_conf[name] = value

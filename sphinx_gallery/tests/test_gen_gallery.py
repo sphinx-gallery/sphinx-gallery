@@ -316,6 +316,54 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
     assert msg.format(m) in build_warn
 
 
+_DUPLICATE_CONF = """
+sphinx_gallery_conf = {
+    'examples_dirs': ['../dup_a', '../dup_b'],
+    'gallery_dirs': ['auto_a', 'auto_b'],
+}"""
+
+
+def _write_duplicate_examples(tmp_path):
+    """Write the same example file name into two `examples_dirs`."""
+    for examples_dir in ("dup_a", "dup_b"):
+        example_dir = tmp_path / examples_dir
+        example_dir.mkdir()
+        (example_dir / "GALLERY_HEADER.rst").write_text(GALLERY_HEADER)
+        (example_dir / "plot_dup.py").write_text(MINIMAL_HEADER)
+
+
+@pytest.mark.add_conf(content=_DUPLICATE_CONF)
+def test_duplicate_files_warn_during_build(sphinx_app_wrapper, tmp_path):
+    """The duplicate check must see the examples, not silently collect nothing.
+
+    `examples_dirs` is relative to the source directory, so resolving it against
+    the current working directory makes the whole check a no-op.
+    """
+    _write_duplicate_examples(tmp_path)
+
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
+    build_warn = sphinx_app._warning.getvalue()
+    assert "Duplicate example file name(s) found" in build_warn
+    assert str(Path("dup_b", "plot_dup.py")) in build_warn
+    assert sphinx_app._warncount == 1
+
+
+@pytest.mark.add_conf(
+    content="suppress_warnings = ['sphinx_gallery.duplicate_filename']\n"
+    + _DUPLICATE_CONF
+)
+def test_suppress_warnings(sphinx_app_wrapper, tmp_path):
+    """Our warnings carry a type and subtype, so `suppress_warnings` can drop them."""
+    _write_duplicate_examples(tmp_path)
+
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
+    assert "Duplicate example file name(s) found" not in sphinx_app._warning.getvalue()
+    # `-W` fails the build on this count, so suppressed warnings must not reach it
+    assert sphinx_app._warncount == 0
+
+
 def _check_order(sphinx_app, key, expected_order=None):
     """Iterates through sphx-glr-thumbcontainer divs and reads key from the tooltip.
 

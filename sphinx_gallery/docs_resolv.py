@@ -30,7 +30,7 @@ from .typing import (
     LinkType,
     PathLikeStr,
 )
-from .utils import _W_KW, _read_json, status_iterator
+from .utils import _W_KW, WARNING_TYPE, _read_json, status_iterator
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
@@ -314,7 +314,9 @@ def _handle_http_url_error(e: Exception, msg: str = "fetching") -> None:
     elif isinstance(e, URLError):
         error_msg = f"{msg}: {e.reason}"
     logger.warning(
-        "The following {} has occurred {}".format(type(e).__name__, error_msg)
+        "The following {} has occurred {}".format(type(e).__name__, error_msg),
+        type=WARNING_TYPE,
+        subtype="url_fetch",
     )
 
 

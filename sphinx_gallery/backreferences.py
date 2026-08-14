@@ -14,6 +14,7 @@ import os
 import re
 import sys
 from collections import defaultdict
+from functools import partial
 from html import escape
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple
@@ -24,7 +25,7 @@ from sphinx.errors import ExtensionError
 from ._dummy import DummyClass  # noqa: F401
 from .scrapers import _find_image_ext
 from .typing import GalleryConfig, PathLikeStr
-from .utils import _W_KW, _replace_md5
+from .utils import _W_KW, WARNING_TYPE, _replace_md5
 
 if TYPE_CHECKING:
     from .py_source_parser import Block
@@ -515,7 +516,11 @@ def _finalize_backreferences(
             _replace_md5(path, mode="t")
         else:
             level = gallery_conf["log_level"]["backreference_missing"]
-            func = getattr(logger, level)
+            func = partial(
+                getattr(logger, level),
+                type=WARNING_TYPE,
+                subtype="backreference_missing",
+            )
             func(f"Could not find backreferences file: {path}")
             func(
                 "The backreferences are likely to be erroneous "

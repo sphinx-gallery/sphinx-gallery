@@ -173,6 +173,9 @@ to your ``conf.py`` file.
 
 Note that the above Matplotlib warning is removed by default.
 
+This section is about warnings raised by your example code. To silence warnings
+raised by Sphinx-Gallery itself, see :ref:`suppressing_warnings`.
+
 .. _importing_callables:
 
 Importing callables
@@ -1372,6 +1375,60 @@ The log level can be set with::
 
 The only valid key currently is ``backreference_missing``.
 The valid values are ``'debug'``, ``'info'``, ``'warning'``, and ``'error'``.
+
+
+.. _suppressing_warnings:
+
+Suppressing Sphinx-Gallery warnings
+===================================
+
+Every warning Sphinx-Gallery emits is tagged with the warning type
+``sphinx_gallery`` and a subtype naming the kind of problem, so Sphinx's
+:confval:`sphinx:suppress_warnings` can silence them by category. This is most
+useful when building with ``-W``, where an unwanted warning otherwise fails the
+whole build. For example, to keep building when an example file name is
+duplicated across galleries::
+
+    suppress_warnings = ['sphinx_gallery.duplicate_filename']
+
+Giving the type on its own silences all Sphinx-Gallery warnings::
+
+    suppress_warnings = ['sphinx_gallery']
+
+The subtypes, and what each one warns about, are:
+
+``backreference_missing``
+    A backreference file that was not written, usually because the filesystem
+    is not case sensitive (see :ref:`log_level`).
+
+``config``
+    A configuration value that could not be honoured, and was ignored or
+    overridden.
+
+``dependency``
+    An optional dependency that is not installed, such as ``optipng``,
+    ``pypandoc`` or ``memory_profiler``.
+
+``duplicate_filename``
+    Example files sharing a name across gallery directories, which breaks some
+    links.
+
+``example_error``
+    An example that failed to execute (see :ref:`warning_on_error`).
+
+``file_conf``
+    An invalid ``# sphinx_gallery_*`` setting in an example file.
+
+``space_in_filename``
+    Example file names containing spaces, which breaks some links.
+
+``thumbnail``
+    A ``sphinx_gallery_thumbnail_path`` that does not exist (see
+    :ref:`providing_thumbnail`).
+
+``url_fetch``
+    A documentation inventory that could not be fetched (see
+    :ref:`link_to_documentation`).
 
 
 .. _disable_all_scripts_download:

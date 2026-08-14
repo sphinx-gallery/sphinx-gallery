@@ -38,6 +38,19 @@ from .typing import GalleryConfig, PathLikeStr
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
+WARNING_TYPE = "sphinx_gallery"
+"""Warning ``type`` for every warning Sphinx-Gallery emits.
+
+Pass it together with a ``subtype`` naming the kind of problem::
+
+    logger.warning("...", type=WARNING_TYPE, subtype="config")
+
+Readers can then silence a kind of warning with ``suppress_warnings =
+["sphinx_gallery.config"]`` in their ``conf.py``, or all of ours with
+``["sphinx_gallery"]``. Keep the subtypes documented in
+``doc/configuration.rst`` in sync with the ones used here.
+"""
+
 
 class _WriteKwargs(TypedDict):
     """Text writing kwargs for builtins.open."""
@@ -262,6 +275,8 @@ def check_duplicate_filenames(files: Sequence[PathLikeStr]) -> None:
             "names will break some links. "
             "List of files: %s",
             sorted(str(name) for name in dup_names),
+            type=WARNING_TYPE,
+            subtype="duplicate_filename",
         )
 
 
@@ -275,6 +290,8 @@ def check_spaces_in_filenames(files: Sequence[PathLikeStr]) -> None:
             "file names will break some links. "
             "List of files: %s",
             sorted(files_with_space),
+            type=WARNING_TYPE,
+            subtype="space_in_filename",
         )
 
 
