@@ -345,7 +345,8 @@ def test_duplicate_files_warn_during_build(sphinx_app_wrapper, tmp_path):
 
     build_warn = sphinx_app._warning.getvalue()
     assert "Duplicate example file name(s) found" in build_warn
-    assert str(Path("dup_b", "plot_dup.py")) in build_warn
+    # the message renders a list, so each path is repr'd -- escaped on Windows
+    assert repr(str(Path("dup_b", "plot_dup.py")))[1:-1] in build_warn
     assert sphinx_app._warncount == 1
 
 
