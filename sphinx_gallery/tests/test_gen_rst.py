@@ -471,6 +471,26 @@ def test_fail_example(gallery_conf, failing_code, want, log_collector, req_pil):
     assert ex_failing_blocks <= 1, "Did not stop executing script after error"
 
 
+def test_stale_codeobj_json_removed(gallery_conf, req_pil):
+    """Test the codeobj cache is dropped when no names are identified anymore.
+
+    A stale ``.codeobj.json`` would resurrect the example's old backreferences
+    via ``_read_cached_backrefs`` on every md5-skipped rebuild.
+    """
+    gallery_conf.update(image_scrapers=(), reset_modules=())
+    with_names = [
+        '"""\nTitle\n=====\n\nDescription.\n"""',
+        "import os",
+        "print(os.path.join('a', 'b'))",
+    ]
+    without_names = ['"""\nTitle\n=====\n\nDescription.\n"""', "print(1)"]
+    _generate_rst(gallery_conf, "plot_codeobj.py", with_names)
+    codeobj = Path(gallery_conf["gallery_dir"], "plot_codeobj.codeobj.json")
+    assert codeobj.is_file()
+    _generate_rst(gallery_conf, "plot_codeobj.py", without_names)
+    assert not codeobj.is_file()
+
+
 def _generate_rst(gallery_conf, fname, content):
     """Return the reST text of a given example content.
 
@@ -1178,6 +1198,104 @@ def test_reset_module_order_3_param_invalid_when(gallery_conf):
     ):
         _generate_rst(gallery_conf, "plot_test.py", CONTENT)
     assert mock_reset_module.call_count == 0
+
+
+DOCSTRING = '"""\nTitle\n=====\n\nIntro.\n"""\n'
+
+
+@pytest.mark.parametrize(
+    ("fname", "content", "serial", "n_warn"),
+    [
+        ("plot.py", DOCSTRING + "# sphinx_gallery_parallel = False\n", True, 0),
+        ("plot.py", DOCSTRING + "x = 1\n", False, 0),
+        # comment syntax is language-specific, and .rst has no in-file config at all
+        (
+            "plot.cpp",
+            "// Title\n// =====\n// sphinx_gallery_parallel = False\n",
+            True,
+            0,
+        ),
+        ("plot.rst", "Title\n=====\n", False, 0),
+        # a non-bool value warns and is ignored
+        ("plot.py", DOCSTRING + "# sphinx_gallery_parallel = 2\n", False, 1),
+        # merely documenting the flag in the docstring must not set it
+        (
+            "plot.py",
+            '"""\nTitle\n=====\n\n    # sphinx_gallery_parallel = False\n"""\n',
+            False,
+            0,
+        ),
+    ],
+    ids=["py", "py-unset", "cpp", "rst", "non-bool", "docstring"],
+)
+def test_split_parallel(gallery_conf, log_collector, fname, content, serial, n_warn):
+    """Test that the in-file parallel flag is picked up as each parser would."""
+    Path(gallery_conf["examples_dir"], fname).write_text(content, encoding="utf-8")
+    got = sg._split_parallel([fname], gallery_conf["examples_dir"], gallery_conf)
+    assert got == (([fname], []) if serial else ([], [fname]))
+    assert log_collector.warning.call_count == n_warn
+
+
+@pytest.mark.parametrize("n_jobs", [2, False])
+def test_parallel_serial_examples(gallery_conf, n_jobs):
+    """Examples opting out of parallelism run in the main process, in gallery order."""
+    if n_jobs:
+        pytest.importorskip("joblib")
+    gallery_conf.update(
+        parallel=n_jobs,
+        within_subsection_order="FileNameSortKey",
+        image_scrapers=(),
+        reset_modules=(),
+    )
+    Path(gallery_conf["examples_dir"], "README.txt").write_text("")
+    names = ["plot_a", "plot_b", "plot_c"]
+    # each example appends "<name>:<main|worker>" as it runs, so we see the real order
+    log = Path(gallery_conf["gallery_dir"], "order.log")
+    for name in names:
+        # only the middle example is serial, so execution order != gallery order
+        flag = "# sphinx_gallery_parallel = False\n" if name == "plot_b" else ""
+        Path(gallery_conf["examples_dir"], f"{name}.py").write_text(
+            f"{DOCSTRING}{flag}import multiprocessing\nfrom pathlib import Path\n"
+            'where = "main" if multiprocessing.parent_process() is None else "worker"\n'
+            f'Path(r"{log}").open("a").write(f"{name}:{{where}} ")\n',
+            encoding="utf-8",
+        )
+
+    _, index_content, _, toctree_items, _ = generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
+    )
+
+    ran = log.read_text(encoding="utf-8").split()
+    if n_jobs:
+        # serial examples finish before anything is dispatched; the rest race
+        assert ran[0] == "plot_b:main"
+        assert sorted(ran[1:]) == ["plot_a:worker", "plot_c:worker"]
+    else:
+        assert ran == [f"{name}:main" for name in names]
+    assert [Path(item).name for item in toctree_items] == names
+    assert re.findall(r"sphx_glr_(plot_[abc])_thumb", index_content) == names
+
+
+def test_split_parallel_serial_build(gallery_conf, log_collector):
+    """A bad in-file parallel setting is reported even when parallel is disabled."""
+    gallery_conf.update(image_scrapers=(), reset_modules=())
+    Path(gallery_conf["examples_dir"], "README.txt").write_text("")
+    Path(gallery_conf["examples_dir"], "plot_a.py").write_text(
+        DOCSTRING + "# sphinx_gallery_parallel = 2\n", encoding="utf-8"
+    )
+    generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
+    )
+    assert log_collector.warning.call_count == 1
+    assert "not a boolean" in log_collector.warning.call_args[0][0]
 
 
 @pytest.fixture

@@ -14,9 +14,10 @@ set -exo pipefail
 (set +x; __sep__)
 
 # Install scikit-learn and doc dependencies
+# uv has no `pip index versions` equivalent, so this query stays on pip
 VERSION=$(pip index versions scikit-learn | cut -d "(" -f2 | cut -d ")" -f1 | cut -d "." -f1-2 | head -n 1)
 echo "Installing scikit-learn version $VERSION"
-pip install --only-binary=:all: \
+uv pip install --only-binary=:all: \
             sphinx numpydoc matplotlib Pillow pandas \
             polars scikit-image packaging seaborn sphinx-prompt \
             sphinxext-opengraph sphinx-copybutton plotly pooch \
