@@ -66,7 +66,7 @@ class MiniGallery(Directive):
     def _get_target_dir(
         self,
         config: sphinx.config.Config,
-        src_dir: str,
+        src_dir: PathLikeStr,
         path: Path,
         obj: str,
     ) -> Path:

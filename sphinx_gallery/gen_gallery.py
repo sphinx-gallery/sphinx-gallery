@@ -183,14 +183,15 @@ def _update_gallery_conf_exclude_implicit_doc(gallery_conf: GalleryConfig) -> No
 
 def _update_gallery_conf_builder_inited(
     sphinx_gallery_conf: GalleryConfig,
-    src_dir: str,
+    src_dir: PathLikeStr,
     plot_gallery: bool = True,
     abort_on_example_error: bool = False,
     builder_name: str = "html",
 ) -> None:
     sphinx_gallery_conf.update(plot_gallery=plot_gallery)
     sphinx_gallery_conf.update(abort_on_example_error=abort_on_example_error)
-    sphinx_gallery_conf["src_dir"] = src_dir
+    # scrapers and other user callables are handed this, so keep it a plain str
+    sphinx_gallery_conf["src_dir"] = str(src_dir)
     # Make it easy to know which builder we're in
     sphinx_gallery_conf["builder_name"] = builder_name
 
@@ -567,7 +568,6 @@ def get_subsections(
         (sortkey,) = _get_callables(gallery_conf, "subsection_order")
     srcdir = Path(srcdir)
     examples_dir = Path(examples_dir)
-    subfolders = [subfolder.name for subfolder in examples_dir.iterdir()]
     if check_for_header:
         subfolders = [
             subfolder.name
@@ -1172,7 +1172,7 @@ API_COLORS = dict(
 
 
 def _make_graph(
-    fname: str,
+    fname: PathLikeStr,
     entries: dict[str, list[str]] | list[str],
     api_entries: dict[str, set[str]],
 ) -> None:
@@ -1192,7 +1192,7 @@ def _make_graph(
 
     Parameters
     ----------
-    fname: str
+    fname : str | pathlib.Path
         Path to '*sg_api_unused.dot' file.
     entries: Dict[str, List] or List[str]
         Used (List) or unused (Dict) API entries.
@@ -1201,6 +1201,7 @@ def _make_graph(
     """
     import graphviz
 
+    fname = Path(fname)
     dg = graphviz.Digraph(
         filename=fname,
         graph_attr={
@@ -1276,8 +1277,9 @@ def _make_graph(
                 dg.edge(entry, ref, color=API_COLORS["edge"])
     # graphviz records the .dot as a dependency of the page, so an unchanged graph
     # must keep its mtime or the page is re-read on every build
-    dg.save(fname + ".new")
-    _replace_md5(fname + ".new", mode="t")
+    fname_new = fname.with_name(fname.name + ".new")
+    dg.save(fname_new)
+    _replace_md5(fname_new, mode="t")
 
 
 def _api_usage_rst(app: Sphinx, api_entries: dict[str, set[str]]) -> str:
@@ -1365,7 +1367,7 @@ def _api_usage_rst(app: Sphinx, api_entries: dict[str, set[str]]) -> str:
 
     if has_graphviz and unused_api_entries:
         _make_graph(
-            str(Path(app.builder.srcdir) / "sg_api_unused.dot"),
+            Path(app.builder.srcdir) / "sg_api_unused.dot",
             unused_api_entries,
             api_entries,
         )
@@ -1401,7 +1403,7 @@ def _api_usage_rst(app: Sphinx, api_entries: dict[str, set[str]]) -> str:
                             if entry.startswith(target_dir):
                                 entry = entry[len(target_dir) + 1 :]
                 _make_graph(
-                    str(Path(app.builder.srcdir) / f"{module}_sg_api_used.dot"),
+                    Path(app.builder.srcdir) / f"{module}_sg_api_used.dot",
                     entries,
                     api_entries,
                 )
@@ -1692,7 +1694,7 @@ def fill_gallery_conf_defaults(
 def update_gallery_conf_builder_inited(app: Sphinx) -> None:
     """Update the the sphinx-gallery config at builder-inited."""
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
-    src_dir = str(app.builder.srcdir)
+    src_dir = app.builder.srcdir
     abort_on_example_error = _bool_eval(app.builder.config.abort_on_example_error)
     _update_gallery_conf_builder_inited(
         app.config.sphinx_gallery_conf,

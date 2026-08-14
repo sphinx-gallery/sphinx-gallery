@@ -553,7 +553,7 @@ def _write_subsection_index(
 def _copy_non_example_files(
     gallery_conf: GalleryConfig,
     src_dir: PathLikeStr,
-    header_fname: str | None,
+    header_fname: PathLikeStr | None,
     target_dir: PathLikeStr,
 ) -> None:
     """Copy non-example files to `target_dir`."""
