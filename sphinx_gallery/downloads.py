@@ -36,7 +36,7 @@ def python_zip(
     ----------
     file_list : list
         Holds all the file names to be included in zip file
-    gallery_path : str
+    gallery_path : str | pathlib.Path
         path to where the zipfile is stored
     extension : str | None
         In order to deal with downloads of plain source files and jupyter notebooks, if
@@ -69,7 +69,7 @@ def list_downloadable_sources(
 
     Parameters
     ----------
-    target_dir : str
+    target_dir : str | pathlib.Path
         path to the directory where source file are
     extensions : tuple[str]
         tuple of file extensions to include
@@ -99,9 +99,9 @@ def generate_zipfiles(
 
     Parameters
     ----------
-    gallery_dir : str
+    gallery_dir : str | pathlib.Path
         path of the gallery to collect downloadable sources
-    src_dir : str
+    src_dir : str | pathlib.Path
         The build source directory. Needed to make the reST paths relative.
     gallery_conf : dict[str, Any]
         Sphinx-Gallery configuration dictionary

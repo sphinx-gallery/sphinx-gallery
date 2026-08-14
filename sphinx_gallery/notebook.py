@@ -114,7 +114,7 @@ def rst2md(
         reST input to be converted to MD
     gallery_conf : dict
         The sphinx-gallery configuration dictionary.
-    target_dir : str
+    target_dir : str | pathlib.Path
         Path that notebook is intended for. Used where relative paths
         may be required.
     heading_levels: dict
@@ -242,7 +242,7 @@ def jupyter_notebook(
         Script execution cells.
     gallery_conf : dict
         The sphinx-gallery configuration dictionary.
-    target_dir : str
+    target_dir : str | pathlib.Path
         Path that notebook is intended for. Used where relative paths
         may be required.
     """

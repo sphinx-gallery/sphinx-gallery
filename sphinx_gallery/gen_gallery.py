@@ -545,9 +545,9 @@ def get_subsections(
 
     Parameters
     ----------
-    srcdir : str
+    srcdir : str | pathlib.Path
         absolute path to directory containing conf.py
-    examples_dir : str
+    examples_dir : str | pathlib.Path
         path to the examples directory relative to conf.py
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.

@@ -413,9 +413,9 @@ def save_thumbnail(
 
     Parameters
     ----------
-    image_path_template : str
+    image_path_template : str | pathlib.Path
         holds the template where to save and how to name the image
-    src_file : str
+    src_file : str | pathlib.Path
         path to source python file
     script_vars : dict
         Configuration and run time variables

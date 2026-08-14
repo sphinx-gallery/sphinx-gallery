@@ -351,11 +351,11 @@ def _thumbnail_div(
 
     Parameters
     ----------
-    target_dir : str
+    target_dir : str | pathlib.Path
         Absolute path to output directory, where thumbnails are saved.
-    src_dir : str
+    src_dir : str | pathlib.Path
         Absolute path to build source directory.
-    fname : str
+    fname : str | pathlib.Path
         Filename of example file.
     intro : str
         Introductory docstring of example, to show in tooltip
@@ -434,11 +434,11 @@ def _write_backreferences(
         Back references already encountered when parsing this example.
     gallery_conf : Dict[str, Any]
         Gallery configurations.
-    src_dir : str
+    src_dir : str | pathlib.Path
         Stuff.
-    target_dir : str
+    target_dir : str | pathlib.Path
         Absolute path to directory where examples are saved.
-    fname : str
+    fname : str | pathlib.Path
         Filename of current example python file.
     intro : str
         Introductory docstring of example.

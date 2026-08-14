@@ -18,7 +18,7 @@ def split_code_and_text_blocks(
 
     Parameters
     ----------
-    source_file : str
+    source_file : str | pathlib.Path
         Path to the source file.
     return_node : bool
         If True, return the ast node.

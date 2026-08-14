@@ -46,7 +46,7 @@ def gen_binder_url(
 
     Parameters
     ----------
-    fpath: str
+    fpath : str | pathlib.Path
         The path to the `.py` file for which a Binder badge will be generated.
     binder_conf: dict
         The Binder configuration dictionary. See `gen_binder_rst` for details.
@@ -97,7 +97,7 @@ def gen_binder_rst(
 
     Parameters
     ----------
-    fpath: str
+    fpath : str | pathlib.Path
         The path to the `.py` file for which a Binder badge will be generated.
 
     binder_conf: dict

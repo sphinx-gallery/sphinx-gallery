@@ -455,7 +455,7 @@ def figure_rst(
     ----------
     figure_list : list
         List of strings of the figures' absolute paths.
-    sources_dir : str
+    sources_dir : str | pathlib.Path
         absolute path of Sphinx documentation sources
     fig_titles : str
         Titles of figures, empty string if no titles found. Currently
