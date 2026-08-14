@@ -786,8 +786,9 @@ def test_thumbnail_path_not_found_warns(
     log_collector.warning.assert_called_once()
     warning_msg = log_collector.warning.call_args[0][0]
     assert "sphinx_gallery_thumbnail_path" in warning_msg
-    expected_path = os.path.join(gallery_conf["src_dir"], "_static/nonexistent.png")
-    assert str(log_collector.warning.call_args[0][1]) == expected_path
+    # the reported path is normalized, so compare it as a path and not as a string
+    expected_path = Path(gallery_conf["src_dir"], "_static/nonexistent.png")
+    assert Path(log_collector.warning.call_args[0][1]) == expected_path
 
 
 def test_zip_python(gallery_conf):
