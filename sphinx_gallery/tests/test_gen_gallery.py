@@ -280,10 +280,14 @@ sphinx_gallery_conf = {
 }"""
 )
 def test_config_reference_url_deprecated(sphinx_app_wrapper):
-    """Test that setting reference_url warns about its deprecation."""
+    """Test setting reference_url reports its deprecation without warning.
+
+    It is deliberately not a warning: the option is a no-op now, so projects
+    building with ``-W`` should not break just by upgrading.
+    """
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
-    build_warn = sphinx_app._warning.getvalue()
-    assert "'reference_url' option is deprecated" in build_warn
+    assert "'reference_url' option is deprecated" in sphinx_app._status.getvalue()
+    assert sphinx_app._warning.getvalue() == ""
 
 
 def test_duplicate_files_warn(sphinx_app_wrapper):

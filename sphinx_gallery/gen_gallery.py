@@ -503,12 +503,13 @@ def _fill_gallery_conf_defaults(
         gallery_conf["backreferences_dir"] = str(backref)
 
     if gallery_conf["reference_url"]:
-        logger.warning(
+        # info rather than warning: the option is now a harmless no-op, and
+        # projects building with -W should not break just by upgrading
+        logger.info(
             "The 'reference_url' option is deprecated and ignored: code links "
             "are now resolved from the documentation being built and from "
             "intersphinx inventories. For external packages, add entries to "
-            "intersphinx_mapping instead.",
-            type="sphinx-gallery",
+            "intersphinx_mapping instead."
         )
 
     # binder
