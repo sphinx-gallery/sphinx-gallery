@@ -16,6 +16,7 @@ from sphinx.errors import ConfigError
 
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
+from .typing import PathLikeStr
 
 
 class ExplicitOrder:
@@ -29,7 +30,8 @@ class ExplicitOrder:
     Parameters
     ----------
     ordered_list : list, tuple, or :term:`python:generator`
-        Hold the paths of each galleries' subsections.
+        Hold the paths of each galleries' subsections, as :class:`str` or
+        :class:`python:pathlib.Path`.
 
     Raises
     ------
@@ -37,7 +39,7 @@ class ExplicitOrder:
         Wrong input type or Subgallery path missing.
     """
 
-    def __init__(self, ordered_list: Iterable[str]) -> None:
+    def __init__(self, ordered_list: Iterable[PathLikeStr]) -> None:
         if not isinstance(ordered_list, (list, tuple, types.GeneratorType)):
             raise ConfigError(
                 "ExplicitOrder sorting key takes a list, "
@@ -92,7 +94,7 @@ class ExplicitOrder:
 class _SortKey:
     """Base class for section order key classes."""
 
-    def __init__(self, src_dir: str) -> None:
+    def __init__(self, src_dir: PathLikeStr) -> None:
         self.src_dir = src_dir
 
     def __repr__(self) -> str:
@@ -104,11 +106,11 @@ class NumberOfCodeLinesSortKey(_SortKey):
 
     Parameters
     ----------
-    src_dir : str
+    src_dir : str | pathlib.Path
         The source directory.
     """
 
-    def __call__(self, filename: str) -> int:
+    def __call__(self, filename: PathLikeStr) -> int:
         """Return number of code lines in `filename`."""
         src_file = Path(self.src_dir) / filename
         file_conf, script_blocks = split_code_and_text_blocks(src_file)
@@ -123,11 +125,11 @@ class FileSizeSortKey(_SortKey):
 
     Parameters
     ----------
-    src_dir : str
+    src_dir : str | pathlib.Path
         The source directory.
     """
 
-    def __call__(self, filename: str) -> int:
+    def __call__(self, filename: PathLikeStr) -> int:
         """Return file size."""
         src_file = Path(self.src_dir) / filename
         return int(src_file.stat().st_size)
@@ -138,13 +140,13 @@ class FileNameSortKey(_SortKey):
 
     Parameters
     ----------
-    src_dir : str
+    src_dir : str | pathlib.Path
         The source directory.
     """
 
-    def __call__(self, filename: str) -> str:
+    def __call__(self, filename: PathLikeStr) -> str:
         """Return `filename`."""
-        return filename
+        return str(filename)
 
 
 class ExampleTitleSortKey(_SortKey):
@@ -152,11 +154,11 @@ class ExampleTitleSortKey(_SortKey):
 
     Parameters
     ----------
-    src_dir : str
+    src_dir : str | pathlib.Path
         The source directory.
     """
 
-    def __call__(self, filename: str) -> str:
+    def __call__(self, filename: PathLikeStr) -> str:
         """Return title of example."""
         src_file = Path(self.src_dir) / filename
         _, script_blocks = split_code_and_text_blocks(src_file)
