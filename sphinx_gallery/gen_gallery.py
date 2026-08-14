@@ -968,20 +968,23 @@ def _format_for_writing(
     lines = list()
     src_dir = Path(src_dir)
     for cost in sorted(costs, key=lambda c: c.sort_key()):
-        rel_path = Path(os.path.relpath(cost.src_file, src_dir)).as_posix()
+        rel_path = Path(os.path.relpath(cost.src_file, src_dir))
         if kind in ("rst", "rst-full"):  # like in sg_execution_times
             target_dir_clean = Path(
                 os.path.relpath(cost.target_dir, src_dir)
             ).as_posix()
             target_dir_clean = target_dir_clean.replace("/", "_")
-            paren = rel_path if kind == "rst-full" else Path(cost.src_file).name
+            # the reST is written to disk, so keep it identical across platforms
+            paren = (
+                rel_path.as_posix() if kind == "rst-full" else Path(cost.src_file).name
+            )
             name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
                 target_dir_clean, Path(cost.src_file).name, paren
             )
             t = _sec_to_readable(cost.execution_time)
         else:  # like in generate_gallery
             assert kind == "console"
-            name = rel_path
+            name = str(rel_path)  # native separators, this is read by a human
             t = f"{cost.execution_time:0.2f} sec"
         m = f"{cost.memory:.1f} MB"
         lines.append([name, t, m])
@@ -1591,9 +1594,7 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
             bold(blue(f"Examples failing as expected ({len(failing_as_expected)}):"))
         )
         for fail_example in failing_as_expected:
-            path = Path(
-                os.path.relpath(fail_example, gallery_conf["src_dir"])
-            ).as_posix()
+            path = os.path.relpath(fail_example, gallery_conf["src_dir"])
             logger.info(
                 f"{bold(blue(path))} failed leaving traceback:\n\n"
                 f"{indent(gallery_conf['failing_examples'][fail_example], idt)}"
@@ -1605,9 +1606,7 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
             bold(red(f"Unexpected failing examples ({len(failing_unexpectedly)}):\n"))
         )
         for fail_example in failing_unexpectedly:
-            path = Path(
-                os.path.relpath(fail_example, gallery_conf["src_dir"])
-            ).as_posix()
+            path = os.path.relpath(fail_example, gallery_conf["src_dir"])
             fail_msgs.append(
                 f"    {bold(red(path))} failed leaving traceback:\n\n"
                 f"{indent(gallery_conf['failing_examples'][fail_example], idt)}"
@@ -1615,8 +1614,7 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
 
     if passing_unexpectedly:
         paths = [
-            Path(os.path.relpath(p, gallery_conf["src_dir"])).as_posix()
-            for p in passing_unexpectedly
+            os.path.relpath(p, gallery_conf["src_dir"]) for p in passing_unexpectedly
         ]
         fail_msgs.append(
             bold(red(f"Examples expected to fail, but not failing ({len(paths)}):\n\n"))
