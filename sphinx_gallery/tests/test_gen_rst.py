@@ -758,6 +758,38 @@ def test_thumbnail_path(test_str, tmp_path):
     assert file_conf == {"thumbnail_path": "_static/demo.png"}
 
 
+@pytest.mark.parametrize(
+    "extra_conf, warns",
+    [
+        pytest.param({}, True, id="path_only"),
+        pytest.param({"thumbnail_number": 1}, False, id="number_takes_priority"),
+    ],
+)
+def test_thumbnail_path_not_found_warns(
+    gallery_conf, log_collector, tmp_path, extra_conf, warns
+):
+    """Test that a missing sphinx_gallery_thumbnail_path emits a warning."""
+    image_path_template = str(tmp_path / "temp_{0:03}.png")
+    src_file = str(tmp_path / "plot_test.py")  # need not exist, only basename is used
+    script_vars = {
+        "image_path_iterator": ImagePathIterator(image_path_template),
+    }
+    file_conf = {"thumbnail_path": "_static/nonexistent.png", **extra_conf}
+
+    sg.save_thumbnail(
+        image_path_template, src_file, script_vars, file_conf, gallery_conf
+    )
+
+    if not warns:
+        log_collector.warning.assert_not_called()
+        return
+    log_collector.warning.assert_called_once()
+    warning_msg = log_collector.warning.call_args[0][0]
+    assert "sphinx_gallery_thumbnail_path" in warning_msg
+    expected_path = os.path.join(gallery_conf["src_dir"], "_static/nonexistent.png")
+    assert str(log_collector.warning.call_args[0][1]) == expected_path
+
+
 def test_zip_python(gallery_conf):
     """Test generated zipfiles are not corrupt and have expected name and contents."""
     gallery_conf.update(examples_dir=os.path.join(gallery_conf["src_dir"], "examples"))
