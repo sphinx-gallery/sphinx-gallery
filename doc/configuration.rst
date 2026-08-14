@@ -2349,6 +2349,43 @@ Note that this affects execution order but not the order of the gallery itself,
 which is still determined by
 :ref:`within_subsection_order <within_gallery_order>`.
 
+.. _sphinx_parallel_read:
+
+Interaction with Sphinx's own parallel reading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``parallel`` option above controls how *examples* are executed, and is separate
+from ``sphinx-build -j``, which makes *Sphinx* read and write documents in parallel.
+The two interact badly if your examples use a threaded native library.
+
+Sphinx creates its read and write workers with ``fork`` (hardcoded in
+``sphinx/util/parallel.py``), and ``fork()`` only clones the calling thread. If an
+OpenMP worker thread is alive in the Sphinx process at that moment, it is lost in the
+child while the OpenMP runtime still believes it exists, and the next parallel region
+in that child blocks forever in the OpenMP join barrier. The build simply goes silent:
+no exception, no traceback, no ``EOFError``, so this is expensive to diagnose. A
+threaded BLAS such as MKL is enough to trigger it; OpenBLAS installs ``pthread_atfork``
+handlers and recovers, so whether you see this depends on which BLAS you link.
+
+Unless ``parallel`` is set, Sphinx-Gallery executes your example code in the Sphinx
+process itself, during ``builder-inited`` -- that is, before Sphinx forks. Any example
+that reaches a threaded BLAS can therefore leave such a thread behind. Options:
+
+- Set ``parallel``, which runs examples in separate Loky processes and so keeps the
+  example code out of the Sphinx process.
+- Cap the thread pools for the whole build in your ``conf.py``, before
+  ``builder-inited``, keeping a reference so the controller is not garbage collected::
+
+      import threadpoolctl
+
+      _threadpool_limits = threadpoolctl.threadpool_limits(limits=1)
+
+- Or set ``OMP_NUM_THREADS=1`` and ``MKL_NUM_THREADS=1`` in the build environment.
+
+The last two make example execution single threaded, which may be a meaningful slowdown
+for numeric galleries. Sphinx-Gallery's own :ref:`recommender <recommend_examples>` uses
+BLAS too, but caps its threads internally, so it is safe on its own.
+
 .. _recommend_examples:
 
 Enabling the example recommender system
