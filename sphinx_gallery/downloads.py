@@ -58,7 +58,7 @@ def python_zip(
     elif extension == ".ipynb":
         zipname += "_jupyter"
     zipname = gallery_path / (zipname + ".zip")
-    return zip_files(file_list, str(zipname), str(gallery_path), extension)
+    return zip_files(file_list, zipname, gallery_path, extension)
 
 
 def list_downloadable_sources(

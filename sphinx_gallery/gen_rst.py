@@ -1671,7 +1671,7 @@ def generate_file_rst(
         files_to_zip += [str(target_file.with_suffix(".ipynb"))]
 
     # Produce the zip file of all sources
-    zip_files(files_to_zip, str(target_file.with_suffix(".zip")), target_dir)
+    zip_files(files_to_zip, target_file.with_suffix(".zip"), target_dir)
 
     # Get names
     out_vars["backrefs"] = _get_backreferences(

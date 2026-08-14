@@ -16,7 +16,16 @@ import zipfile
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
-from typing import Any, Callable, ContextManager, Iterator, Literal, Tuple, TypedDict
+from typing import (
+    Any,
+    Callable,
+    ContextManager,
+    Iterator,
+    Literal,
+    Sequence,
+    Tuple,
+    TypedDict,
+)
 
 import sphinx.util
 
@@ -164,20 +173,16 @@ def get_md5sum(src_file: PathLikeStr, mode: Literal["t", "b"] = "b") -> str:
         File mode to open file with. When in text mode, universal line endings
         are used to ensure consistency in hashes between platforms.
     """
-    # Universal newline mode is intentional here for text mode
     assert mode in ("t", "b")
+    src_file = Path(src_file)
     if mode == "t":
-        with open(
-            src_file, "rt", errors="surrogateescape", encoding="utf-8"
-        ) as src_data:
-            src_content = src_data.read().encode(
-                errors="surrogateescape", encoding="utf-8"
-            )
-            return hashlib.md5(src_content).hexdigest()
+        # Universal newline mode is intentional here for text mode
+        src_content = src_file.read_text(
+            errors="surrogateescape", encoding="utf-8"
+        ).encode(errors="surrogateescape", encoding="utf-8")
     else:
-        with open(src_file, "rb") as src_data:
-            src_content = src_data.read()
-            return hashlib.md5(src_content).hexdigest()
+        src_content = src_file.read_bytes()
+    return hashlib.md5(src_content).hexdigest()
 
 
 def _replace_md5(
@@ -189,21 +194,23 @@ def _replace_md5(
     check: Literal["md5", "json"] = "md5",
 ) -> bool:
     """Replace ``fname_old`` with ``fname_new``, returning whether it changed."""
-    fname_new = str(fname_new)  # convert possible Path
+    fname_new = Path(fname_new)
     assert method in ("move", "copy")
     if fname_old is None:
-        assert fname_new.endswith(".new")
-        fname_old = os.path.splitext(fname_new)[0]
+        assert fname_new.suffix == ".new"
+        fname_old = fname_new.with_suffix("")
+    else:
+        fname_old = Path(fname_old)
     replace = True
-    if os.path.isfile(fname_old):
-        func: Callable[[str], str]
+    if fname_old.is_file():
+        func: Callable[[Path], Any]
         if check == "md5":  # default
             func = partial(get_md5sum, mode=mode)
         else:
             assert check == "json"
 
             def func(x):
-                return json.loads(Path(x).read_text("utf-8"))
+                return json.loads(x.read_text("utf-8"))
 
         try:
             equiv = func(fname_old) == func(fname_new)
@@ -212,7 +219,7 @@ def _replace_md5(
         if equiv:
             replace = False
             if method == "move":
-                os.remove(fname_new)
+                fname_new.unlink()
         else:
             logger.debug(f"Replacing stale {fname_old} with {fname_new}")
     if replace:
@@ -220,7 +227,7 @@ def _replace_md5(
             move(fname_new, fname_old)
         else:
             copyfile(fname_new, fname_old)
-    assert os.path.isfile(fname_old)
+    assert fname_old.is_file()
     return replace
 
 
@@ -236,14 +243,14 @@ def iter_gallery_header_filenames(gallery_conf: GalleryConfig) -> Iterator[str]:
             yield fname + ext
 
 
-def check_duplicate_filenames(files: list[str]) -> None:
+def check_duplicate_filenames(files: Sequence[PathLikeStr]) -> None:
     """Check for duplicate filenames across gallery directories."""
     # Check whether we'll have duplicates
     used_names = set()
     dup_names = list()
 
     for this_file in files:
-        this_fname = os.path.basename(this_file)
+        this_fname = Path(this_file).name
         if this_fname in used_names:
             dup_names.append(this_file)
         else:
@@ -254,14 +261,14 @@ def check_duplicate_filenames(files: list[str]) -> None:
             "Duplicate example file name(s) found. Having duplicate file "
             "names will break some links. "
             "List of files: %s",
-            sorted(dup_names),
+            sorted(str(name) for name in dup_names),
         )
 
 
-def check_spaces_in_filenames(files: list[str]) -> None:
+def check_spaces_in_filenames(files: Sequence[PathLikeStr]) -> None:
     """Check for spaces in filenames across example directories."""
     regex = re.compile(r"[\s]")
-    files_with_space = list(filter(regex.search, files))
+    files_with_space = [str(file) for file in files if regex.search(str(file))]
     if files_with_space:
         logger.warning(
             "Example file name(s) with spaces found. Having spaces in "
@@ -272,7 +279,7 @@ def check_spaces_in_filenames(files: list[str]) -> None:
 
 
 def _collect_gallery_files(
-    examples_dirs: list[str],
+    examples_dirs: Sequence[PathLikeStr],
     gallery_conf: GalleryConfig,
     check_filenames: bool = False,
 ) -> list[str]:
@@ -287,19 +294,19 @@ def _collect_gallery_files(
     files = []
     gallery_header_filenames = list(iter_gallery_header_filenames(gallery_conf))
     for example_dir in examples_dirs:
-        example_depth = os.path.abspath(example_dir).count(os.sep)
-        for root, _, filenames in os.walk(example_dir):
-            root = os.path.normpath(root)
-            if (root.count(os.sep) - example_depth) > max_depth:
+        example_dir = Path(example_dir)
+        for dirpath, _, filenames in os.walk(example_dir):
+            # `os.walk` yields paths below `example_dir`, so the number of parts
+            # relative to it is the depth
+            root = Path(dirpath)
+            if len(root.parts) - len(example_dir.parts) > max_depth:
                 break
             for filename in filenames:
                 if filename in gallery_header_filenames:
                     continue
                 if (s := Path(filename).suffix) and s in exts:
                     if re.search(gallery_conf["ignore_pattern"], filename) is None:
-                        file = filename
-                        if check_filenames:
-                            file = os.path.join(root, filename)
+                        file = str(root / filename) if check_filenames else filename
                         files.append(file)
     if check_filenames:
         check_duplicate_filenames(files)
@@ -308,7 +315,10 @@ def _collect_gallery_files(
 
 
 def zip_files(
-    file_list: list[str], zipname: str, relative_to: str, extension: str | None = None
+    file_list: Sequence[PathLikeStr],
+    zipname: PathLikeStr,
+    relative_to: PathLikeStr,
+    extension: str | None = None,
 ) -> str:
     """
     Creates a zip file with the given files.
@@ -317,14 +327,16 @@ def zip_files(
     `file_list`. The zip file contents will be stored with their paths stripped to be
     relative to `relative_to`.
     """
-    zipname_new = str(zipname) + ".new"
+    zipname = Path(zipname)
+    zipname_new = zipname.with_name(zipname.name + ".new")
     with zipfile.ZipFile(zipname_new, mode="w") as zipf:
         for fname in file_list:
+            fname = Path(fname)
             if extension is not None:
-                fname = os.path.splitext(fname)[0] + extension
-            zipf.write(fname, os.path.relpath(fname, relative_to))
+                fname = fname.with_suffix(extension)
+            zipf.write(fname, Path(os.path.relpath(fname, relative_to)).as_posix())
     _replace_md5(zipname_new)
-    return zipname
+    return str(zipname)
 
 
 def _has_pypandoc() -> Tuple[bool | None, str | None]:
@@ -381,9 +393,10 @@ def _format_toctree(items: list[str], includehidden: bool = False) -> str:
 
 
 # Should be matched with `_read_json`
-def _write_json(target_file: Path, to_save: dict, name: str = "") -> None:
+def _write_json(target_file: PathLikeStr, to_save: dict, name: str = "") -> None:
     """Write dictionary to JSON file."""
-    codeobj_fname = Path(target_file).with_name(target_file.stem + f"{name}.json.new")
+    target_file = Path(target_file)
+    codeobj_fname = target_file.with_name(target_file.stem + f"{name}.json.new")
     with open(codeobj_fname, "w", **_W_KW) as fid:
         json.dump(
             to_save,
@@ -396,11 +409,9 @@ def _write_json(target_file: Path, to_save: dict, name: str = "") -> None:
     _replace_md5(codeobj_fname, check="json")
 
 
-def _read_json(json_fname: str | Path) -> Any:
+def _read_json(json_fname: PathLikeStr) -> Any:
     """Read JSON dictionary from file."""
-    with open(json_fname, "r", encoding="utf-8") as fid:
-        json_dict = json.load(fid)
-    return json_dict
+    return json.loads(Path(json_fname).read_text(encoding="utf-8"))
 
 
 def _combine_backreferences(dict_a: dict, dict_b: dict | None) -> dict:
