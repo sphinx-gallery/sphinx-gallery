@@ -1432,6 +1432,9 @@ For example, the following defines that the image ``demo.png`` in the folder
 
     # sphinx_gallery_thumbnail_path = '_static/demo.png'
 
+If the image cannot be found, a warning is emitted and the default thumbnail is
+used instead.
+
 Note that ``sphinx_gallery_thumbnail_number`` overrules
 ``sphinx_gallery_thumbnail_path``. See
 :ref:`sphx_glr_auto_examples_plot_4b_provide_thumbnail.py` for an example of
