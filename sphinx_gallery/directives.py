@@ -21,6 +21,7 @@ from .backreferences import (
 )
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
+from .typing import PathLikeStr
 from .utils import _read_json
 
 if TYPE_CHECKING:
@@ -108,7 +109,7 @@ class MiniGallery(Directive):
             )
 
         # Add subgallery path, if present
-        subdir: str | Path = ""
+        subdir: PathLikeStr = ""
         if (ex_p := ex_parents[0]) != Path("."):
             subdir = ex_p
         target_dir = target_dir / subdir

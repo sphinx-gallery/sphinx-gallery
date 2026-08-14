@@ -32,13 +32,13 @@ if TYPE_CHECKING:
     import sphinx.application
     import sphinx.config
 
-    from .typing import GalleryConfig
+    from .typing import GalleryConfig, PathLikeStr
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
 def gen_binder_url(
-    fpath: str | os.PathLike,
+    fpath: PathLikeStr,
     binder_conf: dict[str, Any],
     gallery_conf: GalleryConfig,
 ) -> str:
@@ -89,7 +89,7 @@ def gen_binder_url(
 
 
 def gen_binder_rst(
-    fpath: str | os.PathLike,
+    fpath: PathLikeStr,
     binder_conf: dict[str, Any],
     gallery_conf: GalleryConfig,
 ) -> str:
@@ -415,12 +415,12 @@ def create_jupyterlite_contents(
             json.dump(notebook_content, f, indent=2)
 
 
-def gen_jupyterlite_rst(fpath: str | os.PathLike, gallery_conf: GalleryConfig) -> str:
+def gen_jupyterlite_rst(fpath: PathLikeStr, gallery_conf: GalleryConfig) -> str:
     """Generate the reST + link for the Binder badge.
 
     Parameters
     ----------
-    fpath: str | os.PathLike
+    fpath : str | pathlib.Path
         The path to the `.py` file for which a JupyterLite badge will be
         generated.
 
@@ -462,7 +462,7 @@ def gen_jupyterlite_rst(fpath: str | os.PathLike, gallery_conf: GalleryConfig) -
     return rst
 
 
-def _add_jupyterlite_badge_logo(image_dir: str | os.PathLike) -> None:
+def _add_jupyterlite_badge_logo(image_dir: PathLikeStr) -> None:
     image_dir = Path(image_dir)
     image_dir.mkdir(parents=True, exist_ok=True)
     physical_path = image_dir / "jupyterlite_badge_logo.svg"

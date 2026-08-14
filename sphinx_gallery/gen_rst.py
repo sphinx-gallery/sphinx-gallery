@@ -388,7 +388,7 @@ def extract_intro_and_title(filename: PathLikeStr, docstring: str) -> tuple[str,
     return intro, title
 
 
-def md5sum_is_current(src_file: str | Path, mode: Literal["t", "b"] = "b") -> bool:
+def md5sum_is_current(src_file: PathLikeStr, mode: Literal["t", "b"] = "b") -> bool:
     """Checks whether src_file has the same md5 hash as the one on disk."""
     src_md5 = get_md5sum(src_file, mode=mode)
 
@@ -1798,7 +1798,7 @@ def rst_blocks(
 
 def save_rst_example(
     example_rst: str,
-    example_file: str | os.PathLike,
+    example_file: PathLikeStr,
     time_elapsed: float,
     memory_used: float,
     gallery_conf: GalleryConfig,
@@ -1812,7 +1812,7 @@ def save_rst_example(
     ----------
     example_rst : str
         rst containing the executed file content
-    example_file : str | os.PathLike
+    example_file : str | pathlib.Path
         Filename with full path of python example file in documentation folder
     language : str
         Name of the programming language the example is in

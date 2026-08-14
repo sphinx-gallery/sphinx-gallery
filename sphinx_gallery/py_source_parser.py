@@ -15,6 +15,8 @@ from typing import Any, Literal, overload
 from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
 
+from .typing import PathLikeStr
+
 logger = getLogger("sphinx-gallery")
 
 SYNTAX_ERROR_DOCSTRING = """
@@ -45,7 +47,7 @@ IGNORE_BLOCK_PATTERN = re.compile(
 )
 
 
-def parse_source_file(filename: str | Path) -> tuple[ast.Module | None, str]:
+def parse_source_file(filename: PathLikeStr) -> tuple[ast.Module | None, str]:
     """Parse source file into AST node.
 
     Parameters
@@ -159,19 +161,19 @@ Block = namedtuple("Block", ["type", "content", "lineno"])
 
 @overload
 def split_code_and_text_blocks(
-    source_file: str | Path,
+    source_file: PathLikeStr,
     return_node: Literal[True],
 ) -> tuple[dict[str, Any], list, ast.Module | None]: ...
 
 
 @overload
 def split_code_and_text_blocks(
-    source_file: str | Path,
+    source_file: PathLikeStr,
     return_node: Literal[False] = False,
 ) -> tuple[dict[str, Any], list]: ...
 
 
-def split_code_and_text_blocks(source_file: str | Path, return_node: bool = False):
+def split_code_and_text_blocks(source_file: PathLikeStr, return_node: bool = False):
     """Return list with source file separated into code and text blocks.
 
     Parameters

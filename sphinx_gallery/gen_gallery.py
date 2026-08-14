@@ -1453,7 +1453,7 @@ def write_junit_xml(
     ----------
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
-    target_dir : Union[str, pathlib.Path]
+    target_dir : str | pathlib.Path
         Build directory.
     costs: List[ExampleCost]
         List of example run costs.

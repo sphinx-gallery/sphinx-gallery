@@ -167,7 +167,7 @@ def get_md5sum(src_file: PathLikeStr, mode: Literal["t", "b"] = "b") -> str:
 
     Parameters
     ----------
-    src_file : str | os.PathLike
+    src_file : str | pathlib.Path
         Filename to get md5sum for.
     mode : 't' or 'b'
         File mode to open file with. When in text mode, universal line endings
