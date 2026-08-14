@@ -471,6 +471,26 @@ def test_fail_example(gallery_conf, failing_code, want, log_collector, req_pil):
     assert ex_failing_blocks <= 1, "Did not stop executing script after error"
 
 
+def test_stale_codeobj_json_removed(gallery_conf, req_pil):
+    """Test the codeobj cache is dropped when no names are identified anymore.
+
+    A stale ``.codeobj.json`` would resurrect the example's old backreferences
+    via ``_read_cached_backrefs`` on every md5-skipped rebuild.
+    """
+    gallery_conf.update(image_scrapers=(), reset_modules=())
+    with_names = [
+        '"""\nTitle\n=====\n\nDescription.\n"""',
+        "import os",
+        "print(os.path.join('a', 'b'))",
+    ]
+    without_names = ['"""\nTitle\n=====\n\nDescription.\n"""', "print(1)"]
+    _generate_rst(gallery_conf, "plot_codeobj.py", with_names)
+    codeobj = Path(gallery_conf["gallery_dir"], "plot_codeobj.codeobj.json")
+    assert codeobj.is_file()
+    _generate_rst(gallery_conf, "plot_codeobj.py", without_names)
+    assert not codeobj.is_file()
+
+
 def _generate_rst(gallery_conf, fname, content):
     """Return the reST text of a given example content.
 

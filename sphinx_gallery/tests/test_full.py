@@ -3,8 +3,10 @@
 """Test the SG pipeline used with Sphinx and tinybuild."""
 
 import json
+import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 from io import StringIO
@@ -18,6 +20,7 @@ from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 
 from sphinx_gallery.utils import (
+    _W_KW,
     _has_graphviz,
     _has_optipng,
     _has_pypandoc,
@@ -47,8 +50,16 @@ N_INDEX = 2 + 1 + 3 + 1
 # (examples + examples_rst_index + examples_with_rst + examples_README_header + root-level)
 N_EXECUTE = 2 + 3 + 1 + 1 + 1
 # gen_modules + sg_api_usage + doc/index.rst + minigallery.rst
-N_OTHER = 11 + 1 + 1 + 1 + 1
+N_OTHER = 13 + 1 + 1 + 1 + 1
 N_RST = N_EXAMPLES + N_PASS + N_INDEX + N_EXECUTE + N_OTHER
+# these fail or are retried on every build, so their measured time always changes --
+# including rounding to zero on a coarse (Windows) clock
+_RERUN_EXAMPLES = (
+    "plot_failing_example.py",
+    "plot_failing_example_thumbnail.py",
+    "plot_scraper_broken.py",
+    "plot_future_imports_broken.py",
+)
 
 pytest.importorskip("jupyterlite_sphinx")  # needed for tinybuild
 manim = pytest.importorskip("matplotlib.animation")
@@ -135,9 +146,12 @@ def test_api_usage(sphinx_app):
     """Test that an api usage page is created."""
     out_dir = sphinx_app.outdir
     src_dir = sphinx_app.srcdir
-    # the rst file was empty but is removed in post-processing
+    # the rst file is kept so that unchanged rebuilds can skip the page
     api_rst = Path(src_dir, "sg_api_usage.rst")
-    assert not api_rst.is_file()
+    assert api_rst.is_file()
+    assert "Unused API Entries" in api_rst.read_text(encoding="utf-8")
+    if _has_graphviz():
+        assert Path(src_dir, "sg_api_unused.dot").is_file()
     # HTML output
     api_html = Path(out_dir, "sg_api_usage.html")
     assert api_html.is_file()
@@ -790,6 +804,17 @@ def test_logging_std_nested(sphinx_app):
     assert ".. code-block:: none\n\n    is not in the same cell" in lines
 
 
+def _example_times(root: Path) -> dict[str, str]:
+    """Map every row of every ``sg_execution_times.rst`` to its rendered time."""
+    out = {}
+    for times in sorted(root.rglob("sg_execution_times.rst")):
+        text = times.read_text(encoding="utf-8")
+        for name, value in re.findall(r"^   \* - (.+)\n     - (\S+)\n", text, re.M):
+            if name != "Example":  # the header row
+                out[f"{times.relative_to(root)}::{name}"] = value
+    return out
+
+
 def _assert_mtimes(
     list_orig: list[Path],
     list_new: list[Path],
@@ -841,14 +866,18 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     generated_backrefs_0 = sorted(
         f
         for f in (old_src_dir / "gen_modules" / "backreferences").iterdir()
-        # Exclude backreferences_all.json` which is changed when any example is run
+        # `backreferences_all.json` is checked separately, below
         if f.name != "backreferences_all.json"
     )
     generated_rst_0 = sorted(
         f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".rst"
     )
+    # `.cost.json` holds run timings, so it legitimately changes whenever its
+    # example re-runs; `test_rebuild` checks those separately
     generated_json_0 = sorted(
-        f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".json"
+        f
+        for f in (old_src_dir / "auto_examples").iterdir()
+        if f.suffix == ".json" and not f.name.endswith(".cost.json")
     )
     generated_md5_0 = sorted(
         f for f in (old_src_dir / "auto_examples").iterdir() if f.suffix == ".md5"
@@ -929,7 +958,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     generated_backrefs_1 = sorted(
         f
         for f in Path(new_app.srcdir, "gen_modules", "backreferences").iterdir()
-        # Exclude backreferences_all.json` which is changed when any example is run
+        # `backreferences_all.json` is checked separately, below
         if f.name != "backreferences_all.json"
     )
     generated_rst_1 = sorted(
@@ -938,7 +967,7 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     generated_json_1 = sorted(
         f
         for f in Path(new_app.srcdir, "auto_examples").iterdir()
-        if f.suffix == ".json"
+        if f.suffix == ".json" and not f.name.endswith(".cost.json")
     )
     generated_md5_1 = sorted(
         f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".md5"
@@ -961,13 +990,54 @@ def test_rebuild(tmp_path_factory, sphinx_app):
     # mtimes for .md5 files, rewritten whenever an example is executed
     _assert_mtimes(generated_md5_0, generated_md5_1)
 
+    # The API usage page, its graphs, and backreferences_all.json are only rewritten
+    # when their contents change, so an unchanged rebuild must leave them alone
+    api_usage_0 = sorted(old_src_dir.glob("sg_api_usage.rst")) + sorted(
+        old_src_dir.glob("*.dot")
+    )
+    api_usage_0.append(
+        old_src_dir / "gen_modules" / "backreferences" / "backreferences_all.json"
+    )
+    api_usage_1 = [
+        Path(new_app.srcdir, f.relative_to(old_src_dir)) for f in api_usage_0
+    ]
+    assert len(api_usage_0) == (4 if _has_graphviz() else 2)
+    _assert_mtimes(api_usage_0, api_usage_1)
+
+    # examples that did not re-run keep their cached cost, so sg_execution_times.rst
+    # reports the last measured timings instead of zeroing them
+    cost_json_0 = sorted((old_src_dir / "auto_examples").glob("*.cost.json"))
+    cost_json_1 = [
+        Path(new_app.srcdir, f.relative_to(old_src_dir)) for f in cost_json_0
+    ]
+    assert len(cost_json_0) > 0
+    _assert_mtimes(cost_json_0, cost_json_1)
+    # an example faster than the clock resolution really does measure 0 (seen on
+    # Windows), so require the cache to be non-trivial rather than all-positive
+    times = [json.loads(f.read_text(encoding="utf-8"))["time"] for f in cost_json_1]
+    assert min(times) >= 0
+    assert max(times) > 0
+
+    # ... and no row of the rendered page may lose its timing, which is what the cache
+    # is for: without it every example skipped this build reports 00:00.000 instead of
+    # what it last measured
+    old_times = _example_times(old_src_dir)
+    new_times = _example_times(Path(new_app.srcdir))
+    assert set(old_times) == set(new_times)
+    zeroed = sorted(
+        key
+        for key, value in new_times.items()
+        if value == "00:00.000" != old_times[key]
+        and not any(name in key for name in _RERUN_EXAMPLES)
+    )
+    assert zeroed == []
+
     # generated reST files
     ignore = (
         # these two should almost always be different, but in case we
         # get extremely unlucky and have identical run times
         # on the one script that gets re-run (because it's a fail)...
         "sg_execution_times",
-        "sg_api_usage",
         "plot_future_imports_broken",
         "plot_scraper_broken",
         "plot_failing_example",
@@ -1111,7 +1181,7 @@ def _rerun(
     generated_backrefs_1 = sorted(
         f
         for f in Path(new_app.srcdir, "gen_modules", "backreferences").iterdir()
-        # Exclude backreferences_all.json` which is changed when any example is run
+        # `backreferences_all.json` is checked separately, below
         if f.name != "backreferences_all.json"
     )
     generated_rst_1 = sorted(
@@ -1120,7 +1190,7 @@ def _rerun(
     generated_json_1 = sorted(
         f
         for f in Path(new_app.srcdir, "auto_examples").iterdir()
-        if f.suffix == ".json"
+        if f.suffix == ".json" and not f.name.endswith(".cost.json")
     )
     generated_md5_1 = sorted(
         f for f in Path(new_app.srcdir, "auto_examples").iterdir() if f.suffix == ".md5"
@@ -1182,6 +1252,130 @@ def _rerun(
 
     # mtimes for .ipynb files
     _assert_mtimes(copied_ipy_0, copied_ipy_1, different=use_different)
+
+
+# these embed a measured run time, so they legitimately differ between two builds
+_TIMED_RST = ("sg_execution_times.rst",) + tuple(
+    name.replace(".py", ".rst") for name in _RERUN_EXAMPLES
+)
+
+
+def _copy_tinybuild(sphinx_app, tmp_path):
+    """Copy the whole tinybuild tree, since examples_dirs points outside of doc/."""
+    shutil.copytree(Path(sphinx_app.srcdir).parent, tmp_path / "tinybuild")
+    return tmp_path / "tinybuild" / "doc"
+
+
+def _subprocess_build(src_dir, seed="0", *extra):
+    """Build in a fresh process, which is the only way set order can vary."""
+    proc = subprocess.run(
+        [sys.executable, "-m", "sphinx", "-b", "html", "-d", "_build/doctrees"]
+        + list(extra)
+        + [".", "_build/html"],
+        cwd=src_dir,
+        env={**os.environ, "PYTHONHASHSEED": seed},
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stdout[-4000:] + proc.stderr[-4000:]
+
+
+def _snapshot_generated(src_dir):
+    """Read every generated reST, graph, and JSON file in the source directory."""
+    return {
+        path.relative_to(src_dir): path.read_text(encoding="utf-8")
+        for path in sorted(src_dir.rglob("*"))
+        if path.is_file()
+        and "_build" not in path.parts
+        and path.suffix in (".rst", ".dot", ".json")
+    }
+
+
+def test_rebuild_deterministic(tmp_path, sphinx_app):
+    """Test generated files do not depend on set iteration order.
+
+    Sets iterate in a different order in every process, so a file generated from one
+    can change on a rebuild even though nothing did. That is not merely churn: the
+    ``.dot`` files are a ``note_dependency`` of ``sg_api_usage``, so a reshuffled
+    graph marks the page outdated on every other build. Rebuilds run in-process
+    share a hash seed and cannot catch it, hence the subprocesses here.
+    """
+    src_dir = _copy_tinybuild(sphinx_app, tmp_path)
+
+    _subprocess_build(src_dir, "0")
+    first = _snapshot_generated(src_dir)
+    _subprocess_build(src_dir, "1")
+    second = _snapshot_generated(src_dir)
+
+    assert set(first) == set(second)
+    # the artifacts most at risk are the ones built from sets, so make sure the
+    # comparison actually covered them rather than silently finding nothing
+    names = {path.name for path in first}
+    assert "sg_api_usage.rst" in names
+    assert "backreferences_all.json" in names
+    if _has_graphviz():
+        assert "sg_api_unused.dot" in names
+    differ = sorted(
+        str(path)
+        for path, text in first.items()
+        if text != second[path] and path.name not in _TIMED_RST
+    )
+    assert differ == []
+
+
+def test_api_usage_purged(tmp_path, sphinx_app):
+    """Test entries of a document that is no longer read are dropped.
+
+    API entries are collected into the environment and persist across builds, so a
+    module that stops being documented has to be purged explicitly or it lingers in
+    the page forever.
+    """
+    src_dir = _copy_tinybuild(sphinx_app, tmp_path)
+    # build here rather than reuse the fixture's, so that the entries really do come
+    # from a pickled environment that the second build has to purge
+    _subprocess_build(src_dir)
+    api_usage = src_dir / "sg_api_usage.rst"
+    assert "sphinx_gallery._dummy.unused_b" in api_usage.read_text(encoding="utf-8")
+
+    # stop documenting one of the two dummy modules
+    index = src_dir / "index.rst"
+    index.write_text(
+        index.read_text(encoding="utf-8").replace("   _dummy.unused_b\n", ""), **_W_KW
+    )
+    (src_dir / "gen_modules" / "sphinx_gallery._dummy.unused_b.rst").unlink()
+    _subprocess_build(src_dir)
+
+    text = api_usage.read_text(encoding="utf-8")
+    assert "sphinx_gallery._dummy.unused_b" not in text
+    assert "sphinx_gallery._dummy.unused_a" in text  # the other one survives
+
+
+def test_parallel_read_api_usage(tmp_path, sphinx_app):
+    """Test the API usage page is complete when documents are read in parallel.
+
+    ``write_api_entries`` runs during the read phase, so under ``-j`` it fires in
+    fork()ed workers whose entries only reach the main process via ``env-merge-info``.
+    Without that merge the page silently loses most of its entries rather than
+    failing, so compare a parallel full read against a serial one.
+    """
+    src_dir = _copy_tinybuild(sphinx_app, tmp_path)
+
+    _subprocess_build(src_dir)
+    serial = _snapshot_generated(src_dir)
+    # -E to force every document to be re-read, so autodoc actually runs in the
+    # workers; without it an incremental read has nothing to merge back
+    _subprocess_build(src_dir, "0", "-E", "-j", "4")
+    parallel = _snapshot_generated(src_dir)
+
+    api_usage = Path("sg_api_usage.rst")
+    assert api_usage in serial
+    assert "sphinx_gallery._dummy.unused_a" in serial[api_usage]
+    differ = sorted(
+        str(path)
+        for path, text in serial.items()
+        if text != parallel[path] and path.name not in _TIMED_RST
+    )
+    assert differ == []
 
 
 @pytest.mark.parametrize(

@@ -69,6 +69,7 @@ from .utils import (
     _collect_gallery_files,
     _combine_backreferences,
     _format_toctree,
+    _read_json,
     _replace_md5,
     _write_json,
     get_md5sum,
@@ -1441,6 +1442,61 @@ def _clean_script_blocks(
     return script_blocks, output_blocks
 
 
+def _backrefs_from_codeobj(
+    gallery_conf: GalleryConfig, example_code_obj: dict[str, list[dict[str, Any]]]
+) -> set[str]:
+    """Get the backreference names of the code objects identified in an example."""
+    exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
+
+    def _normalize_name(cobj: dict[str, Any]) -> str:
+        full_name = "{module}.{name}".format(**cobj)
+        for pattern in gallery_conf["prefer_full_module"]:
+            if re.search(pattern, full_name):
+                return full_name
+        return "{module_short}.{name}".format(**cobj)
+
+    return {
+        _normalize_name(cobj)
+        for cobjs in example_code_obj.values()
+        for cobj in cobjs
+        if cobj["module"].startswith(gallery_conf["doc_module"])
+        and (
+            cobj["is_explicit"]
+            or (not exclude_regex)
+            or (not exclude_regex.search("{module}.{name}".format(**cobj)))
+        )
+    }
+
+
+def _write_cached_cost(target_file: Path, cost: tuple[float, float]) -> None:
+    """Cache an example's ``(time_elapsed, memory_used)`` next to its md5."""
+    _write_json(target_file, {"time": cost[0], "memory": cost[1]}, ".cost")
+
+
+def _read_cached_cost(target_file: Path) -> tuple[float, float]:
+    """Get an example's last measured ``(time_elapsed, memory_used)``, else zeros."""
+    cost_fname = target_file.with_name(target_file.stem + ".cost.json")
+    if not cost_fname.is_file():  # never run, or cached by an older Sphinx-Gallery
+        return (0.0, 0.0)
+    try:
+        cost = _read_json(cost_fname)
+        return (float(cost["time"]), float(cost["memory"]))
+    except Exception:  # e.g. truncated by an interrupted build
+        return (0.0, 0.0)
+
+
+def _read_cached_backrefs(gallery_conf: GalleryConfig, target_file: Path) -> set[str]:
+    """Get the backreference names of an example from its cached ``.codeobj.json``."""
+    codeobj_fname = target_file.with_name(target_file.stem + ".codeobj.json")
+    if not codeobj_fname.is_file():  # no code objects were identified
+        return set()
+    try:
+        example_code_obj = _read_json(codeobj_fname)
+    except Exception:  # e.g. truncated by an interrupted build
+        return set()
+    return _backrefs_from_codeobj(gallery_conf, example_code_obj)
+
+
 def _get_backreferences(
     gallery_conf: GalleryConfig,
     script_vars: dict[str, Any],
@@ -1457,26 +1513,14 @@ def _get_backreferences(
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
         _write_json(target_file, example_code_obj, ".codeobj")
-    exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
-
-    def _normalize_name(cobj: dict[str, Any]) -> str:
-        full_name = "{module}.{name}".format(**cobj)
-        for pattern in gallery_conf["prefer_full_module"]:
-            if re.search(pattern, full_name):
-                return full_name
-        return "{module_short}.{name}".format(**cobj)
-
-    backrefs = {
-        _normalize_name(cobj)
-        for cobjs in example_code_obj.values()
-        for cobj in cobjs
-        if cobj["module"].startswith(gallery_conf["doc_module"])
-        and (
-            cobj["is_explicit"]
-            or (not exclude_regex)
-            or (not exclude_regex.search("{module}.{name}".format(**cobj)))
+    else:
+        # a stale .codeobj.json would resurrect this example's old backrefs via
+        # _read_cached_backrefs on every md5-skipped rebuild
+        target_file.with_name(target_file.stem + ".codeobj.json").unlink(
+            missing_ok=True
         )
-    }
+
+    backrefs = _backrefs_from_codeobj(gallery_conf, example_code_obj)
 
     # This can help with garbage collection in some instances
     if global_variables is not None and "___" in global_variables:
@@ -1549,7 +1593,11 @@ def generate_file_rst(
             else:
                 out_vars["stale"] = str(target_file)
         if do_return:
-            return intro, title, (0, 0), out_vars
+            # the example is not re-run, so recover its backreferences and cost from
+            # the caches -- otherwise every rebuild empties backreferences_all.json and
+            # zeroes this example's row in sg_execution_times.rst
+            out_vars["backrefs"] = _read_cached_backrefs(gallery_conf, target_file)
+            return intro, title, _read_cached_cost(target_file), out_vars
 
     image_dir = os.path.join(target_dir, "images")
     os.makedirs(image_dir, exist_ok=True)
@@ -1594,6 +1642,10 @@ def generate_file_rst(
     memory_used = memory_base + cast(float, script_vars["memory_delta"])
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
+    if script_vars.get("passing"):
+        # cached alongside the md5, so a build that skips this example can still
+        # report its last measured cost rather than zeros
+        _write_cached_cost(target_file, (time_elapsed, memory_used))
     save_rst_example(
         example_rst,
         target_file,

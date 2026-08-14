@@ -2510,6 +2510,11 @@ Default is ``True`` unless the ``SOURCE_DATE_EPOCH`` environment variable is set
 If you are interested in using execution time and execution success and failure data,
 see :ref:`junit_xml`.
 
+Examples that are not re-run because their source is unchanged report the time and
+memory measured the last time they did run, cached alongside their md5 checksum. This
+means a rebuild that runs nothing at all leaves ``sg_execution_times.rst`` untouched
+rather than replacing every measurement with zero.
+
 .. _show_memory:
 
 Showing memory consumption
@@ -2830,18 +2835,24 @@ Graphs and documentation of both unused API entries and the examples that
 each API entry is used in are generated in the sphinx output directory under
 ``sg_api_usage.html``. See the
 `Sphinx-Gallery API usage documentation and graphs <sg_api_usage.html>`_
-for example. In large projects, there are many modules and, since a graph
-of API usage is generated for each module, this can use a lot of resources
-so ``show_api_usage`` is set to ``'unused'`` by default. The unused API
-entries are all shown in one graph so this scales much better for large
-projects. Setting ``show_api_usage`` to ``True`` will make one graph per
-module showing all of the API entries connected to the example that they
-are used in. This could be helpful for making a map of which examples to
-look at if you want to learn about a particular module. Setting
-``show_api_usage`` to ``False`` will not make any graphs or documentation
-about API usage. Note, the command-line binary ``neato`` from the
-``graphviz`` C utility as well as the ``graphviz`` Python package are
+for example. ``show_api_usage`` is ``False`` by default, which makes no graphs
+or documentation about API usage at all.
+
+Setting ``show_api_usage`` to ``'unused'`` documents and graphs only the unused
+API entries. They are all shown in one graph, so this scales well to large
+projects. Setting it to ``True`` additionally lists the used API entries and
+makes one graph per module showing all of the API entries connected to the
+examples that they are used in. This could be helpful for making a map of which
+examples to look at if you want to learn about a particular module, but in large
+projects there are many modules, and a graph per module can use a lot of
+resources -- prefer ``'unused'`` there. Note, the command-line binary ``neato``
+from the ``graphviz`` C utility as well as the ``graphviz`` Python package are
 required for making the unused and used API entry graphs.
+
+The page is generated into your source directory as ``sg_api_usage.rst``,
+alongside the ``*.dot`` files backing its graphs. These are only rewritten
+when the API usage actually changes, so that unchanged rebuilds skip the page
+entirely; you will likely want to add them to your ``.gitignore``.
 
 .. _api_usage_ignore:
 
