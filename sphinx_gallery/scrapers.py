@@ -593,7 +593,7 @@ SINGLE_IMAGE = """
 # Module resetting
 
 
-def _reset_matplotlib(gallery_conf: GalleryConfig, fname: str | None) -> None:
+def _reset_matplotlib(gallery_conf: GalleryConfig, fname: PathLikeStr | None) -> None:
     """Reset matplotlib."""
     mpl, plt = _import_matplotlib()
     plt.rcdefaults()
@@ -602,7 +602,7 @@ def _reset_matplotlib(gallery_conf: GalleryConfig, fname: str | None) -> None:
     importlib.reload(mpl.category)
 
 
-def _reset_seaborn(gallery_conf: GalleryConfig, fname: str | None) -> None:
+def _reset_seaborn(gallery_conf: GalleryConfig, fname: PathLikeStr | None) -> None:
     """Reset seaborn."""
     seaborn_module = sys.modules.get("seaborn")
     if seaborn_module is not None:
@@ -615,7 +615,9 @@ _reset_dict = {
 }
 
 
-def clean_modules(gallery_conf: GalleryConfig, fname: str | None, when: str) -> None:
+def clean_modules(
+    gallery_conf: GalleryConfig, fname: PathLikeStr | None, when: str
+) -> None:
     """Remove, unload, or reset modules.
 
     After a script is executed it can load a variety of settings that one
@@ -625,7 +627,7 @@ def clean_modules(gallery_conf: GalleryConfig, fname: str | None, when: str) -> 
     ----------
     gallery_conf : dict
         The gallery configuration.
-    fname : str or None
+    fname : str | pathlib.Path | None
         The example being run. Will be None when this is called entering
         a directory of examples to be built.
     when : str

@@ -791,8 +791,8 @@ def generate_gallery_rst(app: Sphinx) -> None:
             this_toctree_items,
             backrefs_root,
         ) = generate_dir_rst(
-            str(examples_dir_abs_path),
-            str(gallery_dir_abs_path),
+            examples_dir_abs_path,
+            gallery_dir_abs_path,
             gallery_conf,
             seen_backrefs,
             is_subsection=False,
@@ -803,7 +803,7 @@ def generate_gallery_rst(app: Sphinx) -> None:
         # `this_content` is None when user provides own index.rst
         sg_root_index = this_content is not None
         costs += this_costs
-        write_computation_times(gallery_conf, str(gallery_dir_abs_path), this_costs)
+        write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
         # `indexst` variable must exist, as passed to `_finish_index_rst`
         indexst = ""
@@ -840,9 +840,7 @@ def generate_gallery_rst(app: Sphinx) -> None:
                 subsection_costs,
                 subsection_toctree_filenames,
                 backrefs_subsec,
-            ) = generate_dir_rst(
-                str(src_dir), str(target_dir), gallery_conf, seen_backrefs
-            )
+            ) = generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs)
 
             _combine_backreferences(backrefs_all, backrefs_subsec)
 
@@ -871,7 +869,7 @@ def generate_gallery_rst(app: Sphinx) -> None:
                 _replace_md5(subsection_index_path, mode="t")
 
             costs += subsection_costs
-            write_computation_times(gallery_conf, str(target_dir), subsection_costs)
+            write_computation_times(gallery_conf, target_dir, subsection_costs)
 
         # Per gallery - items below run once per gallery
         # Finish index.rst and write to file
@@ -881,10 +879,10 @@ def generate_gallery_rst(app: Sphinx) -> None:
             indexst,
             sg_root_index,
             subsection_index_files,
-            str(gallery_dir_abs_path),
+            gallery_dir_abs_path,
         )
         # Build recommendation system
-        _build_recommender(gallery_conf, str(gallery_dir_abs_path), subsecs)
+        _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
 
     # Per project - items below run once only (for all galleries)
     # Write a single global sg_execution_times

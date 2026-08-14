@@ -119,7 +119,7 @@ class ExampleCost:
 class _LoggingTee:
     """A tee object to redirect streams to the logger."""
 
-    def __init__(self, src_filename: str) -> None:
+    def __init__(self, src_filename: PathLikeStr) -> None:
         self.logger = logger
         self.src_filename = src_filename
         self.logger_buffer = ""
@@ -574,7 +574,7 @@ def _copy_non_example_files(
 
 
 def _split_parallel(
-    sorted_listdir: list[str], src_dir: str, gallery_conf: GalleryConfig
+    sorted_listdir: list[str], src_dir: PathLikeStr, gallery_conf: GalleryConfig
 ) -> tuple[list[str], list[str]]:
     """Split examples into those that opt out of parallel execution, and the rest.
 
@@ -601,8 +601,8 @@ def _split_parallel(
 
 
 def generate_dir_rst(
-    src_dir: str,
-    target_dir: str,
+    src_dir: PathLikeStr,
+    target_dir: PathLikeStr,
     gallery_conf: GalleryConfig,
     seen_backrefs: set[str],
     is_subsection: bool = True,
@@ -617,9 +617,9 @@ def generate_dir_rst(
 
     Parameters
     ----------
-    src_dir: str,
+    src_dir : str | pathlib.Path
         Path to root or sub gallery directory containing example files
-    target_dir: str,
+    target_dir : str | pathlib.Path
         Path where parsed examples (rst, python files, etc) will be outputted
     gallery_conf : Dict[str, Any]
         Gallery configurations.
@@ -648,6 +648,8 @@ def generate_dir_rst(
         full path to example target directory, intro, title.
 
     """
+    src_dir = Path(src_dir)
+    target_dir = Path(target_dir)
     index_content: str = ""
     # `_get_gallery_header` returns `None` if user supplied `index.rst`
     header_fname = _get_gallery_header(src_dir, gallery_conf)
@@ -667,7 +669,7 @@ def generate_dir_rst(
     index_content += "\n\n"
 
     # Make all dirs ahead of time to avoid collisions in parallel processing
-    image_dir = Path(target_dir, "images")
+    image_dir = target_dir / "images"
     thumb_dir = image_dir / "thumb"
     thumb_dir.mkdir(parents=True, exist_ok=True)
     if gallery_conf["jupyterlite"] is not None:
@@ -741,7 +743,10 @@ def generate_dir_rst(
             gallery_conf["stale_examples"].append(out_vars["stale"])
         costs.append(
             ExampleCost(
-                execution_time=t, memory=mem, src_file=src_file, target_dir=target_dir
+                execution_time=t,
+                memory=mem,
+                src_file=src_file,
+                target_dir=str(target_dir),
             )
         )
         gallery_item_filename = (
@@ -801,7 +806,7 @@ def generate_dir_rst(
 
 def handle_exception(
     exc_info: tuple[type[BaseException], BaseException, Any] | tuple[None, None, None],
-    src_file: str,
+    src_file: PathLikeStr,
     script_vars: dict[str, Any],
     gallery_conf: GalleryConfig,
 ) -> str:
@@ -947,9 +952,10 @@ def _get_memory_base() -> float:
     return memory_base
 
 
-def _get_parser(fname: str, gallery_conf: GalleryConfig) -> tuple[Parser, str]:
+def _get_parser(fname: PathLikeStr, gallery_conf: GalleryConfig) -> tuple[Parser, str]:
     """Get parser and language."""
     parser: Parser
+    fname = str(fname)
     if fname.endswith(".py"):
         parser = py_source_parser
         language = "Python"
@@ -962,7 +968,7 @@ def _get_parser(fname: str, gallery_conf: GalleryConfig) -> tuple[Parser, str]:
     return parser, language
 
 
-def _check_reset_logging_tee(src_file: str) -> _LoggingTee:
+def _check_reset_logging_tee(src_file: PathLikeStr) -> _LoggingTee:
     # Helper to deal with our tests not necessarily calling execute_script
     # but rather execute_code_block directly
     if isinstance(sys.stdout, _LoggingTee):
@@ -1262,12 +1268,12 @@ def execute_code_block(
     return code_output
 
 
-def executable_script(src_file: str, gallery_conf: GalleryConfig) -> bool:
+def executable_script(src_file: PathLikeStr, gallery_conf: GalleryConfig) -> bool:
     """Validate if script has to be run according to gallery configuration.
 
     Parameters
     ----------
-    src_file : str
+    src_file : str | pathlib.Path
         path to python script
 
     gallery_conf : dict
@@ -1280,7 +1286,7 @@ def executable_script(src_file: str, gallery_conf: GalleryConfig) -> bool:
     """
     filename_pattern = gallery_conf["filename_pattern"]
     execute = bool(
-        re.search(filename_pattern, src_file) and gallery_conf["plot_gallery"]
+        re.search(filename_pattern, str(src_file)) and gallery_conf["plot_gallery"]
     )
     return execute
 
@@ -1533,17 +1539,20 @@ def _get_backreferences(
 
 
 def generate_file_rst(
-    fname: str, target_dir: str, src_dir: str, gallery_conf: GalleryConfig
+    fname: PathLikeStr,
+    target_dir: PathLikeStr,
+    src_dir: PathLikeStr,
+    gallery_conf: GalleryConfig,
 ) -> tuple[str, str, tuple[float, float], dict[str, Any]]:
     """Generate the rst file for a given example.
 
     Parameters
     ----------
-    fname : str
+    fname : str | pathlib.Path
         Filename of python script.
-    target_dir : str
+    target_dir : str | pathlib.Path
         Absolute path to directory in documentation where examples are saved.
-    src_dir : str
+    src_dir : str | pathlib.Path
         Absolute path to directory where source examples are stored.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery.
@@ -1569,9 +1578,10 @@ def generate_file_rst(
         "formatted_exception"
             Formatted string of the exception.
     """
+    target_dir = Path(target_dir)
     src_file = os.path.normpath(Path(src_dir, fname))
     out_vars = dict()
-    target_file = Path(target_dir) / fname
+    target_file = target_dir / fname
     _replace_md5(src_file, target_file, method="copy", mode="t")
 
     parser, language = _get_parser(fname, gallery_conf)
@@ -1601,7 +1611,7 @@ def generate_file_rst(
             out_vars["backrefs"] = _read_cached_backrefs(gallery_conf, target_file)
             return intro, title, _read_cached_cost(target_file), out_vars
 
-    image_dir = Path(target_dir, "images")
+    image_dir = target_dir / "images"
     image_dir.mkdir(parents=True, exist_ok=True)
 
     base_image_name = Path(fname).stem
@@ -1908,7 +1918,7 @@ def save_rst_example(
 
 
 def _get_callables(
-    gallery_conf: GalleryConfig, key: str, src_dir: str | None = None
+    gallery_conf: GalleryConfig, key: str, src_dir: PathLikeStr | None = None
 ) -> tuple[Callable[..., Any], ...]:
     """Get callables for the given conf key, returning tuple of callable(s).
 
