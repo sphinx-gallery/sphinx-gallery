@@ -16,6 +16,7 @@ import contextlib
 import copy
 import gc
 import importlib
+import importlib.util
 import inspect
 import os
 import re
@@ -26,11 +27,12 @@ import warnings
 from dataclasses import dataclass
 from functools import lru_cache
 from io import StringIO
+from itertools import islice
 from pathlib import Path
 from shutil import copyfile
 from textwrap import indent
 from time import time
-from typing import TYPE_CHECKING, Any, Callable, Literal, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, TextIO, cast
 
 import sphinx.util
 from sphinx.errors import ConfigError, ExtensionError
@@ -67,6 +69,7 @@ from .utils import (
     _collect_gallery_files,
     _combine_backreferences,
     _format_toctree,
+    _read_json,
     _replace_md5,
     _write_json,
     get_md5sum,
@@ -570,6 +573,33 @@ def _copy_non_example_files(
             _replace_md5(src_file, fname_old=target_file, method="copy")
 
 
+def _split_parallel(
+    sorted_listdir: list[str], src_dir: str, gallery_conf: GalleryConfig
+) -> tuple[list[str], list[str]]:
+    """Split examples into those that opt out of parallel execution, and the rest.
+
+    Both lists keep their relative order from ``sorted_listdir``.
+    """
+    serial_listdir = []
+    parallel_listdir = []
+    for fname in sorted_listdir:
+        parser, _ = _get_parser(fname, gallery_conf)
+        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        # full parse rather than a cheaper regex over the file, so that we see exactly
+        # the same file_conf as `generate_file_rst` (e.g. docstrings are excluded)
+        file_conf = parser.split_code_and_text_blocks(src_file, return_node=True)[0]
+        run_parallel = file_conf.get("parallel", True)
+        if not isinstance(run_parallel, bool):
+            logger.warning(
+                "sphinx_gallery_parallel setting is not a boolean, got %r in file %s",
+                run_parallel,
+                fname,
+            )
+            run_parallel = True
+        (parallel_listdir if run_parallel else serial_listdir).append(fname)
+    return serial_listdir, parallel_listdir
+
+
 def generate_dir_rst(
     src_dir: str,
     target_dir: str,
@@ -659,32 +689,45 @@ def generate_dir_rst(
     costs = []
     toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf["src_dir"])
+    backrefs_dir: dict[str, list[Backreference]] = {}
+
+    # Always split, so that a bad in-file setting is reported even in serial builds
+    serial_listdir, parallel_listdir = _split_parallel(
+        sorted_listdir, src_dir, gallery_conf
+    )
+    if not gallery_conf["parallel"]:
+        # everything runs here anyway, so keep the original order
+        serial_listdir, parallel_listdir = sorted_listdir, []
+
     iterator = status_iterator(
-        sorted_listdir,
+        serial_listdir + parallel_listdir,
         f"generating gallery for {build_target_dir}... ",
         length=len(sorted_listdir),
     )
 
-    backrefs_dir: dict[str, list[Backreference]] = {}
-
-    parallel = list
-    p_fun = generate_file_rst
-    if gallery_conf["parallel"]:
+    # Examples opting out of parallelism run first, alone in this process, so that
+    # nothing else is executing while they do
+    results = [
+        generate_file_rst(fname, target_dir, src_dir, gallery_conf)
+        for fname in islice(iterator, len(serial_listdir))
+    ]
+    if parallel_listdir:
         from joblib import Parallel, delayed
 
-        p_fun = delayed(generate_file_rst)
         parallel = Parallel(
             n_jobs=gallery_conf["parallel"],
             pre_dispatch="n_jobs",
             batch_size=1,
             backend="loky",
         )
-
-    results = parallel(
-        p_fun(fname, target_dir, src_dir, gallery_conf) for fname in iterator
-    )
-    for fi, (intro, title, (t, mem), out_vars) in enumerate(results):
-        fname = sorted_listdir[fi]
+        results += parallel(
+            delayed(generate_file_rst)(fname, target_dir, src_dir, gallery_conf)
+            for fname in iterator
+        )
+    # Restore gallery (not execution) order so the index and toctree are unaffected
+    results_by_fname = dict(zip(serial_listdir + parallel_listdir, results))
+    for fname in sorted_listdir:
+        intro, title, (t, mem), out_vars = results_by_fname[fname]
         src_file = os.path.normpath(os.path.join(src_dir, fname))
         gallery_conf["titles"][src_file] = title
         # n.b. non-executable files have none of these three variables defined,
@@ -806,7 +849,7 @@ def handle_exception(
             # Our internal input() check
             elif s.name == "_check_input" and ii == len(stack):
                 stop = ii - 1
-    stack = stack[start:stop]  # type: ignore[assignment]
+    stack = stack[start:stop]
 
     formatted_exception = "Traceback (most recent call last):\n" + "".join(
         traceback.format_list(stack) + traceback.format_exception_only(etype, exc)
@@ -847,7 +890,7 @@ def _showwarning(
     category: type[Warning],
     filename: str,
     lineno: int,
-    file: Any = None,
+    file: TextIO | None = None,
     line: str | None = None,
 ) -> None:
     if file is None:
@@ -871,7 +914,7 @@ def patch_warnings() -> Any:
     # capture them, so let's patch over their patch...
     orig_showwarning = warnings.showwarning
     try:
-        warnings.showwarning = _showwarning
+        warnings.showwarning = _showwarning  # ty: ignore[invalid-assignment]
         yield
     finally:
         warnings.showwarning = orig_showwarning
@@ -965,10 +1008,15 @@ def _exec_and_get_memory(
     call_memory, _ = _get_call_memory_and_base(gallery_conf)
     if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
         is_last_expr = True
-        last_val = code_ast.body.pop().value  # type: ignore[attr-defined]
+        last_stmt = code_ast.body.pop()
+        assert isinstance(last_stmt, ast.Expr)
+        last_val = last_stmt.value
         # exec body minus last expression
         mem_body, _ = call_memory(
-            _exec_once(compiler(code_ast, src_file, "exec"), script_vars["fake_main"])  # type: ignore[arg-type]
+            _exec_once(
+                compiler(code_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
+                script_vars["fake_main"],
+            )
         )
         # exec last expression, made into assignment
         body: list[ast.stmt] = [
@@ -979,14 +1027,17 @@ def _exec_and_get_memory(
         ast.fix_missing_locations(last_val_ast)
         mem_last, _ = call_memory(
             _exec_once(
-                compiler(last_val_ast, src_file, "exec"),  # type: ignore[arg-type]
+                compiler(last_val_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
                 script_vars["fake_main"],
             )
         )
         mem_max = max(mem_body, mem_last)
     else:
         mem_max, _ = call_memory(
-            _exec_once(compiler(code_ast, src_file, "exec"), script_vars["fake_main"])  # type: ignore[arg-type]
+            _exec_once(
+                compiler(code_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
+                script_vars["fake_main"],
+            )
         )
     return is_last_expr, mem_max
 
@@ -1070,8 +1121,8 @@ def _get_code_output(
     captured_std = ansi_escape.sub("", captured_std)
 
     # give html output its own header
-    if repr_meth == "_repr_html_":
-        captured_html = HTML_HEADER.format(indent(last_repr, " " * 4))  # type: ignore[arg-type]
+    if repr_meth == "_repr_html_" and last_repr is not None:
+        captured_html = HTML_HEADER.format(indent(last_repr, " " * 4))
     else:
         captured_html = ""
 
@@ -1153,7 +1204,7 @@ def execute_code_block(
     # `sphinx_gallery_capture_repr_block` setting, then the file-level
     # `sphinx_gallery_capture_repr` setting, and finally the
     # global `capture_repr` gallery setting.
-    capture_repr: tuple[str, ...] = block_conf.get(  # type: ignore[assignment]
+    capture_repr: tuple[str, ...] = block_conf.get(
         "capture_repr_block",
         file_conf.get("capture_repr", gallery_conf["capture_repr"]),
     )
@@ -1278,9 +1329,9 @@ def execute_script(
     # sys.modules when running our example
     call_memory, _ = _get_call_memory_and_base(gallery_conf)
 
-    fake_main = importlib.util.module_from_spec(
-        importlib.util.spec_from_loader("__main__", None)  # type: ignore[arg-type]
-    )
+    fake_main_spec = importlib.util.spec_from_loader("__main__", None)
+    assert fake_main_spec is not None
+    fake_main = importlib.util.module_from_spec(fake_main_spec)
     example_globals = fake_main.__dict__
 
     example_globals.update(
@@ -1395,6 +1446,61 @@ def _clean_script_blocks(
     return script_blocks, output_blocks
 
 
+def _backrefs_from_codeobj(
+    gallery_conf: GalleryConfig, example_code_obj: dict[str, list[dict[str, Any]]]
+) -> set[str]:
+    """Get the backreference names of the code objects identified in an example."""
+    exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
+
+    def _normalize_name(cobj: dict[str, Any]) -> str:
+        full_name = "{module}.{name}".format(**cobj)
+        for pattern in gallery_conf["prefer_full_module"]:
+            if re.search(pattern, full_name):
+                return full_name
+        return "{module_short}.{name}".format(**cobj)
+
+    return {
+        _normalize_name(cobj)
+        for cobjs in example_code_obj.values()
+        for cobj in cobjs
+        if cobj["module"].startswith(gallery_conf["doc_module"])
+        and (
+            cobj["is_explicit"]
+            or (not exclude_regex)
+            or (not exclude_regex.search("{module}.{name}".format(**cobj)))
+        )
+    }
+
+
+def _write_cached_cost(target_file: Path, cost: tuple[float, float]) -> None:
+    """Cache an example's ``(time_elapsed, memory_used)`` next to its md5."""
+    _write_json(target_file, {"time": cost[0], "memory": cost[1]}, ".cost")
+
+
+def _read_cached_cost(target_file: Path) -> tuple[float, float]:
+    """Get an example's last measured ``(time_elapsed, memory_used)``, else zeros."""
+    cost_fname = target_file.with_name(target_file.stem + ".cost.json")
+    if not cost_fname.is_file():  # never run, or cached by an older Sphinx-Gallery
+        return (0.0, 0.0)
+    try:
+        cost = _read_json(cost_fname)
+        return (float(cost["time"]), float(cost["memory"]))
+    except Exception:  # e.g. truncated by an interrupted build
+        return (0.0, 0.0)
+
+
+def _read_cached_backrefs(gallery_conf: GalleryConfig, target_file: Path) -> set[str]:
+    """Get the backreference names of an example from its cached ``.codeobj.json``."""
+    codeobj_fname = target_file.with_name(target_file.stem + ".codeobj.json")
+    if not codeobj_fname.is_file():  # no code objects were identified
+        return set()
+    try:
+        example_code_obj = _read_json(codeobj_fname)
+    except Exception:  # e.g. truncated by an interrupted build
+        return set()
+    return _backrefs_from_codeobj(gallery_conf, example_code_obj)
+
+
 def _get_backreferences(
     gallery_conf: GalleryConfig,
     script_vars: dict[str, Any],
@@ -1411,26 +1517,14 @@ def _get_backreferences(
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
         _write_json(target_file, example_code_obj, ".codeobj")
-    exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
-
-    def _normalize_name(cobj: dict[str, Any]) -> str:
-        full_name = "{module}.{name}".format(**cobj)
-        for pattern in gallery_conf["prefer_full_module"]:
-            if re.search(pattern, full_name):
-                return full_name
-        return "{module_short}.{name}".format(**cobj)
-
-    backrefs = {
-        _normalize_name(cobj)
-        for cobjs in example_code_obj.values()
-        for cobj in cobjs
-        if cobj["module"].startswith(gallery_conf["doc_module"])
-        and (
-            cobj["is_explicit"]
-            or (not exclude_regex)
-            or (not exclude_regex.search("{module}.{name}".format(**cobj)))
+    else:
+        # a stale .codeobj.json would resurrect this example's old backrefs via
+        # _read_cached_backrefs on every md5-skipped rebuild
+        target_file.with_name(target_file.stem + ".codeobj.json").unlink(
+            missing_ok=True
         )
-    }
+
+    backrefs = _backrefs_from_codeobj(gallery_conf, example_code_obj)
 
     # This can help with garbage collection in some instances
     if global_variables is not None and "___" in global_variables:
@@ -1503,7 +1597,11 @@ def generate_file_rst(
             else:
                 out_vars["stale"] = str(target_file)
         if do_return:
-            return intro, title, (0, 0), out_vars
+            # the example is not re-run, so recover its backreferences and cost from
+            # the caches -- otherwise every rebuild empties backreferences_all.json and
+            # zeroes this example's row in sg_execution_times.rst
+            out_vars["backrefs"] = _read_cached_backrefs(gallery_conf, target_file)
+            return intro, title, _read_cached_cost(target_file), out_vars
 
     image_dir = os.path.join(target_dir, "images")
     os.makedirs(image_dir, exist_ok=True)
@@ -1548,6 +1646,10 @@ def generate_file_rst(
     memory_used = memory_base + cast(float, script_vars["memory_delta"])
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
+    if script_vars.get("passing"):
+        # cached alongside the md5, so a build that skips this example can still
+        # report its last measured cost rather than zeros
+        _write_cached_cost(target_file, (time_elapsed, memory_used))
     save_rst_example(
         example_rst,
         target_file,
@@ -1795,7 +1897,7 @@ def save_rst_example(
         example_rst += SPHX_GLR_SIG
 
     write_file_new = example_file.with_suffix(".rst.new")
-    with open(write_file_new, "w", **_W_KW) as f:  # type: ignore[call-overload]
+    with open(write_file_new, "w", **_W_KW) as f:
         f.write(example_rst)
     # make it read-only so that people don't try to edit it
     mode = os.stat(write_file_new).st_mode

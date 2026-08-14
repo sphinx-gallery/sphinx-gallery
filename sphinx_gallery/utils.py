@@ -6,6 +6,7 @@ Miscellaneous utilities.
 # Author: Eric Larson
 # License: 3-clause BSD
 
+import contextlib
 import hashlib
 import json
 import os
@@ -15,22 +16,51 @@ import zipfile
 from functools import partial
 from pathlib import Path
 from shutil import copyfile, move
-from typing import Any, Callable, Iterator, Literal, Tuple
+from typing import Any, Callable, ContextManager, Iterator, Literal, Tuple, TypedDict
 
 import sphinx.util
 
 try:
     from sphinx.util.display import status_iterator  # noqa: F401
 except Exception:  # Sphinx < 6
-    from sphinx.util import status_iterator  # type: ignore[no-redef]  # noqa: F401
+    from sphinx.util import status_iterator  # noqa: F401
 
 from .typing import GalleryConfig, PathLikeStr
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-# Text writing kwargs for builtins.open
-_W_KW = dict(encoding="utf-8", newline="\n")
+class _WriteKwargs(TypedDict):
+    """Text writing kwargs for builtins.open."""
+
+    encoding: str
+    newline: str
+
+
+_W_KW: _WriteKwargs = {"encoding": "utf-8", "newline": "\n"}
+
+
+def _single_threaded() -> ContextManager:
+    """Run a block of native code without leaving a thread pool behind.
+
+    Sphinx forks its parallel read and write workers -- ``get_context("fork")`` is
+    hardcoded in ``sphinx/util/parallel.py`` -- and ``fork()`` only clones the calling
+    thread. An OpenMP worker thread that is alive in the Sphinx process at that moment
+    is therefore lost in the child, while the OpenMP runtime still believes it exists;
+    the next parallel region in that child blocks forever in the OpenMP join barrier.
+    Since Sphinx Gallery declares itself ``parallel_read_safe``, any BLAS call it makes
+    in the Sphinx process on its own behalf must not leave such a thread behind.
+
+    Capping the thread pools for the duration of the call means no OpenMP team is ever
+    created, so there is nothing for a later ``fork()`` to lose. This is a no-op when
+    ``threadpoolctl`` is not installed; the deadlock only shows up with a threaded BLAS
+    (notably MKL), so a fallback that silently does nothing is acceptable.
+    """
+    try:
+        import threadpoolctl
+    except ImportError:
+        return contextlib.nullcontext()
+    return threadpoolctl.threadpool_limits(limits=1)
 
 
 def scale_image(
@@ -157,7 +187,8 @@ def _replace_md5(
     method: Literal["move", "copy"] = "move",
     mode: Literal["t", "b"] = "b",
     check: Literal["md5", "json"] = "md5",
-) -> None:
+) -> bool:
+    """Replace ``fname_old`` with ``fname_new``, returning whether it changed."""
     fname_new = str(fname_new)  # convert possible Path
     assert method in ("move", "copy")
     if fname_old is None:
@@ -190,6 +221,7 @@ def _replace_md5(
         else:
             copyfile(fname_new, fname_old)
     assert os.path.isfile(fname_old)
+    return replace
 
 
 def iter_gallery_header_filenames(gallery_conf: GalleryConfig) -> Iterator[str]:
@@ -352,7 +384,7 @@ def _format_toctree(items: list[str], includehidden: bool = False) -> str:
 def _write_json(target_file: Path, to_save: dict, name: str = "") -> None:
     """Write dictionary to JSON file."""
     codeobj_fname = Path(target_file).with_name(target_file.stem + f"{name}.json.new")
-    with open(codeobj_fname, "w", **_W_KW) as fid:  # type: ignore[call-overload]
+    with open(codeobj_fname, "w", **_W_KW) as fid:
         json.dump(
             to_save,
             fid,

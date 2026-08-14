@@ -17,7 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v6
+      - uses: j178/prek-action@v2
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - run: pip install check-manifest
@@ -76,7 +77,7 @@ jobs:
           qt: true
           pyvista: false
       # Python (if pip)
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
         if: matrix.distrib != 'mamba'
@@ -113,9 +114,11 @@ jobs:
           $CMD "/show_memory/d" doc/conf.py
           $CMD "/compress_images/d" doc/conf.py
         if: ${{ !startsWith(matrix.os, 'ubuntu') }}
-      # pydata-sphinx-theme is not compatible with Sphinx 4
       - run: make -C doc SPHINXOPTS= html-noplot
-        if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
-      - run: make -C doc SPHINXOPTS= html -j 2
-        if: matrix.distrib != 'minimal' && matrix.sphinx_version != '4'
+        if: matrix.distrib != 'minimal'
+      # -j goes in SPHINXOPTS: bare `make -j 2` is a make flag, and with a
+      # single target it parallelizes nothing. SPHINXOPTS is overridden (rather
+      # than appended to) to keep dropping the Makefile's -nWT --keep-going.
+      - run: make -C doc SPHINXOPTS="-j 2" html
+        if: matrix.distrib != 'minimal'
       - uses: codecov/codecov-action@v7

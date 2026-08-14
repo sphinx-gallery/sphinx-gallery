@@ -5,6 +5,15 @@ _imageconfig: &imageconfig
   machine:
     image: ubuntu-2404:current
 
+# Half of the MNE job is Sphinx's parallel read phase (391 s of ~830 s to read
+# 1009 documents), and MNE's Makefile passes -j auto, so it scales with cores.
+# The default machine class only has 2. scikit-learn pins SPHINX_NUMJOBS=1, so
+# that job would not benefit and stays on the default.
+_bigimageconfig: &bigimageconfig
+  machine:
+    image: ubuntu-2404:current
+  resource_class: large
+
 commands:
   bash_env:
     steps:
@@ -31,12 +40,12 @@ jobs:
       - bash_env
       - restore_cache:
           keys:
-            - cache-pip-1
+            - cache-uv-1
       - run:
-          name: Pip
+          name: Install dependencies
           command: |
-            pip install --upgrade --only-binary ":all:" pip setuptools
-            pip install --upgrade --only-binary ":all:" \
+            pip install --upgrade --only-binary ":all:" pip setuptools uv
+            uv pip install --upgrade --only-binary ":all:" \
                 numpy matplotlib seaborn statsmodels pillow joblib \
                 "sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6" pytest \
                 traits memory_profiler "ipython!=8.7.0" plotly graphviz \
@@ -45,9 +54,9 @@ jobs:
                 libarchive-c "sphinxcontrib-video>=0.2.1rc0" intersphinx_registry \
                 sphinx-design
       - save_cache:
-          key: cache-pip-1
+          key: cache-uv-1
           paths:
-            - ~/.cache/pip
+            - ~/.cache/uv
       - run:
           name: Test libs
           command: |
@@ -55,7 +64,7 @@ jobs:
       - run:
           name: Install
           command: |
-            pip install -e .
+            uv pip install -e .
       - persist_to_workspace:
           root: ~/
           paths:
@@ -113,7 +122,7 @@ jobs:
           destination: latex
 
   build_docs_mne:
-    <<: *imageconfig
+    <<: *bigimageconfig
     steps:
       - checkout  # just to get SSH keys set up
       - attach_workspace:
