@@ -508,7 +508,7 @@ def _get_gallery_header(
         extensions = list(
             sorted(
                 set(
-                    os.path.splitext(fname)[1]
+                    Path(fname).suffix
                     for fname in iter_gallery_header_filenames(gallery_conf)
                 )
             )
@@ -584,7 +584,7 @@ def _split_parallel(
     parallel_listdir = []
     for fname in sorted_listdir:
         parser, _ = _get_parser(fname, gallery_conf)
-        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        src_file = os.path.normpath(Path(src_dir, fname))
         # full parse rather than a cheaper regex over the file, so that we see exactly
         # the same file_conf as `generate_file_rst` (e.g. docstrings are excluded)
         file_conf = parser.split_code_and_text_blocks(src_file, return_node=True)[0]
@@ -667,11 +667,9 @@ def generate_dir_rst(
     index_content += "\n\n"
 
     # Make all dirs ahead of time to avoid collisions in parallel processing
-    os.makedirs(target_dir, exist_ok=True)
-    image_dir = os.path.join(target_dir, "images")
-    os.makedirs(image_dir, exist_ok=True)
-    thumb_dir = os.path.join(image_dir, "thumb")
-    os.makedirs(thumb_dir, exist_ok=True)
+    image_dir = Path(target_dir, "images")
+    thumb_dir = image_dir / "thumb"
+    thumb_dir.mkdir(parents=True, exist_ok=True)
     if gallery_conf["jupyterlite"] is not None:
         _add_jupyterlite_badge_logo(image_dir)
 
@@ -728,7 +726,7 @@ def generate_dir_rst(
     results_by_fname = dict(zip(serial_listdir + parallel_listdir, results))
     for fname in sorted_listdir:
         intro, title, (t, mem), out_vars = results_by_fname[fname]
-        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        src_file = os.path.normpath(Path(src_dir, fname))
         gallery_conf["titles"][src_file] = title
         # n.b. non-executable files have none of these three variables defined,
         # so the last conditional must be "elif" not just "else"
@@ -830,12 +828,12 @@ def handle_exception(
     # so we inspect the traceback to find the start and stop points.
     start = 0
     stop = len(stack)
-    root = os.path.dirname(__file__) + os.sep
+    this_file = str(Path(__file__).parent / "gen_rst.py")
     for ii, s in enumerate(stack, 1):
         # Trim our internal stack
         if s.name.startswith("_sg_call_memory"):
             start = max(ii, start)
-        elif s.filename.startswith(root + "gen_rst.py"):
+        elif s.filename.startswith(this_file):
             # SyntaxError
             if (
                 s.line is not None
@@ -1181,7 +1179,7 @@ def execute_code_block(
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
-    os.chdir(os.path.dirname(src_file))
+    os.chdir(Path(src_file).parent)
 
     sys_path = copy.deepcopy(sys.path)
     sys.path.append(os.getcwd())
@@ -1410,9 +1408,9 @@ def _make_dummy_images(
                 )
 
             image_path_iterator = script_vars["image_path_iterator"]
-            stock_img = os.path.join(glr_path_static(), "no_image.png")
+            stock_img = Path(glr_path_static(), "no_image.png")
             for _, path in zip(range(dummy_image), image_path_iterator):
-                if not os.path.isfile(path):
+                if not Path(path).is_file():
                     copyfile(stock_img, path)
 
 
@@ -1571,7 +1569,7 @@ def generate_file_rst(
         "formatted_exception"
             Formatted string of the exception.
     """
-    src_file = os.path.normpath(os.path.join(src_dir, fname))
+    src_file = os.path.normpath(Path(src_dir, fname))
     out_vars = dict()
     target_file = Path(target_dir) / fname
     _replace_md5(src_file, target_file, method="copy", mode="t")
@@ -1603,12 +1601,12 @@ def generate_file_rst(
             out_vars["backrefs"] = _read_cached_backrefs(gallery_conf, target_file)
             return intro, title, _read_cached_cost(target_file), out_vars
 
-    image_dir = os.path.join(target_dir, "images")
-    os.makedirs(image_dir, exist_ok=True)
+    image_dir = Path(target_dir, "images")
+    image_dir.mkdir(parents=True, exist_ok=True)
 
-    base_image_name = os.path.splitext(fname)[0]
+    base_image_name = Path(fname).stem
     image_fname = "sphx_glr_" + base_image_name + "_{0:03}.png"
-    image_path_template = os.path.join(image_dir, image_fname)
+    image_path_template = str(image_dir / image_fname)
 
     script_vars = {
         "execute_script": executable,
@@ -1828,8 +1826,9 @@ def save_rst_example(
         The file conf options
     """
     example_file = Path(example_file)
-    example_fname = str(example_file.relative_to(gallery_conf["src_dir"]))
-    ref_fname = example_fname.replace(os.sep, "_")
+    example_path = example_file.relative_to(gallery_conf["src_dir"])
+    example_fname = str(example_path)
+    ref_fname = example_path.as_posix().replace("/", "_")
 
     binder_conf = gallery_conf["binder"]
     is_binder_enabled = len(binder_conf) > 0
@@ -1890,7 +1889,7 @@ def save_rst_example(
 
     if gallery_conf["recommender"]["enable"]:
         # extract the filename without the extension
-        recommend_fname = Path(example_fname).stem
+        recommend_fname = example_path.stem
         example_rst += RECOMMENDATIONS_INCLUDE.format(recommend_fname)
 
     if gallery_conf["show_signature"]:
