@@ -3,7 +3,7 @@
 
 from docutils import nodes
 
-from sphinx_gallery.doctree_links import _add_linenos, _tokenize_and_link
+from sphinx_gallery.doctree_links import _add_linenos, _Resolver, _tokenize_and_link
 
 
 class FakeResolver:
@@ -91,3 +91,45 @@ def test_add_linenos():
     # a mid-line reference is not directly preceded by a line number
     idx = out.index(refs[0])
     assert "linenos" not in _classes(out[idx - 1])  # "x = " sits before it
+
+
+def _stub_resolver(hits):
+    """Build a _Resolver whose lookups come from ``{target: (uri, ...)}``."""
+    resolver = _Resolver.__new__(_Resolver)
+    resolver.prefer_full = set()
+    resolver._cache = {}
+    resolver._lookup = lambda target: hits.get(target, (None, None, False, False))
+    return resolver
+
+
+# as ``pkg._private.mod.Thing`` documented (and re-exported) as ``pkg.Thing``
+_PRIVATE = "pkg._private.mod.Thing"
+_PUBLIC = "pkg.Thing"
+_CANDIDATES = [
+    _cobj("pkg._private.mod", "Thing"),
+    _cobj("pkg", "Thing"),
+]
+
+
+def test_resolve_prefers_non_aliased():
+    """An aliased (``:canonical:``) entry must not beat the public one.
+
+    Sphinx records the private location of a re-exported object as an aliased
+    py-domain entry. Taking it would label the link with the private module,
+    breaking the documented ``sphx-glr-backref-module-*`` styling contract.
+    """
+    hits = {
+        _PRIVATE: ("uri", "py:class", True, True),  # aliased
+        _PUBLIC: ("uri", "py:class", True, False),
+    }
+    link = _stub_resolver(hits).resolve(_CANDIDATES)
+    assert link["title"] == _PUBLIC
+    assert "sphx-glr-backref-module-pkg" in link["classes"]
+
+
+def test_resolve_falls_back_to_aliased():
+    """An aliased entry is still used when nothing else resolves."""
+    hits = {_PRIVATE: ("uri", "py:class", True, True)}
+    link = _stub_resolver(hits).resolve(_CANDIDATES)
+    assert link["title"] == _PRIVATE
+    assert "sphx-glr-backref-module-pkg-_private-mod" in link["classes"]

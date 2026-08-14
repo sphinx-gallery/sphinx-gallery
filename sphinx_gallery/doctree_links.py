@@ -85,14 +85,17 @@ class _Resolver:
             self.inventory = InventoryAdapter(env).main_inventory
         except ImportError:
             self.inventory = {}
-        self._cache: dict[str, tuple[str | None, str | None, bool]] = {}
+        self._cache: dict[str, tuple[str | None, str | None, bool, bool]] = {}
 
-    def _lookup(self, target: str) -> tuple[str | None, str | None, bool]:
-        """Return (uri, objtype, internal) for a fully qualified name."""
+    def _lookup(self, target: str) -> tuple[str | None, str | None, bool, bool]:
+        """Return (uri, objtype, internal, aliased) for a fully qualified name."""
         entry = self.env.domains["py"].objects.get(target)
         if entry is not None:
             uri = self.builder.get_relative_uri(self.docname, entry.docname)
-            return f"{uri}#{entry.node_id}", f"py:{entry.objtype}", True
+            # an aliased entry is the ``:canonical:`` (often private) location of
+            # an object documented elsewhere, so it is only a fallback
+            aliased = getattr(entry, "aliased", False)
+            return f"{uri}#{entry.node_id}", f"py:{entry.objtype}", True, aliased
         for objtype, mapping in self.inventory.items():
             if objtype.startswith("py:") and target in mapping:
                 item = mapping[target]
@@ -100,11 +103,12 @@ class _Resolver:
                 uri = getattr(item, "uri", None)
                 if uri is None:
                     uri = item[2]
-                return str(uri), objtype, False
-        return None, None, False
+                return str(uri), objtype, False, False
+        return None, None, False, False
 
     def resolve(self, cobjs: list[dict[str, Any]]) -> dict[str, Any] | None:
         """Try candidate (module, name) pairs in order; return link info."""
+        fallback = None
         for cobj in cobjs:
             modnames = [cobj["module_short"], cobj["module"]]
             full_name = f"{cobj['module']}.{cobj['name']}"
@@ -119,7 +123,7 @@ class _Resolver:
                     target = f"{modname}.{cobj['name']}"
                 if target not in self._cache:
                     self._cache[target] = self._lookup(target)
-                uri, objtype, internal = self._cache[target]
+                uri, objtype, internal, aliased = self._cache[target]
                 if uri is None or objtype is None:
                     continue
                 # label local objects with the shortest module path even when
@@ -135,13 +139,18 @@ class _Resolver:
                 css.append("sphx-glr-backref-type-" + _sanitize_css_class(objtype))
                 if "py:class" in objtype and not cobj["is_class"]:
                     css.append("sphx-glr-backref-instance")
-                return {
+                link = {
                     "uri": uri,
                     "title": title,
                     "classes": css,
                     "internal": internal,
                 }
-        return None
+                if not aliased:
+                    return link
+                # keep looking: a later candidate may name the object by the
+                # public module it is actually documented under
+                fallback = fallback or link
+        return fallback
 
 
 def _token_node(ttype: Any, text: str) -> nodes.Node:
