@@ -55,9 +55,6 @@ jobs:
                 sphinx-design
             # TODO: restore PyPI plotly above once plotly/plotly.py#5701 is released
             uv pip install "plotly @ git+https://github.com/larsoner/plotly.py@sgthumb"
-            # plotly's scraper also needs a Chromium-based browser for static
-            # image export; the machine image ships Chrome, and if that ever
-            # changes, `plotly_get_chrome -y` (from plotly) installs one.
       - save_cache:
           key: cache-uv-1
           paths:
@@ -82,6 +79,12 @@ jobs:
       - attach_workspace:
           at: ~/
       - bash_env
+      - run:
+          name: Get a browser for plotly static image export
+          command: |
+            # The image's own browser exits after the first kaleido export
+            # (killing the docs build), so fetch a known-good Chrome instead.
+            plotly_get_chrome -y
       - run: sphinx-build doc doc/_build/html -nW --keep-going -b html 2>&1 | tee sphinx_log.txt
       - run:
           name: Check sphinx log for warnings (which are treated as errors)
