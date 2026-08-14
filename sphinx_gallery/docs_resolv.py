@@ -23,7 +23,13 @@ from sphinx.search import js_index
 if TYPE_CHECKING:
     import sphinx.application
 
-from .typing import DocumentationOptions, GalleryConfig, IntersphinxInventory, LinkType
+from .typing import (
+    DocumentationOptions,
+    GalleryConfig,
+    IntersphinxInventory,
+    LinkType,
+    PathLikeStr,
+)
 from .utils import _W_KW, _read_json, status_iterator
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
@@ -50,9 +56,9 @@ def _get_data(url: str) -> str:
     return data
 
 
-def get_data(url: str, gallery_dir: str) -> str:
+def get_data(url: str, gallery_dir: PathLikeStr) -> str:
     """Persistent dictionary usage to retrieve the search indexes."""
-    cached_file = os.path.join(gallery_dir, "searchindex")
+    cached_file = str(Path(gallery_dir) / "searchindex")
     search_index = shelve.open(cached_file)
     if url in search_index:
         data: str = search_index[url]
@@ -136,7 +142,7 @@ class SphinxDocLinkResolver:
         self,
         config: GalleryConfig,
         doc_url: str | Path,
-        gallery_dir: str,
+        gallery_dir: PathLikeStr,
         relative: bool = False,
     ):
         self.config = config
@@ -146,9 +152,9 @@ class SphinxDocLinkResolver:
         self._link_cache: dict[str, LinkType] = {}
 
         if isinstance(doc_url, Path):
-            index_url = os.path.join(doc_url, "index.html")
-            searchindex_url = os.path.join(doc_url, "searchindex.js")
-            docopts_url = os.path.join(doc_url, "_static", "documentation_options.js")
+            index_url = str(doc_url / "index.html")
+            searchindex_url = str(doc_url / "searchindex.js")
+            docopts_url = str(doc_url / "_static" / "documentation_options.js")
         else:
             if relative:
                 raise ExtensionError(
@@ -235,7 +241,7 @@ class SphinxDocLinkResolver:
             fname = os.path.splitext(fname)[0] + ext
             if self._is_windows:
                 fname = fname.replace("/", "\\")
-                link = os.path.join(self.doc_url, fname)
+                link = str(Path(self.doc_url) / fname)
             else:
                 link = posixpath.join(self.doc_url, fname)
 
@@ -252,7 +258,7 @@ class SphinxDocLinkResolver:
     def resolve(
         self,
         cobj: dict[str, Any],
-        this_url: str,
+        this_url: PathLikeStr,
     ) -> LinkType:
         """Resolve the link to the documentation, returns None if not found.
 
@@ -268,7 +274,7 @@ class SphinxDocLinkResolver:
                 - cobj['is_class'] : whether object is class (bool)
                 - cobj['is_explicit'] : whether object is an explicit
                   backreference (referred to by sphinx markup) (bool)
-        this_url: str
+        this_url: str | pathlib.Path
             URL of the current page. Needed to construct relative URLs
             (only used if relative=True in constructor).
 
@@ -350,12 +356,12 @@ def _get_intersphinx_inventory(app: sphinx.application.Sphinx) -> IntersphinxInv
 def _embed_code_links(
     app: sphinx.application.Sphinx,
     gallery_conf: GalleryConfig,
-    gallery_dir: str,
+    gallery_dir: PathLikeStr,
 ):
     """Add resolvers for the packages for which we want to show links."""
     doc_resolvers = {}
 
-    src_gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
+    src_gallery_dir = Path(app.builder.srcdir) / gallery_dir
     for this_module, url in gallery_conf["reference_url"].items():
         try:
             if url is None:
@@ -373,7 +379,7 @@ def _embed_code_links(
         except (URLError, HTTPError) as e:
             _handle_http_url_error(e)
 
-    html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir, gallery_dir))
+    html_gallery_dir = (Path(app.builder.outdir) / gallery_dir).resolve()
 
     # patterns for replacement
     link_pattern = '<a href="{link}" title="{title}" class="{css_class}">{text}</a>'
@@ -382,7 +388,7 @@ def _embed_code_links(
 
     # This could be turned into a generator if necessary, but should be okay
     flat = [
-        [dirpath, filename]
+        Path(dirpath, filename)
         for dirpath, _, filenames in os.walk(html_gallery_dir)
         for filename in filenames
         if filename.endswith(".html")
@@ -392,19 +398,17 @@ def _embed_code_links(
         f"embedding documentation hyperlinks for {gallery_dir}... ",
         color="fuchsia",
         length=len(flat),
-        stringify_func=lambda x: os.path.basename(x[1]),
+        stringify_func=lambda x: x.name,
     )
     intersphinx_inv = _get_intersphinx_inventory(app)
-    for dirpath, fname in iterator:
-        full_fname = os.path.join(html_gallery_dir, dirpath, fname)
-        subpath = dirpath[len(html_gallery_dir) + 1 :]
+    for full_fname in iterator:
+        subpath = full_fname.parent.relative_to(html_gallery_dir)
         if app.builder.name == "dirhtml":
-            json_fname = os.path.join(src_gallery_dir, f"{subpath}.codeobj.json")
+            # the containing directory is the document name, the file is index.html
+            json_fname = src_gallery_dir / f"{subpath}.codeobj.json"
         else:
-            json_fname = os.path.join(
-                src_gallery_dir, subpath, fname[:-5] + ".codeobj.json"
-            )
-        if not os.path.exists(json_fname):
+            json_fname = src_gallery_dir / subpath / f"{full_fname.stem}.codeobj.json"
+        if not json_fname.is_file():
             continue
 
         # we have a json file with the objects to embed links for

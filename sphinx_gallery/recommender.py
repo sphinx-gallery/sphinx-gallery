@@ -21,10 +21,11 @@ from .backreferences import (
 )
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
+from .typing import PathLikeStr
 from .utils import _replace_md5
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Generator, Iterable
 
     import numpy as np
 
@@ -175,14 +176,13 @@ class ExampleRecommender:
 
         return similarity
 
-    def fit(
-        self, file_names: list[str] | Generator[str, None, None]
-    ) -> ExampleRecommender:
+    def fit(self, file_names: Iterable[PathLikeStr]) -> ExampleRecommender:
         """Compute the similarity matrix of a group of documents.
 
         Parameters
         ----------
-        file_names : list or generator of file names.
+        file_names : iterable of str or pathlib.Path
+            The file names, as passed to `predict`.
 
         Returns
         -------
@@ -209,7 +209,8 @@ class ExampleRecommender:
         ):
             raise ValueError("max_df must be float in range [0.0, 1.0] or int")
 
-        file_names = list(file_names)
+        # `predict` looks names up in this list, so normalize them once here
+        file_names = [str(file_name) for file_name in file_names]
         freq_func = self.token_freqs
         counts_matrix = self.dict_vectorizer(
             [freq_func(Path(fname).read_text(encoding="utf-8")) for fname in file_names]
@@ -226,12 +227,12 @@ class ExampleRecommender:
         self.file_names_ = file_names
         return self
 
-    def predict(self, file_name: str) -> list[str]:
+    def predict(self, file_name: PathLikeStr) -> list[str]:
         """Compute the `n_examples` most similar documents to the query.
 
         Parameters
         ----------
-        file_name : str
+        file_name : str | pathlib.Path
             Name of the file corresponding to the query index `item_id`.
 
         Returns
@@ -239,7 +240,7 @@ class ExampleRecommender:
         recommendations : list of str
             Name of the files most similar to the query.
         """
-        item_id = self.file_names_.index(file_name)
+        item_id = self.file_names_.index(str(file_name))
         similar_items = list(enumerate(self.similarity_matrix_[item_id]))
         sorted_items = sorted(similar_items, key=lambda x: x[1], reverse=True)
 
@@ -253,7 +254,7 @@ class ExampleRecommender:
 
 def _write_recommendations(
     recommender: ExampleRecommender,
-    fname: str,
+    fname: PathLikeStr,
     gallery_conf: GalleryConfig,
 ) -> None:
     """Generate `.recommendations` reST file for a given example.
@@ -263,14 +264,14 @@ def _write_recommendations(
     recommender : ExampleRecommender
         Instance of a fitted ExampleRecommender.
 
-    fname : str
+    fname : str | pathlib.Path
         Path to the example file.
 
     gallery_conf : dict
         Configuration dictionary for the sphinx-gallery extension.
     """
     path_fname = Path(fname)
-    recommend_fname = f"{path_fname.parent / path_fname.stem}.recommendations.new"
+    recommend_fname = path_fname.with_name(f"{path_fname.stem}.recommendations.new")
     recommended_examples = recommender.predict(fname)
 
     default_rubric_header = "Related examples"
