@@ -55,6 +55,9 @@ jobs:
                 sphinx-design
             # TODO: restore PyPI plotly above once plotly/plotly.py#5701 is released
             uv pip install "plotly @ git+https://github.com/larsoner/plotly.py@sgthumb"
+            # plotly's scraper also needs a Chromium-based browser for static
+            # image export; the machine image ships Chrome, and if that ever
+            # changes, `plotly_get_chrome -y` (from plotly) installs one.
       - save_cache:
           key: cache-uv-1
           paths:

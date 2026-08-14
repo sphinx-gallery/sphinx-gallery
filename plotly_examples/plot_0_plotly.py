@@ -18,8 +18,9 @@ HTML, and also every figure that is the last expression of a code block
 additionally exported as a static image so that it can serve as the example
 thumbnail, which requires `kaleido
 <https://plotly.com/python/static-image-export/>`_ and a Chromium-based web
-browser; without them a warning is emitted and examples get a placeholder
-thumbnail.
+browser (plotly's ``plotly_get_chrome`` command installs one, e.g. on build
+machines without a browser); without them a warning is emitted and examples
+get a placeholder thumbnail.
 
 This tutorial gives a few examples of plotly figures, starting with its
 high-level API `plotly express <https://plotly.com/python/plotly-express/>`_.
