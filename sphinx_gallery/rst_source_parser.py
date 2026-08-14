@@ -7,17 +7,18 @@ from pathlib import Path
 from typing import Any, Literal
 
 from .py_source_parser import Block
+from .typing import PathLikeStr
 
 
 def split_code_and_text_blocks(
-    source_file: str | Path,
+    source_file: PathLikeStr,
     return_node: Literal[False] = False,
 ) -> tuple[dict[str, Any], list, None]:
     """Return list with source file separated into code and text blocks.
 
     Parameters
     ----------
-    source_file : str
+    source_file : str | pathlib.Path
         Path to the source file.
     return_node : bool
         If True, return the ast node.
@@ -34,7 +35,7 @@ def split_code_and_text_blocks(
         Always None.
     """
     file_conf: dict[str, Any] = {}  # not defined in .rst example files
-    content = Path(source_file).read_text()
+    content = Path(source_file).read_text(encoding="utf-8")
     blocks = [Block("text", content, 1)]
     node = None
 

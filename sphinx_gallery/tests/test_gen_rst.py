@@ -471,6 +471,26 @@ def test_fail_example(gallery_conf, failing_code, want, log_collector, req_pil):
     assert ex_failing_blocks <= 1, "Did not stop executing script after error"
 
 
+def test_stale_codeobj_json_removed(gallery_conf, req_pil):
+    """Test the codeobj cache is dropped when no names are identified anymore.
+
+    A stale ``.codeobj.json`` would resurrect the example's old backreferences
+    via ``_read_cached_backrefs`` on every md5-skipped rebuild.
+    """
+    gallery_conf.update(image_scrapers=(), reset_modules=())
+    with_names = [
+        '"""\nTitle\n=====\n\nDescription.\n"""',
+        "import os",
+        "print(os.path.join('a', 'b'))",
+    ]
+    without_names = ['"""\nTitle\n=====\n\nDescription.\n"""', "print(1)"]
+    _generate_rst(gallery_conf, "plot_codeobj.py", with_names)
+    codeobj = Path(gallery_conf["gallery_dir"], "plot_codeobj.codeobj.json")
+    assert codeobj.is_file()
+    _generate_rst(gallery_conf, "plot_codeobj.py", without_names)
+    assert not codeobj.is_file()
+
+
 def _generate_rst(gallery_conf, fname, content):
     """Return the reST text of a given example content.
 
@@ -736,6 +756,39 @@ def test_thumbnail_path(test_str, tmp_path):
     filename.write_text("\n".join(['"Docstring"', test_str]))
     file_conf, blocks = split_code_and_text_blocks(filename)
     assert file_conf == {"thumbnail_path": "_static/demo.png"}
+
+
+@pytest.mark.parametrize(
+    "extra_conf, warns",
+    [
+        pytest.param({}, True, id="path_only"),
+        pytest.param({"thumbnail_number": 1}, False, id="number_takes_priority"),
+    ],
+)
+def test_thumbnail_path_not_found_warns(
+    gallery_conf, log_collector, tmp_path, extra_conf, warns
+):
+    """Test that a missing sphinx_gallery_thumbnail_path emits a warning."""
+    image_path_template = str(tmp_path / "temp_{0:03}.png")
+    src_file = str(tmp_path / "plot_test.py")  # need not exist, only basename is used
+    script_vars = {
+        "image_path_iterator": ImagePathIterator(image_path_template),
+    }
+    file_conf = {"thumbnail_path": "_static/nonexistent.png", **extra_conf}
+
+    sg.save_thumbnail(
+        image_path_template, src_file, script_vars, file_conf, gallery_conf
+    )
+
+    if not warns:
+        log_collector.warning.assert_not_called()
+        return
+    log_collector.warning.assert_called_once()
+    warning_msg = log_collector.warning.call_args[0][0]
+    assert "sphinx_gallery_thumbnail_path" in warning_msg
+    # the reported path is normalized, so compare it as a path and not as a string
+    expected_path = Path(gallery_conf["src_dir"], "_static/nonexistent.png")
+    assert Path(log_collector.warning.call_args[0][1]) == expected_path
 
 
 def test_zip_python(gallery_conf):

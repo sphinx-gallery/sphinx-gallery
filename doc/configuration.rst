@@ -1432,6 +1432,9 @@ For example, the following defines that the image ``demo.png`` in the folder
 
     # sphinx_gallery_thumbnail_path = '_static/demo.png'
 
+If the image cannot be found, a warning is emitted and the default thumbnail is
+used instead.
+
 Note that ``sphinx_gallery_thumbnail_number`` overrules
 ``sphinx_gallery_thumbnail_path``. See
 :ref:`sphx_glr_auto_examples_plot_4b_provide_thumbnail.py` for an example of
@@ -2349,6 +2352,43 @@ Note that this affects execution order but not the order of the gallery itself,
 which is still determined by
 :ref:`within_subsection_order <within_gallery_order>`.
 
+.. _sphinx_parallel_read:
+
+Interaction with Sphinx's own parallel reading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``parallel`` option above controls how *examples* are executed, and is separate
+from ``sphinx-build -j``, which makes *Sphinx* read and write documents in parallel.
+The two interact badly if your examples use a threaded native library.
+
+Sphinx creates its read and write workers with ``fork`` (hardcoded in
+``sphinx/util/parallel.py``), and ``fork()`` only clones the calling thread. If an
+OpenMP worker thread is alive in the Sphinx process at that moment, it is lost in the
+child while the OpenMP runtime still believes it exists, and the next parallel region
+in that child blocks forever in the OpenMP join barrier. The build simply goes silent:
+no exception, no traceback, no ``EOFError``, so this is expensive to diagnose. A
+threaded BLAS such as MKL is enough to trigger it; OpenBLAS installs ``pthread_atfork``
+handlers and recovers, so whether you see this depends on which BLAS you link.
+
+Unless ``parallel`` is set, Sphinx-Gallery executes your example code in the Sphinx
+process itself, during ``builder-inited`` -- that is, before Sphinx forks. Any example
+that reaches a threaded BLAS can therefore leave such a thread behind. Options:
+
+- Set ``parallel``, which runs examples in separate Loky processes and so keeps the
+  example code out of the Sphinx process.
+- Cap the thread pools for the whole build in your ``conf.py``, before
+  ``builder-inited``, keeping a reference so the controller is not garbage collected::
+
+      import threadpoolctl
+
+      _threadpool_limits = threadpoolctl.threadpool_limits(limits=1)
+
+- Or set ``OMP_NUM_THREADS=1`` and ``MKL_NUM_THREADS=1`` in the build environment.
+
+The last two make example execution single threaded, which may be a meaningful slowdown
+for numeric galleries. Sphinx-Gallery's own :ref:`recommender <recommend_examples>` uses
+BLAS too, but caps its threads internally, so it is safe on its own.
+
 .. _recommend_examples:
 
 Enabling the example recommender system
@@ -2472,6 +2512,11 @@ Default is ``True`` unless the ``SOURCE_DATE_EPOCH`` environment variable is set
 
 If you are interested in using execution time and execution success and failure data,
 see :ref:`junit_xml`.
+
+Examples that are not re-run because their source is unchanged report the time and
+memory measured the last time they did run, cached alongside their md5 checksum. This
+means a rebuild that runs nothing at all leaves ``sg_execution_times.rst`` untouched
+rather than replacing every measurement with zero.
 
 .. _show_memory:
 
@@ -2793,18 +2838,24 @@ Graphs and documentation of both unused API entries and the examples that
 each API entry is used in are generated in the sphinx output directory under
 ``sg_api_usage.html``. See the
 `Sphinx-Gallery API usage documentation and graphs <sg_api_usage.html>`_
-for example. In large projects, there are many modules and, since a graph
-of API usage is generated for each module, this can use a lot of resources
-so ``show_api_usage`` is set to ``'unused'`` by default. The unused API
-entries are all shown in one graph so this scales much better for large
-projects. Setting ``show_api_usage`` to ``True`` will make one graph per
-module showing all of the API entries connected to the example that they
-are used in. This could be helpful for making a map of which examples to
-look at if you want to learn about a particular module. Setting
-``show_api_usage`` to ``False`` will not make any graphs or documentation
-about API usage. Note, the command-line binary ``neato`` from the
-``graphviz`` C utility as well as the ``graphviz`` Python package are
+for example. ``show_api_usage`` is ``False`` by default, which makes no graphs
+or documentation about API usage at all.
+
+Setting ``show_api_usage`` to ``'unused'`` documents and graphs only the unused
+API entries. They are all shown in one graph, so this scales well to large
+projects. Setting it to ``True`` additionally lists the used API entries and
+makes one graph per module showing all of the API entries connected to the
+examples that they are used in. This could be helpful for making a map of which
+examples to look at if you want to learn about a particular module, but in large
+projects there are many modules, and a graph per module can use a lot of
+resources -- prefer ``'unused'`` there. Note, the command-line binary ``neato``
+from the ``graphviz`` C utility as well as the ``graphviz`` Python package are
 required for making the unused and used API entry graphs.
+
+The page is generated into your source directory as ``sg_api_usage.rst``,
+alongside the ``*.dot`` files backing its graphs. These are only rewritten
+when the API usage actually changes, so that unchanged rebuilds skip the page
+entirely; you will likely want to add them to your ``.gitignore``.
 
 .. _api_usage_ignore:
 

@@ -20,6 +20,7 @@ from xml.sax.saxutils import escape, quoteattr
 import sphinx.util
 from docutils import nodes
 from sphinx.application import Sphinx
+from sphinx.environment import BuildEnvironment
 from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util.console import blue, bold, purple, red
 
@@ -48,8 +49,9 @@ from .interactive_example import (
 from .recommender import ExampleRecommender, _write_recommendations
 from .scrapers import _import_matplotlib
 from .sorting import ExplicitOrder
-from .typing import GalleryConfig
+from .typing import GalleryConfig, PathLikeStr
 from .utils import (
+    _W_KW,
     _collect_gallery_files,
     _combine_backreferences,
     _format_toctree,
@@ -58,6 +60,7 @@ from .utils import (
     _has_pypandoc,
     _read_json,
     _replace_md5,
+    _single_threaded,
     _write_json,
 )
 
@@ -180,14 +183,15 @@ def _update_gallery_conf_exclude_implicit_doc(gallery_conf: GalleryConfig) -> No
 
 def _update_gallery_conf_builder_inited(
     sphinx_gallery_conf: GalleryConfig,
-    src_dir: str,
+    src_dir: PathLikeStr,
     plot_gallery: bool = True,
     abort_on_example_error: bool = False,
     builder_name: str = "html",
 ) -> None:
     sphinx_gallery_conf.update(plot_gallery=plot_gallery)
     sphinx_gallery_conf.update(abort_on_example_error=abort_on_example_error)
-    sphinx_gallery_conf["src_dir"] = src_dir
+    # scrapers and other user callables are handed this, so keep it a plain str
+    sphinx_gallery_conf["src_dir"] = str(src_dir)
     # Make it easy to know which builder we're in
     sphinx_gallery_conf["builder_name"] = builder_name
 
@@ -532,8 +536,8 @@ def _fill_gallery_conf_defaults(
 
 
 def get_subsections(
-    srcdir: str,
-    examples_dir: str,
+    srcdir: PathLikeStr,
+    examples_dir: PathLikeStr,
     gallery_conf: GalleryConfig,
     check_for_header: bool = True,
 ) -> list[str]:
@@ -541,9 +545,9 @@ def get_subsections(
 
     Parameters
     ----------
-    srcdir : str
+    srcdir : str | pathlib.Path
         absolute path to directory containing conf.py
-    examples_dir : str
+    examples_dir : str | pathlib.Path
         path to the examples directory relative to conf.py
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
@@ -562,32 +566,26 @@ def get_subsections(
         if isinstance(subsec_order, list):
             gallery_conf["subsection_order"] = ExplicitOrder(subsec_order)
         (sortkey,) = _get_callables(gallery_conf, "subsection_order")
-    subfolders = [subfolder for subfolder in os.listdir(examples_dir)]
+    srcdir = Path(srcdir)
+    examples_dir = Path(examples_dir)
     if check_for_header:
         subfolders = [
-            subfolder
-            for subfolder in subfolders
+            subfolder.name
+            for subfolder in examples_dir.iterdir()
             # Return is not `None` only when a gallery head file is found
-            if _get_gallery_header(
-                os.path.join(examples_dir, subfolder), gallery_conf, raise_error=False
-            )
+            if _get_gallery_header(subfolder, gallery_conf, raise_error=False)
             is not None
         ]
     else:
         # just make sure its a directory, that is not `__pycache__`
         subfolders = [
-            subfolder
-            for subfolder in subfolders
-            if (
-                subfolder != "__pycache__"
-                and os.path.isdir(os.path.join(examples_dir, subfolder))
-            )
+            subfolder.name
+            for subfolder in examples_dir.iterdir()
+            if subfolder.is_dir() and subfolder.name != "__pycache__"
         ]
 
-    base_examples_dir_path = os.path.relpath(examples_dir, srcdir)
-    subfolders_with_path = [
-        os.path.join(base_examples_dir_path, item) for item in subfolders
-    ]
+    base_examples_dir_path = Path(os.path.relpath(examples_dir, srcdir))
+    subfolders_with_path = [str(base_examples_dir_path / item) for item in subfolders]
     sorted_subfolders = sorted(subfolders_with_path, key=sortkey)
 
     return [
@@ -597,7 +595,7 @@ def get_subsections(
 
 
 def _prepare_sphx_glr_dirs(
-    gallery_conf: GalleryConfig, srcdir: str
+    gallery_conf: GalleryConfig, srcdir: PathLikeStr
 ) -> list[tuple[Any, Any]]:
     """Creates necessary folders for sphinx_gallery files."""
     examples_dirs = gallery_conf["examples_dirs"]
@@ -616,8 +614,8 @@ def _prepare_sphx_glr_dirs(
         )
 
     if bool(gallery_conf["backreferences_dir"]):
-        backreferences_dir = os.path.join(srcdir, gallery_conf["backreferences_dir"])
-        os.makedirs(backreferences_dir, exist_ok=True)
+        backreferences_dir = Path(srcdir) / gallery_conf["backreferences_dir"]
+        backreferences_dir.mkdir(parents=True, exist_ok=True)
 
     return list(zip(examples_dirs, gallery_dirs))
 
@@ -642,7 +640,7 @@ def _finish_index_rst(
     indexst: str,
     sg_root_index: bool,
     subsection_index_files: list[str],
-    gallery_dir_abs_path: str,
+    gallery_dir_abs_path: PathLikeStr,
 ) -> None:
     """Add toctree, download and signature, if req, to index and write file."""
     # Generate toctree containing subsection index files
@@ -669,14 +667,14 @@ def _finish_index_rst(
         if app.config.sphinx_gallery_conf["show_signature"]:
             indexst += SPHX_GLR_SIG
         # Write index to file
-        index_rst_new = os.path.join(gallery_dir_abs_path, "index.rst.new")
+        index_rst_new = Path(gallery_dir_abs_path) / "index.rst.new"
         with open(index_rst_new, "w", encoding="utf-8") as fhindex:
             fhindex.write(indexst)
         _replace_md5(index_rst_new, mode="t")
 
 
 def _build_recommender(
-    gallery_conf: GalleryConfig, gallery_dir_abs_path: str, subsecs: list[str]
+    gallery_conf: GalleryConfig, gallery_dir_abs_path: PathLikeStr, subsecs: list[str]
 ) -> None:
     """Build recommender and write recommendations."""
     if gallery_conf["recommender"]["enable"]:
@@ -692,23 +690,29 @@ def _build_recommender(
 
         gallery_py_files: list[str] = []
         # root and subsection directories containing python examples
-        gallery_directories = [gallery_dir_abs_path] + subsecs
-        for current_dir in gallery_directories:
-            src_dir = os.path.join(gallery_dir_abs_path, current_dir)
+        gallery_dir_abs_path = Path(gallery_dir_abs_path)
+        gallery_directories = [Path(s) for s in [gallery_dir_abs_path] + subsecs]
+        for src_dir in gallery_directories:
+            if not src_dir.is_absolute():
+                src_dir = gallery_dir_abs_path / src_dir
             # sort python files to have a deterministic input across call
             py_files = sorted(
                 # NOTE we don't take account of `ignore_pattern` and ignore
                 # ext in `example_extensions`
-                [
-                    os.path.join(src_dir, fname)
-                    for fname in Path(src_dir).iterdir()
-                    if fname.suffix == ".py"
-                ],
-                key=_get_callables(gallery_conf, "within_subsection_order", src_dir)[0],
+                [str(fname) for fname in src_dir.iterdir() if fname.suffix == ".py"],
+                key=_get_callables(
+                    gallery_conf, "within_subsection_order", str(src_dir)
+                )[0],
             )
             gallery_py_files.extend(py_files)
 
-        recommender.fit(gallery_py_files)
+        # `fit` builds the similarity matrix with BLAS. Keep that single threaded so
+        # that no OpenMP thread pool is left alive in the Sphinx process, which would
+        # deadlock the workers Sphinx later forks for its parallel read/write phases
+        # (see `_single_threaded`). The matrices here are tiny, so nothing is lost.
+        # `predict` below only indexes into that matrix, so it needs no protection.
+        with _single_threaded():
+            recommender.fit(gallery_py_files)
         for fname in gallery_py_files:
             _write_recommendations(recommender, fname, gallery_conf)
 
@@ -765,7 +769,8 @@ def generate_gallery_rst(app: Sphinx) -> None:
     seen_backrefs: set[str] = set()
 
     costs: list[ExampleCost] = []
-    workdirs = _prepare_sphx_glr_dirs(gallery_conf, str(app.builder.srcdir))
+    src_root = Path(app.builder.srcdir)
+    workdirs = _prepare_sphx_glr_dirs(gallery_conf, src_root)
 
     # Check for duplicate filenames to make sure linking works as expected
     examples_dirs = [ex_dir for ex_dir, _ in workdirs]
@@ -774,8 +779,8 @@ def generate_gallery_rst(app: Sphinx) -> None:
     backrefs_all: dict[str, list[Backreference]] = {}
 
     for examples_dir, gallery_dir in workdirs:
-        examples_dir_abs_path = os.path.join(str(app.builder.srcdir), examples_dir)
-        gallery_dir_abs_path = os.path.join(str(app.builder.srcdir), gallery_dir)
+        examples_dir_abs_path = src_root / examples_dir
+        gallery_dir_abs_path = src_root / gallery_dir
 
         # Create example rst files for root gallery directory examples
         # (excl. sub-dir examples) and fetch gallery header for root index.rst
@@ -815,14 +820,14 @@ def generate_gallery_rst(app: Sphinx) -> None:
         # list all paths to subsection index files in this array
         subsection_index_files = []
         subsecs = get_subsections(
-            str(app.builder.srcdir),
+            src_root,
             examples_dir_abs_path,
             gallery_conf,
             check_for_header=sg_root_index,
         )
         for subsection in subsecs:
-            src_dir = os.path.join(examples_dir_abs_path, subsection)
-            target_dir = os.path.join(gallery_dir_abs_path, subsection)
+            src_dir = examples_dir_abs_path / subsection
+            target_dir = gallery_dir_abs_path / subsection
             subsection_index_files.append(
                 "/".join(["", gallery_dir, subsection, "index.rst"]).replace(
                     os.sep, "/"
@@ -896,6 +901,8 @@ def generate_gallery_rst(app: Sphinx) -> None:
 
     if gallery_conf["show_api_usage"] is not False:
         _init_api_usage(Path(app.builder.srcdir))
+    else:
+        _remove_api_usage(Path(app.builder.srcdir))
     _finalize_backreferences(seen_backrefs, gallery_conf)
 
     if gallery_conf["plot_gallery"]:
@@ -935,7 +942,7 @@ def _sec_to_readable(t: float) -> str:
 def _format_for_writing(
     costs: list[ExampleCost],
     *,
-    src_dir: str,
+    src_dir: PathLikeStr,
     kind: Literal["rst", "rst-full", "console"] = "rst",
 ) -> list[list[str]]:
     """Provide formatted computation summary text.
@@ -957,20 +964,25 @@ def _format_for_writing(
         [example_file, time_elapsed, memory_used]
     """
     lines = list()
+    src_dir = Path(src_dir)
     for cost in sorted(costs, key=lambda c: c.sort_key()):
-        rel_path = os.path.relpath(cost.src_file, src_dir)
+        rel_path = Path(os.path.relpath(cost.src_file, src_dir))
         if kind in ("rst", "rst-full"):  # like in sg_execution_times
-            target_dir_clean = os.path.relpath(cost.target_dir, src_dir).replace(
-                os.sep, "_"
+            target_dir_clean = Path(
+                os.path.relpath(cost.target_dir, src_dir)
+            ).as_posix()
+            target_dir_clean = target_dir_clean.replace("/", "_")
+            # the reST is written to disk, so keep it identical across platforms
+            paren = (
+                rel_path.as_posix() if kind == "rst-full" else Path(cost.src_file).name
             )
-            paren = rel_path if kind == "rst-full" else os.path.basename(cost.src_file)
             name = ":ref:`sphx_glr_{0}_{1}` (``{2}``)".format(
-                target_dir_clean, os.path.basename(cost.src_file), paren
+                target_dir_clean, Path(cost.src_file).name, paren
             )
             t = _sec_to_readable(cost.execution_time)
         else:  # like in generate_gallery
             assert kind == "console"
-            name = rel_path
+            name = str(rel_path)  # native separators, this is read by a human
             t = f"{cost.execution_time:0.2f} sec"
         m = f"{cost.memory:.1f} MB"
         lines.append([name, t, m])
@@ -978,7 +990,9 @@ def _format_for_writing(
 
 
 def write_computation_times(
-    gallery_conf: GalleryConfig, target_dir: str | None, costs: list[ExampleCost]
+    gallery_conf: GalleryConfig,
+    target_dir: PathLikeStr | None,
+    costs: list[ExampleCost],
 ) -> None:
     """Write computation times to `sg_execution_times.rst`.
 
@@ -996,20 +1010,21 @@ def write_computation_times(
     total_time = sum(cost.execution_time for cost in costs)
     kind: Literal["rst", "rst-full", "console"]
     if target_dir is None:  # all galleries together
-        out_dir = gallery_conf["src_dir"]
+        out_dir = Path(gallery_conf["src_dir"])
         where = "all galleries"
         kind = "rst-full"
         ref_extra = ""
     else:  # a single gallery
-        out_dir = target_dir
-        where = os.path.relpath(target_dir, gallery_conf["src_dir"])
+        out_dir = Path(target_dir)
+        where = Path(os.path.relpath(out_dir, gallery_conf["src_dir"])).as_posix()
         kind = "rst"
-        ref_extra = f"{where.replace(os.sep, '_')}_"
+        ref_extra = f"{where.replace('/', '_')}_"
     new_ref = f"sphx_glr_{ref_extra}sg_execution_times"
     out_file = Path(out_dir) / "sg_execution_times.rst"
-    if out_file.is_file() and total_time == 0:  # a re-run
+    if out_file.is_file() and total_time == 0:  # nothing ran and nothing was cached
         return
-    with out_file.open("w", encoding="utf-8") as fid:
+    out_file_new = out_file.with_suffix(".rst.new")
+    with out_file_new.open("w", **_W_KW) as fid:
         fid.write(SPHX_GLR_COMP_TIMES.format(new_ref))
         fid.write(
             f"**{_sec_to_readable(total_time)}** total execution time for "
@@ -1054,12 +1069,14 @@ def write_computation_times(
      - {mb.rsplit(maxsplit=1)[0]}
 """
             )  # remove the "MB" from the right
+    # unchanged timings must not touch the mtime, or Sphinx re-reads the page
+    _replace_md5(out_file_new, mode="t")
 
 
 def write_api_entries(
     app: Sphinx, what: str, name: str, obj: Any, options: Any, lines: list[str]
 ) -> None:
-    """Write api entries to `_sg_api_entries` configuration.
+    """Collect an API entry into the build environment.
 
     To connect to `autodoc-process-docstring` event.
 
@@ -1083,15 +1100,64 @@ def write_api_entries(
     """
     if app.config.sphinx_gallery_conf["show_api_usage"] is False:
         return
-    if "_sg_api_entries" not in app.config.sphinx_gallery_conf:
-        app.config.sphinx_gallery_conf["_sg_api_entries"] = dict()
-    if what not in app.config.sphinx_gallery_conf["_sg_api_entries"]:
-        app.config.sphinx_gallery_conf["_sg_api_entries"][what] = set()
-    app.config.sphinx_gallery_conf["_sg_api_entries"][what].add(name)
+    # keyed by docname so that entries can be purged when a doc is re-read, which
+    # is what keeps the set complete (and correct) across incremental builds
+    env = app.env
+    _env_api_entries(env).setdefault(env.docname, dict()).setdefault(what, set()).add(
+        name
+    )
+
+
+def _env_api_entries(env: BuildEnvironment) -> dict[str, dict[str, set[str]]]:
+    """Get the ``{docname: {what: {name, ...}}}`` store, creating it if needed."""
+    entries = getattr(env, "sg_api_entries", None)
+    if entries is None:
+        entries = dict()
+        setattr(env, "sg_api_entries", entries)
+    return entries
+
+
+def purge_api_entries(app: Sphinx, env: BuildEnvironment, docname: str) -> None:
+    """Drop the API entries of a document that is about to be re-read.
+
+    To connect to `env-purge-doc` event.
+    """
+    _env_api_entries(env).pop(docname, None)
+
+
+def merge_api_entries(
+    app: Sphinx, env: BuildEnvironment, docnames: list[str], other: BuildEnvironment
+) -> None:
+    """Merge the API entries collected by a parallel read worker.
+
+    To connect to `env-merge-info` event.
+    """
+    _env_api_entries(env).update(getattr(other, "sg_api_entries", {}))
+
+
+def _get_api_entries(env: BuildEnvironment) -> dict[str, set[str]]:
+    """Flatten the per-document API entries into ``{what: {name, ...}}``."""
+    entries: dict[str, set[str]] = dict()
+    for doc_entries in _env_api_entries(env).values():
+        for what, names in doc_entries.items():
+            entries.setdefault(what, set()).update(names)
+    return entries
 
 
 def _init_api_usage(gallery_dir: Path) -> None:
-    (gallery_dir / "sg_api_usage.rst").write_text("")
+    # Just a placeholder so that Sphinx discovers the docname; the real content is
+    # written by write_api_entry_usage once autodoc has reported every entry.
+    fname = gallery_dir / "sg_api_usage.rst"
+    if not fname.is_file():
+        fname.write_text("", **_W_KW)
+
+
+def _remove_api_usage(gallery_dir: Path) -> None:
+    # the generated page and graphs persist across builds, so a build with the
+    # feature turned off has to remove them or the stale page keeps being built
+    (gallery_dir / "sg_api_usage.rst").unlink(missing_ok=True)
+    for dot_file in gallery_dir.glob("*sg_api_*.dot"):
+        dot_file.unlink()
 
 
 # Colors from https://personal.sron.nl/~pault/data/colourschemes.pdf
@@ -1106,7 +1172,9 @@ API_COLORS = dict(
 
 
 def _make_graph(
-    fname: str, entries: dict[str, list[str]] | list[str], gallery_conf: GalleryConfig
+    fname: PathLikeStr,
+    entries: dict[str, list[str]] | list[str],
+    api_entries: dict[str, set[str]],
 ) -> None:
     """Make a graph of unused and used API entries.
 
@@ -1124,15 +1192,16 @@ def _make_graph(
 
     Parameters
     ----------
-    fname: str
+    fname : str | pathlib.Path
         Path to '*sg_api_unused.dot' file.
     entries: Dict[str, List] or List[str]
         Used (List) or unused (Dict) API entries.
-    gallery_conf : Dict[str, Any]
-        Sphinx-Gallery configuration dictionary.
+    api_entries : Dict[str, Set[str]]
+        All API entries collected from autodoc, keyed by object type.
     """
     import graphviz
 
+    fname = Path(fname)
     dg = graphviz.Digraph(
         filename=fname,
         graph_attr={
@@ -1153,7 +1222,9 @@ def _make_graph(
         # look up table for connections so they don't repeat
         lut: dict[str, str] = dict()
         structs = [entry.split(".") for entry in entries]
-        for struct in sorted(structs, key=len):
+        # total order: sets iterate arbitrarily across processes, and a graph
+        # that reshuffles every build churns the .dot the page depends on
+        for struct in sorted(structs, key=lambda struct: (len(struct), struct)):
             for level in range(len(struct) - 2):
                 if (struct[level], struct[level + 1]) in connections:
                     continue
@@ -1192,95 +1263,72 @@ def _make_graph(
                 dg.node(node_to, **node_kwargs)
                 dg.edge(node_from, node_to, color=API_COLORS["edge"])
         # add modules with all API entries
-        for module in gallery_conf["_sg_api_entries"].get("module", []):
+        for module in sorted(api_entries.get("module", [])):
             struct = module.split(".")
             for i in range(len(struct) - 1):
                 if struct[i + 1] not in lut:
                     dg.edge(struct[i], struct[i + 1])
     else:
         assert isinstance(entries, dict)
-        for entry, refs in entries.items():
+        for entry, refs in sorted(entries.items()):
             dg.node(entry)
             for ref in refs:
                 dg.node(ref, color=API_COLORS["bad_1"])
                 dg.edge(entry, ref, color=API_COLORS["edge"])
-    dg.save()
+    # graphviz records the .dot as a dependency of the page, so an unchanged graph
+    # must keep its mtime or the page is re-read on every build
+    fname_new = fname.with_name(fname.name + ".new")
+    dg.save(fname_new)
+    _replace_md5(fname_new, mode="t")
 
 
-def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
-    """Write an html page describing which API entries are used and unused.
+def _api_usage_rst(app: Sphinx, api_entries: dict[str, set[str]]) -> str:
+    """Build the reST describing which API entries are used and unused.
 
-    To document and graph only those API entries that are used by
-    autodoc, we have to wait for autodoc to finish and hook into the
-    ``source-read`` event. This intercepts the text from the rst such
-    that it can be modified. Since, we only touched an empty file,
-    we have to add 1) a list of all the API entries that are unused
-    and a graph of the number of unused API entries per module and 2)
-    a list of API entries that are used in examples, each with a sub-list
-    of which examples that API entry is used in, and a graph that
-    connects all of the API entries in a module to the examples
-    that they are used in.
-
-    Parameters
-    ----------
-    app :
-        The Sphinx application object.
-    docname :
-        Docname of the document currently being parsed.
-    source :
-        List whose single element is the contents of the source file
+    Returns 1) a list of all the API entries that are unused and a graph of the
+    number of unused API entries per module and 2) a list of API entries that
+    are used in examples, each with a sub-list of which examples that API entry
+    is used in, and a graph that connects all of the API entries in a module to
+    the examples that they are used in.
     """
-    docname = docname or ""  # can be None on Sphinx 7.2
-    if docname != "sg_api_usage":
-        return
     gallery_conf = app.config.sphinx_gallery_conf
-    if gallery_conf["show_api_usage"] is False:
-        return
-    # since this is done at the gallery directory level (as opposed
-    # to in a gallery directory, e.g. auto_examples), it runs last
-    # which means that all the api entries will be in gallery_conf
 
     # Always write at least the title
-    source[0] = SPHX_GLR_ORPHAN.format("sphx_glr_sg_api_usage")
+    out = SPHX_GLR_ORPHAN.format("sphx_glr_sg_api_usage")
     title = "Unused API Entries"
-    source[0] += title + "\n" + "^" * len(title) + "\n\n"
-    if (
-        "_sg_api_entries" not in gallery_conf
-        or gallery_conf["backreferences_dir"] is None
-    ):
-        source[0] += "No API entries found, not computed.\n\n"
-        return
-    backreferences_dir = os.path.join(
-        gallery_conf["src_dir"], gallery_conf["backreferences_dir"]
+    out += title + "\n" + "^" * len(title) + "\n\n"
+    if not api_entries or gallery_conf["backreferences_dir"] is None:
+        return out + "No API entries found, not computed.\n\n"
+    backreferences_dir = (
+        Path(gallery_conf["src_dir"]) / gallery_conf["backreferences_dir"]
     )
 
-    example_files = set.union(
+    example_files = set().union(
         *[
-            gallery_conf["_sg_api_entries"][obj_type]
+            api_entries[obj_type]
             for obj_type in ("class", "method", "function")
-            if obj_type in gallery_conf["_sg_api_entries"]
+            if obj_type in api_entries
         ]
     )
 
     if len(example_files) == 0:
-        source[0] += "No examples run, not computed.\n\n"
-        return
+        return out + "No examples run, not computed.\n\n"
 
     def get_entry_type(entry: str) -> str:
-        if entry in gallery_conf["_sg_api_entries"].get("class", []):
+        if entry in api_entries.get("class", []):
             return "class"
-        elif entry in gallery_conf["_sg_api_entries"].get("method", []):
+        elif entry in api_entries.get("method", []):
             return "meth"
         else:
-            assert entry in gallery_conf["_sg_api_entries"]["function"]
+            assert entry in api_entries["function"]
             return "func"
 
     # find used and unused API entries
     unused_api_entries: list[str] = list()
     used_api_entries: dict[str, list[str]] = dict()
     backreferences_all = _read_json(Path(backreferences_dir, "backreferences_all.json"))
-    src_dir = gallery_conf["src_dir"]
-    for entry in example_files:
+    src_dir = Path(gallery_conf["src_dir"])
+    for entry in sorted(example_files):
         # don't include built-in methods etc.
         if re.match(gallery_conf["api_usage_ignore"], entry) is not None:
             continue
@@ -1293,16 +1341,16 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
             for br in backref_entry:
                 # br[2] = abs path to target directory
                 example_path = Path(br[2], br[0]).relative_to(src_dir)
-                ref_name = str(example_path).replace(os.sep, "_")
+                ref_name = example_path.as_posix().replace("/", "_")
                 used_api_entries[entry].append(f"sphx_glr_{ref_name}")
 
     for entry in sorted(unused_api_entries):
-        source[0] += f"- :{get_entry_type(entry)}:`{entry}`\n"
-    source[0] += "\n\n"
+        out += f"- :{get_entry_type(entry)}:`{entry}`\n"
+    out += "\n\n"
 
     has_graphviz = _has_graphviz()
     if has_graphviz and unused_api_entries:
-        source[0] += (
+        out += (
             ".. graphviz:: ./sg_api_unused.dot\n"
             "    :alt: API unused entries graph\n"
             "    :layout: neato\n\n"
@@ -1311,7 +1359,7 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
     used_count = len(used_api_entries)
     total_count = used_count + len(unused_api_entries)
     used_percentage = used_count / max(total_count, 1)  # avoid div by zero
-    source[0] += (
+    out += (
         "\nAPI entries used: "
         f"{round(used_percentage * 100, 2)}% "
         f"({used_count}/{total_count})\n\n"
@@ -1319,31 +1367,31 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
 
     if has_graphviz and unused_api_entries:
         _make_graph(
-            os.path.join(app.builder.srcdir, "sg_api_unused.dot"),
+            Path(app.builder.srcdir) / "sg_api_unused.dot",
             unused_api_entries,
-            gallery_conf,
+            api_entries,
         )
 
     if gallery_conf["show_api_usage"] is True and used_api_entries:
         title = "Used API Entries"
-        source[0] += title + "\n" + "^" * len(title) + "\n\n"
+        out += title + "\n" + "^" * len(title) + "\n\n"
         for entry in sorted(used_api_entries):
-            source[0] += f"- :{get_entry_type(entry)}:`{entry}`\n\n"
+            out += f"- :{get_entry_type(entry)}:`{entry}`\n\n"
             for ref in used_api_entries[entry]:
-                source[0] += f"  - :ref:`{ref}`\n"
-            source[0] += "\n\n"
+                out += f"  - :ref:`{ref}`\n"
+            out += "\n\n"
 
         if has_graphviz:
             used_modules = {entry.split(".")[0] for entry in used_api_entries}
             for module in sorted(used_modules):
-                source[0] += (
+                out += (
                     f"{module}\n" + "^" * len(module) + "\n\n"
                     f".. graphviz:: ./{module}_sg_api_used.dot\n"
                     f"    :alt: {module} usage graph\n"
                     "    :layout: neato\n\n"
                 )
 
-            for module in used_modules:
+            for module in sorted(used_modules):
                 logger.info("Making API usage graph for %s", module)
                 # select and format entries for this module
                 entries: dict = dict()
@@ -1355,28 +1403,49 @@ def write_api_entry_usage(app: Sphinx, docname: str, source: list[str]) -> None:
                             if entry.startswith(target_dir):
                                 entry = entry[len(target_dir) + 1 :]
                 _make_graph(
-                    os.path.join(app.builder.srcdir, f"{module}_sg_api_used.dot"),
+                    Path(app.builder.srcdir) / f"{module}_sg_api_used.dot",
                     entries,
-                    gallery_conf,
+                    api_entries,
                 )
 
+    return out
 
-def clean_api_usage_files(app: Sphinx, exception: Exception | None) -> None:
-    """Remove api usage .dot files.
 
-    To connect to 'build-finished' event.
+def write_api_entry_usage(app: Sphinx, env: BuildEnvironment) -> list[str]:
+    """Write ``sg_api_usage.rst`` and re-read it if it changed.
+
+    To connect to the 'env-updated' event, which is the first point at which every
+    ``autodoc-process-docstring`` has fired -- including those in parallel read
+    workers, whose entries have been merged back by then. Generating here rather
+    than at 'source-read' means a build whose API usage is unchanged leaves the
+    file untouched, so Sphinx skips the document entirely on the next build.
+
+    Returns
+    -------
+    docnames : list of str
+        The documents that need to be written.
     """
-    if os.path.isfile(os.path.join(app.builder.srcdir, "sg_api_usage.rst")):
-        os.remove(os.path.join(app.builder.srcdir, "sg_api_usage.rst"))
-    if os.path.isfile(os.path.join(app.builder.srcdir, "sg_api_unused.dot")):
-        os.remove(os.path.join(app.builder.srcdir, "sg_api_unused.dot"))
-    for file in os.listdir(app.builder.srcdir):
-        if "sg_api_used.dot" in file:
-            os.remove(os.path.join(app.builder.srcdir, file))
+    gallery_conf = app.config.sphinx_gallery_conf
+    if gallery_conf["show_api_usage"] is False:
+        return []
+    docname = "sg_api_usage"
+    fname = Path(app.builder.srcdir, f"{docname}.rst")
+    if not fname.is_file():  # _init_api_usage did not run, e.g. a fresh env
+        return []
+    fname_new = Path(f"{fname}.new")
+    fname_new.write_text(_api_usage_rst(app, _get_api_entries(env)), **_W_KW)
+    changed = _replace_md5(fname_new, mode="t")
+    if not changed and docname in env.all_docs:
+        return []
+    # re-read in-process so the page is current in *this* build rather than the next
+    app.emit("env-purge-doc", env, docname)
+    env.clear_doc(docname)
+    app.builder.read_doc(docname)
+    return [docname]
 
 
 def write_junit_xml(
-    gallery_conf: GalleryConfig, target_dir: str | Path, costs: list[ExampleCost]
+    gallery_conf: GalleryConfig, target_dir: PathLikeStr, costs: list[ExampleCost]
 ) -> None:
     """Write JUnit XML file of example run times, successes, and failures.
 
@@ -1384,7 +1453,7 @@ def write_junit_xml(
     ----------
     gallery_conf : Dict[str, Any]
         Sphinx-Gallery configuration dictionary.
-    target_dir : Union[str, pathlib.Path]
+    target_dir : str | pathlib.Path
         Build directory.
     costs: List[ExampleCost]
         List of example run costs.
@@ -1400,6 +1469,7 @@ def write_junit_xml(
     elapsed = 0.0
     src_dir = gallery_conf["src_dir"]
     output = ""
+    src_dir = Path(src_dir)
     for cost in costs:
         fname = cost.src_file
         if not any(
@@ -1415,8 +1485,8 @@ def write_junit_xml(
         title = gallery_conf["titles"][fname]
         output += (
             '<testcase classname={!s} file={!s} line="1" name={!s} time="{!r}">'.format(
-                quoteattr(os.path.splitext(os.path.basename(fname))[0]),
-                quoteattr(os.path.relpath(fname, src_dir)),
+                quoteattr(Path(fname).stem),
+                quoteattr(Path(os.path.relpath(fname, src_dir)).as_posix()),
                 quoteattr(title),
                 cost.execution_time,
             )
@@ -1445,9 +1515,8 @@ def write_junit_xml(
         )
     ) + output
     # Actually write it
-    fname = os.path.normpath(os.path.join(target_dir, gallery_conf["junit"]))
-    junit_dir = os.path.dirname(fname)
-    os.makedirs(junit_dir, exist_ok=True)
+    fname = Path(target_dir) / gallery_conf["junit"]
+    fname.parent.mkdir(parents=True, exist_ok=True)
     with open(fname, "w", encoding="utf-8") as fid:
         fid.write(output)
 
@@ -1463,20 +1532,20 @@ def touch_empty_backreferences(
     if not bool(app.config.sphinx_gallery_conf["backreferences_dir"]):
         return
 
-    examples_path = os.path.join(
-        app.srcdir,
-        app.config.sphinx_gallery_conf["backreferences_dir"],
-        f"{name}.examples",
+    examples_path = (
+        Path(app.srcdir)
+        / app.config.sphinx_gallery_conf["backreferences_dir"]
+        / f"{name}.examples"
     )
 
-    if not os.path.exists(examples_path):
+    if not examples_path.exists():
         # touch file
-        open(examples_path, "w").close()
+        examples_path.touch()
 
 
 def _expected_failing_examples(gallery_conf: GalleryConfig) -> set[str]:
     return {
-        os.path.normpath(os.path.join(gallery_conf["src_dir"], path))
+        str((Path(gallery_conf["src_dir"]) / path).resolve(strict=False))
         for path in gallery_conf["expected_failing_examples"]
     }
 
@@ -1625,7 +1694,7 @@ def fill_gallery_conf_defaults(
 def update_gallery_conf_builder_inited(app: Sphinx) -> None:
     """Update the the sphinx-gallery config at builder-inited."""
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
-    src_dir = str(app.builder.srcdir)
+    src_dir = app.builder.srcdir
     abort_on_example_error = _bool_eval(app.builder.config.abort_on_example_error)
     _update_gallery_conf_builder_inited(
         app.config.sphinx_gallery_conf,
@@ -1734,7 +1803,10 @@ def setup(app: Sphinx) -> dict[str, Any]:
     if "sphinx.ext.autodoc" in app.extensions:
         app.connect("autodoc-process-docstring", touch_empty_backreferences)
         app.connect("autodoc-process-docstring", write_api_entries)
-        app.connect("source-read", write_api_entry_usage)
+        app.connect("env-purge-doc", purge_api_entries)
+        app.connect("env-merge-info", merge_api_entries)
+        # run early so that other env-updated handlers see the re-read page
+        app.connect("env-updated", write_api_entry_usage, priority=100)
 
     # Add the custom directive
     app.add_directive("minigallery", MiniGallery)
@@ -1750,7 +1822,6 @@ def setup(app: Sphinx) -> dict[str, Any]:
 
     app.connect("build-finished", summarize_failing_examples)
     app.connect("build-finished", embed_code_links)
-    app.connect("build-finished", clean_api_usage_files)
 
     app.connect("html-page-context", setup_template_link_getters)
 
@@ -1760,6 +1831,9 @@ def setup(app: Sphinx) -> dict[str, Any]:
         "parallel_read_safe": True,
         "parallel_write_safe": True,
         "version": _sg_version,
+        # bump whenever the schema of data stored on env changes (sg_api_entries),
+        # so that cached environments from other schemas are discarded
+        "env_version": 1,
     }
     return metadata
 

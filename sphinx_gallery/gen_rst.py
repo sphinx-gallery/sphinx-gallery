@@ -63,12 +63,13 @@ from .scrapers import (
     clean_modules,
     save_figures,
 )
-from .typing import GalleryConfig, Parser
+from .typing import GalleryConfig, Parser, PathLikeStr
 from .utils import (
     _W_KW,
     _collect_gallery_files,
     _combine_backreferences,
     _format_toctree,
+    _read_json,
     _replace_md5,
     _write_json,
     get_md5sum,
@@ -118,7 +119,7 @@ class ExampleCost:
 class _LoggingTee:
     """A tee object to redirect streams to the logger."""
 
-    def __init__(self, src_filename: str) -> None:
+    def __init__(self, src_filename: PathLikeStr) -> None:
         self.logger = logger
         self.src_filename = src_filename
         self.logger_buffer = ""
@@ -354,7 +355,7 @@ def _sanitize_rst(string: str) -> str:
     return string
 
 
-def extract_intro_and_title(filename: str, docstring: str) -> tuple[str, str]:
+def extract_intro_and_title(filename: PathLikeStr, docstring: str) -> tuple[str, str]:
     """Extract and clean the first paragraph of module-level docstring."""
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split("\n\n")
@@ -387,12 +388,12 @@ def extract_intro_and_title(filename: str, docstring: str) -> tuple[str, str]:
     return intro, title
 
 
-def md5sum_is_current(src_file: str | Path, mode: Literal["t", "b"] = "b") -> bool:
+def md5sum_is_current(src_file: PathLikeStr, mode: Literal["t", "b"] = "b") -> bool:
     """Checks whether src_file has the same md5 hash as the one on disk."""
     src_md5 = get_md5sum(src_file, mode=mode)
 
-    src_md5_file = str(src_file) + ".md5"
-    if not os.path.exists(src_md5_file):
+    src_md5_file = Path(f"{src_file}.md5")
+    if not src_md5_file.exists():
         return False
 
     with open(src_md5_file) as file_cs:
@@ -402,8 +403,8 @@ def md5sum_is_current(src_file: str | Path, mode: Literal["t", "b"] = "b") -> bo
 
 
 def save_thumbnail(
-    image_path_template: str,
-    src_file: str,
+    image_path_template: PathLikeStr,
+    src_file: PathLikeStr,
     script_vars: dict[str, Any],
     file_conf: dict[str, Any],
     gallery_conf: GalleryConfig,
@@ -412,9 +413,9 @@ def save_thumbnail(
 
     Parameters
     ----------
-    image_path_template : str
+    image_path_template : str | pathlib.Path
         holds the template where to save and how to name the image
-    src_file : str
+    src_file : str | pathlib.Path
         path to source python file
     script_vars : dict
         Configuration and run time variables
@@ -424,8 +425,10 @@ def save_thumbnail(
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
-    thumb_dir = os.path.join(os.path.dirname(image_path_template), "thumb")
-    os.makedirs(thumb_dir, exist_ok=True)
+    image_path_template = Path(image_path_template)
+    src_file = Path(src_file)
+    thumb_dir = image_path_template.parent / "thumb"
+    thumb_dir.mkdir(parents=True, exist_ok=True)
 
     # read specification of the figure to display as thumbnail from main text
     thumbnail_number = file_conf.get("thumbnail_number", None)
@@ -435,7 +438,7 @@ def save_thumbnail(
         # If no number AND no path, set to default thumbnail_number
         thumbnail_number = 1
     if thumbnail_number is None:
-        image_path = os.path.join(gallery_conf["src_dir"], cast(str, thumbnail_path))
+        image_path = Path(gallery_conf["src_dir"]) / cast(str, thumbnail_path)
     else:
         if not isinstance(thumbnail_number, int):
             raise ExtensionError(
@@ -445,68 +448,77 @@ def save_thumbnail(
         # negative index means counting from the last one
         if thumbnail_number < 0:
             thumbnail_number += len(script_vars["image_path_iterator"]) + 1
-        image_path = image_path_template.format(thumbnail_number)
+        image_path = Path(str(image_path_template).format(thumbnail_number))
+    # thumbnail_number wins above, so only blame thumbnail_path when it was used
+    thumbnail_path_used = thumbnail_number is None
     del thumbnail_number, thumbnail_path, image_path_template
     thumbnail_image_path, ext = _find_image_ext(image_path)
+    # warn here rather than in the fallback below, which a cached thumb file skips
+    if thumbnail_path_used and not Path(thumbnail_image_path).exists():
+        logger.warning(
+            "sphinx_gallery_thumbnail_path '%s' not found for '%s', "
+            "using default thumbnail.",
+            image_path,
+            src_file,
+        )
 
-    base_image_name = os.path.splitext(os.path.basename(src_file))[0]
-    thumb_file = os.path.join(thumb_dir, f"sphx_glr_{base_image_name}_thumb.{ext}")
+    base_image_name = src_file.stem
+    thumb_file = thumb_dir / f"sphx_glr_{base_image_name}_thumb.{ext}"
 
     if "formatted_exception" in script_vars and file_conf.get(
         "failing_thumbnail", True
     ):
-        img = os.path.join(glr_path_static(), "broken_example.png")
-    elif os.path.exists(thumbnail_image_path):
+        img = Path(glr_path_static()) / "broken_example.png"
+    elif Path(thumbnail_image_path).exists():
         img = thumbnail_image_path
-    elif not os.path.exists(thumb_file):
+    elif not thumb_file.exists():
         # create something to replace the thumbnail
         default_thumb_path = gallery_conf["default_thumb_file"]
         if default_thumb_path is None:
-            default_thumb_path = os.path.join(
-                glr_path_static(),
-                "no_image.png",
-            )
+            default_thumb_path = Path(glr_path_static()) / "no_image.png"
         img, ext = _find_image_ext(default_thumb_path)
     else:
         return
     # update extension, since gallery_conf setting can be different
     # from file_conf
     # Here we have to do .new.ext so that optipng and PIL behave well
-    thumb_file = f"{os.path.splitext(thumb_file)[0]}.new.{ext}"
+    thumb_file = Path(f"{thumb_file.with_suffix('')}.new.{ext}")
     if ext in ("svg", "gif"):
         copyfile(img, thumb_file)
     else:
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
         if "thumbnails" in gallery_conf["compress_images"]:
             optipng(thumb_file, gallery_conf["compress_images_args"])
-    fname_old = f"{os.path.splitext(thumb_file)[0][:-3]}{ext}"
+    fname_old = Path(f"{thumb_file.with_suffix('')}")
+    fname_old = fname_old.with_name(fname_old.name[:-3] + ext)
     _replace_md5(thumb_file, fname_old=fname_old)
 
 
 def _get_gallery_header(
-    dir_: str, gallery_conf: GalleryConfig, raise_error: bool = True
+    dir_: PathLikeStr, gallery_conf: GalleryConfig, raise_error: bool = True
 ) -> str | None:
     """Get gallery header from GALLERY_HEADER.[ext] or README.[ext] file.
 
     Returns `None` if user supplied an index.rst or no gallery header file
     found and `raise_error=False`.
     """
+    dir_ = Path(dir_)
     # First check if user supplies an index.rst and that index.rst is in the
     # copyfile regexp:
     if re.match(gallery_conf["copyfile_regex"], "index.rst"):
-        fpth = os.path.join(dir_, "index.rst")
-        if os.path.isfile(fpth):
+        fpth = dir_ / "index.rst"
+        if fpth.is_file():
             return None
     # Next look for GALLERY_HEADER.[ext] (and for backward-compatibility README.[ext]
     for fname in iter_gallery_header_filenames(gallery_conf):
-        fpth = os.path.join(dir_, fname)
-        if os.path.isfile(fpth):
-            return fpth
+        fpth = dir_ / fname
+        if fpth.is_file():
+            return str(fpth)
     if raise_error:
         extensions = list(
             sorted(
                 set(
-                    os.path.splitext(fname)[1]
+                    Path(fname).suffix
                     for fname in iter_gallery_header_filenames(gallery_conf)
                 )
             )
@@ -523,7 +535,7 @@ def _write_subsection_index(
     gallery_conf: GalleryConfig,
     user_index_rst: bool,
     is_subsection: bool,
-    target_dir: str,
+    target_dir: PathLikeStr,
     index_content: str,
     toctree_filenames: list[str],
 ) -> str | None:
@@ -534,12 +546,11 @@ def _write_subsection_index(
     """
     index_path = None
     if gallery_conf["nested_sections"] and not user_index_rst and is_subsection:
-        index_path = os.path.join(target_dir, "index.rst.new")
-        head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
-        with open(index_path, "w", **_W_KW) as findex:
-            findex.write(
-                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.sep, "_"))
-            )
+        target_dir = Path(target_dir)
+        index_path = str(target_dir / "index.rst.new")
+        head_ref = Path(os.path.relpath(target_dir, gallery_conf["src_dir"])).as_posix()
+        with open(index_path, "w", **_W_KW) as findex:  # type: ignore [call-overload]
+            findex.write("\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace("/", "_")))
             findex.write(index_content)
             # Create toctree with all gallery examples and add to index file
             if len(toctree_filenames) > 0:
@@ -551,25 +562,29 @@ def _write_subsection_index(
 
 def _copy_non_example_files(
     gallery_conf: GalleryConfig,
-    src_dir: str,
-    header_fname: str | None,
-    target_dir: str,
+    src_dir: PathLikeStr,
+    header_fname: PathLikeStr | None,
+    target_dir: PathLikeStr,
 ) -> None:
     """Copy non-example files to `target_dir`."""
+    src_dir = Path(src_dir)
+    target_dir = Path(target_dir)
     copyregex = gallery_conf["copyfile_regex"]
     if copyregex:
-        listdir = [fname for fname in os.listdir(src_dir) if re.match(copyregex, fname)]
+        listdir = [
+            fname.name for fname in src_dir.iterdir() if re.match(copyregex, fname.name)
+        ]
         if header_fname:
             # Don't copy over the gallery_header file
             listdir = [fname for fname in listdir if fname != Path(header_fname).name]
         for fname in listdir:
-            src_file = os.path.normpath(os.path.join(src_dir, fname))
-            target_file = os.path.join(target_dir, fname)
+            src_file = src_dir / fname
+            target_file = target_dir / fname
             _replace_md5(src_file, fname_old=target_file, method="copy")
 
 
 def _split_parallel(
-    sorted_listdir: list[str], src_dir: str, gallery_conf: GalleryConfig
+    sorted_listdir: list[str], src_dir: PathLikeStr, gallery_conf: GalleryConfig
 ) -> tuple[list[str], list[str]]:
     """Split examples into those that opt out of parallel execution, and the rest.
 
@@ -579,7 +594,7 @@ def _split_parallel(
     parallel_listdir = []
     for fname in sorted_listdir:
         parser, _ = _get_parser(fname, gallery_conf)
-        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        src_file = os.path.normpath(Path(src_dir, fname))
         # full parse rather than a cheaper regex over the file, so that we see exactly
         # the same file_conf as `generate_file_rst` (e.g. docstrings are excluded)
         file_conf = parser.split_code_and_text_blocks(src_file, return_node=True)[0]
@@ -596,8 +611,8 @@ def _split_parallel(
 
 
 def generate_dir_rst(
-    src_dir: str,
-    target_dir: str,
+    src_dir: PathLikeStr,
+    target_dir: PathLikeStr,
     gallery_conf: GalleryConfig,
     seen_backrefs: set[str],
     is_subsection: bool = True,
@@ -612,9 +627,9 @@ def generate_dir_rst(
 
     Parameters
     ----------
-    src_dir: str,
+    src_dir : str | pathlib.Path
         Path to root or sub gallery directory containing example files
-    target_dir: str,
+    target_dir : str | pathlib.Path
         Path where parsed examples (rst, python files, etc) will be outputted
     gallery_conf : Dict[str, Any]
         Gallery configurations.
@@ -643,6 +658,8 @@ def generate_dir_rst(
         full path to example target directory, intro, title.
 
     """
+    src_dir = Path(src_dir)
+    target_dir = Path(target_dir)
     index_content: str = ""
     # `_get_gallery_header` returns `None` if user supplied `index.rst`
     header_fname = _get_gallery_header(src_dir, gallery_conf)
@@ -662,11 +679,9 @@ def generate_dir_rst(
     index_content += "\n\n"
 
     # Make all dirs ahead of time to avoid collisions in parallel processing
-    os.makedirs(target_dir, exist_ok=True)
-    image_dir = os.path.join(target_dir, "images")
-    os.makedirs(image_dir, exist_ok=True)
-    thumb_dir = os.path.join(image_dir, "thumb")
-    os.makedirs(thumb_dir, exist_ok=True)
+    image_dir = target_dir / "images"
+    thumb_dir = image_dir / "thumb"
+    thumb_dir.mkdir(parents=True, exist_ok=True)
     if gallery_conf["jupyterlite"] is not None:
         _add_jupyterlite_badge_logo(image_dir)
 
@@ -723,7 +738,7 @@ def generate_dir_rst(
     results_by_fname = dict(zip(serial_listdir + parallel_listdir, results))
     for fname in sorted_listdir:
         intro, title, (t, mem), out_vars = results_by_fname[fname]
-        src_file = os.path.normpath(os.path.join(src_dir, fname))
+        src_file = os.path.normpath(Path(src_dir, fname))
         gallery_conf["titles"][src_file] = title
         # n.b. non-executable files have none of these three variables defined,
         # so the last conditional must be "elif" not just "else"
@@ -738,7 +753,10 @@ def generate_dir_rst(
             gallery_conf["stale_examples"].append(out_vars["stale"])
         costs.append(
             ExampleCost(
-                execution_time=t, memory=mem, src_file=src_file, target_dir=target_dir
+                execution_time=t,
+                memory=mem,
+                src_file=src_file,
+                target_dir=str(target_dir),
             )
         )
         gallery_item_filename = (
@@ -798,7 +816,7 @@ def generate_dir_rst(
 
 def handle_exception(
     exc_info: tuple[type[BaseException], BaseException, Any] | tuple[None, None, None],
-    src_file: str,
+    src_file: PathLikeStr,
     script_vars: dict[str, Any],
     gallery_conf: GalleryConfig,
 ) -> str:
@@ -825,12 +843,12 @@ def handle_exception(
     # so we inspect the traceback to find the start and stop points.
     start = 0
     stop = len(stack)
-    root = os.path.dirname(__file__) + os.sep
+    this_file = str(Path(__file__).parent / "gen_rst.py")
     for ii, s in enumerate(stack, 1):
         # Trim our internal stack
         if s.name.startswith("_sg_call_memory"):
             start = max(ii, start)
-        elif s.filename.startswith(root + "gen_rst.py"):
+        elif s.filename.startswith(this_file):
             # SyntaxError
             if (
                 s.line is not None
@@ -944,9 +962,10 @@ def _get_memory_base() -> float:
     return memory_base
 
 
-def _get_parser(fname: str, gallery_conf: GalleryConfig) -> tuple[Parser, str]:
+def _get_parser(fname: PathLikeStr, gallery_conf: GalleryConfig) -> tuple[Parser, str]:
     """Get parser and language."""
     parser: Parser
+    fname = str(fname)
     if fname.endswith(".py"):
         parser = py_source_parser
         language = "Python"
@@ -959,7 +978,7 @@ def _get_parser(fname: str, gallery_conf: GalleryConfig) -> tuple[Parser, str]:
     return parser, language
 
 
-def _check_reset_logging_tee(src_file: str) -> _LoggingTee:
+def _check_reset_logging_tee(src_file: PathLikeStr) -> _LoggingTee:
     # Helper to deal with our tests not necessarily calling execute_script
     # but rather execute_code_block directly
     if isinstance(sys.stdout, _LoggingTee):
@@ -1176,7 +1195,7 @@ def execute_code_block(
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
-    os.chdir(os.path.dirname(src_file))
+    os.chdir(Path(src_file).parent)
 
     sys_path = copy.deepcopy(sys.path)
     sys.path.append(os.getcwd())
@@ -1259,12 +1278,12 @@ def execute_code_block(
     return code_output
 
 
-def executable_script(src_file: str, gallery_conf: GalleryConfig) -> bool:
+def executable_script(src_file: PathLikeStr, gallery_conf: GalleryConfig) -> bool:
     """Validate if script has to be run according to gallery configuration.
 
     Parameters
     ----------
-    src_file : str
+    src_file : str | pathlib.Path
         path to python script
 
     gallery_conf : dict
@@ -1277,7 +1296,7 @@ def executable_script(src_file: str, gallery_conf: GalleryConfig) -> bool:
     """
     filename_pattern = gallery_conf["filename_pattern"]
     execute = bool(
-        re.search(filename_pattern, src_file) and gallery_conf["plot_gallery"]
+        re.search(filename_pattern, str(src_file)) and gallery_conf["plot_gallery"]
     )
     return execute
 
@@ -1405,9 +1424,9 @@ def _make_dummy_images(
                 )
 
             image_path_iterator = script_vars["image_path_iterator"]
-            stock_img = os.path.join(glr_path_static(), "no_image.png")
+            stock_img = Path(glr_path_static(), "no_image.png")
             for _, path in zip(range(dummy_image), image_path_iterator):
-                if not os.path.isfile(path):
+                if not Path(path).is_file():
                     copyfile(stock_img, path)
 
 
@@ -1441,6 +1460,61 @@ def _clean_script_blocks(
     return script_blocks, output_blocks
 
 
+def _backrefs_from_codeobj(
+    gallery_conf: GalleryConfig, example_code_obj: dict[str, list[dict[str, Any]]]
+) -> set[str]:
+    """Get the backreference names of the code objects identified in an example."""
+    exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
+
+    def _normalize_name(cobj: dict[str, Any]) -> str:
+        full_name = "{module}.{name}".format(**cobj)
+        for pattern in gallery_conf["prefer_full_module"]:
+            if re.search(pattern, full_name):
+                return full_name
+        return "{module_short}.{name}".format(**cobj)
+
+    return {
+        _normalize_name(cobj)
+        for cobjs in example_code_obj.values()
+        for cobj in cobjs
+        if cobj["module"].startswith(gallery_conf["doc_module"])
+        and (
+            cobj["is_explicit"]
+            or (not exclude_regex)
+            or (not exclude_regex.search("{module}.{name}".format(**cobj)))
+        )
+    }
+
+
+def _write_cached_cost(target_file: Path, cost: tuple[float, float]) -> None:
+    """Cache an example's ``(time_elapsed, memory_used)`` next to its md5."""
+    _write_json(target_file, {"time": cost[0], "memory": cost[1]}, ".cost")
+
+
+def _read_cached_cost(target_file: Path) -> tuple[float, float]:
+    """Get an example's last measured ``(time_elapsed, memory_used)``, else zeros."""
+    cost_fname = target_file.with_name(target_file.stem + ".cost.json")
+    if not cost_fname.is_file():  # never run, or cached by an older Sphinx-Gallery
+        return (0.0, 0.0)
+    try:
+        cost = _read_json(cost_fname)
+        return (float(cost["time"]), float(cost["memory"]))
+    except Exception:  # e.g. truncated by an interrupted build
+        return (0.0, 0.0)
+
+
+def _read_cached_backrefs(gallery_conf: GalleryConfig, target_file: Path) -> set[str]:
+    """Get the backreference names of an example from its cached ``.codeobj.json``."""
+    codeobj_fname = target_file.with_name(target_file.stem + ".codeobj.json")
+    if not codeobj_fname.is_file():  # no code objects were identified
+        return set()
+    try:
+        example_code_obj = _read_json(codeobj_fname)
+    except Exception:  # e.g. truncated by an interrupted build
+        return set()
+    return _backrefs_from_codeobj(gallery_conf, example_code_obj)
+
+
 def _get_backreferences(
     gallery_conf: GalleryConfig,
     script_vars: dict[str, Any],
@@ -1457,26 +1531,14 @@ def _get_backreferences(
     example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
     if example_code_obj:
         _write_json(target_file, example_code_obj, ".codeobj")
-    exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
-
-    def _normalize_name(cobj: dict[str, Any]) -> str:
-        full_name = "{module}.{name}".format(**cobj)
-        for pattern in gallery_conf["prefer_full_module"]:
-            if re.search(pattern, full_name):
-                return full_name
-        return "{module_short}.{name}".format(**cobj)
-
-    backrefs = {
-        _normalize_name(cobj)
-        for cobjs in example_code_obj.values()
-        for cobj in cobjs
-        if cobj["module"].startswith(gallery_conf["doc_module"])
-        and (
-            cobj["is_explicit"]
-            or (not exclude_regex)
-            or (not exclude_regex.search("{module}.{name}".format(**cobj)))
+    else:
+        # a stale .codeobj.json would resurrect this example's old backrefs via
+        # _read_cached_backrefs on every md5-skipped rebuild
+        target_file.with_name(target_file.stem + ".codeobj.json").unlink(
+            missing_ok=True
         )
-    }
+
+    backrefs = _backrefs_from_codeobj(gallery_conf, example_code_obj)
 
     # This can help with garbage collection in some instances
     if global_variables is not None and "___" in global_variables:
@@ -1487,17 +1549,20 @@ def _get_backreferences(
 
 
 def generate_file_rst(
-    fname: str, target_dir: str, src_dir: str, gallery_conf: GalleryConfig
+    fname: PathLikeStr,
+    target_dir: PathLikeStr,
+    src_dir: PathLikeStr,
+    gallery_conf: GalleryConfig,
 ) -> tuple[str, str, tuple[float, float], dict[str, Any]]:
     """Generate the rst file for a given example.
 
     Parameters
     ----------
-    fname : str
+    fname : str | pathlib.Path
         Filename of python script.
-    target_dir : str
+    target_dir : str | pathlib.Path
         Absolute path to directory in documentation where examples are saved.
-    src_dir : str
+    src_dir : str | pathlib.Path
         Absolute path to directory where source examples are stored.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery.
@@ -1523,9 +1588,10 @@ def generate_file_rst(
         "formatted_exception"
             Formatted string of the exception.
     """
-    src_file = os.path.normpath(os.path.join(src_dir, fname))
+    target_dir = Path(target_dir)
+    src_file = os.path.normpath(Path(src_dir, fname))
     out_vars = dict()
-    target_file = Path(target_dir) / fname
+    target_file = target_dir / fname
     _replace_md5(src_file, target_file, method="copy", mode="t")
 
     parser, language = _get_parser(fname, gallery_conf)
@@ -1549,14 +1615,18 @@ def generate_file_rst(
             else:
                 out_vars["stale"] = str(target_file)
         if do_return:
-            return intro, title, (0, 0), out_vars
+            # the example is not re-run, so recover its backreferences and cost from
+            # the caches -- otherwise every rebuild empties backreferences_all.json and
+            # zeroes this example's row in sg_execution_times.rst
+            out_vars["backrefs"] = _read_cached_backrefs(gallery_conf, target_file)
+            return intro, title, _read_cached_cost(target_file), out_vars
 
-    image_dir = os.path.join(target_dir, "images")
-    os.makedirs(image_dir, exist_ok=True)
+    image_dir = target_dir / "images"
+    image_dir.mkdir(parents=True, exist_ok=True)
 
-    base_image_name = os.path.splitext(fname)[0]
+    base_image_name = Path(fname).stem
     image_fname = "sphx_glr_" + base_image_name + "_{0:03}.png"
-    image_path_template = os.path.join(image_dir, image_fname)
+    image_path_template = str(image_dir / image_fname)
 
     script_vars = {
         "execute_script": executable,
@@ -1594,6 +1664,10 @@ def generate_file_rst(
     memory_used = memory_base + cast(float, script_vars["memory_delta"])
     if not executable:
         time_elapsed = memory_used = 0.0  # don't let the output change
+    if script_vars.get("passing"):
+        # cached alongside the md5, so a build that skips this example can still
+        # report its last measured cost rather than zeros
+        _write_cached_cost(target_file, (time_elapsed, memory_used))
     save_rst_example(
         example_rst,
         target_file,
@@ -1615,7 +1689,7 @@ def generate_file_rst(
         files_to_zip += [str(target_file.with_suffix(".ipynb"))]
 
     # Produce the zip file of all sources
-    zip_files(files_to_zip, str(target_file.with_suffix(".zip")), target_dir)
+    zip_files(files_to_zip, target_file.with_suffix(".zip"), target_dir)
 
     # Get names
     out_vars["backrefs"] = _get_backreferences(
@@ -1744,7 +1818,7 @@ def rst_blocks(
 
 def save_rst_example(
     example_rst: str,
-    example_file: str | os.PathLike,
+    example_file: PathLikeStr,
     time_elapsed: float,
     memory_used: float,
     gallery_conf: GalleryConfig,
@@ -1758,7 +1832,7 @@ def save_rst_example(
     ----------
     example_rst : str
         rst containing the executed file content
-    example_file : str | os.PathLike
+    example_file : str | pathlib.Path
         Filename with full path of python example file in documentation folder
     language : str
         Name of the programming language the example is in
@@ -1772,8 +1846,9 @@ def save_rst_example(
         The file conf options
     """
     example_file = Path(example_file)
-    example_fname = str(example_file.relative_to(gallery_conf["src_dir"]))
-    ref_fname = example_fname.replace(os.sep, "_")
+    example_path = example_file.relative_to(gallery_conf["src_dir"])
+    example_fname = str(example_path)
+    ref_fname = example_path.as_posix().replace("/", "_")
 
     binder_conf = gallery_conf["binder"]
     is_binder_enabled = len(binder_conf) > 0
@@ -1834,7 +1909,7 @@ def save_rst_example(
 
     if gallery_conf["recommender"]["enable"]:
         # extract the filename without the extension
-        recommend_fname = Path(example_fname).stem
+        recommend_fname = example_path.stem
         example_rst += RECOMMENDATIONS_INCLUDE.format(recommend_fname)
 
     if gallery_conf["show_signature"]:
@@ -1853,7 +1928,7 @@ def save_rst_example(
 
 
 def _get_callables(
-    gallery_conf: GalleryConfig, key: str, src_dir: str | None = None
+    gallery_conf: GalleryConfig, key: str, src_dir: PathLikeStr | None = None
 ) -> tuple[Callable[..., Any], ...]:
     """Get callables for the given conf key, returning tuple of callable(s).
 

@@ -2,8 +2,11 @@
 Typing definitions for Sphinx-Gallery.
 """
 
+import os
+from pathlib import Path
 from typing import Any, TypeAlias
 
+PathLikeStr: TypeAlias = str | Path | os.PathLike[str]
 GalleryConfig: TypeAlias = dict[str, Any]
 LinkType: TypeAlias = tuple[str | None, Any | None]
 IntersphinxInventory: TypeAlias = dict[str, dict[str, Any]]

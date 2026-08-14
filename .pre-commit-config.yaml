@@ -44,6 +44,7 @@ repos:
       - id: ty
         additional_dependencies:
           - numpy
+          - threadpoolctl
           - types-docutils
           - types-Pillow
           - types-Pygments
