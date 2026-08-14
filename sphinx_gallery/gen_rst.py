@@ -435,7 +435,6 @@ def save_thumbnail(
     if thumbnail_number is None and thumbnail_path is None:
         # If no number AND no path, set to default thumbnail_number
         thumbnail_number = 1
-    thumbnail_path_set = thumbnail_path is not None
     if thumbnail_number is None:
         image_path = os.path.join(gallery_conf["src_dir"], cast(str, thumbnail_path))
     else:
@@ -448,8 +447,18 @@ def save_thumbnail(
         if thumbnail_number < 0:
             thumbnail_number += len(script_vars["image_path_iterator"]) + 1
         image_path = image_path_template.format(thumbnail_number)
+    # thumbnail_number wins above, so only blame thumbnail_path when it was used
+    thumbnail_path_used = thumbnail_number is None
     del thumbnail_number, thumbnail_path, image_path_template
     thumbnail_image_path, ext = _find_image_ext(image_path)
+    # warn here rather than in the fallback below, which a cached thumb file skips
+    if thumbnail_path_used and not os.path.exists(thumbnail_image_path):
+        logger.warning(
+            "sphinx_gallery_thumbnail_path '%s' not found for '%s', "
+            "using default thumbnail.",
+            image_path,
+            src_file,
+        )
 
     base_image_name = os.path.splitext(os.path.basename(src_file))[0]
     thumb_file = os.path.join(thumb_dir, f"sphx_glr_{base_image_name}_thumb.{ext}")
@@ -461,13 +470,6 @@ def save_thumbnail(
     elif os.path.exists(thumbnail_image_path):
         img = thumbnail_image_path
     elif not os.path.exists(thumb_file):
-        if thumbnail_path_set:
-            logger.warning(
-                "sphinx_gallery_thumbnail_path '%s' not found for '%s', "
-                "using default thumbnail.",
-                image_path,
-                src_file,
-            )
         # create something to replace the thumbnail
         default_thumb_path = gallery_conf["default_thumb_file"]
         if default_thumb_path is None:
