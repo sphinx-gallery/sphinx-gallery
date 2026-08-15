@@ -12,12 +12,13 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator
+from typing import TYPE_CHECKING, Any, Iterator, NamedTuple
 
 from docutils import nodes
 from pygments.lexers import get_lexer_by_name
 from pygments.token import STANDARD_TYPES, Name, Operator
 from sphinx.transforms.post_transforms import SphinxPostTransform
+from sphinx.util.nodes import make_refnode
 
 from .utils import _read_json
 
@@ -36,7 +37,17 @@ def _sanitize_css_class(s: str) -> str:
 
 
 class code_links_block(nodes.General, nodes.TextElement):
-    """A highlighted code block with reference nodes embedded per-token."""
+    """A highlighted code block with reference nodes embedded per-token.
+
+    Sphinx only renders the children of a ``literal_block`` when its
+    ``rawsource`` differs from its text -- otherwise it re-highlights the
+    rawsource with pygments and drops the children (``SkipNode``), which would
+    silently throw every link away:
+    https://github.com/sphinx-doc/sphinx/blob/v9.1.0/sphinx/writers/html5.py#L622-L624
+
+    Rather than rely on that, we swap in a node of our own and render the
+    ``div.highlight`` wrapper that ``visit_literal_block`` would have emitted.
+    """
 
 
 def visit_code_links_block_html(self: Any, node: code_links_block) -> None:
@@ -65,6 +76,16 @@ def _load_code_obj(
         return None
 
 
+class _Lookup(NamedTuple):
+    """Where a name was found: a local document, an external URI, or nowhere."""
+
+    docname: str | None
+    node_id: str | None
+    uri: str | None
+    objtype: str | None  # None when the name was not found at all
+    aliased: bool
+
+
 class _Resolver:
     """Resolve fully qualified names via the py domain and intersphinx."""
 
@@ -85,26 +106,32 @@ class _Resolver:
             self.inventory = InventoryAdapter(env).main_inventory
         except ImportError:
             self.inventory = {}
-        self._cache: dict[str, tuple[str | None, str | None, bool, bool]] = {}
+        self._cache: dict[str, _Lookup] = {}
 
-    def _lookup(self, target: str) -> tuple[str | None, str | None, bool, bool]:
-        """Return (uri, objtype, internal, aliased) for a fully qualified name."""
+    def _lookup(self, target: str) -> _Lookup:
+        """Find a fully qualified name in the py domain, then in intersphinx."""
         entry = self.env.domains["py"].objects.get(target)
         if entry is not None:
-            uri = self.builder.get_relative_uri(self.docname, entry.docname)
             # an aliased entry is the ``:canonical:`` (often private) location of
-            # an object documented elsewhere, so it is only a fallback
-            aliased = getattr(entry, "aliased", False)
-            return f"{uri}#{entry.node_id}", f"py:{entry.objtype}", True, aliased
+            # an object documented elsewhere, so it is only a fallback -- the py
+            # domain prefers the canonical entry the same way:
+            # https://github.com/sphinx-doc/sphinx/blob/v9.1.0/sphinx/domains/python/__init__.py#L1239-L1244
+            return _Lookup(
+                docname=entry.docname,
+                node_id=entry.node_id,
+                uri=None,
+                objtype=f"py:{entry.objtype}",
+                aliased=getattr(entry, "aliased", False),
+            )
         for objtype, mapping in self.inventory.items():
             if objtype.startswith("py:") and target in mapping:
                 item = mapping[target]
-                # Sphinx 8.2+ _InventoryItem vs older plain tuple
+                # Sphinx 8.2+ hands out _InventoryItem, older versions a tuple
                 uri = getattr(item, "uri", None)
                 if uri is None:
                     uri = item[2]
-                return str(uri), objtype, False, False
-        return None, None, False, False
+                return _Lookup(None, None, str(uri), objtype, False)
+        return _Lookup(None, None, None, None, False)
 
     def resolve(self, cobjs: list[dict[str, Any]]) -> dict[str, Any] | None:
         """Try candidate (module, name) pairs in order; return link info."""
@@ -123,11 +150,12 @@ class _Resolver:
                     target = f"{modname}.{cobj['name']}"
                 if target not in self._cache:
                     self._cache[target] = self._lookup(target)
-                uri, objtype, internal, aliased = self._cache[target]
-                if uri is None or objtype is None:
+                found = self._cache[target]
+                if found.objtype is None:  # not documented anywhere we know of
                     continue
                 # label local objects with the shortest module path even when
                 # only documented under a deeper one (gh-1364)
+                internal = found.docname is not None
                 label = cobj["module_short"] if internal else modname
                 # builtins are named bare in the tooltip, as the Python docs
                 # and the inventory entry itself do
@@ -136,32 +164,96 @@ class _Resolver:
                 else:
                     title = f"{label}.{cobj['name']}"
                 css = ["sphx-glr-backref-module-" + _sanitize_css_class(label)]
-                css.append("sphx-glr-backref-type-" + _sanitize_css_class(objtype))
-                if "py:class" in objtype and not cobj["is_class"]:
+                css.append(
+                    "sphx-glr-backref-type-" + _sanitize_css_class(found.objtype)
+                )
+                if "py:class" in found.objtype and not cobj["is_class"]:
                     css.append("sphx-glr-backref-instance")
-                link = {
-                    "uri": uri,
-                    "title": title,
-                    "classes": css,
-                    "internal": internal,
-                }
-                if not aliased:
+                link = {"found": found, "title": title, "classes": css}
+                if not found.aliased:
                     return link
                 # keep looking: a later candidate may name the object by the
                 # public module it is actually documented under
                 fallback = fallback or link
         return fallback
 
+    def reference(
+        self, link: dict[str, Any], children: list[nodes.Node]
+    ) -> nodes.reference:
+        """Build the reference node for a link returned by :meth:`resolve`."""
+        found: _Lookup = link["found"]
+        if found.docname is not None:
+            # make_refnode also handles a target on this very page, which needs
+            # a bare ``refid`` rather than a URI pointing back at ourselves
+            ref = make_refnode(
+                self.builder,
+                self.docname,
+                found.docname,
+                found.node_id,
+                children,
+                title=link["title"],
+            )
+        else:
+            ref = nodes.reference(
+                "",
+                "",
+                *children,
+                internal=False,
+                refuri=found.uri,
+                reftitle=link["title"],
+            )
+        ref["classes"] += link["classes"]
+        return ref
+
+
+def _pygments_class(ttype: Any) -> str:
+    """Return the CSS class pygments' HTML formatter gives a token type.
+
+    Ported from the private ``pygments.formatters.html._get_ttype_class``, which
+    is what ``HtmlFormatter`` itself uses, so that a token unknown to
+    ``STANDARD_TYPES`` gets the same compound class (e.g. ``n-Foo``) as it would
+    in a stock highlighted block:
+    https://github.com/pygments/pygments/blob/2.20.0/pygments/formatters/html.py#L57-L66
+    """
+    short = STANDARD_TYPES.get(ttype)
+    if short:
+        return short
+    suffix = ""
+    while short is None:
+        suffix = "-" + ttype[-1] + suffix
+        ttype = ttype.parent
+        short = STANDARD_TYPES.get(ttype)
+    return short + suffix
+
 
 def _token_node(ttype: Any, text: str) -> nodes.Node:
     """Convert one pygments token to a docutils node."""
-    short = STANDARD_TYPES.get(ttype, "")
-    while not short and ttype.parent is not None:
-        ttype = ttype.parent
-        short = STANDARD_TYPES.get(ttype, "")
-    if not short:
+    short = _pygments_class(ttype)
+    if not short:  # the root Token type, which pygments leaves unwrapped
         return nodes.Text(text)
     return nodes.inline(text, text, classes=[short])
+
+
+def _dotted_chain(tokens: list[tuple[Any, str]], i: int) -> Iterator[tuple[str, int]]:
+    """Yield the dotted-name prefixes starting at ``tokens[i]``, longest first.
+
+    For ``mne.filter.create_filter`` this yields the whole chain, then
+    ``mne.filter``, then ``mne``, each with the number of tokens it spans, so
+    the caller can link the longest prefix that actually resolves.
+    """
+    parts = [tokens[i][1]]
+    spans = [1]
+    j = i
+    while (
+        j + 2 < len(tokens)
+        and tokens[j + 1] == (Operator, ".")
+        and tokens[j + 2][0] in Name
+    ):
+        parts.append(tokens[j + 2][1])
+        spans.append(spans[-1] + 2)
+        j += 2
+    for k in range(len(parts), 0, -1):
+        yield ".".join(parts[:k]), spans[k - 1]
 
 
 def _tokenize_and_link(
@@ -175,95 +267,74 @@ def _tokenize_and_link(
         "python" if lang in ("default", "python3") else lang.lower()
     )
     tokens = list(lexer.get_tokens(code))
+    # an index rather than a for loop: a linked name swallows however many
+    # tokens its dotted chain spans, so the step size varies
     i = 0
-    prev_significant = None
+    prev_token = None  # last non-whitespace token, to spot attribute access
     while i < len(tokens):
         ttype, text = tokens[i]
-        # a linkable chain starts at a Name token not preceded by a "."
-        starts_chain = ttype in Name and not (prev_significant == (Operator, "."))
-        if starts_chain:
-            # gather the maximal dotted chain: Name (. Name)*
-            parts, spans = [text], [1]
-            j = i
-            while (
-                j + 2 < len(tokens)
-                and tokens[j + 1] == (Operator, ".")
-                and tokens[j + 2][0] in Name
-            ):
-                parts.append(tokens[j + 2][1])
-                spans.append(spans[-1] + 2)
-                j += 2
-            # longest prefix of the chain that identifies and resolves wins
-            link = n_tok = None
-            for k in range(len(parts), 0, -1):
-                written = ".".join(parts[:k])
+        link = n_tok = None
+        # only start a chain at a name that is not itself an attribute: the
+        # ``b`` of ``a().b`` continues the preceding expression, so linking it
+        # on its own would point at some unrelated top-level ``b``
+        if ttype in Name and prev_token != (Operator, "."):
+            for written, span in _dotted_chain(tokens, i):
                 if written in code_obj:
                     link = resolver.resolve(code_obj[written])
                     if link is not None:
-                        n_tok = spans[k - 1]
+                        n_tok = span
                         break
-            if link is not None and n_tok is not None:
-                ref = nodes.reference(
-                    "",
-                    "",
-                    internal=link["internal"],
-                    refuri=link["uri"],
-                    reftitle=link["title"],
-                    classes=link["classes"],
-                )
-                for tt, tx in tokens[i : i + n_tok]:
-                    ref += _token_node(tt, tx)
-                yield ref
-                prev_significant = tokens[i + n_tok - 1]
-                i += n_tok
-                continue
+        if link is not None and n_tok is not None:
+            children = [_token_node(tt, tx) for tt, tx in tokens[i : i + n_tok]]
+            yield resolver.reference(link, children)
+            prev_token = tokens[i + n_tok - 1]
+            i += n_tok
+            continue
         if text.strip():
-            prev_significant = (ttype, text)
+            prev_token = (ttype, text)
         yield _token_node(ttype, text)
         i += 1
+
+
+def _split_lines(node: nodes.Node) -> Iterator[nodes.Node]:
+    """Split one token node into a node per line it spans.
+
+    A line number can only be inserted *between* top-level nodes, so a token
+    covering several lines (a triple-quoted string, say) has to become one node
+    per line first. References are atomic: a dotted name never spans lines.
+    """
+    if isinstance(node, nodes.reference):
+        yield node
+        return
+    classes = node["classes"] if isinstance(node, nodes.inline) else None
+    for segment in node.astext().splitlines(keepends=True):
+        if classes is None:
+            yield nodes.Text(segment)
+        else:
+            yield nodes.inline(segment, segment, classes=classes)
 
 
 def _add_linenos(children: list[nodes.Node], start: int) -> list[nodes.Node]:
     """Interleave pygments-style inline line-number nodes into a token stream.
 
-    Replicates ``HtmlFormatter(linenos="inline")``: a ``span.linenos`` at each
-    line start, numbers right-justified to the width of the last line number.
-    Multi-line tokens (e.g. triple-quoted strings) are split per line so the
-    number node can sit between the segments at the top level.
+    Replicates ``HtmlFormatter(linenos="inline")``, which prepends a
+    ``span.linenos`` to every line with the number right-justified to the width
+    of the last one:
+    https://github.com/pygments/pygments/blob/2.20.0/pygments/formatters/html.py#L687
     """
     total = sum(node.astext().count("\n") for node in children)
     width = len(str(start + max(total - 1, 0)))
     out: list[nodes.Node] = []
-    state = {"line": start, "at_start": True}
-
-    def emit_lineno() -> None:
-        txt = str(state["line"]).rjust(width)
-        out.append(nodes.inline(txt, txt, classes=["linenos"]))
-        state["line"] += 1
-        state["at_start"] = False
-
-    def emit(text: str, classes: list[str] | None = None) -> None:
-        for seg in text.splitlines(keepends=True):
-            if state["at_start"]:
-                emit_lineno()
-            if classes is None:
-                out.append(nodes.Text(seg))
-            else:
-                out.append(nodes.inline(seg, seg, classes=classes))
-            if seg.endswith("\n"):
-                state["at_start"] = True
-
+    lineno = start
+    at_line_start = True
     for node in children:
-        if isinstance(node, nodes.Text):
-            emit(node.astext())
-        elif isinstance(node, nodes.reference):
-            # references never contain newlines (dotted-name chains only)
-            if state["at_start"]:
-                emit_lineno()
-            out.append(node)
-        else:
-            assert isinstance(node, nodes.inline)
-            emit(node.astext(), classes=node["classes"])
+        for piece in _split_lines(node):
+            if at_line_start:
+                number = str(lineno).rjust(width)
+                out.append(nodes.inline(number, number, classes=["linenos"]))
+                lineno += 1
+            out.append(piece)
+            at_line_start = piece.astext().endswith("\n")
     return out
 
 

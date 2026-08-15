@@ -3,11 +3,16 @@
 
 from docutils import nodes
 
-from sphinx_gallery.doctree_links import _add_linenos, _Resolver, _tokenize_and_link
+from sphinx_gallery.doctree_links import (
+    _add_linenos,
+    _Lookup,
+    _Resolver,
+    _tokenize_and_link,
+)
 
 
 class FakeResolver:
-    """Resolve any candidate whose full name is in ``known``."""
+    """Resolve any candidate whose full name is in ``known``, as an external link."""
 
     def __init__(self, known):
         self.known = known
@@ -18,12 +23,17 @@ class FakeResolver:
             target = f"{cobj['module']}.{cobj['name']}"
             if target in self.known:
                 return dict(
-                    uri=f"https://example.com/{target}",
+                    found=_Lookup(
+                        None, None, f"https://example.com/{target}", "py:x", False
+                    ),
                     title=target,
                     classes=["sphx-glr-backref-module-x", "sphx-glr-backref-type-y"],
-                    internal=False,
                 )
         return None
+
+    # the real one builds internal links with make_refnode; external links need
+    # no builder, so the fake can share this exact code path
+    reference = _Resolver.reference
 
 
 def _cobj(module, name):
@@ -94,11 +104,11 @@ def test_add_linenos():
 
 
 def _stub_resolver(hits):
-    """Build a _Resolver whose lookups come from ``{target: (uri, ...)}``."""
+    """Build a _Resolver whose lookups come from ``{target: _Lookup}``."""
     resolver = _Resolver.__new__(_Resolver)
     resolver.prefer_full = set()
     resolver._cache = {}
-    resolver._lookup = lambda target: hits.get(target, (None, None, False, False))
+    resolver._lookup = lambda target: hits.get(target, _Lookup(*[None] * 4, False))
     return resolver
 
 
@@ -119,8 +129,8 @@ def test_resolve_prefers_non_aliased():
     breaking the documented ``sphx-glr-backref-module-*`` styling contract.
     """
     hits = {
-        _PRIVATE: ("uri", "py:class", True, True),  # aliased
-        _PUBLIC: ("uri", "py:class", True, False),
+        _PRIVATE: _Lookup("doc", "id", None, "py:class", True),  # aliased
+        _PUBLIC: _Lookup("doc", "id", None, "py:class", False),
     }
     link = _stub_resolver(hits).resolve(_CANDIDATES)
     assert link["title"] == _PUBLIC
@@ -129,7 +139,7 @@ def test_resolve_prefers_non_aliased():
 
 def test_resolve_falls_back_to_aliased():
     """An aliased entry is still used when nothing else resolves."""
-    hits = {_PRIVATE: ("uri", "py:class", True, True)}
+    hits = {_PRIVATE: _Lookup("doc", "id", None, "py:class", True)}
     link = _stub_resolver(hits).resolve(_CANDIDATES)
     assert link["title"] == _PRIVATE
     assert "sphx-glr-backref-module-pkg-_private-mod" in link["classes"]
