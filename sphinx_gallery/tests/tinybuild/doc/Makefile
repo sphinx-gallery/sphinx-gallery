@@ -5,8 +5,9 @@ all: clean html show
 clean:
 	rm -rf _build/*
 	rm -rf auto_examples/
-	rm -rf auto_examples_with_rst/
+	rm -rf auto_examples_README_header/
 	rm -rf auto_examples_rst_index/
+	rm -rf auto_examples_with_rst/
 	rm -rf gen_modules/
 
 html:
@@ -19,4 +20,4 @@ latexpdf:
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
 show:
-	@python -c "import webbrowser; webbrowser.open_new_tab('file://$(PWD)/_build/html/index.html')"
+	@python -c "import webbrowser; webbrowser.open_new_tab('file://$(abspath .)/_build/html/index.html')"

@@ -137,14 +137,108 @@ For a clear example refer to the rendered example
 :ref:`sphx_glr_tutorials_plot_parse.py` and compare it to the generated
 :download:`original python script <tutorials/plot_parse.py>`
 
+.. _non_python_source:
+
+Examples in other programming languages
+=======================================
+
+Sphinx-Gallery also supports rendering HTML pages for examples written in programming
+languages other than Python, although these examples are not currently executed or
+scanned for output. See :ref:`filename/ignore patterns <build_pattern>` for
+configuration settings.
+
+For such examples, the header for the example is defined by the first comment block in
+the file, which must contain a reST title, and may contain any additional reST content
+that should appear above the first code block. For example, a C++ example could start
+with:
+
+.. code:: C++
+
+  // My Awesome Example
+  // ==================
+  //
+  // The description continues as long as there are lines
+  // that start with a comment character.
+
+reST content can likewise be embedded in comments that are marked with a special
+delimiter, where that delimiter depends on the comment characters used by the language
+of the example. Valid special delimiters are:
+
+1. The comment character followed by ``%%``. For example ``//%%`` for C++.
+2. The comment character followed by a space, followed by ``%%``. For example, ``// %%``
+   for C++.
+3. A line of at least 20 comment characters. For example, ``////////////////////`` for
+   C++.
+
+Any text following the special delimiter on the same line will be converted into a reST
+heading (underlined with ``-``). The reST block continues until a line that does not
+start with a comment character is encountered. Some examples:
+
+.. code:: C++
+
+  // %% Important Heading
+  // This is some text in a reST block in C++, appearing underneath a heading.
+  //
+  // * Start a list
+  // * Check it twice
+
+.. code:: Fortran
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! This is the start of a reST block in Fortran 90.
+  !
+  ! It can contain multiple paragraphs.
+
+For languages that use C-style multiline comments, the following styles are supported:
+
+.. code:: C
+
+  /* %%
+   * Subheading
+   * ----------
+   *
+   * Description
+   */
+
+  int y = 3;
+
+  /**************************/
+  /* Another subheading     */
+  /* ------------------     */
+  /*                        */
+  /* Description            */
+  /**************************/
+  double z = 1.5;
+
+Finally, for compatibility with Matlab's use of a simple ``%%`` delimiter to mark code
+sections, this is allowed as a special delimiter in Matlab source files, in addition to
+the multi-language syntax described above:
+
+.. code:: Matlab
+
+  %% Heading
+  % some text below the heading
+
 .. _plain_rst:
 
 Plain reST examples
 ===================
 
-Sphinx-Gallery generates examples from Python scripts,
-so examples written in plain reST files are not supported.
-If you're looking to generate hyperlinks for functions (linking to their
-corresponding online documentation) in code blocks of ordinary reST
-documentation, you might find
-`sphinx-codeautolink <https://sphinx-codeautolink.readthedocs.io/en/latest/>`_ helpful.
+Sphinx-Gallery can also generate gallery pages from plain reStructuredText
+files. Place .rst files in your example folder and include '.rst' in the
+:ref:`example_extensions config <build_pattern>`, e.g. ::
+
+    sphinx_gallery_conf = {
+        ...
+        'example_extensions': {'.py', '.rst'}
+    }
+
+Because Sphinx-Gallery copies the .rst files as-is, no code is executed,
+and no .py and notebook downloads are available.
+
+.. tip::
+
+    If you want classes and functions in reST code blocks to become hyperlinks
+    to their documentation, you might find
+    `sphinx-codeautolink <https://sphinx-codeautolink.readthedocs.io/en/latest/>`_
+    helpful.

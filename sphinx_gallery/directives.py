@@ -1,22 +1,49 @@
 """Custom Sphinx directives."""
-import os
-from pathlib import PurePosixPath
-import shutil
 
-from docutils import nodes
-from docutils import statemachine
+from __future__ import annotations
+
+import os
+import shutil
+from collections import namedtuple
+from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING, Any, List
+
+from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from docutils.parsers.rst.directives import images
-
 from sphinx.errors import ExtensionError
+from sphinx.util.logging import getLogger
+
+from .backreferences import (
+    THUMBNAIL_PARENT_DIV,
+    THUMBNAIL_PARENT_DIV_CLOSE,
+    _thumbnail_div,
+)
+from .gen_rst import extract_intro_and_title
+from .py_source_parser import split_code_and_text_blocks
+from .typing import PathLikeStr
+from .utils import _read_json
+
+if TYPE_CHECKING:
+    import sphinx.application
+    import sphinx.config
+
+logger = getLogger("sphinx-gallery")
 
 
 class MiniGallery(Directive):
     """Custom directive to insert a mini-gallery.
 
-    The required argument is one or more fully qualified names of objects,
-    separated by spaces.  The mini-gallery will be the subset of gallery
-    examples that make use of that object (from that specific namespace).
+    The required argument is one or more of the following:
+
+    * fully qualified names of objects
+    * pathlike strings to example Python files
+    * glob-style pathlike strings to example Python files
+
+    The string list of arguments is separated by spaces.
+
+    The mini-gallery will be the subset of gallery
+    examples that make use of that object from that specific namespace
 
     Options:
 
@@ -27,16 +54,74 @@ class MiniGallery(Directive):
       character.  If omitted, the default heading level is `'^'`.
     """
 
-    required_arguments = 1
-    optional_arguments = 0
+    required_arguments = 0
+    has_content = True
+    optional_arguments = 1
     final_argument_whitespace = True
     option_spec = {
         "add-heading": directives.unchanged,
         "heading-level": directives.single_char_or_unicode,
     }
 
-    def run(self):
-        """Insert backreferences file with appropriate heading."""
+    def _get_target_dir(
+        self,
+        config: sphinx.config.Config,
+        src_dir: PathLikeStr,
+        path: Path,
+        obj: str,
+    ) -> Path:
+        """Get thumbnail target directory, errors when not in example dir."""
+        examples_dirs = config.sphinx_gallery_conf["examples_dirs"]
+        if not isinstance(examples_dirs, list):
+            examples_dirs = [examples_dirs]
+        gallery_dirs = config.sphinx_gallery_conf["gallery_dirs"]
+        if not isinstance(gallery_dirs, list):
+            gallery_dirs = [gallery_dirs]
+
+        gal_matches = []
+        for e, g in zip(examples_dirs, gallery_dirs):
+            e = Path(src_dir, e).resolve(strict=True)
+            g = Path(src_dir, g).resolve(strict=True)
+            try:
+                gal_matches.append((path.relative_to(e), g))
+            except ValueError:
+                continue
+
+        # `path` inside one `examples_dirs`
+        if (n_match := len(gal_matches)) == 1:
+            ex_parents, target_dir = (
+                gal_matches[0][0].parents,
+                gal_matches[0][1],
+            )
+        # `path` inside several `examples_dirs`, take the example dir with
+        # longest match (shortest parents after relative)
+        elif n_match > 1:
+            ex_parents, target_dir = min(
+                [(match[0].parents, match[1]) for match in gal_matches],
+                key=lambda x: len(x[0]),
+            )
+        # `path` is not inside a `examples_dirs`
+        else:
+            raise ExtensionError(
+                f"minigallery directive error: path input '{obj}' found file:"
+                f" '{path}' but this does not live inside any examples_dirs: "
+                f"{examples_dirs}"
+            )
+
+        # Add subgallery path, if present
+        subdir: PathLikeStr = ""
+        if (ex_p := ex_parents[0]) != Path("."):
+            subdir = ex_p
+        target_dir = target_dir / subdir
+        return target_dir
+
+    def run(self) -> list[Any]:
+        """Generate mini-gallery from backreference and example files."""
+        from .gen_rst import _get_callables
+
+        if not (self.arguments or self.content):
+            raise ExtensionError("No arguments passed to 'minigallery'")
+
         # Respect the same disabling options as the `raw` directive
         if (
             not self.state.document.settings.raw_enabled
@@ -47,9 +132,22 @@ class MiniGallery(Directive):
         # Retrieve the backreferences directory
         config = self.state.document.settings.env.config
         backreferences_dir = config.sphinx_gallery_conf["backreferences_dir"]
+        if backreferences_dir is None:
+            logger.warning(
+                "'backreferences_dir' config is None, minigallery "
+                "directive will resolve all inputs as file paths or globs."
+            )
 
-        # Parse the argument into the individual objects
-        obj_list = self.arguments[0].split()
+        # Retrieve source directory
+        src_dir = config.sphinx_gallery_conf["src_dir"]
+
+        # Parse the argument into the individual args
+        arg_list: list[str] = []
+
+        if self.arguments:
+            arg_list.extend([c.strip() for c in self.arguments[0].split()])
+        if self.content:
+            arg_list.extend([c.strip() for c in self.content])
 
         lines = []
 
@@ -57,43 +155,98 @@ class MiniGallery(Directive):
         if "add-heading" in self.options:
             heading = self.options["add-heading"]
             if heading == "":
-                if len(obj_list) == 1:
-                    heading = f"Examples using ``{obj_list[0]}``"
+                if len(arg_list) == 1:
+                    heading = f"Examples using ``{arg_list[0]}``"
                 else:
                     heading = "Examples using one of multiple objects"
             lines.append(heading)
             heading_level = self.options.get("heading-level", "^")
             lines.append(heading_level * len(heading))
 
-        def has_backrefs(obj):
-            src_dir = config.sphinx_gallery_conf["src_dir"]
-            path = os.path.join(src_dir, backreferences_dir, f"{obj}.examples")
-            return os.path.isfile(path) and os.path.getsize(path) > 0
+        ExampleInfo = namedtuple("ExampleInfo", ["target_dir", "intro", "title", "arg"])
+        backreferences_all = None
+        if backreferences_dir:
+            backreferences_all = _read_json(
+                Path(src_dir, backreferences_dir, "backreferences_all.json")
+            )
 
-        if not any(has_backrefs(obj) for obj in obj_list):
+        def has_backrefs(arg: str) -> Any:
+            if backreferences_all is None:
+                return False
+            examples = backreferences_all.get(arg, None)
+            if examples:
+                return examples
+            return False
+
+        # Full paths to example files are dict keys, preventing duplicates
+        file_paths = {}
+        for arg in arg_list:
+            # Backreference arg input
+            if examples := has_backrefs(arg):
+                # Note `ExampleInfo.arg` not required for backreference paths
+                for path in examples:
+                    file_paths[Path(path[1], path[0]).resolve()] = ExampleInfo(
+                        target_dir=path[2], intro=path[3], title=path[4], arg=None
+                    )
+            # Glob path arg input
+            elif paths := Path(src_dir).glob(arg):
+                # Glob paths require extra parsing to get the intro and title
+                # so we don't want to override a duplicate backreference arg input
+                for path in paths:
+                    path_resolved = path.resolve()
+                    if path_resolved in file_paths:
+                        continue
+                    else:
+                        file_paths[path_resolved] = ExampleInfo(None, None, None, arg)
+
+        if len(file_paths) == 0:
             return []
 
-        # Insert the backreferences file(s) using the `include` directive.
-        # This already includes the opening <div class="sphx-glr-thumbnails">
-        # and its closing </div>.
-        for obj in obj_list:
-            path = os.path.join(
-                "/",  # Sphinx treats this as the source dir
-                backreferences_dir,
-                f"{obj}.examples",
-            )
+        lines.append(THUMBNAIL_PARENT_DIV)
 
-            # Always remove the heading from the file
-            lines.append(
-                f"""\
-.. include:: {path}
-    :start-after: start-sphx-glr-thumbnails"""
+        # sort on the file path
+        if config.sphinx_gallery_conf["minigallery_sort_order"] is None:
+            sortkey = None
+        else:
+            (sortkey,) = _get_callables(
+                config.sphinx_gallery_conf, "minigallery_sort_order"
             )
+        if sortkey:
+            sorted_items = sorted(
+                file_paths.items(),
+                # `x[0]` to sort on key only
+                key=lambda x: sortkey(str(x[0])),
+            )
+        else:
+            sorted_items = sorted(file_paths.items())
 
-        # Parse the assembly of `include` and `raw` directives
+        for path, path_info in sorted_items:
+            if path_info.intro is not None:
+                thumbnail = _thumbnail_div(
+                    path_info.target_dir,
+                    src_dir,
+                    path.name,
+                    path_info.intro,
+                    path_info.title,
+                )
+            else:
+                target_dir = self._get_target_dir(config, src_dir, path, path_info.arg)
+                # Get thumbnail
+                # TODO: ideally we would not need to parse file (again) here
+                _, script_blocks = split_code_and_text_blocks(
+                    str(path), return_node=False
+                )
+                intro, title = extract_intro_and_title(
+                    str(path), script_blocks[0].content
+                )
+
+                thumbnail = _thumbnail_div(target_dir, src_dir, path.name, intro, title)
+            lines.append(thumbnail)
+
+        lines.append(THUMBNAIL_PARENT_DIV_CLOSE)
         text = "\n".join(lines)
         include_lines = statemachine.string2lines(text, convert_whitespace=True)
-        self.state_machine.insert_input(include_lines, path)
+        self.state_machine.insert_input(include_lines, str(path))
 
         return []
 
@@ -141,7 +294,7 @@ class ImageSg(images.Image):
         "alt": directives.unchanged,
     }
 
-    def run(self):
+    def run(self) -> List[nodes.Node]:
         """Update node contents."""
         image_node = imgsgnode()
 
@@ -159,10 +312,10 @@ class ImageSg(images.Image):
         return [image_node]
 
 
-def _parse_srcset(st):
+def _parse_srcset(st: str) -> dict[float, str]:
     """Parse st."""
     entries = st.split(",")
-    srcset = {}
+    srcset: dict[float, str] = {}
     for entry in entries:
         spl = entry.strip().split(" ")
         if len(spl) == 1:
@@ -175,7 +328,7 @@ def _parse_srcset(st):
     return srcset
 
 
-def visit_imgsg_html(self, node):
+def visit_imgsg_html(self, node: imgsgnode) -> None:
     """Handle HTML image tag depending on 'srcset' configuration.
 
     If 'srcset' is not `None`, copy images, generate image html tag with 'srcset'
@@ -187,31 +340,20 @@ def visit_imgsg_html(self, node):
 
     imagedir, srcset = _copy_images(self, node)
 
-    # /doc/examples/subd/plot_1.rst
-    docsource = self.document["source"]
-    # /doc/
-    # make sure to add the trailing slash:
-    srctop = os.path.join(self.builder.srcdir, "")
-    # examples/subd/plot_1.rst
-    relsource = os.path.relpath(docsource, srctop)
-    # /doc/build/html
-    desttop = os.path.join(self.builder.outdir, "")
-    # /doc/build/html/examples/subd
-    dest = os.path.join(desttop, relsource)
+    docsource = Path(self.document["source"])  # /doc/examples/subd/plot_1.rst
+    srctop = Path(self.builder.srcdir)  # /doc
+    relsource = Path(os.path.relpath(docsource, srctop))  # examples/subd/plot_1.rst
+    dest = Path(self.builder.outdir) / relsource  # /doc/build/html/examples/subd
 
     # ../../_images/ for dirhtml and ../_images/ for html
-    imagerel = os.path.relpath(imagedir, os.path.dirname(dest))
+    imagerel = Path(os.path.relpath(imagedir, dest.parent))
     if self.builder.name == "dirhtml":
-        imagerel = os.path.join("..", imagerel, "")
-    else:  # html
-        imagerel = os.path.join(imagerel, "")
-
-    if "\\" in imagerel:
-        imagerel = imagerel.replace("\\", "/")
+        imagerel = Path("..") / imagerel
+    imagerel = imagerel.as_posix().rstrip("/") + "/"
     # make srcset str.  Need to change all the prefixes!
     srcsetst = ""
     for mult in srcset:
-        nm = os.path.basename(srcset[mult][1:])
+        nm = Path(srcset[mult][1:]).name
         # ../../_images/plot_1_2_0x.png
         relpath = imagerel + nm
         srcsetst += f"{relpath}"
@@ -223,7 +365,7 @@ def visit_imgsg_html(self, node):
     srcsetst = srcsetst[:-2]
 
     # make uri also be relative...
-    nm = os.path.basename(node["uri"][1:])
+    nm = Path(node["uri"][1:]).name
     uri = imagerel + nm
 
     alt = node["alt"]
@@ -237,11 +379,11 @@ def visit_imgsg_html(self, node):
     self.body.append(html_block)
 
 
-def visit_imgsg_latex(self, node):
+def visit_imgsg_latex(self, node: imgsgnode) -> None:
     """Copy images, set node[uri] to highest resolution image and call `visit_image`."""
     if node["srcset"] is not None:
         imagedir, srcset = _copy_images(self, node)
-        maxmult = -1
+        maxmult: float = -1
         # choose the highest res version for latex:
         for key in srcset.keys():
             maxmult = max(maxmult, key)
@@ -250,39 +392,38 @@ def visit_imgsg_latex(self, node):
     self.visit_image(node)
 
 
-def _copy_images(self, node):
+def _copy_images(self, node: imgsgnode) -> tuple[Path, dict[float, str]]:
     srcset = _parse_srcset(node["srcset"])
 
     # where the sources are.  i.e. myproj/source
-    srctop = self.builder.srcdir
+    srctop = Path(self.builder.srcdir)
 
     # copy image from source to imagedir.  This is
     # *probably* supposed to be done by a builder but...
     # ie myproj/build/html/_images
-    imagedir = os.path.join(self.builder.imagedir, "")
-    imagedir = PurePosixPath(self.builder.outdir, imagedir)
+    imagedir = Path(self.builder.outdir) / self.builder.imagedir
 
-    os.makedirs(imagedir, exist_ok=True)
+    imagedir.mkdir(parents=True, exist_ok=True)
 
     # copy all the sources to the imagedir:
     for mult in srcset:
-        abspath = PurePosixPath(srctop, srcset[mult][1:])
+        abspath = srctop / srcset[mult].lstrip("/")
         shutil.copyfile(abspath, imagedir / abspath.name)
 
     return imagedir, srcset
 
 
-def depart_imgsg_html(self, node):
+def depart_imgsg_html(self, node: imgsgnode) -> None:
     """HTML depart node visitor function."""
     pass
 
 
-def depart_imgsg_latex(self, node):
+def depart_imgsg_latex(self, node: imgsgnode) -> None:
     """LaTeX depart node visitor function."""
     self.depart_image(node)
 
 
-def imagesg_addnode(app):
+def imagesg_addnode(app: sphinx.application.Sphinx) -> None:
     """Add `imgsgnode` to Sphinx app with visitor functions for HTML and LaTeX."""
     app.add_node(
         imgsgnode,

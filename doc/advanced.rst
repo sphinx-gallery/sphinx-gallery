@@ -162,14 +162,14 @@ The function should take the following inputs (in this order):
 
 1. ``block`` - a Sphinx-Gallery ``.py`` file is separated into consecutive
    lines of 'code' and reST 'text', called 'blocks'. For each
-   block, a tuple containing the (label, content, line_number)
-   (e.g. ``('code', 'print("Hello world")', 5)``) of the block is created.
+   block, a `namedtuple` with ("type", "content", "lineno") items
+   (e.g. ``('code', 'print("Hello world")', 5)``) is created.
 
    * 'label' is a string that can either be ``'text'`` or ``'code'``. In this
      context, it should only be ``'code'`` as this function is only called for
      code blocks.
    * 'content' is a string containing the actual content of the code block.
-   * 'line_number' is an integer, indicating the line number that the block
+   * 'lineno' is an integer, indicating the line number that the block
      starts at.
 
 2. ``block_vars`` - dictionary of configuration and runtime variables. Of
@@ -187,6 +187,9 @@ The function should take the following inputs (in this order):
 
 3. ``gallery_conf`` - dictionary containing the configuration of Sphinx-Gallery,
    set under ``sphinx_gallery_conf`` in ``doc/conf.py`` (:ref:`configuration`).
+   Of note, the :ref:`image_srcset <image_srcset>` configuration will provide
+   user specified image resolutions (as floats) and can be used by your custom scraper
+   to enable multi-resolution images.
 
 It should return a string containing the reST for embedding this figure in the
 documentation. See :func:`~sphinx_gallery.scrapers.matplotlib_scraper` for an
@@ -213,44 +216,42 @@ It uses an approach similar to what
 :func:`sphinx_gallery.scrapers.matplotlib_scraper` does under the hood, which
 use the helper function :func:`sphinx_gallery.scrapers.figure_rst` to
 create the standardized reST. If your package will be used to write an image
-file to disk (e.g., PNG or JPEG), we recommend you use a similar approach,
-but via a class so that the ``__repr__`` can remain stable across Sphinx runs::
+file to disk (e.g., PNG or JPEG), we recommend you use a similar approach::
 
-    class MyModuleScraper():
-        def __repr__(self):
-            return 'MyModuleScraper'
+    def my_module_scraper(block, block_vars, gallery_conf):
+        import mymodule
+        # We use a list to collect references to image names
+        image_names = list()
+        # The `image_path_iterator` is created by Sphinx-Gallery, it will yield
+        # a path to a file name that adheres to Sphinx-Gallery naming convention.
+        image_path_iterator = block_vars['image_path_iterator']
 
-        def __call__(self, block, block_vars, gallery_conf):
-            import mymodule
-            # We use a list to collect references to image names
-            image_names = list()
-            # The `image_path_iterator` is created by Sphinx-Gallery, it will yield
-            # a path to a file name that adheres to Sphinx-Gallery naming convention.
-            image_path_iterator = block_vars['image_path_iterator']
-     
-            # Define a list of our already-created figure objects.
-            list_of_my_figures = mymodule.get_figures()
-     
-            # Iterate through figure objects, save to disk, and keep track of paths.
-            for fig, image_path in zip(list_of_my_figures, image_path_iterator):
-                fig.save_png(image_path)
-                image_names.append(image_path)
-     
-            # Close all references to figures so they aren't used later.
-            mymodule.close('all')
-     
-            # Use the `figure_rst` helper function to generate the reST for this
-            # code block's figures. Alternatively you can define your own reST.
-            return figure_rst(image_names, gallery_conf['src_dir'])
+        # Define a list of our already-created figure objects.
+        list_of_my_figures = mymodule.get_figures()
 
-This code would be defined either in your ``conf.py`` file, or as a module that
-you import into your ``conf.py`` file. The configuration needed to use this
-scraper would look like::
+        # Iterate through figure objects, save to disk, and keep track of paths.
+        for fig, image_path in zip(list_of_my_figures, image_path_iterator):
+            fig.save_png(image_path)
+            image_names.append(image_path)
+
+        # Close all references to figures so they aren't used later.
+        mymodule.close('all')
+
+        # Use the `figure_rst` helper function to generate the reST for this
+        # code block's figures. Alternatively you can define your own reST.
+        return figure_rst(image_names, gallery_conf['src_dir'])
+
+This code could be defined either in your ``conf.py`` file, or as a module that
+you import into your ``conf.py`` file (see :ref:`importing_callables`).
+The configuration needed to use this scraper would look like::
 
     sphinx_gallery_conf = {
         ...
-        'image_scrapers': ('matplotlib', MyModuleScraper()),
+        'image_scrapers': ('matplotlib', "my_module._scraper.my_module_scraper"),
     }
+
+Where Sphinx-Gallery will parse the string ``"my_module._scraper.my_module_scraper"``
+to import the callable function.
 
 Example 2: detecting image files on disk
 ----------------------------------------
@@ -261,46 +262,37 @@ the reST needed to embed them in the documentation. Note that the example script
 will still need to be executed to scrape the files, but the images
 don't need to be produced during the execution.
 
-We'll use a callable class in this case, and assume it is defined within your
-package in a module called ``scraper``. Here is the scraper code::
+We assume the function is defined within your
+package in a module called ``_scraper``. Here is the scraper code::
 
     from glob import glob
     import shutil
     import os
     from sphinx_gallery.scrapers import figure_rst
 
-    class PNGScraper(object):
-        def __init__(self):
-            self.seen = set()
- 
-        def __repr__(self):
-            return 'PNGScraper'
- 
-        def __call__(self, block, block_vars, gallery_conf):
-            # Find all PNG files in the directory of this example.
-            path_current_example = os.path.dirname(block_vars['src_file'])
-            pngs = sorted(glob(os.path.join(path_current_example, '*.png')))
- 
-            # Iterate through PNGs, copy them to the sphinx-gallery output directory
-            image_names = list()
-            image_path_iterator = block_vars['image_path_iterator']
-            for png in pngs:
-                if png not in self.seen:
-                    self.seen |= set(png)
-                    this_image_path = image_path_iterator.next()
-                    image_names.append(this_image_path)
-                    shutil.move(png, this_image_path)
-            # Use the `figure_rst` helper function to generate reST for image files
-            return figure_rst(image_names, gallery_conf['src_dir'])
- 
+    def png_scraper(block, block_vars, gallery_conf):
+        # Find all PNG files in the directory of this example.
+        path_current_example = os.path.dirname(block_vars['src_file'])
+        pngs = sorted(glob(os.path.join(path_current_example, '*.png')))
+
+        # Iterate through PNGs, copy them to the Sphinx-Gallery output directory
+        image_names = list()
+        image_path_iterator = block_vars['image_path_iterator']
+        seen = set()
+        for png in pngs:
+            if png not in seen:
+                seen |= set(png)
+                this_image_path = image_path_iterator.next()
+                image_names.append(this_image_path)
+                shutil.move(png, this_image_path)
+        # Use the `figure_rst` helper function to generate reST for image files
+        return figure_rst(image_names, gallery_conf['src_dir'])
 
 Then, in our ``conf.py`` file, we include the following code::
 
-   from mymodule import PNGScraper
-
    sphinx_gallery_conf = {
        ...
-       'image_scrapers': ('matplotlib', PNGScraper()),
+       'image_scrapers': ('matplotlib', 'my_module._scraper.png_scraper'),
    }
 
 Example 3: matplotlib with SVG format
@@ -308,20 +300,17 @@ Example 3: matplotlib with SVG format
 The :func:`sphinx_gallery.scrapers.matplotlib_scraper` supports ``**kwargs``
 to pass to :meth:`matplotlib.figure.Figure.savefig`, one of which is the
 ``format`` argument. See :ref:`custom_scraper` for supported formats.
-To use SVG, you can do::
+To use SVG you can define the following function and ensure it is
+:ref:`importable <importing_callables>`::
 
-    from sphinx_gallery.scrapers import matplotlib_scraper
+    def matplotlib_svg_scraper(*args, **kwargs):
+        return matplotlib_scraper(*args, format='svg', **kwargs)
 
-    class matplotlib_svg_scraper(object):
-        def __repr__(self):
-            return self.__class__.__name__
-
-        def __call__(self, *args, **kwargs):
-            return matplotlib_scraper(*args, format='svg', **kwargs)
+Then in your ``conf.py``::
 
     sphinx_gallery_conf = {
         ...
-        'image_scrapers': (matplotlib_svg_scraper(),),
+        'image_scrapers': ("sphinxext.matplotlib_svg_scraper",),
         ...
     }
 
@@ -332,35 +321,31 @@ writing a customized scraper class or function.
 
 Example 4: Mayavi scraper
 -------------------------
-Historically, sphinx-gallery supported scraping Mayavi figures as well as
+Historically, Sphinx-Gallery supported scraping Mayavi figures as well as
 matplotlib figures. However, due to the complexity of maintaining the scraper,
 support was deprecated in version 0.12.0. To continue using a Mayavi scraping,
 consider using something like the following::
 
     from sphinx_gallery.scrapers import figure_rst
 
-    class MayaviScraper():
-        def __repr__(self):
-            return 'MyModuleScraper'
-
-        def __call__(self, block, block_vars, gallery_conf):
-            from mayavi import mlab
-            image_path_iterator = block_vars['image_path_iterator']
-            image_paths = list()
-            e = mlab.get_engine()
-            for scene, image_path in zip(e.scenes, image_path_iterator):
-                try:
-                    mlab.savefig(image_path, figure=scene)
-                except Exception:
-                    mlab.close(all=True)
-                    raise
-                # make sure the image is not too large
-                scale_image(image_path, image_path, 850, 999)
-                if 'images' in gallery_conf['compress_images']:
-                    optipng(image_path, gallery_conf['compress_images_args'])
-                image_paths.append(image_path)
-            mlab.close(all=True)
-            return figure_rst(image_paths, gallery_conf['src_dir'])
+    def mayavi_scraper(self, block, block_vars, gallery_conf):
+        from mayavi import mlab
+        image_path_iterator = block_vars['image_path_iterator']
+        image_paths = list()
+        e = mlab.get_engine()
+        for scene, image_path in zip(e.scenes, image_path_iterator):
+            try:
+                mlab.savefig(image_path, figure=scene)
+            except Exception:
+                mlab.close(all=True)
+                raise
+            # make sure the image is not too large
+            scale_image(image_path, image_path, 850, 999)
+            if 'images' in gallery_conf['compress_images']:
+                optipng(image_path, gallery_conf['compress_images_args'])
+            image_paths.append(image_path)
+        mlab.close(all=True)
+        return figure_rst(image_paths, gallery_conf['src_dir'])
 
 Integrate custom scrapers with Sphinx-Gallery
 ---------------------------------------------
@@ -418,14 +403,15 @@ For example, to reset matplotlib to always use the ``ggplot`` style, you could d
        style.use('ggplot')
 
 Any custom functions can be defined (or imported) in ``conf.py`` and given to
-the ``reset_modules`` configuration key. To add the function defined above::
+the ``reset_modules`` configuration key. To add the function defined above (assuming
+you've make it :ref:`importable <importing_callables>`)::
 
    sphinx_gallery_conf = {
        ...
-       'reset_modules': (reset_mpl, 'seaborn'),
+       'reset_modules': ("sphinxext.reset_mpl", "seaborn"),
    }
 
-In the config above ``'seaborn'`` refers to the native seaborn resetting
+In the config above ``"seaborn"`` refers to the native seaborn resetting
 function (see :ref:`reset_modules`).
 
 .. note:: Using resetters such as ``reset_mpl`` that deviate from the
@@ -438,7 +424,6 @@ after an example, a function signature with three parameters can be used, where
 the third parameter is required to be named ``when``::
 
     def reset_mpl(gallery_conf, fname, when):
-
         import matplotlib as mpl
         mpl.rcParams['lines.linewidth'] = 2
         if when == 'after' and fname=='dashed_lines':
@@ -510,3 +495,76 @@ the ``sphinx_gallery.gen_gallery`` extension, you can use in ``conf.py``::
     extensions = ['sphinx_gallery.load_style']
 
 This will only cause the ``gallery.css`` file to be added to your build.
+
+Using Sphinx-Gallery sidebar components
+=======================================
+
+Sphinx-Gallery provides two built-in components (which are essentially `Sphinx templates
+<https://www.sphinx-doc.org/en/master/development/templating.html>`__):
+``sg_download_links`` and ``sg_launcher_links``. They are primarily designed for use in
+`secondary sidebars <https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/layout.html#secondary-sidebar-right>`__
+of ``pydata-sphinx-theme``, but also work with any other configuration that uses
+templates, e.g., `html_sidebars
+<https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_sidebars>`__.
+
+- ``sg_download_links``: Displays the download links of source code, Jupyter notebook,
+  and the zip of them for an example.
+- ``sg_launcher_links``: Displays the launcher links for JupyterLite and Binder for an
+  example.
+
+Note that it is safe to use these components on any page, even if the page is not a
+Sphinx-Gallery example page. The components work by grabbing specific Sphinx-Gallery
+classes from the page, hence for non-Sphinx-Gallery pages, the components will simply
+not render anything.
+
+Using these components does not mean that the original download and launcher links will
+be removed from the page. In fact, they cannot be removed as otherwise the components
+cannot grab the necessary information. To visually remove the original links in favor
+of the components, one can use ``display: none`` in CSS to hide them. The relevant
+classes are:
+
+.. literalinclude:: _static/hide_links.css
+   :language: css
+
+Example
+-------
+
+Here we will show an example of how to use these components in the secondary sidebar of
+``pydata-sphinx-theme``. Navigate around :ref:`examples-index` for an example of what
+the sidebar would look like.
+
+Configure the components to be used in the secondary sidebar:
+
+.. code-block:: python
+
+    html_theme_options = {
+        ...
+        "secondary_sidebar_items": ["page-toc", "sg_download_links", "sg_launcher_links"],
+    }
+
+Add the CSS to hide the original download and launcher links (suppose that the CSS is
+placed in ``_static/hide_links.css``):
+
+.. code-block:: python
+
+    html_static_path = ["_static"]
+
+    def setup(app):
+        # ...
+        app.add_css_file("hide_links.css")
+
+The above will include the CSS in all pages. If one wants to add the CSS only for
+certain pages, one can alternatively do the following (only add to pages that start with
+``auto_examples/``):
+
+.. code-block:: python
+
+    html_static_path = ["_static"]
+
+    def hide_sg_links(app, pagename, templatename, context, doctree):
+        if pagename.startswith("auto_examples/"):
+            app.add_css_file("hide_links.css")
+
+    def setup(app):
+        # ...
+        app.connect("html-page-context", hide_sg_links)

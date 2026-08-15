@@ -2,31 +2,40 @@
 # License: 3-clause BSD
 """Link resolver objects."""
 
-import codecs
+from __future__ import annotations
+
 import gzip
-from io import BytesIO
 import os
-import pickle
 import posixpath
 import re
 import shelve
-import sys
-import urllib.request as urllib_request
 import urllib.parse as urllib_parse
+import urllib.request as urllib_request
+from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from urllib.error import HTTPError, URLError
 
+import sphinx.util
 from sphinx.errors import ExtensionError
 from sphinx.search import js_index
-import sphinx.util
 
-from .utils import status_iterator
+if TYPE_CHECKING:
+    import sphinx.application
 
+from .typing import (
+    DocumentationOptions,
+    GalleryConfig,
+    IntersphinxInventory,
+    LinkType,
+    PathLikeStr,
+)
+from .utils import _W_KW, _read_json, status_iterator
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-def _get_data(url):
+def _get_data(url: str) -> str:
     """Get data over http(s) or from a local file."""
     if urllib_parse.urlparse(url).scheme in ("http", "https"):
         user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"  # noqa: E501
@@ -34,29 +43,25 @@ def _get_data(url):
         req = urllib_request.Request(url, None, headers)
         resp = urllib_request.urlopen(req)
         encoding = resp.headers.get("content-encoding", "plain")
-        data = resp.read()
+        data_bytes = resp.read()
         if encoding == "gzip":
-            data = gzip.GzipFile(fileobj=BytesIO(data)).read()
+            data_bytes = gzip.GzipFile(fileobj=BytesIO(data_bytes)).read()
         elif encoding != "plain":
             raise ExtensionError(f"unknown encoding {encoding!r}")
-        data = data.decode("utf-8")
+        data: str = data_bytes.decode("utf-8")
     else:
-        with codecs.open(url, mode="r", encoding="utf-8") as fid:
+        with open(url, mode="r", encoding="utf-8") as fid:
             data = fid.read()
 
     return data
 
 
-def get_data(url, gallery_dir):
+def get_data(url: str, gallery_dir: PathLikeStr) -> str:
     """Persistent dictionary usage to retrieve the search indexes."""
-    # shelve keys need to be str in python 2
-    if sys.version_info[0] == 2 and isinstance(url, str):
-        url = url.encode("utf-8")
-
-    cached_file = os.path.join(gallery_dir, "searchindex")
+    cached_file = str(Path(gallery_dir) / "searchindex")
     search_index = shelve.open(cached_file)
     if url in search_index:
-        data = search_index[url]
+        data: str = search_index[url]
     else:
         data = _get_data(url)
         search_index[url] = data
@@ -65,7 +70,7 @@ def get_data(url, gallery_dir):
     return data
 
 
-def parse_sphinx_docopts(index):
+def parse_sphinx_docopts(index: str) -> DocumentationOptions:
     """Parse the Sphinx index for documentation options.
 
     Parameters
@@ -98,15 +103,17 @@ def parse_sphinx_docopts(index):
         value = value.strip()
         if value[-1] == ",":
             value = value[:-1].rstrip()
+
+        parsed_value: str | int | bool
         if value[0] in "\"'":
-            value = value[1:-1]
+            parsed_value = value[1:-1]
         elif value == "false":
-            value = False
+            parsed_value = False
         elif value == "true":
-            value = True
+            parsed_value = True
         else:
             try:
-                value = int(value)
+                parsed_value = int(value)
             except ValueError:
                 # In Sphinx 1.7.5, URL_ROOT is a JavaScript fragment.
                 # Ignoring this entry since URL_ROOT is not used
@@ -114,7 +121,7 @@ def parse_sphinx_docopts(index):
                 # https://github.com/sphinx-gallery/sphinx-gallery/issues/382
                 continue
 
-        docopts[key] = value
+        docopts[key] = parsed_value
 
     return docopts
 
@@ -124,24 +131,30 @@ class SphinxDocLinkResolver:
 
     Parameters
     ----------
-    doc_url : str
+    doc_url : str | pathlib.Path
         The base URL of the project website.
     relative : bool
         Return relative links (only useful for links to documentation of this
         package).
     """
 
-    def __init__(self, config, doc_url, gallery_dir, relative=False):
+    def __init__(
+        self,
+        config: GalleryConfig,
+        doc_url: str | Path,
+        gallery_dir: PathLikeStr,
+        relative: bool = False,
+    ):
         self.config = config
         self.doc_url = doc_url
         self.gallery_dir = gallery_dir
         self.relative = relative
-        self._link_cache = {}
+        self._link_cache: dict[str, LinkType] = {}
 
         if isinstance(doc_url, Path):
-            index_url = os.path.join(doc_url, "index.html")
-            searchindex_url = os.path.join(doc_url, "searchindex.js")
-            docopts_url = os.path.join(doc_url, "_static", "documentation_options.js")
+            index_url = str(doc_url / "index.html")
+            searchindex_url = str(doc_url / "searchindex.js")
+            docopts_url = str(doc_url / "_static" / "documentation_options.js")
         else:
             if relative:
                 raise ExtensionError(
@@ -159,7 +172,7 @@ class SphinxDocLinkResolver:
                     "You have to use relative=True for the local"
                     " package on a Windows system."
                 )
-            self._is_windows = True
+            self._is_windows: bool = True
         else:
             self._is_windows = False
 
@@ -204,16 +217,14 @@ class SphinxDocLinkResolver:
                     return None
         return match
 
-    def _get_link_type(self, cobj, use_full_module=False):
+    def _get_link_type(self, cobj, use_full_module=False) -> LinkType:
         """Get a valid link and type_, False if not found."""
-        module_type = "module_short"
-        if use_full_module:
-            module_type = "module"
+        module_type = "module" if use_full_module else "module_short"
         first, second = cobj[module_type], cobj["name"]
         match = self._get_index_match(first, second)
         if match is None and "." in second:  # possible class attribute
             first, second = second.split(".", 1)
-            first = ".".join([cobj["module_short"], first])
+            first = ".".join([cobj[module_type], first])
             match = self._get_index_match(first, second)
         if match is None:
             link = type_ = None
@@ -230,7 +241,7 @@ class SphinxDocLinkResolver:
             fname = os.path.splitext(fname)[0] + ext
             if self._is_windows:
                 fname = fname.replace("/", "\\")
-                link = os.path.join(self.doc_url, fname)
+                link = str(Path(self.doc_url) / fname)
             else:
                 link = posixpath.join(self.doc_url, fname)
 
@@ -244,13 +255,17 @@ class SphinxDocLinkResolver:
 
         return link, type_
 
-    def resolve(self, cobj, this_url, return_type=False):
+    def resolve(
+        self,
+        cobj: dict[str, Any],
+        this_url: PathLikeStr,
+    ) -> LinkType:
         """Resolve the link to the documentation, returns None if not found.
 
         Parameters
         ----------
-        cobj : OrderedDict[str, Any]
-            OrderedDict with information about the "code object" for which we are
+        cobj : Dict[str, Any]
+            Dict with information about the "code object" for which we are
             resolving a link.
 
                 - cobj['name'] : function or class name (str)
@@ -259,12 +274,9 @@ class SphinxDocLinkResolver:
                 - cobj['is_class'] : whether object is class (bool)
                 - cobj['is_explicit'] : whether object is an explicit
                   backreference (referred to by sphinx markup) (bool)
-
-        this_url: str
+        this_url: str | pathlib.Path
             URL of the current page. Needed to construct relative URLs
             (only used if relative=True in constructor).
-        return_type : bool
-            If True, return the type as well.
 
         Returns
         -------
@@ -293,10 +305,10 @@ class SphinxDocLinkResolver:
             # for some reason, the relative link goes one directory too high up
             link = link[3:]
 
-        return (link, type_) if return_type else link
+        return link, type_
 
 
-def _handle_http_url_error(e, msg="fetching"):
+def _handle_http_url_error(e: Exception, msg: str = "fetching") -> None:
     if isinstance(e, HTTPError):
         error_msg = f"{msg} {e.url}: {e.code} ({e.msg})"
     elif isinstance(e, URLError):
@@ -306,17 +318,50 @@ def _handle_http_url_error(e, msg="fetching"):
     )
 
 
-def _sanitize_css_class(s):
+def _sanitize_css_class(s: str) -> str:
     for x in "~!@$%^&*()+=,./';:\"?><[]\\{}|`#":
         s = s.replace(x, "-")
     return s
 
 
-def _embed_code_links(app, gallery_conf, gallery_dir):
+def _get_intersphinx_inventory(app: sphinx.application.Sphinx) -> IntersphinxInventory:
+    """
+    Get the mapping between module names and intersphinx inventories.
+
+    In some cases, intersphinx inventories may provide documentation for modules _other_
+    than the one given by the intersphinx_mapping key (e.g., the Python inventory
+    contains documentation for all standard library modules, or Matplotlib contains
+    several `mpl_toolkits`` modules), so this checks py:module for all inventories and
+    adds that additional module mapping.
+    """
+    inventory: IntersphinxInventory
+    if inventory := getattr(app.env, "sg_intersphinx_inventory", None):  # ty: ignore[invalid-assignment]
+        return inventory
+
+    # Make a copy of the inventories, because this dict is created by intersphinx and we
+    # don't want to break whatever assumptions it has made about it.
+    intersphinx_inv_orig = getattr(app.env, "intersphinx_named_inventory", dict())
+    intersphinx_inv = intersphinx_inv_orig.copy()
+    for module_name, inventory in intersphinx_inv_orig.items():
+        documented_modules = {
+            qualname.split(".")[0] for qualname in inventory.get("py:module", dict())
+        }
+        for other_module_name in documented_modules - {module_name}:
+            intersphinx_inv[other_module_name] = inventory
+
+    setattr(app.env, "sg_intersphinx_inventory", intersphinx_inv)
+    return intersphinx_inv
+
+
+def _embed_code_links(
+    app: sphinx.application.Sphinx,
+    gallery_conf: GalleryConfig,
+    gallery_dir: PathLikeStr,
+):
     """Add resolvers for the packages for which we want to show links."""
     doc_resolvers = {}
 
-    src_gallery_dir = os.path.join(app.builder.srcdir, gallery_dir)
+    src_gallery_dir = Path(app.builder.srcdir) / gallery_dir
     for this_module, url in gallery_conf["reference_url"].items():
         try:
             if url is None:
@@ -334,7 +379,7 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
         except (URLError, HTTPError) as e:
             _handle_http_url_error(e)
 
-    html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir, gallery_dir))
+    html_gallery_dir = (Path(app.builder.outdir) / gallery_dir).resolve()
 
     # patterns for replacement
     link_pattern = '<a href="{link}" title="{title}" class="{css_class}">{text}</a>'
@@ -343,33 +388,32 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
 
     # This could be turned into a generator if necessary, but should be okay
     flat = [
-        [dirpath, filename]
+        Path(dirpath, filename)
         for dirpath, _, filenames in os.walk(html_gallery_dir)
         for filename in filenames
+        if filename.endswith(".html")
     ]
     iterator = status_iterator(
         flat,
         f"embedding documentation hyperlinks for {gallery_dir}... ",
         color="fuchsia",
         length=len(flat),
-        stringify_func=lambda x: os.path.basename(x[1]),
+        stringify_func=lambda x: x.name,
     )
-    intersphinx_inv = getattr(app.env, "intersphinx_named_inventory", dict())
-    builtin_modules = set(
-        intersphinx_inv.get("python", dict()).get("py:module", dict()).keys()
-    )
-    for dirpath, fname in iterator:
-        full_fname = os.path.join(html_gallery_dir, dirpath, fname)
-        subpath = dirpath[len(html_gallery_dir) + 1 :]
-        pickle_fname = os.path.join(
-            src_gallery_dir, subpath, fname[:-5] + "_codeobj.pickle"
-        )
-        if not os.path.exists(pickle_fname):
+    intersphinx_inv = _get_intersphinx_inventory(app)
+    for full_fname in iterator:
+        subpath = full_fname.parent.relative_to(html_gallery_dir)
+        if app.builder.name == "dirhtml":
+            # the containing directory is the document name, the file is index.html
+            json_fname = src_gallery_dir / f"{subpath}.codeobj.json"
+        else:
+            json_fname = src_gallery_dir / subpath / f"{full_fname.stem}.codeobj.json"
+        if not json_fname.is_file():
             continue
 
-        # we have a pickle file with the objects to embed links for
-        with open(pickle_fname, "rb") as fid:
-            example_code_obj = pickle.load(fid)
+        # we have a json file with the objects to embed links for
+        example_code_obj = _read_json(json_fname)
+
         # generate replacement strings with the links
         str_repl = {}
         for name in sorted(example_code_obj):
@@ -386,17 +430,17 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                     if this_module in doc_resolvers:
                         try:
                             link, type_ = doc_resolvers[this_module].resolve(
-                                cobj, full_fname, return_type=True
+                                cobj, full_fname
                             )
                         except (HTTPError, URLError) as e:
                             _handle_http_url_error(
                                 e, msg=f"resolving {modname}.{cname}"
                             )
+                        if link is not None and app.builder.name == "dirhtml":
+                            link = link.replace(".html", "/")
 
                     # next try intersphinx
                     if this_module == modname == "builtins":
-                        this_module = "python"
-                    elif modname in builtin_modules:
                         this_module = "python"
                     if link is None and this_module in intersphinx_inv:
                         inv = intersphinx_inv[this_module]
@@ -407,7 +451,10 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
                         for key, value in inv.items():
                             # only python domain
                             if key.startswith("py") and want in value:
-                                link = value[want][2]
+                                try:
+                                    link = value[want].uri
+                                except AttributeError:  # sphinx < 8.2
+                                    link = value[want][2]
                                 type_ = key
                                 break
 
@@ -455,15 +502,17 @@ def _embed_code_links(app, gallery_conf, gallery_dir):
             return str_repl[match.group()]
 
         if len(str_repl) > 0:
-            with codecs.open(full_fname, "r", "utf-8") as fid:
+            with open(full_fname, "r", encoding="utf-8") as fid:
                 lines_in = fid.readlines()
-            with codecs.open(full_fname, "w", "utf-8") as fid:
+            with open(full_fname, "w", **_W_KW) as fid:
                 for line in lines_in:
                     line_out = regex.sub(substitute_link, line)
                     fid.write(line_out)
 
 
-def embed_code_links(app, exception):
+def embed_code_links(
+    app: sphinx.application.Sphinx, exception: Exception | None
+) -> None:
     """Embed hyperlinks to documentation into example code."""
     if exception is not None:
         return
@@ -475,7 +524,7 @@ def embed_code_links(app, exception):
     # require searchindex.js to exist for the links to the local doc
     # and there does not seem to be a good way of knowing which
     # builders creates a searchindex.js.
-    if app.builder.name not in ["html", "readthedocs"]:
+    if app.builder.name not in ["html", "dirhtml", "readthedocs"]:
         return
 
     logger.info("embedding documentation hyperlinks...", color="white")

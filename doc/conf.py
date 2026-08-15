@@ -1,4 +1,5 @@
 """Sphinx-Gallery documentation build configuration file."""
+
 # Sphinx-Gallery documentation build configuration file, created by
 # sphinx-quickstart on Mon Nov 17 16:01:26 2014.
 #
@@ -11,19 +12,19 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
-from datetime import date
+import sys
 import warnings
+from datetime import date
+
+from intersphinx_registry import get_intersphinx_mapping
 
 import sphinx_gallery
-from sphinx_gallery.sorting import FileNameSortKey
-from sphinx_gallery.notebook import add_markdown_cell, add_code_cell
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "sphinxext"))
 
 # -- General configuration ------------------------------------------------
 
@@ -46,6 +47,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.graphviz",
     "jupyterlite_sphinx",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -88,7 +90,7 @@ release = sphinx_gallery.__version__ + "-git"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["_build"]
+exclude_patterns = ["_build", "sphinxext"]
 
 # See warnings about bad links
 nitpicky = True
@@ -132,6 +134,7 @@ html_theme = "pydata_sphinx_theme"
 def setup(app):
     """Sphinx setup function."""
     app.add_css_file("theme_override.css")
+    app.add_css_file("hide_links.css")
     app.add_object_type(
         "confval",
         "confval",
@@ -148,6 +151,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "show_nav_level": 2,
     "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
+    "navigation_with_keys": False,
     "logo": {
         "text": "🖼️ Sphinx-Gallery",
     },
@@ -163,6 +167,7 @@ html_theme_options = {
             "icon": "fa-solid fa-box",
         },
     ],
+    "secondary_sidebar_items": ["page-toc", "sg_download_links", "sg_launcher_links"],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -330,15 +335,24 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {
-    "python": (f"https://docs.python.org/{sys.version_info.major}", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable", None),
-    "pyvista": ("https://docs.pyvista.org/version/stable", None),
-    "sklearn": ("https://scikit-learn.org/stable", None),
-    "sphinx": ("https://www.sphinx-doc.org/en/master", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
-}
+intersphinx_mapping = get_intersphinx_mapping(
+    packages={
+        "joblib",
+        "matplotlib",
+        "numpy",
+        "pandas",
+        "python",
+        "pyvista",
+        "sklearn",
+        "sphinx",
+    },
+)
+
+nitpick_ignore = [
+    # autodoc creates this reference (for `ImageSg.run`), but docutils does not use
+    #  sphinx, so that an intersphinx link cannot be created
+    ("py:class", "docutils.nodes.Node"),
+]
 
 examples_dirs = ["../examples", "../tutorials"]
 gallery_dirs = ["auto_examples", "tutorials"]
@@ -350,91 +364,25 @@ try:
     # installed
     import pyvista
 except Exception:  # can raise all sorts of errors
-    pass
+    pyvista = None
 else:
     image_scrapers += ("pyvista",)
     examples_dirs.append("../pyvista_examples")
     gallery_dirs.append("auto_pyvista_examples")
-    pyvista.OFF_SCREEN = True
-    # Preferred plotting style for documentation
-    pyvista.set_plot_theme("document")
-    pyvista.global_theme.window_size = [1024, 768]
-    pyvista.global_theme.font.size = 22
-    pyvista.global_theme.font.label_size = 22
-    pyvista.global_theme.font.title_size = 22
-    pyvista.global_theme.return_cpos = False
-    # necessary when building the sphinx gallery
-    pyvista.BUILDING_GALLERY = True
-    pyvista.set_jupyter_backend(None)
 
 # Set plotly renderer to capture _repr_html_ for sphinx-gallery
 try:
+    import plotly
     import plotly.io
 except ImportError:
-    pass
+    plotly = None
 else:
-    plotly.io.renderers.default = "sphinx_gallery"
     examples_dirs.append("../plotly_examples")
     gallery_dirs.append("auto_plotly_examples")
 
 min_reported_time = 0
 if "SOURCE_DATE_EPOCH" in os.environ:
-    min_reported_time = sys.maxint if sys.version_info[0] == 2 else sys.maxsize
-
-
-def notebook_modification_function(notebook_content, notebook_filename):
-    """Implement JupyterLite-specific modifications of notebooks."""
-    notebook_content_str = str(notebook_content)
-    warning_template = "\n".join(
-        [
-            "<div class='alert alert-{message_class}'>",
-            "",
-            "# JupyterLite warning",
-            "",
-            "{message}",
-            "</div>",
-        ]
-    )
-
-    if "pyvista_examples" in notebook_filename:
-        message_class = "danger"
-        message = (
-            "PyVista is not packaged in Pyodide, this notebook is not "
-            "expected to work inside JupyterLite"
-        )
-    elif "import plotly" in notebook_content_str:
-        message_class = "danger"
-        message = (
-            "This notebook is not expected to work inside JupyterLite for now."
-            " There seems to be some issues with Plotly, see "
-            "[this]('https://github.com/jupyterlite/jupyterlite/pull/950') "
-            "for more details."
-        )
-    else:
-        message_class = "warning"
-        message = (
-            "JupyterLite integration in sphinx-gallery is beta "
-            "and it may break in unexpected ways"
-        )
-
-    markdown = warning_template.format(message_class=message_class, message=message)
-
-    dummy_notebook_content = {"cells": []}
-    add_markdown_cell(dummy_notebook_content, markdown)
-
-    code_lines = []
-
-    if "seaborn" in notebook_content_str:
-        code_lines.append("%pip install seaborn")
-
-    if code_lines:
-        code_lines = ["# JupyterLite-specific code"] + code_lines
-        code = "\n".join(code_lines)
-        add_code_cell(dummy_notebook_content, code)
-
-    notebook_content["cells"] = (
-        dummy_notebook_content["cells"] + notebook_content["cells"]
-    )
+    min_reported_time = sys.maxsize
 
 
 sphinx_gallery_conf = {
@@ -446,11 +394,13 @@ sphinx_gallery_conf = {
     "examples_dirs": examples_dirs,
     "gallery_dirs": gallery_dirs,
     "image_scrapers": image_scrapers,
+    "reset_modules": ("matplotlib", "seaborn", "sg_doc_build.reset_others"),
     "compress_images": ("images", "thumbnails"),
     # specify the order of examples to be according to filename
-    "within_subsection_order": FileNameSortKey,
+    "within_subsection_order": "FileNameSortKey",
     "expected_failing_examples": [
         "../examples/no_output/plot_raise.py",
+        "../examples/no_output/plot_raise_thumbnail.py",
         "../examples/no_output/plot_syntaxerror.py",
     ],
     "min_reported_time": min_reported_time,
@@ -463,7 +413,9 @@ sphinx_gallery_conf = {
         "notebooks_dir": "notebooks",
         "use_jupyter_lab": True,
     },
-    "jupyterlite": {"notebook_modification_function": notebook_modification_function},
+    "jupyterlite": {
+        "notebook_modification_function": "sg_doc_build.notebook_modification_function",
+    },
     "show_memory": True,
     "promote_jupyter_magic": False,
     "junit": os.path.join("sphinx-gallery", "junit-results.xml"),
@@ -472,7 +424,7 @@ sphinx_gallery_conf = {
     "capture_repr": ("_repr_html_", "__repr__"),
     "matplotlib_animations": True,
     "image_srcset": ["2x"],
-    "nested_sections": False,
+    "nested_sections": True,
     "show_api_usage": True,
 }
 
@@ -483,3 +435,8 @@ warnings.filterwarnings(
     message="Matplotlib is currently using agg, which is a"
     " non-GUI backend, so cannot show the figure.",
 )
+
+# Workaround to suppress missing link warnings to custom types, e.g. GalleryConfig,
+# created through autodoc.
+# TODO: There may be better ways to cope with this by adding the types to the docs.
+suppress_warnings = ["ref.class"]

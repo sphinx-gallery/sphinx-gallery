@@ -16,76 +16,140 @@ necessary, and on a case-by-case basis.
 
 .. _list_of_options:
 
-List of config options
+Configuration options
 ======================
 
-Most Sphinx-Gallery configuration options are set in the Sphinx ``conf.py``
-file:
+Global ``conf.py`` configurations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sphinx-Gallery configuration options that can be set in the Sphinx ``conf.py``
+file, inside a ``sphinx_gallery_conf`` dictionary.
+
+**Gallery files and ordering**
 
 - ``examples_dirs`` and ``gallery_dirs`` (:ref:`multiple_galleries_config`)
-- ``filename_pattern`` and ``ignore_pattern`` (:ref:`build_pattern`)
-- ``run_stale_examples`` (:ref:`run_stale_examples`)
-- ``reset_argv`` (:ref:`reset_argv`)
+- ``filename_pattern``, ``ignore_pattern``, ``example_extensions``, and
+  ``filetype_parsers`` (:ref:`build_pattern`)
+- ``copyfile_regex`` (:ref:`manual_passthrough`)
 - ``subsection_order`` (:ref:`sub_gallery_order`)
 - ``within_subsection_order`` (:ref:`within_gallery_order`)
+- ``nested_sections`` (:ref:`nested_sections`)
+
+**Example execution**
+
+- ``reset_argv`` (:ref:`reset_argv`)
+- ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
+- ``plot_gallery`` (:ref:`without_execution`)
+- ``run_stale_examples`` (:ref:`run_stale_examples`)
+- ``abort_on_example_error`` (:ref:`abort_on_first`)
+- ``expected_failing_examples`` (:ref:`dont_fail_exit`)
+- ``only_warn_on_example_error`` (:ref:`warning_on_error`)
+- ``reset_modules`` and ``reset_modules_order`` (:ref:`reset_modules`)
+- ``parallel`` (:ref:`parallel`)
+
+.. admonition:: Diverging from Jupyter
+    :class: danger
+
+    Sphinx-gallery attempts to render examples to HTML in a manner largely consistent with what a user will experience when they download the corresponding ``.ipynb`` notebook file and run it locally.
+    Some options, such as ``'capture_repr': (),``, will make these behaviors less consistent.
+    Consider using these options sparingly as it could lead to confusion or sub-optimal experiences for users!
+
+**Cross-referencing**
+
 - ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
-  and ``inspect_global_variables`` (:ref:`references_to_examples`)
+  and ``inspect_global_variables`` (:ref:`minigalleries_to_examples`)
+- ``minigallery_sort_order`` (:ref:`minigallery_order`)
+
+**Images and thumbnails**
+
 - ``default_thumb_file`` (:ref:`custom_default_thumb`)
 - ``thumbnail_size`` (:ref:`setting_thumbnail_size`)
-- ``line_numbers`` (:ref:`adding_line_numbers`)
-- ``remove_config_comments`` (:ref:`removing_config_comments`)
-- ``download_all_examples`` (:ref:`disable_all_scripts_download`)
-- ``plot_gallery`` (:ref:`without_execution`)
+- ``image_srcset`` (:ref:`image_srcset`)
 - ``image_scrapers`` (:ref:`image_scrapers`)
 - ``compress_images`` (:ref:`compress_images`)
-- ``image_srcset`` (:ref:`image_srcset`)
-- ``reset_modules`` (:ref:`reset_modules`)
-- ``reset_modules_order`` (:ref:`reset_modules_order`)
-- ``abort_on_example_error`` (:ref:`abort_on_first`)
-- ``only_warn_on_example_error`` (:ref:`warning_on_error`)
-- ``expected_failing_examples`` (:ref:`dont_fail_exit`)
+
+**Compute costs**
+
 - ``min_reported_time`` (:ref:`min_reported_time`)
+- ``write_computation_times`` (:ref:`write_computation_times`)
 - ``show_memory`` (:ref:`show_memory`)
-- ``show_signature`` (:ref:`show_signature`)
-- ``binder`` (:ref:`binder_links`)
-- ``jupyterlite`` (:ref:`jupyterlite`)
+- ``junit`` (:ref:`junit_xml`)
+
+**Jupyter notebooks and interactivity**
+
+- ``notebook_extensions`` (:ref:`notebook_extensions`)
 - ``promote_jupyter_magic`` (:ref:`promote_jupyter_magic`)
 - ``first_notebook_cell`` and ``last_notebook_cell`` (:ref:`own_notebook_cell`)
 - ``notebook_images`` (:ref:`notebook_images`)
 - ``pypandoc`` (:ref:`use_pypandoc`)
-- ``junit`` (:ref:`junit_xml`)
+- ``binder`` (:ref:`binder_links`)
+- ``jupyterlite`` (:ref:`jupyterlite`)
+
+**Appearance**
+
+- ``line_numbers`` (:ref:`adding_line_numbers`)
+- ``remove_config_comments`` (:ref:`removing_config_comments`)
+- ``show_signature`` (:ref:`show_signature`)
+- ``download_all_examples`` (:ref:`disable_all_scripts_download`)
+
+**Miscellaneous**
+
+- ``recommender`` (:ref:`recommend_examples`)
 - ``log_level`` (:ref:`log_level`)
-- ``capture_repr`` and ``ignore_repr_types`` (:ref:`capture_repr`)
-- ``nested_sections`` (:ref:`nested_sections`)
-- ``api_usage_ignore`` (:ref:`api_usage_ignore`)
-- ``show_api_usage`` (:ref:`show_api_usage`)
-- ``copyfile_regex`` (:ref:`manual_passthrough`)
+- ``show_api_usage`` and ``api_usage_ignore`` (:ref:`show_api_usage`)
+
+Configurations inside examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Some options can also be set or overridden on a file-by-file basis:
 
 - ``# sphinx_gallery_line_numbers`` (:ref:`adding_line_numbers`)
 - ``# sphinx_gallery_thumbnail_number`` (:ref:`choosing_thumbnail`)
 - ``# sphinx_gallery_thumbnail_path`` (:ref:`providing_thumbnail`)
+- ``# sphinx_gallery_failing_thumbnail`` (:ref:`failing_thumbnail`)
 - ``# sphinx_gallery_dummy_images`` (:ref:`dummy_images`)
 - ``# sphinx_gallery_capture_repr`` (:ref:`capture_repr`)
+- ``# sphinx_gallery_multi_image`` (:ref:`multi_image`)
+- ``# sphinx_gallery_tags`` (:ref:`tagging_examples`)
+- ``# sphinx_gallery_parallel`` (:ref:`parallel`)
 
 Some options can be set on a per-code-block basis in a file:
 
+- ``# sphinx_gallery_capture_repr_block`` (:ref:`capture_repr`)
 - ``# sphinx_gallery_defer_figures`` (:ref:`defer_figures`)
-
-See also :ref:`removing_config_comments` to hide config comments in files from
-the rendered examples.
+- ``# sphinx_gallery_multi_image_block`` (:ref:`multi_image`)
 
 Some options can be set on a per-line basis in a file:
 - ``# sphinx_gallery_start_ignore`` and ``# sphinx_gallery_end_ignore`` (:ref:`hiding_code_blocks`)
 
-Some options can be set during the build execution step, e.g. using a Makefile:
+See also :ref:`removing_config_comments` to hide config comments in files from
+the rendered examples.
+
+Build options
+^^^^^^^^^^^^^
+
+Configuration options can be set at build time via the
+`Sphinx build -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_
+command line option. This overrides the value set in your ``conf.py`` file for that
+configuration. Values set in your ``conf.py`` are effectively the 'default',
+as it takes lower precedence than values passed via the ``-D`` build option.
+
+You can also use the ``-D`` option in your Makefile to create useful targets,
+for example:
 
 - ``make html-noplot`` (:ref:`without_execution`)
 - ``make html_abort_on_example_error`` (:ref:`abort_on_first`)
 
-And some things can be tweaked directly in CSS:
+.. note::
+    If you wish to use the ``-D`` build option to pass an instantiated class, class or
+    function as a configuration value, you can do so by passing a fully qualified name
+    string to the object. See :ref:`importing_callables` for details.
+
+CSS changes
+^^^^^^^^^^^
+
+Some things can be tweaked directly in CSS:
 
 - ``.sphx-glr-thumbcontainer`` (:ref:`setting_thumbnail_size`)
 
@@ -109,16 +173,158 @@ to your ``conf.py`` file.
 
 Note that the above Matplotlib warning is removed by default.
 
+.. _importing_callables:
+
+Importing callables
+===================
+
+Sphinx-Gallery configuration values that are instantiated classes, classes
+or functions should be passed as fully qualified name strings to the objects.
+The object needs to be importable by Sphinx-Gallery.
+
+Two common ways to achieve this are:
+
+1. Define your object with your package. For example, you could write a function
+   ``def my_sorter`` and put it in ``mymod/utils.py``, then use::
+
+        sphinx_gallery_conf = {
+        #...,
+        "minigallery_sort_order": "mymod.utils.my_sorter",
+        #...
+        }
+
+2. Define your object with your documentation. For example,
+   you can add documentation-specific stuff in a different path and ensure
+   that it can be resolved at build time. For example, you could create a file
+   ``doc/sphinxext.py`` and define your function:
+
+   .. code-block::
+
+       def plotted_sorter(fname):
+           return not fname.startswith("plot_"), fname
+
+   And set in your configuration:
+
+   .. code-block::
+
+       sys.path.insert(0, os.path.dirname(__file__))
+
+       sphinx_gallery_conf = {
+       #...,
+       "minigallery_sort_order": "sphinxext.plotted_sorter",
+       #...
+       }
+
+   And Sphinx-Gallery would resolve ``"sphinxext.plotted_sorter"`` to the
+   ``plotted_sorter`` object because the ``doc/`` directory is first on the path.
+
+Built in classes like :class:`sphinx_gallery.sorting.FileNameSortKey` and similar can
+be used with shorter direct alias strings like ``"FileNameSortKey"`` (see
+:ref:`within_gallery_order` for details).
+
+.. note::
+    Sphinx-Gallery >0.16.0 supports use of fully qualified name strings as a response
+    to the Sphinx >7.3.0 changes to caching and serialization checks of the
+    ``conf.py`` file.
+
+    This means that the previous use of class instances as configuration values to
+    ensure the ``__repr__`` was stable across builds is redundant *if* you are passing
+    configuration values via name strings. When using name strings, the configuration
+    object can just be a function.
+
+.. _own_sort_keys:
+
+Custom sort keys
+================
+
+You can create a custom sort key callable for the following configurations:
+
+* :ref:`subsection_order <sub_gallery_order>` - to reorder subsections
+  (sub-galleries) (passed subsection folder paths relative to the ``conf.py`` file)
+* :ref:`within_subsection_order <within_gallery_order>` - to reorder gallery items
+  within (sub)sections (passed filenames)
+* :ref:`minigallery_sort_order <minigallery_order>` - to reorder minigallery items
+  (passed full paths to example files and
+  :ref:`backreference files <minigalleries_to_examples>`)
+
+The best way to do this is to define a sort function, that takes the passed path
+string. For example, this function puts all filenames starting with ``plot_`` before
+all other filenames::
+
+    def plotted_sorter(fname):
+        return (not fname.startswith("plot_"), fname)
+
+Then make sure it is importable (see :ref:`importing_callables`) and set your
+configuration::
+
+    sphinx_gallery_conf = {
+    #...,
+    "minigallery_sort_order": "sphinxext.plotted_sorter",
+    #...
+    }
+
+For backwards compatibility you can also set your configuration to be a callable
+object but you will have to ensure that the ``__repr__`` is stable across runs.
+See :ref:`stable_repr` for details.
+
+If you do this, we recommend that you use the
+:class:`sphinx_gallery.sorting.FunctionSortKey`
+because it will ensure that the ``__repr__`` is stable across runs.
+
+:class:`sphinx_gallery.sorting.FunctionSortKey` takes a function on init.
+You can create your sort key callable by instantiating a
+:class:`~sphinx_gallery.sorting.FunctionSortKey` instance with your sort key
+function. For example, the following ``minigallery_sort_order`` configuration
+(which sorts on paths) will sort using the first 10 letters of each filename:
+
+.. code-block:: python
+
+    sphinx_gallery_conf = {
+    #...,
+    "minigallery_sort_order": FunctionSortKey(
+        lambda filename: filename[:10]),
+    #...
+    }
+
+.. _stable_repr:
+
+Ensuring a stable ``__repr__``
+==============================
+
+For backwards compatibility Sphinx-Gallery allows certain configuration values to be
+a callable object instead of a :ref:`importable name string <importing_callables>`.
+
+If you wish to use a callable object you will have to ensure that the ``__repr__``
+is stable across runs. Sphinx determines if the build environment has
+changed, and thus if *all* documents should be rewritten, by examining the
+config values using ``md5(str(obj).encode()).hexdigest()`` in
+``sphinx/builders/html.py``. Default class instances in Python have their
+memory address in their ``__repr__`` which is why generally the ``__repr__``
+changes in each build.
+
+Your callable should be a class that defines a stable ``__repr__`` method.
+For example, :class:`sphinx_gallery.sorting.ExplicitOrder` stability is
+ensured via the custom ``__repr__``::
+
+    def __repr__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.ordered_list)
+
+Therefore, the files are only all rebuilt when the specified ordered list
+is changed.
+
 .. _multiple_galleries_config:
 
 Manage multiple galleries
 =========================
 
-Sphinx-Gallery only supports up to sub-folder level in its gallery directories.
-This might be a limitation for you. Or you might want to have separate
-galleries for different purposes, an examples gallery and a tutorials gallery.
-For this you use in your Sphinx ``conf.py`` file a list of directories in
-the sphinx configuration dictionary::
+To specify the locations of your input and output gallery folder(s), use the following
+Sphinx-Gallery configuration dictionary keys:
+
+* ``examples_dirs`` (folder where source example files are)
+* ``gallery_dirs`` (folder where output files should be placed)
+
+Both configurations take list of directory paths, relative to the ``conf.py`` file.
+They can be set in your Sphinx ``conf.py`` file::
 
     sphinx_gallery_conf = {
         ...
@@ -126,12 +332,23 @@ the sphinx configuration dictionary::
         'gallery_dirs': ['auto_examples', 'tutorials'],
     }
 
-Keep in mind that both lists have to be of the same length.
+Keep in mind that both lists should be of the same length.
+
+Each folder in ``examples_dirs`` will be built into an examples gallery. Subfolders
+within each ``examples_dirs`` will be built into gallery subsections (sub-galleries)
+of the parent gallery.
+
+Sphinx-Gallery only supports one level of subfolder nesting in its gallery directories.
+For example our :ref:`examples-index`, has the parent gallery in `examples/` and
+the subsection (aka sub-gallery) in `examples/no_output/`. Further sub-folders are
+not supported. This might be a limitation for you, or you might want to have separate
+galleries for different purposes, e.g., an examples gallery and a tutorials gallery.
 
 .. note:: If your examples take a long time to run, consider looking at the
           :ref:`execution times <sphx_glr_auto_examples_sg_execution_times>`
           file that is generated for each gallery dir (as long as any examples
-          were actually executed in that directory during the build).
+          were actually executed in that directory during the build)
+          and globally for all galleries.
 
 .. _build_pattern:
 
@@ -140,13 +357,14 @@ Parsing and executing examples via matching patterns
 
 By default, Sphinx-Gallery will **parse and add** all files with a ``.py``
 extension to the gallery, but only **execute** files beginning with ``plot_``.
-These behaviors are controlled by the ``ignore_pattern`` and ``filename_pattern``
-entries, which have the default values::
+These behaviors are controlled by the ``ignore_pattern``, ``filename_pattern``,
+and ``example_extensions`` entries, which have the default values::
 
     sphinx_gallery_conf = {
         ...
         'filename_pattern': '/plot_',
         'ignore_pattern': r'__init__\.py',
+        'example_extensions': {'.py'}
     }
 
 To omit some files from the gallery entirely (i.e., not execute, parse, or
@@ -211,6 +429,26 @@ consult the `regular expressions`_ module for more details.
 
         $ sphinx-build -D sphinx_gallery_conf.filename_pattern=plot_specific_example\.py ...
 
+You can also parse and highlight syntax examples in other languages by adding their
+extensions to ``example_extensions``, though they will not be executed. For example, to
+include examples in Python, Julia, and C++::
+
+    sphinx_gallery_conf = {
+        ...
+        'example_extensions': {'.py', '.jl', '.cpp'}
+    }
+
+Parsing and syntax highlighting is supported by the Pygments library, with the language
+determined by the file extension. To override Pygments' default file associations, the
+``filetype_parsers`` option can be used to specify a ``dict`` mapping any of the file
+extensions in ``example_extensions`` to any of the `pygments language names
+<https://pygments.org/languages/>`__. For example::
+
+    sphinx_gallery_conf = {
+        ...
+        'filetype_parsers': {'.m': 'Matlab'}
+    }
+
 .. _run_stale_examples:
 
 Rerunning stale examples
@@ -235,7 +473,7 @@ themselves. To do this, you'd either need to make some change (e.g., add/delete
 a newline) to your example or delete the ``.md5`` file to force Sphinx-Gallery
 to rebuild the example. Instead, you can use the configuration value::
 
-    sphinx_gallery_conf = = {
+    sphinx_gallery_conf = {
         ...
         'run_stale_examples': True,
     }
@@ -262,87 +500,95 @@ Passing command line arguments to example scripts
 By default, Sphinx-Gallery will not pass any command line arguments to example
 scripts. By setting the ``reset_argv`` option, it is possible to change this
 behavior and pass command line arguments to example scripts. ``reset_argv``
-needs to be a Callable that accepts the ``gallery_conf`` and ``script_vars``
+needs to be a ``Callable`` that accepts the ``gallery_conf`` and ``script_vars``
 dictionaries as input and returns a list of strings that are passed as
 additional command line arguments to the interpreter.
 
-An example could be::
+A ``reset_argv`` example could be::
 
-    class ResetArgv:
-        def __repr__(self):
-	    return 'ResetArgv'
+    from pathlib import Path
 
-	def __call__(self, sphinx_gallery_conf, script_vars):
-            if script_vars['src_file'] == 'example1.py':
-	        return ['-a', '1']
-            elif script_vars['src_file'] == 'example2.py':
-	        return ['-a', '2']
+    def reset_argv(sphinx_gallery_conf, script_vars):
+        src_file = Path(script_vars['src_file']).name
+        if src_file == 'example1.py':
+            return ['-a', '1']
+        elif src_file == 'example2.py':
+            return ['-a', '2']
+        else:
+            return []
 
-which is included in the configuration dictionary as::
+This function is defined in ``doc/sphinxext.py`` and we ensured that it is importable
+(see :ref:`importing_callables`).
+
+This can be included in the configuration dictionary as::
 
     sphinx_gallery_conf = {
         ...
-        'reset_argv': ResetArgv(),
+        'reset_argv': "sphinxext.reset_argv",
     }
 
-which is then used by Sphinx-Gallery as::
+which is then resolved by Sphinx-Gallery to the callable ``reset_argv`` and used as::
 
     import sys
     sys.argv[0] = script_vars['src_file']
-    sys.argv[1:] = gallery_conf['reset_argv'](gallery_conf, script_vars)
+    sys.argv[1:] = reset_argv(gallery_conf, script_vars)
 
-
+.. note::
+    For backwards compatibility you can also set your configuration to be a callable
+    object but you will have to ensure that the ``__repr__`` is stable across runs.
+    See :ref:`stable_repr`.
 
 .. _sub_gallery_order:
 
 Sorting gallery subsections
 ===========================
 
-Gallery subsections are sorted by default alphabetically by their folder
-name, and as such you can always organize them by changing your folder
-names. An alternative option is to use a sortkey to organize those
-subsections. We provide an explicit order sortkey where you have to define
-the order of all subfolders in your galleries::
+Gallery subsections (aka sub-galleries) are sorted by default alphabetically by
+their folder name, and as such you can always organize them by changing your folder
+names. Alternatively, you can specify the order via the config value
+``subsection_order`` by providing a list of the subsections as paths
+relative to :file:`conf.py` in the desired order::
 
-    from sphinx_gallery.sorting import ExplicitOrder
     sphinx_gallery_conf = {
         ...
         'examples_dirs': ['../examples','../tutorials'],
-        'subsection_order': ExplicitOrder(['../examples/sin_func',
-                                           '../examples/no_output',
-                                           '../tutorials/seaborn']),
+        'subsection_order': ['../examples/sin_func',
+                             '../examples/no_output',
+                             '../tutorials/seaborn'],
     }
 
 Here we build 2 main galleries `examples` and `tutorials`, each of them
-with subsections. To specify their order explicitly in the gallery we
-import :class:`sphinx_gallery.sorting.ExplicitOrder` and initialize it with
-the list of all subfolders with their paths relative to `conf.py` in the
-order you prefer them to appear. Keep in mind that we use a single sort key
+with subsections. You must list all subsections. If that's too cumbersome,
+one entry can be "*", which will collect all not-listed subsections, e.g.
+``["first_subsection", "*", "last_subsection"]``.
+
+Even more generally, you can set ``subsection_order`` to any callable, which
+will be used as the sorting key function on the subsection folder paths (relative
+to the ``conf.py`` file). See :ref:`own_sort_keys` for more information.
+
+In fact, the
+above list is a convenience shortcut and it is internally wrapped in
+:class:`sphinx_gallery.sorting.ExplicitOrder` as a sortkey.
+
+.. note::
+
+    Sphinx-Gallery <0.16.0 required to wrap the list in
+    :class:`.ExplicitOrder` ::
+
+        from sphinx_gallery.sorting import ExplicitOrder
+        sphinx_gallery_conf = {
+            ...
+            'subsection_order': ExplicitOrder([...])
+        }
+
+    This pattern is discouraged in favor of passing the simple list.
+
+Keep in mind that we use a single sort key
 for all the galleries that are built, thus we include the prefix of each
 gallery in the corresponding subsection folders. One does not define a
 sortkey per gallery. You can use Linux paths, and if your documentation is
 built in a Windows system, paths will be transformed to work accordingly,
 the converse does not hold.
-
-If you so desire you can implement your own sorting key. It will be
-provided the relative paths to `conf.py` of each sub gallery folder.
-
-.. warning:: If you create your own class for ``'subsection_order'``, ensure
-             that the ``__str__`` of your class is stable across runs.
-             Sphinx determines if the build environment has changed
-             (and thus if *all* documents should be rewritten)
-             by examining the config values using
-             ``md5(str(obj).encode()).hexdigest()`` in
-             ``sphinx/builders/html.py``. Default class instances
-             in Python have their memory address in their ``__repr__`` which
-             will in general change for each build. For ``ExplicitOrder``
-             for example, this is fixed via::
-
-                 def __repr__(self):
-                     return '<%s: %s>' % (self.__class__.__name__, self.ordered_list)
-
-             Thus the files are only all rebuilt if the specified ordered list
-             is changed.
 
 .. _within_gallery_order:
 
@@ -355,14 +601,12 @@ set to
 :class:`NumberOfCodeLinesSortKey(src_dir) <sphinx_gallery.sorting.NumberOfCodeLinesSortKey>`,
 which sorts the files based on the number of code lines::
 
-    from sphinx_gallery.sorting import NumberOfCodeLinesSortKey
     sphinx_gallery_conf = {
         ...
-        'within_subsection_order': NumberOfCodeLinesSortKey,
+        'within_subsection_order': "NumberOfCodeLinesSortKey",
     }
 
-In addition, multiple convenience classes are provided for use with
-``within_subsection_order``:
+Built in convenience classes supported by ``within_subsection_order``:
 
 - :class:`sphinx_gallery.sorting.NumberOfCodeLinesSortKey` (default) to sort by
   the number of code lines.
@@ -370,15 +614,30 @@ In addition, multiple convenience classes are provided for use with
 - :class:`sphinx_gallery.sorting.FileNameSortKey` to sort by file name.
 - :class:`sphinx_gallery.sorting.ExampleTitleSortKey` to sort by example title.
 
+These built in Sphinx-Gallery classes can be specified using just the classname as
+a string, e.g., ``"FileSizeSortKey"``. It is functionally equivalent to providing the
+fully qualified name string ``"sphinx_gallery.sorting.NumberOfCodeLinesSortKey"``
+or importing and passing the class. See :ref:`importing_callables` for details.
+
+You can also pass your own custom sort key callable, which will be used to sort
+the full paths to example files in the (sub)section. See :ref:`own_sort_keys` for
+more information.
+
+.. note::
+    For backwards compatibility, ``within_subsection_order`` can also be a
+    class, which will be instantiated with the full path to the output directory;
+    :ref:`gallery_dir <multiple_galleries_config>`.
 
 .. _link_to_documentation:
 
 Add intersphinx links to your examples
 ======================================
 
-Sphinx-Gallery enables you to add hyperlinks in your example scripts so that
-you can link used functions/methods/attributes/objects/classes to their matching
-online documentation. Such code snippets within the gallery appear like this:
+Sphinx-Gallery enables you to add hyperlinks to the **code blocks** in your example
+files. This links functions/methods/attributes/objects/classes used, to their matching
+online documentation.
+
+Such code snippets within the gallery appear like this:
 
 .. raw:: html
 
@@ -387,11 +646,22 @@ online documentation. Such code snippets within the gallery appear like this:
     </pre></div>
     </div>
 
-Have a look at this in full action
-in our example :ref:`sphx_glr_auto_examples_plot_0_sin.py`.
+.. note::
 
-To make this work in your documentation you need to include to the configuration
-dictionary within your Sphinx ``conf.py`` file::
+    Sphinx-Gallery does not manage hyperlinks in reST **text blocks**. These
+    depend on your Sphinx setup. If your project uses :mod:`sphinx.ext.intersphinx`,
+    hyperlinks to external modules will be added to text blocks, similar to a normal
+    Sphinx reST documentation file.
+
+If you use the Sphinx extension :mod:`sphinx.ext.intersphinx`, entries in
+the ``intersphinx`` inventory will automatically be used for linking inside
+code blocks. If you wish to add or over-ride any ``intersphinx`` module, you can
+use the Sphinx-Gallery ``reference_url`` configuration.
+``reference_url`` accepts a dictionary where the key is the module name string and
+value is the URL to the module's documentation directory page, containing
+``searchindex.js``, such as ``'matplotlib': 'https://matplotlib.org'``.
+
+To link the local module, use ``None`` as the value, as shown below::
 
     sphinx_gallery_conf = {
         ...
@@ -401,15 +671,11 @@ dictionary within your Sphinx ``conf.py`` file::
         }
     }
 
-To link to external modules, if you use the Sphinx extension
-:mod:`sphinx.ext.intersphinx`, no additional changes are necessary,
-as the ``intersphinx`` inventory will automatically be used.
-If you do not use ``intersphinx``, then you should add entries that
-point to the directory containing ``searchindex.js``, such as
-``'matplotlib': 'https://matplotlib.org'``.
-
-If you wish to do the same for ordinary reST documentation,
+To add links to code blocks in plain reST example files inside galleries,
 see :ref:`plain_rst`.
+
+Have a look at this functionality in full action
+in our example :ref:`sphx_glr_auto_examples_plot_0_sin.py`.
 
 Resolving module paths
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -443,29 +709,107 @@ In the above example, all fully qualified names matching the regex
 (e.g., module.submodule.meth) when creating links, instead of the short module
 name (e.g., module.meth). All others will use the (default) way of linking.
 
+.. _minigalleries_to_examples:
+
+Add mini-galleries
+==================
+
+Sphinx-Gallery provides the :class:`sphinx_gallery.directives.MiniGallery`
+directive so that you can easily add a gallery of specific examples,
+a 'mini-gallery', to your reST. This directive works in both reST text blocks in
+examples and ``.rst`` files.
+
+The minigallery directive supports passing a list, as a space separated directive
+argument or in the body of the directive. There are two ways to specify examples
+to include in the mini-gallery:
+
+* via fully qualified names of object (see :ref:`references_to_examples`) - this
+  adds all examples where the object was used in the code or referenced in
+  the example text
+* via pathlike strings to example Python files, including glob-style
+  (see :ref:`file_based_minigalleries`)
+
+To use object names, you must enable backreference generation, see
+:ref:`references_to_examples` for details.
+If backreference generation is not enabled, object entries to the
+:class:`~sphinx_gallery.directives.MiniGallery` directive will be ignored
+and all entries will be treated as pathlike strings or glob-style pathlike strings.
+See :ref:`file_based_minigalleries` for details.
+
+For example, the reST below will add a mini-gallery that includes all
+examples that use or reference the specific function ``numpy.exp``, the example
+``examples/plot_sin_.py``, and all example files matching the string
+``/examples/plot_4*``:
+
+.. code-block:: rst
+
+    .. minigallery:: numpy.exp ../examples/plot_0_sin.py ../examples/plot_4*
+
+All relevant examples will be merged into a single mini-gallery. The
+mini-gallery will only be shown if the files exist or the items are actually
+used or referred to in an example. Sphinx-Gallery will prevent duplication, ensuring
+that examples 'passed' more than once (e.g., one example uses a passed object **and**
+matches a passed file string) will only appear once in the mini-gallery.
+
+You can also sort the examples in your mini-galleries. See :ref:`minigallery_order`
+for details.
+
+The mini-gallery directive also supports the following options:
+
+* ``add-heading`` - adds a heading to the mini-gallery.
+
+  * The default heading for a mini-gallery with a single passed argument is:
+    "Examples using *{full qualified object name}*".
+  * The default heading for a mini-gallery with multiple passed arguments is:
+    "Examples of one of multiple objects".
+
+* ``heading-level`` - specify the heading level. Accepts a single character
+  (e.g., ``-``).
+
+For example, the following reST adds the heading "My examples", with heading
+level ``-``. It also shows how to pass inputs in the body of the directive (instead of
+as directive arguments).
+
+.. code-block:: rst
+
+    .. minigallery::
+        :add-heading: My examples
+        :heading-level: -
+
+        numpy.exp
+        ../examples/plot_0_sin.py
+        ../examples/plot_4*
+
 .. _references_to_examples:
 
 Add mini-galleries for API documentation
-========================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When documenting a given function/method/attribute/object/class, Sphinx-Gallery
-enables you to link to any examples that either:
+Sphinx-Gallery can generate minigalleries for objects from specified modules,
+consisting of all examples that either:
 
 1. Use the function/method/attribute/object or instantiate the class in the
-   code (generates *implicit backreferences*).
+   code (called *implicit backreferences*) or
 2. Refer to that function/method/attribute/object/class using sphinx markup
-   ``:func:``/``:meth:``/``:attr:``/``:obj:``/``:class:`` in a text
+   ``:func:`` / ``:meth:`` / ``:attr:`` / ``:obj:`` / ``:class:`` in a text
    block. You can omit this role markup if you have set the `default_role
    <https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-default_role>`_
-   in your ``conf.py`` to any of these roles (generates *explicit
+   in your ``conf.py`` to any of these roles (called *explicit
    backreferences*).
 
-The former is useful for auto-documenting functions/methods/attributes/objects
-that are used and classes that are explicitly instantiated. The generated links
-are called implicit backreferences. The latter is useful for classes that are
-typically implicitly returned rather than explicitly instantiated (e.g.,
+This allows you to pass a fully qualified name of an object (e.g., function, method,
+attribute, class) to the minigallery directive to add a minigallery of all examples
+relevant to that object. This can be useful in API documentation.
+
+**Implicit backreferences** are useful for auto-documenting objects
+that are used and classes that are explicitly instantiated, in the code. Any examples
+where an object is used in the code are added *implicitly* as backreferences.
+
+**Explicit backreferences** are for objects that are *explicitly* referred to
+in an example's text. They are useful for classes that are
+typically implicitly returned in the code rather than explicitly instantiated (e.g.,
 :class:`matplotlib.axes.Axes` which is most often instantiated only indirectly
-within function calls). Such links are called explicit backreferences.
+within function calls).
 
 For example, we can embed a small gallery of all examples that use or
 refer to :obj:`numpy.exp`, which looks like this:
@@ -473,31 +817,64 @@ refer to :obj:`numpy.exp`, which looks like this:
 .. minigallery:: numpy.exp
     :add-heading:
 
-For such behavior to be available, you have to activate it in
-your Sphinx-Gallery configuration ``conf.py`` file with::
+For such behavior to be available, set the following Sphinx-Gallery configurations
+in your ``conf.py`` file:
+
+**Required**
+
+* ``backreferences_dir`` - directory where object granular galleries are stored.
+
+  * This should be a string or ``pathlib.Path`` object that is **relative** to the
+    ``conf.py`` file, or ``None``.
+  * It is ``None`` by default, which means that
+    backrefererences are not generated.
+
+* ``doc_module`` - the modules for which you want object level galleries
+  to be created.
+
+  * It should be a tuple of string module names.
+
+**Optional**
+
+* ``exclude_implicit_doc`` - Regexes to match objects to exclude from implicit
+  backreferences, as set of string regexes.
+
+  * The default option is an empty set, which will exclude nothing.
+  * See :ref:`exclude_implicit_doc` for details.
+
+For example::
 
     sphinx_gallery_conf = {
         ...
         # directory where function/class granular galleries are stored
         'backreferences_dir'  : 'gen_modules/backreferences',
 
-        # Modules for which function/class level galleries are created. In
-        # this case sphinx_gallery and numpy in a tuple of strings.
+        # here we want to create backreferences for sphinx_gallery and numpy
         'doc_module'          : ('sphinx_gallery', 'numpy'),
 
         # Regexes to match objects to exclude from implicit backreferences.
-        # The default option is an empty set, i.e. exclude nothing.
-        # To exclude everything, use: '.*'
         'exclude_implicit_doc': {r'pyplot\.show'},
     }
 
 The path you specify in ``backreferences_dir`` (here we choose
-``gen_modules/backreferences``) will be populated with
-ReStructuredText files. Each .rst file will contain a reduced version of the
-gallery specific to every function/class that is used across all the examples
-and belonging to the modules listed in ``doc_module``.
-``backreferences_dir`` should be a string or ``pathlib.Path`` object that is
-**relative** to the ``conf.py`` file, or ``None``. It is ``None`` by default.
+``gen_modules/backreferences``) will be populated with a file called
+"backreferences_all.json". This contains a mapping of all of all objects
+belonging to the modules listed in ``doc_module`` and not excluded in
+``exclude_implicit_doc``, to the examples where it was used or referenced.
+Objects not used or referenced in any example are not included.
+
+For backwards compatibility ``backreferences_dir`` will also be populated with
+reST files for each object, named '<object>.examples'.
+Each .rst file will contain a reduced version of the
+gallery, containing examples where that "object" that is used.
+'<object>.examples' files will be generated for all objects to prevent inclusion
+errors. Empty '<object>.examples' files are created for objects not used in any
+example.
+
+.. _exclude_implicit_doc:
+
+``exclude_implicit_doc``
+""""""""""""""""""""""""
 
 Sometimes, there are functions that are being used in practically every example
 for the given module, for instance the ``pyplot.show`` or ``pyplot.subplots``
@@ -512,34 +889,57 @@ To exclude the functions mentioned above you would use
 instead of any character, if the name is unambiguous you can also write
 ``pyplot.show`` or just ``show``).
 
-Within your sphinx documentation ``.rst`` files, you can easily
-add this reduced version of the Gallery. For example, the rst below adds
-the reduced version of the Gallery for ``numpy.exp``, which includes all
-examples that use the specific function ``numpy.exp``:
+.. _file_based_minigalleries:
 
-.. code-block:: rst
+Create mini-galleries using file paths
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    .. minigallery:: numpy.exp
-        :add-heading:
+Sometimes you may want to explicitly create a
+:class:`mini-gallery <sphinx_gallery.directives.MiniGallery>` using files that
+do not have functions in common, for example a set of tutorials. The
+mini-gallery directive therefore also supports passing in:
 
-The ``add-heading`` option adds a heading for the mini-gallery, which will be a
-default generated message if no string is provided as an argument. The example
-mini-gallery shown above uses the default heading. The level of the heading
-defaults to ``^``, but can be changed using the ``heading-level`` option, which
-accepts a single character (e.g., ``-``). The mini-gallery will only be shown
-if the item (here ``numpy.exp``) is actually used or referred to in an example.
+* pathlike strings to sphinx gallery example files (relative to ``conf.py``)
+* glob-style pathlike strings to Sphinx-Gallery example files (relative to ``conf.py``).
+  For example, passing ``/examples/plot_4*`` will include all example files
+  matching the above pattern.
 
-You can also list multiple items, separated by spaces, which will merge all
-examples into a single mini-gallery, e.g.:
+.. _minigallery_order:
 
-.. code-block:: rst
+Sort mini-gallery thumbnails from files
+"""""""""""""""""""""""""""""""""""""""
 
-    .. minigallery:: numpy.exp numpy.sin
-        :add-heading: Mini-gallery using ``numpy.exp`` or ``numpy.sin``
-        :heading-level: -
+The :ref:`minigallery <minigalleries_to_examples>` directive generates a gallery of
+thumbnails corresponding to the input file strings or object names.
+You can specify minigallery thumbnails order via the ``minigallery_sort_order``
+configuration, which gets passed to the :py:func:`sorted` ``key`` parameter when
+sorting all minigalleries.
 
-For such a mini-gallery, specifying a custom heading message is recommended
-because the default message is vague: "Examples of one of multiple objects".
+Sorting is done on the full paths to all the gallery examples (e.g.,
+``path/to/plot_example.py``) that correspond to the inputs.
+
+See :ref:`own_sort_keys` for details on writing a custom sort key.
+
+For example, to put all example thumbnails starting with ``"plot_numpy_"`` at the start,
+we could define the function below in ``doc/sphinxext.py`` (note ``False`` gets sorted
+ahead of ``True`` as 0 is less than 1)::
+
+    def function_sorter(x)
+        return (not Path(x).name.starts_with("plot_numpy_"), x)::
+
+We can then set the configuration to be (ensuring the function is
+:ref:`importable <importing_callables>`)::
+
+    sphinx_gallery_conf = {
+        #...,
+        "minigallery_sort_order": "sphinxext.function_sorter",
+        #...
+    }
+
+Sphinx-Gallery would resolve ``"sphinxext.function_sorter"`` to the
+``function_sorter`` object.
+
+Note that you can only define one sorting key for all minigalleries.
 
 Auto-documenting your API with links to examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -682,6 +1082,7 @@ following css prevents any module except for matplotlib from being decorated:
 
     a[class^="sphx-glr-backref-module-"] {
         text-decoration: none;
+        color: inherit;
     }
     a[class^="sphx-glr-backref-module-matplotlib"] {
         text-decoration: underline;
@@ -769,14 +1170,14 @@ the following first cell:
 
 .. code-block:: ipython
 
-    # This cell is added by sphinx-gallery
+    # This cell is added by Sphinx-Gallery
     # It can be customized to whatever you like
 
 Which is achieved by the following configuration::
 
     sphinx_gallery_conf = {
         ...
-        'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+        'first_notebook_cell': ("# This cell is added by Sphinx-Gallery\n"
                                 "# It can be customized to whatever you like\n"
                                 )
     }
@@ -786,7 +1187,7 @@ parameter::
 
     sphinx_gallery_conf = {
         ...
-        'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+        'first_notebook_cell': ("# This cell is added by Sphinx-Gallery\n"
                                 "# It can be customized to whatever you like\n"
                                 ),
         'last_notebook_cell': "# This is the last cell",
@@ -846,7 +1247,7 @@ included in the prefix if it's required.
 .. tip::
 
     If building multiple versions of your documentation on a hosted service and
-    using prefix, consider using `sphinx build -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_
+    using prefix, consider using `Sphinx build -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_
     command line option to ensure links point to the correct version. For
     example:
 
@@ -901,16 +1302,22 @@ Using JUnit XML files
 =====================
 
 Sphinx-Gallery can create a JUnit XML file of your example run times,
-successes, and failures. To create a file named e.g. ``junit-result.xml``
-in the ``/build`` output directory, set the configuration key (path is relative
-to the HTML output directory)::
+successes, and failures. Set ``junit`` configuration to the value of your
+desired JUnit file path, relative to the HTML output directory (which is by
+default ``/_build/html`` relative to your ``conf.py`` file).
+For example, assuming output directory is the default, the configuration below creates
+a file ``junit.xml`` in ``doc/_build/test-results/sphinx-gallery/``::
 
      sphinx_gallery_conf = {
          ...
          'junit': '../test-results/sphinx-gallery/junit.xml',
      }
 
-By default, JUnit XML file generation is disabled (by setting ``'junit': ''``).
+By default, JUnit XML file generation is disabled (default value is: ``'junit': ''``).
+
+Integration with ``CircleCI``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 JUnit XML files are useful for example on CircleCI builds, where you can add
 a line like this to get a summary of your example run times in the CircleCI GUI
 (which will parse the file path
@@ -928,6 +1335,23 @@ For more information on CircleCI integration, peruse the related
 `CircleCI doc <https://circleci.com/docs/2.0/collect-test-data/#metadata-collection-in-custom-test-steps>`__
 and `blog post <https://circleci.com/blog/how-to-output-junit-tests-through-circleci-2-0-for-expanded-insights/>`__.
 
+Parsing the XML file
+^^^^^^^^^^^^^^^^^^^^
+
+The JUnit XML file can also be parsed manually, e.g. to generate parametrized
+test cases with ``pytest`` to limit the maximum execution time. The following
+code block parses the XML file to create a list of test case dictionaries with
+the execution time(s).
+
+.. code-block:: python
+
+    from xml.etree.ElementTree import parse
+
+    xml_path =  "doc/_build/html/sphinx-gallery/junit-results.xml"
+    test_cases = [dict(case.attrib) for case in parse(xml_path).getroot().iterfind("testcase")]
+
+    print(test_cases[0]["time"])
+    0.10358190536499023
 
 .. _log_level:
 
@@ -1008,10 +1432,36 @@ For example, the following defines that the image ``demo.png`` in the folder
 
     # sphinx_gallery_thumbnail_path = '_static/demo.png'
 
+If the image cannot be found, a warning is emitted and the default thumbnail is
+used instead.
+
 Note that ``sphinx_gallery_thumbnail_number`` overrules
 ``sphinx_gallery_thumbnail_path``. See
 :ref:`sphx_glr_auto_examples_plot_4b_provide_thumbnail.py` for an example of
 this functionality.
+
+.. _failing_thumbnail:
+
+Controlling thumbnail behaviour in failing examples
+===================================================
+
+By default, expected failing examples will have their thumbnail image as a
+stamp with the word "BROKEN". This behaviour is controlled by
+``sphinx_gallery_failing_thumbnail``, which is by default ``True``. In cases
+where control over the thumbnail image is desired, this should be set to
+``False``. This will return thumbnail behaviour to 'normal', whereby
+thumbnail will be either the first figure created (or the
+:ref:`default thumbnail <custom_default_thumb>` if no figure is created)
+or :ref:`provided thumbnail <providing_thumbnail>`::
+
+
+    # sphinx_gallery_failing_thumbnail = False
+
+Compare the thumbnails of
+:ref:`sphx_glr_auto_examples_no_output_plot_raise_thumbnail.py` (where the
+option is ``False``) and :ref:`sphx_glr_auto_examples_no_output_plot_raise.py`
+(where the option is the default ``True``) for an example of this
+functionality.
 
 
 .. _binder_links:
@@ -1134,21 +1584,21 @@ Sphinx-Gallery automatically generates Jupyter notebooks for any examples built
 with the gallery. `JupyterLite <https://jupyterlite.readthedocs.io>`__ makes it
 possible to run an example in your browser. The functionality is quite similar
 to Binder in the sense that you will get a Jupyter environment where you can
-run the example interactively as a notebook. The main difference with Binder
+run the example interactively as a notebook. The main differences from Binder
 are:
 
 - with JupyterLite, the example actually runs in your browser, there is no need
   for a separate machine in the cloud to run your Python code. That means that
   starting a Jupyter server is generally quicker, no need to wait for the
   Binder image to be built
-- with JupyterLite the first imports take time. At the time of writing
-  (February 2023) ``import scipy`` can take ~15-30s. Some innocuously looking
+- with JupyterLite, the first imports take time. At the time of writing
+  (December 2024) ``import scipy`` can take ~15-30s. Some innocuously looking
   Python code may just not work and break in an unexpected fashion. The Jupyter
   kernel is based on Pyodide, see `here
   <https://pyodide.org/en/latest/usage/wasm-constraints.html>`__ for some
   Pyodide limitations.
-- with JupyterLite environments are not as flexible as Binder, for example you
-  can not use a docker image but only the default `Pyodide
+- JupyterLite environments are not as flexible as Binder. For example, you
+  can not use a Docker image, but only the default `Pyodide
   <https://pyodide.org/en/stable/index.html>`__ environment. That means that
   some non pure-Python packages may not be available, see list of `available
   packages in Pyodide
@@ -1162,8 +1612,12 @@ are:
 
 In order to enable JupyterLite links with Sphinx-Gallery, you need to install
 the `jupyterlite-sphinx <https://jupyterlite-sphinx.readthedocs.io>`_ package.
-For `jupyterlite-sphinx>=0.8` (released 15 March 2023) you also need to install
-`jupyterlite-pyodide-kernel`.
+Recent versions of ``jupyterlite-sphinx`` and Sphinx-Gallery should be compatible,
+with each other, but we recommend ``jupyterlite-sphinx>=0.17.1``.
+For ``jupyterlite-sphinx>=0.8`` you also need to install
+``jupyterlite-pyodide-kernel``. The latest released version is recommended, but
+recent versions should work as well, this depends on the version of Pyodide
+that you are using or planning to use.
 
 You then need to add `jupyterlite_sphinx` to your Sphinx extensions in
 ``conf.py``::
@@ -1179,8 +1633,8 @@ You can configure JupyterLite integration by setting
     sphinx_gallery_conf = {
       ...
       'jupyterlite': {
-         'use_jupyter_lab': <bool>, # Whether JupyterLite links should start Jupyter Lab instead of the Retrolab Notebook interface.
-         'notebook_modification_function': <function>, # function that implements JupyterLite-specific modifications of notebooks
+         'use_jupyter_lab': <bool>, # Whether JupyterLite links should start Jupyter Lab instead of the Notebook interface.
+         'notebook_modification_function': <str>, # fully qualified name of a function that implements JupyterLite-specific modifications of notebooks
          'jupyterlite_contents': <str>, # where to copy the example notebooks (relative to Sphinx source directory)
          }
     }
@@ -1191,8 +1645,9 @@ use_jupyter_lab (type: bool, default: ``True``)
   Whether the default interface activated by the JupyterLite link will be for
   Jupyter Lab or the RetroLab Notebook interface.
 
-notebook_modification_function (type: function, default: ``None``)
-  Function that implements JupyterLite-specific modifications of notebooks. By
+notebook_modification_function (type: str, default: ``None``)
+  Fully qualified name of a
+  function that implements JupyterLite-specific modifications of notebooks. By
   default, it is ``None`` which means that notebooks are not going to be
   modified. Its signature should be ``notebook_modification_function(json_dict:
   dict, notebook_filename: str) -> None`` where ``json_dict`` is what you get
@@ -1204,7 +1659,8 @@ notebook_modification_function (type: function, default: ``None``)
   are installing additional packages with a ``%pip install seaborn`` code cell,
   or adding a markdown cell to indicate that a notebook is not expected to work
   inside JupyterLite, for example because it is using packages that are not
-  packaged inside Pyodide.
+  packaged inside Pyodide. For backward compatibility it can also be a callable
+  but this will not be cached properly as part of the environment by Sphinx.
 
 jupyterlite_contents (type: string, default: ``jupyterlite_contents``)
   The name of a folder where the built Jupyter notebooks will be copied,
@@ -1212,8 +1668,8 @@ jupyterlite_contents (type: string, default: ``jupyterlite_contents``)
   contents.
 
 You can set variables in ``conf.py`` to configure ``jupyterlite-sphinx``, see
-the `jupyterlite-sphinx doc
-<https://jupyterlite-sphinx.readthedocs.io/en/latest/configuration.html>`__ for
+the `jupyterlite-sphinx documentation
+<https://jupyterlite-sphinx.readthedocs.io/en/stable/configuration.html>`__ for
 more details.
 
 If a Sphinx-Gallery configuration for JupyterLite is discovered, the following
@@ -1232,7 +1688,7 @@ extra things will happen:
    server in your browser with the current example as notebook
 
 If, for some reason, you want to enable the ``jupyterlite-sphinx`` extension
-but not use sphinx-gallery Jupyterlite integration you can do::
+but not use Sphinx-Gallery Jupyterlite integration you can do::
 
     extensions = [
         ...,
@@ -1247,6 +1703,27 @@ but not use sphinx-gallery Jupyterlite integration you can do::
 See the Sphinx-Gallery `Sphinx configuration file
 <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/doc/conf.py>`_
 for an example that uses the JupyterLite integration.
+
+.. _notebook_extensions:
+
+Controlling notebook download links
+===================================
+
+By default, links to download Jupyter noteooks and launch Binder or JupyterLite (if
+enabled) are shown only for Python examples. If parsing other file extensions has been
+enabled (using the ``example_extensions`` option; see :ref:`build_pattern`), notebook
+downloads can be enabled using the ``notebook_extensions`` option. For example::
+
+    sphinx_gallery_conf = {
+        "notebook_extensions": {".py", ".jl"}
+    }
+
+where the listed extensions are compared to file names in the gallery directory.
+
+.. note::
+
+    Currently, all generated notebooks specify Python as the kernel. After downloading,
+    the user will need to manually change to the correct kernel.
 
 .. _promote_jupyter_magic:
 
@@ -1309,9 +1786,19 @@ Building without executing examples
 Sphinx-Gallery can parse all your examples and build the gallery
 without executing any of the scripts. This is just for speed
 visualization processes of the gallery and the size it takes your
-website to display, or any use you can imagine for it. To achieve this you
-need to pass the no plot option in the build process by modifying
-your ``Makefile`` with:
+website to display, or any use you can imagine for it.
+
+This can be done by setting the ``plot_gallery`` configuration in the
+``sphinx_gallery_conf`` dictionary inside your ``conf.py``::
+
+    sphinx_gallery_conf = {
+        ...
+        'plot_gallery': 'False',
+    }
+
+You can also change this via the
+`Sphinx build option -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_,
+which can be used to add a 'no-plot' target to your ``Makefile``:
 
 .. code-block:: Makefile
 
@@ -1323,17 +1810,9 @@ your ``Makefile`` with:
 Remember that for ``Makefile`` white space is significant and the indentation are tabs
 and not spaces.
 
-Alternatively, you can add the ``plot_gallery`` option to the
-``sphinx_gallery_conf`` dictionary inside your ``conf.py`` to have it as
-a default::
-
-    sphinx_gallery_conf = {
-        ...
-        'plot_gallery': 'False',
-    }
-
 The highest precedence is always given to the `-D` flag of the
-``sphinx-build`` command.
+``sphinx-build`` command, which effectively makes the value set in your ``conf.py``
+file the 'default'.
 
 .. note::
 
@@ -1430,24 +1909,52 @@ to scrape matplotlib images you can do::
 
 The default value is ``'image_scrapers': ('matplotlib',)`` which only scrapes
 Matplotlib images. Note that this includes any images produced by packages that
-are based on Matplotlib, for example Seaborn or Yellowbrick. If you want
-to embed :class:`matplotlib.animation.Animation`\s as animations rather
-than a single static image of the animation figure, you should add::
+are based on Matplotlib, for example Seaborn or Yellowbrick.
+
+Matplotlib animations
+^^^^^^^^^^^^^^^^^^^^^
+
+If you wish to embed :class:`matplotlib.animation.Animation`\s as animations rather
+than a single static image of the animation figure, you should use the
+`matplotlib_animations` configuration. It accepts either a bool, indicating whether
+animations should be enabled, or a tuple of the format: (enabled: bool, format: str)::
 
       sphinx_gallery_conf = {
           ...
-          'matplotlib_animations': True,
+          'matplotlib_animations': (True, 'mp4'),
       }
 
-HTML embedding options can be changed by setting ``rcParams['animation.html']``
-and related options in your
+`matplotlib_animations` is `False` by default.
+
+Any file format supported by Matplotlib for animations is allowed. If no format
+is specified (i.e., it is a single bool), or it is *None*, then the format is
+determined by ``rcParams['animation.html']`` and related options in your
 `matplotlib rcParams <https://matplotlib.org/stable/tutorials/introductory/customizing.html>`_.
-It's also recommended to ensure that "imagemagick" is available as a
-``writer``, which you can check with
-:class:`matplotlib.animation.ImageMagickWriter.isAvailable()
-<matplotlib.animation.ImageMagickWriter>`.
-The FFmpeg writer in some light testing did not work as well for
-creating GIF thumbnails for the gallery pages.
+This means that it can be set inside your code block, though note that Sphinx-Gallery
+will reset Matplotib defaults before each example file executes (see
+:ref:`reset_modules`).
+
+If the format is ``'html5'`` or ``'jshtml'``, the animation will effectively
+be embedded in the resulting HTML file. Otherwise the animation will be saved
+in an external file, thus reducing the size of the ReST file generated.
+If you request a format that saves to an external file, you will need the
+`sphinxcontrib-video extension <https://pypi.org/project/sphinxcontrib-video/>`_
+installed in your environment.
+
+Note that while ``matplotlib_animations`` allows you to set the
+``rcParams['animation.html']`` globally, setting it inside a code block will
+override the global setting.
+
+It's also recommended to ensure that "FFmpeg" or "imagemagick" is available as a
+``writer``. Use
+:class:`matplotlib.animation.ImageMagickWriter.isAvailable() <matplotlib.animation.ImageMagickWriter>`
+or
+:class:`matplotlib.animation.FFMpegWriter.isAvailable() <matplotlib.animation.FFMpegWriter>`
+to check.
+We recommend FFMpeg writer, unless you are using Matplotlib <3.3.1.
+
+Supported scrapers
+^^^^^^^^^^^^^^^^^^
 
 The following scrapers are supported:
 
@@ -1463,7 +1970,11 @@ The following scrapers are supported:
     how to integrate with Sphinx-Gallery.
 - qtgallery
     This library provides a scraper for Qt windows. See `their repository <https://github.com/ixjlyons/qtgallery>`_
-    for instructions on integrating with Sphinx-Gallery. 
+    for instructions on integrating with Sphinx-Gallery.
+- plotly
+    This library provides a scraper, though it is also possible to capture plotly
+    figures using :ref:`capture_repr <capture_repr>` configuration.
+    See :ref:`sphx_glr_auto_plotly_examples_plot_0_plotly.py` for details.
 
 It is possible to write custom scrapers for images generated by packages
 outside of those listed above. This is accomplished
@@ -1515,6 +2026,44 @@ further deferred, if desired). The following produces only one plot::
 
   plt.plot([2, 2])
   plt.show()
+
+.. _multi_image:
+
+Controlling the layout of multiple figures from the same code block
+===================================================================
+
+By default, multiple figures generated from the same code block are stacked
+side-by-side. Particularly for wide figures, this can lead to cases where images are
+highly shrunk, losing their legibility. This behaviour can be controlled using two
+optional variables:
+
+- a file-wide ``sphinx_gallery_multi_image`` variable
+- a code block-specific ``sphinx_gallery_multi_image_block`` variable
+
+The default behaviour is to treat these variables as being set to ``"multi"``, which
+causes figures to be stacked side-by-side. Setting these variables to ``"single"`` will
+allow figures produced from a code block to be displayed as a single column.
+
+For instance, adding::
+
+    # sphinx_gallery_multi_image = "single"
+
+somewhere in an example file will cause images from all code blocks where multiple
+figures are produced to be displayed in a single column.
+
+Alternatively, adding::
+
+    # sphinx_gallery_multi_image_block = "single"
+
+to a code block will cause multiple figures from only that code block to be displayed in
+a single column.
+
+Conversely, if ``sphinx_gallery_multi_image = "single"`` is set for the whole file,
+adding ``sphinx_gallery_multi_image_block = "multi"`` can restore the default behaviour
+for a single code block.
+
+See the example :ref:`sphx_glr_auto_examples_plot_9_multi_image_separate.py` for a
+demonstration of this functionality.
 
 .. _hiding_code_blocks:
 
@@ -1630,7 +2179,7 @@ To do so, follow the instructions in :ref:`custom_reset`.
 .. _reset_modules_order:
 
 Order of resetting modules
-==========================
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, Sphinx-Gallery will reset modules before each example is run.
 The choices for ``reset_modules_order`` are ``before`` (default), ``after``, and
@@ -1676,32 +2225,32 @@ Abort build on first fail
 
 Sphinx-Gallery provides the early fail option. In
 this mode the gallery build process breaks as soon as an exception
-occurs in the execution of the examples scripts. To activate this
-behavior you need to pass a flag at the build process. It can be done
-by including in your ``Makefile``:
-
-.. code-block:: Makefile
-
-    html_abort_on_example_error:
-	$(SPHINXBUILD) -D abort_on_example_error=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
-
-Remember that for ``Makefile`` white space is significant and the indentation
-are tabs and not spaces.
-
-Alternatively, you can add the ``abort_on_example_error`` option to
-the ``sphinx_gallery_conf`` dictionary inside your ``conf.py``
-configuration file to have it as a default::
+occurs in the execution of the examples scripts. This can by activated via the
+``abort_on_example_error`` configuration, which can be set ``sphinx_gallery_conf``
+dictionary inside your ``conf.py`` configuration file::
 
     sphinx_gallery_conf = {
         ...
         'abort_on_example_error': True,
     }
 
+You can also change this via the
+`Sphinx build option -D <https://www.sphinx-doc.org/en/master/man/sphinx-build.html#cmdoption-sphinx-build-D>`_,
+which can be used to add a 'abort_on_example_error' target to your ``Makefile``:
 
-The highest precedence is always given to the `-D` flag of
-the ``sphinx-build`` command.
+.. code-block:: makefile
+
+    html_abort_on_example_error:
+        $(SPHINXBUILD) -D abort_on_example_error=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+        @echo
+        @echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+Remember that for ``Makefile`` white space is significant and the indentation
+are tabs and not spaces.
+
+The highest precedence is always given to the `-D` flag of the
+``sphinx-build`` command, which effectively makes the value set in your ``conf.py``
+file the 'default'.
 
 .. _dont_fail_exit:
 
@@ -1740,6 +2289,156 @@ flag is passed to ``sphinx-build``. This can be enabled by setting::
         'only_warn_on_example_error': True
     }
 
+
+.. _parallel:
+
+Build examples in parallel
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sphinx-Gallery can be configured to run examples simultaneously using
+:mod:`joblib`. This can be enabled by setting::
+
+    sphinx_gallery_conf = {
+        ...
+        'parallel': 2,
+    }
+
+If an ``int``, then that number of jobs will be passed to :class:`joblib.Parallel`.
+If ``True``, then the same number of jobs will be used as the ``-j`` flag for
+Sphinx.
+
+Warnings emitted by :mod:`joblib` during documentation building (e.g., the
+``UserWarning`` about a
+`worker restarting <https://github.com/joblib/joblib/issues/883>`_) are emitted
+during gallery generation at the same time as warnings from example
+code execution. These can be filtered out with
+``warnings.filterwarnings`` (see :ref:`removing_warnings`). This is particularly
+important to do if you have tweaked warning handling in your documentation build
+to treat warnings as errors, e.g., with a line like
+``warnings.filterwarnings("error)`` which converts all warnings into errors. In
+this case, if joblib emits a warning during build of an example, this example will fail
+unexpectedly unless they are filtered out. Note that this differs from the warnings
+affected by the ``- W`` / ``--fail-on-warning`` ``sphinx-build`` flag, which converts
+Sphinx warnings during documentation building into errors.
+
+.. warning::
+    Some packages might not play nicely with parallel processing, so this feature
+    is considered **experimental**!
+
+    For example, you might need to set variables or call functions in a
+    :ref:`custom resetter <custom_reset>` to ensure that all spawned processes are
+    properly set up and torn down. Parallelism is achieved through the Loky backend of
+    joblib, see :ref:`joblib:parallel` for documentation of many relevant conisderations
+    (e.g., pickling, oversubscription of CPU resources, etc.).
+
+    Using parallel building will also disable memory measurements.
+
+Excluding individual examples from parallel execution
+"""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+Individual examples that cannot be run in a worker process -- for example because
+they use :mod:`multiprocessing` themselves, require a library that is not
+fork/spawn safe, or need exclusive access to a resource such as a GPU -- can opt out
+by adding the following comment anywhere in the example file::
+
+    # sphinx_gallery_parallel = False
+
+Such examples are executed one at a time in the main process, before anything is
+dispatched to the worker processes, so that no other example is running while they
+execute. This is exactly how they would be run with ``'parallel': False``. The
+setting has no effect when parallel building is disabled.
+
+Note that this affects execution order but not the order of the gallery itself,
+which is still determined by
+:ref:`within_subsection_order <within_gallery_order>`.
+
+.. _sphinx_parallel_read:
+
+Interaction with Sphinx's own parallel reading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``parallel`` option above controls how *examples* are executed, and is separate
+from ``sphinx-build -j``, which makes *Sphinx* read and write documents in parallel.
+The two interact badly if your examples use a threaded native library.
+
+Sphinx creates its read and write workers with ``fork`` (hardcoded in
+``sphinx/util/parallel.py``), and ``fork()`` only clones the calling thread. If an
+OpenMP worker thread is alive in the Sphinx process at that moment, it is lost in the
+child while the OpenMP runtime still believes it exists, and the next parallel region
+in that child blocks forever in the OpenMP join barrier. The build simply goes silent:
+no exception, no traceback, no ``EOFError``, so this is expensive to diagnose. A
+threaded BLAS such as MKL is enough to trigger it; OpenBLAS installs ``pthread_atfork``
+handlers and recovers, so whether you see this depends on which BLAS you link.
+
+Unless ``parallel`` is set, Sphinx-Gallery executes your example code in the Sphinx
+process itself, during ``builder-inited`` -- that is, before Sphinx forks. Any example
+that reaches a threaded BLAS can therefore leave such a thread behind. Options:
+
+- Set ``parallel``, which runs examples in separate Loky processes and so keeps the
+  example code out of the Sphinx process.
+- Cap the thread pools for the whole build in your ``conf.py``, before
+  ``builder-inited``, keeping a reference so the controller is not garbage collected::
+
+      import threadpoolctl
+
+      _threadpool_limits = threadpoolctl.threadpool_limits(limits=1)
+
+- Or set ``OMP_NUM_THREADS=1`` and ``MKL_NUM_THREADS=1`` in the build environment.
+
+The last two make example execution single threaded, which may be a meaningful slowdown
+for numeric galleries. Sphinx-Gallery's own :ref:`recommender <recommend_examples>` uses
+BLAS too, but caps its threads internally, so it is safe on its own.
+
+.. _recommend_examples:
+
+Enabling the example recommender system
+=======================================
+
+Sphinx-Gallery can be configured to generate content-based recommendations for
+an example gallery. A list of related examples is automatically generated by
+computing the closest examples in the `TF-IDF
+<https://en.wikipedia.org/wiki/Tf%E2%80%93idf>`_ space of their text contents.
+Only examples within a single gallery (including it's sub-galleries) are used to
+compute the closest examples. The most similar content is then displayed at the bottom
+of each example as a set of thumbnails.
+
+The recommender system can be enabled by setting ``enable`` to ``True``. To
+configure it, pass a dictionary to the ``sphinx_gallery_conf``, e.g.::
+
+    sphinx_gallery_conf = {
+        ...
+        "recommender": {"enable": True, "n_examples": 5, "min_df": 3, "max_df": 0.9},
+    }
+
+The only necessary parameter is ``enable``. If any other parameters is not
+specified, the default value is used. Below is a more complete explanation of
+each field:
+
+enable (type: bool, default: False)
+  Whether to generate recommendations inside the example gallery. Enabling this
+  feature requires adding `numpy` to the dependencies.
+n_examples (type: int, default: 5)
+  Number of most relevant examples to display.
+min_df (type: float in range [0.0, 1.0] | int, default: 3)
+  When building the vocabulary ignore terms that have a document frequency
+  strictly lower than the given threshold. If float, the parameter represents a
+  proportion of documents, integer represents absolute counts. This value is
+  also called cut-off in the literature.
+max_df (type: float in range [0.0, 1.0] | int, default: 0.9)
+  When building the vocabulary ignore terms that have a document frequency
+  strictly higher than the given threshold. If float, the parameter represents a
+  proportion of documents, integer represents absolute counts.
+rubric_header (type: str, default: "Related examples")
+  Customizable rubric header. It can be edited to more descriptive text or to
+  add external links, e.g. to the API doc of the recommender system on the
+  Sphinx-Gallery documentation.
+
+The parameters ``min_df`` and ``max_df`` can be customized by the user to trim
+the very rare/very common words. This may improve the recommendations quality,
+but more importantly, it spares some computation resources that would be wasted
+on non-informative tokens.
+
+Currently example recommendations are only computed for ``.py`` files.
 
 .. _setting_thumbnail_size:
 
@@ -1802,6 +2501,22 @@ The ``min_reported_time`` parameter can be set to a number of seconds. The
 duration of scripts that ran faster than that amount will not be logged nor
 embedded in the html output.
 
+.. _write_computation_times:
+
+Write computation times
+=======================
+
+Set to ``False`` if you want to omit computation times from all gallery outputs.
+This helps with reproducible builds.
+Default is ``True`` unless the ``SOURCE_DATE_EPOCH`` environment variable is set.
+
+If you are interested in using execution time and execution success and failure data,
+see :ref:`junit_xml`.
+
+Examples that are not re-run because their source is unchanged report the time and
+memory measured the last time they did run, cached alongside their md5 checksum. This
+means a rebuild that runs nothing at all leaves ``sg_execution_times.rst`` untouched
+rather than replacing every measurement with zero.
 
 .. _show_memory:
 
@@ -1871,11 +2586,15 @@ are:
   present in some objects, for example, pandas dataframes.
 
 Output capture can be controlled globally by the ``capture_repr`` configuration
-setting or file-by-file by adding a comment to the example file, which overrides
+setting, file-by-file by adding a comment to the example file, which overrides
 any global setting::
 
     # sphinx_gallery_capture_repr = ()
 
+, or block-by-block by adding a comment to the code block, which overrides any
+global or file setting::
+
+    # sphinx_gallery_capture_repr_block = ()
 
 The default setting is::
 
@@ -1905,8 +2624,7 @@ From another perspective, take for example the following code block::
 ``'Hello world'`` would be captured for every ``capture_repr`` setting as this
 is directed to standard output. Further,
 
-* if ``capture_repr`` is an empty tuple, nothing else would be
-  captured.
+* if ``capture_repr`` is an empty tuple, nothing else would be captured.
 * if ``capture_repr`` is ``('__repr__')``, ``2`` would also be captured.
 * if ``capture_repr`` is ``('_repr_html_', '__repr__')`` (the default)
   Sphinx-Gallery would first attempt to capture ``_repr_html_``. Since this
@@ -1937,8 +2655,27 @@ method which would thus be captured. You can prevent this by:
     plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
     plt.show()
 
-The unwanted string output will not occur if ``'capture_repr'`` is an empty
-tuple or does not contain ``__repr__`` or ``__str__``.
+* add a ``# sphinx_gallery_capture_repr_block = ()`` comment to the code block.
+  The unwanted string output will not occur if ``'capture_repr'`` is an empty
+  tuple or, at least, does not contain ``__repr__`` or ``__str__``.
+  For example::
+
+    # sphinx_gallery_capture_repr_block = ()
+    import matplotlib.pyplot as plt
+
+    plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+
+.. admonition:: Note for Plotly users
+   :class: note
+
+   The suggestions above also apply to Plotly users. Plotly figures have
+   several `update methods
+   <https://plotly.com/python/creating-and-updating-figures/>`_ that
+   implicitly return the updated figure object. You can set a block-level
+   ``# sphinx_gallery_capture_repr_block = ()`` comment to prevent these
+   from being captured, or assign the return values to a variable (*e.g.,*
+   ``fig = fig.update_layout(...)``).
+
 
 .. _regular expressions: https://docs.python.org/3/library/re.html
 
@@ -1958,14 +2695,12 @@ expression includes the string 'matplotlib.text' *or* 'matplotlib.axes'.
 This would prevent capturing of all subclasses of 'matplotlib.text', e.g.
 expressions of type 'matplotlib.text.Annotation', 'matplotlib.text.OffsetFrom'
 etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
-'matplotlib.axes.Axes.plot' etc.) will also not be captured.
-
-.. code-block:: python
+'matplotlib.axes.Axes.plot' etc.) will also not be captured. ::
 
     sphinx_gallery_conf = {
         ...
         'capture_repr': ('__repr__'),
-        'ignore_repr_types': r'matplotlib[text, axes]',
+        'ignore_repr_types': r'matplotlib\.(text|axes)',
     }
 
 
@@ -1974,33 +2709,47 @@ etc. Similarly subclasses of 'matplotlib.axes' (e.g. 'matplotlib.axes.Axes',
 Nesting gallery sections
 ========================
 
-By default, ``nested_sections=True``.
-In this case, for each folder present in the gallery's root folder,
-Sphinx-Gallery expects to find a readme and uses it to build
-a specific index file for this subsection.
-This index file will contain the section's description and a toctree
-linking to each gallery item which belongs to this subsection.
+``nested_sections`` lets you control how gallery ``index.rst`` files are generated
+when your :ref:`gallery <multiple_galleries_config>` has subsections
+(sub-folders inside :ref:`examples_dirs <multiple_galleries_config>`, aka
+sub-galleries). This can be useful for
+controlling sidebar appearance. The default is set to ``nested_sections=True``
+because it generally works with the popular
+`pydata-sphinx-theme <https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html>`_
+theme. It can however, cause undesirable duplication in the sidebar with other
+themes so users are advised to choose the most suitable ``nested_sections`` setting
+for their theme.
 
-Eventually, the gallery's main index files will contain the gallery's
-description and a toctree linking to each subsections's index file.
+With default ``nested_sections=True``, Sphinx-Gallery will use the
+``GALLERY_HEADER.[ext]`` (or ``README.[ext]`` for backward-compatibility) files
+for the parent gallery and each subsection to build separate index files for the
+parent gallery and each subsection.
+Subsection index files will contain the subsection's header (from the
+``GALLERY_HEADER.[ext]`` file) and a toctree
+linking to each gallery example in the subsection.
+The parent gallery's main ``index.rst`` file will contain, in sequence:
 
-With this behaviour, generated file structure and toctrees mimic that of
-the original gallery folder. This is useful to generate sidebars with
-nested sections representing the gallery's file structure.
+* parent gallery header followed by gallery thumbnails,
+* a toctree linking to each gallery example in the parent gallery,
+* subsection header followed by subsection thumbnails, for all subsections,
+* a second toctree, at the end of the file, linking to all subsection index files.
 
-.. note::
+The generated file structure and toctrees mimic that of the parent gallery folder,
+which may be needed for generating sidebars with nested sections for some themes.
 
-    When ``nested_sections=True``, gallery items located in the gallery's root folder
-    should be move to a new subfolder, otherwise the sidebar
-    might not behave as expected (due to the fuzzy toctree structure).
+For other themes, having two toctrees can cause undesirable duplication in the sidebar.
+In this case you can try moving all parent gallery examples to their own sub-folder,
+as this will result in a single toctree in the parent gallery ``index.rst``, or
+using ``nested_sections=False``.
 
-If ``nested_sections=False``, Sphinx-Gallery will behave as it used to
-previous to version 0.10.2.
+``nested_sections=False`` makes Sphinx-Gallery behave as it used to
+prior to version 0.10.2.
 Specifically, it will generate a single index file for the whole gallery.
-This index file will contain descriptions for the whole gallery as well as for
-each subsection, and a specific toctree for each subsection.
-In particular, sidebars generated using these toctrees might not reflect the
-actual section / folder structure.
+This index file will contain headers for the parent gallery and each subsection, with
+each header followed by a toctree that links to every example in the
+parent gallery/subsection.
+For some themes, sidebars generated using these toctrees would list all gallery items
+with a flat structure and not reflect the nested folder structure of sub-galleries.
 
 .. _manual_passthrough:
 
@@ -2008,40 +2757,77 @@ Manually passing files
 ======================
 
 By default, Sphinx-Gallery creates all the files that are written in the
-sphinx-build directory, either by generating rst and images from a ``*.py``
-in the gallery-source, or from  creating ``index.rst`` from ``README.txt``
+sphinx-build directory, either by generating reST and images from a ``*.py``
+in the gallery-source, or from  creating ``index.rst`` from
+``GALLERY_HEADER.rst`` (or ``README.[rst/txt]`` for backward-compatibility)
 in the gallery-source.  However, sometimes it is desirable to pass files
 from the gallery-source to the sphinx-build.  For example, you may want
 to pass an image that a gallery refers to, but does not generate itself.
-You may also want to pass raw rst from the gallery-source to the
+You may also want to pass raw reST from the gallery-source to the
 sphinx-build, because that material fits in thematically with your gallery,
-but is easier to write as rst.  To accommodate this, you may set
+but is easier to write as reST.  To accommodate this, you may set
 ``copyfile_regex`` in ``sphinx_gallery_conf``.  The following copies
-across rst files.
-
-.. code-block:: python
+across reST files. ::
 
     sphinx_gallery_conf = {
         ...
        'copyfile_regex': r'.*\.rst',
     }
 
-Note that if you copy across files rst files, for instance, it is your
+Note that if you copy across reST files, for instance, it is your
 responsibility to ensure that they are in a sphinx ``toctree`` somewhere
 in your document.  You can, of course, add a ``toctree`` to your
-``README.txt``.
+``GALLERY_HEADER.rst``.
 
 Manually passing ``index.rst``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can bypass Sphinx-Gallery automatically creating an  ``index.rst`` from a
-``README.txt`` in a gallery directory or subdirectory. If your
+``GALLERY_HEADER.rst`` in a gallery directory or nested sub-gallery directory. If your
 ``copyfile_regex`` includes ``index.rst``, and you have an ``index.rst`` in the
-gallery-source instead of the README, Sphinx-Gallery will use that instead of
-the index it automatically makes.  If you do this, you are responsible for
+gallery-source (i.e., a :ref:`examples_dirs <multiple_galleries_config>` directory),
+Sphinx-Gallery will use that instead and not make an index file for that gallery
+or any of its sub-galleries.
+If you pass your own ``index.rst`` file, you are responsible for
 adding your own Sphinx ``toctree`` in that index (or elsewhere in your Sphinx
 documentation) that includes any gallery items or other files in that
-directory.
+directory. You are also responsible for adding any necessary ``index.rst``
+files for that gallery's sub-galleries.
+
+The following is an example of ``index.rst`` that handles a gallery with
+sub-galleries and can insert an example from one sub-gallery into another one
+while preserving the nested structure in the TOC tree.:
+
+.. code-block:: rst
+
+    Examples gallery
+    ================
+
+    Subgallery 1
+    ------------
+
+    .. toctree::
+        :maxdepth: 2
+        :glob:
+        :hidden:
+
+        subgallery1/plot_*
+
+    .. minigallery:: ../../examples/subgallery1/plot_*.py
+
+    Subgallery 2
+    ------------
+
+    .. toctree::
+        :maxdepth: 2
+        :glob:
+        :hidden:
+
+        subgallery2/plot_*
+
+    .. minigallery::
+        ../../examples/subgallery2/plot_*.py
+        ../../examples/subgallery1/plot_example_in_both.py
 
 .. _show_api_usage:
 
@@ -2052,22 +2838,29 @@ Graphs and documentation of both unused API entries and the examples that
 each API entry is used in are generated in the sphinx output directory under
 ``sg_api_usage.html``. See the
 `Sphinx-Gallery API usage documentation and graphs <sg_api_usage.html>`_
-for example. In large projects, there are many modules and, since a graph
-of API usage is generated for each module, this can use a lot of resources
-so ``show_api_usage`` is set to ``'unused'`` by default. The unused API
-entries are all shown in one graph so this scales much better for large
-projects. Setting ``show_api_usage`` to ``True`` will make one graph per
-module showing all of the API entries connected to the example that they
-are used in. This could be helpful for making a map of which examples to
-look at if you want to learn about a particular module. Setting
-``show_api_usage`` to ``False`` will not make any graphs or documentation
-about API usage. Note, ``graphviz`` is required for making the unused and
-used API entry graphs.
+for example. ``show_api_usage`` is ``False`` by default, which makes no graphs
+or documentation about API usage at all.
+
+Setting ``show_api_usage`` to ``'unused'`` documents and graphs only the unused
+API entries. They are all shown in one graph, so this scales well to large
+projects. Setting it to ``True`` additionally lists the used API entries and
+makes one graph per module showing all of the API entries connected to the
+examples that they are used in. This could be helpful for making a map of which
+examples to look at if you want to learn about a particular module, but in large
+projects there are many modules, and a graph per module can use a lot of
+resources -- prefer ``'unused'`` there. Note, the command-line binary ``neato``
+from the ``graphviz`` C utility as well as the ``graphviz`` Python package are
+required for making the unused and used API entry graphs.
+
+The page is generated into your source directory as ``sg_api_usage.rst``,
+alongside the ``*.dot`` files backing its graphs. These are only rewritten
+when the API usage actually changes, so that unchanged rebuilds skip the page
+entirely; you will likely want to add them to your ``.gitignore``.
 
 .. _api_usage_ignore:
 
 Ignoring API entries
-====================
+^^^^^^^^^^^^^^^^^^^^
 
 By default, ``api_usage_ignore='.*__.*__'`` ignores files that match this
 regular expression in documenting and graphing the usage of API entries
@@ -2075,3 +2868,22 @@ within the example gallery. This regular expression can be modified to
 ignore any kind of file that should not be considered. The default regular
 expression ignores functions like ``__len__()`` for which it may not be
 desirable to document if they are used in examples.
+
+.. _tagging_examples:
+
+Tagging Examples and Filtering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can tag examples with the::
+
+  # sphinx_gallery_tags = ["tag1", "tag2"]
+
+syntax.
+
+This adds the tags to the end of each example, and also adds dynamic
+filtering of the examples on index pages.
+See :ref:`examples-index` for a demonstration.
+
+Tags support a wide character set, although some with special meaning
+in HTML documents might not render correctly, specifically ``|`` and
+``@`` are known not to work well.

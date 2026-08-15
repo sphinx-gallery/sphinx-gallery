@@ -8,70 +8,118 @@ example files.
 Files that generate images should start with 'plot'.
 """
 
-from time import time
-import copy
-import contextlib
+from __future__ import annotations
+
 import ast
-import codecs
-from functools import partial
+import codeop
+import contextlib
+import copy
 import gc
-import pickle
 import importlib
-from io import StringIO
+import importlib.util
+import inspect
 import os
 import re
 import stat
-from textwrap import indent
-import warnings
-from shutil import copyfile
-import subprocess
 import sys
 import traceback
-import codeop
+import warnings
+from dataclasses import dataclass
+from functools import lru_cache
+from io import StringIO
+from itertools import islice
+from pathlib import Path
+from shutil import copyfile
+from textwrap import indent
+from time import time
+from typing import TYPE_CHECKING, Any, Callable, Literal, TextIO, cast
 
-from sphinx.errors import ExtensionError
 import sphinx.util
+from sphinx.errors import ConfigError, ExtensionError
+from sphinx.util.console import blue, bold, red
 
-from .scrapers import save_figures, ImagePathIterator, clean_modules, _find_image_ext
-from .utils import (
-    replace_py_ipynb,
-    scale_image,
-    get_md5sum,
-    _replace_md5,
-    optipng,
-    status_iterator,
-)
-from . import glr_path_static
+from . import glr_path_static, py_source_parser, rst_source_parser
 from .backreferences import (
-    _write_backreferences,
-    _thumbnail_div,
-    identify_names,
-    _make_ref_regex,
     THUMBNAIL_PARENT_DIV,
     THUMBNAIL_PARENT_DIV_CLOSE,
+    Backreference,
+    _make_ref_regex,
+    _thumbnail_div,
+    _write_backreferences,
+    identify_names,
 )
-from .downloads import CODE_DOWNLOAD
-from .py_source_parser import (
-    split_code_and_text_blocks,
-    remove_config_comments,
-    remove_ignore_blocks,
+from .block_parser import BlockParser
+from .interactive_example import (
+    _add_jupyterlite_badge_logo,
+    gen_binder_rst,
+    gen_jupyterlite_rst,
 )
-
 from .notebook import jupyter_notebook, save_notebook
-from .interactive_example import gen_binder_rst
-from .interactive_example import gen_jupyterlite_rst
+from .scrapers import (
+    ImagePathIterator,
+    _find_image_ext,
+    _reset_dict,
+    _scraper_dict,
+    clean_modules,
+    save_figures,
+)
+from .typing import GalleryConfig, Parser, PathLikeStr
+from .utils import (
+    _W_KW,
+    _collect_gallery_files,
+    _combine_backreferences,
+    _format_toctree,
+    _read_json,
+    _replace_md5,
+    _write_json,
+    get_md5sum,
+    iter_gallery_header_filenames,
+    optipng,
+    scale_image,
+    status_iterator,
+    zip_files,
+)
 
+if TYPE_CHECKING:
+    from types import ModuleType
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-###############################################################################
+@dataclass(frozen=True)
+class ExampleCost:
+    """Runtime cost of a single example script.
+
+    Attributes
+    ----------
+    execution_time : float
+        Execution time in seconds.
+    memory : float
+        Peak memory usage in MB.
+    src_file : str
+        Path to the source Python file.
+    target_dir : str
+        Path to the target output directory.
+    """
+
+    execution_time: float
+    memory: float
+    src_file: str
+    target_dir: str
+
+    def sort_key(self) -> tuple[float, float, str]:
+        """Return sort key for consistent ordering.
+
+        Returns tuple of: descending time, descending memory, ascending filename.
+        This orders examples to show the most expensive/problematic ones first.
+        """
+        return (-self.execution_time, -self.memory, self.src_file)
 
 
 class _LoggingTee:
     """A tee object to redirect streams to the logger."""
 
-    def __init__(self, src_filename):
+    def __init__(self, src_filename: PathLikeStr) -> None:
         self.logger = logger
         self.src_filename = src_filename
         self.logger_buffer = ""
@@ -81,7 +129,7 @@ class _LoggingTee:
         self.closed = False
         self.encoding = "utf-8"
 
-    def set_std_and_reset_position(self):
+    def set_std_and_reset_position(self) -> _LoggingTee:
         if not isinstance(sys.stdout, _LoggingTee):
             self.origs = (sys.stdout, sys.stderr)
         sys.stdout = sys.stderr = self
@@ -89,12 +137,12 @@ class _LoggingTee:
         self.output = StringIO()
         return self
 
-    def restore_std(self):
+    def restore_std(self) -> None:
         sys.stdout.flush()
         sys.stderr.flush()
         sys.stdout, sys.stderr = self.origs
 
-    def write(self, data):
+    def write(self, data: str) -> None:
         self.output.write(data)
 
         if self.first_write:
@@ -114,47 +162,47 @@ class _LoggingTee:
         for line in lines:
             self.logger.verbose("%s", line)
 
-    def flush(self):
+    def flush(self) -> None:
         self.output.flush()
         if self.logger_buffer:
             self.logger.verbose("%s", self.logger_buffer)
             self.logger_buffer = ""
 
     # For TextIO compatibility
-    def close(self):
+    def close(self) -> None:
         pass
 
-    def fileno(self):
+    def fileno(self) -> int:
         return self.output.fileno()
 
-    def isatty(self):
+    def isatty(self) -> bool:
         return self.output.isatty()
 
-    def readable(self):
+    def readable(self) -> bool:
         return False
 
-    def seekable(self):
+    def seekable(self) -> bool:
         return False
 
-    def tell(self):
+    def tell(self) -> int:
         return self.output.tell()
 
-    def writable(self):
+    def writable(self) -> bool:
         return True
 
     @property
-    def errors(self):
+    def errors(self) -> str | None:
         return self.output.errors
 
     @property
-    def newlines(self):
+    def newlines(self) -> Any:
         return self.output.newlines
 
     # When called in gen_rst, conveniently use context managing
-    def __enter__(self):
+    def __enter__(self) -> _LoggingTee:
         return self
 
-    def __exit__(self, type_, value, tb):
+    def __exit__(self, type_: Any, value: Any, tb: Any) -> None:
         self.restore_std()
 
 
@@ -192,6 +240,13 @@ TIMING_CONTENT = """
 
 """
 
+TAGS_CONTENT = """
+.. rst-class:: sphx-glr-example-tags
+
+   🏷 Tags: {tags}
+
+"""
+
 SPHX_GLR_SIG = """\n
 .. only:: html
 
@@ -209,26 +264,62 @@ HTML_HEADER = """.. raw:: html
     <br />
     <br />"""
 
+DOWNLOAD_LINKS_HEADER = """
+.. _sphx_glr_download_{0}:
 
-def codestr2rst(codestr, lang="python", lineno=None):
+.. only:: html
+
+  .. container:: sphx-glr-footer sphx-glr-footer-example
+"""
+
+CODE_DOWNLOAD = """
+    .. container:: sphx-glr-download sphx-glr-download-python
+
+      :download:`Download {1} source code: {0} <{0}>`
+"""
+
+NOTEBOOK_DOWNLOAD = """
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: {0} <{0}>`
+"""
+
+ZIP_DOWNLOAD = """
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: {0} <{0}>`
+"""
+
+RECOMMENDATIONS_INCLUDE = """\n
+.. include:: {0}.recommendations
+"""
+
+
+def codestr2rst(codestr: str, lang: str = "python", lineno: int | None = None) -> str:
     """Return reStructuredText code block from code string."""
     if lineno is not None:
         # Sphinx only starts numbering from the first non-empty line.
         blank_lines = codestr.count("\n", 0, -len(codestr.lstrip()))
-        lineno = f"   :lineno-start: {lineno + blank_lines}\n"
+        lineno_str = f"   :lineno-start: {lineno + blank_lines}\n"
     else:
-        lineno = ""
-    code_directive = f".. code-block:: {lang}\n{lineno}\n"
+        lineno_str = ""
+    # If the whole block is indented, prevent Sphinx from removing too much whitespace
+    dedent = "   :dedent: 1\n"
+    for line in codestr.splitlines():
+        if line and not line.startswith((" ", "\t")):
+            dedent = ""
+            break
+    code_directive = f".. code-block:: {lang}\n{dedent}{lineno_str}\n"
     indented_block = indent(codestr, " " * 4)
     return code_directive + indented_block
 
 
-def _regroup(x):
-    x = x.groups()
+def _regroup(match: re.Match[str]) -> str:
+    x = match.groups()
     return x[0] + x[1].split(".")[-1] + x[2]
 
 
-def _sanitize_rst(string):
+def _sanitize_rst(string: str) -> str:
     """Use regex to remove at least some sphinx directives."""
     # :class:`a.b.c <thing here>`, :ref:`abc <thing here>` --> thing here
     p, e = r"(\s|^):[^:\s]+:`", r"`(\W|$)"
@@ -241,8 +332,12 @@ def _sanitize_rst(string):
     # ``whatever thing`` --> whatever thing
     p = r"(\s|^)`"
     string = re.sub(p + r"`([^`]+)`" + e, r"\1\2\3", string)
+    # `~mymodule.MyClass` --> MyClass
+    string = re.sub(p + r"~([^`]+)" + e, _regroup, string)
+
     # `whatever thing` --> whatever thing
-    string = re.sub(p + r"([^`]+)" + e, r"\1\2\3", string)
+    # `.MyClass` --> MyClass
+    string = re.sub(p + r"\.?([^`]+)" + e, r"\1\2\3", string)
 
     # **string** --> string
     string = re.sub(r"\*\*([^\*]*)\*\*", r"\1", string)
@@ -260,7 +355,7 @@ def _sanitize_rst(string):
     return string
 
 
-def extract_intro_and_title(filename, docstring):
+def extract_intro_and_title(filename: PathLikeStr, docstring: str) -> tuple[str, str]:
     """Extract and clean the first paragraph of module-level docstring."""
     # lstrip is just in case docstring has a '\n\n' at the beginning
     paragraphs = docstring.lstrip().split("\n\n")
@@ -288,36 +383,39 @@ def extract_intro_and_title(filename, docstring):
     # Concatenate all lines of the first paragraph and truncate at 95 chars
     intro = re.sub("\n", " ", intro_paragraph)
     intro = _sanitize_rst(intro)
-    if len(intro) > 95:
-        intro = intro[:95] + "..."
-
     title = _sanitize_rst(title)
 
     return intro, title
 
 
-def md5sum_is_current(src_file, mode="b"):
+def md5sum_is_current(src_file: PathLikeStr, mode: Literal["t", "b"] = "b") -> bool:
     """Checks whether src_file has the same md5 hash as the one on disk."""
-    src_md5 = get_md5sum(src_file, mode)
+    src_md5 = get_md5sum(src_file, mode=mode)
 
-    src_md5_file = src_file + ".md5"
-    if os.path.exists(src_md5_file):
-        with open(src_md5_file) as file_checksum:
-            ref_md5 = file_checksum.read()
+    src_md5_file = Path(f"{src_file}.md5")
+    if not src_md5_file.exists():
+        return False
 
-        return src_md5 == ref_md5
+    with open(src_md5_file) as file_cs:
+        ref_md5 = file_cs.read()
 
-    return False
+    return src_md5 == ref_md5
 
 
-def save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf):
+def save_thumbnail(
+    image_path_template: PathLikeStr,
+    src_file: PathLikeStr,
+    script_vars: dict[str, Any],
+    file_conf: dict[str, Any],
+    gallery_conf: GalleryConfig,
+) -> None:
     """Generate and Save the thumbnail image.
 
     Parameters
     ----------
-    image_path_template : str
+    image_path_template : str | pathlib.Path
         holds the template where to save and how to name the image
-    src_file : str
+    src_file : str | pathlib.Path
         path to source python file
     script_vars : dict
         Configuration and run time variables
@@ -327,9 +425,10 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
     """
-    thumb_dir = os.path.join(os.path.dirname(image_path_template), "thumb")
-    if not os.path.exists(thumb_dir):
-        os.makedirs(thumb_dir)
+    image_path_template = Path(image_path_template)
+    src_file = Path(src_file)
+    thumb_dir = image_path_template.parent / "thumb"
+    thumb_dir.mkdir(parents=True, exist_ok=True)
 
     # read specification of the figure to display as thumbnail from main text
     thumbnail_number = file_conf.get("thumbnail_number", None)
@@ -339,7 +438,7 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
         # If no number AND no path, set to default thumbnail_number
         thumbnail_number = 1
     if thumbnail_number is None:
-        image_path = os.path.join(gallery_conf["src_dir"], thumbnail_path)
+        image_path = Path(gallery_conf["src_dir"]) / cast(str, thumbnail_path)
     else:
         if not isinstance(thumbnail_number, int):
             raise ExtensionError(
@@ -349,229 +448,378 @@ def save_thumbnail(image_path_template, src_file, script_vars, file_conf, galler
         # negative index means counting from the last one
         if thumbnail_number < 0:
             thumbnail_number += len(script_vars["image_path_iterator"]) + 1
-        image_path = image_path_template.format(thumbnail_number)
+        image_path = Path(str(image_path_template).format(thumbnail_number))
+    # thumbnail_number wins above, so only blame thumbnail_path when it was used
+    thumbnail_path_used = thumbnail_number is None
     del thumbnail_number, thumbnail_path, image_path_template
     thumbnail_image_path, ext = _find_image_ext(image_path)
+    # warn here rather than in the fallback below, which a cached thumb file skips
+    if thumbnail_path_used and not Path(thumbnail_image_path).exists():
+        logger.warning(
+            "sphinx_gallery_thumbnail_path '%s' not found for '%s', "
+            "using default thumbnail.",
+            image_path,
+            src_file,
+        )
 
-    base_image_name = os.path.splitext(os.path.basename(src_file))[0]
-    thumb_file = os.path.join(thumb_dir, f"sphx_glr_{base_image_name}_thumb.{ext}")
+    base_image_name = src_file.stem
+    thumb_file = thumb_dir / f"sphx_glr_{base_image_name}_thumb.{ext}"
 
-    if src_file in gallery_conf["failing_examples"]:
-        img = os.path.join(glr_path_static(), "broken_example.png")
-    elif os.path.exists(thumbnail_image_path):
+    if "formatted_exception" in script_vars and file_conf.get(
+        "failing_thumbnail", True
+    ):
+        img = Path(glr_path_static()) / "broken_example.png"
+    elif Path(thumbnail_image_path).exists():
         img = thumbnail_image_path
-    elif not os.path.exists(thumb_file):
+    elif not thumb_file.exists():
         # create something to replace the thumbnail
         default_thumb_path = gallery_conf["default_thumb_file"]
         if default_thumb_path is None:
-            default_thumb_path = os.path.join(
-                glr_path_static(),
-                "no_image.png",
-            )
+            default_thumb_path = Path(glr_path_static()) / "no_image.png"
         img, ext = _find_image_ext(default_thumb_path)
     else:
         return
     # update extension, since gallery_conf setting can be different
     # from file_conf
     # Here we have to do .new.ext so that optipng and PIL behave well
-    thumb_file = f"{os.path.splitext(thumb_file)[0]}.new.{ext}"
+    thumb_file = Path(f"{thumb_file.with_suffix('')}.new.{ext}")
     if ext in ("svg", "gif"):
         copyfile(img, thumb_file)
     else:
         scale_image(img, thumb_file, *gallery_conf["thumbnail_size"])
         if "thumbnails" in gallery_conf["compress_images"]:
             optipng(thumb_file, gallery_conf["compress_images_args"])
-    fname_old = f"{os.path.splitext(thumb_file)[0][:-3]}{ext}"
+    fname_old = Path(f"{thumb_file.with_suffix('')}")
+    fname_old = fname_old.with_name(fname_old.name[:-3] + ext)
     _replace_md5(thumb_file, fname_old=fname_old)
 
 
-def _get_readme(dir_, gallery_conf, raise_error=True):
-    # first check if there is an index.rst and that index.rst is in the
+def _get_gallery_header(
+    dir_: PathLikeStr, gallery_conf: GalleryConfig, raise_error: bool = True
+) -> str | None:
+    """Get gallery header from GALLERY_HEADER.[ext] or README.[ext] file.
+
+    Returns `None` if user supplied an index.rst or no gallery header file
+    found and `raise_error=False`.
+    """
+    dir_ = Path(dir_)
+    # First check if user supplies an index.rst and that index.rst is in the
     # copyfile regexp:
     if re.match(gallery_conf["copyfile_regex"], "index.rst"):
-        fpth = os.path.join(dir_, "index.rst")
-        if os.path.isfile(fpth):
+        fpth = dir_ / "index.rst"
+        if fpth.is_file():
             return None
-    # now look for README.txt, README.rst etc...
-    extensions = [".txt"] + sorted(gallery_conf["app"].config["source_suffix"])
-    for ext in extensions:
-        for fname in ("README", "readme"):
-            fpth = os.path.join(dir_, fname + ext)
-            if os.path.isfile(fpth):
-                return fpth
+    # Next look for GALLERY_HEADER.[ext] (and for backward-compatibility README.[ext]
+    for fname in iter_gallery_header_filenames(gallery_conf):
+        fpth = dir_ / fname
+        if fpth.is_file():
+            return str(fpth)
     if raise_error:
+        extensions = list(
+            sorted(
+                set(
+                    Path(fname).suffix
+                    for fname in iter_gallery_header_filenames(gallery_conf)
+                )
+            )
+        )
         raise ExtensionError(
-            "Example directory {} does not have a README file with one "
-            "of the expected file extensions {}. Please write one to "
+            "Example directory {} does not have a GALLERY_HEADER file with "
+            "one of the expected file extensions {}. Please write one to "
             "introduce your gallery.".format(dir_, extensions)
         )
     return None
 
 
+def _write_subsection_index(
+    gallery_conf: GalleryConfig,
+    user_index_rst: bool,
+    is_subsection: bool,
+    target_dir: PathLikeStr,
+    index_content: str,
+    toctree_filenames: list[str],
+) -> str | None:
+    """Write `index.rst` file for subsection if user has not provided index file.
+
+    Returns path to index file written or `None` if no index file written as user
+    provided one.
+    """
+    index_path = None
+    if gallery_conf["nested_sections"] and not user_index_rst and is_subsection:
+        target_dir = Path(target_dir)
+        index_path = str(target_dir / "index.rst.new")
+        head_ref = Path(os.path.relpath(target_dir, gallery_conf["src_dir"])).as_posix()
+        with open(index_path, "w", **_W_KW) as findex:  # type: ignore [call-overload]
+            findex.write("\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace("/", "_")))
+            findex.write(index_content)
+            # Create toctree with all gallery examples and add to index file
+            if len(toctree_filenames) > 0:
+                subsection_index_toctree = _format_toctree(toctree_filenames)
+                findex.write(subsection_index_toctree)
+
+    return index_path
+
+
+def _copy_non_example_files(
+    gallery_conf: GalleryConfig,
+    src_dir: PathLikeStr,
+    header_fname: PathLikeStr | None,
+    target_dir: PathLikeStr,
+) -> None:
+    """Copy non-example files to `target_dir`."""
+    src_dir = Path(src_dir)
+    target_dir = Path(target_dir)
+    copyregex = gallery_conf["copyfile_regex"]
+    if copyregex:
+        listdir = [
+            fname.name for fname in src_dir.iterdir() if re.match(copyregex, fname.name)
+        ]
+        if header_fname:
+            # Don't copy over the gallery_header file
+            listdir = [fname for fname in listdir if fname != Path(header_fname).name]
+        for fname in listdir:
+            src_file = src_dir / fname
+            target_file = target_dir / fname
+            _replace_md5(src_file, fname_old=target_file, method="copy")
+
+
+def _split_parallel(
+    sorted_listdir: list[str], src_dir: PathLikeStr, gallery_conf: GalleryConfig
+) -> tuple[list[str], list[str]]:
+    """Split examples into those that opt out of parallel execution, and the rest.
+
+    Both lists keep their relative order from ``sorted_listdir``.
+    """
+    serial_listdir = []
+    parallel_listdir = []
+    for fname in sorted_listdir:
+        parser, _ = _get_parser(fname, gallery_conf)
+        src_file = os.path.normpath(Path(src_dir, fname))
+        # full parse rather than a cheaper regex over the file, so that we see exactly
+        # the same file_conf as `generate_file_rst` (e.g. docstrings are excluded)
+        file_conf = parser.split_code_and_text_blocks(src_file, return_node=True)[0]
+        run_parallel = file_conf.get("parallel", True)
+        if not isinstance(run_parallel, bool):
+            logger.warning(
+                "sphinx_gallery_parallel setting is not a boolean, got %r in file %s",
+                run_parallel,
+                fname,
+            )
+            run_parallel = True
+        (parallel_listdir if run_parallel else serial_listdir).append(fname)
+    return serial_listdir, parallel_listdir
+
+
 def generate_dir_rst(
-    src_dir,
-    target_dir,
-    gallery_conf,
-    seen_backrefs,
-    include_toctree=True,
-):
-    """Generate the gallery reStructuredText for an example directory.
+    src_dir: PathLikeStr,
+    target_dir: PathLikeStr,
+    gallery_conf: GalleryConfig,
+    seen_backrefs: set[str],
+    is_subsection: bool = True,
+) -> tuple[
+    str | None,
+    str | None,
+    list[ExampleCost],
+    list[str],
+    dict[str, list[Backreference]],
+]:
+    """Generate output example reST files for one gallery (sub)directory.
 
     Parameters
     ----------
-    src_dir: str,
-        Path to example directory containing python files
-        and possibly sub categories
-    target_dir: str,
-        Path where parsed examples (rst, python files, etc)
-        will be outputted
+    src_dir : str | pathlib.Path
+        Path to root or sub gallery directory containing example files
+    target_dir : str | pathlib.Path
+        Path where parsed examples (rst, python files, etc) will be outputted
     gallery_conf : Dict[str, Any]
         Gallery configurations.
     seen_backrefs: set,
         Back references encountered when parsing this gallery
         will be stored in this set.
-    include_toctree: bool
-        Whether or not toctree should be included
-        in generated rst file.
-        Default = True.
+    is_subsection: bool,
+        Weather `src_dir` is a subsection dir. If subsection dir, we write
+        a `index.rst` file with toctree listing every example file.
+        Default=True.
 
     Returns
     -------
-    index_path: str,
-        Path to index rst file presenting the current example gallery
-    index_content: str,
-        Content which will be written to the index rst file
-        presenting the current example gallery
-    costs: List[Dict]
-        List of dicts of costs for building each element of the gallery
-         with keys "t", "mem", "src_file", and "target_dir".
+    index_path: str or None
+        Path to index rst file for the `src_dir`. None if user provided
+        own index.
+    index_content: str or None
+        Gallery header content. `None` when user provided own index.rst.
+    costs: List[ExampleCost]
+        List of runtime costs for building each element of the gallery.
     toctree_items: list,
-        List of files included in toctree
-        (independent of include_toctree's value)
-    """
-    head_ref = os.path.relpath(target_dir, gallery_conf["src_dir"])
+        List of example file names we generated ReST for.
+    backrefs_dir : dict[str, list[tuple]]
+        Dictionary where key is the backreference object name and value is a list of
+        tuples containing: example filename, full path to example source directory,
+        full path to example target directory, intro, title.
 
-    subsection_index_content = ""
-    subsection_readme_fname = _get_readme(src_dir, gallery_conf)
-    have_index_rst = False
-    if subsection_readme_fname:
-        with codecs.open(subsection_readme_fname, "r", encoding="utf-8") as fid:
-            subsection_readme_content = fid.read()
-            subsection_index_content += subsection_readme_content
-    else:
-        have_index_rst = True
+    """
+    src_dir = Path(src_dir)
+    target_dir = Path(target_dir)
+    index_content: str = ""
+    # `_get_gallery_header` returns `None` if user supplied `index.rst`
+    header_fname = _get_gallery_header(src_dir, gallery_conf)
+    user_index_rst = True
+    if header_fname:
+        user_index_rst = False
+        with open(header_fname, "r", encoding="utf-8") as fid:
+            header_content = fid.read()
+            index_content += header_content
+
+    # Add an empty div for js
+    index_content += (
+        "\n\n.. raw:: html\n\n  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>"
+    )
 
     # Add empty lines to avoid bug in issue #165
-    subsection_index_content += "\n\n"
+    index_content += "\n\n"
 
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
-    # get filenames
-    listdir = [fname for fname in os.listdir(src_dir) if fname.endswith(".py")]
-    # limit which to look at based on regex (similar to filename_pattern)
-    listdir = [
-        fname
-        for fname in listdir
-        if re.search(
-            gallery_conf["ignore_pattern"],
-            os.path.normpath(os.path.join(src_dir, fname)),
-        )
-        is None
-    ]
+    # Make all dirs ahead of time to avoid collisions in parallel processing
+    image_dir = target_dir / "images"
+    thumb_dir = image_dir / "thumb"
+    thumb_dir.mkdir(parents=True, exist_ok=True)
+    if gallery_conf["jupyterlite"] is not None:
+        _add_jupyterlite_badge_logo(image_dir)
+
+    # Get example filenames from `src_dir`
+    listdir = _collect_gallery_files([src_dir], gallery_conf)
     # sort them
     sorted_listdir = sorted(
-        listdir, key=gallery_conf["within_subsection_order"](src_dir)
+        listdir, key=_get_callables(gallery_conf, "within_subsection_order", src_dir)[0]
     )
 
     # Add div containing all thumbnails;
     # this is helpful for controlling grid or flexbox behaviours
-    subsection_index_content += THUMBNAIL_PARENT_DIV
+    index_content += THUMBNAIL_PARENT_DIV
 
-    entries_text = []
     costs = []
-    subsection_toctree_filenames = []
+    toctree_filenames = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf["src_dir"])
+    backrefs_dir: dict[str, list[Backreference]] = {}
+
+    # Always split, so that a bad in-file setting is reported even in serial builds
+    serial_listdir, parallel_listdir = _split_parallel(
+        sorted_listdir, src_dir, gallery_conf
+    )
+    if not gallery_conf["parallel"]:
+        # everything runs here anyway, so keep the original order
+        serial_listdir, parallel_listdir = sorted_listdir, []
+
     iterator = status_iterator(
-        sorted_listdir,
+        serial_listdir + parallel_listdir,
         f"generating gallery for {build_target_dir}... ",
         length=len(sorted_listdir),
     )
-    for fname in iterator:
-        intro, title, (t, mem) = generate_file_rst(
-            fname, target_dir, src_dir, gallery_conf, seen_backrefs
+
+    # Examples opting out of parallelism run first, alone in this process, so that
+    # nothing else is executing while they do
+    results = [
+        generate_file_rst(fname, target_dir, src_dir, gallery_conf)
+        for fname in islice(iterator, len(serial_listdir))
+    ]
+    if parallel_listdir:
+        from joblib import Parallel, delayed
+
+        parallel = Parallel(
+            n_jobs=gallery_conf["parallel"],
+            pre_dispatch="n_jobs",
+            batch_size=1,
+            backend="loky",
         )
-        src_file = os.path.normpath(os.path.join(src_dir, fname))
-        costs.append(dict(t=t, mem=mem, src_file=src_file, target_dir=target_dir))
-        gallery_item_filename = os.path.join(build_target_dir, fname[:-3]).replace(
-            os.sep, "/"
+        results += parallel(
+            delayed(generate_file_rst)(fname, target_dir, src_dir, gallery_conf)
+            for fname in iterator
+        )
+    # Restore gallery (not execution) order so the index and toctree are unaffected
+    results_by_fname = dict(zip(serial_listdir + parallel_listdir, results))
+    for fname in sorted_listdir:
+        intro, title, (t, mem), out_vars = results_by_fname[fname]
+        src_file = os.path.normpath(Path(src_dir, fname))
+        gallery_conf["titles"][src_file] = title
+        # n.b. non-executable files have none of these three variables defined,
+        # so the last conditional must be "elif" not just "else"
+        if "formatted_exception" in out_vars:
+            assert "passing" not in out_vars
+            assert "stale" not in out_vars
+            gallery_conf["failing_examples"][src_file] = out_vars["formatted_exception"]
+        elif "passing" in out_vars:
+            assert "stale" not in out_vars
+            gallery_conf["passing_examples"].append(src_file)
+        elif "stale" in out_vars:
+            gallery_conf["stale_examples"].append(out_vars["stale"])
+        costs.append(
+            ExampleCost(
+                execution_time=t,
+                memory=mem,
+                src_file=src_file,
+                target_dir=str(target_dir),
+            )
+        )
+        gallery_item_filename = (
+            (Path(build_target_dir) / fname).with_suffix("").as_posix()
         )
         this_entry = _thumbnail_div(
-            target_dir, gallery_conf["src_dir"], fname, intro, title
+            target_dir,
+            gallery_conf["src_dir"],
+            fname,
+            intro,
+            title,
+            tags=out_vars.get("tags", None),
         )
-        entries_text.append(this_entry)
-        subsection_toctree_filenames.append("/" + gallery_item_filename)
+        index_content += this_entry
+        toctree_filenames.append("/" + gallery_item_filename)
 
-    for entry_text in entries_text:
-        subsection_index_content += entry_text
+        # Write backreferences
+        if "backrefs" in out_vars:
+            backrefs_example = _write_backreferences(
+                out_vars["backrefs"],
+                seen_backrefs,
+                gallery_conf,
+                src_dir,
+                target_dir,
+                fname,
+                intro,
+                title,
+            )
+            _combine_backreferences(backrefs_dir, backrefs_example)
 
     # Close thumbnail parent div
-    subsection_index_content += THUMBNAIL_PARENT_DIV_CLOSE
+    index_content += THUMBNAIL_PARENT_DIV_CLOSE
 
-    # Write subsection index file
-    # only if nested_sections is True
-    subsection_index_path = None
-    if gallery_conf["nested_sections"] is True and not have_index_rst:
-        subsection_index_path = os.path.join(target_dir, "index.rst.new")
-        with codecs.open(subsection_index_path, "w", encoding="utf-8") as (findex):
-            findex.write(
-                "\n\n.. _sphx_glr_{}:\n\n".format(head_ref.replace(os.path.sep, "_"))
-            )
-            findex.write(subsection_index_content)
+    # Write index file if required
+    index_path = _write_subsection_index(
+        gallery_conf,
+        user_index_rst,
+        is_subsection,
+        target_dir,
+        index_content,
+        toctree_filenames,
+    )
 
-            # Create toctree for index file
-            # with all gallery items which belong to current subsection
-            # and add it to generated index rst file if need be.
-            # Toctree cannot be empty
-            # and won't be added if include_toctree is false
-            # (this is useful when generating the example gallery's main
-            # index rst file, which should contain only one toctree)
-            if len(subsection_toctree_filenames) > 0 and include_toctree:
-                subsection_index_toctree = """
-.. toctree::
-   :hidden:
-
-   {}\n
-""".format(
-                    "\n   ".join(subsection_toctree_filenames)
-                )
-                findex.write(subsection_index_toctree)
-
-    if have_index_rst:
-        # the user has supplied index.rst, so blank out the content
-        subsection_index_content = None
-
-    # Copy over any other files.
-    copyregex = gallery_conf["copyfile_regex"]
-    if copyregex:
-        listdir = [fname for fname in os.listdir(src_dir) if re.match(copyregex, fname)]
-        readme = _get_readme(src_dir, gallery_conf, raise_error=False)
-        # don't copy over the readme
-        if readme:
-            listdir = [fname for fname in listdir if fname != os.path.basename(readme)]
-        for fname in listdir:
-            src_file = os.path.normpath(os.path.join(src_dir, fname))
-            target_file = os.path.join(target_dir, fname)
-            _replace_md5(src_file, fname_old=target_file, method="copy")
+    # Copy over any other (non-gallery-example) files.
+    _copy_non_example_files(gallery_conf, src_dir, header_fname, target_dir)
 
     return (
-        subsection_index_path,
-        subsection_index_content,
+        index_path,
+        None
+        if user_index_rst
+        else index_content,  # no content if user provided own index.rst
         costs,
-        subsection_toctree_filenames,
+        toctree_filenames,
+        backrefs_dir,
     )
 
 
-def handle_exception(exc_info, src_file, script_vars, gallery_conf):
+def handle_exception(
+    exc_info: tuple[type[BaseException], BaseException, Any] | tuple[None, None, None],
+    src_file: PathLikeStr,
+    script_vars: dict[str, Any],
+    gallery_conf: GalleryConfig,
+) -> str:
     """Trim and format exception, maybe raise error, etc."""
     from .gen_gallery import _expected_failing_examples
 
@@ -595,15 +843,17 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     # so we inspect the traceback to find the start and stop points.
     start = 0
     stop = len(stack)
-    root = os.path.dirname(__file__) + os.sep
+    this_file = str(Path(__file__).parent / "gen_rst.py")
     for ii, s in enumerate(stack, 1):
         # Trim our internal stack
-        if s.filename.startswith(root + "gen_gallery.py") and s.name == "call_memory":
+        if s.name.startswith("_sg_call_memory"):
             start = max(ii, start)
-        elif s.filename.startswith(root + "gen_rst.py"):
+        elif s.filename.startswith(this_file):
             # SyntaxError
-            if s.name == "execute_code_block" and (
-                "compile(" in s.line or "save_figures" in s.line
+            if (
+                s.line is not None
+                and s.name == "execute_code_block"
+                and ("compile(" in s.line or "save_figures" in s.line)
             ):
                 start = max(ii, start)
             # Any other error
@@ -619,16 +869,19 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     )
 
     expected = src_file in _expected_failing_examples(gallery_conf)
+    src_file_rel = os.path.relpath(src_file, gallery_conf["src_dir"])
     if expected:
-        func, color = (
-            logger.info,
-            "blue",
+        logger.info(  # needs leading newline to get away from iterator
+            f"\n{bold(blue('%s'))} expectedly failed to execute correctly:\n\n%s",
+            src_file_rel,
+            blue(indent(formatted_exception, "    ")),
         )
     else:
-        func, color = logger.warning, "red"
-    func(
-        "%s failed to execute correctly: %s", src_file, formatted_exception, color=color
-    )
+        logger.warning(  # needs leading newline to get away from iterator
+            f"\n{bold(red('%s'))} unexpectedly failed to execute correctly:\n\n%s",
+            src_file_rel,
+            red(indent(formatted_exception, "    ")),
+        )
 
     except_rst = codestr2rst(formatted_exception, lang="pytb")
 
@@ -636,7 +889,7 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
     if gallery_conf["abort_on_example_error"]:
         raise
     # Stores failing file
-    gallery_conf["failing_examples"][src_file] = formatted_exception
+    script_vars["formatted_exception"] = formatted_exception
     script_vars["execute_script"] = False
 
     # Ensure it's marked as our style
@@ -645,7 +898,14 @@ def handle_exception(exc_info, src_file, script_vars, gallery_conf):
 
 
 # Adapted from github.com/python/cpython/blob/3.7/Lib/warnings.py
-def _showwarning(message, category, filename, lineno, file=None, line=None):
+def _showwarning(
+    message: Warning | str,
+    category: type[Warning],
+    filename: str,
+    lineno: int,
+    file: TextIO | None = None,
+    line: str | None = None,
+) -> None:
     if file is None:
         file = sys.stderr
         if file is None:
@@ -661,13 +921,13 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
 
 
 @contextlib.contextmanager
-def patch_warnings():
+def patch_warnings() -> Any:
     """Patch warnings.showwarning to actually write out the warning."""
     # Sphinx or logging or someone is patching warnings, but we want to
     # capture them, so let's patch over their patch...
     orig_showwarning = warnings.showwarning
     try:
-        warnings.showwarning = _showwarning
+        warnings.showwarning = _showwarning  # ty: ignore[invalid-assignment]
         yield
     finally:
         warnings.showwarning = orig_showwarning
@@ -676,12 +936,12 @@ def patch_warnings():
 class _exec_once:
     """Deal with memory_usage calling functions more than once (argh)."""
 
-    def __init__(self, code, fake_main):
+    def __init__(self, code: Any, fake_main: ModuleType) -> None:
         self.code = code
         self.fake_main = fake_main
         self.run = False
 
-    def __call__(self):
+    def __call__(self) -> None:
         if not self.run:
             self.run = True
             old_main = sys.modules.get("__main__", None)
@@ -694,40 +954,31 @@ class _exec_once:
                         sys.modules["__main__"] = old_main
 
 
-def _get_memory_base(gallery_conf):
-    """Get the base amount of memory used by running a Python process."""
-    if not gallery_conf["plot_gallery"]:
-        return 0.0
-    # There might be a cleaner way to do this at some point
+def _get_memory_base() -> float:
+    """Get the base amount of memory used by the current Python process."""
     from memory_profiler import memory_usage
 
-    if sys.platform in ("win32", "darwin"):
-        sleep, timeout = (1, 2)
-    else:
-        sleep, timeout = (0.5, 1)
-    proc = subprocess.Popen(
-        [sys.executable, "-c", f"import time, sys; time.sleep({sleep}); sys.exit(0)"],
-        close_fds=True,
-    )
-    memories = memory_usage(proc, interval=1e-3, timeout=timeout)
-    kwargs = dict(timeout=timeout) if sys.version_info >= (3, 5) else {}
-    proc.communicate(**kwargs)
-    # On OSX sometimes the last entry can be None
-    memories = [mem for mem in memories if mem is not None] + [0.0]
-    memory_base = max(memories)
+    memory_base: float = memory_usage(max_usage=True)
     return memory_base
 
 
-def _ast_module():
-    """Get ast.Module function, dealing with: https://bugs.python.org/issue35894."""
-    if sys.version_info >= (3, 8):
-        ast_Module = partial(ast.Module, type_ignores=[])
+def _get_parser(fname: PathLikeStr, gallery_conf: GalleryConfig) -> tuple[Parser, str]:
+    """Get parser and language."""
+    parser: Parser
+    fname = str(fname)
+    if fname.endswith(".py"):
+        parser = py_source_parser
+        language = "Python"
+    elif fname.endswith(".rst"):
+        parser = rst_source_parser
+        language = "RST"
     else:
-        ast_Module = ast.Module
-    return ast_Module
+        parser = BlockParser(fname, gallery_conf)
+        language = parser.language
+    return parser, language
 
 
-def _check_reset_logging_tee(src_file):
+def _check_reset_logging_tee(src_file: PathLikeStr) -> _LoggingTee:
     # Helper to deal with our tests not necessarily calling execute_script
     # but rather execute_code_block directly
     if isinstance(sys.stdout, _LoggingTee):
@@ -738,15 +989,19 @@ def _check_reset_logging_tee(src_file):
     return logging_tee
 
 
-def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_vars):
+def _exec_and_get_memory(
+    compiler: codeop.Compile,
+    *,
+    code_ast: ast.Module,
+    gallery_conf: GalleryConfig,
+    script_vars: dict[str, Any],
+) -> tuple[bool, float]:
     """Execute ast, capturing output if last line expression and get max mem usage.
 
     Parameters
     ----------
     compiler : codeop.Compile
         Compiler to compile AST of code block.
-    ast_Module : Callable
-        ast.Module function.
     code_ast : ast.Module
         AST parsed code to execute.
     gallery_conf : Dict[str, Any]
@@ -764,33 +1019,46 @@ def _exec_and_get_memory(compiler, ast_Module, code_ast, gallery_conf, script_va
     src_file = script_vars["src_file"]
     # capture output if last line is expression
     is_last_expr = False
+    call_memory, _ = _get_call_memory_and_base(gallery_conf)
     if len(code_ast.body) and isinstance(code_ast.body[-1], ast.Expr):
         is_last_expr = True
-        last_val = code_ast.body.pop().value
+        last_stmt = code_ast.body.pop()
+        assert isinstance(last_stmt, ast.Expr)
+        last_val = last_stmt.value
         # exec body minus last expression
-        mem_body, _ = gallery_conf["call_memory"](
-            _exec_once(compiler(code_ast, src_file, "exec"), script_vars["fake_main"])
+        mem_body, _ = call_memory(
+            _exec_once(
+                compiler(code_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
+                script_vars["fake_main"],
+            )
         )
         # exec last expression, made into assignment
-        body = [
+        body: list[ast.stmt] = [
             ast.Assign(targets=[ast.Name(id="___", ctx=ast.Store())], value=last_val)
         ]
-        last_val_ast = ast_Module(body=body)
+        # `type_ignores` empty list deals with: https://bugs.python.org/issue3589
+        last_val_ast = ast.Module(body=body, type_ignores=[])
         ast.fix_missing_locations(last_val_ast)
-        mem_last, _ = gallery_conf["call_memory"](
+        mem_last, _ = call_memory(
             _exec_once(
-                compiler(last_val_ast, src_file, "exec"), script_vars["fake_main"]
+                compiler(last_val_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
+                script_vars["fake_main"],
             )
         )
         mem_max = max(mem_body, mem_last)
     else:
-        mem_max, _ = gallery_conf["call_memory"](
-            _exec_once(compiler(code_ast, src_file, "exec"), script_vars["fake_main"])
+        mem_max, _ = call_memory(
+            _exec_once(
+                compiler(code_ast, src_file, "exec"),  # ty: ignore[invalid-argument-type]
+                script_vars["fake_main"],
+            )
         )
     return is_last_expr, mem_max
 
 
-def _get_last_repr(capture_repr, ___):
+def _get_last_repr(
+    capture_repr: tuple[str, ...], ___: Any
+) -> tuple[str | None, str | None]:
     """Get repr of last expression, using first method in 'capture_repr' available."""
     for meth in capture_repr:
         try:
@@ -810,8 +1078,13 @@ def _get_last_repr(capture_repr, ___):
 
 
 def _get_code_output(
-    is_last_expr, example_globals, gallery_conf, logging_tee, images_rst, file_conf
-):
+    is_last_expr: bool,
+    example_globals: dict[str, Any],
+    gallery_conf: GalleryConfig,
+    logging_tee: _LoggingTee,
+    images_rst: str,
+    capture_repr: tuple[str, ...],
+) -> str:
     """Obtain standard output and html output in reST.
 
     Parameters
@@ -820,12 +1093,12 @@ def _get_code_output(
         Whether the last expression in executed code is an ast.Expr.
     example_globals: Dict[str, Any]
         Global variables for examples.
+    gallery_conf : Dict[str, Any]
+        Gallery configurations.
     logging_tee : _LoggingTee
         Logging tee.
     images_rst : str
         rst code to embed the images in the document.
-    gallery_conf : Dict[str, Any]
-        Gallery configurations.
     file_conf : Dict[str, Any]
         File-specific settings given in source file comments as:
         ``# sphinx_gallery_<name> = <value>``.
@@ -842,8 +1115,9 @@ def _get_code_output(
         ___ = example_globals["___"]
         ignore_repr = False
         if gallery_conf["ignore_repr_types"]:
-            ignore_repr = re.search(gallery_conf["ignore_repr_types"], str(type(___)))
-        capture_repr = file_conf.get("capture_repr", gallery_conf["capture_repr"])
+            ignore_repr = bool(
+                re.search(gallery_conf["ignore_repr_types"], str(type(___)))
+            )
         if capture_repr != () and not ignore_repr:
             last_repr, repr_meth = _get_last_repr(capture_repr, ___)
 
@@ -861,7 +1135,7 @@ def _get_code_output(
     captured_std = ansi_escape.sub("", captured_std)
 
     # give html output its own header
-    if repr_meth == "_repr_html_":
+    if repr_meth == "_repr_html_" and last_repr is not None:
         captured_html = HTML_HEADER.format(indent(last_repr, " " * 4))
     else:
         captured_html = ""
@@ -870,24 +1144,28 @@ def _get_code_output(
     return code_output
 
 
-def _reset_cwd_syspath(cwd, sys_path):
+def _reset_cwd_syspath(cwd: str, sys_path: list[str]) -> None:
     """Reset cwd and sys.path."""
     os.chdir(cwd)
     sys.path = sys_path
 
 
 def execute_code_block(
-    compiler, block, example_globals, script_vars, gallery_conf, file_conf
-):
+    compiler: codeop.Compile,
+    block: py_source_parser.Block,
+    example_globals: dict[str, Any] | None,
+    script_vars: dict[str, Any],
+    gallery_conf: GalleryConfig,
+    file_conf: dict[str, Any],
+) -> str:
     """Execute the code block of the example file.
 
     Parameters
     ----------
     compiler : codeop.Compile
         Compiler to compile AST of code block.
-    block : List[Tuple[str, str, int]]
-        List of Tuples, each Tuple contains label ('text' or 'code'),
-        the corresponding content string of block and the leading line number.
+    block : sphinx_gallery.py_source_parser.Block
+        The code block to be executed.
     example_globals: Dict[str, Any]
         Global variables for examples.
     script_vars : Dict[str, Any]
@@ -905,9 +1183,8 @@ def execute_code_block(
     """
     if example_globals is None:  # testing shortcut
         example_globals = script_vars["fake_main"].__dict__
-    blabel, bcontent, lineno = block
     # If example is not suitable to run, skip executing its blocks
-    if not script_vars["execute_script"] or blabel == "text":
+    if not script_vars["execute_script"] or block.type == "text":
         return ""
 
     cwd = os.getcwd()
@@ -918,26 +1195,52 @@ def execute_code_block(
 
     # First cd in the original example dir, so that any file
     # created by the example get created in this directory
-    os.chdir(os.path.dirname(src_file))
+    os.chdir(Path(src_file).parent)
 
     sys_path = copy.deepcopy(sys.path)
     sys.path.append(os.getcwd())
 
     # Save figures unless there is a `sphinx_gallery_defer_figures` flag
-    match = re.search(
-        r"^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?", bcontent, re.MULTILINE
+    defer_figs_match = re.search(
+        r"^[\ \t]*#\s*sphinx_gallery_defer_figures[\ \t]*\n?",
+        block.content,
+        re.MULTILINE,
     )
-    need_save_figures = match is None
+    need_save_figures: bool = defer_figs_match is None
+
+    block_conf = py_source_parser.extract_file_config(block.content)
+
+    # Add `sphinx_gallery_multi_image_block` setting to block variables
+    # (extract config rather than just regex search since the option's value is needed)
+    script_vars["multi_image"] = block_conf.get("multi_image_block")
+
+    # Determine the block's `capture_repr` value by prioritising the block-level
+    # `sphinx_gallery_capture_repr_block` setting, then the file-level
+    # `sphinx_gallery_capture_repr` setting, and finally the
+    # global `capture_repr` gallery setting.
+    capture_repr: tuple[str, ...] = block_conf.get(
+        "capture_repr_block",
+        file_conf.get("capture_repr", gallery_conf["capture_repr"]),
+    )
+
+    # Add file_conf to script_vars to be read by image scrapers
+    script_vars["file_conf"] = file_conf
 
     try:
-        ast_Module = _ast_module()
-        code_ast = ast_Module([bcontent])
-        flags = ast.PyCF_ONLY_AST | compiler.flags
-        code_ast = compile(bcontent, src_file, "exec", flags, dont_inherit=1)
-        ast.increment_lineno(code_ast, lineno - 1)
-
+        # The "compile" step itself can fail on a SyntaxError, so just prepend
+        # newlines to get the correct failing line to show up in the traceback
+        code_ast = compile(
+            "\n" * (block.lineno - 1) + block.content,
+            src_file,
+            "exec",
+            flags=ast.PyCF_ONLY_AST | compiler.flags,
+            dont_inherit=True,
+        )
         is_last_expr, mem_max = _exec_and_get_memory(
-            compiler, ast_Module, code_ast, gallery_conf, script_vars
+            compiler,
+            code_ast=code_ast,
+            gallery_conf=gallery_conf,
+            script_vars=script_vars,
         )
         script_vars["memory_delta"].append(mem_max)
         # This should be inside the try block, e.g., in case of a savefig error
@@ -966,7 +1269,7 @@ def execute_code_block(
             gallery_conf,
             logging_tee,
             images_rst,
-            file_conf,
+            capture_repr,
         )
     finally:
         _reset_cwd_syspath(cwd, sys_path)
@@ -975,12 +1278,12 @@ def execute_code_block(
     return code_output
 
 
-def executable_script(src_file, gallery_conf):
+def executable_script(src_file: PathLikeStr, gallery_conf: GalleryConfig) -> bool:
     """Validate if script has to be run according to gallery configuration.
 
     Parameters
     ----------
-    src_file : str
+    src_file : str | pathlib.Path
         path to python script
 
     gallery_conf : dict
@@ -992,17 +1295,24 @@ def executable_script(src_file, gallery_conf):
         True if script has to be executed
     """
     filename_pattern = gallery_conf["filename_pattern"]
-    execute = re.search(filename_pattern, src_file) and gallery_conf["plot_gallery"]
+    execute = bool(
+        re.search(filename_pattern, str(src_file)) and gallery_conf["plot_gallery"]
+    )
     return execute
 
 
-def _check_input(prompt=None):
+def _check_input(prompt: Any = None) -> None:
     raise ExtensionError(
         "Cannot use input() builtin function in Sphinx-Gallery examples"
     )
 
 
-def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
+def execute_script(
+    script_blocks: list[py_source_parser.Block],
+    script_vars: dict[str, Any],
+    gallery_conf: GalleryConfig,
+    file_conf: dict[str, Any],
+) -> tuple[list[str], float]:
     """Execute and capture output from python script already in block structure.
 
     Parameters
@@ -1031,9 +1341,11 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
     # for in example scikit-learn if the example uses multiprocessing.
     # Here we create a new __main__ module, and temporarily change
     # sys.modules when running our example
-    fake_main = importlib.util.module_from_spec(
-        importlib.util.spec_from_loader("__main__", None)
-    )
+    call_memory, _ = _get_call_memory_and_base(gallery_conf)
+
+    fake_main_spec = importlib.util.spec_from_loader("__main__", None)
+    assert fake_main_spec is not None
+    fake_main = importlib.util.module_from_spec(fake_main_spec)
     example_globals = fake_main.__dict__
 
     example_globals.update(
@@ -1058,9 +1370,10 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
         # https://github.com/sphinx-gallery/sphinx-gallery/pull/252
         # for more details.
         sys.argv[0] = script_vars["src_file"]
-        sys.argv[1:] = gallery_conf["reset_argv"](gallery_conf, script_vars)
+        (reset_argv,) = _get_callables(gallery_conf, "reset_argv")
+        sys.argv[1:] = reset_argv(gallery_conf, script_vars)
         gc.collect()
-        memory_start, _ = gallery_conf["call_memory"](lambda: None)
+        memory_start, _ = call_memory(lambda: None)
     else:
         memory_start = 0.0
 
@@ -1090,91 +1403,17 @@ def execute_script(script_blocks, script_vars, gallery_conf, file_conf):
         script_vars["memory_delta"] -= memory_start
         # Write md5 checksum if the example was meant to run (no-plot
         # shall not cache md5sum) and has built correctly
-        with open(script_vars["target_file"] + ".md5", "w") as file_checksum:
-            file_checksum.write(get_md5sum(script_vars["target_file"], "t"))
-        gallery_conf["passing_examples"].append(script_vars["src_file"])
+        with open(script_vars["target_file"] + ".md5", "w") as file_cs:
+            file_cs.write(get_md5sum(script_vars["target_file"], mode="t"))
+        script_vars["passing"] = True
 
     return output_blocks, time_elapsed
 
 
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=None):
-    """Generate the rst file for a given example.
-
-    Parameters
-    ----------
-    fname : str
-        Filename of python script.
-    target_dir : str
-        Absolute path to directory in documentation where examples are saved.
-    src_dir : str
-        Absolute path to directory where source examples are stored.
-    gallery_conf : dict
-        Contains the configuration of Sphinx-Gallery.
-    seen_backrefs : set
-        The seen backreferences.
-
-    Returns
-    -------
-    intro: str
-        The introduction of the example.
-    cost : tuple
-        A tuple containing the ``(time_elapsed, memory_used)`` required to run the
-        script.
-    """
-    seen_backrefs = set() if seen_backrefs is None else seen_backrefs
-    src_file = os.path.normpath(os.path.join(src_dir, fname))
-    target_file = os.path.join(target_dir, fname)
-    _replace_md5(src_file, target_file, "copy", mode="t")
-    fname_nice = os.path.relpath(src_file, gallery_conf["src_dir"])
-
-    file_conf, script_blocks, node = split_code_and_text_blocks(
-        src_file, return_node=True
-    )
-    intro, title = extract_intro_and_title(fname, script_blocks[0][1])
-    gallery_conf["titles"][src_file] = title
-
-    executable = executable_script(src_file, gallery_conf)
-
-    reason = "md5sum not current"
-    if md5sum_is_current(target_file, mode="t"):
-        if executable:
-            if gallery_conf["run_stale_examples"]:
-                do_return, reason = False, "run_stale_examples=True"
-            else:
-                gallery_conf["stale_examples"].append(target_file)
-                do_return, reason = True, "stale"
-        else:
-            do_return, reason = True, "not executable"
-        if do_return:
-            logger.debug("%s: not running, %s", fname_nice, reason)
-            return intro, title, (0, 0)
-
-    image_dir = os.path.join(target_dir, "images")
-    if not os.path.exists(image_dir):
-        os.makedirs(image_dir)
-
-    base_image_name = os.path.splitext(fname)[0]
-    image_fname = "sphx_glr_" + base_image_name + "_{0:03}.png"
-    image_path_template = os.path.join(image_dir, image_fname)
-
-    script_vars = {
-        "execute_script": executable,
-        "image_path_iterator": ImagePathIterator(image_path_template),
-        "src_file": src_file,
-        "target_file": target_file,
-    }
-
-    if executable and gallery_conf["reset_modules_order"] in ["before", "both"]:
-        logger.debug("%s: clean modules before", fname_nice)
-        clean_modules(gallery_conf, fname, "before")
-    logger.debug("%s: running, %s", fname_nice, reason)
-    output_blocks, time_elapsed = execute_script(
-        script_blocks, script_vars, gallery_conf, file_conf
-    )
-
-    logger.debug("%s ran in : %.2g seconds", fname_nice, time_elapsed)
-
-    # Create dummy images
+def _make_dummy_images(
+    executable: bool, file_conf: dict[str, Any], script_vars: dict[str, Any]
+) -> None:
+    """Make dummy images when not executing the example."""
     if not executable:
         dummy_image = file_conf.get("dummy_images", None)
         if dummy_image is not None:
@@ -1185,62 +1424,57 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
                 )
 
             image_path_iterator = script_vars["image_path_iterator"]
-            stock_img = os.path.join(glr_path_static(), "no_image.png")
+            stock_img = Path(glr_path_static(), "no_image.png")
             for _, path in zip(range(dummy_image), image_path_iterator):
-                if not os.path.isfile(path):
+                if not Path(path).is_file():
                     copyfile(stock_img, path)
 
+
+def _clean_script_blocks(
+    gallery_conf: GalleryConfig,
+    parser: ModuleType,
+    script_blocks: list[py_source_parser.Block],
+    output_blocks: list[str],
+) -> tuple[list[py_source_parser.Block], list[str]]:
+    """Remove ignore blocks, config comments and final empty blocks."""
     # Ignore blocks must be processed before the
     # remaining config comments are removed.
     script_blocks = [
-        (label, remove_ignore_blocks(content), line_number)
+        py_source_parser.Block(label, parser.remove_ignore_blocks(content), line_number)
         for label, content, line_number in script_blocks
     ]
 
     if gallery_conf["remove_config_comments"]:
         script_blocks = [
-            (label, remove_config_comments(content), line_number)
+            py_source_parser.Block(
+                label, parser.remove_config_comments(content), line_number
+            )
             for label, content, line_number in script_blocks
         ]
 
-    # Remove final empty block, which can occur after config comments
-    # are removed
-    if script_blocks[-1][1].isspace():
+    # Remove final empty block, (can occur after config comments removed)
+    if script_blocks[-1].content.isspace():
         script_blocks = script_blocks[:-1]
         output_blocks = output_blocks[:-1]
 
-    logger.debug("%s: create rst blocks", fname_nice)
-    example_rst = rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf)
-    memory_used = gallery_conf["memory_base"] + script_vars["memory_delta"]
-    if not executable:
-        time_elapsed = memory_used = 0.0  # don't let the output change
-    logger.debug("%s: saving rst", fname_nice)
-    save_rst_example(example_rst, target_file, time_elapsed, memory_used, gallery_conf)
+    return script_blocks, output_blocks
 
-    save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
 
-    logger.debug("%s: writing notebook", fname_nice)
-    example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
-    ipy_fname = replace_py_ipynb(target_file) + ".new"
-    save_notebook(example_nb, ipy_fname)
-    _replace_md5(ipy_fname, mode="t")
-
-    # Write names
-    logger.debug("%s: resolve backrefs", fname_nice)
-    if gallery_conf["inspect_global_variables"]:
-        global_variables = script_vars["example_globals"]
-    else:
-        global_variables = None
-    ref_regex = _make_ref_regex(gallery_conf["app"].config)
-    example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
-    if example_code_obj:
-        codeobj_fname = target_file[:-3] + "_codeobj.pickle.new"
-        with open(codeobj_fname, "wb") as fid:
-            pickle.dump(example_code_obj, fid, pickle.HIGHEST_PROTOCOL)
-        _replace_md5(codeobj_fname)
+def _backrefs_from_codeobj(
+    gallery_conf: GalleryConfig, example_code_obj: dict[str, list[dict[str, Any]]]
+) -> set[str]:
+    """Get the backreference names of the code objects identified in an example."""
     exclude_regex = gallery_conf["exclude_implicit_doc_regex"]
-    backrefs = {
-        "{module_short}.{name}".format(**cobj)
+
+    def _normalize_name(cobj: dict[str, Any]) -> str:
+        full_name = "{module}.{name}".format(**cobj)
+        for pattern in gallery_conf["prefer_full_module"]:
+            if re.search(pattern, full_name):
+                return full_name
+        return "{module_short}.{name}".format(**cobj)
+
+    return {
+        _normalize_name(cobj)
         for cobjs in example_code_obj.values()
         for cobj in cobjs
         if cobj["module"].startswith(gallery_conf["doc_module"])
@@ -1251,22 +1485,229 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf, seen_backrefs=No
         )
     }
 
-    # Write backreferences
-    logger.debug("%s: write backrefs", fname_nice)
-    _write_backreferences(
-        backrefs, seen_backrefs, gallery_conf, target_dir, fname, intro, title
-    )
+
+def _write_cached_cost(target_file: Path, cost: tuple[float, float]) -> None:
+    """Cache an example's ``(time_elapsed, memory_used)`` next to its md5."""
+    _write_json(target_file, {"time": cost[0], "memory": cost[1]}, ".cost")
+
+
+def _read_cached_cost(target_file: Path) -> tuple[float, float]:
+    """Get an example's last measured ``(time_elapsed, memory_used)``, else zeros."""
+    cost_fname = target_file.with_name(target_file.stem + ".cost.json")
+    if not cost_fname.is_file():  # never run, or cached by an older Sphinx-Gallery
+        return (0.0, 0.0)
+    try:
+        cost = _read_json(cost_fname)
+        return (float(cost["time"]), float(cost["memory"]))
+    except Exception:  # e.g. truncated by an interrupted build
+        return (0.0, 0.0)
+
+
+def _read_cached_backrefs(gallery_conf: GalleryConfig, target_file: Path) -> set[str]:
+    """Get the backreference names of an example from its cached ``.codeobj.json``."""
+    codeobj_fname = target_file.with_name(target_file.stem + ".codeobj.json")
+    if not codeobj_fname.is_file():  # no code objects were identified
+        return set()
+    try:
+        example_code_obj = _read_json(codeobj_fname)
+    except Exception:  # e.g. truncated by an interrupted build
+        return set()
+    return _backrefs_from_codeobj(gallery_conf, example_code_obj)
+
+
+def _get_backreferences(
+    gallery_conf: GalleryConfig,
+    script_vars: dict[str, Any],
+    script_blocks: list[Any],
+    node: ast.Module | None,
+    target_file: Path,
+) -> set[str]:
+    """Get example backreferences for `script_blocks` and write _codeobj."""
+    if gallery_conf["inspect_global_variables"]:
+        global_variables = script_vars["example_globals"]
+    else:
+        global_variables = None
+    ref_regex = _make_ref_regex(gallery_conf["default_role"])
+    example_code_obj = identify_names(script_blocks, ref_regex, global_variables, node)
+    if example_code_obj:
+        _write_json(target_file, example_code_obj, ".codeobj")
+    else:
+        # a stale .codeobj.json would resurrect this example's old backrefs via
+        # _read_cached_backrefs on every md5-skipped rebuild
+        target_file.with_name(target_file.stem + ".codeobj.json").unlink(
+            missing_ok=True
+        )
+
+    backrefs = _backrefs_from_codeobj(gallery_conf, example_code_obj)
 
     # This can help with garbage collection in some instances
     if global_variables is not None and "___" in global_variables:
         del global_variables["___"]
-    del script_vars, global_variables  # don't keep these during reset
+    del global_variables
+
+    return backrefs
+
+
+def generate_file_rst(
+    fname: PathLikeStr,
+    target_dir: PathLikeStr,
+    src_dir: PathLikeStr,
+    gallery_conf: GalleryConfig,
+) -> tuple[str, str, tuple[float, float], dict[str, Any]]:
+    """Generate the rst file for a given example.
+
+    Parameters
+    ----------
+    fname : str | pathlib.Path
+        Filename of python script.
+    target_dir : str | pathlib.Path
+        Absolute path to directory in documentation where examples are saved.
+    src_dir : str | pathlib.Path
+        Absolute path to directory where source examples are stored.
+    gallery_conf : dict
+        Contains the configuration of Sphinx-Gallery.
+
+    Returns
+    -------
+    intro: str
+        The introduction of the example.
+    title : str
+        The example title.
+    cost : tuple
+        A tuple containing the ``(time_elapsed, memory_used)`` required to run the
+        script.
+    out_vars : dict
+        Variables used to run the script, possibly with entries:
+
+        "stale"
+            True if the example was stale.
+        "backrefs"
+            The backreferences.
+        "passing"
+            True if the example passed.
+        "formatted_exception"
+            Formatted string of the exception.
+    """
+    target_dir = Path(target_dir)
+    src_file = os.path.normpath(Path(src_dir, fname))
+    out_vars = dict()
+    target_file = target_dir / fname
+    _replace_md5(src_file, target_file, method="copy", mode="t")
+
+    parser, language = _get_parser(fname, gallery_conf)
+
+    file_conf, script_blocks, node = parser.split_code_and_text_blocks(
+        src_file, return_node=True
+    )
+    if "tags" in file_conf:
+        out_vars["tags"] = file_conf["tags"]
+
+    intro, title = extract_intro_and_title(fname, script_blocks[0].content)
+
+    executable = executable_script(src_file, gallery_conf)
+
+    if md5sum_is_current(target_file, mode="t"):
+        do_return = True
+        logger.debug(f"md5sum is current: {target_file}")
+        if executable:
+            if gallery_conf["run_stale_examples"]:
+                do_return = False
+            else:
+                out_vars["stale"] = str(target_file)
+        if do_return:
+            # the example is not re-run, so recover its backreferences and cost from
+            # the caches -- otherwise every rebuild empties backreferences_all.json and
+            # zeroes this example's row in sg_execution_times.rst
+            out_vars["backrefs"] = _read_cached_backrefs(gallery_conf, target_file)
+            return intro, title, _read_cached_cost(target_file), out_vars
+
+    image_dir = target_dir / "images"
+    image_dir.mkdir(parents=True, exist_ok=True)
+
+    base_image_name = Path(fname).stem
+    image_fname = "sphx_glr_" + base_image_name + "_{0:03}.png"
+    image_path_template = str(image_dir / image_fname)
+
+    script_vars = {
+        "execute_script": executable,
+        "image_path_iterator": ImagePathIterator(image_path_template),
+        "src_file": src_file,
+        "target_file": str(target_file),
+    }
+
+    if executable and gallery_conf["reset_modules_order"] in ["before", "both"]:
+        clean_modules(gallery_conf, fname, "before")
+    output_blocks, time_elapsed = execute_script(
+        script_blocks, script_vars, gallery_conf, file_conf
+    )
+
+    logger.debug("%s ran in : %.2g seconds", src_file, time_elapsed)
+
+    # Create dummy images
+    _make_dummy_images(executable, file_conf, script_vars)
+
+    script_blocks, output_blocks = _clean_script_blocks(
+        gallery_conf,
+        parser,
+        script_blocks,
+        output_blocks,
+    )
+
+    example_rst = rst_blocks(
+        script_blocks,
+        output_blocks,
+        file_conf,
+        gallery_conf,
+        language=language,
+    )
+    _, memory_base = _get_call_memory_and_base(gallery_conf)
+    memory_used = memory_base + cast(float, script_vars["memory_delta"])
+    if not executable:
+        time_elapsed = memory_used = 0.0  # don't let the output change
+    if script_vars.get("passing"):
+        # cached alongside the md5, so a build that skips this example can still
+        # report its last measured cost rather than zeros
+        _write_cached_cost(target_file, (time_elapsed, memory_used))
+    save_rst_example(
+        example_rst,
+        target_file,
+        time_elapsed,
+        memory_used,
+        gallery_conf,
+        language=language,
+        file_conf=file_conf,
+    )
+
+    save_thumbnail(image_path_template, src_file, script_vars, file_conf, gallery_conf)
+    files_to_zip: list[str] = [str(target_file)]
+
+    if target_file.suffix in gallery_conf["notebook_extensions"]:
+        example_nb = jupyter_notebook(script_blocks, gallery_conf, target_dir)
+        ipy_fname = target_file.with_suffix(".ipynb.new")
+        save_notebook(example_nb, ipy_fname)
+        _replace_md5(ipy_fname, mode="t")
+        files_to_zip += [str(target_file.with_suffix(".ipynb"))]
+
+    # Produce the zip file of all sources
+    zip_files(files_to_zip, target_file.with_suffix(".zip"), target_dir)
+
+    # Get names
+    out_vars["backrefs"] = _get_backreferences(
+        gallery_conf,
+        script_vars,
+        script_blocks,
+        node,
+        target_file,
+    )
+    for key in ("passing", "formatted_exception"):
+        if key in script_vars:
+            out_vars[key] = script_vars[key]
+    # don't keep this during reset
+    del script_vars
     if executable and gallery_conf["reset_modules_order"] in ["after", "both"]:
-        logger.debug("%s: clean modules after", fname_nice)
         clean_modules(gallery_conf, fname, "after")
 
-    logger.debug("%s: done", fname_nice)
-    return intro, title, (time_elapsed, memory_used)
+    return intro, title, (time_elapsed, memory_used), out_vars
 
 
 EXAMPLE_HEADER = """
@@ -1295,7 +1736,14 @@ RST_BLOCK_HEADER = """\
 """
 
 
-def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
+def rst_blocks(
+    script_blocks: list[py_source_parser.Block],
+    output_blocks: list[str],
+    file_conf: dict[str, Any],
+    gallery_conf: GalleryConfig,
+    *,
+    language: str = "python",
+) -> str:
     """Generate the rst string containing the script prose, code and output.
 
     Parameters
@@ -1310,6 +1758,9 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     file_conf : dict
         File-specific settings given in source file comments as:
         ``# sphinx_gallery_<name> = <value>``
+    language : str
+        The language to be used for syntax highlighting in code blocks. Must be a name
+        or alias recognized by Pygments.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
 
@@ -1322,21 +1773,23 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
     example_rst = ""
-    for bi, ((blabel, bcontent, lineno), code_output) in enumerate(
-        zip(script_blocks, output_blocks)
-    ):
+    for bi, (script_block, code_output) in enumerate(zip(script_blocks, output_blocks)):
         # do not add comment to the title block, otherwise the linking does
         # not work properly
         if bi > 0:
             example_rst += RST_BLOCK_HEADER.format(
-                lineno, lineno + bcontent.count("\n")
+                script_block.lineno,
+                script_block.lineno + script_block.content.count("\n"),
             )
-        if blabel == "code":
-            if not file_conf.get("line_numbers", gallery_conf["line_numbers"]):
-                lineno = None
+        if script_block.type == "code":
+            lineno = (
+                script_block.lineno
+                if file_conf.get("line_numbers", gallery_conf["line_numbers"])
+                else None
+            )
 
             code_rst = (
-                codestr2rst(bcontent, lang=gallery_conf["lang"], lineno=lineno) + "\n"
+                codestr2rst(script_block.content, lang=language, lineno=lineno) + "\n"
             )
             if is_example_notebook_like:
                 example_rst += code_rst
@@ -1348,32 +1801,54 @@ def rst_blocks(script_blocks, output_blocks, file_conf, gallery_conf):
                     example_rst += "\n\n|\n\n"
                 example_rst += code_rst
         else:
-            block_separator = "\n\n" if not bcontent.endswith("\n") else "\n"
-            example_rst += bcontent + block_separator
+            block_separator = (
+                "\n\n" if not script_block.content.endswith("\n") else "\n"
+            )
+            # Remove "# noqa: E501" at the end of any lines (issue #1403)
+            text_content = re.sub(
+                r"^(.*)( +# noqa: ?E501 *)$",
+                r"\1",  # replace with first capturing group
+                script_block.content,
+                flags=re.MULTILINE,
+            )
+            example_rst += text_content + block_separator
 
     return example_rst
 
 
 def save_rst_example(
-    example_rst, example_file, time_elapsed, memory_used, gallery_conf
-):
+    example_rst: str,
+    example_file: PathLikeStr,
+    time_elapsed: float,
+    memory_used: float,
+    gallery_conf: GalleryConfig,
+    *,
+    language: str = "python",
+    file_conf: dict[str, Any] | None = None,
+) -> None:
     """Saves the rst notebook to example_file including header & footer.
 
     Parameters
     ----------
     example_rst : str
         rst containing the executed file content
-    example_file : str
+    example_file : str | pathlib.Path
         Filename with full path of python example file in documentation folder
+    language : str
+        Name of the programming language the example is in
     time_elapsed : float
         Time elapsed in seconds while executing file
     memory_used : float
         Additional memory used during the run.
     gallery_conf : dict
         Sphinx-Gallery configuration dictionary
+    file_conf : dict
+        The file conf options
     """
-    example_fname = os.path.relpath(example_file, gallery_conf["src_dir"])
-    ref_fname = example_fname.replace(os.path.sep, "_")
+    example_file = Path(example_file)
+    example_path = example_file.relative_to(gallery_conf["src_dir"])
+    example_fname = str(example_path)
+    ref_fname = example_path.as_posix().replace("/", "_")
 
     binder_conf = gallery_conf["binder"]
     is_binder_enabled = len(binder_conf) > 0
@@ -1381,50 +1856,67 @@ def save_rst_example(
     jupyterlite_conf = gallery_conf["jupyterlite"]
     is_jupyterlite_enabled = jupyterlite_conf is not None
 
-    interactive_example_text = ""
     if is_binder_enabled or is_jupyterlite_enabled:
-        interactive_example_text += " or to run this example in your browser via "
+        interactive_example_text = " or to run this example in your browser via "
+    else:
+        interactive_example_text = "."
 
     if is_binder_enabled and is_jupyterlite_enabled:
-        interactive_example_text += "JupyterLite or Binder"
+        interactive_example_text += "JupyterLite or Binder."
     elif is_binder_enabled:
-        interactive_example_text += "Binder"
+        interactive_example_text += "Binder."
     elif is_jupyterlite_enabled:
-        interactive_example_text += "JupyterLite"
+        interactive_example_text += "JupyterLite."
 
     example_rst = (
         EXAMPLE_HEADER.format(example_fname, ref_fname, interactive_example_text)
         + example_rst
     )
 
-    if time_elapsed >= gallery_conf["min_reported_time"]:
+    if time_elapsed > gallery_conf["min_reported_time"]:
         time_m, time_s = divmod(time_elapsed, 60)
         example_rst += TIMING_CONTENT.format(time_m, time_s)
-
-    fname = os.path.basename(example_file)
 
     if gallery_conf["show_memory"]:
         example_rst += f"**Estimated memory usage:** {memory_used: .0f} MB\n\n"
 
-    # Generate a binder URL if specified
-    binder_badge_rst = ""
-    if is_binder_enabled:
-        binder_badge_rst += gen_binder_rst(example_file, binder_conf, gallery_conf)
-        binder_badge_rst = indent(binder_badge_rst, "  ")  # need an extra two
+    # TODO: Figure out a way to link this to the corresponding index
+    # page with query parameters i.e. /index.html?sg-tags=<tags>
+    if file_conf and file_conf.get("tags"):
+        example_rst += TAGS_CONTENT.format(tags=", ".join(file_conf["tags"]))
 
-    jupyterlite_rst = ""
-    if is_jupyterlite_enabled:
+    example_rst += DOWNLOAD_LINKS_HEADER.format(ref_fname)
+
+    save_notebook = example_file.suffix in gallery_conf["notebook_extensions"]
+
+    # Generate a binder URL if specified
+    if is_binder_enabled and save_notebook:
+        binder_badge_rst = gen_binder_rst(example_file, binder_conf, gallery_conf)
+        binder_badge_rst = indent(binder_badge_rst, "  ")  # need an extra two
+        example_rst += binder_badge_rst
+
+    if is_jupyterlite_enabled and save_notebook:
         jupyterlite_rst = gen_jupyterlite_rst(example_file, gallery_conf)
         jupyterlite_rst = indent(jupyterlite_rst, "  ")  # need an extra two
+        example_rst += jupyterlite_rst
 
-    example_rst += CODE_DOWNLOAD.format(
-        fname, replace_py_ipynb(fname), binder_badge_rst, ref_fname, jupyterlite_rst
-    )
+    if save_notebook:
+        ipynb_download_file = example_file.with_suffix(".ipynb").name
+        example_rst += NOTEBOOK_DOWNLOAD.format(ipynb_download_file)
+
+    example_rst += CODE_DOWNLOAD.format(example_file.name, language)
+    example_rst += ZIP_DOWNLOAD.format(example_file.with_suffix(".zip").name)
+
+    if gallery_conf["recommender"]["enable"]:
+        # extract the filename without the extension
+        recommend_fname = example_path.stem
+        example_rst += RECOMMENDATIONS_INCLUDE.format(recommend_fname)
+
     if gallery_conf["show_signature"]:
         example_rst += SPHX_GLR_SIG
 
-    write_file_new = re.sub(r"\.py$", ".rst.new", example_file)
-    with codecs.open(write_file_new, "w", encoding="utf-8") as f:
+    write_file_new = example_file.with_suffix(".rst.new")
+    with open(write_file_new, "w", **_W_KW) as f:
         f.write(example_rst)
     # make it read-only so that people don't try to edit it
     mode = os.stat(write_file_new).st_mode
@@ -1433,3 +1925,153 @@ def save_rst_example(
     # in case it wasn't in our pattern, only replace the file if it's
     # still stale.
     _replace_md5(write_file_new, mode="t")
+
+
+def _get_callables(
+    gallery_conf: GalleryConfig, key: str, src_dir: PathLikeStr | None = None
+) -> tuple[Callable[..., Any], ...]:
+    """Get callables for the given conf key, returning tuple of callable(s).
+
+    If value is a string, import, with the following exceptions:
+
+    * `within_subsection_order` - add full path if value is a built-in aliases,
+      instantiate if value is a class
+    * `image_scrapers` - get value from `_scraper_dict` or import module and
+      get `_get_sg_image_scraper` attribute
+    * `reset_modules` - get value from `_reset_dict`
+    """
+    builtin_aliases = (
+        "ExampleTitleSortKey",
+        "FileNameSortKey",
+        "FileSizeSortKey",
+        "NumberOfCodeLinesSortKey",
+    )
+    singletons = (
+        "reset_argv",
+        "minigallery_sort_order",
+        "subsection_order",
+        "within_subsection_order",
+    )
+    # the following should be the case (internal use only):
+    assert key in ("image_scrapers", "reset_modules", "jupyterlite") + singletons, key
+    # Get correct config value and ensure it's a list
+    which = gallery_conf[key]
+    if key == "jupyterlite":
+        which = [which["notebook_modification_function"]]
+    elif key in singletons:
+        which = [which]
+    if not isinstance(which, (tuple, list)):
+        which = [which]
+    which = list(which)
+
+    for wi, what in enumerate(which):
+        # Get readable string, for error message
+        if key == "jupyterlite":
+            readable = f"{key}['notebook_modification_function']"
+        elif key in singletons:
+            readable = f"{key}={repr(what)}"
+        else:
+            readable = f"{key}[{wi}]={repr(what)}"
+        # Import string FQNs or get value from dict
+        if isinstance(what, str):
+            # use fully qualified name to resolve builtin callable classes
+            # (otherwise not serializable)
+            if what in builtin_aliases:
+                what = f"sphinx_gallery.sorting.{what}"
+            if "." in what:
+                mod, attr = what.rsplit(".", 1)
+                try:
+                    what = getattr(importlib.import_module(mod), attr)
+                except Exception:
+                    raise ConfigError(
+                        f"Unknown string option {readable} "
+                        f"when importing {attr} from {mod}"
+                    )
+            elif key == "image_scrapers":
+                if what in _scraper_dict:
+                    what = _scraper_dict[what]
+                else:
+                    try:
+                        what = importlib.import_module(what)
+                        what = getattr(what, "_get_sg_image_scraper")
+                        what = what()
+                    except Exception:
+                        raise ConfigError(f"Unknown string option for {readable}")
+            elif key == "reset_modules":
+                if what not in _reset_dict:
+                    raise ConfigError(f"Unknown string option for {readable}: {what}")
+                what = _reset_dict[what]
+            which[wi] = what
+        # make sure classes get instantiated (so they become callable)
+        if key == "within_subsection_order" and inspect.isclass(what):
+            what = what(src_dir)
+            which[wi] = what
+        if inspect.isclass(what):
+            raise ConfigError(
+                f"Got class rather than callable instance for {readable}: {what}"
+            )
+        if not callable(what):
+            raise ConfigError(f"{readable} must be callable")
+    return tuple(which)
+
+
+# Default no-op version
+def _sg_call_memory_noop(func: Callable[[], Any]) -> tuple[float, Any]:
+    return 0.0, func()
+
+
+def _get_call_memory_and_base(
+    gallery_conf: GalleryConfig, *, update: bool = False
+) -> tuple[Callable[[Callable[[], Any]], tuple[float, Any]], float]:
+    show_memory = gallery_conf["show_memory"]
+
+    # Default to no-op version
+    call_memory: Callable[[Callable[[], Any]], tuple[float, Any]] = _sg_call_memory_noop
+    memory_base = 0.0
+
+    if show_memory and gallery_conf["plot_gallery"]:
+        if callable(show_memory):
+            call_memory = show_memory
+        elif gallery_conf["parallel"]:
+            if update:
+                logger.warning(
+                    f"{gallery_conf['show_memory']=} disabled due to "
+                    f"{gallery_conf['parallel']=}."
+                )
+                gallery_conf["show_memory"] = False
+        else:
+            out = _get_memprof_call_memory()
+            if out is not None:
+                call_memory, memory_base = out
+            elif update:
+                gallery_conf["show_memory"] = False
+
+    assert callable(call_memory)
+
+    return call_memory, memory_base
+
+
+def _sg_call_memory_memprof(func: Callable[[], Any]) -> tuple[float, Any]:
+    from memory_profiler import memory_usage  # noqa
+
+    mem, out = memory_usage(func, max_usage=True, retval=True, multiprocess=True)
+    try:
+        mem = mem[0]  # old MP always returned a list
+    except TypeError:  # 'float' object is not subscriptable
+        pass
+    return mem, out
+
+
+@lru_cache()
+def _get_memprof_call_memory() -> (
+    tuple[Callable[[Callable[[], Any]], tuple[float, Any]], float] | None
+):
+    try:
+        from memory_profiler import memory_usage  # noqa
+    except ImportError:
+        logger.warning(
+            "Please install 'memory_profiler' to enable peak memory measurements."
+        )
+        return None
+    else:
+        return _sg_call_memory_memprof, _get_memory_base()

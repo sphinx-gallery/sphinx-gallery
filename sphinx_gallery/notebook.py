@@ -2,12 +2,10 @@ r"""Parser for Jupyter notebooks.
 
 Class that holds the Jupyter notebook information
 """
+
 # Author: Óscar Nájera
 # License: 3-clause BSD
 
-from collections import defaultdict
-from functools import partial
-from itertools import count
 import argparse
 import base64
 import copy
@@ -17,17 +15,27 @@ import os
 import re
 import sys
 import textwrap
+from collections import defaultdict
+from functools import partial
+from itertools import count
+from pathlib import Path
+from typing import Any, TypeAlias
 
-from sphinx.errors import ExtensionError
 import sphinx.util
+from sphinx.errors import ExtensionError
 
-from .py_source_parser import split_code_and_text_blocks
-from .utils import replace_py_ipynb
+from .py_source_parser import Block, split_code_and_text_blocks
+from .typing import GalleryConfig, PathLikeStr
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
+NotebookContent: TypeAlias = dict[str, Any]
+"""
+A hierarchical mapping mirroring the JSON structure of a Jupyter notebook.
+"""
 
-def jupyter_notebook_skeleton():
+
+def jupyter_notebook_skeleton() -> NotebookContent:
     """Returns a dictionary with the elements of a Jupyter notebook."""
     py_version = sys.version_info
     notebook_skeleton = {
@@ -54,7 +62,7 @@ def jupyter_notebook_skeleton():
     return notebook_skeleton
 
 
-def directive_fun(match, directive):
+def directive_fun(match: re.Match, directive: str) -> str:
     """Helper to fill in directives."""
     directive_to_alert = dict(note="info", warning="danger")
     return '<div class="alert alert-{}"><h4>{}</h4><p>{}</p></div>'.format(
@@ -62,7 +70,7 @@ def directive_fun(match, directive):
     )
 
 
-def convert_code_to_md(text):
+def convert_code_to_md(text: str) -> str:
     """Rewrite code blocks to use Markdown's preferred backtick notation.
 
     Backtick notation preserves syntax highlighting.
@@ -92,7 +100,12 @@ def convert_code_to_md(text):
     return text
 
 
-def rst2md(text, gallery_conf, target_dir, heading_levels):
+def rst2md(
+    text: str,
+    gallery_conf: GalleryConfig,
+    target_dir: PathLikeStr,
+    heading_levels: dict[tuple[str | None, str], int],
+) -> str:
     """Converts reST from docstrings and text blocks to markdown for Jupyter notebooks.
 
     Parameters
@@ -101,7 +114,7 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
         reST input to be converted to MD
     gallery_conf : dict
         The sphinx-gallery configuration dictionary.
-    target_dir : str
+    target_dir : str | pathlib.Path
         Path that notebook is intended for. Used where relative paths
         may be required.
     heading_levels: dict
@@ -127,7 +140,7 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
     text = re.sub(
         headings,
         lambda match: "{1}{0} {2}".format(
-            "#" * heading_levels[match.group("over", "under")],
+            "#" * heading_levels[(match.group("over"), match.group("under"))],
             *match.group("pre", "heading"),
         ),
         text,
@@ -177,7 +190,9 @@ def rst2md(text, gallery_conf, target_dir, heading_levels):
     return text
 
 
-def generate_image_src(image_path, gallery_conf, target_dir):
+def generate_image_src(
+    image_path: str, gallery_conf: GalleryConfig, target_dir: PathLikeStr
+) -> str:
     """Modify image path for notebook, according to "notebook_images" config.
 
     URLs are unchanged.
@@ -196,13 +211,13 @@ def generate_image_src(image_path, gallery_conf, target_dir):
         # Path should now be relative to source dir, not target dir
         target_dir = gallery_conf["src_dir"]
         image_path = image_path.lstrip("/")
-    full_path = os.path.join(target_dir, image_path.replace("/", os.sep))
+    full_path = Path(target_dir) / image_path
 
     if isinstance(gallery_conf["notebook_images"], str):
         # Use as prefix e.g. URL
         prefix = gallery_conf["notebook_images"]
-        rel_path = os.path.relpath(full_path, gallery_conf["src_dir"])
-        return prefix + rel_path.replace(os.sep, "/")
+        rel_path = Path(os.path.relpath(full_path, gallery_conf["src_dir"]))
+        return prefix + rel_path.as_posix()
     else:
         # True, but not string. Embed as data URI.
         try:
@@ -216,7 +231,9 @@ def generate_image_src(image_path, gallery_conf, target_dir):
         return f"data:{mime_type[0]};base64,{data.decode('ascii')}"
 
 
-def jupyter_notebook(script_blocks, gallery_conf, target_dir):
+def jupyter_notebook(
+    script_blocks: list[Block], gallery_conf: GalleryConfig, target_dir: PathLikeStr
+) -> NotebookContent:
     """Generate a Jupyter notebook file cell-by-cell.
 
     Parameters
@@ -225,7 +242,7 @@ def jupyter_notebook(script_blocks, gallery_conf, target_dir):
         Script execution cells.
     gallery_conf : dict
         The sphinx-gallery configuration dictionary.
-    target_dir : str
+    target_dir : str | pathlib.Path
         Path that notebook is intended for. Used where relative paths
         may be required.
     """
@@ -241,7 +258,7 @@ def jupyter_notebook(script_blocks, gallery_conf, target_dir):
     return work_notebook
 
 
-def add_code_cell(work_notebook, code):
+def add_code_cell(work_notebook: NotebookContent, code: str) -> None:
     """Add a code cell to the notebook.
 
     Parameters
@@ -259,7 +276,7 @@ def add_code_cell(work_notebook, code):
     work_notebook["cells"].append(code_cell)
 
 
-def add_markdown_cell(work_notebook, markdown):
+def add_markdown_cell(work_notebook: NotebookContent, markdown: str) -> None:
     """Add a markdown cell to the notebook.
 
     Parameters
@@ -271,7 +288,7 @@ def add_markdown_cell(work_notebook, markdown):
     work_notebook["cells"].append(markdown_cell)
 
 
-def promote_jupyter_cell_magic(work_notebook, markdown):
+def promote_jupyter_cell_magic(work_notebook: NotebookContent, markdown: str) -> str:
     """Promote Jupyter cell magic in text blocks to code block in notebooks.
 
     Parses a block of markdown text looking for code blocks starting with a
@@ -302,7 +319,12 @@ def promote_jupyter_cell_magic(work_notebook, markdown):
     return markdown[text_cell_start:]
 
 
-def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
+def fill_notebook(
+    work_notebook: NotebookContent,
+    script_blocks: list[Block],
+    gallery_conf: GalleryConfig,
+    target_dir: PathLikeStr,
+) -> None:
     """Writes the Jupyter notebook cells.
 
     If available, uses pypandoc to convert rst to markdown.
@@ -313,7 +335,9 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
         Each list element should be a tuple of (label, content, lineno).
     """
     heading_level_counter = count(start=1)
-    heading_levels = defaultdict(lambda: next(heading_level_counter))
+    heading_levels: dict[tuple[str | None, str], int] = defaultdict(
+        lambda: next(heading_level_counter)
+    )
     for blabel, bcontent, lineno in script_blocks:
         if blabel == "code":
             add_code_cell(work_notebook, bcontent)
@@ -338,7 +362,7 @@ def fill_notebook(work_notebook, script_blocks, gallery_conf, target_dir):
                 add_markdown_cell(work_notebook, markdown)
 
 
-def save_notebook(work_notebook, write_file):
+def save_notebook(work_notebook: NotebookContent, write_file: PathLikeStr) -> None:
     """Saves the Jupyter work_notebook to write_file."""
     with open(write_file, "w") as out_nb:
         json.dump(work_notebook, out_nb, indent=2)
@@ -375,6 +399,6 @@ def python_to_jupyter_cli(args=None, namespace=None, sphinx_gallery_conf=None):
     for src_file in args.python_src_file:
         file_conf, blocks = split_code_and_text_blocks(src_file)
         print(f"Converting {src_file}")
-        target_dir = os.path.dirname(src_file)
+        target_dir = Path(src_file).parent
         example_nb = jupyter_notebook(blocks, copy.deepcopy(gallery_conf), target_dir)
-        save_notebook(example_nb, replace_py_ipynb(src_file))
+        save_notebook(example_nb, Path(src_file).with_suffix(".ipynb"))

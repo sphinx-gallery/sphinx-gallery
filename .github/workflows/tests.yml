@@ -1,0 +1,124 @@
+name: 'Tests'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
+  cancel-in-progress: true
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
+permissions:
+  contents: read
+
+jobs:
+  style:
+    name: 'Quick checks'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: j178/prek-action@v2
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - run: pip install check-manifest
+      - run: check-manifest
+  pytest:
+    name: '${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.distrib }} / ${{ matrix.sphinx_version }}'
+    timeout-minutes: 30
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    env:
+      PYTHON_VERSION: '${{ matrix.python }}'
+      SPHINX_VERSION: '${{ matrix.sphinx_version }}'
+      DISTRIB: '${{ matrix.distrib }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest  # newest possible
+            python: '3.13'
+            sphinx_version: dev
+            distrib: pip
+            locale: C
+          - os: ubuntu-latest
+            python: '3.11'
+            sphinx_version: '6'
+            distrib: mamba
+          - os: ubuntu-latest
+            python: '3.10'
+            sphinx_version: '7'
+            distrib: minimal
+          - os: ubuntu-latest
+            python: '3.13'
+            sphinx_version: '8'
+            distrib: pip
+          - os: ubuntu-latest
+            python: '3.14'
+            sphinx_version: '9'
+            distrib: pip
+          - os: macos-latest
+            python: '3.12'
+            sphinx_version: 'default'
+            distrib: pip
+          - os: windows-latest
+            python: '3.11'
+            sphinx_version: 'default'
+            distrib: pip
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # Xvfb/OpenGL
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+          pyvista: false
+      # Python (if pip)
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+        if: matrix.distrib != 'mamba'
+      # Python (if conda)
+      - uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-name: test
+          init-shell: bash
+          create-args: >-
+            python=${{ env.PYTHON_VERSION }} pip numpy setuptools matplotlib pillow
+            pytest pytest-cov coverage seaborn statsmodels plotly joblib wheel libiconv
+            pygraphviz memory_profiler ipython pypandoc lxml conda-libmamba-solver
+            ffmpeg intersphinx-registry
+        if: matrix.distrib == 'mamba'
+      # Make sure that things work even if the locale is set to C (which
+      # effectively means ASCII). Some of the input rst files have unicode
+      # characters and we need to deal with this gracefully.
+      - name: Set env vars
+        shell: bash -e {0}
+        run: |
+          echo "LC_ALL=C" >> $GITHUB_ENV
+          echo "LANG=C" >> $GITHUB_ENV
+          echo "LC_CTYPE=C" >> $GITHUB_ENV
+        if: matrix.locale == 'C'
+      - run: .github/install.sh
+      - run: pytest sphinx_gallery -v --tb=short
+      - name: Remove incompatible doc config entries
+        run: |
+          if [[ "$(uname)" == "Darwin" ]]; then
+            CMD="sed -i ''"
+          else
+            CMD="sed -i"
+          fi
+          $CMD "/show_memory/d" doc/conf.py
+          $CMD "/compress_images/d" doc/conf.py
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      - run: make -C doc SPHINXOPTS= html-noplot
+        if: matrix.distrib != 'minimal'
+      # -j goes in SPHINXOPTS: bare `make -j 2` is a make flag, and with a
+      # single target it parallelizes nothing. SPHINXOPTS is overridden (rather
+      # than appended to) to keep dropping the Makefile's -nWT --keep-going.
+      - run: make -C doc SPHINXOPTS="-j 2" html
+        if: matrix.distrib != 'minimal'
+      - uses: codecov/codecov-action@v7

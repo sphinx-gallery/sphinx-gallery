@@ -1,0 +1,20 @@
+name: Bot PR labeler
+# pull_request_target is dangerous if we do anything with the PR contents, but here
+# we just automatically label
+on: pull_request_target  # yamllint disable-line rule:truthy
+
+permissions:
+  contents: read
+
+jobs:
+  pr-labeler:
+    if: (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]') && github.repository == 'sphinx-gallery/sphinx-gallery'
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: TimonVS/pr-labeler-action@v5
+        with:
+          # We use the mne-bot for simplicity, thus token name
+          repo-token: ${{ secrets.MNE_BOT_TOKEN }}

@@ -1,8 +1,8 @@
 """
-Test without __future__ imports
--------------------------------
+Test without ``__future__`` imports
+-----------------------------------
 
-Test that __future__ imports inside sphinx_gallery modules does not affect the
+Test that ``__future__`` imports inside sphinx_gallery modules does not affect the
 parsing of this script.
 """
 

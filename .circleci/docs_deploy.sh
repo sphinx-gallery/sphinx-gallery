@@ -24,6 +24,9 @@ git config --global user.name "bot@try.out" > /dev/null 2>&1
 git clone git@github.com:sphinx-gallery/sphinx-gallery.github.io.git
 
 siteSource="${PWD}/${siteSource}"
+# Stuff that we persist to workspace that we don't want
+rm -Rf "${siteSource}/project"
+rm -Rf "${siteSource}/python_env"
 cd sphinx-gallery.github.io/
 mkdir -p ${destDir}
 destDir="${PWD}/${destDir}"

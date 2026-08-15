@@ -52,9 +52,9 @@ Let's say your Python project has the following structure:
     │   ├── __init__.py
     │   └── mod.py
     └── examples
-      	├── plot_example.py
-      	├── example.py
-      	└── README.txt (or .rst)
+        ├── plot_example.py
+        ├── example.py
+        └── GALLERY_HEADER.rst (or README.[rst/.txt])
 
 * ``doc`` is the Sphinx 'source directory'. It contains the Sphinx base
   configuration files. Default versions of these base files can obtained from
@@ -80,8 +80,11 @@ Structure the examples folder
 In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
-* **The gallery header**: A file named ``README.txt`` or ``README.rst`` that
-  contains reST to be used as a header for the gallery welcome page, which will
+* **The gallery header**: A file named ``GALLERY_HEADER.[ext]``,
+  where ``[ext]`` is 'txt' or an entry in ``sphinx_gallery_conf["source_suffix"]`` (or
+  for backward-compatibility ``README.[ext]``). Default recommendation is
+  ``GALLERY_HEADER.rst``. This file should contain reST to be used as a header for
+  the gallery welcome page, which will
   also include thumbnails generated from this folder. It must have at least a
   title. For example::
 
@@ -106,7 +109,9 @@ this folder must have the following things:
       tuned. See :ref:`capture_repr`.
     * You can have sub-directories in your ``examples`` directory. These will be
       included as sub-sections of your gallery. They **must** contain their own
-      ``README.txt`` or ``README.rst`` file as well.
+      ``GALLERY_HEADER.[ext]`` file as well. Note that ``[ext]`` can be 'txt' or an
+      entry in ``sphinx_gallery_conf["source_suffix"]``. We also support
+      ``README.[ext]`` for backward-compatibility.
 
 .. warning::
 
@@ -160,7 +165,8 @@ files and directories:
   example ``.py`` files (more details in :ref:`image_scrapers`) and thumbnail
   images for the gallery.
 * A directory for each sub-directory in ``'example_dirs'``. Within each
-  directory will be the above and below listed files for that 'sub-gallery'.
+  directory will be the above and below listed files for that 'sub-gallery'
+  (aka subsection).
 
 Additionally for **each** ``.py`` file, a file with the following suffix is
 generated:
@@ -172,7 +178,7 @@ generated:
 * ``.py`` - to enable the user to download a ``.py`` version of the example.
 * ``.py.md5`` - a md5 hash of the ``.py`` file, used to determine if changes
   have been made to the file and thus if new output files need to be generated.
-* ``_codeobj.pickle`` - used to identify function names and to which module
+* ``.codeobj.json`` - used to identify function names and to which module
   they belong (more details in
   :ref:`sphx_glr_auto_examples_plot_6_function_identifier.py`)
 

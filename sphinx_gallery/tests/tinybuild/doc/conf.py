@@ -1,76 +1,23 @@
 """Sphinx configuration for tinybuild."""
 
 import os.path as op
+
 import sphinx
-from sphinx_gallery.scrapers import matplotlib_scraper
-from sphinx_gallery.sorting import FileNameSortKey
 
 
-class matplotlib_format_scraper:
-    """Calls Matplotlib scraper, passing required `format` kwarg for testing."""
+class CustomSortKey:
+    """Basically a clone of FilenameSortKey, for testing custom class sorters."""
 
-    def __repr__(self):
-        return self.__class__.__name__
+    def __init__(self, src_dir):
+        self.src_dir = src_dir
 
-    def __call__(self, block, block_vars, gallery_conf):
-        """Call Matplotlib scraper with required `format` kwarg for testing."""
-        kwargs = dict()
-        if (
-            op.basename(block_vars["target_file"]) == "plot_svg.py"
-            and gallery_conf["builder_name"] != "latex"
-        ):
-            kwargs["format"] = "svg"
-        elif (
-            op.basename(block_vars["target_file"]) == "plot_webp.py"
-            and gallery_conf["builder_name"] != "latex"
-        ):
-            kwargs["format"] = "webp"
-        return matplotlib_scraper(block, block_vars, gallery_conf, **kwargs)
+    def __call__(self, item):
+        """Provide the custom sort key."""
+        return item
 
 
-class ResetArgv:
-    """Provide `reset_argv` callable returning required `sys.argv` for test."""
-
-    def __repr__(self):
-        return "ResetArgv"
-
-    def __call__(self, sphinx_gallery_conf, script_vars):
-        """Return 'plot' arg if 'plot_command_line_args' example, for testing."""
-        if "plot_command_line_args.py" in script_vars["src_file"]:
-            return ["plot"]
-        else:
-            return []
-
-
-def _raise(*args, **kwargs):
-    import matplotlib.pyplot as plt
-
-    plt.close("all")
-    raise ValueError(
-        "zero-size array to reduction operation minimum which " "has no identity"
-    )
-
-
-class MockScrapeProblem:
-    """Used in 'reset_modules' to mock error during scraping."""
-
-    def __init__(self):
-        from matplotlib.colors import colorConverter
-
-        self._orig = colorConverter.to_rgba
-
-    def __repr__(self):
-        return "MockScrapeProblem"
-
-    def __call__(self, gallery_conf, fname):
-        """Raise error for 'scraper_broken' example."""
-        from matplotlib.colors import colorConverter
-
-        if "scraper_broken" in fname:
-            colorConverter.to_rgba = _raise
-        else:
-            colorConverter.to_rgba = self._orig
-
+# Where our helpers live
+util_root = "sphinx_gallery.tests.tinybuild.utils"
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -92,14 +39,14 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest", None),
 }
-
-
-def notebook_modification_function(notebook_content, notebook_filename):
-    """Implement JupyterLite-specific modifications of notebooks."""
-    source = f"JupyterLite-specific change for {notebook_filename}"
-    markdown_cell = {"cell_type": "markdown", "metadata": {}, "source": source}
-    notebook_content["cells"] = [markdown_cell] + notebook_content["cells"]
-
+html_sidebars = {
+    "**": [
+        "globaltoc.html",
+        "searchbox.html",
+        "sg_download_links.html",
+        "sg_launcher_links.html",
+    ]
+}
 
 rst_prolog = """
 .. _mylink: https://example.com
@@ -107,6 +54,7 @@ rst_prolog = """
 
 sphinx_gallery_conf = {
     "doc_module": ("sphinx_gallery",),
+    "prefer_full_module": {r"sphinx_gallery\._dummy"},
     "reference_url": {
         "sphinx_gallery": None,
         "scipy": "http://docs.scipy.org/doc/scipy/wrong_url",  # bad one
@@ -120,31 +68,51 @@ sphinx_gallery_conf = {
         "notebooks_dir": "notebooks",
         "use_jupyter_lab": True,
     },
-    "jupyterlite": {"notebook_modification_function": notebook_modification_function},
-    "examples_dirs": ["../examples/", "../examples_with_rst/", "../examples_rst_index"],
-    "reset_argv": ResetArgv(),
-    "reset_modules": (MockScrapeProblem(), "matplotlib"),
+    "jupyterlite": {
+        "notebook_modification_function": f"{util_root}.notebook_modification_function",
+    },
+    "examples_dirs": [
+        "../examples/",
+        "../examples_with_rst/",
+        "../examples_rst_index",
+        "../examples_README_header",
+    ],
+    "example_extensions": {".py", ".cpp", ".m", ".jl", ".rst"},
+    # we have .rst in the example_extensions but want the index.rst files in
+    # examples_rst_index/ and the direct-to-copy .rst files in examples_with_rst
+    # to be ignored. Therefore, we extend the ignore_pattern by this.
+    "ignore_pattern": r"(__init__\.py|index\.rst|rst_example[1-9]\.rst)",
+    "filetype_parsers": {".m": "Matlab"},
+    "reset_argv": f"{util_root}.reset_argv",
+    "reset_modules": (f"{util_root}.mock_scrape_problem", "matplotlib"),
     "gallery_dirs": [
         "auto_examples",
         "auto_examples_with_rst",
         "auto_examples_rst_index",
+        "auto_examples_README_header",
     ],
     "backreferences_dir": "gen_modules/backreferences",
-    "within_subsection_order": FileNameSortKey,
-    "image_scrapers": (matplotlib_format_scraper(),),
+    "subsection_order": f"{util_root}.noop_key",
+    "within_subsection_order": CustomSortKey,
+    "minigallery_sort_order": f"{util_root}.mock_sort",
+    "image_scrapers": (f"{util_root}.matplotlib_format_scraper",),
     "expected_failing_examples": [
         "../examples/future/plot_future_imports_broken.py",
         "../examples/plot_scraper_broken.py",
+        "../examples/plot_failing_example.py",
+        "../examples/plot_failing_example_thumbnail.py",
     ],
-    "show_memory": True,
+    "show_memory": False,
     "compress_images": ("images", "thumbnails"),
     "junit": op.join("sphinx-gallery", "junit-results.xml"),
-    "matplotlib_animations": True,
+    "matplotlib_animations": (True, "mp4"),
     "pypandoc": True,
     "image_srcset": ["2x"],
     "exclude_implicit_doc": ["figure_rst"],
     "show_api_usage": True,
-    "copyfile_regex": r".*\.rst",
+    "copyfile_regex": r"(index\.rst|rst_example[1-9]\.rst)",
+    "recommender": {"enable": True, "n_examples": 3},
+    "parallel": 2,
 }
 nitpicky = True
 highlight_language = "python3"

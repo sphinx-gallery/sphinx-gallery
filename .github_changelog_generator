@@ -1,5 +1,7 @@
 project=sphinx-gallery
 user=sphinx-gallery
 add-sections={"api":{"prefix":"**API changes**","labels":["api"]},"documentation":{"prefix":"**Documentation**","labels":["documentation"]},"maintenance":{"prefix": "**Project maintenance**","labels":["maintenance"]}}
-max-issues=200
+max-issues=2
 issues=no
+compare-link=no
+cache-file=.github_changelog_cache

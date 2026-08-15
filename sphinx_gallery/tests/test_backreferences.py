@@ -2,16 +2,15 @@
 # License: 3-clause BSD
 """Testing the rst files generator."""
 
-import pytest
 import sys
 from unittest.mock import MagicMock, patch
 
+import pytest
 from sphinx.errors import ExtensionError
 
 import sphinx_gallery.backreferences as sg
-from sphinx_gallery.py_source_parser import split_code_and_text_blocks
 from sphinx_gallery.gen_rst import _sanitize_rst
-
+from sphinx_gallery.py_source_parser import Block, split_code_and_text_blocks
 
 REFERENCE = r"""
 .. raw:: html
@@ -23,7 +22,7 @@ REFERENCE = r"""
   .. image:: /fake_dir/images/thumb/sphx_glr_test_file_thumb.png
     :alt:
 
-  :ref:`sphx_glr_fake_dir_test_file.py`
+  :doc:`/fake_dir/test_file`
 
 .. raw:: html
 
@@ -52,6 +51,11 @@ REFERENCE = r"""
             "this and that; and these things and those things",
             False,
         ),
+        (
+            "See `.MyClass` and `~.MyClass.close`",
+            "See MyClass and close",
+            False,
+        ),
     ],
 )
 def test_thumbnail_div(content, tooltip, is_backref):
@@ -75,7 +79,7 @@ def test_thumbnail_div(content, tooltip, is_backref):
         extra = """
 .. only:: not html
 
- * :ref:`sphx_glr_fake_dir_test_file.py`
+ * :doc:`/fake_dir/test_file`
 """
     else:
         extra = ""
@@ -129,15 +133,24 @@ def test_identify_names(unicode_sample, gallery_conf):
         "DummyClass": [
             {
                 "name": "DummyClass",
-                "module": "sphinx_gallery.back_references",
-                "module_short": "sphinx_gallery.back_references",
+                "module": "sphinx_gallery._dummy",
+                "module_short": "sphinx_gallery._dummy",
+                "is_class": False,
+                "is_explicit": False,
+            }
+        ],
+        "NestedDummyClass": [
+            {
+                "name": "NestedDummyClass",
+                "module": "sphinx_gallery._dummy.nested",
+                "module_short": "sphinx_gallery._dummy",
                 "is_class": False,
                 "is_explicit": False,
             }
         ],
     }
     _, script_blocks = split_code_and_text_blocks(unicode_sample)
-    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
+    ref_regex = sg._make_ref_regex()
     res = sg.identify_names(script_blocks, ref_regex)
     assert expected == res
 
@@ -165,7 +178,7 @@ def test_get_short_module_name(mock, short_module):
         assert short_mod_no_attr is None
 
 
-def test_identify_names_implicit(tmpdir, gallery_conf):
+def test_identify_names_implicit(tmp_path, gallery_conf):
     """Test implicit name identification."""
     code_str = b"""
 '''
@@ -213,11 +226,11 @@ h.i.j()
         ],
     }
 
-    fname = tmpdir.join("identify_names.py")
-    fname.write(code_str, "wb")
+    fname = tmp_path / "identify_names.py"
+    fname.write_bytes(code_str)
 
-    _, script_blocks = split_code_and_text_blocks(fname.strpath)
-    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
+    _, script_blocks = split_code_and_text_blocks(fname)
+    ref_regex = sg._make_ref_regex()
     res = sg.identify_names(script_blocks, ref_regex)
 
     assert expected == res
@@ -257,10 +270,9 @@ cobj = dict(module="m", module_short="m", name="n", is_class=False, is_explicit=
 # and docutils.sourceforge.io/docs/ref/rst/roles.html
 def test_identify_names_explicit(text, default_role, ref, cobj, gallery_conf):
     """Test explicit name identification."""
-    if default_role:
-        gallery_conf["app"].config["default_role"] = default_role
-    script_blocks = [("text", text, 1)]
+    default_role = "" if default_role is None else default_role
+    script_blocks = [Block("text", text, 1)]
     expected = {ref: [cobj]} if ref else {}
-    ref_regex = sg._make_ref_regex(gallery_conf["app"].config)
+    ref_regex = sg._make_ref_regex(default_role)
     actual = sg.identify_names(script_blocks, ref_regex)
     assert expected == actual

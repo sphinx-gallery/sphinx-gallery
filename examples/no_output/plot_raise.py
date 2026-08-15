@@ -15,8 +15,8 @@ You will also get the python traceback of the failed code block.
 # License: BSD 3 clause
 # sphinx_gallery_line_numbers = True
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 plt.pcolormesh(np.random.randn(100, 100))
 

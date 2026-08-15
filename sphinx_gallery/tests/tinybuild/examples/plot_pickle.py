@@ -4,8 +4,9 @@ Pickling
 
 This example pickles a function.
 """
-from math import sqrt
+
 import pickle
+from math import sqrt
 
 from joblib import Parallel, delayed
 

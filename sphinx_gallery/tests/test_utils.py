@@ -1,17 +1,36 @@
-# Author: Nicholas Cain
-# License: 3-clause BSD
-r"""Test utility functions."""
+"""Test utility functions."""
 
-import sphinx_gallery.utils as utils
-import pytest
+from sphinx_gallery.utils import _combine_backreferences, _read_json, _write_json
 
 
-@pytest.mark.parametrize("file_name", ("some/file/name", "/corner.pycase"))
-def test_replace_py_ipynb(file_name):
-    """Test extension correctly replaced by `replace_py_ipynb`."""
-    # Test behavior of function with expected input:
-    assert utils.replace_py_ipynb(file_name + ".py") == file_name + ".ipynb"
+def test_combine_backreferences():
+    """Check `_combine_backreferences` works as expected."""
+    backrefs_a = {
+        "a": [1, 2],
+        "b": [11, 12],
+    }
+    assert _combine_backreferences({}, backrefs_a) == backrefs_a
 
-    # Test behavior of function with unexpected input:
-    with pytest.raises(ValueError, match="Unrecognized file extension"):
-        utils.replace_py_ipynb(file_name + ".txt")
+    backrefs_b = {
+        "a": [3, 4],
+        "c": [21, 22],
+    }
+    assert _combine_backreferences(backrefs_a, backrefs_b) == {
+        "a": [1, 2, 3, 4],
+        "b": [11, 12],
+        "c": [21, 22],
+    }
+
+
+def test_read_write_json(tmp_path):
+    """Check `_read_json` and `_write_json` work as expected."""
+    path = tmp_path / "test"
+    data = {
+        "object1": ("path/file.py", "first intro", "first title"),
+        "object2": ("path2/file2.py", "second intro", "second title"),
+    }
+    _write_json(path, data, "test_dict")
+    # Writing converts tuples to lists
+    assert _read_json(path.with_name(path.stem + "test_dict.json")) == {
+        key: list(value) for key, value in data.items()
+    }

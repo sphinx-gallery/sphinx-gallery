@@ -3,30 +3,33 @@
 """Testing the rst files generator."""
 
 import ast
-import codecs
+import codeop
 import importlib
 import io
 import logging
-import tempfile
-import re
 import os
+import re
 import shutil
-import sys
-from unittest import mock
 import zipfile
-import codeop
+from pathlib import Path
+from unittest import mock
 
 import pytest
-
 from sphinx.errors import ExtensionError
+
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import (
-    generate_dir_rst,
     _update_gallery_conf_exclude_implicit_doc,
+    generate_dir_rst,
 )
-from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
 from sphinx_gallery.interactive_example import check_binder_conf
+
+# TODO: The tests of this method should probably be moved to test_py_source_parser.py
+from sphinx_gallery.py_source_parser import Block, split_code_and_text_blocks
+from sphinx_gallery.scrapers import ImagePathIterator, figure_rst
+
+root = Path(__file__).parents[2]
 
 CONTENT = [
     '"""',
@@ -65,11 +68,13 @@ CONTENT = [
 
 def test_split_code_and_text_blocks():
     """Test if a known example file gets properly split."""
-    file_conf, blocks = sg.split_code_and_text_blocks("examples/no_output/just_code.py")
+    file_conf, blocks = split_code_and_text_blocks(
+        root / "examples" / "no_output" / "just_code.py",
+    )
 
-    assert file_conf == {}
-    assert blocks[0][0] == "text"
-    assert blocks[1][0] == "code"
+    assert file_conf == {"tags": ["just-code"]}
+    assert blocks[0].type == "text"
+    assert blocks[1].type == "code"
 
 
 def test_bug_cases_of_notebook_syntax():
@@ -77,33 +82,31 @@ def test_bug_cases_of_notebook_syntax():
 
     `plot_parse.py` uses both '#'s' and '#%%' as cell separators.
     """
-    with open("sphinx_gallery/tests/reference_parse.txt") as reference:
-        ref_blocks = ast.literal_eval(reference.read())
-        file_conf, blocks = sg.split_code_and_text_blocks("tutorials/plot_parse.py")
+    ref_blocks = ast.literal_eval(
+        (Path(__file__).parent / "reference_parse.txt").read_text("utf-8")
+    )
+    file_conf, blocks = split_code_and_text_blocks(root / "tutorials" / "plot_parse.py")
 
-        assert file_conf == {}
-        assert blocks == ref_blocks
+    assert file_conf == {}
+    assert blocks == ref_blocks
 
 
-def test_direct_comment_after_docstring():
+def test_direct_comment_after_docstring(tmp_path):
     # For more details see
     # https://github.com/sphinx-gallery/sphinx-gallery/pull/49
-    with tempfile.NamedTemporaryFile("w", delete=False) as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "# and now comes the module code",
-                    "# with a second line of comment",
-                    "x, y = 1, 2",
-                    "",
-                ]
-            )
+    filename = tmp_path / "example.txt"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "# and now comes the module code",
+                "# with a second line of comment",
+                "x, y = 1, 2",
+                "",
+            ]
         )
-    try:
-        file_conf, result = sg.split_code_and_text_blocks(f.name)
-    finally:
-        os.remove(f.name)
+    )
+    file_conf, result = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     expected_result = [
@@ -124,22 +127,21 @@ def test_direct_comment_after_docstring():
     assert result == expected_result
 
 
-def test_final_rst_last_word(tmpdir):
+def test_final_rst_last_word(tmp_path):
     """Tests last word in final rst block included as text."""
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "# comment only code block",
-                    "#%%",
-                    "# Include this whole sentence.",
-                ]
-            )
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "# comment only code block",
+                "#%%",
+                "# Include this whole sentence.",
+            ]
         )
+    )
 
-    file_conf, result = sg.split_code_and_text_blocks(f.name)
+    file_conf, result = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     expected_result = [
@@ -150,35 +152,34 @@ def test_final_rst_last_word(tmpdir):
     assert result == expected_result
 
 
-def test_rst_block_after_docstring(gallery_conf, tmpdir):
+def test_rst_block_after_docstring(gallery_conf, tmp_path):
     """Assert there is a blank line between the docstring and rst blocks."""
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "####################",
-                    "# Paragraph 1",
-                    "# is long.",
-                    "",
-                    "#%%",
-                    "# Paragraph 2",
-                    "",
-                    "# %%",
-                    "# Paragraph 3",
-                    "",
-                ]
-            )
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "####################",
+                "# Paragraph 1",
+                "# is long.",
+                "",
+                "#%%",
+                "# Paragraph 2",
+                "",
+                "# %%",
+                "# Paragraph 3",
+                "",
+            ]
         )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    )
+    file_conf, blocks = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     assert len(blocks) == 4
-    assert blocks[0][0] == "text"
-    assert blocks[1][0] == "text"
-    assert blocks[2][0] == "text"
-    assert blocks[3][0] == "text"
+    assert blocks[0].type == "text"
+    assert blocks[1].type == "text"
+    assert blocks[2].type == "text"
+    assert blocks[3].type == "text"
 
     script_vars = {"execute_script": ""}
     file_conf = {}
@@ -208,36 +209,81 @@ Paragraph 3
     assert example_rst == want_rst
 
 
-def test_rst_empty_code_block(gallery_conf, tmpdir):
+def test_rst_block_noqa_removal(gallery_conf, tmp_path):
+    """Check "# noqa: E501" removed from end of text blocks (issue #1403)."""
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "####################",
+                "# Paragraph 1",
+                "# has a noqa at the end. # noqa: E501",
+                "",
+                "#%%",
+                "# Paragraph 2 also has a noqa # noqa:E501",
+                "",
+                "# %%",
+                "# Paragraph 3",
+                "",
+            ]
+        )
+    )
+    file_conf, blocks = split_code_and_text_blocks(filename)
+
+    script_vars = {"execute_script": ""}
+    output_blocks, _ = sg.execute_script(blocks, script_vars, gallery_conf, file_conf)
+
+    example_rst = sg.rst_blocks(blocks, output_blocks, file_conf, gallery_conf)
+    want_rst = """\
+Docstring
+
+.. GENERATED FROM PYTHON SOURCE LINES 3-5
+
+Paragraph 1
+has a noqa at the end.
+
+.. GENERATED FROM PYTHON SOURCE LINES 7-8
+
+Paragraph 2 also has a noqa
+
+.. GENERATED FROM PYTHON SOURCE LINES 10-11
+
+Paragraph 3
+
+"""
+    assert example_rst == want_rst
+
+
+def test_rst_empty_code_block(gallery_conf, tmp_path):
     """Test that we can "execute" a code block containing only comments."""
     gallery_conf.update(image_scrapers=())
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    '"Docstring"',
-                    "####################",
-                    "# Paragraph 1",
-                    "",
-                    "# just a comment" "",
-                ]
-            )
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        "\n".join(
+            [
+                '"Docstring"',
+                "####################",
+                "# Paragraph 1",
+                "",
+                "# just a comment",
+            ]
         )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    )
+    file_conf, blocks = split_code_and_text_blocks(filename)
 
     assert file_conf == {}
     assert len(blocks) == 3
-    assert blocks[0][0] == "text"
-    assert blocks[1][0] == "text"
-    assert blocks[2][0] == "code"
+    assert blocks[0].type == "text"
+    assert blocks[1].type == "text"
+    assert blocks[2].type == "code"
 
     gallery_conf["abort_on_example_error"] = True
     script_vars = dict(
         execute_script=True,
-        src_file=filename,
+        src_file=str(filename),
         image_path_iterator=[],
-        target_file=filename,
+        target_file=str(filename),
     )
 
     output_blocks, time_elapsed = sg.execute_script(
@@ -261,13 +307,12 @@ Paragraph 1
     assert example_rst.rstrip("\n") == want_rst
 
 
-def test_script_vars_globals(gallery_conf, tmpdir):
+def test_script_vars_globals(gallery_conf, tmp_path):
     """Assert the global vars get stored."""
     gallery_conf.update(image_scrapers=())
-    filename = str(tmpdir.join("temp.py"))
-    with open(filename, "w") as f:
-        f.write(
-            """
+    filename = tmp_path / "temp.py"
+    filename.write_text(
+        """
 '''
 My example
 ----------
@@ -277,17 +322,17 @@ This is it.
 a = 1.
 b = 'foo'
 """
-        )
-    file_conf, blocks = sg.split_code_and_text_blocks(filename)
+    )
+    file_conf, blocks = split_code_and_text_blocks(filename)
     assert len(blocks) == 2
-    assert blocks[0][0] == "text"
-    assert blocks[1][0] == "code"
+    assert blocks[0].type == "text"
+    assert blocks[1].type == "code"
     assert file_conf == {}
     script_vars = {
         "execute_script": True,
-        "src_file": filename,
+        "src_file": str(filename),
         "image_path_iterator": [],
-        "target_file": filename,
+        "target_file": str(filename),
     }
     output_blocks, time_elapsed = sg.execute_script(
         blocks, script_vars, gallery_conf, file_conf
@@ -311,9 +356,7 @@ def test_extract_intro_and_title():
     intro, title = sg.extract_intro_and_title("<string>", "\n".join(CONTENT[1:10]))
     assert title == "Docstring header"
     assert "Docstring" not in intro
-    assert (
-        intro == "This is the description of the example which goes on and on, Óscar"
-    )  # noqa
+    assert intro == "This is the description of the example which goes on and on, Óscar"  # noqa
     assert "second paragraph" not in intro
 
     # SG incorrectly grabbing description when a label is defined (gh-232)
@@ -346,15 +389,14 @@ def test_extract_intro_and_title():
     )  # noqa: E501
     assert title == '"-`Header"-with:; punct mark\'s'
 
-    # Long intro paragraph gets shortened
+    # Long intro paragraph are preserved
     intro_paragraph = "\n".join(["this is one line" for _ in range(10)])
     intro, _ = sg.extract_intro_and_title(
         "filename", "Title\n-----\n\n" + intro_paragraph
     )
     assert len(intro_paragraph) > 100
-    assert len(intro) < 100
-    assert intro.endswith("...")
-    assert intro_paragraph.replace("\n", " ")[:95] == intro[:95]
+    assert len(intro) > 100
+    assert intro_paragraph.replace("\n", " ") == intro
 
     # Errors
     with pytest.raises(ExtensionError, match="should have a header"):
@@ -370,26 +412,19 @@ def test_extract_intro_and_title():
         ["t", "ea8a570e9f3afc0a7c3f2a17a48b8047"],
     ),
 )
-def test_md5sums(mode, expected_md5):
+def test_md5sums(mode, expected_md5, tmp_path):
     """Test md5sum check functions work on know file content."""
     file_content = b"Local test\r\n"
-    with tempfile.NamedTemporaryFile("wb", delete=False) as f:
-        f.write(file_content)
-    try:
-        file_md5 = sg.get_md5sum(f.name, mode)
-        # verify correct md5sum
-        assert file_md5 == expected_md5
-        # False because is a new file
-        assert not sg.md5sum_is_current(f.name)
-        # Write md5sum to file to check is current
-        with open(f.name + ".md5", "w") as file_checksum:
-            file_checksum.write(file_md5)
-        try:
-            assert sg.md5sum_is_current(f.name, mode)
-        finally:
-            os.remove(f.name + ".md5")
-    finally:
-        os.remove(f.name)
+    fname = tmp_path / "test"
+    fname.write_bytes(file_content)
+    file_md5 = sg.get_md5sum(fname, mode)
+    # verify correct md5sum
+    assert file_md5 == expected_md5, mode
+    # False because is a new file
+    assert not sg.md5sum_is_current(fname), mode
+    # Write md5sum to file to check is current
+    fname.with_name(fname.name + ".md5").write_text(file_md5)
+    assert sg.md5sum_is_current(fname, mode), mode
 
 
 @pytest.mark.parametrize(
@@ -411,12 +446,8 @@ def test_fail_example(gallery_conf, failing_code, want, log_collector, req_pil):
     gallery_conf.update(image_scrapers=(), reset_modules=())
     gallery_conf.update(filename_pattern="raise.py")
 
-    with codecs.open(
-        os.path.join(gallery_conf["examples_dir"], "raise.py"),
-        mode="w",
-        encoding="utf-8",
-    ) as f:
-        f.write("\n".join(failing_code))
+    path = Path(gallery_conf["examples_dir"], "raise.py")
+    path.write_text("\n".join(failing_code), encoding="utf-8")
 
     sg.generate_file_rst(
         "raise.py",
@@ -434,15 +465,30 @@ def test_fail_example(gallery_conf, failing_code, want, log_collector, req_pil):
     assert "_check_input" not in msg
 
     # read rst file and check if it contains traceback output
+    path = Path(gallery_conf["gallery_dir"], "raise.rst")
+    ex_failing_blocks = path.read_text(encoding="utf-8").count("pytb")
+    assert ex_failing_blocks != 0, "Did not run into errors in bad code"
+    assert ex_failing_blocks <= 1, "Did not stop executing script after error"
 
-    with codecs.open(
-        os.path.join(gallery_conf["gallery_dir"], "raise.rst"),
-        mode="r",
-        encoding="utf-8",
-    ) as f:
-        ex_failing_blocks = f.read().count("pytb")
-        assert ex_failing_blocks != 0, "Did not run into errors in bad code"
-        assert ex_failing_blocks <= 1, "Did not stop executing script after error"
+
+def test_stale_codeobj_json_removed(gallery_conf, req_pil):
+    """Test the codeobj cache is dropped when no names are identified anymore.
+
+    A stale ``.codeobj.json`` would resurrect the example's old backreferences
+    via ``_read_cached_backrefs`` on every md5-skipped rebuild.
+    """
+    gallery_conf.update(image_scrapers=(), reset_modules=())
+    with_names = [
+        '"""\nTitle\n=====\n\nDescription.\n"""',
+        "import os",
+        "print(os.path.join('a', 'b'))",
+    ]
+    without_names = ['"""\nTitle\n=====\n\nDescription.\n"""', "print(1)"]
+    _generate_rst(gallery_conf, "plot_codeobj.py", with_names)
+    codeobj = Path(gallery_conf["gallery_dir"], "plot_codeobj.codeobj.json")
+    assert codeobj.is_file()
+    _generate_rst(gallery_conf, "plot_codeobj.py", without_names)
+    assert not codeobj.is_file()
 
 
 def _generate_rst(gallery_conf, fname, content):
@@ -467,21 +513,21 @@ def _generate_rst(gallery_conf, fname, content):
     rst : str
         The generated reST code.
     """
-    with codecs.open(
-        os.path.join(gallery_conf["examples_dir"], fname), mode="w", encoding="utf-8"
-    ) as f:
-        f.write("\n".join(content))
+    path = Path(gallery_conf["examples_dir"], fname)
+    path.write_text("\n".join(content), encoding="utf-8")
+    Path(gallery_conf["examples_dir"], "README.txt").write_text("")
+
     # generate rst file
-    sg.generate_file_rst(
-        fname, gallery_conf["gallery_dir"], gallery_conf["examples_dir"], gallery_conf
+    generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
     )
     # read rst file and check if it contains code output
-    rst_fname = os.path.splitext(fname)[0] + ".rst"
-    with codecs.open(
-        os.path.join(gallery_conf["gallery_dir"], rst_fname), mode="r", encoding="utf-8"
-    ) as f:
-        rst = f.read()
-    return rst
+    rst_fname = Path(gallery_conf["gallery_dir"], fname).with_suffix(".rst")
+    return rst_fname.read_text(encoding="utf-8")
 
 
 ALPHA_CONTENT = '''
@@ -493,9 +539,7 @@ Plot.
 """
 import matplotlib.pyplot as plt
 plt.plot([0, 1], [0, 1])
-'''.split(
-    "\n"
-)
+'''.split("\n")
 
 
 def _alpha_mpl_scraper(block, block_vars, gallery_conf):
@@ -507,7 +551,7 @@ def _alpha_mpl_scraper(block, block_vars, gallery_conf):
         fig = plt.figure(fig_num)
         assert image_path.endswith(".png")
         # use format that does not support alpha
-        image_path = image_path[:-3] + "jpg"
+        image_path = Path(image_path).with_suffix(".jpg")
         fig.savefig(image_path)
         image_paths.append(image_path)
     plt.close("all")
@@ -561,6 +605,7 @@ def test_final_empty_block(gallery_conf, req_pil):
     """
     content_block = CONTENT + ["# %%", "", "# sphinx_gallery_line_numbers = True"]
     gallery_conf["remove_config_comments"] = True
+    gallery_conf["min_reported_time"] = -1  # Force timing info to be shown
     rst = _generate_rst(gallery_conf, "test.py", content_block)
     want = "RuntimeWarning)\n\n\n.. rst-class:: sphx-glr-timing"
     assert want in rst
@@ -589,9 +634,7 @@ EXCLUDE_CONTENT = '''
 import numpy
 numpy.pi
 numpy.e
-'''.split(
-    "\n"
-)
+'''.split("\n")
 
 
 @pytest.mark.parametrize(
@@ -617,29 +660,42 @@ def test_exclude_implicit(gallery_conf, exclusion, expected, monkeypatch, req_pi
         gallery_conf["exclude_implicit_doc"] = exclusion
         _update_gallery_conf_exclude_implicit_doc(gallery_conf)
     _generate_rst(gallery_conf, "test_exclude_implicit.py", EXCLUDE_CONTENT)
-    if sys.version_info >= (3, 8, 0):
-        assert mock_write_backreferences.call_args.args[0] == expected
-    else:
-        assert mock_write_backreferences.call_args[0][0] == expected
+    assert mock_write_backreferences.call_args.args[0] == expected
 
 
-@pytest.mark.parametrize("ext", (".txt", ".rst", ".bad"))
-def test_gen_dir_rst(gallery_conf, ext):
+@pytest.mark.parametrize(
+    "gallery_header",
+    [
+        "GALLERY_HEADER.rst",
+        "README.txt",
+        "README.rst",
+    ],
+)
+def test_gen_dir_rst(gallery_conf, gallery_header):
     """Test gen_dir_rst."""
-    print(os.listdir(gallery_conf["examples_dir"]))
-    fname_readme = os.path.join(gallery_conf["src_dir"], "README.txt")
-    with open(fname_readme, "wb") as fid:
-        fid.write("Testing\n=======\n\nÓscar here.".encode())
-    fname_out = os.path.splitext(fname_readme)[0] + ext
-    if fname_readme != fname_out:
-        shutil.move(fname_readme, fname_out)
-    args = (gallery_conf["src_dir"], gallery_conf["gallery_dir"], gallery_conf, [])
-    if ext == ".bad":  # not found with correct ext
-        with pytest.raises(ExtensionError, match="does not have a README"):
-            generate_dir_rst(*args)
-    else:
-        out = generate_dir_rst(*args)
-        assert "Óscar here" in out[1]
+    header_path = Path(gallery_conf["src_dir"], gallery_header)
+    header_path.write_bytes("Testing\n=======\n\nÓscar here.".encode())
+    out = generate_dir_rst(
+        gallery_conf["src_dir"], gallery_conf["gallery_dir"], gallery_conf, []
+    )
+    assert "Óscar here" in out[1]
+
+
+@pytest.mark.parametrize(
+    "gallery_header",
+    [
+        "GALLERY_HEADER.bad",
+        "README.bad",
+    ],
+)
+def test_gen_dir_rst_invalid_header(gallery_conf, gallery_header):
+    """Check `_get_gallery_header` raises error for invalid header extension."""
+    header_path = Path(gallery_conf["src_dir"], gallery_header)
+    header_path.write_bytes("Testing\n=======\n\nÓscar here.".encode())
+    with pytest.raises(ExtensionError, match="does not have a GALLERY_HEADER"):
+        generate_dir_rst(
+            gallery_conf["src_dir"], gallery_conf["gallery_dir"], gallery_conf, []
+        )
 
 
 def test_pattern_matching(gallery_conf, log_collector, req_pil):
@@ -659,11 +715,8 @@ def test_pattern_matching(gallery_conf, log_collector, req_pil):
     fnames = ["plot_0.py", "plot_1.py", "plot_2.py"]
     for fname in fnames:
         rst = _generate_rst(gallery_conf, fname, CONTENT)
-        rst_fname = os.path.splitext(fname)[0] + ".rst"
-        if re.search(
-            gallery_conf["filename_pattern"],
-            os.path.join(gallery_conf["gallery_dir"], rst_fname),
-        ):
+        rst_fname = Path(gallery_conf["gallery_dir"], fname).with_suffix(".rst")
+        if re.search(gallery_conf["filename_pattern"], str(rst_fname)):
             assert code_output in rst
             assert warn_output in rst
         else:
@@ -680,14 +733,11 @@ def test_pattern_matching(gallery_conf, log_collector, req_pil):
         "    # sphinx_gallery_thumbnail_number=2",
     ],
 )
-def test_thumbnail_number(test_str):
+def test_thumbnail_number(test_str, tmp_path):
     """Test correct plot used as thumbnail image."""
-    with tempfile.NamedTemporaryFile("w", delete=False) as f:
-        f.write("\n".join(['"Docstring"', test_str]))
-    try:
-        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
-    finally:
-        os.remove(f.name)
+    filename = tmp_path / "example.py"
+    filename.write_text("\n".join(['"Docstring"', test_str]))
+    file_conf, blocks = split_code_and_text_blocks(filename)
     assert file_conf == {"thumbnail_number": 2}
 
 
@@ -700,29 +750,82 @@ def test_thumbnail_number(test_str):
         "    # sphinx_gallery_thumbnail_path='_static/demo.png'",
     ],
 )
-def test_thumbnail_path(test_str):
+def test_thumbnail_path(test_str, tmp_path):
     """Test correct plot used for thumbnail image."""
-    with tempfile.NamedTemporaryFile("w", delete=False) as f:
-        f.write("\n".join(['"Docstring"', test_str]))
-    try:
-        file_conf, blocks = sg.split_code_and_text_blocks(f.name)
-    finally:
-        os.remove(f.name)
+    filename = tmp_path / "example.py"
+    filename.write_text("\n".join(['"Docstring"', test_str]))
+    file_conf, blocks = split_code_and_text_blocks(filename)
     assert file_conf == {"thumbnail_path": "_static/demo.png"}
 
 
-def test_zip_notebooks(gallery_conf):
-    """Test generated zipfiles are not corrupt."""
+@pytest.mark.parametrize(
+    "extra_conf, warns",
+    [
+        pytest.param({}, True, id="path_only"),
+        pytest.param({"thumbnail_number": 1}, False, id="number_takes_priority"),
+    ],
+)
+def test_thumbnail_path_not_found_warns(
+    gallery_conf, log_collector, tmp_path, extra_conf, warns
+):
+    """Test that a missing sphinx_gallery_thumbnail_path emits a warning."""
+    image_path_template = str(tmp_path / "temp_{0:03}.png")
+    src_file = str(tmp_path / "plot_test.py")  # need not exist, only basename is used
+    script_vars = {
+        "image_path_iterator": ImagePathIterator(image_path_template),
+    }
+    file_conf = {"thumbnail_path": "_static/nonexistent.png", **extra_conf}
+
+    sg.save_thumbnail(
+        image_path_template, src_file, script_vars, file_conf, gallery_conf
+    )
+
+    if not warns:
+        log_collector.warning.assert_not_called()
+        return
+    log_collector.warning.assert_called_once()
+    warning_msg = log_collector.warning.call_args[0][0]
+    assert "sphinx_gallery_thumbnail_path" in warning_msg
+    # the reported path is normalized, so compare it as a path and not as a string
+    expected_path = Path(gallery_conf["src_dir"], "_static/nonexistent.png")
+    assert Path(log_collector.warning.call_args[0][1]) == expected_path
+
+
+def test_zip_python(gallery_conf):
+    """Test generated zipfiles are not corrupt and have expected name and contents."""
     gallery_conf.update(examples_dir=os.path.join(gallery_conf["src_dir"], "examples"))
     shutil.copytree(
-        os.path.join(os.path.dirname(__file__), "tinybuild", "examples"),
+        Path(__file__).parent / "tinybuild" / "examples",
         gallery_conf["examples_dir"],
     )
     examples = downloads.list_downloadable_sources(gallery_conf["examples_dir"])
     zipfilepath = downloads.python_zip(examples, gallery_conf["gallery_dir"])
+    assert zipfilepath.endswith("_python.zip")
     zipf = zipfile.ZipFile(zipfilepath)
     check = zipf.testzip()
     assert not check, f"Bad file in zipfile: {check}"
+    filenames = {item.filename for item in zipf.filelist}
+    assert "examples/plot_command_line_args.py" in filenames
+    assert "examples/julia_sample.jl" not in filenames
+
+
+def test_zip_mixed_source(gallery_conf):
+    """Test generated zipfiles are not corrupt and have expected name and contents."""
+    gallery_conf.update(examples_dir=os.path.join(gallery_conf["src_dir"], "examples"))
+    shutil.copytree(
+        Path(__file__).parent / "tinybuild" / "examples",
+        gallery_conf["examples_dir"],
+    )
+    examples = downloads.list_downloadable_sources(
+        gallery_conf["examples_dir"], (".py", ".jl")
+    )
+    zipfilepath = downloads.python_zip(examples, gallery_conf["gallery_dir"], None)
+    zipf = zipfile.ZipFile(zipfilepath)
+    check = zipf.testzip()
+    assert not check, f"Bad file in zipfile: {check}"
+    filenames = {item.filename for item in zipf.filelist}
+    assert "examples/plot_command_line_args.py" in filenames
+    assert "examples/julia_sample.jl" in filenames
 
 
 def test_rst_example(gallery_conf):
@@ -738,13 +841,12 @@ def test_rst_example(gallery_conf):
         }
     )
     gallery_conf.update(binder=binder_conf)
+    gallery_conf["min_reported_time"] = -1
 
-    example_file = os.path.join(gallery_conf["gallery_dir"], "plot.py")
+    example_file = Path(gallery_conf["gallery_dir"], "plot.py")
     sg.save_rst_example("example_rst", example_file, 0, 0, gallery_conf)
 
-    test_file = re.sub(r"\.py$", ".rst", example_file)
-    with codecs.open(test_file) as f:
-        rst = f.read()
+    rst = example_file.with_suffix(".rst").read_text()
 
     assert "lab/tree/notebooks/plot.ipynb" in rst
 
@@ -754,14 +856,14 @@ def test_rst_example(gallery_conf):
 
 
 @pytest.fixture(scope="function")
-def script_vars(tmpdir):
+def script_vars(tmp_path):
     fake_main = importlib.util.module_from_spec(
         importlib.util.spec_from_loader("__main__", None)
     )
     fake_main.__dict__.update({"__doc__": ""})
     script_vars = {
         "execute_script": True,
-        "image_path_iterator": ImagePathIterator(str(tmpdir.join("temp.png"))),
+        "image_path_iterator": ImagePathIterator(str(tmp_path / "temp.png")),
         "src_file": __file__,
         "memory_delta": [],
         "fake_main": fake_main,
@@ -776,7 +878,7 @@ def test_output_indentation(gallery_conf, script_vars):
 
     test_string = r"\n".join(["  A B", "A 1 2", "B 3 4"])
     code = "print('" + test_string + "')"
-    code_block = ("code", code, 1)
+    code_block = Block("code", code, 1)
     file_conf = {}
     output = sg.execute_code_block(
         compiler, code_block, None, script_vars, gallery_conf, file_conf
@@ -796,7 +898,7 @@ def test_output_no_ansi(gallery_conf, script_vars):
     compiler = codeop.Compile()
 
     code = 'print("\033[94m0.25")'
-    code_block = ("code", code, 1)
+    code_block = Block("code", code, 1)
     file_conf = {}
     output = sg.execute_code_block(
         compiler, code_block, None, script_vars, gallery_conf, file_conf
@@ -819,7 +921,7 @@ def test_absl_logging(gallery_conf, script_vars):
     compiler = codeop.Compile()
     code = 'from absl import logging\nlogging.info("Should not crash!")'
     sg.execute_code_block(
-        compiler, ("code", code, 1), None, script_vars, gallery_conf, {}
+        compiler, Block("code", code, 1), None, script_vars, gallery_conf, {}
     )
 
     # Previously, absl crashed during shutdown, after all tests had run, so
@@ -833,7 +935,7 @@ def test_empty_output_box(gallery_conf, script_vars):
     gallery_conf.update(image_scrapers=())
     compiler = codeop.Compile()
 
-    code_block = ("code", "print(__doc__)", 1)
+    code_block = Block("code", "print(__doc__)", 1)
     file_conf = {}
 
     output = sg.execute_code_block(
@@ -991,7 +1093,7 @@ def test_capture_repr(
 ):
     """Tests output capturing with various capture_repr settings."""
     compiler = codeop.Compile()
-    code_block = ("code", code, 1)
+    code_block = Block("code", code, 1)
     gallery_conf["capture_repr"] = capture_repr
     file_conf = {}
     output = sg.execute_code_block(
@@ -1001,24 +1103,33 @@ def test_capture_repr(
 
 
 @pytest.mark.parametrize(
-    "caprepr_gallery, caprepr_file, expected_out",
+    "caprepr_gallery, caprepr_file, caprepr_block, expected_out",
     [
-        pytest.param(tuple(), ("__repr__",), "2", id="() --> repr"),
-        pytest.param(("__repr__",), "()", "", id="repr --> ()"),
+        pytest.param(tuple(), "()", '("__repr__",)', "2", id="() --> () --> repr"),
+        pytest.param(tuple(), ("__repr__",), None, "2", id="() --> repr --> None"),
+        pytest.param(("__repr__",), "()", None, "", id="repr --> () --> None"),
+        pytest.param(tuple(), ("__repr__",), "()", "", id="() --> repr --> ()"),
+        pytest.param(("__repr__",), "()", "()", "", id="repr --> () --> ()"),
     ],
 )
-def test_per_file_capture_repr(
+def test_capture_repr_per_file_and_per_block(
     gallery_conf,
     caprepr_gallery,
     caprepr_file,
+    caprepr_block,
     expected_out,
     req_mpl,
     req_pil,
     script_vars,
 ):
-    """Tests that per file capture_repr overrides gallery_conf."""
+    """Tests that per file/block capture_repr overrides gallery_conf."""
     compiler = codeop.Compile()
-    code_block = ("code", "a=2\n2", 1)
+    caprepr_block = (
+        f"# sphinx_gallery_capture_repr_block={caprepr_block}\n"
+        if caprepr_block
+        else ""
+    )
+    code_block = Block("code", f"{caprepr_block}a=2\n2", 1)
     gallery_conf["capture_repr"] = caprepr_gallery
     file_conf = {"capture_repr": caprepr_file}
     output = sg.execute_code_block(
@@ -1028,9 +1139,9 @@ def test_per_file_capture_repr(
 
 
 def test_ignore_repr_types(gallery_conf, req_mpl, req_pil, script_vars):
-    """Tests output capturing with various capture_repr settings."""
+    """Tests that `ignore_repr_types` correctly ignores the output of a specific type."""
     compiler = codeop.Compile()
-    code_block = ("code", "a=2\na", 1)
+    code_block = Block("code", "a=2\na", 1)
     gallery_conf["ignore_repr_types"] = r"int"
     file_conf = {}
     output = sg.execute_code_block(
@@ -1094,10 +1205,108 @@ def test_reset_module_order_3_param_invalid_when(gallery_conf):
     gallery_conf["reset_modules_order"] = "before"
     with pytest.raises(
         ValueError,
-        match=("3rd parameter in cleanup_3_param " "function signature must be 'when'"),
+        match=("3rd parameter in cleanup_3_param function signature must be 'when'"),
     ):
         _generate_rst(gallery_conf, "plot_test.py", CONTENT)
     assert mock_reset_module.call_count == 0
+
+
+DOCSTRING = '"""\nTitle\n=====\n\nIntro.\n"""\n'
+
+
+@pytest.mark.parametrize(
+    ("fname", "content", "serial", "n_warn"),
+    [
+        ("plot.py", DOCSTRING + "# sphinx_gallery_parallel = False\n", True, 0),
+        ("plot.py", DOCSTRING + "x = 1\n", False, 0),
+        # comment syntax is language-specific, and .rst has no in-file config at all
+        (
+            "plot.cpp",
+            "// Title\n// =====\n// sphinx_gallery_parallel = False\n",
+            True,
+            0,
+        ),
+        ("plot.rst", "Title\n=====\n", False, 0),
+        # a non-bool value warns and is ignored
+        ("plot.py", DOCSTRING + "# sphinx_gallery_parallel = 2\n", False, 1),
+        # merely documenting the flag in the docstring must not set it
+        (
+            "plot.py",
+            '"""\nTitle\n=====\n\n    # sphinx_gallery_parallel = False\n"""\n',
+            False,
+            0,
+        ),
+    ],
+    ids=["py", "py-unset", "cpp", "rst", "non-bool", "docstring"],
+)
+def test_split_parallel(gallery_conf, log_collector, fname, content, serial, n_warn):
+    """Test that the in-file parallel flag is picked up as each parser would."""
+    Path(gallery_conf["examples_dir"], fname).write_text(content, encoding="utf-8")
+    got = sg._split_parallel([fname], gallery_conf["examples_dir"], gallery_conf)
+    assert got == (([fname], []) if serial else ([], [fname]))
+    assert log_collector.warning.call_count == n_warn
+
+
+@pytest.mark.parametrize("n_jobs", [2, False])
+def test_parallel_serial_examples(gallery_conf, n_jobs):
+    """Examples opting out of parallelism run in the main process, in gallery order."""
+    if n_jobs:
+        pytest.importorskip("joblib")
+    gallery_conf.update(
+        parallel=n_jobs,
+        within_subsection_order="FileNameSortKey",
+        image_scrapers=(),
+        reset_modules=(),
+    )
+    Path(gallery_conf["examples_dir"], "README.txt").write_text("")
+    names = ["plot_a", "plot_b", "plot_c"]
+    # each example appends "<name>:<main|worker>" as it runs, so we see the real order
+    log = Path(gallery_conf["gallery_dir"], "order.log")
+    for name in names:
+        # only the middle example is serial, so execution order != gallery order
+        flag = "# sphinx_gallery_parallel = False\n" if name == "plot_b" else ""
+        Path(gallery_conf["examples_dir"], f"{name}.py").write_text(
+            f"{DOCSTRING}{flag}import multiprocessing\nfrom pathlib import Path\n"
+            'where = "main" if multiprocessing.parent_process() is None else "worker"\n'
+            f'Path(r"{log}").open("a").write(f"{name}:{{where}} ")\n',
+            encoding="utf-8",
+        )
+
+    _, index_content, _, toctree_items, _ = generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
+    )
+
+    ran = log.read_text(encoding="utf-8").split()
+    if n_jobs:
+        # serial examples finish before anything is dispatched; the rest race
+        assert ran[0] == "plot_b:main"
+        assert sorted(ran[1:]) == ["plot_a:worker", "plot_c:worker"]
+    else:
+        assert ran == [f"{name}:main" for name in names]
+    assert [Path(item).name for item in toctree_items] == names
+    assert re.findall(r"sphx_glr_(plot_[abc])_thumb", index_content) == names
+
+
+def test_split_parallel_serial_build(gallery_conf, log_collector):
+    """A bad in-file parallel setting is reported even when parallel is disabled."""
+    gallery_conf.update(image_scrapers=(), reset_modules=())
+    Path(gallery_conf["examples_dir"], "README.txt").write_text("")
+    Path(gallery_conf["examples_dir"], "plot_a.py").write_text(
+        DOCSTRING + "# sphinx_gallery_parallel = 2\n", encoding="utf-8"
+    )
+    generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
+    )
+    assert log_collector.warning.call_count == 1
+    assert "not a boolean" in log_collector.warning.call_args[0][0]
 
 
 @pytest.fixture
@@ -1168,7 +1377,7 @@ def test_textio_compat(log_collector_wrap):
     assert tee.writable()
 
 
-def test_fileno(monkeypatch, log_collector_wrap):
+def test_fileno(log_collector_wrap):
     _, _, tee, _ = log_collector_wrap
     with pytest.raises(io.UnsupportedOperation):
         tee.fileno()
@@ -1198,6 +1407,5 @@ def test_newlines(log_collector_wrap):
     assert tee.newlines == tee.output.newlines
 
 
-# TODO: test that broken thumbnail does appear when needed
 # TODO: test that examples are executed after a no-plot and produce
 #       the correct image in the thumbnail

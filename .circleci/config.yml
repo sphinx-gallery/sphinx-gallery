@@ -1,19 +1,33 @@
-version: 2
+version: 2.1
+
+# Aliases to reuse
+_imageconfig: &imageconfig
+  machine:
+    image: ubuntu-2404:current
+
+# Half of the MNE job is Sphinx's parallel read phase (391 s of ~830 s to read
+# 1009 documents), and MNE's Makefile passes -j auto, so it scales with cores.
+# The default machine class only has 2. scikit-learn pins SPHINX_NUMJOBS=1, so
+# that job would not benefit and stays on the default.
+_bigimageconfig: &bigimageconfig
+  machine:
+    image: ubuntu-2404:current
+  resource_class: large
+
+commands:
+  bash_env:
+    steps:
+      - run:
+          name: Set BASH_ENV
+          command: |
+            ./.circleci/setup_bash.sh
+
 jobs:
-  build_docs:
-    docker:
-      - image: cimg/python:3.10.10
+  setup_env:
+    <<: *imageconfig
     steps:
       # Get our data and merge with upstream
       - checkout
-      - run:
-          name: Update libraries
-          command: |
-            sudo apt update
-            sudo apt --no-install-recommends install -yq \
-              libosmesa6 libglx-mesa0 libopengl0 libglx0 libdbus-1-3 \
-              libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 xvfb \
-              texlive texlive-latex-extra latexmk optipng tex-gyre graphviz
       - run:
           name: Merge with upstream
           command: |
@@ -23,33 +37,26 @@ jobs:
               echo "Merging $(cat merge.txt)";
               git pull --ff-only origin "refs/pull/$(cat merge.txt)/merge";
             fi
-      # Python env
-      - run:
-          name: Set up Xvfb
-          command: |
-            echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
-            echo 'export XDG_RUNTIME_DIR=/tmp/runtime-circleci' >> $BASH_ENV
-            echo 'export DISPLAY=:99' >> $BASH_ENV
-            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
-
+      - bash_env
       - restore_cache:
           keys:
-            - cache-pip
+            - cache-uv-1
       - run:
-          name: Pip
+          name: Install dependencies
           command: |
-            pip install --progress-bar off --user --upgrade --only-binary ":all:" pip setuptools
-            pip install --progress-bar off --user --upgrade --only-binary ":all:" numpy matplotlib "pyqt5!=5.15.2,!=5.15.3,!=5.15.8" vtk
-            pip install --progress-bar off --user --upgrade seaborn statsmodels pillow joblib sphinx pytest traits pyvista memory_profiler "ipython!=8.7.0" plotly graphviz "docutils>=0.18" imageio
-            pip install --progress-bar off "jupyterlite-sphinx>=0.8.0,<0.9.0" "jupyterlite-pyodide-kernel<0.1.0" libarchive-c
-            pip install --progress-bar off --user --upgrade --pre pydata-sphinx-theme
+            pip install --upgrade --only-binary ":all:" pip setuptools uv
+            uv pip install --upgrade --only-binary ":all:" \
+                numpy matplotlib seaborn statsmodels pillow joblib \
+                "sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6" pytest \
+                traits memory_profiler "ipython!=8.7.0" plotly graphviz \
+                "pyvista>=0.44.0" "docutils>=0.18" imageio pydata-sphinx-theme \
+                "jupyterlite-sphinx>=0.17.1" "jupyterlite-pyodide-kernel" \
+                libarchive-c "sphinxcontrib-video>=0.2.1rc0" intersphinx_registry \
+                sphinx-design
       - save_cache:
-          key: cache-pip
+          key: cache-uv-1
           paths:
-            - ~/.cache/pip
-
-      # Fix libgcc_s.so.1 pthread_cancel bug:
-      # https://github.com/ContinuumIO/anaconda-issues/issues/9190#issuecomment-386508136
+            - ~/.cache/uv
       - run:
           name: Test libs
           command: |
@@ -57,31 +64,88 @@ jobs:
       - run:
           name: Install
           command: |
-            python setup.py develop --user
+            uv pip install -e .
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project
+            - python_env
 
-      - run: sphinx-build doc doc/_build/html -nW --keep-going -b html
+  build_docs:
+    <<: *imageconfig
+    steps:
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run: sphinx-build doc doc/_build/html -nW --keep-going -b html 2>&1 | tee sphinx_log.txt
+      - run:
+          name: Check sphinx log for warnings (which are treated as errors)
+          when: always
+          command: |
+            ! grep "^.*\(WARNING\|ERROR\): " sphinx_log.txt
       - store_artifacts:
           path: doc/_build/html/
           destination: html
       - store_test_results:
           path: doc/_build/html/
+      - persist_to_workspace:
+          root: doc/_build/html
+          paths: .
 
-      - run: sphinx-build sphinx_gallery/tests/tinybuild/doc tiny_html
+  build_tinyhtml:
+    <<: *imageconfig
+    steps:
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run: make -C sphinx_gallery/tests/tinybuild/doc clean html
       - store_artifacts:
-          path: tiny_html
+          path: sphinx_gallery/tests/tinybuild/doc/_build/html
           destination: tiny_html
 
+  build_latexpdf:
+    <<: *imageconfig
+    steps:
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run:
+          name: Get LaTeX tools
+          command: |
+            sudo apt install texlive texlive-latex-extra latexmk tex-gyre
       - run:
           name: latexpdf
           command: |
-            cd sphinx_gallery/tests/tinybuild/doc && make clean && make latexpdf
+            make -C sphinx_gallery/tests/tinybuild/doc clean latexpdf
       - store_artifacts:
           path: sphinx_gallery/tests/tinybuild/doc/_build/latex/
           destination: latex
 
-      - persist_to_workspace:
-          root: doc/_build/html
-          paths: .
+  build_docs_mne:
+    <<: *bigimageconfig
+    steps:
+      - checkout  # just to get SSH keys set up
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run:
+          command: ./.circleci/build_docs_mne.sh
+      - store_artifacts:
+          path: mne-python/doc/_build/html/
+          destination: docs_mne
+
+  build_docs_skl:
+    <<: *imageconfig
+    steps:
+      - checkout  # just to get SSH keys set up
+      - attach_workspace:
+          at: ~/
+      - bash_env
+      - run:
+          command: ./.circleci/build_docs_skl.sh
+      - store_artifacts:
+          path: scikit-learn/doc/_build/html/stable
+          destination: docs_skl
 
   deploy_dev:
     docker:
@@ -114,10 +178,31 @@ workflows:
     jobs:
       # https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag
       # Run for all branches and tags
-      - build_docs:
+      - setup_env: &filter_tags
           filters:
             tags:
               only: /.*/
+      - build_docs:
+          requires:
+            - setup_env
+          <<: *filter_tags
+      - build_tinyhtml:
+          requires:
+            - setup_env
+          <<: *filter_tags
+      - build_latexpdf:
+          requires:
+            - setup_env
+          <<: *filter_tags
+      # integration tests
+      - build_docs_mne:
+          requires:
+            - setup_env
+          <<: *filter_tags
+      - build_docs_skl:
+          requires:
+            - setup_env
+          <<: *filter_tags
       # Run for master branch
       - deploy_dev:
           requires:

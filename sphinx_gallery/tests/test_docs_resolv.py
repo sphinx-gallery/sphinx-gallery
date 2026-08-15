@@ -2,13 +2,9 @@
 # License: 3-clause BSD
 """Testing the rst files generator."""
 
-import os
-import tempfile
-import sys
-
 import pytest
-
 from sphinx.errors import ExtensionError
+
 import sphinx_gallery.docs_resolv as sg
 
 
@@ -18,26 +14,21 @@ def test_embed_code_links_get_data():
     sg._get_data("http://scikit-learn.org/stable/")  # GZip
 
 
-def test_shelve(tmpdir):
+def test_shelve(tmp_path):
     """Test if shelve can cache and retrieve data after file is deleted."""
     test_string = "test information"
-    tmp_cache = str(tmpdir)
-    with tempfile.NamedTemporaryFile("w", delete=False) as f:
-        f.write(test_string)
-    try:
-        # recovers data from temporary file and caches it in the shelve
-        file_data = sg.get_data(f.name, tmp_cache)
-    finally:
-        os.remove(f.name)
+    tmp_cache = tmp_path / "cache"
+    tmp_cache.mkdir(parents=True, exist_ok=True)
+    test_file = tmp_path / "example.txt"
+    test_file.write_text(test_string)
+    # recovers data from temporary file and caches it in the shelve
+    file_data = sg.get_data(str(test_file), str(tmp_cache))
     # tests recovered data matches
     assert file_data == test_string
 
     # test if cached data is available after temporary file has vanished
-    assert sg.get_data(f.name, tmp_cache) == test_string
-
-    # shelve keys need to be str in python 2, deal with unicode input
-    if sys.version_info[0] == 2:
-        assert sg.get_data(f.name, tmp_cache) == test_string
+    test_file.unlink()
+    assert sg.get_data(str(test_file), str(tmp_cache)) == test_string
 
 
 def test_parse_sphinx_docopts():

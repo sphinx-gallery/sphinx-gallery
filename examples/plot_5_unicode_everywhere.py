@@ -9,9 +9,10 @@ to stress test the build and test environments that parse the example files.
 # 🎉 👍
 # Code source: Óscar Nájera
 # License: BSD 3 clause
+# sphinx_gallery_tags = ["matplotlib","line-plot","unicode"]
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 plt.rcParams["font.size"] = 20
 plt.rcParams["font.monospace"] = ["DejaVu Sans Mono"]

@@ -1,3 +1,7 @@
+.. This gallery header file is intentionally kept as README.txt and not
+   renamed to GALLERY_HEADER.rst to test the backward compatibility for
+   using README.txt as gallery header during doc build.
+
 .. _notebook_examples:
 
 Notebook-style Narrative Gallery

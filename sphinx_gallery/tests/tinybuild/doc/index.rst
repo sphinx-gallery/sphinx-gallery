@@ -17,6 +17,10 @@ every module. Examples `here <auto_examples/index.html>`_.
    :template: module.rst
 
    backreferences
+   _dummy
+   _dummy.nested
+   _dummy.unused_a
+   _dummy.unused_b
    docs_resolv
    downloads
    gen_gallery
@@ -38,3 +42,4 @@ This tests that mini-gallery reference labels work:
    auto_examples/index.rst
    auto_examples_with_rst/index.rst
    auto_examples_rst_index/index.rst
+   auto_examples_README_header/index.rst

@@ -9,4 +9,6 @@ example. Note that no output is capture as this file is not executed.
 
 # Code source: Óscar Nájera
 # License: BSD 3 clause
+# sphinx_gallery_tags = ["just-code"]
+
 print([i for i in range(10)])

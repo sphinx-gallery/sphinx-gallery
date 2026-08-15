@@ -2,22 +2,23 @@
 # License: 3-clause BSD
 """Testing the binder badge functionality."""
 
-from copy import deepcopy
 import os
 import re
+from copy import deepcopy
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-
 from sphinx.application import Sphinx
 from sphinx.errors import ConfigError
+
 from sphinx_gallery.interactive_example import (
-    gen_binder_url,
-    check_binder_conf,
     _copy_binder_reqs,
-    gen_binder_rst,
-    gen_jupyterlite_rst,
+    check_binder_conf,
     check_jupyterlite_conf,
+    gen_binder_rst,
+    gen_binder_url,
+    gen_jupyterlite_rst,
 )
 
 
@@ -36,8 +37,7 @@ def test_binder():
 
     url = gen_binder_url(file_path, conf_base, gallery_conf_base)
     expected = (
-        "http://test1.com/v2/gh/org/repo/"
-        "branch?filepath=notebooks/mydir/myfile.ipynb"
+        "http://test1.com/v2/gh/org/repo/branch?filepath=notebooks/mydir/myfile.ipynb"
     )
     assert url == expected
 
@@ -96,7 +96,7 @@ def test_binder():
     conf6 = deepcopy(conf1)
     conf6["dependencies"] = {"test": "test"}
     with pytest.raises(
-        ConfigError, match="`dependencies` value should be a " "list of strings"
+        ConfigError, match="`dependencies` value should be a list of strings"
     ):
         url = check_binder_conf(conf6)
 
@@ -110,9 +110,7 @@ def test_binder():
         pass
 
     apptmp.srcdir = "/"
-    with pytest.raises(
-        ConfigError, match="Couldn't find the Binder " "requirements file"
-    ):
+    with pytest.raises(ConfigError, match="Couldn't find the Binder requirements file"):
         url = _copy_binder_reqs(apptmp, conf7)
 
     # Check returns the correct object
@@ -149,10 +147,10 @@ def test_binder():
     assert url == expected
 
 
-def test_gen_binder_rst(tmpdir):
+def test_gen_binder_rst(tmp_path):
     """Check binder rst generated correctly."""
-    gallery_conf_base = {"gallery_dirs": [str(tmpdir)], "src_dir": "blahblah"}
-    file_path = str(tmpdir.join("blahblah", "mydir", "myfile.py"))
+    gallery_conf_base = {"gallery_dirs": [str(tmp_path)], "src_dir": "blahblah"}
+    file_path = tmp_path / "blahblah" / "mydir" / "myfile.py"
     conf_base = {
         "binderhub_url": "http://test1.com",
         "org": "org",
@@ -162,7 +160,7 @@ def test_gen_binder_rst(tmpdir):
     }
     conf_base = check_binder_conf(conf_base)
     orig_dir = os.getcwd()
-    os.chdir(str(tmpdir))
+    os.chdir(tmp_path)
     try:
         rst = gen_binder_rst(file_path, conf_base, gallery_conf_base)
     finally:
@@ -173,30 +171,28 @@ def test_gen_binder_rst(tmpdir):
     assert image_rst in rst
     assert target_rst in rst
     assert alt_rst in rst
-    image_fname = os.path.join(
-        os.path.dirname(file_path), "images", "binder_badge_logo.svg"
-    )
-    assert os.path.isfile(image_fname)
+    image_fname = file_path.parent / "images" / "binder_badge_logo.svg"
+    assert image_fname.is_file()
 
 
 @pytest.mark.parametrize("use_jupyter_lab", [True, False])
 @pytest.mark.parametrize(
     "example_file",
     [
-        os.path.join("example_dir", "myfile.py"),
-        os.path.join("example_dir", "subdir", "myfile.py"),
+        Path("example_dir", "myfile.py"),
+        Path("example_dir", "subdir", "myfile.py"),
     ],
 )
-def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
+def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmp_path):
     """Check binder rst generated correctly."""
     gallery_conf = {
-        "gallery_dirs": [str(tmpdir)],
+        "gallery_dirs": [str(tmp_path)],
         "src_dir": "blahblah",
         "jupyterlite": {"use_jupyter_lab": use_jupyter_lab},
     }
-    file_path = str(tmpdir.join("blahblah", example_file))
+    file_path = tmp_path / "blahblah" / example_file
     orig_dir = os.getcwd()
-    os.chdir(str(tmpdir))
+    os.chdir(tmp_path)
     try:
         rst = gen_jupyterlite_rst(file_path, gallery_conf)
     finally:
@@ -204,9 +200,9 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     image_rst = " .. image:: images/jupyterlite_badge_logo.svg"
 
     target_rst_template = (
-        ":target: {root_url}/lite/{jupyter_part}.+path={notebook_path}"
+        ":target: {root_url}/lite/{jupyter_part}.+index.html.+path={notebook_path}"
     )
-    if "subdir" not in file_path:
+    if "subdir" not in file_path.parts:
         root_url = r"\.\."
         notebook_path = r"example_dir/myfile\.ipynb"
     else:
@@ -216,7 +212,7 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     if use_jupyter_lab:
         jupyter_part = "lab"
     else:
-        jupyter_part = "retro/notebooks"
+        jupyter_part = "notebooks"
 
     target_rst = target_rst_template.format(
         root_url=root_url, jupyter_part=jupyter_part, notebook_path=notebook_path
@@ -225,10 +221,8 @@ def test_gen_jupyterlite_rst(use_jupyter_lab, example_file, tmpdir):
     assert image_rst in rst
     assert re.search(target_rst, rst), rst
     assert alt_rst in rst
-    image_fname = os.path.join(
-        os.path.dirname(file_path), "images", "jupyterlite_badge_logo.svg"
-    )
-    assert os.path.isfile(image_fname)
+    image_fname = file_path.parent / "images" / "jupyterlite_badge_logo.svg"
+    assert image_fname.is_file()
 
 
 def test_check_jupyterlite_conf():
@@ -245,7 +239,7 @@ def test_check_jupyterlite_conf():
     app.extensions = ["jupyterlite_sphinx"]
     assert check_jupyterlite_conf(None, app) is None
     assert check_jupyterlite_conf({}, app) == {
-        "jupyterlite_contents": os.path.join("srcdir", "jupyterlite_contents"),
+        "jupyterlite_contents": str(Path("srcdir", "jupyterlite_contents")),
         "use_jupyter_lab": True,
         "notebook_modification_function": None,
     }
@@ -255,7 +249,7 @@ def test_check_jupyterlite_conf():
         "use_jupyter_lab": False,
     }
     expected = {
-        "jupyterlite_contents": os.path.join("srcdir", "this_is_the_contents_dir"),
+        "jupyterlite_contents": str(Path("srcdir", "this_is_the_contents_dir")),
         "use_jupyter_lab": False,
         "notebook_modification_function": None,
     }
@@ -267,7 +261,7 @@ def test_check_jupyterlite_conf():
     conf = {"notebook_modification_function": notebook_modification_function}
 
     expected = {
-        "jupyterlite_contents": os.path.join("srcdir", "jupyterlite_contents"),
+        "jupyterlite_contents": str(Path("srcdir", "jupyterlite_contents")),
         "use_jupyter_lab": True,
         "notebook_modification_function": notebook_modification_function,
     }

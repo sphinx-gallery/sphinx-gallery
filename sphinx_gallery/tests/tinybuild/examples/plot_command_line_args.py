@@ -7,8 +7,8 @@ Use command line arguments to control example script.
 
 import sys
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 if len(sys.argv) > 1 and sys.argv[1] == "plot":
     fig_0, ax_0 = plt.subplots(figsize=(5, 1))

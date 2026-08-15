@@ -10,17 +10,39 @@ images are injected as rst ``image-sg`` directives into the ``.rst``
 file generated for each example script.
 """
 
+from __future__ import annotations
+
 import importlib
 import inspect
 import os
-import sys
 import re
+import sys
+from pathlib import Path, PurePosixPath
 from textwrap import indent
-from pathlib import PurePosixPath
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, TypeAlias
 from warnings import filterwarnings
 
 from sphinx.errors import ExtensionError
+
+from .typing import GalleryConfig, PathLikeStr
 from .utils import optipng
+
+if TYPE_CHECKING:
+    import matplotlib.animation
+    import matplotlib.figure
+
+    from .py_source_parser import Block
+
+SrcsetMap: TypeAlias = dict[float | int, PathLikeStr | PurePosixPath]
+"""
+Mapping of image srcset multiplication factor to image path.
+The key 0 is reserved for the original image. Other keys are
+multiplication factors, e.g. 2 for 2x.
+
+Example:
+
+{0: "/images/image.png", 2.0: "/images/image_2_00x.png"}
+"""
 
 __all__ = [
     "save_figures",
@@ -35,7 +57,7 @@ __all__ = [
 # Scrapers
 
 
-def _import_matplotlib():
+def _import_matplotlib() -> tuple[Any, Any]:
     """Import matplotlib safely."""
     # make sure that the Agg backend is set before importing any
     # matplotlib
@@ -70,14 +92,14 @@ def _import_matplotlib():
     return matplotlib, plt
 
 
-def _matplotlib_fig_titles(fig):
+def _matplotlib_fig_titles(fig: matplotlib.figure.Figure) -> str:
     titles = []
     # get supertitle if exists
     suptitle = getattr(fig, "_suptitle", None)
     if suptitle is not None:
         titles.append(suptitle.get_text())
     # get titles from all axes, for all locs
-    title_locs = ["left", "center", "right"]
+    title_locs: list[Literal["left", "center", "right"]] = ["left", "center", "right"]
     for ax in fig.axes:
         for loc in title_locs:
             text = ax.get_title(loc=loc)
@@ -94,25 +116,36 @@ _ANIMATION_RST = """
 
         {0}
 """
+_ANIMATION_VIDEO_RST = """
+.. video:: {video}
+   :class: sphx-glr-single-img
+   :height: {height}
+   :width: {width}
+{options}
+"""
 
 
-def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
+def matplotlib_scraper(
+    block: Block, block_vars: dict[str, Any], gallery_conf: GalleryConfig, **kwargs: Any
+) -> str:
     """Scrape Matplotlib images.
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : sphinx_gallery.py_source_parser.Block
+        The code block to be executed. Format (label, content, lineno).
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict
         Contains the configuration of Sphinx-Gallery
     **kwargs : dict
         Additional keyword arguments to pass to
-        :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``.
-        The ``format`` kwarg in particular is used to set the file extension
-        of the output file (currently only 'png', 'jpg', 'svg', 'gif', and
-        'webp' are supported).
+        :meth:`~matplotlib.figure.Figure.savefig`, e.g. ``format='svg'``. The
+        ``format`` keyword argument in particular is used to set the file
+        extension of the output file (currently only 'png', 'jpg', 'svg',
+        'gif', and 'webp' are supported).
+
+        This is not used internally, but intended for use when overriding the scraper.
 
     Returns
     -------
@@ -123,49 +156,28 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     # Do not use _import_matplotlib() to avoid potentially changing the backend
     import matplotlib
     import matplotlib.pyplot as plt
-
     from matplotlib.animation import Animation
 
     image_path_iterator = block_vars["image_path_iterator"]
     image_rsts = []
-    # Check for srcset hidpi images
     srcset = gallery_conf["image_srcset"]
-    srcset_mult_facs = [1]  # one is always supplied...
-    for st in srcset:
-        if (len(st) > 0) and (st[-1] == "x"):
-            # "2x" = "2.0"
-            srcset_mult_facs += [float(st[:-1])]
-        elif st == "":
-            pass
-        else:
-            raise ExtensionError(
-                f'Invalid value for image_srcset parameter: "{st}". '
-                "Must be a list of strings with the multiplicative "
-                'factor followed by an "x".  e.g. ["2.0x", "1.5x"]'
-            )
 
     # Check for animations
-    anims = list()
-    if gallery_conf["matplotlib_animations"]:
+    anims = {}
+    if gallery_conf["matplotlib_animations"][0]:
         for ani in block_vars["example_globals"].values():
             if isinstance(ani, Animation):
-                anims.append(ani)
+                anims[ani._fig] = ani
     # Then standard images
     for fig_num, image_path in zip(plt.get_fignums(), image_path_iterator):
         image_path = PurePosixPath(image_path)
         if "format" in kwargs:
             image_path = image_path.with_suffix("." + kwargs["format"])
-        # Set the fig_num figure as the current figure as we can't
-        # save a figure that's not the current figure.
+        # Convert figure number to Figure.
         fig = plt.figure(fig_num)
         # Deal with animations
-        cont = False
-        for anim in anims:
-            if anim._fig is fig:
-                image_rsts.append(_anim_rst(anim, str(image_path), gallery_conf))
-                cont = True
-                break
-        if cont:
+        if anim := anims.get(fig):
+            image_rsts.append(_anim_rst(anim, image_path, gallery_conf))
             continue
         # get fig titles
         fig_titles = _matplotlib_fig_titles(fig)
@@ -186,27 +198,25 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             if dpi0 == "figure":
                 dpi0 = fig.dpi
             dpi0 = these_kwargs.get("dpi", dpi0)
-            srcsetpaths = {0: image_path}
+            srcsetpaths_dict: SrcsetMap = {0: image_path}
 
             # save other srcset paths, keyed by multiplication factor:
-            for mult in srcset_mult_facs:
-                if not (mult == 1):
-                    multst = f"{mult:.2f}".replace(".", "_")
-                    name = f"{image_path.stem}_{multst}x{image_path.suffix}"
-                    hipath = image_path.parent / PurePosixPath(name)
-                    hikwargs = these_kwargs.copy()
-                    hikwargs["dpi"] = mult * dpi0
-                    fig.savefig(hipath, **hikwargs)
-                    srcsetpaths[mult] = hipath
-            srcsetpaths = [srcsetpaths]
+            for mult in srcset:
+                multst = f"{mult:.2f}".replace(".", "_")
+                name = f"{image_path.stem}_{multst}x{image_path.suffix}"
+                this_hipath = image_path.parent / PurePosixPath(name)
+                hikwargs = {**these_kwargs, "dpi": mult * dpi0}
+                fig.savefig(this_hipath, **hikwargs)
+                srcsetpaths_dict[mult] = this_hipath
+            srcsetpaths: list[SrcsetMap] = [srcsetpaths_dict]
         except Exception:
             plt.close("all")
             raise
 
         if "images" in gallery_conf["compress_images"]:
-            optipng(str(image_path), gallery_conf["compress_images_args"])
-            for hipath in srcsetpaths[0].items():
-                optipng(str(hipath), gallery_conf["compress_images_args"])
+            # key 0 is image_path itself, so this covers it as well
+            for hipath in srcsetpaths[0].values():
+                optipng(Path(hipath), gallery_conf["compress_images_args"])
 
         image_rsts.append(
             figure_rst(
@@ -217,15 +227,25 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
             )
         )
 
+    # Determine whether single-img should be converted to multi-img
+    convert_to_multi_image = True  # default is to convert
+    if block_vars.get("multi_image") is not None:  # block setting takes precedence
+        convert_to_multi_image = block_vars["multi_image"] != "single"
+    elif block_vars.get("file_conf") is not None:  # then file setting
+        convert_to_multi_image = block_vars["file_conf"].get("multi_image") != "single"
+
     plt.close("all")
     rst = ""
     if len(image_rsts) == 1:
         rst = image_rsts[0]
     elif len(image_rsts) > 1:
-        image_rsts = [
-            re.sub(r":class: sphx-glr-single-img", ":class: sphx-glr-multi-img", image)
-            for image in image_rsts
-        ]
+        if convert_to_multi_image:
+            image_rsts = [
+                re.sub(
+                    r":class: sphx-glr-single-img", ":class: sphx-glr-multi-img", image
+                )
+                for image in image_rsts
+            ]
         image_rsts = [
             HLIST_IMAGE_MATPLOTLIB + indent(image, " " * 6) for image in image_rsts
         ]
@@ -233,13 +253,18 @@ def matplotlib_scraper(block, block_vars, gallery_conf, **kwargs):
     return rst
 
 
-def _anim_rst(anim, image_path, gallery_conf):
+def _anim_rst(
+    anim: matplotlib.animation.Animation,
+    image_path: PurePosixPath,
+    gallery_conf: GalleryConfig,
+) -> str:
+    from matplotlib import rcParams
     from matplotlib.animation import FFMpegWriter, ImageMagickWriter
 
     # output the thumbnail as the image, as it will just be copied
     # if it's the file thumbnail
     fig = anim._fig
-    image_path = image_path.replace(".png", ".gif")
+    gif_image_path = Path(image_path).with_suffix(".gif")
     fig_size = fig.get_size_inches()
     thumb_size = gallery_conf["thumbnail_size"]
     use_dpi = round(min(t_s / f_s for t_s, f_s in zip(thumb_size, fig_size)))
@@ -249,15 +274,43 @@ def _anim_rst(anim, image_path, gallery_conf):
         writer = "imagemagick"
     else:
         writer = None
-    anim.save(image_path, writer=writer, dpi=use_dpi)
-    html = anim._repr_html_()
-    if html is None:  # plt.rcParams['animation.html'] == 'none'
+    anim.save(gif_image_path, writer=writer, dpi=use_dpi)
+
+    _, fmt = gallery_conf["matplotlib_animations"]
+    # Formats that are embedded in rst
+    html = None
+    if fmt is None:
+        html = anim._repr_html_()
+        if html is None:  # plt.rcParams['animation.html'] == 'none'
+            html = anim.to_jshtml()
+    elif fmt == "html5":
+        html = anim.to_html5_video()
+    elif fmt == "jshtml":
         html = anim.to_jshtml()
-    html = indent(html, "     ")
-    return _ANIMATION_RST.format(html)
+    if html is not None:
+        html = indent(html, "     ")
+        return _ANIMATION_RST.format(html)
+
+    # Formats that are saved and use `video` directive
+    video = Path(image_path).with_suffix(f".{fmt}")
+    anim.save(video)
+    options = ["autoplay"]
+    if getattr(anim, "_repeat", False):
+        options.append("loop")
+    dpi = rcParams["savefig.dpi"]
+    if dpi == "figure":
+        dpi = fig.dpi
+    video_uri = _as_relative_rst_path(video, gallery_conf["src_dir"])
+    html = _ANIMATION_VIDEO_RST.format(
+        video=f"/{video_uri}",
+        width=int(fig_size[0] * dpi),
+        height=int(fig_size[1] * dpi),
+        options="".join(f"   :{opt}:\n" for opt in options),
+    )
+    return html
 
 
-_scraper_dict = dict(
+_scraper_dict: dict[str, Callable[..., str]] = dict(
     matplotlib=matplotlib_scraper,
 )
 
@@ -271,12 +324,12 @@ class ImagePathIterator:
         The template image path.
     """
 
-    def __init__(self, image_path):
-        self.image_path = image_path
-        self.paths = list()
+    def __init__(self, image_path: PathLikeStr) -> None:
+        self.image_path = str(image_path)
+        self.paths: list[str] = list()
         self._stop = 1000000
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return the number of image paths used.
 
         Returns
@@ -286,7 +339,7 @@ class ImagePathIterator:
         """
         return len(self.paths)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         """Iterate over paths.
 
         Returns
@@ -307,11 +360,11 @@ class ImagePathIterator:
         else:
             raise ExtensionError(f"Generated over {self._stop} images")
 
-    def next(self):
+    def next(self) -> str:
         """Return the next image path, with numbering starting at 1."""
         return self.__next__()
 
-    def __next__(self):
+    def __next__(self) -> str:
         # The +1 here is because we start image numbering at 1 in filenames
         path = self.image_path.format(len(self) + 1)
         self.paths.append(path)
@@ -323,25 +376,27 @@ class ImagePathIterator:
 _KNOWN_IMG_EXTS = ("png", "svg", "jpg", "gif", "webp")
 
 
-def _find_image_ext(path):
+def _find_image_ext(path: PathLikeStr) -> tuple[str, str]:
     """Find an image, tolerant of different file extensions."""
-    path = os.path.splitext(path)[0]
+    path = Path(path).with_suffix("")
     for ext in _KNOWN_IMG_EXTS:
-        this_path = f"{path}.{ext}"
-        if os.path.isfile(this_path):
+        this_path = path.with_suffix(f".{ext}")
+        if this_path.is_file():
             break
     else:
         ext = "png"
-    return (f"{path}.{ext}", ext)
+    return (str(path.with_suffix(f".{ext}")), ext)
 
 
-def save_figures(block, block_vars, gallery_conf):
+def save_figures(
+    block: Block, block_vars: dict[str, Any], gallery_conf: GalleryConfig
+) -> str:
     """Save all open figures of the example code-block.
 
     Parameters
     ----------
-    block : tuple
-        A tuple containing the (label, content, line_number) of the block.
+    block : sphinx_gallery.py_source_parser.Block
+        The code block to be executed. Format (label, content, lineno).
     block_vars : dict
         Dict of block variables.
     gallery_conf : dict
@@ -352,10 +407,12 @@ def save_figures(block, block_vars, gallery_conf):
     images_rst : str
         rst code to embed the images in the document.
     """
+    from .gen_rst import _get_callables
+
     image_path_iterator = block_vars["image_path_iterator"]
     all_rst = ""
     prev_count = len(image_path_iterator)
-    for scraper in gallery_conf["image_scrapers"]:
+    for scraper in _get_callables(gallery_conf, "image_scrapers"):
         rst = scraper(block, block_vars, gallery_conf)
         if not isinstance(rst, str):
             raise ExtensionError(
@@ -367,16 +424,28 @@ def save_figures(block, block_vars, gallery_conf):
             current_path, _ = _find_image_ext(
                 image_path_iterator.paths[prev_count + ii]
             )
-            if not os.path.isfile(current_path):
+            if not Path(current_path).is_file():
                 raise ExtensionError(
-                    f"Scraper {scraper} did not produce expected image:"
-                    f"\n{current_path}"
+                    f"Scraper {scraper} did not produce expected image:\n{current_path}"
                 )
         all_rst += rst
     return all_rst
 
 
-def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
+def _as_relative_rst_path(path: PathLikeStr, sources_dir: PathLikeStr) -> str:
+    """Return path relative to sources_dir as a normalized POSIX path."""
+    # relative_to doesn't work on windows
+    # rel_path = path.relative_to(sources_dir).as_posix()
+    rel_path = os.path.relpath(str(path), str(sources_dir))
+    return Path(rel_path).as_posix().lstrip("/")
+
+
+def figure_rst(
+    figure_list: list[PathLikeStr | PurePosixPath],
+    sources_dir: PathLikeStr,
+    fig_titles: str = "",
+    srcsetpaths: list[SrcsetMap] | None = None,
+) -> str:
     """Generate reST for a list of image filenames.
 
     Depending on whether we have one or more figures, we use a
@@ -386,7 +455,7 @@ def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
     ----------
     figure_list : list
         List of strings of the figures' absolute paths.
-    sources_dir : str
+    sources_dir : str | pathlib.Path
         absolute path of Sphinx documentation sources
     fig_titles : str
         Titles of figures, empty string if no titles found. Currently
@@ -417,8 +486,7 @@ def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
         srcsetpaths = [{0: fl} for fl in figure_list]
 
     figure_paths = [
-        os.path.relpath(figure_path, sources_dir).replace(os.sep, "/").lstrip("/")
-        for figure_path in figure_list
+        _as_relative_rst_path(figure_path, sources_dir) for figure_path in figure_list
     ]
 
     # Get alt text
@@ -426,9 +494,9 @@ def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
     if fig_titles:
         alt = fig_titles
     elif figure_list:
-        file_name = os.path.split(figure_list[0])[1]
+        file_name = Path(figure_list[0]).name
         # remove ext & 'sphx_glr_' from start & n#'s from end
-        file_name_noext = os.path.splitext(file_name)[0][9:-4]
+        file_name_noext = Path(file_name).stem[9:-4]
         # replace - & _ with \s
         file_name_final = re.sub(r"[-,_]", " ", file_name_noext)
         alt = file_name_final
@@ -452,7 +520,7 @@ def figure_rst(figure_list, sources_dir, fig_titles="", srcsetpaths=None):
     return images_rst
 
 
-def _get_srcset_st(sources_dir, hinames):
+def _get_srcset_st(sources_dir: PathLikeStr, hinames: SrcsetMap) -> str:
     """Create the srcset string for including on the rst line.
 
     For example; `sources_dir` might be `/home/sample-proj/source`,
@@ -466,7 +534,7 @@ def _get_srcset_st(sources_dir, hinames):
     """
     srcst = ""
     for k in hinames.keys():
-        path = os.path.relpath(hinames[k], sources_dir).replace(os.sep, "/").lstrip("/")
+        path = _as_relative_rst_path(hinames[k], sources_dir)
         srcst += "/" + path
         if k == 0:
             srcst += ", "
@@ -479,7 +547,7 @@ def _get_srcset_st(sources_dir, hinames):
     return srcst
 
 
-def _single_line_sanitize(s):
+def _single_line_sanitize(s: str) -> str:
     """Remove problematic newlines."""
     # For example, when setting a :alt: for an image, it shouldn't have \n
     # This is a function in case we end up finding other things to replace
@@ -525,7 +593,7 @@ SINGLE_IMAGE = """
 # Module resetting
 
 
-def _reset_matplotlib(gallery_conf, fname):
+def _reset_matplotlib(gallery_conf: GalleryConfig, fname: PathLikeStr | None) -> None:
     """Reset matplotlib."""
     mpl, plt = _import_matplotlib()
     plt.rcdefaults()
@@ -534,7 +602,7 @@ def _reset_matplotlib(gallery_conf, fname):
     importlib.reload(mpl.category)
 
 
-def _reset_seaborn(gallery_conf, fname):
+def _reset_seaborn(gallery_conf: GalleryConfig, fname: PathLikeStr | None) -> None:
     """Reset seaborn."""
     seaborn_module = sys.modules.get("seaborn")
     if seaborn_module is not None:
@@ -547,7 +615,9 @@ _reset_dict = {
 }
 
 
-def clean_modules(gallery_conf, fname, when):
+def clean_modules(
+    gallery_conf: GalleryConfig, fname: PathLikeStr | None, when: str
+) -> None:
     """Remove, unload, or reset modules.
 
     After a script is executed it can load a variety of settings that one
@@ -557,7 +627,7 @@ def clean_modules(gallery_conf, fname, when):
     ----------
     gallery_conf : dict
         The gallery configuration.
-    fname : str or None
+    fname : str | pathlib.Path | None
         The example being run. Will be None when this is called entering
         a directory of examples to be built.
     when : str
@@ -566,13 +636,16 @@ def clean_modules(gallery_conf, fname, when):
         This parameter is only forwarded when the callables accept 3
         parameters.
     """
-    for reset_module in gallery_conf["reset_modules"]:
+    from .gen_rst import _get_callables
+
+    for reset_module in _get_callables(gallery_conf, "reset_modules"):
         sig = inspect.signature(reset_module)
         if len(sig.parameters) == 3:
             third_param = list(sig.parameters.keys())[2]
             if third_param != "when":
+                name = getattr(reset_module, "__name__", repr(reset_module))
                 raise ValueError(
-                    f"3rd parameter in {reset_module.__name__} "
+                    f"3rd parameter in {name} "
                     "function signature must be 'when', "
                     f"got {third_param}"
                 )

@@ -2,16 +2,31 @@
 
 Miscellaneous utilities.
 """
+
 # Author: Eric Larson
 # License: 3-clause BSD
 
-
+import contextlib
 import hashlib
+import json
 import os
-from shutil import move, copyfile
+import re
 import subprocess
+import zipfile
+from functools import partial
+from pathlib import Path
+from shutil import copyfile, move
+from typing import (
+    Any,
+    Callable,
+    ContextManager,
+    Iterator,
+    Literal,
+    Sequence,
+    Tuple,
+    TypedDict,
+)
 
-from sphinx.errors import ExtensionError
 import sphinx.util
 
 try:
@@ -19,32 +34,61 @@ try:
 except Exception:  # Sphinx < 6
     from sphinx.util import status_iterator  # noqa: F401
 
+from .typing import GalleryConfig, PathLikeStr
 
 logger = sphinx.util.logging.getLogger("sphinx-gallery")
 
 
-def _get_image():
+class _WriteKwargs(TypedDict):
+    """Text writing kwargs for builtins.open."""
+
+    encoding: str
+    newline: str
+
+
+_W_KW: _WriteKwargs = {"encoding": "utf-8", "newline": "\n"}
+
+
+def _single_threaded() -> ContextManager:
+    """Run a block of native code without leaving a thread pool behind.
+
+    Sphinx forks its parallel read and write workers -- ``get_context("fork")`` is
+    hardcoded in ``sphinx/util/parallel.py`` -- and ``fork()`` only clones the calling
+    thread. An OpenMP worker thread that is alive in the Sphinx process at that moment
+    is therefore lost in the child, while the OpenMP runtime still believes it exists;
+    the next parallel region in that child blocks forever in the OpenMP join barrier.
+    Since Sphinx Gallery declares itself ``parallel_read_safe``, any BLAS call it makes
+    in the Sphinx process on its own behalf must not leave such a thread behind.
+
+    Capping the thread pools for the duration of the call means no OpenMP team is ever
+    created, so there is nothing for a later ``fork()`` to lose. This is a no-op when
+    ``threadpoolctl`` is not installed; the deadlock only shows up with a threaded BLAS
+    (notably MKL), so a fallback that silently does nothing is acceptable.
+    """
     try:
-        from PIL import Image
-    except ImportError as exc:  # capture the error for the modern way
-        try:
-            import Image
-        except ImportError:
-            raise ExtensionError(
-                "Could not import pillow, which is required "
-                f"to rescale images (e.g., for thumbnails): {exc}"
-            )
-    return Image
+        import threadpoolctl
+    except ImportError:
+        return contextlib.nullcontext()
+    return threadpoolctl.threadpool_limits(limits=1)
 
 
-def scale_image(in_fname, out_fname, max_width, max_height):
+def scale_image(
+    in_fname: PathLikeStr,
+    out_fname: PathLikeStr,
+    max_width: int,
+    max_height: int,
+) -> None:
     """Scales image centered in image box using `max_width` and `max_height`.
 
     The same aspect ratio is retained. If `in_fname` == `out_fname` the image can only
     be scaled down.
     """
     # local import to avoid testing dependency on PIL:
-    Image = _get_image()
+    from PIL import Image
+
+    in_fname = Path(in_fname)
+    out_fname = Path(out_fname)
+
     img = Image.open(in_fname)
     # XXX someday we should just try img.thumbnail((max_width, max_height)) ...
     width_in, height_in = img.size
@@ -65,10 +109,7 @@ def scale_image(in_fname, out_fname, max_width, max_height):
     # resize the image using resize; if using .thumbnail and the image is
     # already smaller than max_width, max_height, then this won't scale up
     # at all (maybe could be an option someday...)
-    try:  # Pillow 9+
-        bicubic = Image.Resampling.BICUBIC
-    except Exception:
-        bicubic = Image.BICUBIC
+    bicubic = Image.Resampling.BICUBIC
     img = img.resize((width_sc, height_sc), bicubic)
     # img.thumbnail((width_sc, height_sc), Image.BICUBIC)
     # width_sc, height_sc = img.size  # necessary if using thumbnail
@@ -85,19 +126,19 @@ def scale_image(in_fname, out_fname, max_width, max_height):
         thumb.convert("RGB").save(out_fname)
 
 
-def optipng(fname, args=()):
+def optipng(fname: Path, args: Tuple = ()) -> None:
     """Optimize a PNG in place.
 
     Parameters
     ----------
-    fname : str
+    fname : Path
         The filename. If it ends with '.png', ``optipng -o7 fname`` will
         be run. If it fails because the ``optipng`` executable is not found
         or optipng fails, the function returns.
     args : tuple
         Extra command-line arguments, such as ``['-o7']``.
     """
-    if fname.endswith(".png"):
+    if fname.suffix == ".png":
         # -o7 because this is what CPython used
         # https://github.com/python/cpython/pull/8032
         try:
@@ -106,67 +147,79 @@ def optipng(fname, args=()):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except (subprocess.CalledProcessError, OSError):  # FileNotFoundError
+        except (subprocess.CalledProcessError, FileNotFoundError):
             pass
 
 
-def _has_optipng():
+def _has_optipng() -> bool:
     try:
         subprocess.check_call(
             ["optipng", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-    except OSError:  # FileNotFoundError
+    except FileNotFoundError:
         return False
     else:
         return True
 
 
-def replace_py_ipynb(fname):
-    """Replace '.py' extension in filename with '.ipynb'."""
-    fname_prefix, extension = os.path.splitext(fname)
-    allowed_extension = ".py"
-    if extension != allowed_extension:
-        raise ValueError(
-            f"Unrecognized file extension, expected {allowed_extension}, "
-            f"got {extension}"
-        )
-    new_extension = ".ipynb"
-    return f"{fname_prefix}{new_extension}"
-
-
-def get_md5sum(src_file, mode="b"):
+def get_md5sum(src_file: PathLikeStr, mode: Literal["t", "b"] = "b") -> str:
     """Returns md5sum of file.
 
     Parameters
     ----------
-    src_file : str
+    src_file : str | pathlib.Path
         Filename to get md5sum for.
     mode : 't' or 'b'
         File mode to open file with. When in text mode, universal line endings
         are used to ensure consistency in hashes between platforms.
     """
+    assert mode in ("t", "b")
+    src_file = Path(src_file)
     if mode == "t":
-        kwargs = {"errors": "surrogateescape", "encoding": "utf-8"}
+        # Universal newline mode is intentional here for text mode
+        src_content = src_file.read_text(
+            errors="surrogateescape", encoding="utf-8"
+        ).encode(errors="surrogateescape", encoding="utf-8")
     else:
-        kwargs = {}
-    with open(src_file, "r" + mode, **kwargs) as src_data:
-        src_content = src_data.read()
-        if mode == "t":
-            src_content = src_content.encode(**kwargs)
-        return hashlib.md5(src_content).hexdigest()
+        src_content = src_file.read_bytes()
+    return hashlib.md5(src_content).hexdigest()
 
 
-def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
+def _replace_md5(
+    fname_new: PathLikeStr,
+    fname_old: PathLikeStr | None = None,
+    *,
+    method: Literal["move", "copy"] = "move",
+    mode: Literal["t", "b"] = "b",
+    check: Literal["md5", "json"] = "md5",
+) -> bool:
+    """Replace ``fname_old`` with ``fname_new``, returning whether it changed."""
+    fname_new = Path(fname_new)
     assert method in ("move", "copy")
     if fname_old is None:
-        assert fname_new.endswith(".new")
-        fname_old = os.path.splitext(fname_new)[0]
+        assert fname_new.suffix == ".new"
+        fname_old = fname_new.with_suffix("")
+    else:
+        fname_old = Path(fname_old)
     replace = True
-    if os.path.isfile(fname_old):
-        if get_md5sum(fname_old, mode) == get_md5sum(fname_new, mode):
+    if fname_old.is_file():
+        func: Callable[[Path], Any]
+        if check == "md5":  # default
+            func = partial(get_md5sum, mode=mode)
+        else:
+            assert check == "json"
+
+            def func(x):
+                return json.loads(x.read_text("utf-8"))
+
+        try:
+            equiv = func(fname_old) == func(fname_new)
+        except Exception:  # e.g., old JSON file is a problem
+            equiv = False
+        if equiv:
             replace = False
             if method == "move":
-                os.remove(fname_new)
+                fname_new.unlink()
         else:
             logger.debug(f"Replacing stale {fname_old} with {fname_new}")
     if replace:
@@ -174,10 +227,119 @@ def _replace_md5(fname_new, fname_old=None, method="move", mode="b"):
             move(fname_new, fname_old)
         else:
             copyfile(fname_new, fname_old)
-    assert os.path.isfile(fname_old)
+    assert fname_old.is_file()
+    return replace
 
 
-def _has_pypandoc():
+def iter_gallery_header_filenames(gallery_conf: GalleryConfig) -> Iterator[str]:
+    """
+    A generator of all possible gallery header filenames.
+
+    We support GALLERY_HEADER.[ext], and for backward-compatibility README.[ext]
+    """
+    extensions = [".txt"] + sorted(gallery_conf["source_suffix"])
+    for ext in extensions:
+        for fname in ("GALLERY_HEADER", "README", "readme"):
+            yield fname + ext
+
+
+def check_duplicate_filenames(files: Sequence[PathLikeStr]) -> None:
+    """Check for duplicate filenames across gallery directories."""
+    # Check whether we'll have duplicates
+    used_names = set()
+    dup_names = list()
+
+    for this_file in files:
+        this_fname = Path(this_file).name
+        if this_fname in used_names:
+            dup_names.append(this_file)
+        else:
+            used_names.add(this_fname)
+
+    if len(dup_names) > 0:
+        logger.warning(
+            "Duplicate example file name(s) found. Having duplicate file "
+            "names will break some links. "
+            "List of files: %s",
+            sorted(str(name) for name in dup_names),
+        )
+
+
+def check_spaces_in_filenames(files: Sequence[PathLikeStr]) -> None:
+    """Check for spaces in filenames across example directories."""
+    regex = re.compile(r"[\s]")
+    files_with_space = [str(file) for file in files if regex.search(str(file))]
+    if files_with_space:
+        logger.warning(
+            "Example file name(s) with spaces found. Having spaces in "
+            "file names will break some links. "
+            "List of files: %s",
+            sorted(files_with_space),
+        )
+
+
+def _collect_gallery_files(
+    examples_dirs: Sequence[PathLikeStr],
+    gallery_conf: GalleryConfig,
+    check_filenames: bool = False,
+) -> list[str]:
+    """Collect files with `example_extensions`, accounting for `ignore_pattern`.
+
+    If `check_filenames` we check one level of sub-folders as well as root
+    `example_dirs` for gallery example files. We then check for duplicate and
+    spaces in full file paths.
+    """
+    exts = gallery_conf["example_extensions"]
+    max_depth = 1 if check_filenames else 0
+    files = []
+    gallery_header_filenames = list(iter_gallery_header_filenames(gallery_conf))
+    for example_dir in examples_dirs:
+        example_dir = Path(example_dir)
+        for dirpath, _, filenames in os.walk(example_dir):
+            # `os.walk` yields paths below `example_dir`, so the number of parts
+            # relative to it is the depth
+            root = Path(dirpath)
+            if len(root.parts) - len(example_dir.parts) > max_depth:
+                break
+            for filename in filenames:
+                if filename in gallery_header_filenames:
+                    continue
+                if (s := Path(filename).suffix) and s in exts:
+                    if re.search(gallery_conf["ignore_pattern"], filename) is None:
+                        file = str(root / filename) if check_filenames else filename
+                        files.append(file)
+    if check_filenames:
+        check_duplicate_filenames(files)
+        check_spaces_in_filenames(files)
+    return files
+
+
+def zip_files(
+    file_list: Sequence[PathLikeStr],
+    zipname: PathLikeStr,
+    relative_to: PathLikeStr,
+    extension: str | None = None,
+) -> str:
+    """
+    Creates a zip file with the given files.
+
+    A zip file named `zipname` will be created containing the files listed in
+    `file_list`. The zip file contents will be stored with their paths stripped to be
+    relative to `relative_to`.
+    """
+    zipname = Path(zipname)
+    zipname_new = zipname.with_name(zipname.name + ".new")
+    with zipfile.ZipFile(zipname_new, mode="w") as zipf:
+        for fname in file_list:
+            fname = Path(fname)
+            if extension is not None:
+                fname = fname.with_suffix(extension)
+            zipf.write(fname, Path(os.path.relpath(fname, relative_to)).as_posix())
+    _replace_md5(zipname_new)
+    return str(zipname)
+
+
+def _has_pypandoc() -> Tuple[bool | None, str | None]:
     """Check if pypandoc package available."""
     try:
         import pypandoc  # noqa
@@ -190,13 +352,72 @@ def _has_pypandoc():
         return True, version
 
 
-def _has_graphviz():
+def _has_graphviz() -> bool:
     try:
         import graphviz  # noqa F401
     except ImportError as exc:
         logger.info(
-            "`graphviz` required for graphical visualization "
+            "`graphviz` Python package required for graphical visualization "
             f"but could not be imported, got: {exc}"
         )
         return False
+    try:
+        subprocess.check_call(
+            ["neato", "-V"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+    except FileNotFoundError as exc:
+        logger.info(
+            "`neato` layout engine required for graphical visualization "
+            f"but command-line executable could not be found ({exc})"
+        )
+        return False
     return True
+
+
+def _format_toctree(items: list[str], includehidden: bool = False) -> str:
+    """Format a toc tree."""
+    st = """
+.. toctree::
+   :hidden:"""
+    if includehidden:
+        st += """
+   :includehidden:
+"""
+    st += """
+
+   {}\n""".format("\n   ".join(items))
+
+    st += "\n"
+
+    return st
+
+
+# Should be matched with `_read_json`
+def _write_json(target_file: PathLikeStr, to_save: dict, name: str = "") -> None:
+    """Write dictionary to JSON file."""
+    target_file = Path(target_file)
+    codeobj_fname = target_file.with_name(target_file.stem + f"{name}.json.new")
+    with open(codeobj_fname, "w", **_W_KW) as fid:
+        json.dump(
+            to_save,
+            fid,
+            sort_keys=True,
+            ensure_ascii=False,
+            indent=1,
+            check_circular=False,
+        )
+    _replace_md5(codeobj_fname, check="json")
+
+
+def _read_json(json_fname: PathLikeStr) -> Any:
+    """Read JSON dictionary from file."""
+    return json.loads(Path(json_fname).read_text(encoding="utf-8"))
+
+
+def _combine_backreferences(dict_a: dict, dict_b: dict | None) -> dict:
+    """Combine backreferences dictionaries, joining lists when keys are the same."""
+    # `dict_b` is None when `backreferences_dir` config not set
+    if isinstance(dict_b, dict):
+        for key, value in dict_b.items():
+            dict_a.setdefault(key, []).extend(value)
+    return dict_a
