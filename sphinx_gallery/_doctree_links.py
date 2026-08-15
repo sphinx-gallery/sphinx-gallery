@@ -234,6 +234,24 @@ def _token_node(ttype: Any, text: str) -> nodes.Node:
     return nodes.inline(text, text, classes=[short])
 
 
+# the languages Sphinx itself highlights with the Python lexer; a literal_block
+# with no language at all is highlighted as "default", hence as Python:
+# https://github.com/sphinx-doc/sphinx/blob/v9.1.0/sphinx/highlighting.py#L126-L130
+_PYTHON_LANGS = frozenset({"py", "python", "py3", "python3", "default"})
+
+
+def _lexer_name(lang: str, code: str) -> str | None:
+    """Return the pygments lexer Sphinx would use, or None if not Python."""
+    lang = lang.lower()
+    if lang in _PYTHON_LANGS:
+        return "pycon" if code.startswith(">>>") else "python"
+    if lang in {"pycon", "pycon3"}:
+        return "pycon"
+    if lang == "ipython3":
+        return "ipython3"
+    return None
+
+
 def _dotted_chain(tokens: list[tuple[Any, str]], i: int) -> Iterator[tuple[str, int]]:
     """Yield the dotted-name prefixes starting at ``tokens[i]``, longest first.
 
@@ -255,7 +273,7 @@ def _dotted_chain(tokens: list[tuple[Any, str]], i: int) -> Iterator[tuple[str, 
 
 def _tokenize_and_link(
     code: str,
-    lang: str,
+    lexer_name: str,
     code_obj: dict[str, list[dict[str, Any]]],
     resolver: _Resolver,
 ) -> Iterator[nodes.Node]:
@@ -263,9 +281,7 @@ def _tokenize_and_link(
     # we lex ourselves because Sphinx replaces the docutils ``code`` directive
     # (which does emit per-token nodes) with a literal_block holding one Text
     # child, highlighted much later by pygments straight to an HTML string
-    lexer = get_lexer_by_name(
-        "python" if lang in ("default", "python3") else lang.lower()
-    )
+    lexer = get_lexer_by_name(lexer_name)
     tokens = list(lexer.get_tokens(code))
     linked_through = -1  # last index already emitted as part of a link
     prev_token = None  # last non-whitespace token, to spot attribute access
@@ -355,11 +371,14 @@ class CodeLinksTransform(SphinxPostTransform):
         app = getattr(self.env, "_app", None) or self.app
         resolver = _Resolver(self.env, app.builder, docname, gallery_conf)
         for block in list(self.document.findall(nodes.literal_block)):
-            lang = block.get("language", "")
-            if lang.lower() not in ("python", "python3", "default", "ipython3"):
-                continue
             code = block.rawsource
-            children = list(_tokenize_and_link(code, lang, code_obj, resolver))
+            # a block written as a plain ``::`` literal carries no language at
+            # all, and the writer treats that as "default"
+            lang = block.get("language") or "default"
+            lexer_name = _lexer_name(lang, code)
+            if lexer_name is None:
+                continue
+            children = list(_tokenize_and_link(code, lexer_name, code_obj, resolver))
             if block.get("linenos"):
                 lineno_start = block.get("highlight_args", {}).get("linenostart", 1)
                 children = _add_linenos(children, lineno_start)

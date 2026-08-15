@@ -1,10 +1,12 @@
 # License: 3-clause BSD
 """Unit tests for doctree-based code link embedding."""
 
+import pytest
 from docutils import nodes
 
 from sphinx_gallery._doctree_links import (
     _add_linenos,
+    _lexer_name,
     _Lookup,
     _Resolver,
     _tokenize_and_link,
@@ -101,6 +103,31 @@ def test_add_linenos():
     # a mid-line reference is not directly preceded by a line number
     idx = out.index(refs[0])
     assert "linenos" not in _classes(out[idx - 1])  # "x = " sits before it
+
+
+@pytest.mark.parametrize(
+    "lang, code, want",
+    [
+        # Sphinx highlights all of these with the Python lexer, so we must
+        # rewrite them too -- "default" is what a plain ``::`` block becomes
+        ("python", "x = 1", "python"),
+        ("Python", "x = 1", "python"),  # sphinx-gallery emits it capitalised
+        ("python3", "x = 1", "python"),
+        ("py", "x = 1", "python"),
+        ("py3", "x = 1", "python"),
+        ("default", "x = 1", "python"),
+        ("default", ">>> x = 1", "pycon"),  # interactive session
+        ("pycon", ">>> x = 1", "pycon"),
+        ("ipython3", "x = 1", "ipython3"),
+        # not Python: leave the block alone
+        ("c", "int x;", None),
+        ("none", "hello", None),
+        ("text", "hello", None),
+    ],
+)
+def test_lexer_name(lang, code, want):
+    """We rewrite exactly the blocks Sphinx would highlight as Python."""
+    assert _lexer_name(lang, code) == want
 
 
 def _stub_resolver(hits):
