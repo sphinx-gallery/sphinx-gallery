@@ -22,7 +22,6 @@ DOCUMENTED_SUBTYPES = {
     "file_conf",
     "space_in_filename",
     "thumbnail",
-    "url_fetch",
 }
 
 

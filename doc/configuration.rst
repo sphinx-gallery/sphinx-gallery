@@ -1421,10 +1421,6 @@ The subtypes, and what each one warns about, are:
     A ``sphinx_gallery_thumbnail_path`` that does not exist (see
     :ref:`providing_thumbnail`).
 
-``url_fetch``
-    A documentation inventory that could not be fetched (see
-    :ref:`link_to_documentation`).
-
 
 .. _disable_all_scripts_download:
 
