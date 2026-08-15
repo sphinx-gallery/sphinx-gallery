@@ -3,7 +3,7 @@
 
 from docutils import nodes
 
-from sphinx_gallery.doctree_links import (
+from sphinx_gallery._doctree_links import (
     _add_linenos,
     _Lookup,
     _Resolver,

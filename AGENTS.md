@@ -76,7 +76,7 @@ contract.
 Names in rendered example code blocks (`np.arange`, an instance's method, …) become links to
 API documentation. `backreferences.py` identifies the names — AST plus, when the example ran,
 introspection of its globals — and caches the candidates per example in `<example>.codeobj.json`.
-`doctree_links.py` turns those into links in a `SphinxPostTransform` at write time.
+`_doctree_links.py` turns those into links in a `SphinxPostTransform` at write time.
 
 - **Links are doctree nodes, not post-processed HTML.** The transform re-tokenizes the block
   with pygments into `inline` nodes and wraps linkable runs in `reference` nodes, so every HTML

@@ -26,9 +26,9 @@ from sphinx.util.console import blue, bold, purple, red
 
 from . import __version__ as _sg_version
 from . import glr_path_static
+from ._doctree_links import setup_doctree_links
 from .backreferences import Backreference, _finalize_backreferences
 from .directives import ImageSg, MiniGallery, imagesg_addnode
-from .doctree_links import setup_doctree_links
 from .downloads import generate_zipfiles
 from .gen_rst import (
     SPHX_GLR_SIG,

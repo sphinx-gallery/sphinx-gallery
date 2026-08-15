@@ -243,15 +243,12 @@ def _dotted_chain(tokens: list[tuple[Any, str]], i: int) -> Iterator[tuple[str, 
     """
     parts = [tokens[i][1]]
     spans = [1]
-    j = i
-    while (
-        j + 2 < len(tokens)
-        and tokens[j + 1] == (Operator, ".")
-        and tokens[j + 2][0] in Name
-    ):
-        parts.append(tokens[j + 2][1])
+    # step over the "." of each ``.name`` that continues the chain
+    for j in range(i + 1, len(tokens) - 1, 2):
+        if tokens[j] != (Operator, ".") or tokens[j + 1][0] not in Name:
+            break
+        parts.append(tokens[j + 1][1])
         spans.append(spans[-1] + 2)
-        j += 2
     for k in range(len(parts), 0, -1):
         yield ".".join(parts[:k]), spans[k - 1]
 
@@ -267,12 +264,11 @@ def _tokenize_and_link(
         "python" if lang in ("default", "python3") else lang.lower()
     )
     tokens = list(lexer.get_tokens(code))
-    # an index rather than a for loop: a linked name swallows however many
-    # tokens its dotted chain spans, so the step size varies
-    i = 0
+    linked_through = -1  # last index already emitted as part of a link
     prev_token = None  # last non-whitespace token, to spot attribute access
-    while i < len(tokens):
-        ttype, text = tokens[i]
+    for i, (ttype, text) in enumerate(tokens):
+        if i <= linked_through:
+            continue  # a dotted name we already linked swallowed this token
         link = n_tok = None
         # only start a chain at a name that is not itself an attribute: the
         # ``b`` of ``a().b`` continues the preceding expression, so linking it
@@ -287,13 +283,12 @@ def _tokenize_and_link(
         if link is not None and n_tok is not None:
             children = [_token_node(tt, tx) for tt, tx in tokens[i : i + n_tok]]
             yield resolver.reference(link, children)
-            prev_token = tokens[i + n_tok - 1]
-            i += n_tok
-            continue
-        if text.strip():
-            prev_token = (ttype, text)
-        yield _token_node(ttype, text)
-        i += 1
+            linked_through = i + n_tok - 1
+            prev_token = tokens[linked_through]
+        else:
+            if text.strip():
+                prev_token = (ttype, text)
+            yield _token_node(ttype, text)
 
 
 def _split_lines(node: nodes.Node) -> Iterator[nodes.Node]:

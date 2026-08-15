@@ -276,7 +276,7 @@ def identify_names(
     example_code_obj: dict[str, list[dict[str, Any]]] = (
         dict()
     )  # native dict preserves order nowadays
-    # Make a list of all guesses; the doctree_links resolver stops at the
+    # Make a list of all guesses; the _doctree_links resolver stops at the
     # first one that resolves
     for name, full_name, class_like, is_class, is_explicit in names:
         if name not in example_code_obj:
