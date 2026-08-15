@@ -2,7 +2,8 @@
 Animation support
 =================
 
-Show an animation, which should end up nicely embedded below. See `mylink`_.
+Show an animation, which should end up nicely embedded below. See `mylink`_ and
+`My Other Link`_, which are defined in ``rst_prolog`` and ``rst_epilog``.
 """
 
 import matplotlib.animation as animation

@@ -46,6 +46,7 @@ from .interactive_example import (
     post_configure_jupyterlite_sphinx,
     pre_configure_jupyterlite_sphinx,
 )
+from .notebook import _parse_link_targets
 from .recommender import ExampleRecommender, _write_recommendations
 from .scrapers import _import_matplotlib
 from .sorting import ExplicitOrder
@@ -396,12 +397,17 @@ def _fill_gallery_conf_defaults(
 
     gallery_conf["default_role"] = ""
     gallery_conf["source_suffix"] = {".rst": "restructuredtext"}
+    gallery_conf["rst_link_targets"] = {}
     if app is not None:
         if app.config["default_role"]:
             gallery_conf["default_role"] = app.config["default_role"]
         gallery_conf["source_suffix"] = app.config["source_suffix"]
         if isinstance(gallery_conf["source_suffix"], str):
             gallery_conf["source_suffix"] = {gallery_conf["source_suffix"]: None}
+        # Sphinx adds these to every document, so examples can use their link targets
+        gallery_conf["rst_link_targets"] = _parse_link_targets(
+            "\n".join(app.config[key] or "" for key in ("rst_prolog", "rst_epilog"))
+        )
 
     # Check capture_repr
     _check_config_type(gallery_conf, "capture_repr", (tuple, list), str_to_list=True)

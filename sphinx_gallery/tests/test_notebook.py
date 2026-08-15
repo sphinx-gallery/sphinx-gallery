@@ -15,6 +15,7 @@ import pytest
 from sphinx.errors import ExtensionError
 
 from sphinx_gallery.notebook import (
+    _parse_link_targets,
     jupyter_notebook,
     promote_jupyter_cell_magic,
     python_to_jupyter_cli,
@@ -127,6 +128,62 @@ For more details on interpolation see the page `channel_interpolation`.
 
 [See more](https://en.wikipedia.org/wiki/Interpolation).
 """  # noqa
+    assert rst2md(rst, gallery_conf, "", {}) == markdown
+
+
+def test_parse_link_targets():
+    """Test extraction of hyperlink targets from reST."""
+    targets = _parse_link_targets(
+        textwrap.dedent(
+            """\
+        .. _mylink: https://example.com
+        .. _`my other link`: https://example.org
+        .. _wrapped: https://example.com/
+           some/long/path
+        .. _alias: mylink_
+        .. _`indirect alias`: `my other link`_
+        .. _internal:
+        .. __: https://anonymous.example.com
+        .. _dangling: unknown_
+        .. _circular: circular_
+        """
+        )
+    )
+    assert targets == {
+        "mylink": "https://example.com",
+        "my other link": "https://example.org",
+        "wrapped": "https://example.com/some/long/path",
+        "alias": "https://example.com",
+        "indirect alias": "https://example.org",
+    }
+
+
+def test_link_targets(gallery_conf):
+    """Test that references to hyperlink targets become links (gh-1202)."""
+    gallery_conf = gallery_conf.copy()
+    gallery_conf["rst_link_targets"] = {
+        "mylink": "https://example.com",
+        "my other link": "https://example.org",
+        "local": "https://wrong.example.com",
+    }
+    rst = """\
+See `mylink`_, mylink_, `some text <mylink_>`_ and `My Other
+Link`_.
+
+Unknown targets are left alone: `unknown`_ and ``mylink_``.
+
+Targets from the block itself win: local_.
+
+.. _local: https://local.example.com
+"""
+    markdown = """\
+See [mylink](https://example.com), [mylink](https://example.com), [some text](https://example.com) and [My Other Link](https://example.org).
+
+Unknown targets are left alone: `unknown`_ and ``mylink_``.
+
+Targets from the block itself win: [local](https://local.example.com).
+
+"""  # noqa: E501
     assert rst2md(rst, gallery_conf, "", {}) == markdown
 
 

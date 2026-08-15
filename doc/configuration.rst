@@ -1275,6 +1275,10 @@ complex reST syntax. If your examples have more complex reST, ``pypandoc`` may
 produce better results. By default, the 'pypandoc' configuration is set to
 ``False`` and ``pypandoc`` is not used.
 
+With either converter, hyperlink targets defined in the Sphinx ``rst_prolog``
+and ``rst_epilog`` configuration values are available to example text blocks, so
+references to them (e.g., ```mylink`_``) become links in the notebooks.
+
 To use ``pypandoc`` you can set::
 
     sphinx_gallery_conf = {
