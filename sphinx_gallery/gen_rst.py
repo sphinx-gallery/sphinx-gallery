@@ -66,6 +66,7 @@ from .scrapers import (
 from .typing import GalleryConfig, Parser, PathLikeStr
 from .utils import (
     _W_KW,
+    WARNING_TYPE,
     _collect_gallery_files,
     _combine_backreferences,
     _format_toctree,
@@ -460,6 +461,8 @@ def save_thumbnail(
             "using default thumbnail.",
             image_path,
             src_file,
+            type=WARNING_TYPE,
+            subtype="thumbnail",
         )
 
     base_image_name = src_file.stem
@@ -604,6 +607,8 @@ def _split_parallel(
                 "sphinx_gallery_parallel setting is not a boolean, got %r in file %s",
                 run_parallel,
                 fname,
+                type=WARNING_TYPE,
+                subtype="file_conf",
             )
             run_parallel = True
         (parallel_listdir if run_parallel else serial_listdir).append(fname)
@@ -881,6 +886,8 @@ def handle_exception(
             f"\n{bold(red('%s'))} unexpectedly failed to execute correctly:\n\n%s",
             src_file_rel,
             red(indent(formatted_exception, "    ")),
+            type=WARNING_TYPE,
+            subtype="example_error",
         )
 
     except_rst = codestr2rst(formatted_exception, lang="pytb")
@@ -2036,7 +2043,9 @@ def _get_call_memory_and_base(
             if update:
                 logger.warning(
                     f"{gallery_conf['show_memory']=} disabled due to "
-                    f"{gallery_conf['parallel']=}."
+                    f"{gallery_conf['parallel']=}.",
+                    type=WARNING_TYPE,
+                    subtype="config",
                 )
                 gallery_conf["show_memory"] = False
         else:
@@ -2070,7 +2079,9 @@ def _get_memprof_call_memory() -> (
         from memory_profiler import memory_usage  # noqa
     except ImportError:
         logger.warning(
-            "Please install 'memory_profiler' to enable peak memory measurements."
+            "Please install 'memory_profiler' to enable peak memory measurements.",
+            type=WARNING_TYPE,
+            subtype="dependency",
         )
         return None
     else:
