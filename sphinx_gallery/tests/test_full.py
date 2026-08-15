@@ -489,29 +489,30 @@ def test_repr_html_classes(sphinx_app):
     assert "gallery-rendered-html.css" in lines
 
 
+_BACKREF_LINK = re.compile(
+    r'<a class="([^"]*sphx-glr-backref[^"]*)" href="([^"]+)"'
+    r'(?: title="([^"]+)")?>(.*?)</a>',
+    re.S,
+)
+_HTML_TAG = re.compile(r"<[^>]+>")
+
+
 def _backref_links(lines):
     """Extract embedded code links as dicts of {classes, href, title, text}."""
-    links = []
-    for m in re.finditer(
-        r'<a class="([^"]*sphx-glr-backref[^"]*)" href="([^"]+)"'
-        r'(?: title="([^"]+)")?>(.*?)</a>',
-        lines,
-        re.S,
-    ):
-        cls, href, title, html = m.groups()
-        links.append(
-            dict(
-                classes=set(cls.split()),
-                href=href,
-                title=title,
-                text=re.sub(r"<[^>]+>", "", html),
-            )
+    return [
+        dict(
+            classes=set(cls.split()),
+            href=href,
+            title=title,
+            text=_HTML_TAG.sub("", html),
         )
-    return links
+        for cls, href, title, html in _BACKREF_LINK.findall(lines)
+    ]
 
 
 def _assert_link(links, text, classes, href_re=None):
     """Assert some link with this text has these sphx-glr classes (and href)."""
+    __tracebackhide__ = True
     with_text = [link for link in links if link["text"] == text]
     assert with_text, f"no link with text {text!r}"
     for link in with_text:
@@ -525,6 +526,7 @@ def _assert_link(links, text, classes, href_re=None):
 
 def _assert_dummy_links(links, mod, page, cls_name, inst):
     """Assert instance/class/method/property links for a tinybuild dummy class."""
+    __tracebackhide__ = True
     module_css = "sphx-glr-backref-module-sphinx_gallery-_dummy"
     anchor = "".join(rf"{part}[._-]" for part in mod.split(".") if part)
     href = rf"sphinx_gallery\._dummy\.{page}#sphinx[_-]gallery[.-]_dummy[.-]{anchor}"

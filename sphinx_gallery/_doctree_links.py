@@ -260,6 +260,9 @@ def _tokenize_and_link(
     resolver: _Resolver,
 ) -> Iterator[nodes.Node]:
     """Yield docutils nodes for ``code``, linking names found in ``code_obj``."""
+    # we lex ourselves because Sphinx replaces the docutils ``code`` directive
+    # (which does emit per-token nodes) with a literal_block holding one Text
+    # child, highlighted much later by pygments straight to an HTML string
     lexer = get_lexer_by_name(
         "python" if lang in ("default", "python3") else lang.lower()
     )
