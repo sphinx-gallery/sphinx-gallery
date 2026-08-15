@@ -86,7 +86,7 @@ def test_code_conversion():
 
 def test_convert(gallery_conf):
     """Test reST conversion to markdown."""
-    rst = """hello
+    rst = textwrap.dedent("""hello
 
 .. contents::
     :local:
@@ -99,7 +99,12 @@ This is :math:`some` math :math:`stuff`.
 
 .. warning::
     Go away
+   Go away
 
+   .. code-block::
+      a = 1 + 2
+
+   Second paragraph.
 For more details on interpolation see the page :ref:`channel_interpolation`.
 .. _foo: bar
 
@@ -110,14 +115,14 @@ For more details on interpolation see the page :ref:`channel_interpolation`.
   :class: img_class
 
 `See more  <https://en.wikipedia.org/wiki/Interpolation>`_.
-"""
+""")
 
     markdown = """hello
 
 This is $some$ math $stuff$.
 
 <div class="alert alert-info"><h4>Note</h4><p>Interpolation is a linear operation that can be performed also on
-    Raw and Epochs objects.</p></div>
+Raw and Epochs objects.</p></div>
 
 <div class="alert alert-danger"><h4>Warning</h4><p>Go away</p></div>
 
