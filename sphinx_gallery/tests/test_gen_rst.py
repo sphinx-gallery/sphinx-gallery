@@ -1260,15 +1260,17 @@ def test_parallel_serial_examples(gallery_conf, n_jobs):
     )
     Path(gallery_conf["examples_dir"], "README.txt").write_text("")
     names = ["plot_a", "plot_b", "plot_c"]
-    # each example appends "<name>:<main|worker>" as it runs, so we see the real order
-    log = Path(gallery_conf["gallery_dir"], "order.log")
+    # Each example records where and when it ran, so we see the real order. One file
+    # per example rather than a shared log: the workers would otherwise append
+    # concurrently, and on Windows O_APPEND is a seek-then-write that can lose one.
+    gallery_dir = Path(gallery_conf["gallery_dir"])
     for name in names:
         # only the middle example is serial, so execution order != gallery order
         flag = "# sphinx_gallery_parallel = False\n" if name == "plot_b" else ""
         Path(gallery_conf["examples_dir"], f"{name}.py").write_text(
-            f"{DOCSTRING}{flag}import multiprocessing\nfrom pathlib import Path\n"
+            f"{DOCSTRING}{flag}import multiprocessing, time\nfrom pathlib import Path\n"
             'where = "main" if multiprocessing.parent_process() is None else "worker"\n'
-            f'Path(r"{log}").open("a").write(f"{name}:{{where}} ")\n',
+            f'Path(r"{gallery_dir}", "{name}.ran").write_text(f"{{where}} {{time.time()}}")\n',
             encoding="utf-8",
         )
 
@@ -1280,13 +1282,20 @@ def test_parallel_serial_examples(gallery_conf, n_jobs):
         is_subsection=False,
     )
 
-    ran = log.read_text(encoding="utf-8").split()
+    assert gallery_conf["failing_examples"] == {}
+    ran = {
+        path.stem: path.read_text(encoding="utf-8").split()
+        for path in gallery_dir.glob("*.ran")
+    }
+    where = {name: entry[0] for name, entry in ran.items()}
+    started = {name: float(entry[1]) for name, entry in ran.items()}
     if n_jobs:
+        assert where == {"plot_a": "worker", "plot_b": "main", "plot_c": "worker"}
         # serial examples finish before anything is dispatched; the rest race
-        assert ran[0] == "plot_b:main"
-        assert sorted(ran[1:]) == ["plot_a:worker", "plot_c:worker"]
+        assert started["plot_b"] < min(started["plot_a"], started["plot_c"])
     else:
-        assert ran == [f"{name}:main" for name in names]
+        assert where == {name: "main" for name in names}
+        assert sorted(started, key=started.__getitem__) == names
     assert [Path(item).name for item in toctree_items] == names
     assert re.findall(r"sphx_glr_(plot_[abc])_thumb", index_content) == names
 

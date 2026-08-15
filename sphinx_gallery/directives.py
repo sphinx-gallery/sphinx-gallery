@@ -22,7 +22,7 @@ from .backreferences import (
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
 from .typing import PathLikeStr
-from .utils import _read_json
+from .utils import WARNING_TYPE, _read_json
 
 if TYPE_CHECKING:
     import sphinx.application
@@ -135,7 +135,9 @@ class MiniGallery(Directive):
         if backreferences_dir is None:
             logger.warning(
                 "'backreferences_dir' config is None, minigallery "
-                "directive will resolve all inputs as file paths or globs."
+                "directive will resolve all inputs as file paths or globs.",
+                type=WARNING_TYPE,
+                subtype="config",
             )
 
         # Retrieve source directory

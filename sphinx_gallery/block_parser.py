@@ -13,6 +13,7 @@ from sphinx.util.logging import getLogger
 
 from .py_source_parser import FLAG_BODY, Block
 from .typing import GalleryConfig, PathLikeStr
+from .utils import WARNING_TYPE
 
 logger = getLogger("sphinx-gallery")
 
@@ -341,7 +342,11 @@ class BlockParser:
                 value = ast.literal_eval(value)
             except (SyntaxError, ValueError):
                 logger.warning(
-                    "Sphinx-gallery option %s was passed invalid value %s", name, value
+                    "Sphinx-gallery option %s was passed invalid value %s",
+                    name,
+                    value,
+                    type=WARNING_TYPE,
+                    subtype="file_conf",
                 )
             else:
                 file_conf[name] = value

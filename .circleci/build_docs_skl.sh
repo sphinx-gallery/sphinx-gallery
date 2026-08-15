@@ -30,5 +30,8 @@ uv pip install --only-binary=:all: \
 # Checkout scikit-learn main branch, to build docs from repo
 git clone git@github.com:scikit-learn/scikit-learn.git --single-branch --depth 1 --branch ${VERSION}.X
 cd scikit-learn/doc
-export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_display_object_visualization"
+# plot_roc_curve_visualization_api rather than plot_display_object_visualization:
+# same Display objects, but the wine dataset ships with scikit-learn, where the
+# latter fetches from OpenML and fails the build whenever that times out
+export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_roc_curve_visualization_api"
 make html

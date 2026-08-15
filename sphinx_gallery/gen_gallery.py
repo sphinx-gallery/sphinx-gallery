@@ -52,6 +52,7 @@ from .sorting import ExplicitOrder
 from .typing import GalleryConfig, PathLikeStr
 from .utils import (
     _W_KW,
+    WARNING_TYPE,
     _collect_gallery_files,
     _combine_backreferences,
     _format_toctree,
@@ -292,6 +293,8 @@ def _check_compress_images(gallery_conf: GalleryConfig) -> None:
         logger.warning(
             "optipng binaries not found, PNG %s will not be optimized",
             " and ".join(compress_images),
+            type=WARNING_TYPE,
+            subtype="dependency",
         )
         compress_images = ()
     gallery_conf["compress_images"] = compress_images
@@ -345,7 +348,9 @@ def _check_pypandoc_config(gallery_conf: GalleryConfig) -> None:
     if isinstance(gallery_conf["pypandoc"], dict) and has_pypandoc is None:
         logger.warning(
             "'pypandoc' not available. Using Sphinx-Gallery to "
-            "convert rst text blocks to markdown for .ipynb files."
+            "convert rst text blocks to markdown for .ipynb files.",
+            type=WARNING_TYPE,
+            subtype="dependency",
         )
         gallery_conf["pypandoc"] = False
     elif isinstance(gallery_conf["pypandoc"], dict):
@@ -610,7 +615,9 @@ def _prepare_sphx_glr_dirs(
     if len(examples_dirs) != len(gallery_dirs):
         logger.warning(
             "'examples_dirs' and 'gallery_dirs' are of different lengths. "
-            "Surplus entries will be ignored."
+            "Surplus entries will be ignored.",
+            type=WARNING_TYPE,
+            subtype="config",
         )
 
     if bool(gallery_conf["backreferences_dir"]):
@@ -772,8 +779,10 @@ def generate_gallery_rst(app: Sphinx) -> None:
     src_root = Path(app.builder.srcdir)
     workdirs = _prepare_sphx_glr_dirs(gallery_conf, src_root)
 
-    # Check for duplicate filenames to make sure linking works as expected
-    examples_dirs = [ex_dir for ex_dir, _ in workdirs]
+    # Check for duplicate filenames to make sure linking works as expected.
+    # `examples_dirs` is relative to `src_root`, and resolving it against the cwd
+    # instead would silently collect nothing.
+    examples_dirs = [src_root / ex_dir for ex_dir, _ in workdirs]
     _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
 
     backrefs_all: dict[str, list[Backreference]] = {}
@@ -1656,7 +1665,7 @@ def summarize_failing_examples(app: Sphinx, exception: Exception | None) -> None
             )
         )
         if gallery_conf["only_warn_on_example_error"]:
-            logger.warning(fail_message)
+            logger.warning(fail_message, type=WARNING_TYPE, subtype="example_error")
         else:
             raise ExtensionError(fail_message)
 
