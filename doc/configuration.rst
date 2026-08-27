@@ -56,7 +56,7 @@ file, inside a ``sphinx_gallery_conf`` dictionary.
 
 **Cross-referencing**
 
-- ``reference_url``, ``prefer_full_module`` (:ref:`link_to_documentation`)
+- ``prefer_full_module`` (:ref:`link_to_documentation`)
 - ``backreferences_dir``, ``doc_module``, ``exclude_implicit_doc``,
   and ``inspect_global_variables`` (:ref:`minigalleries_to_examples`)
 - ``minigallery_sort_order`` (:ref:`minigallery_order`)
@@ -656,23 +656,18 @@ Such code snippets within the gallery appear like this:
     hyperlinks to external modules will be added to text blocks, similar to a normal
     Sphinx reST documentation file.
 
-If you use the Sphinx extension :mod:`sphinx.ext.intersphinx`, entries in
-the ``intersphinx`` inventory will automatically be used for linking inside
-code blocks. If you wish to add or over-ride any ``intersphinx`` module, you can
-use the Sphinx-Gallery ``reference_url`` configuration.
-``reference_url`` accepts a dictionary where the key is the module name string and
-value is the URL to the module's documentation directory page, containing
-``searchindex.js``, such as ``'matplotlib': 'https://matplotlib.org'``.
+This works automatically, with no configuration needed:
 
-To link the local module, use ``None`` as the value, as shown below::
+- Objects documented in the project being built are resolved through Sphinx's
+  own cross-reference machinery (the Python domain), for any HTML builder.
+- Objects from external packages are resolved through the
+  :mod:`sphinx.ext.intersphinx` inventories, so link any external package by
+  adding it to ``intersphinx_mapping`` in your ``conf.py``.
 
-    sphinx_gallery_conf = {
-        ...
-        'reference_url': {
-             # The module you locally document uses None
-            'sphinx_gallery': None,
-        }
-    }
+.. note:: The ``reference_url`` option is deprecated and ignored. Links to the
+          project being documented (previously ``'mymodule': None`` entries)
+          are now automatic, and external entries should be replaced by
+          ``intersphinx_mapping`` entries in ``conf.py``.
 
 To add links to code blocks in plain reST example files inside galleries,
 see :ref:`plain_rst`.
@@ -1425,10 +1420,6 @@ The subtypes, and what each one warns about, are:
 ``thumbnail``
     A ``sphinx_gallery_thumbnail_path`` that does not exist (see
     :ref:`providing_thumbnail`).
-
-``url_fetch``
-    A documentation inventory that could not be fetched (see
-    :ref:`link_to_documentation`).
 
 
 .. _disable_all_scripts_download:
