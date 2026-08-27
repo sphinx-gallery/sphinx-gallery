@@ -8,6 +8,10 @@ plot_future_statements.py. We should eventually update this script to actually
 test this... we require Python 3 nowadays so the ``__future__`` statements there
 don't do anything. So for now let's repurpose this to look at some
 backreferences. We should probably also change the filename in another PR!
+
+A cross-reference carrying an intersphinx inventory prefix, such as
+:obj:`sphinx_gallery:sphinx_gallery.sorting.ExplicitOrder`, becomes a backreference
+whose name contains a colon -- which is not a legal filename character on Windows.
 """
 
 # sphinx_gallery_thumbnail_path = '_static_nonstandard/demo.png'

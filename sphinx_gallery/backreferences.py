@@ -412,6 +412,19 @@ class Backreference(NamedTuple):
     title: str
 
 
+# Explicit backreference names come from reST roles in the example text, so they are
+# not restricted to Python identifiers: an intersphinx inventory prefix such as
+# ``:ref:`pkg:target``` leaves a ``:`` behind, which cannot appear in a filename on
+# Windows. Cover the whole Windows-invalid set; ``/`` also keeps a name from escaping
+# ``backreferences_dir``.
+_INVALID_FNAME_CHARS = re.compile(r'[<>:"/\\|?*]')
+
+
+def _sanitize_backref(backref: str) -> str:
+    """Make a backreference name safe to use as a filename."""
+    return _INVALID_FNAME_CHARS.sub("_", backref)
+
+
 def _write_backreferences(
     backrefs: set[str],
     seen_backrefs: set[str],
@@ -432,7 +445,8 @@ def _write_backreferences(
     backrefs : set[str]
         Back references to write.
     seen_backrefs: set[str]
-        Back references already encountered when parsing this example.
+        Filename-sanitized back references already encountered when parsing this
+        example, updated in place.
     gallery_conf : Dict[str, Any]
         Gallery configurations.
     src_dir : str | pathlib.Path
@@ -462,12 +476,13 @@ def _write_backreferences(
 
     backrefs_example = defaultdict(list)
     for backref in backrefs:
+        fname_backref = _sanitize_backref(backref)
         include_path = (
             Path(gallery_conf["src_dir"])
             / gallery_conf["backreferences_dir"]
-            / f"{backref}.examples.new"
+            / f"{fname_backref}.examples.new"
         )
-        seen = backref in seen_backrefs
+        seen = fname_backref in seen_backrefs
         mode = "a" if seen else "w"
         with open(include_path, mode, **_W_KW) as ex_file:
             if not seen:
@@ -490,7 +505,7 @@ def _write_backreferences(
                     is_backref=True,
                 )
             )
-            seen_backrefs.add(backref)
+            seen_backrefs.add(fname_backref)
             backrefs_example[backref].append(
                 Backreference(str(fname), str(src_dir), str(target_dir), intro, title)
             )
@@ -500,7 +515,11 @@ def _write_backreferences(
 def _finalize_backreferences(
     seen_backrefs: set[str], gallery_conf: GalleryConfig
 ) -> None:
-    """Replace backref files only if necessary."""
+    """Replace backref files only if necessary.
+
+    ``seen_backrefs`` holds names already passed through ``_sanitize_backref``, so
+    they are used as filenames as-is.
+    """
     logger = sphinx.util.logging.getLogger("sphinx-gallery")
     if gallery_conf["backreferences_dir"] is None:
         return

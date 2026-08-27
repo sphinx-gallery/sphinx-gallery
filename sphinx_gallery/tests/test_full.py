@@ -777,6 +777,13 @@ def test_backreferences_dirhtml(sphinx_dirhtml_app):
             "plot_second_future_imports",
             id="ExplicitOrder",
         ),
+        # an intersphinx inventory prefix survives into the backreference name, so
+        # its colon must be sanitized out of the filename (invalid on Windows)
+        pytest.param(
+            "sphinx_gallery_sphinx_gallery.sorting.ExplicitOrder.examples",
+            "plot_second_future_imports",
+            id="inventory-prefix",
+        ),
     ],
 )
 def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
@@ -789,6 +796,13 @@ def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
     n_open = lines.count("<div")
     n_close = lines.count("</div")
     assert n_open == n_close
+
+
+def test_backreferences_filenames(sphinx_app):
+    """Backreference filenames must be usable on every platform."""
+    backref_dir = Path(sphinx_app.srcdir, "gen_modules", "backreferences")
+    bad = [p.name for p in backref_dir.iterdir() if set(p.name) & set(r'<>:"/\|?*')]
+    assert bad == []
 
 
 def test_backreferences_examples_html(sphinx_app):
