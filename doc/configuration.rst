@@ -867,7 +867,10 @@ Each .rst file will contain a reduced version of the
 gallery, containing examples where that "object" that is used.
 '<object>.examples' files will be generated for all objects to prevent inclusion
 errors. Empty '<object>.examples' files are created for objects not used in any
-example.
+example. Characters that cannot appear in a filename (``<>:"/\|?*``) are replaced
+with an underscore, so that a name picked up from markup that carries an
+intersphinx inventory prefix (``:obj:`inventory:package.object```) still yields a
+usable filename on every platform.
 
 .. _exclude_implicit_doc:
 

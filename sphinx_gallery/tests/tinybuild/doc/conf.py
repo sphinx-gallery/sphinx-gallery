@@ -107,6 +107,11 @@ sphinx_gallery_conf = {
     "parallel": 2,
 }
 nitpicky = True
+# deliberately unresolvable: plot_second_future_imports.py references it to check that
+# a colon in a backreference name does not end up in a filename
+nitpick_ignore = [
+    ("py:obj", "sphinx_gallery:sphinx_gallery.sorting.ExplicitOrder"),
+]
 highlight_language = "python3"
 html_static_path = ["_static_nonstandard"]
 

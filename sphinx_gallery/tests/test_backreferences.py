@@ -237,6 +237,11 @@ h.i.j()
 
 
 cobj = dict(module="m", module_short="m", name="n", is_class=False, is_explicit=True)
+# a py-like default_role lets any role prefix through, so an intersphinx inventory
+# prefix (``:ref:`inv:target```) ends up in the name -- see `_sanitize_backref`
+cobj_colon = dict(
+    module="inv:m", module_short="inv:m", name="n", is_class=False, is_explicit=True
+)
 
 
 @pytest.mark.parametrize(
@@ -251,6 +256,7 @@ cobj = dict(module="m", module_short="m", name="n", is_class=False, is_explicit=
         (":ref:`m.n`", None, None, None),
         ("`m.n`", "ref", None, None),
         ("``literal``", "obj", None, None),
+        (":ref:`inv:m.n`", "obj", "inv:m.n", cobj_colon),
     ],
     ids=[
         "regular",
@@ -262,6 +268,7 @@ cobj = dict(module="m", module_short="m", name="n", is_class=False, is_explicit=
         "non-python role",
         "non-python default_role",
         "literal",
+        "inventory prefix",
     ],
 )
 # the sphinx default value for default_role is None = no change, the docutils
@@ -276,3 +283,38 @@ def test_identify_names_explicit(text, default_role, ref, cobj, gallery_conf):
     ref_regex = sg._make_ref_regex(default_role)
     actual = sg.identify_names(script_blocks, ref_regex)
     assert expected == actual
+
+
+def test_write_backreferences_sanitized_filename(gallery_conf, tmp_path):
+    """Colons in backreference names must not reach the filesystem."""
+    backrefs_dir = tmp_path / "backreferences"
+    backrefs_dir.mkdir()
+    gallery_conf["backreferences_dir"] = "backreferences"
+    gallery_conf["src_dir"] = str(tmp_path)
+    thumb = tmp_path / "images" / "thumb" / "sphx_glr_plot_example_thumb.png"
+    thumb.parent.mkdir(parents=True)
+    thumb.touch()
+    seen_backrefs = set()
+
+    backrefs_example = sg._write_backreferences(
+        {"mne:mne.Epochs"},
+        seen_backrefs,
+        gallery_conf,
+        tmp_path,
+        tmp_path,
+        "plot_example.py",
+        "intro",
+        "title",
+    )
+    # the name is untouched: `backreferences_all.json` and the minigallery
+    # directive are keyed by it
+    assert list(backrefs_example) == ["mne:mne.Epochs"]
+    assert seen_backrefs == {"mne_mne.Epochs"}
+    assert [p.name for p in backrefs_dir.iterdir()] == ["mne_mne.Epochs.examples.new"]
+
+    sg._finalize_backreferences(seen_backrefs, gallery_conf)
+    assert [p.name for p in backrefs_dir.iterdir()] == ["mne_mne.Epochs.examples"]
+    content = (backrefs_dir / "mne_mne.Epochs.examples").read_text("utf-8")
+    # the heading still shows the real name
+    assert "Examples using ``mne:mne.Epochs``" in content
+    assert content.count("<div") == content.count("</div")

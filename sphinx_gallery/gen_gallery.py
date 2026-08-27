@@ -27,7 +27,11 @@ from sphinx.util.console import blue, bold, purple, red
 from . import __version__ as _sg_version
 from . import glr_path_static
 from ._doctree_links import setup_doctree_links
-from .backreferences import Backreference, _finalize_backreferences
+from .backreferences import (
+    Backreference,
+    _finalize_backreferences,
+    _sanitize_backref,
+)
 from .directives import ImageSg, MiniGallery, imagesg_addnode
 from .downloads import generate_zipfiles
 from .gen_rst import (
@@ -1551,10 +1555,12 @@ def touch_empty_backreferences(
     if not bool(app.config.sphinx_gallery_conf["backreferences_dir"]):
         return
 
+    # a dotted Python name needs no sanitizing, but keep the name -> filename
+    # mapping in one place so this matches what `_write_backreferences` produced
     examples_path = (
         Path(app.srcdir)
         / app.config.sphinx_gallery_conf["backreferences_dir"]
-        / f"{name}.examples"
+        / f"{_sanitize_backref(name)}.examples"
     )
 
     if not examples_path.exists():
