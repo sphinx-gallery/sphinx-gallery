@@ -1738,6 +1738,23 @@ def test_jupyter_notebook_pandoc(sphinx_app):
         assert md_sg in md
 
 
+def test_jupyter_notebook_rst_prolog_epilog(sphinx_app):
+    """Test that ``rst_prolog``/``rst_epilog`` link targets resolve (gh-1202)."""
+    nb = json.loads(
+        Path(sphinx_app.srcdir, "auto_examples", "plot_animation.ipynb").read_text(
+            encoding="utf-8"
+        )
+    )
+    # pandoc hard-wraps its output, so compare without the line breaks
+    md = " ".join(
+        " ".join("".join(cell["source"]).split())
+        for cell in nb["cells"]
+        if cell["cell_type"] == "markdown"
+    )
+    assert "[mylink](https://example.com)" in md
+    assert "[My Other Link](https://example.org)" in md
+
+
 def test_md5_hash(sphinx_app):
     """Test MD5 hashing."""
     src_dir = sphinx_app.srcdir
