@@ -16,8 +16,7 @@ set -exo pipefail
 
 git clone git@github.com:/mne-tools/mne-python.git
 cd mne-python
-uv pip install -e . --group doc mne-qt-browser "PySide6!=6.10.0" -r doc/related_software.txt
-uv pip install --no-deps -r doc/related_software_nodeps.txt
+uv pip install -e . --group doc mne-qt-browser "PySide6!=6.10.0"
 
 (set +x; __sep__)
 
