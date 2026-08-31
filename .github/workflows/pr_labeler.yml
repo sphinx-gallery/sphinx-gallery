@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   pr-labeler:
-    if: (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]') && github.repository == 'sphinx-gallery/sphinx-gallery'
+    if: (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'mne-bot') && github.repository == 'sphinx-gallery/sphinx-gallery'
     permissions:
       contents: read
       pull-requests: write
