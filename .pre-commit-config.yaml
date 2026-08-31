@@ -39,7 +39,9 @@ repos:
       - id: validate-pyproject
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.76
+    # 0.0.76 turns the "no uv.lock" uv-metadata warning into a counted diagnostic
+    # (exit 1) with no way to suppress it: https://github.com/astral-sh/ty/issues/4225
+    rev: v0.0.75
     hooks:
       - id: ty
         additional_dependencies:
