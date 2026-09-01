@@ -26,7 +26,23 @@ jobs:
           activate-environment: true
           python-version: '3.13'
       - run: uv pip install prek
-      - run: prek auto-update
+      - name: Update pre-commit hook versions
+        env:
+          # Hook versions that break our CI, as `<repo>=<tag glob>` entries. Newer tags are
+          # still picked up, so drop an entry once its upstream issue is fixed.
+          #
+          # ty >=0.0.76 makes the "no uv.lock" uv-metadata warning a counted diagnostic
+          # (exit 1) with no way to suppress it: https://github.com/astral-sh/ty/issues/4225
+          EXCLUDED_TAGS: >-
+            https://github.com/astral-sh/ty-pre-commit=v0.0.76
+            https://github.com/astral-sh/ty-pre-commit=v0.0.77
+        run: |
+          set -eo pipefail
+          ARGS=()
+          for TAG in $EXCLUDED_TAGS; do
+            ARGS+=(--repo-exclude-tag "$TAG")
+          done
+          prek auto-update "${ARGS[@]}"
       - name: Check if files changed
         id: status
         run: |
