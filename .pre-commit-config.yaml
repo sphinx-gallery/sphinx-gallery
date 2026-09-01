@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.4
+    rev: v0.16.5
     hooks:
       - id: ruff-format
         exclude: plot_syntaxerror
@@ -28,7 +28,7 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.28.1
+    rev: v2.29.0
     hooks:
       - id: pyproject-fmt
         additional_dependencies: [tox]
@@ -39,7 +39,8 @@ repos:
       - id: validate-pyproject
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.74
+    # 0.0.76+ breaks CI; see EXCLUDED_TAGS in .github/workflows/scheduled_updates.yml
+    rev: v0.0.75
     hooks:
       - id: ty
         additional_dependencies:
@@ -50,7 +51,3 @@ repos:
           - types-Pygments
           - sphinx <9.1  # last to support 3.10
         args: [--no-python-downloads, --no-project]
-
-# https://github.com/astral-sh/ty-pre-commit#running-pre-commit-in-ci-with-ty-pre-commit
-ci:
-  skip: [ty]

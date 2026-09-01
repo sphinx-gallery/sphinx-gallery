@@ -1,0 +1,78 @@
+name: Scheduled updates
+
+on:  # yamllint disable-line rule:truthy
+  schedule:
+    - cron: '0 0 * * 1'  # At 00:00 every Monday
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Update pre-commit hook versions
+    if: github.repository == 'sphinx-gallery/sphinx-gallery'
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    env:
+      # We use the mne-bot for simplicity, thus token name
+      GH_TOKEN: ${{ secrets.MNE_BOT_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.MNE_BOT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: true
+      - uses: astral-sh/setup-uv@v10
+        with:
+          activate-environment: true
+          python-version: '3.13'
+      - run: uv pip install prek
+      - name: Update pre-commit hook versions
+        env:
+          # Hook versions that break our CI, as `<repo>=<tag glob>` entries. Newer tags are
+          # still picked up, so drop an entry once its upstream issue is fixed.
+          #
+          # ty >=0.0.76 makes the "no uv.lock" uv-metadata warning a counted diagnostic
+          # (exit 1) with no way to suppress it: https://github.com/astral-sh/ty/issues/4225
+          EXCLUDED_TAGS: >-
+            https://github.com/astral-sh/ty-pre-commit=v0.0.76
+            https://github.com/astral-sh/ty-pre-commit=v0.0.77
+        run: |
+          set -eo pipefail
+          ARGS=()
+          for TAG in $EXCLUDED_TAGS; do
+            ARGS+=(--repo-exclude-tag "$TAG")
+          done
+          prek auto-update "${ARGS[@]}"
+      - name: Check if files changed
+        id: status
+        run: |
+          git diff && git status --porcelain
+          if [[ $(git status --porcelain) ]]; then
+            echo "dirty=true" >> $GITHUB_OUTPUT
+          fi
+      # Run the updated hooks over the whole repo so any new reformatting lands here
+      - uses: j178/prek-action@v3.0.0
+        if: steps.status.outputs.dirty == 'true'
+      - name: Create PR
+        if: steps.status.outputs.dirty == 'true' && (success() || failure())
+        env:
+          BRANCH: prek-auto-update
+          TITLE: 'MAINT: Update pre-commit hook versions'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -xeo pipefail
+          git config --global user.email "50266005+mne-bot@users.noreply.github.com"
+          git config --global user.name "mne[bot]"
+          git checkout -b "$BRANCH"
+          git commit -am "mne[bot]: ${TITLE#MAINT: }"
+          git push --force origin "$BRANCH"
+          printf '%s\n\n%s\n' \
+            "Created by the \`update\` job of this [GitHub Action run]($RUN_URL)." \
+            "*Created by \`prek auto-update\`. The updated hooks were then run over the whole repo, so any reformatting they now do is included here.*" \
+            > "$RUNNER_TEMP/pr_body.md"
+          # A previous run's PR may still be open, in which case the force-push updates it
+          PR_URL=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')
+          if [[ -z "$PR_URL" ]]; then
+            PR_URL=$(gh pr create --base master --head "$BRANCH" --title "$TITLE" --body-file "$RUNNER_TEMP/pr_body.md" --label maintenance)
+          fi
+          echo "$PR_URL" >> $GITHUB_STEP_SUMMARY
