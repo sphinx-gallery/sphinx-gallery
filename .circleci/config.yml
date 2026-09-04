@@ -48,11 +48,13 @@ jobs:
             uv pip install --upgrade --only-binary ":all:" \
                 numpy matplotlib seaborn statsmodels pillow joblib \
                 "sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6" pytest \
-                traits memory_profiler "ipython!=8.7.0" plotly graphviz \
+                traits memory_profiler "ipython!=8.7.0" kaleido graphviz \
                 "pyvista>=0.44.0" "docutils>=0.18" imageio pydata-sphinx-theme \
                 "jupyterlite-sphinx>=0.17.1" "jupyterlite-pyodide-kernel" \
                 libarchive-c "sphinxcontrib-video>=0.2.1rc0" intersphinx_registry \
                 sphinx-design
+            # TODO: restore PyPI plotly above once plotly/plotly.py#5701 is released
+            uv pip install "plotly @ git+https://github.com/larsoner/plotly.py@sgthumb"
       - save_cache:
           key: cache-uv-1
           paths:
@@ -77,6 +79,12 @@ jobs:
       - attach_workspace:
           at: ~/
       - bash_env
+      - run:
+          name: Get a browser for plotly static image export
+          command: |
+            # The image's own browser exits after the first kaleido export
+            # (killing the docs build), so fetch a known-good Chrome instead.
+            plotly_get_chrome -y
       - run: sphinx-build doc doc/_build/html -nW --keep-going -b html 2>&1 | tee sphinx_log.txt
       - run:
           name: Check sphinx log for warnings (which are treated as errors)

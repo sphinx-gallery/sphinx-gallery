@@ -1642,8 +1642,16 @@ def generate_file_rst(
         "target_file": str(target_file),
     }
 
-    if executable and gallery_conf["reset_modules_order"] in ["before", "both"]:
-        clean_modules(gallery_conf, fname, "before")
+    if executable:
+        # Resolve the scrapers before the example runs rather than when it is
+        # scraped afterwards. Resolving a scraper named by string (e.g.
+        # `"plotly"`) imports the library, which may rely on that import to
+        # set itself up for the build; the worker processes of a parallel
+        # build never read conf.py, so this is their only chance to do so
+        # before the example runs.
+        _get_callables(gallery_conf, "image_scrapers")
+        if gallery_conf["reset_modules_order"] in ["before", "both"]:
+            clean_modules(gallery_conf, fname, "before")
     output_blocks, time_elapsed = execute_script(
         script_blocks, script_vars, gallery_conf, file_conf
     )
@@ -1939,7 +1947,8 @@ def _get_callables(
 ) -> tuple[Callable[..., Any], ...]:
     """Get callables for the given conf key, returning tuple of callable(s).
 
-    If value is a string, import, with the following exceptions:
+    A string containing a `.` is imported as a fully qualified name, for any
+    key. A string without one is resolved per key:
 
     * `within_subsection_order` - add full path if value is a built-in aliases,
       instantiate if value is a class
