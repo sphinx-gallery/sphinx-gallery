@@ -352,6 +352,39 @@ def test_codestr2rst():
     assert reference == output
 
 
+@pytest.mark.parametrize(
+    "content,expected",
+    [
+        # Explicit title: Sphinx renders the title, so the tooltip must too
+        # (gh-1644).
+        (":term:`ascent <parcel ascent>`", "ascent"),
+        (":term:`wind barbs <wind barb>`", "wind barbs"),
+        (":class:`Sounding <a.b.Sounding>`", "Sounding"),
+        (":ref:`whatever <better name>`", "whatever"),
+        # Domain-qualified roles must not leave the domain behind (gh-1644).
+        (":py:class:`Sounding <a.b.Sounding>`", "Sounding"),
+        (":py:func:`parcel path <a.b.parcel_path>`", "parcel path"),
+        (":std:doc:`the guide <howtos/index>`", "the guide"),
+        (":py:mod:`a.b.c`", "a.b.c"),
+        (":py:class:`~a.b.MyClass`", "MyClass"),
+        # Forms that already worked
+        (":term:`dewpoint`", "dewpoint"),
+        (":class:`a.b.c`", "a.b.c"),
+        (":class:`~a.b.MyClass`", "MyClass"),
+        ("``literal``", "literal"),
+        ("`interpreted`", "interpreted"),
+        ("`~mymodule.MyClass`", "MyClass"),
+        ("**bold**", "bold"),
+        ("*italic*", "italic"),
+        ("`link text <https://example.com>`_", "link text"),
+    ],
+)
+@pytest.mark.parametrize("template", ["See {} here.", "{} starts it.", "It ends {}"])
+def test_sanitize_rst(content, expected, template):
+    """Test that sphinx markup is reduced to what sphinx would render."""
+    assert sg._sanitize_rst(template.format(content)) == template.format(expected)
+
+
 def test_extract_intro_and_title():
     intro, title = sg.extract_intro_and_title("<string>", "\n".join(CONTENT[1:10]))
     assert title == "Docstring header"
