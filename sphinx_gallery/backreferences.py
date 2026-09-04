@@ -498,7 +498,9 @@ def _write_backreferences(
             ex_file.write(
                 _thumbnail_div(
                     target_dir,
-                    src_dir,
+                    # the Sphinx srcdir, not the example src_dir: the paths land in
+                    # a file under `backreferences_dir` and are srcdir-absolute
+                    gallery_conf["src_dir"],
                     fname,
                     intro,
                     title,

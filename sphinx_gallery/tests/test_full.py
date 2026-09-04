@@ -2,6 +2,7 @@
 # License: 3-clause BSD
 """Test the SG pipeline used with Sphinx and tinybuild."""
 
+import itertools
 import json
 import os
 import re
@@ -796,6 +797,13 @@ def test_backreferences_examples_rst(sphinx_app, rst_file, example_used_in):
     n_open = lines.count("<div")
     n_close = lines.count("</div")
     assert n_open == n_close
+    # tinybuild's examples_dirs is outside srcdir, so resolving these srcdir-absolute
+    # paths against it would climb above srcdir and never resolve
+    assert "/../" not in lines
+    targets = re.findall(r":doc:`(.*?)`|\.\. image:: (\S+)", lines)
+    assert targets
+    for target in itertools.chain.from_iterable(targets):
+        assert not target or target.startswith("/auto_examples/"), target
 
 
 def test_backreferences_filenames(sphinx_app):
