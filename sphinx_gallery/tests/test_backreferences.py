@@ -42,7 +42,7 @@ REFERENCE = r"""
         # reST sanitizing
         (
             "1 :class:`~a.b`. 2 :class:`a.b` 3 :ref:`whatever <better name>`",
-            "1 b. 2 a.b 3 better name",
+            "1 b. 2 a.b 3 whatever",
             False,
         ),
         ("use :meth:`mne.io.Raw.plot_psd` to", "use mne.io.Raw.plot_psd to", False),

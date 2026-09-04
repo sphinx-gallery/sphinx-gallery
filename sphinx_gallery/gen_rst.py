@@ -322,9 +322,13 @@ def _regroup(match: re.Match[str]) -> str:
 
 def _sanitize_rst(string: str) -> str:
     """Use regex to remove at least some sphinx directives."""
-    # :class:`a.b.c <thing here>`, :ref:`abc <thing here>` --> thing here
-    p, e = r"(\s|^):[^:\s]+:`", r"`(\W|$)"
-    string = re.sub(p + r"\S+\s*<([^>`]+)>" + e, r"\1\2\3", string)
+    # :class:`title <a.b.c>`, :ref:`title <thing here>` --> title
+    # Sphinx renders the explicit title, not the target, so keep the title.
+    # The role name is `(?:[^:\s`]+:)+` rather than a single segment so that a
+    # domain-qualified role (:py:class:, :std:doc:) is consumed whole -- matching
+    # from its inner colon would strand the ":py" as literal text (gh-1644).
+    p, e = r"(\s|^):(?:[^:\s`]+:)+`", r"`(\W|$)"
+    string = re.sub(p + r"([^`<>]+?)\s*<[^>`]+>" + e, r"\1\2\3", string)
     # :class:`~a.b.c` --> c
     string = re.sub(p + r"~([^`]+)" + e, _regroup, string)
     # :class:`a.b.c` --> a.b.c
@@ -348,7 +352,7 @@ def _sanitize_rst(string: str) -> str:
     string = re.sub(r"`([^`<>]+) <[^`<>]+>`\_\_?", r"\1", string)
 
     # :anchor:`the term` --> the term
-    string = re.sub(r":[a-z]+:`([^`<>]+)( <[^`<>]+>)?`", r"\1", string)
+    string = re.sub(r":(?:[a-z]+:)+`([^`<>]+)( <[^`<>]+>)?`", r"\1", string)
 
     # r'\\dfrac' --> r'\dfrac'
     string = string.replace("\\\\", "\\")
