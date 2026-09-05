@@ -318,3 +318,39 @@ def test_write_backreferences_sanitized_filename(gallery_conf, tmp_path):
     # the heading still shows the real name
     assert "Examples using ``mne:mne.Epochs``" in content
     assert content.count("<div") == content.count("</div")
+
+
+def test_write_backreferences_examples_outside_srcdir(gallery_conf, tmp_path):
+    """Thumbnail paths are srcdir-absolute even when examples live outside srcdir."""
+    src_dir = tmp_path / "doc"
+    examples_dir = tmp_path / "examples" / "sub"
+    target_dir = src_dir / "auto_examples" / "sub"
+    backrefs_dir = src_dir / "generated"
+    backrefs_dir.mkdir(parents=True)
+    examples_dir.mkdir(parents=True)
+    gallery_conf["backreferences_dir"] = "generated"
+    gallery_conf["src_dir"] = str(src_dir)
+    thumb = target_dir / "images" / "thumb" / "sphx_glr_plot_example_thumb.png"
+    thumb.parent.mkdir(parents=True)
+    thumb.touch()
+    seen_backrefs = set()
+
+    sg._write_backreferences(
+        {"mod.func"},
+        seen_backrefs,
+        gallery_conf,
+        examples_dir,
+        target_dir,
+        "plot_example.py",
+        "intro",
+        "title",
+    )
+    sg._finalize_backreferences(seen_backrefs, gallery_conf)
+    content = (backrefs_dir / "mod.func.examples").read_text("utf-8")
+    assert ":doc:`/auto_examples/sub/plot_example`" in content
+    assert (
+        ".. image:: /auto_examples/sub/images/thumb/sphx_glr_plot_example_thumb.png"
+        in content
+    )
+    # a path that climbs above srcdir can never resolve
+    assert "/../" not in content
