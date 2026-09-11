@@ -81,7 +81,7 @@ In order for Sphinx-Gallery to build a gallery from your ``examples`` folder,
 this folder must have the following things:
 
 * **The gallery header**: A file named ``GALLERY_HEADER.[ext]``,
-  where ``[ext]`` is 'txt' or an entry in ``sphinx_gallery_conf["source_suffix"]`` (or
+  where ``[ext]`` is 'txt' or an entry in Sphinx's :confval:`sphinx:source_suffix` (or
   for backward-compatibility ``README.[ext]``). Default recommendation is
   ``GALLERY_HEADER.rst``. This file should contain reST to be used as a header for
   the gallery welcome page, which will
@@ -110,7 +110,7 @@ this folder must have the following things:
     * You can have sub-directories in your ``examples`` directory. These will be
       included as sub-sections of your gallery. They **must** contain their own
       ``GALLERY_HEADER.[ext]`` file as well. Note that ``[ext]`` can be 'txt' or an
-      entry in ``sphinx_gallery_conf["source_suffix"]``. We also support
+      entry in Sphinx's :confval:`sphinx:source_suffix`. We also support
       ``README.[ext]`` for backward-compatibility.
 
 .. warning::
