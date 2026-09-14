@@ -53,8 +53,9 @@ jobs:
                 "jupyterlite-sphinx>=0.17.1" "jupyterlite-pyodide-kernel" \
                 libarchive-c "sphinxcontrib-video>=0.2.1rc0" intersphinx_registry \
                 sphinx-design
-            # TODO: restore PyPI plotly above once plotly/plotly.py#5701 is released
-            uv pip install "plotly @ git+https://github.com/larsoner/plotly.py@sgthumb"
+            # TODO: restore PyPI plotly above once a plotly release newer than
+            # 7.0.0 is out (plotly/plotly.py#5701 is merged but unreleased)
+            uv pip install "plotly @ git+https://github.com/plotly/plotly.py@main"
       - save_cache:
           key: cache-uv-1
           paths:

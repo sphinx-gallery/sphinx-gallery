@@ -3,8 +3,8 @@
 Example with the plotly graphing library
 ========================================
 
-Sphinx-Gallery supports examples made with the `plotly library`_. To use
-plotly, add its scraper to the list of :ref:`image_scrapers` in the
+Sphinx-Gallery supports examples made with the `plotly library`_. With plotly
+newer than 7.0.0, add its scraper to the list of :ref:`image_scrapers` in the
 ``conf.py`` of the project::
 
     sphinx_gallery_conf = {
@@ -21,6 +21,16 @@ thumbnail, which requires `kaleido
 browser (plotly's ``plotly_get_chrome`` command installs one, e.g. on build
 machines without a browser); without them a warning is emitted and examples
 get a placeholder thumbnail.
+
+With plotly 7.0.0 or older, instead select its ``sphinx_gallery`` renderer in
+``conf.py``::
+
+    import plotly.io as pio
+    pio.renderers.default = "sphinx_gallery"
+
+and display figures as the last expression of a code block only. No
+thumbnails are generated this way; provide one per example with
+``sphinx_gallery_thumbnail_path`` (see :ref:`providing_thumbnail`).
 
 This tutorial gives a few examples of plotly figures, starting with its
 high-level API `plotly express <https://plotly.com/python/plotly-express/>`_.
