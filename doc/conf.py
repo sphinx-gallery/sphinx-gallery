@@ -379,6 +379,10 @@ except ImportError:
 else:
     examples_dirs.append("../plotly_examples")
     gallery_dirs.append("auto_plotly_examples")
+    # The scraper hook needs plotly newer than 7.0.0 (plotly/plotly.py#5701,
+    # merged but not yet released), so keep this guard until then
+    if hasattr(plotly, "_get_sg_image_scraper"):
+        image_scrapers += ("plotly",)
 
 min_reported_time = 0
 if "SOURCE_DATE_EPOCH" in os.environ:
@@ -436,4 +440,9 @@ warnings.filterwarnings(
 # Workaround to suppress missing link warnings to custom types, e.g. GalleryConfig,
 # created through autodoc.
 # TODO: There may be better ways to cope with this by adding the types to the docs.
-suppress_warnings = ["ref.class"]
+suppress_warnings = [
+    "ref.class",
+    # plotly recovers from its shared export browser dying mid-build, so the
+    # warning it emits about that shouldn't fail our -W build
+    "plotly.sg_scraper_fallback",
+]
