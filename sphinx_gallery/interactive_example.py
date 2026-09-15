@@ -247,7 +247,7 @@ def check_binder_conf(binder_conf: dict[str, Any] | None) -> dict[str, Any]:
     # Return an empty configuration in case of None
     binder_conf = {} if binder_conf is None else binder_conf.copy()
     if not isinstance(binder_conf, dict):
-        raise ConfigError("`binder_conf` must be a dictionary or None.")
+        raise ConfigError("sphinx_gallery_conf['binder'] must be a dictionary or None.")
     if len(binder_conf) == 0:
         return binder_conf
 
@@ -260,7 +260,9 @@ def check_binder_conf(binder_conf: dict[str, Any] | None) -> dict[str, Any]:
             missing_values.append(val)
 
     if len(missing_values) > 0:
-        raise ConfigError(f"binder_conf is missing values for: {missing_values}")
+        raise ConfigError(
+            f"sphinx_gallery_conf['binder'] is missing values for: {missing_values}"
+        )
 
     for key in binder_conf.keys():
         if key not in (req_values + optional_values):
@@ -486,7 +488,7 @@ def check_jupyterlite_conf(
         return None
 
     if not isinstance(jupyterlite_conf, dict):
-        raise ConfigError("`jupyterlite_conf` must be a dictionary")
+        raise ConfigError("sphinx_gallery_conf['jupyterlite'] must be a dictionary")
 
     conf_defaults = {
         "jupyterlite_contents": "jupyterlite_contents",
