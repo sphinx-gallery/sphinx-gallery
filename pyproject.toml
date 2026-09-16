@@ -90,7 +90,10 @@ packages.find.include = [
 ]  # package names should match these glob patterns (["*"] by default)
 packages.find.namespaces = true  # allow scanning PEP 420 namespaces (true by default)
 include-package-data = true
-dynamic.version = { attr = "sphinx_gallery.__version__" }
+
+# The version comes from the git tags, so it never needs bumping by hand.
+[tool.setuptools_scm]
+version_scheme = "release-branch-semver"  # guess the next minor, not the next patch
 
 [tool.ruff]
 exclude = [
