@@ -15,8 +15,8 @@ How to make a release
 
 .. highlight:: console
 
-1. Update ``CHANGES.rst`` and version in a PR
----------------------------------------------
+1. Update ``CHANGES.rst`` in a PR
+---------------------------------
 
 1. Use `github_changelog_generator
    <https://github.com/github-changelog-generator/github-changelog-generator#installation>`_ to
@@ -55,27 +55,26 @@ How to make a release
    Then copy just the sections to ``CHANGES.rst``. **Keep ``CHANGELOG.md`` for
    later.**
 
-4. Update the version in ``sphinx_gallery/__init__.py``, which should end in
-   ``.dev0``. You should replace ``.dev0`` with ``0`` to obtain a semantic
-   version (e.g., ``0.12.dev0`` to ``0.12.0``).
+4. Open a PR with the above **changelog** changes (along with any updates to this
+   ``maintainers.rst`` document!). There is no version to bump: the version comes
+   from the git tag via ``setuptools-scm``, and ``sphinx_gallery.__version__``
+   reads it back with ``importlib.metadata``.
 
-5. Open a PR with the above **changelog** and **version** changes (along with
-   any updates to this ``maintainers.rst`` document!).
+5. Make sure CIs are green.
 
-6. Make sure CIs are green.
+6. Check that the built documentation looks correct.
 
-7. Check that the built documentation looks correct.
+7. Get somebody else to make sure all looks well, and merge this pull request.
 
-8. Get somebody else to make sure all looks well, and merge this pull request.
-
-2.  Finalize the release
-------------------------
+2. Finalize the release
+-----------------------
 
 1. Make sure CIs are green following the "Release" PR.
 2. Create a new release on GitHub
 
    * Go to the `Draft a new release <https://github.com/sphinx-gallery/sphinx-gallery/releases/new>`_ page.
-   * The **tag version** is whatever the version is in ``__init__.py`` prepended with ``v``. E.g., ``v0.7.0``.
+   * The **tag version** is the semantic version being released, prepended with ``v``. E.g., ``v0.7.0``.
+     This tag is what sets the released version, so make sure it is right.
    * The **release title** is ``Release <tag-version>``.
    * The **description** should contain the markdown changelog
      you generated above (in the ``CHANGELOG.md`` file) and include a "Full changelog"
@@ -85,11 +84,9 @@ How to make a release
    * Confirm that the new version of Sphinx Gallery
      `is posted to PyPI <https://pypi.org/project/sphinx-gallery/#history>`_.
 
-3. Now that the releases are complete, we need to switch the ``master`` branch
-   back into a developer mode. Bump the `Sphinx Gallery version number <https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinx_gallery/__init__.py>`_
-   to the next minor (or major) release and append ``.dev0`` to the end, and make a PR for this change.
-
-4. Celebrate! You've just released a new version of Sphinx Gallery!
+3. Celebrate! You've just released a new version of Sphinx Gallery! ``master`` goes
+   back into developer mode on its own: the next commit after the tag builds as
+   ``<next-minor>.0.dev<N>``.
 
 3. Post-release tasks
 ---------------------
