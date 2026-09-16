@@ -2382,7 +2382,9 @@ Sphinx warnings during documentation building into errors.
     joblib, see :ref:`joblib:parallel` for documentation of many relevant conisderations
     (e.g., pickling, oversubscription of CPU resources, etc.).
 
-    Using parallel building will also disable memory measurements.
+    Using parallel building will also disable memory measurements, with a warning
+    that ``sphinx-build -W`` turns into a build error. Drop ``show_memory`` from your
+    configuration rather than setting both.
 
 Excluding individual examples from parallel execution
 """""""""""""""""""""""""""""""""""""""""""""""""""""

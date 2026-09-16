@@ -27,11 +27,28 @@ during fixture setup instead of a skip.
 ## Commands
 
 ```bash
-pytest sphinx_gallery                                  # full suite, ~2.5 min
+pytest sphinx_gallery -n 4                             # full suite, ~2.5 min
 pytest sphinx_gallery/tests/test_full.py -k rebuild    # single test / keyword
 pre-commit run -a                                      # the actual lint gate
 make -C doc html                                       # build SG's own docs
 ```
+
+Serially the suite takes ~6 min, and nearly all of that is spent building miniature
+Sphinx projects, so it parallelizes well. `--dist=loadgroup` is in `addopts` and takes
+effect as soon as `-n` is passed: modules that cannot be split across workers say so
+with a module-level `pytestmark = pytest.mark.xdist_group(...)` (see `test_full.py`,
+whose tests share one mutated build), and everything else is load balanced test by
+test. `test_full.py` is a single unit of work and therefore the critical path, so more
+than about four workers buys nothing. CI picks the count per OS (`PYTEST_XDIST_N` in
+`.github/workflows/tests.yml`).
+
+`make -C doc html` passes `-j auto`, and `doc/conf.py` sets `"parallel": True`, which
+reuses that number for the Loky workers that run the examples. Both are wired to the
+same knob on purpose: running examples out-of-process is what keeps a threaded BLAS
+from leaving a thread behind for Sphinx's forked read/write workers to deadlock on
+(see `sphinx_parallel_read` in `doc/configuration.rst`). `show_memory` is therefore
+unavailable in SG's own docs -- `parallel` disables it, with a warning that `-W`
+would promote to an error.
 
 `pre-commit` is the source of truth for linting. It runs `ruff-format` and `ruff` with
 **`--select=I` only** (import sorting), plus codespell, yamllint, sphinx-lint, and `ty`.

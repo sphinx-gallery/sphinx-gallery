@@ -68,6 +68,11 @@ if not manim.writers.is_available("ffmpeg"):
     pytest.skip("ffmpeg is not available", allow_module_level=True)
 pytest.importorskip("joblib")
 
+# Under `pytest -n`, keep this whole module on one worker and in collection
+# order: the tests share the module-scoped `sphinx_app` build, and `test_rebuild`
+# mutates that source tree for the tests that follow it.
+pytestmark = pytest.mark.xdist_group("tinybuild")
+
 
 @pytest.fixture(scope="module")
 def sphinx_app(tmp_path_factory, req_mpl, req_pil):
