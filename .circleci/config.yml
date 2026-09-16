@@ -90,7 +90,9 @@ jobs:
             # The image's own browser exits after the first kaleido export
             # (killing the docs build), so fetch a known-good Chrome instead.
             plotly_get_chrome -y
-      - run: sphinx-build doc doc/_build/html -nW --keep-going -b html 2>&1 | tee sphinx_log.txt
+      # -j auto matches doc/Makefile; sphinx_gallery_conf["parallel"] picks the
+      # same number up and runs the examples in that many Loky workers.
+      - run: sphinx-build doc doc/_build/html -nW --keep-going -j auto -b html 2>&1 | tee sphinx_log.txt
       - run:
           name: Check sphinx log for warnings (which are treated as errors)
           when: always

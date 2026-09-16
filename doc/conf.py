@@ -417,7 +417,14 @@ sphinx_gallery_conf = {
     "jupyterlite": {
         "notebook_modification_function": "sg_doc_build.notebook_modification_function",
     },
-    "show_memory": True,
+    # `True` reuses ``sphinx-build -j`` (``auto`` in doc/Makefile) as the number of
+    # Loky workers that run the examples, and is a no-op for a build without ``-j``.
+    # It also keeps example code out of the Sphinx process, so no example can leave a
+    # BLAS thread behind for Sphinx's forked read/write workers to deadlock on -- see
+    # the "Interaction with Sphinx's own parallel reading" section of configuration.rst.
+    "parallel": True,
+    # NOTE: `show_memory` is deliberately not set. It is incompatible with `parallel`
+    # (gen_rst warns and disables it, which `-W` would turn into a build error).
     "promote_jupyter_magic": False,
     "junit": os.path.join("sphinx-gallery", "junit-results.xml"),
     # capture raw HTML or, if not present, __repr__ of last expression in

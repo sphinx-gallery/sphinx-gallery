@@ -51,6 +51,7 @@ optional-dependencies.dev = [
   "pydata-sphinx-theme",
   "pytest",
   "pytest-coverage",
+  "pytest-xdist",
   "seaborn",
   "sphinx-design",
   "sphinxcontrib-video",
@@ -187,6 +188,11 @@ ini_options.addopts = [
   "--color=yes",
   "--cov-report=",
   "--cov=sphinx_gallery",
+  # Only takes effect once -n is passed. "loadgroup" rather than the default
+  # "load" because test_full.py shares one module-scoped, mutated tinybuild
+  # across its tests: its xdist_group mark keeps them together and in order on
+  # a single worker, while everything else still load balances test by test.
+  "--dist=loadgroup",
   "--durations=5",
   "-r a",
   "--tb=short",

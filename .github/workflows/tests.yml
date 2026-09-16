@@ -102,7 +102,18 @@ jobs:
           echo "LC_CTYPE=C" >> $GITHUB_ENV
         if: matrix.locale == 'C'
       - run: .github/install.sh
-      - run: pytest sphinx_gallery -v --tb=short
+      # Explicit counts (in the spirit of SciPy's CI) rather than -n auto, so the
+      # number does not silently change with the runner image; macOS runners have
+      # fewer cores and less RAM than the others. Above ~4 there is nothing to gain
+      # anyway: test_full.py is a single xdist_group, and so the critical path.
+      - name: Set number of pytest-xdist workers
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            echo "PYTEST_XDIST_N=2" | tee -a $GITHUB_ENV
+          else
+            echo "PYTEST_XDIST_N=4" | tee -a $GITHUB_ENV
+          fi
+      - run: pytest sphinx_gallery -v --tb=short -n "$PYTEST_XDIST_N"
       - name: Remove incompatible doc config entries
         run: |
           if [[ "$(uname)" == "Darwin" ]]; then
@@ -110,14 +121,14 @@ jobs:
           else
             CMD="sed -i"
           fi
-          $CMD "/show_memory/d" doc/conf.py
           $CMD "/compress_images/d" doc/conf.py
         if: ${{ !startsWith(matrix.os, 'ubuntu') }}
-      - run: make -C doc SPHINXOPTS= html-noplot
-        if: matrix.distrib != 'minimal'
-      # -j goes in SPHINXOPTS: bare `make -j 2` is a make flag, and with a
+      # -j goes in SPHINXOPTS: bare `make -j auto` is a make flag, and with a
       # single target it parallelizes nothing. SPHINXOPTS is overridden (rather
-      # than appended to) to keep dropping the Makefile's -nWT --keep-going.
-      - run: make -C doc SPHINXOPTS="-j 2" html
+      # than appended to) to keep dropping the Makefile's -nWT --keep-going, so
+      # the Makefile's own -j auto has to be repeated here.
+      - run: make -C doc SPHINXOPTS="-j auto" html-noplot
+        if: matrix.distrib != 'minimal'
+      - run: make -C doc SPHINXOPTS="-j auto" html
         if: matrix.distrib != 'minimal'
       - uses: codecov/codecov-action@v7
