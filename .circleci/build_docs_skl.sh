@@ -34,4 +34,8 @@ cd scikit-learn/doc
 # same Display objects, but the wine dataset ships with scikit-learn, where the
 # latter fetches from OpenML and fails the build whenever that times out
 export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_roc_curve_visualization_api"
-make html
+# scikit-learn's Makefile defaults the `html` target to SPHINX_NUMJOBS=1, to
+# dodge stalls and EOFErrors they hit building the *full* gallery in parallel
+# (scikit-learn/scikit-learn#25809, #25836). We build two examples on a 4-core
+# box, so take the cores; drop this override if the job starts hanging.
+make html SPHINX_NUMJOBS=auto
