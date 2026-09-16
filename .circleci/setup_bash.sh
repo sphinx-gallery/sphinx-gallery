@@ -2,9 +2,25 @@
 
 set -eo pipefail
 echo "set -eo pipefail" >> "$BASH_ENV"
-sudo apt update
-sudo apt --no-install-recommends install -yq ffmpeg graphviz optipng python3-venv \
-    xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libopengl0 libegl1 libosmesa6 mesa-utils libxcb-shape0 libxcb-cursor0 libxml2 \
+# Give up on a stalled mirror connection quickly and retry, rather than hanging
+# until CircleCI's 10 min no-output timeout kills the job (mne-tools gh-14103).
+APT_OPTS="-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+sudo apt update $APT_OPTS
+# The Qt6 list below is kept in sync with mne-tools/tools/setup_xvfb.sh, which
+# is where the MNE integration build gets its rendering deps. Two of them are
+# spelled differently on 26.04, so pick per release rather than hard-coding one
+# spelling and breaking whenever the image tag moves:
+#   - libxml2 was renamed libxml2-16 (SONAME bump)
+#   - graphviz's non-dot layout engines moved into plugin packages, and both
+#     our own and MNE's API-usage graphs are laid out with neato, which
+#     otherwise fails with 'no layout engine support for "neato"'
+if [[ $(lsb_release -rs) == "26.04" ]]; then
+    EXTRA_DEPS="libxml2-16 libgvplugin-neato-layout8"
+else
+    EXTRA_DEPS="libxml2"
+fi
+sudo apt --no-install-recommends install -yq $APT_OPTS ffmpeg graphviz optipng python3-venv \
+    xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libopengl0 libegl1 libosmesa6 mesa-utils libxcb-shape0 libxcb-cursor0 $EXTRA_DEPS \
     r-base libtirpc-dev
 
 python3 -m venv ~/python_env
