@@ -65,7 +65,8 @@ def jupyter_notebook_skeleton() -> NotebookContent:
 def directive_fun(match: re.Match, directive: str) -> str:
     """Helper to fill in directives."""
     directive_to_alert = dict(note="info", warning="danger")
-    return '<div class="alert alert-{}"><h4>{}</h4><p>{}</p></div>'.format(
+    # no <p>: the body can contain block content (e.g. a nested code-block)
+    return '<div class="alert alert-{}"><h4>{}</h4>\n\n{}\n\n</div>'.format(
         directive_to_alert[directive], directive.capitalize(), match.group(1).strip()
     )
 

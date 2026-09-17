@@ -116,10 +116,18 @@ For more details on interpolation see the page :ref:`channel_interpolation`.
 
 This is $some$ math $stuff$.
 
-<div class="alert alert-info"><h4>Note</h4><p>Interpolation is a linear operation that can be performed also on
-    Raw and Epochs objects.</p></div>
+<div class="alert alert-info"><h4>Note</h4>
 
-<div class="alert alert-danger"><h4>Warning</h4><p>Go away</p></div>
+Interpolation is a linear operation that can be performed also on
+    Raw and Epochs objects.
+
+</div>
+
+<div class="alert alert-danger"><h4>Warning</h4>
+
+Go away
+
+</div>
 
 For more details on interpolation see the page `channel_interpolation`.
 
@@ -128,6 +136,34 @@ For more details on interpolation see the page `channel_interpolation`.
 [See more](https://en.wikipedia.org/wiki/Interpolation).
 """  # noqa
     assert rst2md(rst, gallery_conf, "", {}) == markdown
+
+
+def test_convert_note_with_nested_code_block(gallery_conf):
+    """Test that a code-block nested in a note/warning isn't left dangling.
+
+    Regression test for a note/warning whose body ends with a nested
+    ``code-block``: the alert wrapper used to end with a literal
+    ``</p></div>`` glued onto the last line of the resulting code fence,
+    which renders as visible text rather than closing markup.
+    """
+    rst = """.. note::
+
+    You can write the result to disk with:
+
+    .. code-block::
+
+        write_result(result)
+
+Some text after.
+"""
+    markdown = rst2md(rst, gallery_conf, "", {})
+    assert "</p></div>" not in markdown
+    assert markdown == (
+        '<div class="alert alert-info"><h4>Note</h4>\n\n'
+        "You can write the result to disk with:\n\n"
+        "```\nwrite_result(result)\n```\n"
+        "</div>\n\nSome text after.\n"
+    )
 
 
 def test_headings():
