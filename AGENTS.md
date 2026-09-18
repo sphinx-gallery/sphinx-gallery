@@ -117,11 +117,30 @@ introspection of its globals — and caches the candidates per example in `<exam
   Sphinx 9. Running at write time means links re-resolve on every build without invalidating
   cached example doctrees.
 
+## Writing tests
+
+Keep tests compact: every line is read by a volunteer reviewer and then maintained, and
+re-created setup is one of the things reviewers most often ask to have deleted.
+
+- **Add to an existing test before writing a new one.** In order of preference: extend a test
+  that already builds the objects you need (a parametrized one especially, since the new
+  assertion then runs for every case for free), then add a test function to the existing
+  `tests/test_<module>.py`, and only then create anything new. A new test file or fixture is a
+  signal to stop and look for one that already exists. For example, gh-1652 (dots in example
+  names broke image lookup) needed no new test: renaming the image in the existing
+  `test_save_matplotlib_figures` to `my.image{0}.png` reproduced it for both png and svg.
+- **Use the cheapest layer that reproduces the bug.** A unit test of the helper in the matching
+  `test_<module>.py` runs in milliseconds; every Sphinx build costs seconds, and `test_full.py`
+  is already the suite's critical path. Reach for tinybuild when the bug needs a real build
+  (events, caching, rebuilds, HTML output), and then prefer adding an assertion to an existing
+  `test_full.py` test over adding a build.
+
 ## tinybuild
 
 `sphinx_gallery/tests/tinybuild/` is a miniature project built by the `sphinx_app` fixture and
 asserted against throughout `test_full.py`. When a bug shows up in a downstream project
-(MNE-Python, scikit-learn, …), the convention is to extend tinybuild so the suite reproduces it.
+(MNE-Python, scikit-learn, …) and only a full build reproduces it, the convention is to extend
+tinybuild so the suite reproduces it.
 
 - The `sphinx_app` fixture is **module-scoped and mutated** by `test_rebuild`, which rebuilds
   and edits examples in the shared source directory. Later tests read that mutated tree, so one
