@@ -119,7 +119,7 @@ This is $some$ math $stuff$.
 <div class="alert alert-info"><h4>Note</h4>
 
 Interpolation is a linear operation that can be performed also on
-    Raw and Epochs objects.
+Raw and Epochs objects.
 
 </div>
 
@@ -144,7 +144,9 @@ def test_convert_note_with_nested_code_block(gallery_conf):
     Regression test for a note/warning whose body ends with a nested
     ``code-block``: the alert wrapper used to end with a literal
     ``</p></div>`` glued onto the last line of the resulting code fence,
-    which renders as visible text rather than closing markup.
+    which renders as visible text rather than closing markup. Text after the
+    code-block must also lose its rST indentation, or Markdown renders it as
+    an indented code block.
     """
     rst = """.. note::
 
@@ -154,6 +156,8 @@ def test_convert_note_with_nested_code_block(gallery_conf):
 
         write_result(result)
 
+    Then read it back.
+
 Some text after.
 """
     markdown = rst2md(rst, gallery_conf, "", {})
@@ -162,6 +166,7 @@ Some text after.
         '<div class="alert alert-info"><h4>Note</h4>\n\n'
         "You can write the result to disk with:\n\n"
         "```\nwrite_result(result)\n```\n"
+        "Then read it back.\n\n"
         "</div>\n\nSome text after.\n"
     )
 

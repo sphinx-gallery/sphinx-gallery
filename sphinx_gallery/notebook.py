@@ -65,9 +65,14 @@ def jupyter_notebook_skeleton() -> NotebookContent:
 def directive_fun(match: re.Match, directive: str) -> str:
     """Helper to fill in directives."""
     directive_to_alert = dict(note="info", warning="danger")
+    # The body is parsed as Markdown, where a line indented by 4+ spaces after a
+    # blank line is a code block, so drop the rST indentation. The first line may
+    # start on the directive line itself (``.. note:: text``) and is unindented.
+    first, _, rest = match.group(1).partition("\n")
+    body = f"{first.strip()}\n{textwrap.dedent(rest)}".strip()
     # no <p>: the body can contain block content (e.g. a nested code-block)
     return '<div class="alert alert-{}"><h4>{}</h4>\n\n{}\n\n</div>'.format(
-        directive_to_alert[directive], directive.capitalize(), match.group(1).strip()
+        directive_to_alert[directive], directive.capitalize(), body
     )
 
 
