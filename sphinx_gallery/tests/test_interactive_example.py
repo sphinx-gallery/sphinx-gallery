@@ -79,7 +79,9 @@ def test_binder():
             continue
         conf3 = deepcopy(conf1)
         conf3.pop(key)
-        with pytest.raises(ConfigError, match="binder_conf is missing values"):
+        with pytest.raises(
+            ConfigError, match=r"sphinx_gallery_conf\['binder'\] is missing values"
+        ):
             url = check_binder_conf(conf3)
 
     # Dependencies file
@@ -124,6 +126,12 @@ def test_binder():
     conf7["foo"] = "blah"
     with pytest.raises(ConfigError, match="Unknown Binder config key"):
         url = check_binder_conf(conf7)
+
+    # A non-dict is reported against the key the user actually wrote in conf.py
+    with pytest.raises(
+        ConfigError, match=r"sphinx_gallery_conf\['binder'\] must be a dictionary"
+    ):
+        check_binder_conf(["org", "repo"])
 
     # Assert using lab correctly changes URL
     conf_lab = deepcopy(conf_base)

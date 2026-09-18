@@ -14,9 +14,10 @@ set -exo pipefail
 (set +x; __sep__)
 
 # Install scikit-learn and doc dependencies
+# uv has no `pip index versions` equivalent, so this query stays on pip
 VERSION=$(pip index versions scikit-learn | cut -d "(" -f2 | cut -d ")" -f1 | cut -d "." -f1-2 | head -n 1)
 echo "Installing scikit-learn version $VERSION"
-pip install --only-binary=:all: \
+uv pip install --only-binary=:all: \
             sphinx numpydoc matplotlib Pillow pandas \
             polars scikit-image packaging seaborn sphinx-prompt \
             sphinxext-opengraph sphinx-copybutton plotly pooch \
@@ -29,5 +30,13 @@ pip install --only-binary=:all: \
 # Checkout scikit-learn main branch, to build docs from repo
 git clone git@github.com:scikit-learn/scikit-learn.git --single-branch --depth 1 --branch ${VERSION}.X
 cd scikit-learn/doc
-export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_display_object_visualization"
-make html
+# plot_roc_curve_visualization_api rather than plot_display_object_visualization:
+# same Display objects, but the wine dataset ships with scikit-learn, where the
+# latter fetches from OpenML and fails the build whenever that times out
+export EXAMPLES_PATTERN="plot_grid_search_text_feature_extraction|plot_roc_curve_visualization_api"
+# Pass SPHINX_NUMJOBS explicitly rather than inheriting scikit-learn's default,
+# so this job's parallelism is visible here rather than in their Makefile. It
+# stays at 1 because parallel reads stall or raise EOFError on their side
+# (scikit-learn/scikit-learn#25809, #25836); switch to `auto` once
+# scikit-learn/scikit-learn#34718 lands and makes read/write parallel-safe.
+make html SPHINX_NUMJOBS=1

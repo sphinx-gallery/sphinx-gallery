@@ -21,7 +21,8 @@ from .backreferences import (
 )
 from .gen_rst import extract_intro_and_title
 from .py_source_parser import split_code_and_text_blocks
-from .utils import _read_json
+from .typing import PathLikeStr
+from .utils import WARNING_TYPE, _read_json
 
 if TYPE_CHECKING:
     import sphinx.application
@@ -65,7 +66,7 @@ class MiniGallery(Directive):
     def _get_target_dir(
         self,
         config: sphinx.config.Config,
-        src_dir: str,
+        src_dir: PathLikeStr,
         path: Path,
         obj: str,
     ) -> Path:
@@ -108,7 +109,7 @@ class MiniGallery(Directive):
             )
 
         # Add subgallery path, if present
-        subdir: str | Path = ""
+        subdir: PathLikeStr = ""
         if (ex_p := ex_parents[0]) != Path("."):
             subdir = ex_p
         target_dir = target_dir / subdir
@@ -134,7 +135,9 @@ class MiniGallery(Directive):
         if backreferences_dir is None:
             logger.warning(
                 "'backreferences_dir' config is None, minigallery "
-                "directive will resolve all inputs as file paths or globs."
+                "directive will resolve all inputs as file paths or globs.",
+                type=WARNING_TYPE,
+                subtype="config",
             )
 
         # Retrieve source directory
@@ -210,11 +213,16 @@ class MiniGallery(Directive):
             (sortkey,) = _get_callables(
                 config.sphinx_gallery_conf, "minigallery_sort_order"
             )
-        for path, path_info in sorted(
-            file_paths.items(),
-            # `x[0]` to sort on key only
-            key=((lambda x: sortkey(str(x[0]))) if sortkey else None),
-        ):
+        if sortkey:
+            sorted_items = sorted(
+                file_paths.items(),
+                # `x[0]` to sort on key only
+                key=lambda x: sortkey(str(x[0])),
+            )
+        else:
+            sorted_items = sorted(file_paths.items())
+
+        for path, path_info in sorted_items:
             if path_info.intro is not None:
                 thumbnail = _thumbnail_div(
                     path_info.target_dir,
@@ -334,31 +342,20 @@ def visit_imgsg_html(self, node: imgsgnode) -> None:
 
     imagedir, srcset = _copy_images(self, node)
 
-    # /doc/examples/subd/plot_1.rst
-    docsource = self.document["source"]
-    # /doc/
-    # make sure to add the trailing slash:
-    srctop = os.path.join(self.builder.srcdir, "")
-    # examples/subd/plot_1.rst
-    relsource = os.path.relpath(docsource, srctop)
-    # /doc/build/html
-    desttop = os.path.join(self.builder.outdir, "")
-    # /doc/build/html/examples/subd
-    dest = os.path.join(desttop, relsource)
+    docsource = Path(self.document["source"])  # /doc/examples/subd/plot_1.rst
+    srctop = Path(self.builder.srcdir)  # /doc
+    relsource = Path(os.path.relpath(docsource, srctop))  # examples/subd/plot_1.rst
+    dest = Path(self.builder.outdir) / relsource  # /doc/build/html/examples/subd
 
     # ../../_images/ for dirhtml and ../_images/ for html
-    imagerel = os.path.relpath(imagedir, os.path.dirname(dest))
+    imagerel = Path(os.path.relpath(imagedir, dest.parent))
     if self.builder.name == "dirhtml":
-        imagerel = os.path.join("..", imagerel, "")
-    else:  # html
-        imagerel = os.path.join(imagerel, "")
-
-    if "\\" in imagerel:
-        imagerel = imagerel.replace("\\", "/")
+        imagerel = Path("..") / imagerel
+    imagerel = imagerel.as_posix().rstrip("/") + "/"
     # make srcset str.  Need to change all the prefixes!
     srcsetst = ""
     for mult in srcset:
-        nm = os.path.basename(srcset[mult][1:])
+        nm = Path(srcset[mult][1:]).name
         # ../../_images/plot_1_2_0x.png
         relpath = imagerel + nm
         srcsetst += f"{relpath}"
@@ -370,7 +367,7 @@ def visit_imgsg_html(self, node: imgsgnode) -> None:
     srcsetst = srcsetst[:-2]
 
     # make uri also be relative...
-    nm = os.path.basename(node["uri"][1:])
+    nm = Path(node["uri"][1:]).name
     uri = imagerel + nm
 
     alt = node["alt"]
@@ -397,22 +394,22 @@ def visit_imgsg_latex(self, node: imgsgnode) -> None:
     self.visit_image(node)
 
 
-def _copy_images(self, node: imgsgnode) -> tuple[PurePosixPath, dict[float, str]]:
+def _copy_images(self, node: imgsgnode) -> tuple[Path, dict[float, str]]:
     srcset = _parse_srcset(node["srcset"])
 
     # where the sources are.  i.e. myproj/source
-    srctop = self.builder.srcdir
+    srctop = Path(self.builder.srcdir)
 
     # copy image from source to imagedir.  This is
     # *probably* supposed to be done by a builder but...
     # ie myproj/build/html/_images
-    imagedir = PurePosixPath(self.builder.outdir, self.builder.imagedir)
+    imagedir = Path(self.builder.outdir) / self.builder.imagedir
 
-    os.makedirs(imagedir, exist_ok=True)
+    imagedir.mkdir(parents=True, exist_ok=True)
 
     # copy all the sources to the imagedir:
     for mult in srcset:
-        abspath = PurePosixPath(srctop, srcset[mult][1:])
+        abspath = srctop / srcset[mult].lstrip("/")
         shutil.copyfile(abspath, imagedir / abspath.name)
 
     return imagedir, srcset

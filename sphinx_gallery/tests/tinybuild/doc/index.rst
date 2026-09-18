@@ -19,7 +19,8 @@ every module. Examples `here <auto_examples/index.html>`_.
    backreferences
    _dummy
    _dummy.nested
-   docs_resolv
+   _dummy.unused_a
+   _dummy.unused_b
    downloads
    gen_gallery
    gen_rst

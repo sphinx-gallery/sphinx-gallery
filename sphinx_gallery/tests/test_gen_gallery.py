@@ -16,6 +16,7 @@ from sphinx.errors import ConfigError, ExtensionError, SphinxWarning
 from sphinx_gallery.gen_gallery import (
     _bool_eval,
     _fill_gallery_conf_defaults,
+    _make_graph,
     fill_gallery_conf_defaults,
     write_api_entry_usage,
     write_computation_times,
@@ -23,6 +24,7 @@ from sphinx_gallery.gen_gallery import (
 from sphinx_gallery.interactive_example import create_jupyterlite_contents
 from sphinx_gallery.utils import (
     _collect_gallery_files,
+    _has_graphviz,
     check_duplicate_filenames,
     check_spaces_in_filenames,
 )
@@ -269,6 +271,25 @@ def test_config_backreferences(sphinx_app_wrapper):
     assert build_warn == ""
 
 
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    'reference_url': {'sphinx_gallery': None},
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}"""
+)
+def test_config_reference_url_deprecated(sphinx_app_wrapper):
+    """Test setting reference_url reports its deprecation without warning.
+
+    It is deliberately not a warning: the option is a no-op now, so projects
+    building with ``-W`` should not break just by upgrading.
+    """
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    assert "'reference_url' option is deprecated" in sphinx_app._status.getvalue()
+    assert sphinx_app._warning.getvalue() == ""
+
+
 def test_duplicate_files_warn(sphinx_app_wrapper):
     """Test for a warning when two files with the same filename exist."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()
@@ -312,6 +333,55 @@ def test_spaces_in_files_warn(sphinx_app_wrapper):
     check_spaces_in_filenames(files)
     build_warn = sphinx_app._warning.getvalue()
     assert msg.format(m) in build_warn
+
+
+_DUPLICATE_CONF = """
+sphinx_gallery_conf = {
+    'examples_dirs': ['../dup_a', '../dup_b'],
+    'gallery_dirs': ['auto_a', 'auto_b'],
+}"""
+
+
+def _write_duplicate_examples(tmp_path):
+    """Write the same example file name into two `examples_dirs`."""
+    for examples_dir in ("dup_a", "dup_b"):
+        example_dir = tmp_path / examples_dir
+        example_dir.mkdir()
+        (example_dir / "GALLERY_HEADER.rst").write_text(GALLERY_HEADER)
+        (example_dir / "plot_dup.py").write_text(MINIMAL_HEADER)
+
+
+@pytest.mark.add_conf(content=_DUPLICATE_CONF)
+def test_duplicate_files_warn_during_build(sphinx_app_wrapper, tmp_path):
+    """The duplicate check must see the examples, not silently collect nothing.
+
+    `examples_dirs` is relative to the source directory, so resolving it against
+    the current working directory makes the whole check a no-op.
+    """
+    _write_duplicate_examples(tmp_path)
+
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
+    build_warn = sphinx_app._warning.getvalue()
+    assert "Duplicate example file name(s) found" in build_warn
+    # the message renders a list, so each path is repr'd -- escaped on Windows
+    assert repr(str(Path("dup_b", "plot_dup.py")))[1:-1] in build_warn
+    assert sphinx_app._warncount == 1
+
+
+@pytest.mark.add_conf(
+    content="suppress_warnings = ['sphinx_gallery.duplicate_filename']\n"
+    + _DUPLICATE_CONF
+)
+def test_suppress_warnings(sphinx_app_wrapper, tmp_path):
+    """Our warnings carry a type and subtype, so `suppress_warnings` can drop them."""
+    _write_duplicate_examples(tmp_path)
+
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+
+    assert "Duplicate example file name(s) found" not in sphinx_app._warning.getvalue()
+    # `-W` fails the build on this count, so suppressed warnings must not reach it
+    assert sphinx_app._warncount == 0
 
 
 def _check_order(sphinx_app, key, expected_order=None):
@@ -966,7 +1036,108 @@ def test_write_computation_times_noop(sphinx_app_wrapper):
 
 
 def test_write_api_usage_noop(sphinx_app_wrapper):
-    write_api_entry_usage(sphinx_app_wrapper.create_sphinx_app(), list(), None)
+    app = sphinx_app_wrapper.create_sphinx_app()
+    assert write_api_entry_usage(app, app.env) == []
+
+
+_API_USAGE_CONF = """
+sphinx_gallery_conf = {{
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'backreferences_dir': 'gen_modules/backreferences',
+    'doc_module': ('sphinx_gallery',),
+    'show_api_usage': {0!r},
+}}"""
+
+# `Block` is used by src/plot_1.py, the rest of the module is not
+_API_USAGE_RST = {
+    "api.rst": """
+API
+===
+
+.. automodule:: sphinx_gallery.py_source_parser
+   :members:
+"""
+}
+
+
+def _build_api_usage(sphinx_app_wrapper):
+    sphinx_app = sphinx_app_wrapper.build_sphinx_app()
+    return Path(sphinx_app.srcdir, "sg_api_usage.rst").read_text(encoding="utf-8")
+
+
+@pytest.mark.add_conf(
+    extensions=["sphinx.ext.autodoc", "sphinx_gallery.gen_gallery"],
+    content=_API_USAGE_CONF.format("unused"),
+)
+@pytest.mark.add_file(file=_API_USAGE_RST)
+def test_show_api_usage_unused(sphinx_app_wrapper):
+    """Test 'unused' documents only the unused entries.
+
+    This is what large projects use, since a graph per module does not scale.
+    """
+    content = _build_api_usage(sphinx_app_wrapper)
+    assert "Unused API Entries" in content
+    assert ":func:`sphinx_gallery.py_source_parser.remove_ignore_blocks`" in content
+    # the used entries and their per-module graphs are True-only
+    assert "Used API Entries" not in content
+    assert "sg_api_used.dot" not in content
+
+
+@pytest.mark.add_conf(
+    extensions=["sphinx.ext.autodoc", "sphinx_gallery.gen_gallery"],
+    content=_API_USAGE_CONF.format(True),
+)
+@pytest.mark.add_file(file=_API_USAGE_RST)
+def test_show_api_usage_true(sphinx_app_wrapper):
+    """Test True additionally documents the used entries."""
+    content = _build_api_usage(sphinx_app_wrapper)
+    assert "Unused API Entries" in content
+    assert "Used API Entries" in content
+    assert ":class:`sphinx_gallery.py_source_parser.Block`" in content
+    if _has_graphviz():
+        assert "sphinx_gallery_sg_api_used.dot" in content
+
+
+@pytest.mark.add_conf(
+    extensions=["sphinx.ext.autodoc", "sphinx_gallery.gen_gallery"],
+    content=_API_USAGE_CONF.format(False),
+)
+@pytest.mark.add_file(file=_API_USAGE_RST)
+def test_show_api_usage_disabled_cleanup(sphinx_app_wrapper):
+    """Test stale files from an earlier show_api_usage build are removed.
+
+    The generated page and graphs persist across builds by design, so turning the
+    feature off must delete them or the stale page keeps being read and built.
+    """
+    src_dir = Path(sphinx_app_wrapper.srcdir)
+    stale = [
+        src_dir / "sg_api_usage.rst",
+        src_dir / "sg_api_unused.dot",
+        src_dir / "sphinx_gallery_sg_api_used.dot",
+    ]
+    for path in stale:
+        path.write_text("stale", encoding="utf-8")
+    sphinx_app_wrapper.build_sphinx_app()
+    for path in stale:
+        assert not path.is_file(), path
+
+
+@pytest.mark.parametrize("used", (False, True))
+def test_make_graph_deterministic(tmp_path, used):
+    """The .dot must not depend on set iteration order (it is a page dependency)."""
+    pytest.importorskip("graphviz")
+    names = [f"mod.sub{i % 3}.obj{i}" for i in range(30)]
+    api_entries = {"module": {"mod.sub0", "mod.sub1", "mod.sub2"}}
+    outputs = set()
+    # the same entries in different orders must produce byte-identical output, or an
+    # unchanged rebuild reshuffles the graph and marks sg_api_usage outdated
+    for order in (names, names[::-1], sorted(names, key=len)):
+        entries = {n: [f"ex_{n}"] for n in order} if used else list(order)
+        fname = str(tmp_path / "g.dot")
+        _make_graph(fname, entries, api_entries)
+        outputs.add(Path(fname).read_text(encoding="utf-8"))
+    assert len(outputs) == 1
 
 
 @pytest.mark.add_conf(

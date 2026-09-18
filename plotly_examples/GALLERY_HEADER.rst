@@ -8,4 +8,4 @@ Plotly Gallery
 Plotly Examples
 ---------------
 
-Examples from the Sphinx-Gallery using Plotly for embedding 3D plots.
+Examples from the Sphinx-Gallery using Plotly for embedding interactive plots.

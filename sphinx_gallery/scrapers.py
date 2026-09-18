@@ -19,20 +19,21 @@ import re
 import sys
 from pathlib import Path, PurePosixPath
 from textwrap import indent
-from typing import TYPE_CHECKING, Any, Callable, Iterator, TypeAlias
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, TypeAlias
 from warnings import filterwarnings
 
 from sphinx.errors import ExtensionError
 
-from .typing import GalleryConfig
+from .typing import GalleryConfig, PathLikeStr
 from .utils import optipng
 
 if TYPE_CHECKING:
+    import matplotlib.animation
     import matplotlib.figure
 
     from .py_source_parser import Block
 
-SrcsetMap: TypeAlias = dict[float | int, str | PurePosixPath]
+SrcsetMap: TypeAlias = dict[float | int, PathLikeStr | PurePosixPath]
 """
 Mapping of image srcset multiplication factor to image path.
 The key 0 is reserved for the original image. Other keys are
@@ -98,7 +99,7 @@ def _matplotlib_fig_titles(fig: matplotlib.figure.Figure) -> str:
     if suptitle is not None:
         titles.append(suptitle.get_text())
     # get titles from all axes, for all locs
-    title_locs = ["left", "center", "right"]
+    title_locs: list[Literal["left", "center", "right"]] = ["left", "center", "right"]
     for ax in fig.axes:
         for loc in title_locs:
             text = ax.get_title(loc=loc)
@@ -213,9 +214,9 @@ def matplotlib_scraper(
             raise
 
         if "images" in gallery_conf["compress_images"]:
-            optipng(str(image_path), gallery_conf["compress_images_args"])
-            for hipath in srcsetpaths[0].items():
-                optipng(str(hipath), gallery_conf["compress_images_args"])
+            # key 0 is image_path itself, so this covers it as well
+            for hipath in srcsetpaths[0].values():
+                optipng(Path(hipath), gallery_conf["compress_images_args"])
 
         image_rsts.append(
             figure_rst(
@@ -299,9 +300,7 @@ def _anim_rst(
     dpi = rcParams["savefig.dpi"]
     if dpi == "figure":
         dpi = fig.dpi
-    # relative_to doesn't work on windows
-    # video_uri = video.relative_to(gallery_conf["src_dir"]).as_posix()
-    video_uri = PurePosixPath(os.path.relpath(video, gallery_conf["src_dir"]))
+    video_uri = _as_relative_rst_path(video, gallery_conf["src_dir"])
     html = _ANIMATION_VIDEO_RST.format(
         video=f"/{video_uri}",
         width=int(fig_size[0] * dpi),
@@ -325,8 +324,8 @@ class ImagePathIterator:
         The template image path.
     """
 
-    def __init__(self, image_path: str) -> None:
-        self.image_path = image_path
+    def __init__(self, image_path: PathLikeStr) -> None:
+        self.image_path = str(image_path)
         self.paths: list[str] = list()
         self._stop = 1000000
 
@@ -377,12 +376,13 @@ class ImagePathIterator:
 _KNOWN_IMG_EXTS = ("png", "svg", "jpg", "gif", "webp")
 
 
-def _find_image_ext(path: str) -> tuple[str, str]:
+def _find_image_ext(path: PathLikeStr) -> tuple[str, str]:
     """Find an image, tolerant of different file extensions."""
-    path = os.path.splitext(path)[0]
+    # Append rather than with_suffix(): once the image extension is gone, any dot left
+    # in the example name (e.g. "optuna.visualization.plot_timeline") looks like one
+    path = str(Path(path).with_suffix(""))
     for ext in _KNOWN_IMG_EXTS:
-        this_path = f"{path}.{ext}"
-        if os.path.isfile(this_path):
+        if Path(f"{path}.{ext}").is_file():
             break
     else:
         ext = "png"
@@ -425,7 +425,7 @@ def save_figures(
             current_path, _ = _find_image_ext(
                 image_path_iterator.paths[prev_count + ii]
             )
-            if not os.path.isfile(current_path):
+            if not Path(current_path).is_file():
                 raise ExtensionError(
                     f"Scraper {scraper} did not produce expected image:\n{current_path}"
                 )
@@ -433,9 +433,17 @@ def save_figures(
     return all_rst
 
 
+def _as_relative_rst_path(path: PathLikeStr, sources_dir: PathLikeStr) -> str:
+    """Return path relative to sources_dir as a normalized POSIX path."""
+    # relative_to doesn't work on windows
+    # rel_path = path.relative_to(sources_dir).as_posix()
+    rel_path = os.path.relpath(str(path), str(sources_dir))
+    return Path(rel_path).as_posix().lstrip("/")
+
+
 def figure_rst(
-    figure_list: list[str | PurePosixPath],
-    sources_dir: str,
+    figure_list: list[PathLikeStr | PurePosixPath],
+    sources_dir: PathLikeStr,
     fig_titles: str = "",
     srcsetpaths: list[SrcsetMap] | None = None,
 ) -> str:
@@ -448,7 +456,7 @@ def figure_rst(
     ----------
     figure_list : list
         List of strings of the figures' absolute paths.
-    sources_dir : str
+    sources_dir : str | pathlib.Path
         absolute path of Sphinx documentation sources
     fig_titles : str
         Titles of figures, empty string if no titles found. Currently
@@ -479,8 +487,7 @@ def figure_rst(
         srcsetpaths = [{0: fl} for fl in figure_list]
 
     figure_paths = [
-        os.path.relpath(figure_path, sources_dir).replace(os.sep, "/").lstrip("/")
-        for figure_path in figure_list
+        _as_relative_rst_path(figure_path, sources_dir) for figure_path in figure_list
     ]
 
     # Get alt text
@@ -488,9 +495,9 @@ def figure_rst(
     if fig_titles:
         alt = fig_titles
     elif figure_list:
-        file_name = os.path.split(figure_list[0])[1]
+        file_name = Path(figure_list[0]).name
         # remove ext & 'sphx_glr_' from start & n#'s from end
-        file_name_noext = os.path.splitext(file_name)[0][9:-4]
+        file_name_noext = Path(file_name).stem[9:-4]
         # replace - & _ with \s
         file_name_final = re.sub(r"[-,_]", " ", file_name_noext)
         alt = file_name_final
@@ -514,7 +521,7 @@ def figure_rst(
     return images_rst
 
 
-def _get_srcset_st(sources_dir: str, hinames: SrcsetMap) -> str:
+def _get_srcset_st(sources_dir: PathLikeStr, hinames: SrcsetMap) -> str:
     """Create the srcset string for including on the rst line.
 
     For example; `sources_dir` might be `/home/sample-proj/source`,
@@ -528,7 +535,7 @@ def _get_srcset_st(sources_dir: str, hinames: SrcsetMap) -> str:
     """
     srcst = ""
     for k in hinames.keys():
-        path = os.path.relpath(hinames[k], sources_dir).replace(os.sep, "/").lstrip("/")
+        path = _as_relative_rst_path(hinames[k], sources_dir)
         srcst += "/" + path
         if k == 0:
             srcst += ", "
@@ -587,7 +594,7 @@ SINGLE_IMAGE = """
 # Module resetting
 
 
-def _reset_matplotlib(gallery_conf: GalleryConfig, fname: str | None) -> None:
+def _reset_matplotlib(gallery_conf: GalleryConfig, fname: PathLikeStr | None) -> None:
     """Reset matplotlib."""
     mpl, plt = _import_matplotlib()
     plt.rcdefaults()
@@ -596,7 +603,7 @@ def _reset_matplotlib(gallery_conf: GalleryConfig, fname: str | None) -> None:
     importlib.reload(mpl.category)
 
 
-def _reset_seaborn(gallery_conf: GalleryConfig, fname: str | None) -> None:
+def _reset_seaborn(gallery_conf: GalleryConfig, fname: PathLikeStr | None) -> None:
     """Reset seaborn."""
     seaborn_module = sys.modules.get("seaborn")
     if seaborn_module is not None:
@@ -609,7 +616,9 @@ _reset_dict = {
 }
 
 
-def clean_modules(gallery_conf: GalleryConfig, fname: str | None, when: str) -> None:
+def clean_modules(
+    gallery_conf: GalleryConfig, fname: PathLikeStr | None, when: str
+) -> None:
     """Remove, unload, or reset modules.
 
     After a script is executed it can load a variety of settings that one
@@ -619,7 +628,7 @@ def clean_modules(gallery_conf: GalleryConfig, fname: str | None, when: str) -> 
     ----------
     gallery_conf : dict
         The gallery configuration.
-    fname : str or None
+    fname : str | pathlib.Path | None
         The example being run. Will be None when this is called entering
         a directory of examples to be built.
     when : str
@@ -635,8 +644,9 @@ def clean_modules(gallery_conf: GalleryConfig, fname: str | None, when: str) -> 
         if len(sig.parameters) == 3:
             third_param = list(sig.parameters.keys())[2]
             if third_param != "when":
+                name = getattr(reset_module, "__name__", repr(reset_module))
                 raise ValueError(
-                    f"3rd parameter in {reset_module.__name__} "
+                    f"3rd parameter in {name} "
                     "function signature must be 'when', "
                     f"got {third_param}"
                 )

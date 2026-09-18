@@ -16,7 +16,7 @@ assert 3 / 2 == 1.5
 print(3 / 2, end="")
 
 # testing reset of mpl
-orig_dpi = 80.0 if matplotlib.__version__[0] < "2" else 100.0
+orig_dpi = 100.0
 assert matplotlib.rcParams["figure.dpi"] == orig_dpi
 matplotlib.rcParams["figure.dpi"] = 90.0
 assert matplotlib.rcParams["figure.dpi"] == 90.0

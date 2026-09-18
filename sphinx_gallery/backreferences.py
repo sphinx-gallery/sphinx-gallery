@@ -14,6 +14,7 @@ import os
 import re
 import sys
 from collections import defaultdict
+from functools import partial
 from html import escape
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple
@@ -23,8 +24,8 @@ from sphinx.errors import ExtensionError
 
 from ._dummy import DummyClass  # noqa: F401
 from .scrapers import _find_image_ext
-from .typing import GalleryConfig
-from .utils import _W_KW, _replace_md5
+from .typing import GalleryConfig, PathLikeStr
+from .utils import _W_KW, WARNING_TYPE, _replace_md5
 
 if TYPE_CHECKING:
     from .py_source_parser import Block
@@ -275,8 +276,8 @@ def identify_names(
     example_code_obj: dict[str, list[dict[str, Any]]] = (
         dict()
     )  # native dict preserves order nowadays
-    # Make a list of all guesses, in `_embed_code_links` we will break
-    # when we find a match
+    # Make a list of all guesses; the _doctree_links resolver stops at the
+    # first one that resolves
     for name, full_name, class_like, is_class, is_explicit in names:
         if name not in example_code_obj:
             example_code_obj[name] = list()
@@ -337,17 +338,25 @@ BACKREF_THUMBNAIL_TEMPLATE = (
 
 
 def _thumbnail_div(
-    target_dir, src_dir, fname, intro, title, is_backref=False, check=True, *, tags=None
-):
+    target_dir: PathLikeStr,
+    src_dir: PathLikeStr,
+    fname: PathLikeStr,
+    intro: str,
+    title: str,
+    is_backref: bool = False,
+    check: bool = True,
+    *,
+    tags=None,
+) -> str:
     """Generate reST to place a thumbnail in a gallery.
 
     Parameters
     ----------
-    target_dir : str
+    target_dir : str | pathlib.Path
         Absolute path to output directory, where thumbnails are saved.
-    src_dir : str
+    src_dir : str | pathlib.Path
         Absolute path to build source directory.
-    fname : str
+    fname : str | pathlib.Path
         Filename of example file.
     intro : str
         Introductory docstring of example, to show in tooltip
@@ -364,22 +373,21 @@ def _thumbnail_div(
     thumbnail : str
         reST for a thumbnail.
     """
+    target_dir = Path(target_dir)
+    src_dir = Path(src_dir)
     fname = Path(fname)
     thumb, _ = _find_image_ext(
-        os.path.join(target_dir, "images", "thumb", f"sphx_glr_{fname.stem}_thumb.png")
+        target_dir / "images" / "thumb" / f"sphx_glr_{fname.stem}_thumb.png"
     )
-    if check and not os.path.isfile(thumb):
+    if check and not Path(thumb).is_file():
         # This means we have done something wrong in creating our thumbnail!
         raise ExtensionError(
             f"Could not find internal Sphinx-Gallery thumbnail file:\n{thumb}"
         )
-    thumb = os.path.relpath(thumb, src_dir)
-    full_dir = os.path.relpath(target_dir, src_dir)
+    thumb = Path(os.path.relpath(thumb, src_dir)).as_posix()
+    full_dir = Path(os.path.relpath(target_dir, src_dir))
 
-    # Inside rst files forward slash defines paths
-    thumb = thumb.replace(os.sep, "/")
-
-    doc_name = "/" + (Path(full_dir) / fname).with_suffix("").as_posix()
+    doc_name = "/" + (full_dir / fname).with_suffix("").as_posix()
 
     tag_html_attr = ""
     if tags:
@@ -404,13 +412,26 @@ class Backreference(NamedTuple):
     title: str
 
 
+# Explicit backreference names come from reST roles in the example text, so they are
+# not restricted to Python identifiers: an intersphinx inventory prefix such as
+# ``:ref:`pkg:target``` leaves a ``:`` behind, which cannot appear in a filename on
+# Windows. Cover the whole Windows-invalid set; ``/`` also keeps a name from escaping
+# ``backreferences_dir``.
+_INVALID_FNAME_CHARS = re.compile(r'[<>:"/\\|?*]')
+
+
+def _sanitize_backref(backref: str) -> str:
+    """Make a backreference name safe to use as a filename."""
+    return _INVALID_FNAME_CHARS.sub("_", backref)
+
+
 def _write_backreferences(
     backrefs: set[str],
     seen_backrefs: set[str],
     gallery_conf: GalleryConfig,
-    src_dir: str,
-    target_dir: str,
-    fname: str,
+    src_dir: PathLikeStr,
+    target_dir: PathLikeStr,
+    fname: PathLikeStr,
     intro: str,
     title: str,
 ) -> dict[str, list[Backreference]] | None:
@@ -424,14 +445,15 @@ def _write_backreferences(
     backrefs : set[str]
         Back references to write.
     seen_backrefs: set[str]
-        Back references already encountered when parsing this example.
+        Filename-sanitized back references already encountered when parsing this
+        example, updated in place.
     gallery_conf : Dict[str, Any]
         Gallery configurations.
-    src_dir : str
+    src_dir : str | pathlib.Path
         Stuff.
-    target_dir : str
+    target_dir : str | pathlib.Path
         Absolute path to directory where examples are saved.
-    fname : str
+    fname : str | pathlib.Path
         Filename of current example python file.
     intro : str
         Introductory docstring of example.
@@ -448,16 +470,21 @@ def _write_backreferences(
     if gallery_conf["backreferences_dir"] is None:
         return None
 
+    src_dir = Path(src_dir)
+    target_dir = Path(target_dir)
+    fname = Path(fname)
+
     backrefs_example = defaultdict(list)
     for backref in backrefs:
-        include_path = os.path.join(
-            gallery_conf["src_dir"],
-            gallery_conf["backreferences_dir"],
-            f"{backref}.examples.new",
+        fname_backref = _sanitize_backref(backref)
+        include_path = (
+            Path(gallery_conf["src_dir"])
+            / gallery_conf["backreferences_dir"]
+            / f"{fname_backref}.examples.new"
         )
-        seen = backref in seen_backrefs
+        seen = fname_backref in seen_backrefs
         mode = "a" if seen else "w"
-        with open(include_path, mode, **_W_KW) as ex_file:  # type: ignore[call-overload]
+        with open(include_path, mode, **_W_KW) as ex_file:
             if not seen:
                 # Be aware that if the number of lines of this heading changes,
                 # the minigallery directive should be modified accordingly
@@ -471,6 +498,8 @@ def _write_backreferences(
             ex_file.write(
                 _thumbnail_div(
                     target_dir,
+                    # the Sphinx srcdir, not the example src_dir: the paths land in
+                    # a file under `backreferences_dir` and are srcdir-absolute
                     gallery_conf["src_dir"],
                     fname,
                     intro,
@@ -478,9 +507,9 @@ def _write_backreferences(
                     is_backref=True,
                 )
             )
-            seen_backrefs.add(backref)
+            seen_backrefs.add(fname_backref)
             backrefs_example[backref].append(
-                Backreference(fname, src_dir, target_dir, intro, title)
+                Backreference(str(fname), str(src_dir), str(target_dir), intro, title)
             )
     return dict(backrefs_example)
 
@@ -488,26 +517,31 @@ def _write_backreferences(
 def _finalize_backreferences(
     seen_backrefs: set[str], gallery_conf: GalleryConfig
 ) -> None:
-    """Replace backref files only if necessary."""
+    """Replace backref files only if necessary.
+
+    ``seen_backrefs`` holds names already passed through ``_sanitize_backref``, so
+    they are used as filenames as-is.
+    """
     logger = sphinx.util.logging.getLogger("sphinx-gallery")
     if gallery_conf["backreferences_dir"] is None:
         return
 
+    backrefs_dir = Path(gallery_conf["src_dir"]) / gallery_conf["backreferences_dir"]
     for backref in seen_backrefs:
-        path = os.path.join(
-            gallery_conf["src_dir"],
-            gallery_conf["backreferences_dir"],
-            f"{backref}.examples.new",
-        )
-        if os.path.isfile(path):
+        path = backrefs_dir / f"{backref}.examples.new"
+        if path.is_file():
             # Close div containing all thumbnails
             # (it was open in _write_backreferences)
-            with open(path, "a", **_W_KW) as ex_file:  # type: ignore[call-overload]
+            with open(path, "a", **_W_KW) as ex_file:
                 ex_file.write(THUMBNAIL_PARENT_DIV_CLOSE)
             _replace_md5(path, mode="t")
         else:
             level = gallery_conf["log_level"]["backreference_missing"]
-            func = getattr(logger, level)
+            func = partial(
+                getattr(logger, level),
+                type=WARNING_TYPE,
+                subtype="backreference_missing",
+            )
             func(f"Could not find backreferences file: {path}")
             func(
                 "The backreferences are likely to be erroneous "

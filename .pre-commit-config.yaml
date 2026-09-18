@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.20
+    rev: v0.16.5
     hooks:
       - id: ruff-format
         exclude: plot_syntaxerror
@@ -8,7 +8,7 @@ repos:
         args: ["--select=I", "--fix"]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.2
+    rev: v2.4.3
     hooks:
       - id: codespell
         additional_dependencies:
@@ -28,24 +28,26 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.25.1
+    rev: v2.29.0
     hooks:
       - id: pyproject-fmt
         additional_dependencies: [tox]
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.25
+    rev: '0.26'
     hooks:
       - id: validate-pyproject
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+  - repo: https://github.com/astral-sh/ty-pre-commit
+    # 0.0.76+ breaks CI; see EXCLUDED_TAGS in .github/workflows/scheduled_updates.yml
+    rev: v0.0.75
     hooks:
-      - id: mypy
-        exclude: "^(examples|doc)/"
+      - id: ty
         additional_dependencies:
           - numpy
+          - threadpoolctl
           - types-docutils
           - types-Pillow
           - types-Pygments
           - sphinx <9.1  # last to support 3.10
+        args: [--no-python-downloads, --no-project]

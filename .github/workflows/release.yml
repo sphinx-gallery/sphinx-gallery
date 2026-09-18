@@ -20,8 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # setuptools-scm needs the tags to compute the version
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Install dependencies
@@ -32,6 +34,16 @@ jobs:
         run: python -m build --sdist --wheel
       - name: Check package
         run: twine check --strict dist/*
+      - name: Check version matches the tag
+        # setuptools-scm silently invents a version if the tags are missing, so
+        # refuse to publish anything that is not exactly the tagged version.
+        if: github.event_name == 'release'
+        run: |
+          set -eo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          got=$(ls dist/*.tar.gz | sed -E 's|.*/sphinx_gallery-(.*)\.tar\.gz|\1|')
+          echo "tag=$tag built=$got"
+          test "$tag" == "$got"
       - name: Check env vars
         run: |
           echo "Triggered by: ${{ github.event_name }}"

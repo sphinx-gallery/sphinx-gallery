@@ -17,6 +17,7 @@ from unittest import mock
 import pytest
 from sphinx.errors import ExtensionError
 
+import sphinx_gallery
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import (
@@ -352,6 +353,39 @@ def test_codestr2rst():
     assert reference == output
 
 
+@pytest.mark.parametrize(
+    "content,expected",
+    [
+        # Explicit title: Sphinx renders the title, so the tooltip must too
+        # (gh-1644).
+        (":term:`ascent <parcel ascent>`", "ascent"),
+        (":term:`wind barbs <wind barb>`", "wind barbs"),
+        (":class:`Sounding <a.b.Sounding>`", "Sounding"),
+        (":ref:`whatever <better name>`", "whatever"),
+        # Domain-qualified roles must not leave the domain behind (gh-1644).
+        (":py:class:`Sounding <a.b.Sounding>`", "Sounding"),
+        (":py:func:`parcel path <a.b.parcel_path>`", "parcel path"),
+        (":std:doc:`the guide <howtos/index>`", "the guide"),
+        (":py:mod:`a.b.c`", "a.b.c"),
+        (":py:class:`~a.b.MyClass`", "MyClass"),
+        # Forms that already worked
+        (":term:`dewpoint`", "dewpoint"),
+        (":class:`a.b.c`", "a.b.c"),
+        (":class:`~a.b.MyClass`", "MyClass"),
+        ("``literal``", "literal"),
+        ("`interpreted`", "interpreted"),
+        ("`~mymodule.MyClass`", "MyClass"),
+        ("**bold**", "bold"),
+        ("*italic*", "italic"),
+        ("`link text <https://example.com>`_", "link text"),
+    ],
+)
+@pytest.mark.parametrize("template", ["See {} here.", "{} starts it.", "It ends {}"])
+def test_sanitize_rst(content, expected, template):
+    """Test that sphinx markup is reduced to what sphinx would render."""
+    assert sg._sanitize_rst(template.format(content)) == template.format(expected)
+
+
 def test_extract_intro_and_title():
     intro, title = sg.extract_intro_and_title("<string>", "\n".join(CONTENT[1:10]))
     assert title == "Docstring header"
@@ -427,6 +461,45 @@ def test_md5sums(mode, expected_md5, tmp_path):
     assert sg.md5sum_is_current(fname, mode), mode
 
 
+def test_scrapers_resolved_before_execution(gallery_conf, monkeypatch, req_pil):
+    """Scrapers named by string are resolved before the example runs.
+
+    Resolving imports the library, and a library may rely on that import to
+    set itself up for the build (e.g. plotly selects its renderer). A worker
+    process of a parallel build never reads conf.py, so resolving after the
+    example has run would be too late.
+    """
+    events = []
+    monkeypatch.setattr(sphinx_gallery, "_sg_test_events", events, raising=False)
+    monkeypatch.setattr(
+        sphinx_gallery,
+        "_get_sg_image_scraper",
+        lambda: events.append("resolved") or _custom_scraper,
+        raising=False,
+    )
+    gallery_conf.update(image_scrapers=("sphinx_gallery",), reset_modules=())
+
+    path = Path(gallery_conf["examples_dir"], "plot_order.py")
+    path.write_text(
+        '"""\nOrder\n=====\n"""\n'
+        "import sphinx_gallery\n"
+        'sphinx_gallery._sg_test_events.append("executed")\n',
+        encoding="utf-8",
+    )
+    sg.generate_file_rst(
+        "plot_order.py",
+        gallery_conf["gallery_dir"],
+        gallery_conf["examples_dir"],
+        gallery_conf,
+    )
+
+    assert events[:2] == ["resolved", "executed"]
+
+
+def _custom_scraper(block, block_vars, gallery_conf):
+    return ""
+
+
 @pytest.mark.parametrize(
     "failing_code, want",
     [
@@ -469,6 +542,26 @@ def test_fail_example(gallery_conf, failing_code, want, log_collector, req_pil):
     ex_failing_blocks = path.read_text(encoding="utf-8").count("pytb")
     assert ex_failing_blocks != 0, "Did not run into errors in bad code"
     assert ex_failing_blocks <= 1, "Did not stop executing script after error"
+
+
+def test_stale_codeobj_json_removed(gallery_conf, req_pil):
+    """Test the codeobj cache is dropped when no names are identified anymore.
+
+    A stale ``.codeobj.json`` would resurrect the example's old backreferences
+    via ``_read_cached_backrefs`` on every md5-skipped rebuild.
+    """
+    gallery_conf.update(image_scrapers=(), reset_modules=())
+    with_names = [
+        '"""\nTitle\n=====\n\nDescription.\n"""',
+        "import os",
+        "print(os.path.join('a', 'b'))",
+    ]
+    without_names = ['"""\nTitle\n=====\n\nDescription.\n"""', "print(1)"]
+    _generate_rst(gallery_conf, "plot_codeobj.py", with_names)
+    codeobj = Path(gallery_conf["gallery_dir"], "plot_codeobj.codeobj.json")
+    assert codeobj.is_file()
+    _generate_rst(gallery_conf, "plot_codeobj.py", without_names)
+    assert not codeobj.is_file()
 
 
 def _generate_rst(gallery_conf, fname, content):
@@ -736,6 +829,39 @@ def test_thumbnail_path(test_str, tmp_path):
     filename.write_text("\n".join(['"Docstring"', test_str]))
     file_conf, blocks = split_code_and_text_blocks(filename)
     assert file_conf == {"thumbnail_path": "_static/demo.png"}
+
+
+@pytest.mark.parametrize(
+    "extra_conf, warns",
+    [
+        pytest.param({}, True, id="path_only"),
+        pytest.param({"thumbnail_number": 1}, False, id="number_takes_priority"),
+    ],
+)
+def test_thumbnail_path_not_found_warns(
+    gallery_conf, log_collector, tmp_path, extra_conf, warns
+):
+    """Test that a missing sphinx_gallery_thumbnail_path emits a warning."""
+    image_path_template = str(tmp_path / "temp_{0:03}.png")
+    src_file = str(tmp_path / "plot_test.py")  # need not exist, only basename is used
+    script_vars = {
+        "image_path_iterator": ImagePathIterator(image_path_template),
+    }
+    file_conf = {"thumbnail_path": "_static/nonexistent.png", **extra_conf}
+
+    sg.save_thumbnail(
+        image_path_template, src_file, script_vars, file_conf, gallery_conf
+    )
+
+    if not warns:
+        log_collector.warning.assert_not_called()
+        return
+    log_collector.warning.assert_called_once()
+    warning_msg = log_collector.warning.call_args[0][0]
+    assert "sphinx_gallery_thumbnail_path" in warning_msg
+    # the reported path is normalized, so compare it as a path and not as a string
+    expected_path = Path(gallery_conf["src_dir"], "_static/nonexistent.png")
+    assert Path(log_collector.warning.call_args[0][1]) == expected_path
 
 
 def test_zip_python(gallery_conf):
@@ -1156,6 +1282,113 @@ def test_reset_module_order_3_param_invalid_when(gallery_conf):
     ):
         _generate_rst(gallery_conf, "plot_test.py", CONTENT)
     assert mock_reset_module.call_count == 0
+
+
+DOCSTRING = '"""\nTitle\n=====\n\nIntro.\n"""\n'
+
+
+@pytest.mark.parametrize(
+    ("fname", "content", "serial", "n_warn"),
+    [
+        ("plot.py", DOCSTRING + "# sphinx_gallery_parallel = False\n", True, 0),
+        ("plot.py", DOCSTRING + "x = 1\n", False, 0),
+        # comment syntax is language-specific, and .rst has no in-file config at all
+        (
+            "plot.cpp",
+            "// Title\n// =====\n// sphinx_gallery_parallel = False\n",
+            True,
+            0,
+        ),
+        ("plot.rst", "Title\n=====\n", False, 0),
+        # a non-bool value warns and is ignored
+        ("plot.py", DOCSTRING + "# sphinx_gallery_parallel = 2\n", False, 1),
+        # merely documenting the flag in the docstring must not set it
+        (
+            "plot.py",
+            '"""\nTitle\n=====\n\n    # sphinx_gallery_parallel = False\n"""\n',
+            False,
+            0,
+        ),
+    ],
+    ids=["py", "py-unset", "cpp", "rst", "non-bool", "docstring"],
+)
+def test_split_parallel(gallery_conf, log_collector, fname, content, serial, n_warn):
+    """Test that the in-file parallel flag is picked up as each parser would."""
+    Path(gallery_conf["examples_dir"], fname).write_text(content, encoding="utf-8")
+    got = sg._split_parallel([fname], gallery_conf["examples_dir"], gallery_conf)
+    assert got == (([fname], []) if serial else ([], [fname]))
+    assert log_collector.warning.call_count == n_warn
+
+
+@pytest.mark.parametrize("n_jobs", [2, False])
+def test_parallel_serial_examples(gallery_conf, n_jobs):
+    """Examples opting out of parallelism run in the main process, in gallery order."""
+    if n_jobs:
+        pytest.importorskip("joblib")
+    gallery_conf.update(
+        parallel=n_jobs,
+        within_subsection_order="FileNameSortKey",
+        image_scrapers=(),
+        reset_modules=(),
+    )
+    Path(gallery_conf["examples_dir"], "README.txt").write_text("")
+    names = ["plot_a", "plot_b", "plot_c"]
+    # Each example records where and when it ran, so we see the real order. One file
+    # per example rather than a shared log: the workers would otherwise append
+    # concurrently, and on Windows O_APPEND is a seek-then-write that can lose one.
+    gallery_dir = Path(gallery_conf["gallery_dir"])
+    for name in names:
+        # only the middle example is serial, so execution order != gallery order
+        flag = "# sphinx_gallery_parallel = False\n" if name == "plot_b" else ""
+        Path(gallery_conf["examples_dir"], f"{name}.py").write_text(
+            f"{DOCSTRING}{flag}import multiprocessing, time\nfrom pathlib import Path\n"
+            'where = "main" if multiprocessing.parent_process() is None else "worker"\n'
+            f'Path(r"{gallery_dir}", "{name}.ran").write_text(f"{{where}} {{time.time()}}")\n',
+            encoding="utf-8",
+        )
+
+    _, index_content, _, toctree_items, _ = generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
+    )
+
+    assert gallery_conf["failing_examples"] == {}
+    ran = {
+        path.stem: path.read_text(encoding="utf-8").split()
+        for path in gallery_dir.glob("*.ran")
+    }
+    where = {name: entry[0] for name, entry in ran.items()}
+    started = {name: float(entry[1]) for name, entry in ran.items()}
+    if n_jobs:
+        assert where == {"plot_a": "worker", "plot_b": "main", "plot_c": "worker"}
+        # serial examples finish before anything is dispatched; the rest race
+        assert started["plot_b"] < min(started["plot_a"], started["plot_c"])
+    else:
+        assert where == {name: "main" for name in names}
+        assert sorted(started, key=started.__getitem__) == names
+    assert [Path(item).name for item in toctree_items] == names
+    assert re.findall(r"sphx_glr_(plot_[abc])_thumb", index_content) == names
+
+
+def test_split_parallel_serial_build(gallery_conf, log_collector):
+    """A bad in-file parallel setting is reported even when parallel is disabled."""
+    gallery_conf.update(image_scrapers=(), reset_modules=())
+    Path(gallery_conf["examples_dir"], "README.txt").write_text("")
+    Path(gallery_conf["examples_dir"], "plot_a.py").write_text(
+        DOCSTRING + "# sphinx_gallery_parallel = 2\n", encoding="utf-8"
+    )
+    generate_dir_rst(
+        gallery_conf["examples_dir"],
+        gallery_conf["gallery_dir"],
+        gallery_conf,
+        set(),
+        is_subsection=False,
+    )
+    assert log_collector.warning.call_count == 1
+    assert "not a boolean" in log_collector.warning.call_args[0][0]
 
 
 @pytest.fixture

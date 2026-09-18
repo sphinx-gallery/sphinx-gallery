@@ -12,7 +12,8 @@ from sphinx.errors import ExtensionError
 from sphinx.util.logging import getLogger
 
 from .py_source_parser import FLAG_BODY, Block
-from .typing import GalleryConfig
+from .typing import GalleryConfig, PathLikeStr
+from .utils import WARNING_TYPE
 
 logger = getLogger("sphinx-gallery")
 
@@ -39,7 +40,7 @@ class BlockParser:
         Contains the configuration of Sphinx-Gallery.
     """
 
-    def __init__(self, source_file: str | Path, gallery_conf: GalleryConfig) -> None:
+    def __init__(self, source_file: PathLikeStr, gallery_conf: GalleryConfig) -> None:
         source_path = Path(source_file)
         if name := gallery_conf["filetype_parsers"].get(source_path.suffix):
             self.lexer = pygments.lexers.find_lexer_class_by_name(name)()
@@ -126,7 +127,7 @@ class BlockParser:
 
     def split_code_and_text_blocks(
         self,
-        source_file: str | Path,
+        source_file: PathLikeStr,
         return_node: bool = False,
     ) -> tuple[dict, list[Block], None]:
         """Return list with source file separated into code and text blocks.
@@ -243,7 +244,7 @@ class BlockParser:
         block: list[str] = []
         mode: Literal["text", "code"] | None = None
         for n, (token, text) in enumerate(self._get_content_lines(content)):
-            if mode == "text" and token in pygments.token.Whitespace:  # type: ignore[comparison-overlap]
+            if mode == "text" and token in pygments.token.Whitespace:
                 # Blank line ends current text block
                 if block:
                     yield finalize_block(mode, block)
@@ -286,7 +287,9 @@ class BlockParser:
                     else:
                         block.append(text)
                 else:
-                    block.append(self.continue_text.search(text).group(1))  # type: ignore[union-attr]
+                    m = self.continue_text.search(text)
+                    assert m is not None
+                    block.append(m.group(1))
             elif mode != "code":
                 # start of a code block
                 if block:
@@ -339,7 +342,11 @@ class BlockParser:
                 value = ast.literal_eval(value)
             except (SyntaxError, ValueError):
                 logger.warning(
-                    "Sphinx-gallery option %s was passed invalid value %s", name, value
+                    "Sphinx-gallery option %s was passed invalid value %s",
+                    name,
+                    value,
+                    type=WARNING_TYPE,
+                    subtype="file_conf",
                 )
             else:
                 file_conf[name] = value

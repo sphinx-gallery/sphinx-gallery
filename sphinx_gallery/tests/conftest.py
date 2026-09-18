@@ -12,7 +12,7 @@ from sphinx.application import Sphinx
 from sphinx.errors import ExtensionError
 from sphinx.util.docutils import docutils_namespace
 
-from sphinx_gallery import docs_resolv, gen_gallery, gen_rst, py_source_parser
+from sphinx_gallery import gen_gallery, gen_rst, py_source_parser
 from sphinx_gallery.scrapers import _import_matplotlib
 
 
@@ -38,7 +38,6 @@ def gallery_conf(tmp_path):
 @pytest.fixture
 def log_collector(monkeypatch):
     app = Mock(spec=Sphinx, name="FakeSphinxApp")()
-    monkeypatch.setattr(docs_resolv, "logger", app)
     monkeypatch.setattr(gen_gallery, "logger", app)
     monkeypatch.setattr(py_source_parser, "logger", app)
     monkeypatch.setattr(gen_rst, "logger", app)

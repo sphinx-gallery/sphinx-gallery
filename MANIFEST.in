@@ -27,6 +27,8 @@ recursive-include sphinx_gallery/tests/tinybuild *
 include sphinx_gallery/tests/reference_parse.txt
 exclude sphinx_gallery/_static/broken_stamp.svg
 exclude RELEASES.md
+exclude AGENTS.md
+exclude CLAUDE.md
 recursive-exclude continuous_integration *
 exclude continuous_integration
 recursive-exclude doc *

@@ -55,13 +55,14 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
     import matplotlib.pyplot as plt  # nest these so that Agg can be set
 
     plt.plot(1, 1)
-    fname_template = str(Path(gallery_conf["gallery_dir"], "image{0}.png"))
+    # dots in the example name must survive (gh-1652)
+    fname_template = str(Path(gallery_conf["gallery_dir"], "my.image{0}.png"))
     image_path_iterator = ImagePathIterator(fname_template)
     block = ("",) * 3
     block_vars = dict(image_path_iterator=image_path_iterator)
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 1
-    fname = f"/image1.{ext}"
+    fname = f"/my.image1.{ext}"
     assert fname in image_rst
     fname = gallery_conf["gallery_dir"] + fname
     assert Path(fname).is_file()
@@ -78,7 +79,7 @@ def test_save_matplotlib_figures(make_gallery_conf, ext):
     image_rst = save_figures(block, block_vars, gallery_conf)
     assert len(image_path_iterator) == 5
     for ii in range(4, 6):
-        fname = f"/image{ii}.{ext}"
+        fname = f"/my.image{ii}.{ext}"
         assert fname in image_rst
         fname = gallery_conf["gallery_dir"] + fname
         assert Path(fname).is_file()
@@ -168,6 +169,30 @@ def test_save_matplotlib_figures_hidpi(make_gallery_conf):
         assert fname in image_rst
         fname = gallery_conf["gallery_dir"] + fname
         assert Path(fname).is_file()
+
+
+def test_save_matplotlib_figures_compress(make_gallery_conf, monkeypatch):
+    """Test that every saved image, hi-dpi ones included, is passed to optipng."""
+    gallery_conf = make_gallery_conf({"image_srcset": ["2x"]})
+    # set directly, as the default is dropped when the optipng binary is missing
+    gallery_conf["compress_images"] = ["images"]
+
+    compressed = []
+    monkeypatch.setattr(
+        sphinx_gallery.scrapers, "optipng", lambda fname, args: compressed.append(fname)
+    )
+
+    import matplotlib.pyplot as plt  # nest these so that Agg can be set
+
+    plt.plot(1, 1)
+    fname_template = str(Path(gallery_conf["gallery_dir"], "image{0}.png"))
+    block_vars = dict(image_path_iterator=ImagePathIterator(fname_template))
+    save_figures(("",) * 3, block_vars, gallery_conf)
+
+    assert sorted(Path(fname).name for fname in compressed) == [
+        "image1.png",
+        "image1_2_00x.png",
+    ]
 
 
 def _custom_func(x, y, z):
