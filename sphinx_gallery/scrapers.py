@@ -378,14 +378,15 @@ _KNOWN_IMG_EXTS = ("png", "svg", "jpg", "gif", "webp")
 
 def _find_image_ext(path: PathLikeStr) -> tuple[str, str]:
     """Find an image, tolerant of different file extensions."""
-    path = Path(path).with_suffix("")
+    # Append rather than with_suffix(): once the image extension is gone, any dot left
+    # in the example name (e.g. "optuna.visualization.plot_timeline") looks like one
+    path = str(Path(path).with_suffix(""))
     for ext in _KNOWN_IMG_EXTS:
-        this_path = path.with_suffix(f".{ext}")
-        if this_path.is_file():
+        if Path(f"{path}.{ext}").is_file():
             break
     else:
         ext = "png"
-    return (str(path.with_suffix(f".{ext}")), ext)
+    return (f"{path}.{ext}", ext)
 
 
 def save_figures(
