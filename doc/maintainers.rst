@@ -22,11 +22,12 @@ How to make a release
    <https://github.com/github-changelog-generator/github-changelog-generator#installation>`_ to
    gather all merged pull requests and closed issues during the development
    cycle. You will likely need to `generate a Github token <https://github.com/settings/tokens/new?description=GitHub%20Changelog%20Generator%20token>`_
-   as Github only allows 50 unauthenticated requests per hour. In the
-   command below ``<version>`` is the current (not development) version of
-   the package, e.g., ``0.6.0``. The changelog can generated with the following::
+   as Github only allows 50 unauthenticated requests per hour. In the command
+   below, ``<previous>`` is the most recent release (e.g., ``0.6.0``) and ``<new>``
+   is the one being made (e.g., ``0.6.1``), which ``--future-release`` uses to
+   label the new section instead of ``Unreleased``::
 
-      github_changelog_generator --since-tag=v<version> --token <your-40-digit-token>
+      github_changelog_generator --since-tag=v<previous> --future-release=v<new> --token <your-40-digit-token>
 
    To avoid the need to pass ``--token``, you can use ``export CHANGELOG_GITHUB_TOKEN=<your-40-digit-token>`` instead.
 
