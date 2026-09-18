@@ -65,8 +65,14 @@ def jupyter_notebook_skeleton() -> NotebookContent:
 def directive_fun(match: re.Match, directive: str) -> str:
     """Helper to fill in directives."""
     directive_to_alert = dict(note="info", warning="danger")
-    return '<div class="alert alert-{}"><h4>{}</h4><p>{}</p></div>'.format(
-        directive_to_alert[directive], directive.capitalize(), match.group(1).strip()
+    # The body is parsed as Markdown, where a line indented by 4+ spaces after a
+    # blank line is a code block, so drop the rST indentation. The first line may
+    # start on the directive line itself (``.. note:: text``) and is unindented.
+    first, _, rest = match.group(1).partition("\n")
+    body = f"{first.strip()}\n{textwrap.dedent(rest)}".strip()
+    # no <p>: the body can contain block content (e.g. a nested code-block)
+    return '<div class="alert alert-{}"><h4>{}</h4>\n\n{}\n\n</div>'.format(
+        directive_to_alert[directive], directive.capitalize(), body
     )
 
 
@@ -108,7 +114,15 @@ _LINK_TARGET_RE = re.compile(
 # `label <name_>`_, `name`_ and name_ (anonymous ``__`` references cannot be resolved)
 _EMBEDDED_REF_RE = re.compile(r"`(?P<label>[^`<]*?)[ \t\n]*<(?P<name>[^`<>]+)_>`_(?!_)")
 _PHRASE_REF_RE = re.compile(r"`(?P<name>[^`<>]+)`_(?!_)")
-_SIMPLE_REF_RE = re.compile(r"(?<![`\w])(?P<name>\w[\w.+-]*)_(?![\w`_])")
+# docutils reference names can contain isolated -.+: (``est.coef_`` refers to est.coef)
+_SIMPLE_REF_RE = re.compile(r"(?<![`\w.+:-])(?P<name>\w+(?:[-.+:]\w+)*)_(?![\w`_])")
+# inline literals and the indented bodies of ``::`` literal blocks and code directives
+_LITERAL_RE = re.compile(
+    r"``.+?``"
+    r"|::(?:[ \t]+[^\n]*)?\n(?:[ \t]*\n)*(?P<indent>[ \t]+)[^\n]*"
+    r"(?:\n(?:(?P=indent)[^\n]*|[ \t]*(?=\n)))*",
+    flags=re.S,
+)
 
 
 def _normalize_target_name(name: str) -> str:
@@ -172,9 +186,17 @@ def _resolve_link_targets(text: str, targets: dict[str, str]) -> str:
         label = match.groupdict().get("label") or match["name"]
         return f"[{' '.join(label.split())}]({uri})"
 
-    for regex in (_EMBEDDED_REF_RE, _PHRASE_REF_RE, _SIMPLE_REF_RE):
-        text = regex.sub(_sub, text)
-    return text
+    def _sub_all(text: str) -> str:
+        for regex in (_EMBEDDED_REF_RE, _PHRASE_REF_RE, _SIMPLE_REF_RE):
+            text = regex.sub(_sub, text)
+        return text
+
+    # references are not recognized inside literals, so leave those untouched
+    out, pos = [], 0
+    for literal in _LITERAL_RE.finditer(text):
+        out += [_sub_all(text[pos : literal.start()]), literal.group(0)]
+        pos = literal.end()
+    return "".join(out + [_sub_all(text[pos:])])
 
 
 def rst2md(
