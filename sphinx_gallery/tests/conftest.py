@@ -26,7 +26,12 @@ def gallery_conf(tmp_path):
     """Set up a test sphinx-gallery configuration."""
     app = Mock(
         spec=Sphinx,
-        config=dict(source_suffix={".rst": None}, default_role=None),
+        config=dict(
+            source_suffix={".rst": None},
+            default_role=None,
+            rst_prolog=None,
+            rst_epilog=None,
+        ),
         extensions=[],
     )
     gallery_conf = gen_gallery._fill_gallery_conf_defaults({}, app=app)

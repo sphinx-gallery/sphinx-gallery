@@ -15,6 +15,7 @@ import pytest
 from sphinx.errors import ExtensionError
 
 from sphinx_gallery.notebook import (
+    _parse_link_targets,
     jupyter_notebook,
     promote_jupyter_cell_magic,
     python_to_jupyter_cli,
@@ -135,6 +136,50 @@ For more details on interpolation see the page `channel_interpolation`.
 
 [See more](https://en.wikipedia.org/wiki/Interpolation).
 """  # noqa
+    assert rst2md(rst, gallery_conf, "", {}) == markdown
+
+
+def test_link_targets(gallery_conf):
+    """Test that references to hyperlink targets become links (gh-1202)."""
+    gallery_conf = gallery_conf.copy()
+    targets = _parse_link_targets(
+        textwrap.dedent(
+            """\
+            .. _mylink: https://example.com
+            .. _`My Other Link`: https://example.org
+            .. _local: https://wrong.example.com
+            .. _alias: mylink_
+            .. _internal:
+            .. __: https://anonymous.example.com
+            """
+        )
+    )
+    assert list(targets) == ["mylink", "my other link", "local"]
+    gallery_conf["rst_link_targets"] = targets
+    rst = """\
+See `mylink`_, mylink_, `some text <mylink_>`_ and `My Other
+Link`_.
+
+Unknown targets and literals are left alone: `unknown`_, alias_, est.mylink_,
+``a mylink_`` and::
+
+    b = mylink_
+
+Targets from the block itself win: local_.
+
+.. _local: https://local.example.com
+"""
+    markdown = """\
+See [mylink](https://example.com), [mylink](https://example.com), [some text](https://example.com) and [My Other Link](https://example.org).
+
+Unknown targets and literals are left alone: `unknown`_, alias_, est.mylink_,
+``a mylink_`` and::
+
+    b = mylink_
+
+Targets from the block itself win: [local](https://local.example.com).
+
+"""  # noqa: E501
     assert rst2md(rst, gallery_conf, "", {}) == markdown
 
 

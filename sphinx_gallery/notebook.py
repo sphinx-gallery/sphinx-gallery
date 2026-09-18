@@ -106,6 +106,68 @@ def convert_code_to_md(text: str) -> str:
     return text
 
 
+# ``.. _name: uri`` and ``.. _`name`: uri``; anonymous (``.. __: uri``) and indirect
+# (``.. _a: b_``) targets, and URIs continued on the next line, are not supported
+_LINK_TARGET_RE = re.compile(
+    r"^ *\.\. _(?!_)(?P<name>`[^`]+`|[^`:\n]+):(?P<uri>.*)$", re.M
+)
+# Only names of known targets are replaced, so these can be loose
+_REF_RE = re.compile(
+    # inline literals and indented blocks after ``::`` are left alone
+    r"(?P<literal>``[^`]+``|::.*(?:\n(?:[ \t]+.*)?)+)"
+    r"|`(?P<label>[^`<]+)<(?P<embedded>[^`>]+)_>`_"  # `label <name_>`_
+    r"|`(?P<phrase>[^`]+)`_"  # `name`_
+    r"|(?<![\w.])(?P<simple>\w+)_\b"  # name_ (but not est.coef_)
+)
+
+
+def _normalize_target_name(name: str) -> str:
+    """Normalize a hyperlink name the way reST matches references to targets."""
+    return " ".join(name.strip("`").split()).lower()
+
+
+def _parse_link_targets(text: str) -> dict[str, str]:
+    """Get the ``{name: URI}`` external hyperlink targets defined in reST ``text``.
+
+    Parameters
+    ----------
+    text : str
+        reST to scan for hyperlink target definitions.
+
+    Returns
+    -------
+    targets : dict
+        Mapping of normalized (whitespace-collapsed, lower-cased) target names to URIs.
+    """
+    targets = {
+        _normalize_target_name(match["name"]): match["uri"].strip()
+        for match in _LINK_TARGET_RE.finditer(text)
+    }
+    # internal (no URI) and indirect targets have no URI to link to
+    return {name: uri for name, uri in targets.items() if uri and uri[-1] != "_"}
+
+
+def _link_targets_to_rst(targets: dict[str, str]) -> str:
+    """Render ``targets`` back to reST target definitions."""
+    if not targets:
+        return ""
+    return "\n\n" + "\n".join(f".. _`{name}`: {uri}" for name, uri in targets.items())
+
+
+def _resolve_link_targets(text: str, targets: dict[str, str]) -> str:
+    """Turn reST references to ``targets`` into markdown links."""
+
+    def _sub(match: re.Match) -> str:
+        name = match["embedded"] or match["phrase"] or match["simple"]
+        uri = None if match["literal"] else targets.get(_normalize_target_name(name))
+        if uri is None:
+            return match[0]
+        label = match["label"] or name
+        return f"[{' '.join(label.split())}]({uri})"
+
+    return _REF_RE.sub(_sub, text)
+
+
 def rst2md(
     text: str,
     gallery_conf: GalleryConfig,
@@ -168,8 +230,13 @@ def rst2md(
         )
         text = re.sub(directive_re, partial(directive_fun, directive=directive), text)
 
+    # targets defined in the block itself take precedence over the ones from conf.py
+    targets = {**gallery_conf.get("rst_link_targets", {}), **_parse_link_targets(text)}
+
     footnote_links = re.compile(r"^ *\.\. _.*:.*$\n", flags=re.M)
     text = re.sub(footnote_links, "", text)
+
+    text = _resolve_link_targets(text, targets)
 
     embedded_uris = re.compile(r"`([^`]*?)\s*<([^`]*)>`_")
     text = re.sub(embedded_uris, r"[\1](\2)", text)
@@ -344,6 +411,7 @@ def fill_notebook(
     heading_levels: dict[tuple[str | None, str], int] = defaultdict(
         lambda: next(heading_level_counter)
     )
+    conf_targets = gallery_conf.get("rst_link_targets", {})
     for blabel, bcontent, lineno in script_blocks:
         if blabel == "code":
             add_code_cell(work_notebook, bcontent)
@@ -355,6 +423,13 @@ def fill_notebook(
             else:
                 import pypandoc
 
+                # pandoc resolves references itself, it just needs to be told about the
+                # targets from conf.py (unused definitions produce no output); the ones
+                # the block defines itself take precedence, so they are left out
+                block_targets = _parse_link_targets(bcontent)
+                bcontent += _link_targets_to_rst(
+                    {k: v for k, v in conf_targets.items() if k not in block_targets}
+                )
                 # pandoc automatically adds \n to the end
                 markdown = pypandoc.convert_text(
                     bcontent, to="md", format="rst", **gallery_conf["pypandoc"]

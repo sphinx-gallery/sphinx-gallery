@@ -48,6 +48,13 @@ html_sidebars = {
     ]
 }
 
+rst_prolog = """
+.. _mylink: https://example.com
+"""
+rst_epilog = """
+.. _`my other link`: https://example.org
+"""
+
 sphinx_gallery_conf = {
     "doc_module": ("sphinx_gallery",),
     "prefer_full_module": {r"sphinx_gallery\._dummy"},
