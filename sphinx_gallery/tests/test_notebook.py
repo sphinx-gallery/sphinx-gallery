@@ -15,6 +15,7 @@ import pytest
 from sphinx.errors import ExtensionError
 
 from sphinx_gallery.notebook import (
+    _parse_link_targets,
     jupyter_notebook,
     promote_jupyter_cell_magic,
     python_to_jupyter_cli,
@@ -122,16 +123,24 @@ For more details on interpolation see the page :ref:`channel_interpolation`.
 
 This is $some$ math $stuff$.
 
-<div class="alert alert-info"><h4>Note</h4><p>Interpolation is a linear operation that can be performed also on
-Raw and Epochs objects.</p></div>
+<div class="alert alert-info"><h4>Note</h4>
 
-<div class="alert alert-danger"><h4>Warning</h4><p>Go away,
+Interpolation is a linear operation that can be performed also on
+Raw and Epochs objects.
+
+</div>
+
+<div class="alert alert-danger"><h4>Warning</h4>
+
+Go away,
 far away
 
 ```python
 a = 1 + 2
 ```
-Second paragraph.</p></div>
+Second paragraph.
+
+</div>
 
 For more details on interpolation see the page `channel_interpolation`.
 
@@ -140,6 +149,83 @@ For more details on interpolation see the page `channel_interpolation`.
 [See more](https://en.wikipedia.org/wiki/Interpolation).
 """  # noqa
     assert rst2md(rst, gallery_conf, "", {}) == markdown
+
+
+def test_link_targets(gallery_conf):
+    """Test that references to hyperlink targets become links (gh-1202)."""
+    gallery_conf = gallery_conf.copy()
+    targets = _parse_link_targets(
+        textwrap.dedent(
+            """\
+            .. _mylink: https://example.com
+            .. _`My Other Link`: https://example.org
+            .. _local: https://wrong.example.com
+            .. _alias: mylink_
+            .. _internal:
+            .. __: https://anonymous.example.com
+            """
+        )
+    )
+    assert list(targets) == ["mylink", "my other link", "local"]
+    gallery_conf["rst_link_targets"] = targets
+    rst = """\
+See `mylink`_, mylink_, `some text <mylink_>`_ and `My Other
+Link`_.
+
+Unknown targets and literals are left alone: `unknown`_, alias_, est.mylink_,
+``a mylink_`` and::
+
+    b = mylink_
+
+Targets from the block itself win: local_.
+
+.. _local: https://local.example.com
+"""
+    markdown = """\
+See [mylink](https://example.com), [mylink](https://example.com), [some text](https://example.com) and [My Other Link](https://example.org).
+
+Unknown targets and literals are left alone: `unknown`_, alias_, est.mylink_,
+``a mylink_`` and::
+
+    b = mylink_
+
+Targets from the block itself win: [local](https://local.example.com).
+
+"""  # noqa: E501
+    assert rst2md(rst, gallery_conf, "", {}) == markdown
+
+
+def test_convert_note_with_nested_code_block(gallery_conf):
+    """Test that a code-block nested in a note/warning isn't left dangling.
+
+    Regression test for a note/warning whose body ends with a nested
+    ``code-block``: the alert wrapper used to end with a literal
+    ``</p></div>`` glued onto the last line of the resulting code fence,
+    which renders as visible text rather than closing markup. Text after the
+    code-block must also lose its rST indentation, or Markdown renders it as
+    an indented code block.
+    """
+    rst = """.. note::
+
+    You can write the result to disk with:
+
+    .. code-block::
+
+        write_result(result)
+
+    Then read it back.
+
+Some text after.
+"""
+    markdown = rst2md(rst, gallery_conf, "", {})
+    assert "</p></div>" not in markdown
+    assert markdown == (
+        '<div class="alert alert-info"><h4>Note</h4>\n\n'
+        "You can write the result to disk with:\n\n"
+        "```\nwrite_result(result)\n```\n"
+        "Then read it back.\n\n"
+        "</div>\n\nSome text after.\n"
+    )
 
 
 def test_headings():
