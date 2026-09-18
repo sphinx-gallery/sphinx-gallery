@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.22.1
+-------
+
+**Fixed bugs:**
+
+-  Restore handling of multiple dots in paths `#1654 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1654>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Fix note/warning admonitions leaking closing tags around nested code-blocks `#1653 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1653>`__ (`teonbrooks <https://github.com/teonbrooks>`__)
+-  BUG: Fix bug with rst_prolog/rst_epilog in NB `#1204 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1204>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Project maintenance**
+
+-  Parallelize tests `#1651 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1651>`__ (`larsoner <https://github.com/larsoner>`__)
+
 v0.22.0
 -------
 
@@ -42,6 +55,7 @@ Two changes in this release are worth calling out:
 
 **Project maintenance**
 
+-  Fix release `#1650 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1650>`__ (`larsoner <https://github.com/larsoner>`__)
 -  [pre-commit.ci] pre-commit autoupdate `#1643 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1643>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
 -  Sanitize backref filenames `#1642 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1642>`__ (`larsoner <https://github.com/larsoner>`__)
 -  [pre-commit.ci] pre-commit autoupdate `#1641 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1641>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
