@@ -139,47 +139,29 @@ For more details on interpolation see the page `channel_interpolation`.
     assert rst2md(rst, gallery_conf, "", {}) == markdown
 
 
-def test_parse_link_targets():
-    """Test extraction of hyperlink targets from reST."""
-    targets = _parse_link_targets(
-        textwrap.dedent(
-            """\
-        .. _mylink: https://example.com
-        .. _`my other link`: https://example.org
-        .. _wrapped: https://example.com/
-           some/long/path
-        .. _alias: mylink_
-        .. _`indirect alias`: `my other link`_
-        .. _internal:
-        .. __: https://anonymous.example.com
-        .. _dangling: unknown_
-        .. _circular: circular_
-        """
-        )
-    )
-    assert targets == {
-        "mylink": "https://example.com",
-        "my other link": "https://example.org",
-        "wrapped": "https://example.com/some/long/path",
-        "alias": "https://example.com",
-        "indirect alias": "https://example.org",
-    }
-
-
 def test_link_targets(gallery_conf):
     """Test that references to hyperlink targets become links (gh-1202)."""
     gallery_conf = gallery_conf.copy()
-    gallery_conf["rst_link_targets"] = {
-        "mylink": "https://example.com",
-        "my other link": "https://example.org",
-        "local": "https://wrong.example.com",
-    }
+    targets = _parse_link_targets(
+        textwrap.dedent(
+            """\
+            .. _mylink: https://example.com
+            .. _`My Other Link`: https://example.org
+            .. _local: https://wrong.example.com
+            .. _alias: mylink_
+            .. _internal:
+            .. __: https://anonymous.example.com
+            """
+        )
+    )
+    assert list(targets) == ["mylink", "my other link", "local"]
+    gallery_conf["rst_link_targets"] = targets
     rst = """\
 See `mylink`_, mylink_, `some text <mylink_>`_ and `My Other
 Link`_.
 
-Unknown targets and literals are left alone: `unknown`_, est.mylink_, ``a mylink_``
-and::
+Unknown targets and literals are left alone: `unknown`_, alias_, est.mylink_,
+``a mylink_`` and::
 
     b = mylink_
 
@@ -190,8 +172,8 @@ Targets from the block itself win: local_.
     markdown = """\
 See [mylink](https://example.com), [mylink](https://example.com), [some text](https://example.com) and [My Other Link](https://example.org).
 
-Unknown targets and literals are left alone: `unknown`_, est.mylink_, ``a mylink_``
-and::
+Unknown targets and literals are left alone: `unknown`_, alias_, est.mylink_,
+``a mylink_`` and::
 
     b = mylink_
 

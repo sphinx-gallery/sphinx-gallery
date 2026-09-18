@@ -106,39 +106,28 @@ def convert_code_to_md(text: str) -> str:
     return text
 
 
+# ``.. _name: uri`` and ``.. _`name`: uri``; anonymous (``.. __: uri``) and indirect
+# (``.. _a: b_``) targets, and URIs continued on the next line, are not supported
 _LINK_TARGET_RE = re.compile(
-    r"^[ \t]*\.\.[ \t]+_(?!_)(?P<name>`(?:[^`\\]|\\.)+`|(?:[^:\\\n]|\\.)+):"
-    r"(?P<uri>[^\n]*(?:\n[ \t]+[^\n]+)*)",
-    flags=re.M,
+    r"^ *\.\. _(?!_)(?P<name>`[^`]+`|[^`:\n]+):(?P<uri>.*)$", re.M
 )
-# `label <name_>`_, `name`_ and name_ (anonymous ``__`` references cannot be resolved)
-_EMBEDDED_REF_RE = re.compile(r"`(?P<label>[^`<]*?)[ \t\n]*<(?P<name>[^`<>]+)_>`_(?!_)")
-_PHRASE_REF_RE = re.compile(r"`(?P<name>[^`<>]+)`_(?!_)")
-# docutils reference names can contain isolated -.+: (``est.coef_`` refers to est.coef)
-_SIMPLE_REF_RE = re.compile(r"(?<![`\w.+:-])(?P<name>\w+(?:[-.+:]\w+)*)_(?![\w`_])")
-# inline literals and the indented bodies of ``::`` literal blocks and code directives
-_LITERAL_RE = re.compile(
-    r"``.+?``"
-    r"|::(?:[ \t]+[^\n]*)?\n(?:[ \t]*\n)*(?P<indent>[ \t]+)[^\n]*"
-    r"(?:\n(?:(?P=indent)[^\n]*|[ \t]*(?=\n)))*",
-    flags=re.S,
+# Only names of known targets are replaced, so these can be loose
+_REF_RE = re.compile(
+    # inline literals and indented blocks after ``::`` are left alone
+    r"(?P<literal>``[^`]+``|::.*(?:\n(?:[ \t]+.*)?)+)"
+    r"|`(?P<label>[^`<]+)<(?P<embedded>[^`>]+)_>`_"  # `label <name_>`_
+    r"|`(?P<phrase>[^`]+)`_"  # `name`_
+    r"|(?<![\w.])(?P<simple>\w+)_\b"  # name_ (but not est.coef_)
 )
 
 
 def _normalize_target_name(name: str) -> str:
     """Normalize a hyperlink name the way reST matches references to targets."""
-    name = name.strip()
-    if name.startswith("`") and name.endswith("`"):
-        name = name[1:-1]
-    return " ".join(re.sub(r"\\(.)", r"\1", name).split()).lower()
+    return " ".join(name.strip("`").split()).lower()
 
 
 def _parse_link_targets(text: str) -> dict[str, str]:
     """Get the ``{name: URI}`` external hyperlink targets defined in reST ``text``.
-
-    Indirect targets (``.. _alias: other_``) are followed to the URI they point at, and
-    dropped if it cannot be resolved. Internal targets (those without a URI) are skipped
-    since they have no notebook equivalent.
 
     Parameters
     ----------
@@ -151,22 +140,11 @@ def _parse_link_targets(text: str) -> dict[str, str]:
         Mapping of normalized (whitespace-collapsed, lower-cased) target names to URIs.
     """
     targets = {
-        _normalize_target_name(match["name"]): " ".join(match["uri"].split())
+        _normalize_target_name(match["name"]): match["uri"].strip()
         for match in _LINK_TARGET_RE.finditer(text)
     }
-    targets = {name: uri for name, uri in targets.items() if uri}
-    for name, uri in list(targets.items()):
-        seen = {name}
-        while uri.endswith("_") and not uri.endswith("\\_"):
-            ref = _normalize_target_name(uri[:-1])
-            if ref in seen or ref not in targets:  # circular or unresolvable
-                del targets[name]
-                break
-            seen.add(ref)
-            uri = targets[ref]
-        else:
-            targets[name] = re.sub(r"\s+", "", uri)
-    return targets
+    # internal (no URI) and indirect targets have no URI to link to
+    return {name: uri for name, uri in targets.items() if uri and uri[-1] != "_"}
 
 
 def _link_targets_to_rst(targets: dict[str, str]) -> str:
@@ -180,23 +158,14 @@ def _resolve_link_targets(text: str, targets: dict[str, str]) -> str:
     """Turn reST references to ``targets`` into markdown links."""
 
     def _sub(match: re.Match) -> str:
-        uri = targets.get(_normalize_target_name(match["name"]))
+        name = match["embedded"] or match["phrase"] or match["simple"]
+        uri = None if match["literal"] else targets.get(_normalize_target_name(name))
         if uri is None:
-            return match.group(0)
-        label = match.groupdict().get("label") or match["name"]
+            return match[0]
+        label = match["label"] or name
         return f"[{' '.join(label.split())}]({uri})"
 
-    def _sub_all(text: str) -> str:
-        for regex in (_EMBEDDED_REF_RE, _PHRASE_REF_RE, _SIMPLE_REF_RE):
-            text = regex.sub(_sub, text)
-        return text
-
-    # references are not recognized inside literals, so leave those untouched
-    out, pos = [], 0
-    for literal in _LITERAL_RE.finditer(text):
-        out += [_sub_all(text[pos : literal.start()]), literal.group(0)]
-        pos = literal.end()
-    return "".join(out + [_sub_all(text[pos:])])
+    return _REF_RE.sub(_sub, text)
 
 
 def rst2md(
