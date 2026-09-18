@@ -322,9 +322,13 @@ def _regroup(match: re.Match[str]) -> str:
 
 def _sanitize_rst(string: str) -> str:
     """Use regex to remove at least some sphinx directives."""
-    # :class:`a.b.c <thing here>`, :ref:`abc <thing here>` --> thing here
-    p, e = r"(\s|^):[^:\s]+:`", r"`(\W|$)"
-    string = re.sub(p + r"\S+\s*<([^>`]+)>" + e, r"\1\2\3", string)
+    # :class:`title <a.b.c>`, :ref:`title <thing here>` --> title
+    # Sphinx renders the explicit title, not the target, so keep the title.
+    # The role name is `(?:[^:\s`]+:)+` rather than a single segment so that a
+    # domain-qualified role (:py:class:, :std:doc:) is consumed whole -- matching
+    # from its inner colon would strand the ":py" as literal text (gh-1644).
+    p, e = r"(\s|^):(?:[^:\s`]+:)+`", r"`(\W|$)"
+    string = re.sub(p + r"([^`<>]+?)\s*<[^>`]+>" + e, r"\1\2\3", string)
     # :class:`~a.b.c` --> c
     string = re.sub(p + r"~([^`]+)" + e, _regroup, string)
     # :class:`a.b.c` --> a.b.c
@@ -348,7 +352,7 @@ def _sanitize_rst(string: str) -> str:
     string = re.sub(r"`([^`<>]+) <[^`<>]+>`\_\_?", r"\1", string)
 
     # :anchor:`the term` --> the term
-    string = re.sub(r":[a-z]+:`([^`<>]+)( <[^`<>]+>)?`", r"\1", string)
+    string = re.sub(r":(?:[a-z]+:)+`([^`<>]+)( <[^`<>]+>)?`", r"\1", string)
 
     # r'\\dfrac' --> r'\dfrac'
     string = string.replace("\\\\", "\\")
@@ -1642,8 +1646,16 @@ def generate_file_rst(
         "target_file": str(target_file),
     }
 
-    if executable and gallery_conf["reset_modules_order"] in ["before", "both"]:
-        clean_modules(gallery_conf, fname, "before")
+    if executable:
+        # Resolve the scrapers before the example runs rather than when it is
+        # scraped afterwards. Resolving a scraper named by string (e.g.
+        # `"plotly"`) imports the library, which may rely on that import to
+        # set itself up for the build; the worker processes of a parallel
+        # build never read conf.py, so this is their only chance to do so
+        # before the example runs.
+        _get_callables(gallery_conf, "image_scrapers")
+        if gallery_conf["reset_modules_order"] in ["before", "both"]:
+            clean_modules(gallery_conf, fname, "before")
     output_blocks, time_elapsed = execute_script(
         script_blocks, script_vars, gallery_conf, file_conf
     )
@@ -1939,7 +1951,8 @@ def _get_callables(
 ) -> tuple[Callable[..., Any], ...]:
     """Get callables for the given conf key, returning tuple of callable(s).
 
-    If value is a string, import, with the following exceptions:
+    A string containing a `.` is imported as a fully qualified name, for any
+    key. A string without one is resolved per key:
 
     * `within_subsection_order` - add full path if value is a built-in aliases,
       instantiate if value is a class

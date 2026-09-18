@@ -9,6 +9,9 @@ import pytest
 from sphinx.application import Sphinx
 from sphinx.util.docutils import docutils_namespace
 
+# Keep this module on a single `pytest -n` worker; it shares a module-scoped build.
+pytestmark = pytest.mark.xdist_group("tinybuild_noexec")
+
 
 @pytest.fixture(scope="module")
 def sphinx_app(tmp_path_factory, req_mpl, req_pil):

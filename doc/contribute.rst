@@ -144,6 +144,29 @@ All code contributions should be tested. We use the `pytest
 <https://docs.pytest.org/>`_ testing framework and ``tinybuild`` to build test
 pages. Tests can be found in :file:`sphinx_gallery/tests`.
 
+.. _testing-parallel:
+
+Running the tests in parallel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The suite spends most of its time building miniature Sphinx projects, so it
+parallelizes well with `pytest-xdist <https://pytest-xdist.readthedocs.io/>`_:
+
+.. code-block:: console
+
+    python -m pytest sphinx_gallery -n 4
+
+:file:`pyproject.toml` already sets ``--dist=loadgroup``, which only takes effect
+once you pass ``-n``. Tests that must stay together on one worker -- currently
+those in :file:`tests/test_full.py`, which share a single mutated ``tinybuild``
+build -- declare that with a module-level
+``pytestmark = pytest.mark.xdist_group(...)``; everything else is load balanced
+test by test. Add such a mark to any new module that relies on a module-scoped
+fixture or on tests running in order.
+
+Because that group is a single unit of work, it bounds how fast the suite can
+finish: past roughly four workers there is nothing left to gain.
+
 .. _testing-tinybuild:
 
 tinybuild

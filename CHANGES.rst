@@ -1,6 +1,71 @@
 Changelog
 =========
 
+v0.22.0
+-------
+
+Two changes in this release are worth calling out:
+
+-  Code links in example code blocks are now built as doctree nodes by a Sphinx
+   post-transform, instead of by rewriting the generated HTML with a regex. Many
+   names that previously went unlinked are now linked, and a few that resolved to
+   the wrong object are corrected. The ``reference_url`` option is deprecated and
+   ignored as a result.
+-  Image scrapers named by string (e.g. ``"plotly"``) are now resolved before each
+   example runs rather than after it. Libraries that configure themselves on import
+   are therefore set up in time, which fixes them in parallel builds, whose workers
+   never read ``conf.py``.
+
+**Implemented enhancements:**
+
+-  ENH: Use Sphinx transform mechanic for backreferences `#1638 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1638>`__ (`larsoner <https://github.com/larsoner>`__)
+-  ENH: Allow examples to opt out of parallel execution `#1634 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1634>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Emit warning when thumbnail not found `#1587 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1587>`__ (`AdamRJensen <https://github.com/AdamRJensen>`__)
+
+**Fixed bugs:**
+
+-  Report binder/jupyterlite config errors against the real conf key `#1649 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1649>`__ (`hxperl <https://github.com/hxperl>`__)
+-  Remove spacing of empty tag lists `#1647 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1647>`__ (`PAUL-BERNARD <https://github.com/PAUL-BERNARD>`__)
+-  Fix backref `#1646 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1646>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Keep the title of an explicit-title cross-reference in tooltips `#1645 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1645>`__ (`bjlittle <https://github.com/bjlittle>`__)
+-  Run the duplicate checks and tag warnings with a type and subtype `#1637 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1637>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Fix parallelization deadlock with recommender `#1633 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1633>`__ (`larsoner <https://github.com/larsoner>`__)
+-  BUG: Fix API usage and execution time generation `#1629 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1629>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Fix docs and reqs for API usage `#1617 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1617>`__ (`larsoner <https://github.com/larsoner>`__)
+
+**Documentation**
+
+-  docs: point GALLERY_HEADER suffix at Sphinx's source_suffix (#1493) `#1648 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1648>`__ (`hxperl <https://github.com/hxperl>`__)
+-  Document modern plotly scraper usage `#1635 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1635>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Update description of Plotly examples `#1626 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1626>`__ (`FPC0401 <https://github.com/FPC0401>`__)
+-  Add pvlib link to README `#1618 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1618>`__ (`mikofski <https://github.com/mikofski>`__)
+
+**Project maintenance**
+
+-  [pre-commit.ci] pre-commit autoupdate `#1643 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1643>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Sanitize backref filenames `#1642 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1642>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1641 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1641>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Pre commit ci update config `#1640 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1640>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Fix flaky tests `#1631 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1631>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1630 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1630>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT Fix ty errors `#1628 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1628>`__ (`lucyleeow <https://github.com/lucyleeow>`__)
+-  Bump actions/setup-python from 6 to 7 in the actions group `#1627 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1627>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  Switch to ty for type checking `#1624 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1624>`__ (`larsoner <https://github.com/larsoner>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1623 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1623>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  MNT: Systematically support pathlib.Path `#1622 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1622>`__ (`timhoffm <https://github.com/timhoffm>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1619 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1619>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1616 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1616>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Install and build docs for latest sklearn release `#1615 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1615>`__ (`larsoner <https://github.com/larsoner>`__)
+-  Bump actions/checkout from 6 to 7 in the actions group `#1614 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1614>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1613 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1613>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1610 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1610>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  Bump codecov/codecov-action from 6 to 7 in the actions group `#1609 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1609>`__ (`dependabot[bot] <https://github.com/apps/dependabot>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1608 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1608>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1607 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1607>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1606 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1606>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1605 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1605>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+-  [pre-commit.ci] pre-commit autoupdate `#1604 <https://github.com/sphinx-gallery/sphinx-gallery/pull/1604>`__ (`pre-commit-ci[bot] <https://github.com/apps/pre-commit-ci>`__)
+
 v0.21.0
 -------
 

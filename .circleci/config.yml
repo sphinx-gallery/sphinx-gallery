@@ -1,18 +1,22 @@
 version: 2.1
 
-# Aliases to reuse
+# gen3 resource classes are only valid with the `current` tag, not a pinned
+# dated tag -- a pinned tag is rejected with "is not a valid resource class"
+_machine_image: &machine_image
+  image: ubuntu-2604:current
+
+# Every machine job gets large.gen3 (4 vCPUs, 16GiB). The doc builds are
+# dominated by Sphinx's parallel read phase, which scales with cores; MNE's
+# Makefile passes -j auto and so uses them. The scikit-learn build is still
+# pinned to one job for reasons of its own (see build_docs_skl.sh).
+# gen3 is an open beta, and is both faster and cheaper per minute than gen1
+# large (14 vs 20 credits/min); revert to `large` if beta queue times or
+# reliability become a problem.
+# https://discuss.circleci.com/t/changes-to-remote-docker-reporting-pricing/47759
 _imageconfig: &imageconfig
   machine:
-    image: ubuntu-2404:current
-
-# Half of the MNE job is Sphinx's parallel read phase (391 s of ~830 s to read
-# 1009 documents), and MNE's Makefile passes -j auto, so it scales with cores.
-# The default machine class only has 2. scikit-learn pins SPHINX_NUMJOBS=1, so
-# that job would not benefit and stays on the default.
-_bigimageconfig: &bigimageconfig
-  machine:
-    image: ubuntu-2404:current
-  resource_class: large
+    <<: *machine_image
+  resource_class: large.gen3
 
 commands:
   bash_env:
@@ -48,11 +52,14 @@ jobs:
             uv pip install --upgrade --only-binary ":all:" \
                 numpy matplotlib seaborn statsmodels pillow joblib \
                 "sphinx!=7.3.2,!=7.3.3,!=7.3.4,!=7.3.5,!=7.3.6" pytest \
-                traits memory_profiler "ipython!=8.7.0" plotly graphviz \
+                traits memory_profiler "ipython!=8.7.0" kaleido graphviz \
                 "pyvista>=0.44.0" "docutils>=0.18" imageio pydata-sphinx-theme \
                 "jupyterlite-sphinx>=0.17.1" "jupyterlite-pyodide-kernel" \
                 libarchive-c "sphinxcontrib-video>=0.2.1rc0" intersphinx_registry \
                 sphinx-design
+            # TODO: restore PyPI plotly above once a plotly release newer than
+            # 7.0.0 is out (plotly/plotly.py#5701 is merged but unreleased)
+            uv pip install "plotly @ git+https://github.com/plotly/plotly.py@main"
       - save_cache:
           key: cache-uv-1
           paths:
@@ -77,7 +84,15 @@ jobs:
       - attach_workspace:
           at: ~/
       - bash_env
-      - run: sphinx-build doc doc/_build/html -nW --keep-going -b html 2>&1 | tee sphinx_log.txt
+      - run:
+          name: Get a browser for plotly static image export
+          command: |
+            # The image's own browser exits after the first kaleido export
+            # (killing the docs build), so fetch a known-good Chrome instead.
+            plotly_get_chrome -y
+      # -j auto matches doc/Makefile; sphinx_gallery_conf["parallel"] picks the
+      # same number up and runs the examples in that many Loky workers.
+      - run: sphinx-build doc doc/_build/html -nW --keep-going -j auto -b html 2>&1 | tee sphinx_log.txt
       - run:
           name: Check sphinx log for warnings (which are treated as errors)
           when: always
@@ -122,7 +137,7 @@ jobs:
           destination: latex
 
   build_docs_mne:
-    <<: *bigimageconfig
+    <<: *imageconfig
     steps:
       - checkout  # just to get SSH keys set up
       - attach_workspace:

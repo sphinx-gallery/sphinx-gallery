@@ -27,11 +27,28 @@ during fixture setup instead of a skip.
 ## Commands
 
 ```bash
-pytest sphinx_gallery                                  # full suite, ~2.5 min
+pytest sphinx_gallery -n 4                             # full suite, ~2.5 min
 pytest sphinx_gallery/tests/test_full.py -k rebuild    # single test / keyword
 pre-commit run -a                                      # the actual lint gate
 make -C doc html                                       # build SG's own docs
 ```
+
+Serially the suite takes ~6 min, and nearly all of that is spent building miniature
+Sphinx projects, so it parallelizes well. `--dist=loadgroup` is in `addopts` and takes
+effect as soon as `-n` is passed: modules that cannot be split across workers say so
+with a module-level `pytestmark = pytest.mark.xdist_group(...)` (see `test_full.py`,
+whose tests share one mutated build), and everything else is load balanced test by
+test. `test_full.py` is a single unit of work and therefore the critical path, so more
+than about four workers buys nothing. CI picks the count per OS (`PYTEST_XDIST_N` in
+`.github/workflows/tests.yml`).
+
+`make -C doc html` passes `-j auto`, and `doc/conf.py` sets `"parallel": True`, which
+reuses that number for the Loky workers that run the examples. Both are wired to the
+same knob on purpose: running examples out-of-process is what keeps a threaded BLAS
+from leaving a thread behind for Sphinx's forked read/write workers to deadlock on
+(see `sphinx_parallel_read` in `doc/configuration.rst`). `show_memory` is therefore
+unavailable in SG's own docs -- `parallel` disables it, with a warning that `-W`
+would promote to an error.
 
 `pre-commit` is the source of truth for linting. It runs `ruff-format` and `ruff` with
 **`--select=I` only** (import sorting), plus codespell, yamllint, sphinx-lint, and `ty`.
@@ -70,6 +87,35 @@ contract.
 - A page whose content depends on autodoc cannot be filled in at `source-read` without
   ordering and parallelism hazards; `env-updated` is the first point where every
   `autodoc-process-docstring` has fired and worker environments have been merged.
+
+## Code links in examples
+
+Names in rendered example code blocks (`np.arange`, an instance's method, …) become links to
+API documentation. `backreferences.py` identifies the names — AST plus, when the example ran,
+introspection of its globals — and caches the candidates per example in `<example>.codeobj.json`.
+`_doctree_links.py` turns those into links in a `SphinxPostTransform` at write time.
+
+- **Links are doctree nodes, not post-processed HTML.** The transform re-tokenizes the block
+  with pygments into `inline` nodes and wraps linkable runs in `reference` nodes, so every HTML
+  builder renders them and nothing rewrites built pages. (Until 0.20 this was a regex over
+  pygments `<span>` markup at `build-finished`, which silently did nothing for `dirhtml`.)
+- **`rawsource` must differ from `astext()`.** `HTML5Translator.visit_literal_block` re-highlights
+  with pygments and `SkipNode`s the children whenever they are equal — which they naturally are,
+  since the token texts concatenate back to the source. The replacement node deliberately holds
+  no rawsource; if links vanish from the output, check this first.
+- A `reference` node's parent must be a `TextElement`, or `visit_reference` fails an assertion.
+- **Targets come from Sphinx, never from a search index.** Local objects resolve through
+  `env.domains["py"].objects` (URIs via `builder.get_relative_uri`), external ones through the
+  intersphinx `InventoryAdapter`; inventory entries are `_InventoryItem` on Sphinx ≥ 8.2 and
+  plain tuples before. `reference_url` is deprecated and ignored.
+- **The label and the target can disagree, deliberately.** Local links are labelled with
+  `module_short` even when the object is only documented under a deeper module (gh-1364), and
+  `prefer_full_module` only redirects where a name *resolves* (gh-947). The
+  `sphx-glr-backref-module-*` / `-type-*` / `-instance` classes are a documented styling
+  contract — see `stylizing_code_links` in `doc/configuration.rst`.
+- Post-transforms reach the app via `env._app`; `SphinxPostTransform.app` is deprecated as of
+  Sphinx 9. Running at write time means links re-resolve on every build without invalidating
+  cached example doctrees.
 
 ## tinybuild
 

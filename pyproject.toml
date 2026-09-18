@@ -51,6 +51,7 @@ optional-dependencies.dev = [
   "pydata-sphinx-theme",
   "pytest",
   "pytest-coverage",
+  "pytest-xdist",
   "seaborn",
   "sphinx-design",
   "sphinxcontrib-video",
@@ -89,7 +90,10 @@ packages.find.include = [
 ]  # package names should match these glob patterns (["*"] by default)
 packages.find.namespaces = true  # allow scanning PEP 420 namespaces (true by default)
 include-package-data = true
-dynamic.version = { attr = "sphinx_gallery.__version__" }
+
+# The version comes from the git tags, so it never needs bumping by hand.
+[tool.setuptools_scm]
+version_scheme = "release-branch-semver"  # guess the next minor, not the next patch
 
 [tool.ruff]
 exclude = [
@@ -184,6 +188,11 @@ ini_options.addopts = [
   "--color=yes",
   "--cov-report=",
   "--cov=sphinx_gallery",
+  # Only takes effect once -n is passed. "loadgroup" rather than the default
+  # "load" because test_full.py shares one module-scoped, mutated tinybuild
+  # across its tests: its xdist_group mark keeps them together and in order on
+  # a single worker, while everything else still load balances test by test.
+  "--dist=loadgroup",
   "--durations=5",
   "-r a",
   "--tb=short",

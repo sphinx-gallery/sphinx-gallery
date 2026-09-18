@@ -21,7 +21,6 @@ every module. Examples `here <auto_examples/index.html>`_.
    _dummy.nested
    _dummy.unused_a
    _dummy.unused_b
-   docs_resolv
    downloads
    gen_gallery
    gen_rst

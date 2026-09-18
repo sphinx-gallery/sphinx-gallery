@@ -271,6 +271,25 @@ def test_config_backreferences(sphinx_app_wrapper):
     assert build_warn == ""
 
 
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    'reference_url': {'sphinx_gallery': None},
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+}"""
+)
+def test_config_reference_url_deprecated(sphinx_app_wrapper):
+    """Test setting reference_url reports its deprecation without warning.
+
+    It is deliberately not a warning: the option is a no-op now, so projects
+    building with ``-W`` should not break just by upgrading.
+    """
+    sphinx_app = sphinx_app_wrapper.create_sphinx_app()
+    assert "'reference_url' option is deprecated" in sphinx_app._status.getvalue()
+    assert sphinx_app._warning.getvalue() == ""
+
+
 def test_duplicate_files_warn(sphinx_app_wrapper):
     """Test for a warning when two files with the same filename exist."""
     sphinx_app = sphinx_app_wrapper.create_sphinx_app()

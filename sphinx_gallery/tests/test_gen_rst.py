@@ -17,6 +17,7 @@ from unittest import mock
 import pytest
 from sphinx.errors import ExtensionError
 
+import sphinx_gallery
 import sphinx_gallery.gen_rst as sg
 from sphinx_gallery import downloads
 from sphinx_gallery.gen_gallery import (
@@ -352,6 +353,39 @@ def test_codestr2rst():
     assert reference == output
 
 
+@pytest.mark.parametrize(
+    "content,expected",
+    [
+        # Explicit title: Sphinx renders the title, so the tooltip must too
+        # (gh-1644).
+        (":term:`ascent <parcel ascent>`", "ascent"),
+        (":term:`wind barbs <wind barb>`", "wind barbs"),
+        (":class:`Sounding <a.b.Sounding>`", "Sounding"),
+        (":ref:`whatever <better name>`", "whatever"),
+        # Domain-qualified roles must not leave the domain behind (gh-1644).
+        (":py:class:`Sounding <a.b.Sounding>`", "Sounding"),
+        (":py:func:`parcel path <a.b.parcel_path>`", "parcel path"),
+        (":std:doc:`the guide <howtos/index>`", "the guide"),
+        (":py:mod:`a.b.c`", "a.b.c"),
+        (":py:class:`~a.b.MyClass`", "MyClass"),
+        # Forms that already worked
+        (":term:`dewpoint`", "dewpoint"),
+        (":class:`a.b.c`", "a.b.c"),
+        (":class:`~a.b.MyClass`", "MyClass"),
+        ("``literal``", "literal"),
+        ("`interpreted`", "interpreted"),
+        ("`~mymodule.MyClass`", "MyClass"),
+        ("**bold**", "bold"),
+        ("*italic*", "italic"),
+        ("`link text <https://example.com>`_", "link text"),
+    ],
+)
+@pytest.mark.parametrize("template", ["See {} here.", "{} starts it.", "It ends {}"])
+def test_sanitize_rst(content, expected, template):
+    """Test that sphinx markup is reduced to what sphinx would render."""
+    assert sg._sanitize_rst(template.format(content)) == template.format(expected)
+
+
 def test_extract_intro_and_title():
     intro, title = sg.extract_intro_and_title("<string>", "\n".join(CONTENT[1:10]))
     assert title == "Docstring header"
@@ -425,6 +459,45 @@ def test_md5sums(mode, expected_md5, tmp_path):
     # Write md5sum to file to check is current
     fname.with_name(fname.name + ".md5").write_text(file_md5)
     assert sg.md5sum_is_current(fname, mode), mode
+
+
+def test_scrapers_resolved_before_execution(gallery_conf, monkeypatch, req_pil):
+    """Scrapers named by string are resolved before the example runs.
+
+    Resolving imports the library, and a library may rely on that import to
+    set itself up for the build (e.g. plotly selects its renderer). A worker
+    process of a parallel build never reads conf.py, so resolving after the
+    example has run would be too late.
+    """
+    events = []
+    monkeypatch.setattr(sphinx_gallery, "_sg_test_events", events, raising=False)
+    monkeypatch.setattr(
+        sphinx_gallery,
+        "_get_sg_image_scraper",
+        lambda: events.append("resolved") or _custom_scraper,
+        raising=False,
+    )
+    gallery_conf.update(image_scrapers=("sphinx_gallery",), reset_modules=())
+
+    path = Path(gallery_conf["examples_dir"], "plot_order.py")
+    path.write_text(
+        '"""\nOrder\n=====\n"""\n'
+        "import sphinx_gallery\n"
+        'sphinx_gallery._sg_test_events.append("executed")\n',
+        encoding="utf-8",
+    )
+    sg.generate_file_rst(
+        "plot_order.py",
+        gallery_conf["gallery_dir"],
+        gallery_conf["examples_dir"],
+        gallery_conf,
+    )
+
+    assert events[:2] == ["resolved", "executed"]
+
+
+def _custom_scraper(block, block_vars, gallery_conf):
+    return ""
 
 
 @pytest.mark.parametrize(

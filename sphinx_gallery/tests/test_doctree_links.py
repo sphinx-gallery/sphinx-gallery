@@ -1,0 +1,172 @@
+# License: 3-clause BSD
+"""Unit tests for doctree-based code link embedding."""
+
+import pytest
+from docutils import nodes
+
+from sphinx_gallery._doctree_links import (
+    _add_linenos,
+    _lexer_name,
+    _Lookup,
+    _Resolver,
+    _tokenize_and_link,
+)
+
+
+class FakeResolver:
+    """Resolve any candidate whose full name is in ``known``, as an external link."""
+
+    def __init__(self, known):
+        self.known = known
+
+    def resolve(self, cobjs):
+        """Return link info for the first known candidate, else None."""
+        for cobj in cobjs:
+            target = f"{cobj['module']}.{cobj['name']}"
+            if target in self.known:
+                return dict(
+                    found=_Lookup(
+                        None, None, f"https://example.com/{target}", "py:x", False
+                    ),
+                    title=target,
+                    classes=["sphx-glr-backref-module-x", "sphx-glr-backref-type-y"],
+                )
+        return None
+
+    # the real one builds internal links with make_refnode; external links need
+    # no builder, so the fake can share this exact code path
+    reference = _Resolver.reference
+
+
+def _cobj(module, name):
+    return dict(
+        name=name, module=module, module_short=module, is_class=False, is_explicit=False
+    )
+
+
+CODE = """\
+import numpy as np
+x = np.arange(3)
+s = '''one
+two'''
+y = np.arange(x.mean())
+"""
+
+CODE_OBJ = {
+    "np.arange": [_cobj("numpy", "arange")],
+    "x.mean": [_cobj("numpy", "ndarray.mean")],
+    "x": [_cobj("numpy", "ndarray")],
+}
+
+
+def test_tokenize_and_link():
+    """Names resolve to reference nodes; unresolved names stay plain."""
+    resolver = FakeResolver({"numpy.arange", "numpy.ndarray"})
+    out = list(_tokenize_and_link(CODE, "python", CODE_OBJ, resolver))
+    # round-trips the source exactly
+    assert "".join(n.astext() for n in out) == CODE
+    refs = [n for n in out if isinstance(n, nodes.reference)]
+    # x.mean does not resolve, so its longest resolving prefix (x) links
+    # and the .mean attribute stays plain
+    assert [r.astext() for r in refs] == ["x", "np.arange", "np.arange", "x"]
+    ref = refs[1]
+    assert ref["refuri"] == "https://example.com/numpy.arange"
+    assert ref["reftitle"] == "numpy.arange"
+    assert "sphx-glr-backref-module-x" in ref["classes"]
+    # tokens within the link keep their pygments classes
+    assert ref.children[0].astext() == "np"
+    assert ref.children[0]["classes"] == ["n"]
+    assert ref.children[1].astext() == "."
+    # the attribute after an unresolved chain is not linked
+    texts = [n.astext() for n in out if isinstance(n, nodes.inline)]
+    assert "mean" in texts
+
+
+def _classes(n):
+    return n.get("classes", []) if isinstance(n, nodes.Element) else []
+
+
+def test_add_linenos():
+    """Line numbers interleave at line starts, padded, honoring the start."""
+    resolver = FakeResolver({"numpy.arange"})
+    children = list(_tokenize_and_link(CODE, "python", CODE_OBJ, resolver))
+    out = _add_linenos(children, start=8)
+    linenos = [n for n in out if "linenos" in _classes(n)]
+    # 5 source lines (multiline string spans lines 3-4)
+    assert [n.astext() for n in linenos] == [" 8", " 9", "10", "11", "12"]
+    # stripping the linenos recovers the source
+    rest = [n for n in out if "linenos" not in _classes(n)]
+    assert "".join(n.astext() for n in rest) == CODE
+    # references survive the interleaving
+    refs = [n for n in out if isinstance(n, nodes.reference)]
+    assert len(refs) == 2  # np.arange twice (only known name here)
+    # a mid-line reference is not directly preceded by a line number
+    idx = out.index(refs[0])
+    assert "linenos" not in _classes(out[idx - 1])  # "x = " sits before it
+
+
+@pytest.mark.parametrize(
+    "lang, code, want",
+    [
+        # Sphinx highlights all of these with the Python lexer, so we must
+        # rewrite them too -- "default" is what a plain ``::`` block becomes
+        ("python", "x = 1", "python"),
+        ("Python", "x = 1", "python"),  # sphinx-gallery emits it capitalised
+        ("python3", "x = 1", "python"),
+        ("py", "x = 1", "python"),
+        ("py3", "x = 1", "python"),
+        ("default", "x = 1", "python"),
+        ("default", ">>> x = 1", "pycon"),  # interactive session
+        ("pycon", ">>> x = 1", "pycon"),
+        ("ipython3", "x = 1", "ipython3"),
+        # not Python: leave the block alone
+        ("c", "int x;", None),
+        ("none", "hello", None),
+        ("text", "hello", None),
+    ],
+)
+def test_lexer_name(lang, code, want):
+    """We rewrite exactly the blocks Sphinx would highlight as Python."""
+    assert _lexer_name(lang, code) == want
+
+
+def _stub_resolver(hits):
+    """Build a _Resolver whose lookups come from ``{target: _Lookup}``."""
+    resolver = _Resolver.__new__(_Resolver)
+    resolver.prefer_full = set()
+    resolver._cache = {}
+    resolver._lookup = lambda target: hits.get(target, _Lookup(*[None] * 4, False))
+    return resolver
+
+
+# as ``pkg._private.mod.Thing`` documented (and re-exported) as ``pkg.Thing``
+_PRIVATE = "pkg._private.mod.Thing"
+_PUBLIC = "pkg.Thing"
+_CANDIDATES = [
+    _cobj("pkg._private.mod", "Thing"),
+    _cobj("pkg", "Thing"),
+]
+
+
+def test_resolve_prefers_non_aliased():
+    """An aliased (``:canonical:``) entry must not beat the public one.
+
+    Sphinx records the private location of a re-exported object as an aliased
+    py-domain entry. Taking it would label the link with the private module,
+    breaking the documented ``sphx-glr-backref-module-*`` styling contract.
+    """
+    hits = {
+        _PRIVATE: _Lookup("doc", "id", None, "py:class", True),  # aliased
+        _PUBLIC: _Lookup("doc", "id", None, "py:class", False),
+    }
+    link = _stub_resolver(hits).resolve(_CANDIDATES)
+    assert link["title"] == _PUBLIC
+    assert "sphx-glr-backref-module-pkg" in link["classes"]
+
+
+def test_resolve_falls_back_to_aliased():
+    """An aliased entry is still used when nothing else resolves."""
+    hits = {_PRIVATE: _Lookup("doc", "id", None, "py:class", True)}
+    link = _stub_resolver(hits).resolve(_CANDIDATES)
+    assert link["title"] == _PRIVATE
+    assert "sphx-glr-backref-module-pkg-_private-mod" in link["classes"]

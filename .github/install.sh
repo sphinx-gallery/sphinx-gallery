@@ -41,7 +41,7 @@ fi
 
 set -x
 pip install $EXTRA_ARGS $PIP_DEPENDENCIES \
-    pytest pytest-cov coverage pydata-sphinx-theme lxml \
+    pytest pytest-cov pytest-xdist coverage pydata-sphinx-theme lxml \
     "sphinxcontrib-video>=0.2.1rc0" \
     -e .${DEP_OPT}
 set +x
