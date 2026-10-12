@@ -51,7 +51,7 @@ jobs:
             echo "dirty=true" >> $GITHUB_OUTPUT
           fi
       # Run the updated hooks over the whole repo so any new reformatting lands here
-      - uses: j178/prek-action@v3.0.0
+      - uses: j178/prek-action@v3.0.1
         if: steps.status.outputs.dirty == 'true'
       - name: Create PR
         if: steps.status.outputs.dirty == 'true' && (success() || failure())
