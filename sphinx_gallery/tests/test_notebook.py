@@ -139,6 +139,27 @@ For more details on interpolation see the page `channel_interpolation`.
     assert rst2md(rst, gallery_conf, "", {}) == markdown
 
 
+def test_convert_note_with_multiple_paragraphs(gallery_conf):
+    """Test that paragraphs in a note are not rendered as Markdown code."""
+    rst = """.. note::
+
+    This paragraph explains the interactive example and is intentionally long
+    enough to wrap across multiple lines.
+
+    You can copy and paste individual parts, or download the entire example
+    using the link at the bottom of the page.
+"""
+    markdown = rst2md(rst, gallery_conf, "", {})
+    assert markdown == (
+        '<div class="alert alert-info"><h4>Note</h4>\n\n'
+        "This paragraph explains the interactive example and is intentionally long\n"
+        "enough to wrap across multiple lines.\n\n"
+        "You can copy and paste individual parts, or download the entire example\n"
+        "using the link at the bottom of the page.\n\n"
+        "</div>\n"
+    )
+
+
 def test_link_targets(gallery_conf):
     """Test that references to hyperlink targets become links (gh-1202)."""
     gallery_conf = gallery_conf.copy()
