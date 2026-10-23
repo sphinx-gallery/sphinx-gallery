@@ -44,7 +44,8 @@ def test_latex_conversion(gallery_conf):
     assert align_eq_jmd == rst2md(align_eq, gallery_conf, "", {})
 
 
-def test_code_conversion():
+@pytest.mark.parametrize("backticks", ["```", "````", "`````"])
+def test_code_conversion(backticks):
     """Test `rst2md` results in ``` code format so Jupyter syntax highlighting works."""
     rst = textwrap.dedent(
         """
@@ -83,6 +84,11 @@ def test_code_conversion():
         // not a real code block
     """
     )
+
+    contents = f'{backticks}python\nprint("hello")\n{backticks}'
+    rst = ".. code-block:: markdown\n\n" + textwrap.indent(contents, "    ") + "\n"
+    fence = backticks + "`"
+    assert rst2md(rst, {}, "", {}) == f"{fence}markdown\n{contents}\n{fence}\n"
 
 
 def test_convert(gallery_conf):
@@ -322,7 +328,8 @@ def test_headings():
     assert "# White space above\n" in text
 
 
-def test_cell_magic_promotion():
+@pytest.mark.parametrize("backticks", ["```", "````", "`````"])
+def test_cell_magic_promotion(backticks):
     markdown = textwrap.dedent(
         """\
     # Should be rendered as text
@@ -359,6 +366,16 @@ def test_cell_magic_promotion():
     assert cells[3]["cell_type"] == "markdown"
     assert cells[3]["source"][0] == "Interspersed text block"
     assert cells[4]["cell_type"] == "code"
+
+    contents = f'%%writefile README.md\n{backticks}python\nprint("hello")\n{backticks}'
+    rst = ".. code-block:: markdown\n\n" + textwrap.indent(contents, "    ") + "\n"
+    markdown = rst2md(rst, {}, "", {})
+    work_notebook = {"cells": []}
+    promote_jupyter_cell_magic(work_notebook, markdown)
+    cells = work_notebook["cells"]
+    assert len(cells) == 1
+    assert cells[0]["cell_type"] == "code"
+    assert cells[0]["source"][0] == contents
 
 
 @pytest.mark.parametrize(
