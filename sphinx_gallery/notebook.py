@@ -101,7 +101,8 @@ def convert_code_to_md(text: str) -> str:
         end_index = code_end_match.start() if code_end_match else len(text)
 
         contents = textwrap.dedent(text[start_index:end_index]).rstrip()
-        new_code = f"```{code_block.group(1)}\n{contents}\n```\n"
+        fence = "`" * max(3, max(map(len, re.findall(r"`+", contents)), default=0) + 1)
+        new_code = f"{fence}{code_block.group(1)}\n{contents}\n{fence}\n"
         text = text[: code_block.span()[0]] + new_code + text[end_index:]
     return text
 
@@ -375,7 +376,7 @@ def promote_jupyter_cell_magic(work_notebook: NotebookContent, markdown: str) ->
         Markdown cell content.
     """
     # Regex detects all code blocks that use %% Jupyter cell magic
-    cell_magic_regex = r"\n?```\s*[a-z]*\n(%%(?:[\s\S]*?))\n?```\n?"
+    cell_magic_regex = r"\n?(`{3,})\s*[a-z]*\n(%%(?:[\s\S]*?))\n?\1\n?"
 
     text_cell_start = 0
     for magic_cell in re.finditer(cell_magic_regex, markdown):
@@ -385,7 +386,7 @@ def promote_jupyter_cell_magic(work_notebook: NotebookContent, markdown: str) ->
             add_markdown_cell(work_notebook, text_block)
         text_cell_start = magic_cell.span()[1]
 
-        code_block = magic_cell.group(1)
+        code_block = magic_cell.group(2)
         add_code_cell(work_notebook, code_block)
 
     # Return remaining text (which equals markdown if no magic cells exist)
