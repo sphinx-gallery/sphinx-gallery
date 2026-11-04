@@ -384,17 +384,17 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmp_path):
         stamp_fname_scaled,
         *sphinx_app.config.sphinx_gallery_conf["thumbnail_size"],
     )
-    broken_stamp = np.asarray(Image.open(stamp_fname_scaled))
-    assert broken_stamp.shape[2] in (3, 4)  # optipng can strip the alpha channel
+    # optipng can strip the alpha channel or reduce to a palette
+    broken_stamp = np.asarray(Image.open(stamp_fname_scaled).convert("RGB"))
 
     # Get thumbnail from example with failing example thumbnail behaviour
     # (i.e. thumbnail should be "BROKEN" stamp)
     thumb_fname = Path(
         sphinx_app.outdir, "_images", "sphx_glr_plot_failing_example_thumb.png"
     )
-    thumbnail = np.asarray(Image.open(thumb_fname))
+    thumbnail = np.asarray(Image.open(thumb_fname).convert("RGB"))
     assert broken_stamp.shape[:2] == thumbnail.shape[:2]
-    corr = np.corrcoef(broken_stamp[..., :3].ravel(), thumbnail[..., :3].ravel())[0, 1]
+    corr = np.corrcoef(broken_stamp.ravel(), thumbnail.ravel())[0, 1]
     assert corr > 0.99  # i.e. thumbnail and "BROKEN" stamp are identical
 
     # Get thumbnail from example with default thumbnail behaviour
@@ -404,9 +404,9 @@ def test_thumbnail_expected_failing_examples(sphinx_app, tmp_path):
         "_images",
         "sphx_glr_plot_failing_example_thumbnail_thumb.png",
     )
-    thumbnail = np.asarray(Image.open(thumb_fname))
+    thumbnail = np.asarray(Image.open(thumb_fname).convert("RGB"))
     assert broken_stamp.shape[:2] == thumbnail.shape[:2]
-    corr = np.corrcoef(broken_stamp[..., :3].ravel(), thumbnail[..., :3].ravel())[0, 1]
+    corr = np.corrcoef(broken_stamp.ravel(), thumbnail.ravel())[0, 1]
     assert corr < 0.7  # i.e. thumbnail and "BROKEN" stamp are not identical
 
 
