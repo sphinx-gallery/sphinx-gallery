@@ -1060,29 +1060,23 @@ def write_computation_times(
             f"{len(costs)} file{'s' if len(costs) != 1 else ''} **from {where}**:\n\n"
         )
         lines = _format_for_writing(costs, src_dir=gallery_conf["src_dir"], kind=kind)
-        # https://datatables.net/examples/styling/bootstrap5.html
-        fid.write(  # put it in a container to make the scoped style work
+        # Bootstrap's CSS would restyle the whole page; browsers ignore <style scoped>
+        fid.write(
             """\
-.. container::
+.. raw:: html
 
-  .. raw:: html
-
-    <style scoped>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
-    </style>
+    <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script type="text/javascript" class="init">
     $(document).ready( function () {
         $('table.sg-datatable').DataTable({order: [[1, 'desc']]});
     } );
     </script>
 
-  .. list-table::
+.. list-table::
    :header-rows: 1
-   :class: table table-striped sg-datatable
+   :class: sg-datatable display
 
    * - Example
      - Time
