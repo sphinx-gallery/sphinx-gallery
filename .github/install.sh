@@ -8,10 +8,9 @@ python -m pip install --upgrade pip setuptools wheel
 PLATFORM=$(python -c "import platform; print(platform.system())")
 DEP_OPT=""
 if [ "$DISTRIB" == "mamba" ]; then
-    conda config --set solver libmamba
     # memory_profiler is unreliable on macOS and Windows (lots of zombie processes)
     if [ "$PLATFORM" != "Linux" ]; then
-        conda remove -y memory_profiler
+        micromamba remove -y memory_profiler
     fi
     PIP_DEPENDENCIES="jupyterlite-sphinx>=0.17.1 jupyterlite-pyodide-kernel libarchive-c numpy sphinx-design"
 elif [ "$DISTRIB" == "minimal" ]; then
@@ -49,7 +48,14 @@ set +x
 # "pip install pygraphviz" does not guarantee graphviz binaries exist
 if [[ "$DISTRIB" != "mamba" ]]; then
     if [[ "$PLATFORM" == "Linux" ]]; then
-        sudo apt install ffmpeg graphviz
+        APT_PACKAGES="ffmpeg graphviz"
+        # From graphviz 14 (Ubuntu 26.04) neato is a separate plugin package
+        # that "graphviz" does not pull in. "neato -V" still works without it,
+        # so _has_graphviz() is True but the API usage graphs fail to render.
+        if apt-cache show libgvplugin-neato-layout8 &>/dev/null; then
+            APT_PACKAGES="$APT_PACKAGES libgvplugin-neato-layout8"
+        fi
+        sudo apt install $APT_PACKAGES
     else
         # ffmpeg gates all of test_full.py, so without it the tinybuild suite
         # silently disappears. The wheel is a static build, so it beats brew
