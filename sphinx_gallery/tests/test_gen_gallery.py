@@ -715,6 +715,52 @@ Should emit a syntax error in the second code block.
 sphinx_gallery_conf = {
     'examples_dirs': 'src',
     'gallery_dirs': 'ex',
+    'parallel': 2,
+}"""
+)
+def test_parallel_workers_stopped(sphinx_app_wrapper):
+    """The loky workers do not outlive gallery generation (gh-1658)."""
+    pytest.importorskip("joblib")
+    from joblib.externals.loky import reusable_executor
+
+    sphinx_app_wrapper.build_sphinx_app()
+
+    executor = reusable_executor._executor
+    assert executor is not None, "the examples did not run in parallel"
+    assert executor._flags.shutdown
+
+
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
+    'parallel': 2,
+    'abort_on_example_error': True,
+}"""
+)
+def test_parallel_workers_stopped_on_abort(sphinx_app_wrapper, monkeypatch):
+    """An example that aborts the build still stops the workers (gh-1658)."""
+    stopped = []
+    monkeypatch.setattr(
+        "sphinx_gallery.gen_gallery._shutdown_parallel_executor", stopped.append
+    )
+
+    Path(sphinx_app_wrapper.srcdir, "src", "plot_3.py").write_text(
+        "'''\nFailing example\n---------------\n'''\n\nraise RuntimeError('boom')\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ExtensionError, match="boom"):
+        sphinx_app_wrapper.build_sphinx_app()
+
+    assert len(stopped) == 1
+
+
+@pytest.mark.add_conf(
+    content="""
+sphinx_gallery_conf = {
+    'examples_dirs': 'src',
+    'gallery_dirs': 'ex',
     'filename_pattern': 'plot_1.py',
 }"""
 )

@@ -40,6 +40,7 @@ from .gen_rst import (
     _get_call_memory_and_base,
     _get_callables,
     _get_gallery_header,
+    _shutdown_parallel_executor,
     generate_dir_rst,
 )
 from .interactive_example import (
@@ -793,151 +794,158 @@ def generate_gallery_rst(app: Sphinx) -> None:
         extra = f" (with parallel={gallery_conf['parallel']})"
     logger.info(f"generating gallery{extra}...", color="white")
 
-    seen_backrefs: set[str] = set()
+    try:
+        seen_backrefs: set[str] = set()
 
-    costs: list[ExampleCost] = []
-    src_root = Path(app.builder.srcdir)
-    workdirs = _prepare_sphx_glr_dirs(gallery_conf, src_root)
+        costs: list[ExampleCost] = []
+        src_root = Path(app.builder.srcdir)
+        workdirs = _prepare_sphx_glr_dirs(gallery_conf, src_root)
 
-    # Check for duplicate filenames to make sure linking works as expected.
-    # `examples_dirs` is relative to `src_root`, and resolving it against the cwd
-    # instead would silently collect nothing.
-    examples_dirs = [src_root / ex_dir for ex_dir, _ in workdirs]
-    _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
+        # Check for duplicate filenames to make sure linking works as expected.
+        # `examples_dirs` is relative to `src_root`, and resolving it against the cwd
+        # instead would silently collect nothing.
+        examples_dirs = [src_root / ex_dir for ex_dir, _ in workdirs]
+        _collect_gallery_files(examples_dirs, gallery_conf, check_filenames=True)
 
-    backrefs_all: dict[str, list[Backreference]] = {}
+        backrefs_all: dict[str, list[Backreference]] = {}
 
-    for examples_dir, gallery_dir in workdirs:
-        examples_dir_abs_path = src_root / examples_dir
-        gallery_dir_abs_path = src_root / gallery_dir
+        for examples_dir, gallery_dir in workdirs:
+            examples_dir_abs_path = src_root / examples_dir
+            gallery_dir_abs_path = src_root / gallery_dir
 
-        # Create example rst files for root gallery directory examples
-        # (excl. sub-dir examples) and fetch gallery header for root index.rst
-        (
-            _,
-            this_content,
-            this_costs,
-            this_toctree_items,
-            backrefs_root,
-        ) = generate_dir_rst(
-            examples_dir_abs_path,
-            gallery_dir_abs_path,
-            gallery_conf,
-            seen_backrefs,
-            is_subsection=False,
-        )
-
-        _combine_backreferences(backrefs_all, backrefs_root)
-
-        # `this_content` is None when user provides own index.rst
-        sg_root_index = this_content is not None
-        costs += this_costs
-        write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
-
-        # `indexst` variable must exist, as passed to `_finish_index_rst`
-        indexst = ""
-        # Create root gallery index.rst
-        if sg_root_index:
-            assert this_content is not None  # for type narrowing
-            # :orphan: to suppress "not included in TOCTREE" sphinx warnings
-            indexst = ":orphan:\n\n" + this_content
-            # Write toctree with gallery items from gallery root folder
-            if len(this_toctree_items) > 0:
-                this_toctree = _format_toctree(this_toctree_items)
-                indexst += this_toctree
-
-        # list all paths to subsection index files in this array
-        subsection_index_files = []
-        subsecs = get_subsections(
-            src_root,
-            examples_dir_abs_path,
-            gallery_conf,
-            check_for_header=sg_root_index,
-        )
-        for subsection in subsecs:
-            src_dir = examples_dir_abs_path / subsection
-            target_dir = gallery_dir_abs_path / subsection
-            subsection_index_files.append(
-                "/".join(["", gallery_dir, subsection, "index.rst"]).replace(
-                    os.sep, "/"
-                )  # fwd slashes needed in rst
+            # Create example rst files for root gallery directory examples
+            # (excl. sub-dir examples) and fetch gallery header for root index.rst
+            (
+                _,
+                this_content,
+                this_costs,
+                this_toctree_items,
+                backrefs_root,
+            ) = generate_dir_rst(
+                examples_dir_abs_path,
+                gallery_dir_abs_path,
+                gallery_conf,
+                seen_backrefs,
+                is_subsection=False,
             )
 
-            (
-                subsection_index_path,
-                subsection_index_content,
-                subsection_costs,
-                subsection_toctree_filenames,
-                backrefs_subsec,
-            ) = generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs)
+            _combine_backreferences(backrefs_all, backrefs_root)
 
-            _combine_backreferences(backrefs_all, backrefs_subsec)
+            # `this_content` is None when user provides own index.rst
+            sg_root_index = this_content is not None
+            costs += this_costs
+            write_computation_times(gallery_conf, gallery_dir_abs_path, this_costs)
 
-            has_subsection_header = False
-            if subsection_index_content:
-                if gallery_conf["nested_sections"]:
-                    # Filter tags to prevent tag duplication as subsection headers
-                    # are included in both root index and subsection index files
-                    indexst += _filter_tags(subsection_index_content)
-                else:
-                    indexst += subsection_index_content
-                has_subsection_header = True
+            # `indexst` variable must exist, as passed to `_finish_index_rst`
+            indexst = ""
+            # Create root gallery index.rst
+            if sg_root_index:
+                assert this_content is not None  # for type narrowing
+                # :orphan: to suppress "not included in TOCTREE" sphinx warnings
+                indexst = ":orphan:\n\n" + this_content
+                # Write toctree with gallery items from gallery root folder
+                if len(this_toctree_items) > 0:
+                    this_toctree = _format_toctree(this_toctree_items)
+                    indexst += this_toctree
 
-            # Write subsection toctree containing all filenames, if req.
-            if (
-                sg_root_index
-                and not gallery_conf["nested_sections"]
-                and len(subsection_toctree_filenames) > 0
-            ):
-                subsection_index_toctree = _format_toctree(subsection_toctree_filenames)
-                indexst += subsection_index_toctree
-            # Otherwise, for the conditions below, a new subsection index.rst.new
-            # file should have been created and it needs to be parsed
-            elif gallery_conf["nested_sections"] and has_subsection_header:
-                assert subsection_index_path is not None  # for type narrowing
-                _replace_md5(subsection_index_path, mode="t")
+            # list all paths to subsection index files in this array
+            subsection_index_files = []
+            subsecs = get_subsections(
+                src_root,
+                examples_dir_abs_path,
+                gallery_conf,
+                check_for_header=sg_root_index,
+            )
+            for subsection in subsecs:
+                src_dir = examples_dir_abs_path / subsection
+                target_dir = gallery_dir_abs_path / subsection
+                subsection_index_files.append(
+                    "/".join(["", gallery_dir, subsection, "index.rst"]).replace(
+                        os.sep, "/"
+                    )  # fwd slashes needed in rst
+                )
 
-            costs += subsection_costs
-            write_computation_times(gallery_conf, target_dir, subsection_costs)
+                (
+                    subsection_index_path,
+                    subsection_index_content,
+                    subsection_costs,
+                    subsection_toctree_filenames,
+                    backrefs_subsec,
+                ) = generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs)
 
-        # Per gallery - items below run once per gallery
-        # Finish index.rst and write to file
-        _finish_index_rst(
-            app,
-            gallery_conf,
-            indexst,
-            sg_root_index,
-            subsection_index_files,
-            gallery_dir_abs_path,
-        )
-        # Build recommendation system
-        _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
+                _combine_backreferences(backrefs_all, backrefs_subsec)
 
-    # Per project - items below run once only (for all galleries)
-    # Write a single global sg_execution_times
-    write_computation_times(gallery_conf, None, costs)
+                has_subsection_header = False
+                if subsection_index_content:
+                    if gallery_conf["nested_sections"]:
+                        # Filter tags to prevent tag duplication as subsection headers
+                        # are included in both root index and subsection index files
+                        indexst += _filter_tags(subsection_index_content)
+                    else:
+                        indexst += subsection_index_content
+                    has_subsection_header = True
 
-    # Write backreferences_all to file
-    if gallery_conf["backreferences_dir"]:
-        _write_json(
-            Path(
-                gallery_conf["src_dir"],
-                gallery_conf["backreferences_dir"],
-                "backreferences_all",
-            ),
-            backrefs_all,
-        )
+                # Write subsection toctree containing all filenames, if req.
+                if (
+                    sg_root_index
+                    and not gallery_conf["nested_sections"]
+                    and len(subsection_toctree_filenames) > 0
+                ):
+                    subsection_index_toctree = _format_toctree(
+                        subsection_toctree_filenames
+                    )
+                    indexst += subsection_index_toctree
+                # Otherwise, for the conditions below, a new subsection index.rst.new
+                # file should have been created and it needs to be parsed
+                elif gallery_conf["nested_sections"] and has_subsection_header:
+                    assert subsection_index_path is not None  # for type narrowing
+                    _replace_md5(subsection_index_path, mode="t")
 
-    if gallery_conf["show_api_usage"] is not False:
-        _init_api_usage(Path(app.builder.srcdir))
-    else:
-        _remove_api_usage(Path(app.builder.srcdir))
-    _finalize_backreferences(seen_backrefs, gallery_conf)
+                costs += subsection_costs
+                write_computation_times(gallery_conf, target_dir, subsection_costs)
 
-    if gallery_conf["plot_gallery"]:
-        _log_costs(costs, gallery_conf)
-        # Also create a junit.xml file, useful e.g. on CircleCI
-        write_junit_xml(gallery_conf, app.builder.outdir, costs)
+            # Per gallery - items below run once per gallery
+            # Finish index.rst and write to file
+            _finish_index_rst(
+                app,
+                gallery_conf,
+                indexst,
+                sg_root_index,
+                subsection_index_files,
+                gallery_dir_abs_path,
+            )
+            # Build recommendation system
+            _build_recommender(gallery_conf, gallery_dir_abs_path, subsecs)
+
+        # Per project - items below run once only (for all galleries)
+        # Write a single global sg_execution_times
+        write_computation_times(gallery_conf, None, costs)
+
+        # Write backreferences_all to file
+        if gallery_conf["backreferences_dir"]:
+            _write_json(
+                Path(
+                    gallery_conf["src_dir"],
+                    gallery_conf["backreferences_dir"],
+                    "backreferences_all",
+                ),
+                backrefs_all,
+            )
+
+        if gallery_conf["show_api_usage"] is not False:
+            _init_api_usage(Path(app.builder.srcdir))
+        else:
+            _remove_api_usage(Path(app.builder.srcdir))
+        _finalize_backreferences(seen_backrefs, gallery_conf)
+
+        if gallery_conf["plot_gallery"]:
+            _log_costs(costs, gallery_conf)
+            # Also create a junit.xml file, useful e.g. on CircleCI
+            write_junit_xml(gallery_conf, app.builder.outdir, costs)
+    finally:
+        # loky keeps its idle workers, and their memory, alive otherwise; stop
+        # them here too when an example aborts the build.
+        _shutdown_parallel_executor(gallery_conf)
 
 
 SPHX_GLR_ORPHAN = """

@@ -823,6 +823,26 @@ def generate_dir_rst(
     )
 
 
+def _shutdown_parallel_executor(gallery_conf: GalleryConfig) -> None:
+    """Stop the loky workers that ``Parallel`` reuses between galleries.
+
+    loky keeps its reusable executor, and the idle workers it holds along with
+    whatever memory the examples left in them, alive for minutes after the last
+    ``Parallel`` call. Nothing else stops that pool, so the workers would still
+    be running while Sphinx reads and writes the pages. Does nothing when the
+    examples did not run in parallel, or when joblib is not installed.
+    """
+    if not gallery_conf["parallel"]:
+        return
+    try:
+        # imported lazily: joblib is optional, and the module is private to it
+        loky = importlib.import_module("joblib.externals.loky")
+    except ImportError:
+        return
+    # reuse=True gives back the executor the examples ran in, if there is one
+    loky.get_reusable_executor(reuse=True).shutdown(wait=True)
+
+
 def handle_exception(
     exc_info: tuple[type[BaseException], BaseException, Any] | tuple[None, None, None],
     src_file: PathLikeStr,

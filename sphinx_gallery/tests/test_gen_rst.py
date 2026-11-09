@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 import zipfile
 from pathlib import Path
 from unittest import mock
@@ -1371,6 +1372,43 @@ def test_parallel_serial_examples(gallery_conf, n_jobs):
         assert sorted(started, key=started.__getitem__) == names
     assert [Path(item).name for item in toctree_items] == names
     assert re.findall(r"sphx_glr_(plot_[abc])_thumb", index_content) == names
+
+
+def test_shutdown_parallel_executor(gallery_conf):
+    """The loky workers reused by ``Parallel`` are stopped (gh-1658)."""
+    pytest.importorskip("joblib")
+    from joblib import Parallel, delayed
+    from joblib.externals.loky import get_reusable_executor
+
+    Parallel(n_jobs=2, backend="loky")(delayed(int)(i) for i in range(4))
+    executor = get_reusable_executor(reuse=True)
+    assert not executor._flags.shutdown
+
+    gallery_conf["parallel"] = 2
+    sg._shutdown_parallel_executor(gallery_conf)
+
+    assert executor._flags.shutdown
+
+
+def test_shutdown_parallel_executor_noop(gallery_conf, monkeypatch):
+    """The pool is left alone when the build is serial or joblib is missing."""
+    pytest.importorskip("joblib")
+    from joblib import Parallel, delayed
+    from joblib.externals.loky import get_reusable_executor
+
+    Parallel(n_jobs=2, backend="loky")(delayed(int)(i) for i in range(4))
+    executor = get_reusable_executor(reuse=True)
+    try:
+        gallery_conf["parallel"] = False
+        sg._shutdown_parallel_executor(gallery_conf)
+        assert not executor._flags.shutdown
+
+        monkeypatch.setitem(sys.modules, "joblib.externals.loky", None)
+        gallery_conf["parallel"] = 2
+        sg._shutdown_parallel_executor(gallery_conf)
+        assert not executor._flags.shutdown
+    finally:
+        executor.shutdown(wait=True)
 
 
 def test_split_parallel_serial_build(gallery_conf, log_collector):
