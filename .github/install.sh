@@ -12,7 +12,7 @@ if [ "$DISTRIB" == "mamba" ]; then
     if [ "$PLATFORM" != "Linux" ]; then
         micromamba remove -y memory_profiler
     fi
-    PIP_DEPENDENCIES="jupyterlite-sphinx>=0.17.1 jupyterlite-pyodide-kernel libarchive-c numpy sphinx-design>=0.8"
+    PIP_DEPENDENCIES="jupyterlite-sphinx>=0.17.1 jupyterlite-pyodide-kernel libarchive-c numpy sphinx-design"
 elif [ "$DISTRIB" == "minimal" ]; then
     PIP_DEPENDENCIES=""
 elif [ "$DISTRIB" == "pip" ]; then
