@@ -18,71 +18,76 @@ frequently asked questions, and utilities.
     .. grid-item-card::
         :text-align: center
 
-        **Advanced Usage**
-        ^^^
+        .. card-header::
+
+            **Advanced Usage**
 
         Understand Sphinx-Gallery more deeply, and learn additional
         things you can do with Sphinx-Gallery.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: advanced
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: advanced
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Advanced Usage
+                Advanced Usage
 
     .. grid-item-card::
         :text-align: center
 
-        **FAQ**
-        ^^^
+        .. card-header::
+
+            **FAQ**
 
         Get answers to common issues and usage scenarios.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: faq
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: faq
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Frequently Asked Questions
+                Frequently Asked Questions
 
     .. grid-item-card::
         :text-align: center
 
-        **Utilities**
-        ^^^
+        .. card-header::
+
+            **Utilities**
 
         Additional tools for working with Sphinx-Gallery.
-        +++
 
-        .. button-ref:: utils
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+        .. card-footer::
 
-            Sphinx-Gallery Utilities
+            .. button-ref:: utils
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
+
+                Sphinx-Gallery Utilities
 
     .. grid-item-card::
         :text-align: center
 
-        **API reference**
-        ^^^
+        .. card-header::
+
+            **API reference**
 
         Relevant for developers who want to modify or extend Sphinx-Gallery.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: reference
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: reference
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Sphinx-Gallery API Reference
+                Sphinx-Gallery API Reference

@@ -18,73 +18,77 @@ of Sphinx-Gallery.
     .. grid-item-card::
         :text-align: center
 
-        **Getting started**
-        ^^^
+        .. card-header::
+
+            **Getting started**
 
         Learn the basics of Sphinx-Gallery and set up your project by following a
         step-by-step guide.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: getting_started
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: getting_started
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Getting Started with Sphinx-Gallery
+                Getting Started with Sphinx-Gallery
 
     .. grid-item-card::
         :text-align: center
 
-        **Write gallery pages**
-        ^^^
+        .. card-header::
+
+            **Write gallery pages**
 
         Learn the structure and syntax of the Python files that are the input
         for the gallery pages.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: syntax
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: syntax
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Structuring Python scripts for Sphinx-Gallery
+                Structuring Python scripts for Sphinx-Gallery
 
     .. grid-item-card::
         :text-align: center
 
-        **Customize**
-        ^^^
+        .. card-header::
+
+            **Customize**
 
         Adapt Sphinx-Gallery to your needs through the configuration settings.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: configuration
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: configuration
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Configuration
+                Configuration
 
     .. grid-item-card::
         :text-align: center
 
-        **Who uses Sphinx-Gallery**
-        ^^^
+        .. card-header::
+
+            **Who uses Sphinx-Gallery**
 
         See how Sphinx-Gallery is used in existing projects.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: projects_list
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: projects_list
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            List of projects using Sphinx-Gallery
+                List of projects using Sphinx-Gallery
