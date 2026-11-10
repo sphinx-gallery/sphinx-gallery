@@ -18,72 +18,76 @@ plotting backends.
     .. grid-item-card::
         :text-align: center
 
-        **Basic**
-        ^^^
+        .. card-header::
+
+            **Basic**
 
         An example gallery with Matplotlib plots.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: auto_examples/index
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: auto_examples/index
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Matplotlib Gallery
+                Matplotlib Gallery
 
     .. grid-item-card::
         :text-align: center
 
-        **Tutorial**
-        ^^^
+        .. card-header::
+
+            **Tutorial**
 
         A gallery with a longer tutorial-style entry.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: tutorials/index
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: tutorials/index
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Notebook-style Narrative Gallery
+                Notebook-style Narrative Gallery
 
     .. grid-item-card::
         :text-align: center
 
-        **Plotly**
-        ^^^
+        .. card-header::
+
+            **Plotly**
 
         An example gallery with Plotly plots.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: auto_plotly_examples/index
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: auto_plotly_examples/index
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            Ploty Gallery
+                Ploty Gallery
 
     .. grid-item-card::
         :text-align: center
 
-        **PyVista**
-        ^^^
+        .. card-header::
+
+            **PyVista**
 
         An example gallery with 3D plots using PyVista.
 
-        +++
+        .. card-footer::
 
-        .. button-ref:: auto_pyvista_examples/index
-            :ref-type: doc
-            :expand:
-            :color: secondary
-            :click-parent:
+            .. button-ref:: auto_pyvista_examples/index
+                :ref-type: doc
+                :expand:
+                :color: secondary
+                :click-parent:
 
-            PyVista Gallery
+                PyVista Gallery
 

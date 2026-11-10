@@ -53,7 +53,7 @@ optional-dependencies.dev = [
   "pytest-coverage",
   "pytest-xdist",
   "seaborn",
-  "sphinx-design",
+  "sphinx-design>=0.8",
   "sphinxcontrib-video",
   "statsmodels",
   "threadpoolctl",
