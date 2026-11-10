@@ -116,6 +116,7 @@ An incomplete list:
 .. projects_list_start
 
 * `Apache TVM <https://tvm.apache.org/docs/tutorial/index.html>`_
+* `Atomic Simulation Environment <https://docs.ase-lib.org>`_
 * `Atomistic Cookbook <https://atomistic-cookbook.org>`_
 * `auto-sklearn <https://automl.github.io/auto-sklearn/master/examples/index.html>`_
 * `Biotite <https://www.biotite-python.org/latest/examples/index.html>`_
