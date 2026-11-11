@@ -411,6 +411,10 @@ sphinx_gallery_conf = {
         "branch": "master",
         "binderhub_url": "https://mybinder.org",
         "dependencies": "./binder/requirements.txt",
+        # The built docs are published under stable/ or dev/ in the
+        # sphinx-gallery.github.io repo, so Binder needs that prefix to
+        # find the notebooks (gh-1092).
+        "filepath_prefix": "dev" if "dev" in version else "stable",
         "notebooks_dir": "notebooks",
         "use_jupyter_lab": True,
     },
