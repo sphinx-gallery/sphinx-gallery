@@ -12,8 +12,8 @@ from unittest.mock import Mock
 import pytest
 from sphinx.application import Sphinx
 from sphinx.errors import ConfigError
-import sphinx_gallery
 
+import sphinx_gallery
 from sphinx_gallery.interactive_example import (
     _copy_binder_reqs,
     check_binder_conf,
