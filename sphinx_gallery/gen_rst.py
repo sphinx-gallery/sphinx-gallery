@@ -297,7 +297,11 @@ RECOMMENDATIONS_INCLUDE = """\n
 
 
 def codestr2rst(codestr: str, lang: str = "python", lineno: int | None = None) -> str:
-    """Return reStructuredText code block from code string."""
+    """Return reStructuredText code block from code string.
+
+    ``lineno`` is the line number of the first line of ``codestr``, and is used
+    as the starting line number of the rendered block.
+    """
     if lineno is not None:
         # Sphinx only starts numbering from the first non-empty line.
         blank_lines = codestr.count("\n", 0, -len(codestr.lstrip()))
@@ -1821,15 +1825,19 @@ def rst_blocks(
                 script_block.lineno + script_block.content.count("\n"),
             )
         if script_block.type == "code":
-            lineno = (
-                script_block.lineno
-                if file_conf.get("line_numbers", gallery_conf["line_numbers"])
-                else None
-            )
+            line_numbers = file_conf.get("line_numbers", gallery_conf["line_numbers"])
+            lineno = None
+            content = script_block.content
+            if line_numbers == "per-block":
+                # Number each block from 1 rather than from its position in the
+                # example. Stripping the leading blank lines keeps that true for
+                # blocks that start with them, as Sphinx numbers those too.
+                content = content.lstrip("\n")
+                lineno = 1
+            elif line_numbers:
+                lineno = script_block.lineno
 
-            code_rst = (
-                codestr2rst(script_block.content, lang=language, lineno=lineno) + "\n"
-            )
+            code_rst = codestr2rst(content, lang=language, lineno=lineno) + "\n"
             if is_example_notebook_like:
                 example_rst += code_rst
                 example_rst += code_output
