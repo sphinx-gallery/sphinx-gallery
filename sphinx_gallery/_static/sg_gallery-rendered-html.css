@@ -1,4 +1,5 @@
 /* Adapted from notebook/static/style/style.min.css */
+html:not([data-theme]),
 html[data-theme="light"] {
   --sg-text-color: #000;
   --sg-background-color: #ffffff;
