@@ -288,8 +288,8 @@ class ImageSg(images.Image):
 
     has_content = False
     required_arguments = 1
-    optional_arguments = 3
-    final_argument_whitespace = False
+    optional_arguments = 0
+    final_argument_whitespace = True
     option_spec = {
         "srcset": directives.unchanged,
         "class": directives.class_option,
@@ -319,12 +319,14 @@ def _parse_srcset(st: str) -> dict[float, str]:
     entries = st.split(",")
     srcset: dict[float, str] = {}
     for entry in entries:
-        spl = entry.strip().split(" ")
+        directory, slash, filename = entry.strip().rpartition("/")
+        spl = filename.split(" ")
+        path = directory + slash + spl[0]
         if len(spl) == 1:
-            srcset[0] = spl[0]
+            srcset[0] = path
         elif len(spl) == 2:
             mult = spl[1][:-1]
-            srcset[float(mult)] = spl[0]
+            srcset[float(mult)] = path
         else:
             raise ExtensionError('srcset argument "{entry}" is invalid.')
     return srcset
