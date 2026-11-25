@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 from collections import namedtuple
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Any, List
+from urllib.parse import quote
 
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
@@ -316,19 +318,18 @@ class ImageSg(images.Image):
 
 def _parse_srcset(st: str) -> dict[float, str]:
     """Parse st."""
-    entries = st.split(",")
     srcset: dict[float, str] = {}
-    for entry in entries:
-        directory, slash, filename = entry.strip().rpartition("/")
-        spl = filename.split(" ")
-        path = directory + slash + spl[0]
-        if len(spl) == 1:
-            srcset[0] = path
-        elif len(spl) == 2:
-            mult = spl[1][:-1]
-            srcset[float(mult)] = path
+    for entry in st.split(","):
+        entry = entry.strip()
+        # Paths may contain spaces, so only a trailing token can be a descriptor
+        path, _, desc = entry.rpartition(" ")
+        if re.fullmatch(r"\d+(\.\d+)?x", desc):
+            mult, path = float(desc[:-1]), path.rstrip()
         else:
-            raise ExtensionError('srcset argument "{entry}" is invalid.')
+            mult, path = 0, entry
+        if not path:
+            raise ExtensionError(f'srcset argument "{entry}" is invalid.')
+        srcset[mult] = path
     return srcset
 
 
@@ -359,7 +360,7 @@ def visit_imgsg_html(self, node: imgsgnode) -> None:
     for mult in srcset:
         nm = Path(srcset[mult][1:]).name
         # ../../_images/plot_1_2_0x.png
-        relpath = imagerel + nm
+        relpath = imagerel + quote(nm)
         srcsetst += f"{relpath}"
         if mult == 0:
             srcsetst += ", "
@@ -370,7 +371,7 @@ def visit_imgsg_html(self, node: imgsgnode) -> None:
 
     # make uri also be relative...
     nm = Path(node["uri"][1:]).name
-    uri = imagerel + nm
+    uri = imagerel + quote(nm)
 
     alt = node["alt"]
     if node["class"] is not None:
