@@ -420,8 +420,6 @@ def _fill_gallery_conf_defaults(
     ):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
 
-    # `line_numbers` is a bool or the string "per-block", so it is evaluated
-    # separately
     gallery_conf["line_numbers"] = _line_numbers_eval(gallery_conf["line_numbers"])
 
     gallery_conf["default_role"] = ""

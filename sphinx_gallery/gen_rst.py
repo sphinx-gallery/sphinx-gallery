@@ -1815,6 +1815,12 @@ def rst_blocks(
     # A simple example has two blocks: one for the
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
+    line_numbers = file_conf.get("line_numbers", gallery_conf["line_numbers"])
+    if isinstance(line_numbers, str) and line_numbers != "per-block":
+        raise ExtensionError(
+            "sphinx_gallery_line_numbers setting must be a bool or 'per-block', "
+            f"got {line_numbers!r}"
+        )
     example_rst = ""
     for bi, (script_block, code_output) in enumerate(zip(script_blocks, output_blocks)):
         # do not add comment to the title block, otherwise the linking does
@@ -1825,14 +1831,11 @@ def rst_blocks(
                 script_block.lineno + script_block.content.count("\n"),
             )
         if script_block.type == "code":
-            line_numbers = file_conf.get("line_numbers", gallery_conf["line_numbers"])
             lineno = None
             content = script_block.content
             if line_numbers == "per-block":
-                # Number each block from 1 rather than from its position in the
-                # example. Stripping the leading blank lines keeps that true for
-                # blocks that start with them, as Sphinx numbers those too.
-                content = content.lstrip("\n")
+                # codestr2rst would otherwise offset lineno by the leading blank lines
+                content = re.sub(r"\A(?:[ \t]*\n)+", "", content)
                 lineno = 1
             elif line_numbers:
                 lineno = script_block.lineno
