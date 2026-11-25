@@ -1,18 +1,27 @@
 /* Adapted from notebook/static/style/style.min.css */
-html:not([data-theme]),
-html[data-theme="light"] {
+/* Light by default; pydata-sphinx-theme sets data-theme on <html>, Furo on <body> */
+:root, html[data-theme="light"], body[data-theme="light"] {
   --sg-text-color: #000;
   --sg-background-color: #ffffff;
   --sg-code-background-color: #eff0f1;
   --sg-tr-hover-color: rgba(66, 165, 245, 0.2);
   --sg-tr-odd-color: #f5f5f5;
 }
-html[data-theme="dark"] {
+html[data-theme="dark"], body[data-theme="dark"] {
   --sg-text-color: #fff;
   --sg-background-color: #121212;
   --sg-code-background-color: #2f2f30;
   --sg-tr-hover-color: rgba(66, 165, 245, 0.2);
   --sg-tr-odd-color: #1f1f1f;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme="auto"], body[data-theme="auto"] {
+    --sg-text-color: #fff;
+    --sg-background-color: #121212;
+    --sg-code-background-color: #2f2f30;
+    --sg-tr-hover-color: rgba(66, 165, 245, 0.2);
+    --sg-tr-odd-color: #1f1f1f;
+  }
 }
 
 .rendered_html {
