@@ -312,12 +312,12 @@ def _collect_gallery_files(
     gallery_header_filenames = list(iter_gallery_header_filenames(gallery_conf))
     for example_dir in examples_dirs:
         example_dir = Path(example_dir)
-        for dirpath, _, filenames in os.walk(example_dir):
+        for dirpath, dirnames, filenames in os.walk(example_dir):
             # `os.walk` yields paths below `example_dir`, so the number of parts
             # relative to it is the depth
             root = Path(dirpath)
-            if len(root.parts) - len(example_dir.parts) > max_depth:
-                break
+            if len(root.parts) - len(example_dir.parts) == max_depth:
+                dirnames.clear()
             for filename in filenames:
                 if filename in gallery_header_filenames:
                     continue
