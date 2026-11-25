@@ -1134,6 +1134,20 @@ setting::
 
     # sphinx_gallery_line_numbers = True
 
+By default, the numbers match the line numbers of the example script, so they
+differ from block to block. Setting ``line_numbers`` to ``'per-block'``
+instead numbers every code block from ``1``::
+
+    sphinx_gallery_conf = {
+        ...
+        'line_numbers': 'per-block',
+    }
+
+In an example script the value of that option is parsed as a Python literal,
+so it must be quoted::
+
+    # sphinx_gallery_line_numbers = "per-block"
+
 .. _removing_config_comments:
 
 Removing config comments

@@ -172,6 +172,22 @@ def _bool_eval(x: Any) -> bool:
     return bool(x)
 
 
+def _line_numbers_eval(x: Any) -> bool | Literal["per-block"]:
+    """Evaluate the ``line_numbers`` config.
+
+    Like `_bool_eval`, but additionally accepts ``"per-block"``, and raises a
+    `ConfigError` instead of a `NameError` for any other string.
+    """
+    if isinstance(x, str) and x.strip().strip("\"'") == "per-block":
+        return "per-block"
+    try:
+        return _bool_eval(x)
+    except (NameError, SyntaxError):
+        raise ConfigError(
+            f"'line_numbers' must be a bool or 'per-block', got: {x!r}"
+        ) from None
+
+
 def _update_gallery_conf_exclude_implicit_doc(gallery_conf: GalleryConfig) -> None:
     """Update gallery config exclude_implicit_doc.
 
@@ -395,7 +411,6 @@ def _fill_gallery_conf_defaults(
     for key in (
         "download_all_examples",
         "inspect_global_variables",
-        "line_numbers",
         "nested_sections",
         "only_warn_on_example_error",
         "promote_jupyter_magic",
@@ -404,6 +419,8 @@ def _fill_gallery_conf_defaults(
         "show_signature",
     ):
         gallery_conf[key] = _bool_eval(gallery_conf[key])
+
+    gallery_conf["line_numbers"] = _line_numbers_eval(gallery_conf["line_numbers"])
 
     gallery_conf["default_role"] = ""
     gallery_conf["source_suffix"] = {".rst": "restructuredtext"}

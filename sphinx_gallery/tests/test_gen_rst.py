@@ -355,6 +355,49 @@ def test_codestr2rst():
 
 
 @pytest.mark.parametrize(
+    "global_value, file_value, expected",
+    [
+        (False, None, None),
+        (True, None, ":lineno-start: 7"),
+        ("per-block", None, ":lineno-start: 1"),
+        (True, "per-block", ":lineno-start: 1"),
+        (False, True, ":lineno-start: 7"),
+        (True, "per_block", None),
+    ],
+    ids=[
+        "off",
+        "on",
+        "per-block",
+        "per-block-overrides-global",
+        "file-override",
+        "file-typo",
+    ],
+)
+def test_line_numbers(gallery_conf, global_value, file_value, expected):
+    """Test the ``line_numbers`` setting, including ``"per-block"`` (gh-1636)."""
+    blocks = [
+        Block("text", "Introduction\n", 1),
+        # leading blank lines (one whitespace-only) that codestr2rst offsets for
+        Block("code", "\n  \nx = 1\ny = 2\n", 5),
+    ]
+    gallery_conf["line_numbers"] = global_value
+    file_conf = {} if file_value is None else {"line_numbers": file_value}
+    if file_value == "per_block":
+        with pytest.raises(ExtensionError, match="must be a bool or 'per-block'"):
+            sg.rst_blocks(blocks, ["", ""], file_conf, gallery_conf)
+        return
+    rst = sg.rst_blocks(blocks, ["", ""], file_conf, gallery_conf)
+
+    if expected is None:
+        assert ":lineno-start:" not in rst
+    else:
+        assert expected in rst
+    if expected == ":lineno-start: 1":
+        # the leading blank lines are dropped, so the code really starts at 1
+        assert "x = 1\n    y = 2" in rst
+
+
+@pytest.mark.parametrize(
     "content,expected",
     [
         # Explicit title: Sphinx renders the title, so the tooltip must too

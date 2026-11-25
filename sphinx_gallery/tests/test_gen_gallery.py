@@ -85,6 +85,31 @@ def test_bool_eval():
     assert _bool_eval("0") == False
 
 
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        (True, True),
+        (False, False),
+        ("True", True),
+        ("per-block", "per-block"),
+        ('"per-block"', "per-block"),
+    ],
+)
+def test_line_numbers_eval(value, expected):
+    """Ensure `line_numbers` accepts bools and ``"per-block"`` (gh-1636)."""
+    conf = _fill_gallery_conf_defaults(dict(line_numbers=value))
+    assert conf["line_numbers"] == expected
+
+
+@pytest.mark.parametrize("value", ["per_block", "blocks"])
+def test_bad_line_numbers(value):
+    """Ensure invalid `line_numbers` values are caught."""
+    with pytest.raises(
+        ConfigError, match="'line_numbers' must be a bool or 'per-block'"
+    ):
+        _fill_gallery_conf_defaults(dict(line_numbers=value))
+
+
 def test_bad_config():
     """Test that bad config values are caught."""
     sphinx_gallery_conf = dict(example_dir="")

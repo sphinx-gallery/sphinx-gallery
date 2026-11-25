@@ -297,7 +297,11 @@ RECOMMENDATIONS_INCLUDE = """\n
 
 
 def codestr2rst(codestr: str, lang: str = "python", lineno: int | None = None) -> str:
-    """Return reStructuredText code block from code string."""
+    """Return reStructuredText code block from code string.
+
+    ``lineno`` is the line number of the first line of ``codestr``, and is used
+    as the starting line number of the rendered block.
+    """
     if lineno is not None:
         # Sphinx only starts numbering from the first non-empty line.
         blank_lines = codestr.count("\n", 0, -len(codestr.lstrip()))
@@ -1811,6 +1815,12 @@ def rst_blocks(
     # A simple example has two blocks: one for the
     # example introduction/explanation and one for the code
     is_example_notebook_like = len(script_blocks) > 2
+    line_numbers = file_conf.get("line_numbers", gallery_conf["line_numbers"])
+    if isinstance(line_numbers, str) and line_numbers != "per-block":
+        raise ExtensionError(
+            "sphinx_gallery_line_numbers setting must be a bool or 'per-block', "
+            f"got {line_numbers!r}"
+        )
     example_rst = ""
     for bi, (script_block, code_output) in enumerate(zip(script_blocks, output_blocks)):
         # do not add comment to the title block, otherwise the linking does
@@ -1821,15 +1831,16 @@ def rst_blocks(
                 script_block.lineno + script_block.content.count("\n"),
             )
         if script_block.type == "code":
-            lineno = (
-                script_block.lineno
-                if file_conf.get("line_numbers", gallery_conf["line_numbers"])
-                else None
-            )
+            lineno = None
+            content = script_block.content
+            if line_numbers == "per-block":
+                # codestr2rst would otherwise offset lineno by the leading blank lines
+                content = re.sub(r"\A(?:[ \t]*\n)+", "", content)
+                lineno = 1
+            elif line_numbers:
+                lineno = script_block.lineno
 
-            code_rst = (
-                codestr2rst(script_block.content, lang=language, lineno=lineno) + "\n"
-            )
+            code_rst = codestr2rst(content, lang=language, lineno=lineno) + "\n"
             if is_example_notebook_like:
                 example_rst += code_rst
                 example_rst += code_output
