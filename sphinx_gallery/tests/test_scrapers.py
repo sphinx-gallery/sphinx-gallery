@@ -350,3 +350,27 @@ def test_reset_matplotlib(make_gallery_conf):
 
     assert matplotlib.rcParams["lines.linewidth"] != 42
     assert len(matplotlib.units.registry) > 0
+
+
+@pytest.mark.add_conf(content="include_patterns = ['index.rst']")
+def test_figure_srcset_in_directory_with_spaces(sphinx_app_wrapper):
+    from PIL import Image
+
+    srcdir = sphinx_app_wrapper.srcdir
+    image_dir = srcdir / "Plot Styles"
+    image_dir.mkdir()
+    normal = image_dir / "my plot.png"
+    hidpi = image_dir / "my plot_2x.png"
+    for size, path in ((1, normal), (2, hidpi)):
+        Image.new("RGB", (size, size)).save(path)
+
+    rst = figure_rst([normal], srcdir, srcsetpaths=[{0: normal, 2: hidpi}])
+    (srcdir / "index.rst").write_text("Figures\n=======\n" + rst, encoding="utf-8")
+    app = sphinx_app_wrapper.build_sphinx_app()
+
+    outdir = Path(app.outdir)
+    html = (outdir / "index.html").read_text(encoding="utf-8")
+    assert 'src="_images/my%20plot.png"' in html
+    assert 'srcset="_images/my%20plot.png, _images/my%20plot_2x.png 2.00x"' in html
+    for path in (normal, hidpi):
+        assert (outdir / "_images" / path.name).read_bytes() == path.read_bytes()
