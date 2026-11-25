@@ -380,11 +380,14 @@ executed, you can modify ``filename_pattern``. For example::
         'filename_pattern': '/plot_compute_',
     }
 
-will build all examples starting with ``plot_compute_``. The key
-``filename_pattern`` (and ``ignore_pattern``) accepts `regular expressions`_
-which will be matched with the full path of the example. This is the reason
-the leading ``'/'`` is required. Users are advised to use ``re.escape(os.sep)``
-instead of ``'/'`` if they want to be agnostic to the operating system.
+will execute examples whose path contains ``/plot_compute_``. Both options accept
+`regular expressions`_. ``filename_pattern`` matches against the full path of
+the example. Use ``re.escape(os.sep)`` in place of ``'/'`` to match the path
+separator on the current operating system.
+
+``ignore_pattern`` matches against the filename alone. For example,
+``r'^skip_'`` omits files whose names start with ``skip_`` in any gallery
+directory.
 
 The ``filename_pattern`` option is also useful if you want to build only a
 subset of the examples. For example, you may

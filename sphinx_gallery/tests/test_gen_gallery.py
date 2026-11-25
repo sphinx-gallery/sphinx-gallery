@@ -609,6 +609,12 @@ def test_collect_gallery_files(tmp_path, gallery_conf):
         ap.parent.mkdir(parents=True, exist_ok=True)
         ap.touch()
 
+    # Nested data directories must not hide sibling galleries from the checks.
+    for section in ("folder1", "folder2"):
+        data_dir = tmp_path / "examples" / section / "data"
+        data_dir.mkdir()
+        (data_dir / "nested.py").touch()
+
     examples_path = tmp_path / "examples"
     dirs = [str(examples_path)]
     collected_files = set(
