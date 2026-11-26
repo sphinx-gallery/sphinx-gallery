@@ -4,6 +4,7 @@
 
 import os
 import re
+import runpy
 from copy import deepcopy
 from pathlib import Path
 from unittest.mock import Mock
@@ -12,6 +13,7 @@ import pytest
 from sphinx.application import Sphinx
 from sphinx.errors import ConfigError
 
+import sphinx_gallery
 from sphinx_gallery.interactive_example import (
     _copy_binder_reqs,
     check_binder_conf,
@@ -20,6 +22,16 @@ from sphinx_gallery.interactive_example import (
     gen_binder_url,
     gen_jupyterlite_rst,
 )
+
+
+@pytest.mark.parametrize(
+    ("package_version", "docs_version"),
+    [("1.2.3", "stable"), ("1.3.dev0", "dev")],
+)
+def test_doc_binder_filepath_prefix(monkeypatch, package_version, docs_version):
+    monkeypatch.setattr(sphinx_gallery, "__version__", package_version)
+    conf = runpy.run_path(Path(__file__).parents[2] / "doc" / "conf.py")
+    assert conf["sphinx_gallery_conf"]["binder"]["filepath_prefix"] == docs_version
 
 
 def test_binder():
